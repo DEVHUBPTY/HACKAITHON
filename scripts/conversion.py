@@ -33,43 +33,12 @@ PATRON_ARCHIVO_GDELT = re.compile(
 )
 PATRON_ARCHIVO_WB = re.compile(r"^wb_(?P<ind>[A-Za-z0-9.]+)_(?P<ts>\d{8}T\d{6}Z)\.json$")
 
-COLUMNAS_NOTICIAS = [
-    "id_noticia",
-    "titulo",
-    "url",
-    "medio",
-    "idioma",
-    "fecha_publicacion",
-    "fecha_deteccion",
-    "fecha_extraccion",
-    "tema",
-    "origen",
-    "alcance_texto",
-]
-COLUMNAS_INDICADORES = [
-    "id_indicador",
-    "pais_iso3",
-    "indicador_id",
-    "anio",
-    "valor",
-    "unidad",
-    "fuente_url",
-    "fecha_extraccion",
-    "licencia",
-]
-CAMPOS_FUENTES = ["dominio", "nombre_legible", "pais", "origen", "condiciones"]
-CAMPOS_EVENTO = [
-    "id",
-    "magnitude",
-    "time",
-    "updated",
-    "longitude",
-    "latitude",
-    "depth",
-    "place",
-    "status",
-    "url",
-]
+# Los campos del contrato viven en config/contrato.yaml (única fuente; también la usan la carga y la validación).
+_CONTRATO = configuracion.cargar_contrato()
+COLUMNAS_NOTICIAS = _CONTRATO.noticias
+COLUMNAS_INDICADORES = [*_CONTRATO.indicadores_extra, *_CONTRATO.indicadores]
+CAMPOS_FUENTES = _CONTRATO.fuentes
+CAMPOS_EVENTO = _CONTRATO.eventos
 FORMATO_GDELT = "%Y%m%d%H%M%S"
 ORIGEN_RSS = "TVN RSS"
 ORIGEN_GDELT = "GDELT"
