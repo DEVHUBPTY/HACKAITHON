@@ -110,3 +110,33 @@ def test_un_fallo_resuelto_despues_deja_de_reportarse(tmp_path: Path, cfg: dict,
         extraer.extraer_gdelt(tmp_path, cfg)
     extraer.extraer_gdelt(tmp_path, cfg)  # solo pide el rango que faltaba
     assert conversion.fallos_gdelt_sin_resolver(tmp_path, cfg) == []
+
+
+def test_cuerpo_que_no_es_json_de_gdelt_no_se_guarda_y_se_reintenta(tmp_path: Path, cfg: dict, red: dict) -> None:
+    ini, fin = datetime(2026, 10, 4, tzinfo=UTC), datetime(2026, 10, 5, tzinfo=UTC)
+    red["respuestas"] += [Respuesta(200, "<html>limite de solicitudes</html>"), Respuesta()]
+    extraer._consultar_gdelt("economia", "q", ini, fin, tmp_path, cfg, {})
+    assert len(red["llamadas"]) == 2 and red["esperas"] == [cfg["gdelt"]["espera_429_segundos"]]
+    guardados = list((tmp_path / "gdelt").glob("gdelt_*.json"))
+    assert len(guardados) == 1 and "html" not in guardados[0].read_text("utf-8")
+
+
+def test_vacio_exige_confirmacion_y_no_se_reutiliza(tmp_path: Path, cfg: dict, red: dict) -> None:
+    ini, fin = datetime(2026, 10, 4, tzinfo=UTC), datetime(2026, 10, 5, tzinfo=UTC)
+    red["respuestas"] += [Respuesta(200, "{}"), Respuesta(200, "{}")]
+    extraer._consultar_gdelt("economia", "q", ini, fin, tmp_path, cfg, {})
+    assert len(red["llamadas"]) == 2  # el primer {} no se acepta solo
+    assert extraer._crudo_existente(tmp_path, cfg, "economia", ini, fin) is None  # un {} no es reutilizable
+
+
+def test_un_solo_vacio_seguido_de_bloqueo_es_fallo(cfg: dict, red: dict) -> None:
+    red["respuestas"] += [Respuesta(200, "{}"), Respuesta(429), Respuesta(429)]
+    with pytest.raises(extraer.ErrorDeExtraccion):
+        extraer._pedir_gdelt({"query": "x"}, cfg)
+
+
+def test_clasificar_respuesta() -> None:
+    c = extraer._clasificar_respuesta
+    assert c('{"articles": []}') == "ok" and c('{"articles": [{"url": "x"}]}') == "ok"
+    assert c("{}") == "vacio" and c("") == "vacio"
+    assert c("limite de solicitudes") == "invalido" and c('{"error": "x"}') == "invalido"

@@ -132,8 +132,27 @@ def _prefijo_gdelt(tema: str, ini: datetime, fin: datetime) -> str:
 def _crudo_existente(raw: Path, config: dict[str, Any], tema: str, ini: datetime, fin: datetime) -> Path | None:
     """Crudo ya descargado para exactamente esta consulta y este rango, si existe."""
     carpeta = raw / config["gdelt"]["carpeta_cruda"]
-    coincidencias = conversion.archivos_crudos(carpeta, f"{_prefijo_gdelt(tema, ini, fin)}_*.json")
-    return coincidencias[-1] if coincidencias else None
+    for ruta in reversed(conversion.archivos_crudos(carpeta, f"{_prefijo_gdelt(tema, ini, fin)}_*.json")):
+        if _clasificar_respuesta(ruta.read_text(encoding="utf-8")) == "ok":  # los vacíos no se reutilizan
+            return ruta
+    return None
+
+
+def _clasificar_respuesta(texto: str) -> str:
+    """``ok`` = JSON de GDELT con la clave ``articles``; ``vacio`` = ``{}`` o cuerpo vacío; ``invalido`` = lo demás.
+
+    Verificado el 2026-10-06: una consulta sin resultados devuelve HTTP 200 con ``{}``; pero un
+    ``{}`` también podría ser un bloqueo disfrazado, así que solo se acepta tras confirmarlo.
+    """
+    if not texto.strip():
+        return "vacio"
+    try:
+        datos = json.loads(texto, strict=False)
+    except json.JSONDecodeError:
+        return "invalido"
+    if isinstance(datos, dict) and "articles" in datos:
+        return "ok"
+    return "vacio" if datos == {} else "invalido"
 
 
 def _pedir_gdelt(params: dict[str, Any], config: dict[str, Any]) -> requests.Response:
@@ -141,6 +160,7 @@ def _pedir_gdelt(params: dict[str, Any], config: dict[str, Any]) -> requests.Res
     cfg = config["gdelt"]
     gen = config["general"]
     ultimo = "sin intentos"
+    vacios = 0
     for intento in range(cfg["max_intentos"]):
         try:
             resp = requests.get(
@@ -154,12 +174,24 @@ def _pedir_gdelt(params: dict[str, Any], config: dict[str, Any]) -> requests.Res
             espera = cfg["espera_429_segundos"] * 2**intento
         else:
             if resp.status_code == 200:
-                return resp
-            ultimo = f"HTTP {resp.status_code}"
-            if resp.status_code != 429 and resp.status_code < 500:
-                raise ErrorDeExtraccion(f"GDELT respondió {ultimo}")
-            retry = resp.headers.get("Retry-After", "")
-            espera = int(retry) if retry.isdigit() else cfg["espera_429_segundos"] * 2**intento
+                clase = _clasificar_respuesta(resp.text)
+                if clase == "ok":
+                    return resp
+                if clase == "vacio":
+                    vacios += 1
+                    if vacios >= 2:  # dos respuestas vacías seguidas = sin resultados genuinos
+                        return resp
+                    ultimo = "respuesta vacía sin confirmar"
+                    espera = cfg["pausa_segundos"]
+                else:
+                    ultimo = f"cuerpo que no es JSON de GDELT: {resp.text[:60]!r}"
+                    espera = cfg["espera_429_segundos"] * 2**intento
+            else:
+                ultimo = f"HTTP {resp.status_code}"
+                if resp.status_code != 429 and resp.status_code < 500:
+                    raise ErrorDeExtraccion(f"GDELT respondió {ultimo}")
+                retry = resp.headers.get("Retry-After", "")
+                espera = int(retry) if retry.isdigit() else cfg["espera_429_segundos"] * 2**intento
         logger.warning("GDELT %s (intento %s/%s); espero %s s", ultimo, intento + 1, cfg["max_intentos"], espera)
         if intento + 1 < cfg["max_intentos"]:
             time.sleep(espera)
@@ -202,10 +234,7 @@ def _consultar_gdelt(
     finally:
         estado["ultima"] = time.monotonic()
     texto = resp.text
-    try:
-        datos = json.loads(texto, strict=False) if texto.strip() else {}
-    except json.JSONDecodeError as exc:
-        raise ErrorDeExtraccion(f"GDELT devolvió algo que no es JSON: {texto[:80]!r}") from exc
+    datos = json.loads(texto, strict=False) if texto.strip() else {}
     n = len(datos.get("articles", []))
     horas = (fin - ini).total_seconds() / 3600
     if n >= cfg["maxrecords"] and horas / 2 >= cfg["rango_minimo_horas"]:
@@ -214,7 +243,7 @@ def _consultar_gdelt(
         return _consultar_gdelt(tema, consulta, ini, mitad, raw, config, estado) + _consultar_gdelt(
             tema, consulta, mitad, fin, raw, config, estado
         )
-    # Se guarda también la respuesta vacía: así la corrida siguiente no repite la llamada.
+    # Un vacío confirmado se guarda como crudo (trazabilidad), pero no se reutiliza.
     _guardar(
         raw / cfg["carpeta_cruda"],
         conversion.nombre_con_ts(_prefijo_gdelt(tema, ini, fin), _ahora(), "json"),
