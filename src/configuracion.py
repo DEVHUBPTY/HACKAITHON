@@ -108,11 +108,6 @@ class PataConsulta(ModeloConfig):
     filtros: list[str]
     terminos: list[str]
 
-    @model_validator(mode="after")
-    def _consulta_valida(self) -> "PataConsulta":
-        consultas_gdelt.construir_consulta(self.model_dump())  # lanza ValueError si un término no sirve
-        return self
-
 
 class Gdelt(ModeloConfig):
     endpoint: str
@@ -130,6 +125,16 @@ class Gdelt(ModeloConfig):
     # tema de origen (D-62) -> pata ('locales', 'internacional') -> definición; ver src/consultas_gdelt.py
     consultas: dict[str, dict[str, PataConsulta]]
     motivo_cambio_consultas: str
+    # Consultas reemplazadas (tema -> consulta antigua): sus crudos siguen en raw/ pero no alimentan el snapshot (D-83).
+    consultas_historicas: dict[str, str]
+    largo_minimo_termino: int
+
+    @model_validator(mode="after")
+    def _consultas_validas(self) -> "Gdelt":
+        for patas in self.consultas.values():
+            for pata in patas.values():
+                consultas_gdelt.construir_consulta(pata.model_dump(), self.largo_minimo_termino)  # ValueError si no sirve
+        return self
 
 
 class Indicador(ModeloConfig):

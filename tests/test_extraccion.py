@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import conversion, extraer
+from scripts import conversion, extraer, manifest
 from tests.conftest import DESCRIPCION_SECRETA, IMAGEN_SECRETA, RSS_ITEMS, SELLO, rss_sintetico
 
 
@@ -179,7 +179,7 @@ def test_rangos_de_fechas_cubren_la_ventana_sin_huecos() -> None:
 
 
 def _gdelt_extra(data: Path, articulos: list[dict]) -> None:
-    (data / "raw" / "gdelt" / "gdelt_turismo_20260930000000_20261006000000_20261006T121000Z.json").write_text(
+    (data / "raw" / "gdelt" / "gdelt_turismo__locales_20260930000000_20261006000000_20261006T121000Z.json").write_text(
         json.dumps({"articles": articulos}), encoding="utf-8"
     )
 
@@ -218,6 +218,31 @@ def test_pais_de_la_fuente_en_espanol_o_nulo_no_pendiente(data_sintetica: Path, 
     assert por["extra1.test"]["pais"] is None and por["extra2.test"]["pais"] is None
     assert por["extra1.test"]["condiciones"] == "Pendiente de verificar"  # solo las condiciones son "pendientes"
     assert por["ejemplo.test"]["pais"] == "Estados Unidos"
+
+
+def test_crudos_de_consultas_reemplazadas_no_alimentan_el_snapshot_y_se_informan(data_sintetica: Path, config) -> None:
+    """D-83: un crudo sin pata (consulta anterior a E0-04) queda en raw/ pero no entra a noticias.csv."""
+    antes, _, _ = conversion.convertir_noticias(data_sintetica / "raw", config)
+    viejo = data_sintetica / "raw" / "gdelt" / "gdelt_logistica_20260930000000_20261006000000_20261006T121000Z.json"
+    viejo.write_text(json.dumps({"articles": [_articulo(9, "English", "United States")]}), encoding="utf-8")
+    filas, _, auditoria = conversion.convertir_noticias(data_sintetica / "raw", config)
+    assert filas == antes and "Extra 9" not in {f["titulo"] for f in filas}
+    assert viejo.exists()  # raw/ es inmutable
+    assert auditoria["crudos_excluidos"] == [
+        {
+            "archivo": viejo.name,
+            "tema": "logistica",
+            "pata": None,
+            "motivo": "consulta reemplazada (D-83)",
+            "consulta_historica": config["gdelt"]["consultas_historicas"]["logistica"],
+        }
+    ]
+    conversion.convertir_todo(data_sintetica / "raw", data_sintetica / "processed", config)
+    m = manifest.construir_manifest(data_sintetica, config)
+    assert m["crudos_excluidos"][0]["archivo"] == viejo.name
+    assert m["historial"][-1]["crudos_excluidos"] == {"total": 1, "por_motivo": {"consulta reemplazada (D-83)": 1}}
+    assert m["consultas"]["gdelt"]["consultas_historicas"]["logistica"].startswith("Panama (logistica")
+    assert "logistica" not in {t for f in filas for t in f["tema"].split("|")}
 
 
 def test_seccion_de_la_url_sale_de_la_configuracion(config) -> None:

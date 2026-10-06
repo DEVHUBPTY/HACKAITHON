@@ -412,6 +412,38 @@ def rango_divisible(ini: datetime, fin: datetime, config: dict[str, Any]) -> boo
     return (fin - ini).total_seconds() / 3600 / 2 >= config["gdelt"]["rango_minimo_horas"]
 
 
+MOTIVO_CONSULTA_REEMPLAZADA = "consulta reemplazada (D-83)"
+
+
+def separar_crudos_gdelt(carpeta_raw: Path, config: dict[str, Any]) -> tuple[list[Path], list[dict[str, Any]]]:
+    """Separa los crudos de GDELT en vigentes y reemplazados (D-83).
+
+    Vigente = su (tema, pata) existe en ``gdelt.consultas``. El resto (p. ej. los anteriores a E0-04, sin pata)
+    queda intacto en ``raw/`` pero no alimenta el snapshot: se devuelve como excluido, con su consulta histórica.
+    """
+    cfg = config["gdelt"]
+    vigentes_ok = {(t, p) for t, patas in cfg["consultas"].items() for p in patas}
+    historicas = cfg.get("consultas_historicas", {})
+    vigentes: list[Path] = []
+    excluidos: list[dict[str, Any]] = []
+    for ruta in archivos_crudos(carpeta_raw / cfg["carpeta_cruda"], "gdelt_*.json"):
+        m = PATRON_ARCHIVO_GDELT.match(ruta.name)
+        if m and (m["tema"], m["pata"]) in vigentes_ok:
+            vigentes.append(ruta)
+            continue
+        tema = m["tema"] if m else None
+        excluidos.append(
+            {
+                "archivo": ruta.name,
+                "tema": tema,
+                "pata": m["pata"] if m else None,
+                "motivo": MOTIVO_CONSULTA_REEMPLAZADA,
+                "consulta_historica": historicas.get(tema),
+            }
+        )
+    return vigentes, excluidos
+
+
 def crudos_gdelt(carpeta_raw: Path, config: dict[str, Any]) -> list[dict[str, Any]]:
     """Clasifica cada crudo ``gdelt_*.json``.
 
@@ -453,7 +485,7 @@ def rango_cubierto(
 ) -> bool:
     """True si crudos ``ok`` de ese tema y pata (de cualquier alineación) cubren por completo ``[ini, fin]``.
 
-    Los crudos sin pata (consultas anteriores a E0-04) solo cuentan para consultas sin pata.
+    Los crudos sin pata (consultas anteriores a E0-04) no cubren ninguna pata nueva.
     """
     cubiertos = _fusionar_intervalos(
         [
@@ -534,7 +566,7 @@ def cobertura_gdelt(carpeta_raw: Path, config: dict[str, Any], fin: datetime, di
     sin_resolver: list[dict[str, Any]] = []
     for tema, definicion in config["gdelt"]["consultas"].items():
         # Un día cuenta como cubierto solo si lo cubren TODAS las patas del tema (E0-04).
-        patas: list[str | None] = list(definicion) if isinstance(definicion, dict) else [None]
+        patas: list[str] = list(definicion)
         por_pata = {}
         for pata in patas:
             propios = [c for c in crudos if c["tema"] == tema and c["pata"] == pata]
@@ -547,7 +579,7 @@ def cobertura_gdelt(carpeta_raw: Path, config: dict[str, Any], fin: datetime, di
                 if any(a <= dia and dia + timedelta(days=1) <= b for a, b in cubiertos):
                     continue
                 motivo, detalle = _motivo_dia(dia, propios, regs)
-                pendientes.append((dia, motivo, detalle if pata is None else f"[{pata}] {detalle}"))
+                pendientes.append((dia, motivo, f"[{pata}] {detalle}"))
                 break
         por_tema[tema] = {"dias_esperados": len(ventana), "dias_cubiertos": len(ventana) - len(pendientes)}
         corridas: list[dict[str, Any]] = []
@@ -578,7 +610,7 @@ def convertir_noticias(
     Devuelve (filas, fuentes, auditoría). La auditoría documenta la ventana y las exclusiones.
     """
     archivos_rss = archivos_crudos(carpeta_raw / config["rss_tvn"]["carpeta_cruda"], "rss_tvn_*.xml")
-    archivos_gdelt = archivos_crudos(carpeta_raw / config["gdelt"]["carpeta_cruda"], "gdelt_*.json")
+    archivos_gdelt, crudos_excluidos = separar_crudos_gdelt(carpeta_raw, config)
     entradas: list[dict[str, Any]] = []
     for ruta in archivos_rss:
         entradas += _leer_rss(ruta, config)
@@ -628,6 +660,7 @@ def convertir_noticias(
             "fin": a_iso(fin),
         },
         "registros_crudos_leidos": len(entradas),
+        "crudos_excluidos": crudos_excluidos,
         "gdelt_cobertura_por_tema": cobertura["por_tema"],
         "gdelt_rangos_sin_resolver": cobertura["sin_resolver"],
         "idiomas_sin_mapeo": dict(sorted(sin_mapeo.items())),

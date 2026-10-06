@@ -66,7 +66,12 @@ def main(argv: list[str] | None = None) -> int:
     carpeta = Path(args[0]) if args else conversion.RAIZ / "data" / "raw" / "gdelt"
     consultas = configuracion.cargar_fuentes().model_dump()["gdelt"]["consultas"]
     res = estimar(leer_articulos(carpeta), consultas)
-    print(json.dumps({"nota": "estimación por título; no sustituye una corrida real", "temas": res}, ensure_ascii=False, indent=2))
+    print(json.dumps({"nota": (
+                "Estimación por título. Solo mide artículos que las consultas ANTERIORES ya devolvieron: dice cuánto "
+                "ruido se filtraría, no cuántos artículos relevantes nuevos aparecerían (el recall nuevo no se puede "
+                "medir offline). No sustituye una corrida real."
+            ),
+            "temas": res}, ensure_ascii=False, indent=2))
     return 0
 
 

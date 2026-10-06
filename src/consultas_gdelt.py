@@ -18,52 +18,45 @@ import re
 import unicodedata
 from typing import Any
 
-LARGO_MINIMO_TERMINO = 3  # supuesto: GDELT rechaza palabras demasiado cortas
 _PROHIBIDOS = re.compile(r"[()\"]")
 
 
-def _termino(t: str) -> str:
+def _termino(t: str, largo_minimo: int) -> str:
     """Una palabra va suelta; una frase, entre comillas."""
     t = t.strip()
     if not t or _PROHIBIDOS.search(t) or t.upper() == "OR":
         raise ValueError(f"término inválido para GDELT: {t!r}")
-    if len(t) < LARGO_MINIMO_TERMINO:
+    if len(t) < largo_minimo:
         raise ValueError(f"término demasiado corto para GDELT: {t!r}")
     return f'"{t}"' if " " in t else t
 
 
-def construir_consulta(pata: dict[str, Any]) -> str:
-    """``(t1 OR "frase dos") filtro1 filtro2`` a partir de ``{terminos, filtros}``."""
-    terminos = [_termino(t) for t in pata["terminos"]]
+def construir_consulta(pata: dict[str, Any], largo_minimo: int) -> str:
+    """``(t1 OR "frase dos") filtro1 filtro2`` a partir de ``{terminos, filtros}``.
+
+    ``largo_minimo`` viene de ``gdelt.largo_minimo_termino`` (config).
+    """
+    terminos = [_termino(t, largo_minimo) for t in pata["terminos"]]
     if not terminos:
         raise ValueError("una pata necesita al menos un término")
     bloque = terminos[0] if len(terminos) == 1 else f"({' OR '.join(terminos)})"
     return " ".join([bloque, *pata.get("filtros", [])])
 
 
-def construir_consultas(consultas: dict[str, Any]) -> list[tuple[str, str | None, str]]:
-    """Lista ``(tema, pata, consulta)`` en el orden de la configuración.
-
-    Un valor ``str`` (formato antiguo) es una consulta única, con pata ``None``.
-    """
-    salida: list[tuple[str, str | None, str]] = []
-    for tema, valor in consultas.items():
-        if isinstance(valor, str):
-            salida.append((tema, None, valor))
-            continue
-        for nombre, pata in valor.items():
-            salida.append((tema, nombre, construir_consulta(pata)))
-    return salida
+def construir_consultas(consultas: dict[str, Any], largo_minimo: int) -> list[tuple[str, str, str]]:
+    """Lista ``(tema, pata, consulta)`` en el orden de la configuración."""
+    return [
+        (tema, nombre, construir_consulta(pata, largo_minimo))
+        for tema, patas in consultas.items()
+        for nombre, pata in patas.items()
+    ]
 
 
-def consultas_por_tema(consultas: dict[str, Any]) -> dict[str, Any]:
-    """Forma para el manifest: ``{tema: {pata: consulta}}`` (o ``{tema: consulta}`` si es antigua)."""
-    salida: dict[str, Any] = {}
-    for tema, pata, q in construir_consultas(consultas):
-        if pata is None:
-            salida[tema] = q
-        else:
-            salida.setdefault(tema, {})[pata] = q
+def consultas_por_tema(consultas: dict[str, Any], largo_minimo: int) -> dict[str, dict[str, str]]:
+    """Forma para el manifest: ``{tema: {pata: consulta}}``."""
+    salida: dict[str, dict[str, str]] = {}
+    for tema, pata, q in construir_consultas(consultas, largo_minimo):
+        salida.setdefault(tema, {})[pata] = q
     return salida
 
 

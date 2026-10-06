@@ -9,6 +9,9 @@ import pytest
 from scripts import conversion, extraer
 
 
+PATA_UNICA = {"descripcion": "d", "filtros": ["sourcecountry:panama"], "terminos": ["economía", "economy"]}
+
+
 class Respuesta:
     def __init__(self, codigo: int = 200, texto: str = '{"articles": []}', cabeceras: dict | None = None):
         self.status_code = codigo
@@ -18,7 +21,7 @@ class Respuesta:
 
 @pytest.fixture
 def cfg(config: dict) -> dict:
-    config["gdelt"].update(consultas={"economia": "Panama (economia OR economy)"}, rango_dias=1, max_intentos=3, pausa_segundos=0)
+    config["gdelt"].update(consultas={"economia": {"locales": PATA_UNICA}}, rango_dias=1, max_intentos=3, pausa_segundos=0)
     config["ventana_noticias"].update(dias_base=2, dias_maximo=2)
     config["volumen_noticias"]["minimo"] = 0
     return config
@@ -45,10 +48,12 @@ def red(monkeypatch: pytest.MonkeyPatch):
     return estado
 
 
-def _escribir(raw: Path, tema: str, ini: datetime, fin: datetime, texto: str, ts: str = "20261006T120000Z") -> None:
+def _escribir(
+    raw: Path, tema: str, ini: datetime, fin: datetime, texto: str, ts: str = "20261006T120000Z", pata: str | None = None
+) -> None:
     carpeta = raw / "gdelt"
     carpeta.mkdir(parents=True, exist_ok=True)
-    (carpeta / f"{extraer._prefijo_gdelt(tema, ini, fin)}_{ts}.json").write_text(texto)
+    (carpeta / f"{extraer._prefijo_gdelt(tema, ini, fin, pata)}_{ts}.json").write_text(texto)
 
 
 def _dia(d: int, h: int = 0, m: int = 0) -> datetime:
@@ -163,14 +168,14 @@ def test_respuesta_al_tope_sin_mitades_no_cubre_el_rango(raw: Path, cfg: dict) -
 
 
 def test_cobertura_por_tema_lista_cada_rango_sin_resolver_con_su_motivo(raw: Path, cfg: dict) -> None:
-    cfg["gdelt"]["consultas"] = {"economia": "q", "turismo": "q", "logistica": "q", "eventos_naturales": "q"}
-    _escribir(raw, "economia", _dia(1, 16, 18), _dia(6, 16, 18), '{"articles": []}')  # no alineado: días 2..5
-    _escribir(raw, "logistica", _dia(4), _dia(6), "{}")  # un {} no cubre
+    cfg["gdelt"]["consultas"] = {t: {"locales": PATA_UNICA} for t in ("economia", "turismo", "logistica", "eventos_naturales")}
+    _escribir(raw, "economia", _dia(1, 16, 18), _dia(6, 16, 18), '{"articles": []}', pata="locales")  # no alineado: días 2..5
+    _escribir(raw, "logistica", _dia(4), _dia(6), "{}", pata="locales")  # un {} no cubre
     carpeta_registro = raw.parent / cfg["general"]["carpeta_registro"]
     carpeta_registro.mkdir()
     conversion.escribir_json(
         carpeta_registro / "registro_manual_20261006T171832Z.json",
-        {"origen": "x", "fallos": [{"tema": "turismo", "inicio": "20261004000000", "fin": "20261006000000", "motivo": "HTTP 429", "tipo": "bloqueado"}]},
+        {"origen": "x", "fallos": [{"tema": "turismo", "pata": "locales", "inicio": "20261004000000", "fin": "20261006000000", "motivo": "HTTP 429", "tipo": "bloqueado"}]},
     )
     cob = conversion.cobertura_gdelt(raw, cfg, _dia(6, 12), 6)  # días 10-01 .. 10-05
     assert cob["por_tema"] == {

@@ -114,7 +114,7 @@ def _prefijo_gdelt(tema: str, ini: datetime, fin: datetime, pata: str | None = N
     return f"gdelt_{tema}{sufijo}_{ini.strftime(FORMATO_GDELT)}_{fin.strftime(FORMATO_GDELT)}"
 
 
-def _pedir_gdelt(params: dict[str, Any], config: dict[str, Any]) -> requests.Response:
+def _pedir_gdelt(params: dict[str, Any], config: dict[str, Any], etiqueta: str = "") -> requests.Response:
     """GET a GDELT con backoff: respeta ``Retry-After``; si no, espera base × 2^intento.
 
     Un ``{}`` (o cuerpo vacío) se devuelve tal cual, **sin repetir la llamada**: no prueba que no haya
@@ -147,7 +147,7 @@ def _pedir_gdelt(params: dict[str, Any], config: dict[str, Any]) -> requests.Res
                     raise ErrorDeExtraccion(f"GDELT respondió {ultimo}")
                 retry = resp.headers.get("Retry-After", "")
                 espera = int(retry) if retry.isdigit() else cfg["espera_429_segundos"] * 2**intento
-        logger.warning("GDELT %s (intento %s/%s); espero %s s", ultimo, intento + 1, cfg["max_intentos"], espera)
+        logger.warning("GDELT %s %s (intento %s/%s); espero %s s", etiqueta, ultimo, intento + 1, cfg["max_intentos"], espera)
         if intento + 1 < cfg["max_intentos"]:
             time.sleep(espera)
     raise ErrorDeExtraccion(f"GDELT sin respuesta tras {cfg['max_intentos']} intentos ({ultimo})")
@@ -185,7 +185,7 @@ def _consultar_gdelt(
     if (tema, pata, ini, fin) in intentados:
         return 0
     if not estado.get("forzar") and conversion.rango_cubierto(raw, config, tema, ini, fin, pata):
-        logger.info("GDELT %s %s..%s: ya cubierto por crudos existentes, no se vuelve a pedir", tema, ini, fin)
+        logger.info("GDELT %s/%s %s..%s: ya cubierto por crudos existentes, no se vuelve a pedir", tema, pata, ini, fin)
         estado["reutilizados"] = estado.get("reutilizados", 0) + 1
         return 0
     intentados.add((tema, pata, ini, fin))
@@ -202,14 +202,14 @@ def _consultar_gdelt(
         "enddatetime": fin.strftime(FORMATO_GDELT),
     }
     try:
-        resp = _pedir_gdelt(params, config)
+        resp = _pedir_gdelt(params, config, f"{tema}/{pata}")
     finally:
         estado["ultima"] = time.monotonic()
     texto = resp.text
     # Toda respuesta válida se guarda sin modificar, también la que se subdivide o viene vacía.
     _guardar_gdelt(raw, config, tema, ini, fin, texto, pata)
     if _clasificar_respuesta(texto) == "vacio":
-        logger.warning("GDELT %s %s..%s: respuesta {}; cobertura sin resolver (no es un vacío confirmado)", tema, ini, fin)
+        logger.warning("GDELT %s/%s %s..%s: respuesta {}; cobertura sin resolver (no es un vacío confirmado)", tema, pata, ini, fin)
         estado.setdefault("sospechosos", []).append(
             {
                 "tema": tema,
@@ -223,12 +223,12 @@ def _consultar_gdelt(
         return 0
     n = len(json.loads(texto, strict=False).get("articles") or [])
     if n >= cfg["maxrecords"] and conversion.rango_divisible(ini, fin, config):
-        logger.info("GDELT %s %s..%s llegó al tope (%s); subdivido", tema, ini, fin, n)
+        logger.info("GDELT %s/%s %s..%s llegó al tope (%s); subdivido", tema, pata, ini, fin, n)
         mitad = (ini + (fin - ini) / 2).replace(microsecond=0)
         return n + _consultar_gdelt(tema, consulta, ini, mitad, raw, config, estado, pata) + _consultar_gdelt(
             tema, consulta, mitad, fin, raw, config, estado, pata
         )
-    logger.info("GDELT %s %s..%s: %s artículos", tema, ini, fin, n)
+    logger.info("GDELT %s/%s %s..%s: %s artículos", tema, pata, ini, fin, n)
     return n
 
 
@@ -239,11 +239,11 @@ def _extraer_gdelt_rangos(
     total = 0
     fallidos: list[dict[str, str]] = []
     for ini, fin in _rangos(ahora, dias, cfg["rango_dias"]):
-        for tema, pata, consulta in consultas_gdelt.construir_consultas(cfg["consultas"]):
+        for tema, pata, consulta in consultas_gdelt.construir_consultas(cfg["consultas"], cfg["largo_minimo_termino"]):
             try:
                 total += _consultar_gdelt(tema, consulta, ini, fin, raw, config, estado, pata)
             except ErrorDeExtraccion as exc:  # un rango fallido no frena a los demás
-                logger.error("GDELT %s %s..%s falló: %s", tema, ini, fin, exc)
+                logger.error("GDELT %s/%s %s..%s falló: %s", tema, pata, ini, fin, exc)
                 fallidos.append(
                     {
                         "tema": tema,

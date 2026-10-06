@@ -14,25 +14,25 @@ PATA_INTER = {"filtros": ["-sourcecountry:panama"], "terminos": ["Panama Canal",
 
 
 def test_or_en_parentesis_frases_entre_comillas_y_filtro() -> None:
-    assert consultas_gdelt.construir_consulta(PATA_LOCAL) == '(puerto OR "Zona Libre") sourcecountry:panama'
+    assert consultas_gdelt.construir_consulta(PATA_LOCAL, 3) == '(puerto OR "Zona Libre") sourcecountry:panama'
     assert (
-        consultas_gdelt.construir_consulta(PATA_INTER)
+        consultas_gdelt.construir_consulta(PATA_INTER, 3)
         == '("Panama Canal" OR "Canal de Panamá") -sourcecountry:panama'
     )
 
 
 def test_un_solo_termino_no_lleva_parentesis() -> None:
-    assert consultas_gdelt.construir_consulta({"filtros": [], "terminos": ["Sinaproc"]}) == "Sinaproc"
+    assert consultas_gdelt.construir_consulta({"filtros": [], "terminos": ["Sinaproc"]}, 3) == "Sinaproc"
 
 
 @pytest.mark.parametrize("malo", ["", "OR", "a (b)", 'dos "comillas"', "ab"])
 def test_terminos_invalidos_se_rechazan(malo: str) -> None:
     with pytest.raises(ValueError):
-        consultas_gdelt.construir_consulta({"filtros": [], "terminos": [malo]})
+        consultas_gdelt.construir_consulta({"filtros": [], "terminos": [malo]}, 3)
 
 
 def test_url_codifica_comillas_parentesis_y_operadores(config: dict) -> None:
-    q = consultas_gdelt.construir_consulta(PATA_INTER)
+    q = consultas_gdelt.construir_consulta(PATA_INTER, 3)
     params = {"query": q, "mode": "ArtList", "format": "json", "startdatetime": "20261001000000"}
     url = requests.Request("GET", config["gdelt"]["endpoint"], params=params).prepare().url
     assert "%22Panama+Canal%22" in url and "%28" in url and "-sourcecountry%3Apanama" in url
@@ -54,14 +54,23 @@ def test_la_pata_internacional_nunca_usa_panama_suelto_con_un_sustantivo_generic
 
 
 def test_dos_patas_por_tema_son_pocas_llamadas(config: dict) -> None:
-    armadas = consultas_gdelt.construir_consultas(config["gdelt"]["consultas"])
+    armadas = consultas_gdelt.construir_consultas(config["gdelt"]["consultas"], config["gdelt"]["largo_minimo_termino"])
     assert len(armadas) == 2 * len(config["gdelt"]["consultas"])
     assert {t for t, _, _ in armadas} == {"logistica", "turismo", "economia", "eventos_naturales"}  # D-62
 
 
-def test_formato_antiguo_sigue_siendo_una_consulta_sin_pata() -> None:
-    assert consultas_gdelt.construir_consultas({"economia": "Panama economy"}) == [("economia", None, "Panama economy")]
-    assert consultas_gdelt.consultas_por_tema({"economia": "q"}) == {"economia": "q"}
+def test_el_largo_minimo_sale_de_la_configuracion() -> None:
+    assert consultas_gdelt.construir_consulta({"filtros": [], "terminos": ["abcd"]}, 4) == "abcd"
+    with pytest.raises(ValueError, match="corto"):
+        consultas_gdelt.construir_consulta({"filtros": [], "terminos": ["abcd"]}, 5)
+
+
+def test_terminos_de_las_patas_locales_no_son_ambiguos(config: dict) -> None:
+    """Un medio de Panamá usa 'canal' también para canales de TV: no se permite el término suelto."""
+    for patas in config["gdelt"]["consultas"].values():
+        terminos = {t.lower() for t in patas["locales"]["terminos"]}
+        assert not terminos & {"canal", "carga", "visitantes", "inversión", "inversion"}
+    assert "Canal de Panamá" in config["gdelt"]["consultas"]["logistica"]["locales"]["terminos"]
 
 
 def test_el_modelo_estricto_rechaza_un_termino_invalido(tmp_path: Path) -> None:
