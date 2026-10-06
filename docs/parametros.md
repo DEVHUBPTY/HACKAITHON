@@ -64,6 +64,26 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 | Cobertura de un día de GDELT | Cubierto solo si un crudo `articles` lo contiene completo; una respuesta al tope (250) subdivisible no cubre sola | Supuesto | `test_cobertura_por_tema_lista_cada_rango_sin_resolver_con_su_motivo` |
 | Tabla de idiomas de GDELT · tabla de países (`paises_es`) | Nombre -> ISO 639-1 · nombre en inglés -> español | Práctica (lista de idiomas de la API DOC 2.0; ISO 639-1) | `test_todos_los_idiomas_de_gdelt_tienen_codigo_de_dos_letras`; lo desconocido se marca en el manifest o queda nulo |
 
+## Prueba del modelo local (E0-07, `config/llm.yaml`)
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| Host de Ollama por defecto | `http://localhost:11434` | Práctica (puerto estándar de Ollama) | Se lee `OLLAMA_HOST` de `local.env`, nunca del shell |
+| Timeout por llamada | 180 s | Supuesto (≈ 12× la meta de latencia, para no cortar una llamada lenta y medirla) | Llamadas con error cuentan como inválidas |
+| `keep_alive` durante la prueba | 10 m | Supuesto (el modelo no se descarga entre llamadas) | La carga solo pesa en el calentamiento |
+| Temperatura | 0.0 | Práctica (reproducibilidad); Ollama la recomienda para salida estructurada | — |
+| Semilla | 0 | Práctica (reproducibilidad) | — |
+| `num_ctx` | 4096 | Supuesto (el prompt mide ≈ 930 tokens; margen ≈ 4×) | `prompt_eval_count` en `outputs/probar_llm_*.json` |
+| `num_predict` | 1024 | Supuesto (la salida mide ≈ 200–400 tokens; margen ≈ 3×) | `done_reason` = `stop` en todas las llamadas |
+| Pensamiento (`think`) | `false` | Documentación de Ollama (ver `docs/eleccion_modelo.md`) | `pensamiento_presente` = false en todas las llamadas |
+| Repeticiones por titular | 4 (→ 20 llamadas con 5 titulares) | Supuesto (mínimo para estimar mediana y p95 con n = 20) | IC de Wilson sobre la validez |
+| Llamadas de calentamiento | 1 (fuera de las estadísticas) | Práctica (excluir la carga del modelo en frío) | `load_duration_s` en los resultados |
+| Titulares de la muestra | 5 de TVN Panamá: 2 nacionales, 1 mundo, 1 tvmax, 1 entretenimiento | Spec E0-07 (5 titulares reales); reparto por tema = supuesto | Selección determinista por `id_noticia` ordenado |
+| Confianza del IC | 95 % (Wilson para proporciones) | Práctica estadística (CLAUDE.md) | — |
+| Criterio D-02: mediana | ≤ 15 s | PDF (meta de 9.1) | `scripts.probar_llm` |
+| Criterio D-02: JSON inválido | ≤ 1 de cada 10 llamadas | Supuesto (D-02) | `scripts.probar_llm` |
+| Criterio D-02: rechazo del validador | ≤ 20 % | Supuesto (D-02) | No evaluable en E0-07 (el validador es de E1); se usa el indicador `hecho_sobre_titular` como aproximación |
+
 ## Consulta y generación
 
 | Parámetro | Valor | Origen | Cómo se valida |
