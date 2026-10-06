@@ -1,0 +1,13 @@
+# Contrato de datos (sección 7 del reto): ÚNICA fuente de los campos de cada archivo de data/processed/.
+# Lo leen scripts/conversion.py (escribe), scripts/validar_snapshot.py y src/carga.py (validan).
+# Los campos críticos de cada archivo viven en config/carga.yaml y deben ser un subconjunto de estas listas.
+
+noticias: [id_noticia, titulo, url, medio, idioma, fecha_publicacion, fecha_deteccion, fecha_extraccion, tema, origen, alcance_texto]
+
+# Mínimo del contrato del PDF. El snapshot agrega además los campos de indicadores_extra.
+indicadores: [pais_iso3, indicador_id, anio, valor, unidad, fuente_url, fecha_extraccion, licencia]
+indicadores_extra: [id_indicador]   # va primero en indicadores.csv; el fixture T01 puede no traerlo
+
+eventos: [id, magnitude, time, updated, longitude, latitude, depth, place, status, url]
+
+fuentes: [dominio, nombre_legible, pais, origen, condiciones]

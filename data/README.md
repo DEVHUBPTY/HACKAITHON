@@ -7,6 +7,7 @@ poetry run python -m scripts.extraer --todo       # RSS + GDELT + Banco Mundial 
 poetry run python -m scripts.extraer --rss        # solo el RSS de TVN: correr a diario, agrega un archivo nuevo
 poetry run python -m scripts.manifest             # data/manifest.json + data/CHANGELOG.md
 poetry run python -m scripts.validar_snapshot     # outputs/validacion_snapshot.json
+poetry run python -m src.carga                    # processed/validos/ + outputs/errores.csv + outputs/reporte_calidad.json (D-82)
 ```
 
 ## Qué se versiona y qué no (D-72)
@@ -18,6 +19,7 @@ poetry run python -m scripts.validar_snapshot     # outputs/validacion_snapshot.
 | `raw/banco_mundial/`, `raw/usgs/` | Sí | Datos abiertos (CC BY 4.0 · dominio público de USGS) |
 | `registro_extraccion/` | Sí | Fallos y notas de extracción (rangos, motivos, origen); sin contenido restringido. **No son respuestas de la API** |
 | `processed/` | Sí | Solo metadatos: no contiene `descripcion` ni `socialimage` |
+| `processed/validos/` | **No** (`.gitignore`) | Derivado y regenerable: las filas válidas que deja `python -m src.carga` (D-82). Mismos nombres que el contrato; salida determinista; nunca modifica los archivos de `processed/` ni su manifest. Es la entrada de E1-03 (si una prueba la necesita, la genera con ese comando) |
 | `manifest.json`, `CHANGELOG.md` | Sí | Huellas SHA-256, consultas, historial |
 
 El manifest registra el SHA-256 de los crudos que no se versionan, de modo que quien regenere

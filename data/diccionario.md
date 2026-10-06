@@ -66,6 +66,19 @@ cuenta como cubierto solo si un crudo con la clave `articles` lo contiene comple
 prueba que no haya resultados (queda como `vacio_sospechoso`, apta para reintentar). Los días cubiertos por
 tema están en `manifest.json` → `cobertura_efectiva.gdelt_dias_por_tema`.
 
+## `processed/validos/`: filas válidas (D-82)
+
+Lo escribe `poetry run python -m src.carga` (E1-02), no `conversion.py`. Contiene solo las filas que
+pasaron la validación, con los mismos nombres de archivo y campos del contrato: `noticias.csv`,
+`indicadores.csv`, `eventos.geojson`, `fuentes.json`. Es la entrada de las etapas siguientes (E1-03).
+
+- Los archivos de `processed/` y su manifest **no cambian**: `validos/` es una vista derivada, ignorada por git
+  y regenerable.
+- Salida determinista: filas ordenadas por clave (`id_noticia`; país, indicador y año; `id`; `dominio`),
+  UTF-8, saltos LF. Los nulos siguen siendo nulos (celda vacía o `null`, nunca 0).
+- Las filas rechazadas, con su motivo, van a `outputs/errores.csv`; el conteo, a `outputs/reporte_calidad.json`
+  (por archivo: `validas + rechazadas = leidas`, `errores_de_archivo` y `lineas_mal_formadas` aparte).
+
 ## Fuera de `processed/`
 
 - `raw/`: **solo** respuestas de la API, sin modificar. Nunca contiene notas ni registros de fallos.

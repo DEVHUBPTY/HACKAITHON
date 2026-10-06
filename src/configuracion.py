@@ -166,6 +166,115 @@ def cargar_fuentes(carpeta: Path | None = None) -> ConfigFuentes:
     return cargar_config("fuentes", ConfigFuentes, carpeta)
 
 
+# ------------------------------------------------------------------ carga.yaml (E1-02)
+
+
+class ArchivosCarga(ModeloConfig):
+    """Nombres de los cuatro archivos del snapshot que lee la carga."""
+
+    noticias: str
+    indicadores: str
+    eventos: str
+    fuentes: str
+
+
+class SalidaCarga(ModeloConfig):
+    """Salidas de la carga y parámetros del reporte."""
+
+    errores: str
+    reporte: str
+    max_caracteres_valor_en_errores: int
+    top_medios_concentracion: int
+    z_intervalo_confianza: float
+    carpeta_validos: str
+
+
+class FechaIso(ModeloConfig):
+    """Formato ISO 8601 UTC con ``Z``: patrón de sintaxis y formato de ``strptime`` (fecha real)."""
+
+    patron: str
+    formato: str
+
+
+class FechasCarga(ModeloConfig):
+    """Formatos de fecha que acepta la carga (solo el de ``data/processed/``)."""
+
+    iso_utc: FechaIso
+
+
+class NoticiasCarga(ModeloConfig):
+    """Reglas de ``noticias.csv``: críticos, alternativas de fecha y columnas a validar."""
+
+    patron_id: str
+    criticos: list[str]
+    fechas_alternativas: list[str]
+    fecha_opcional: list[str]
+    opcionales: list[str]
+    columnas_fecha: list[str]
+    columnas_url: list[str]
+
+
+class IndicadoresCarga(ModeloConfig):
+    """Reglas de ``indicadores.csv``: patrones, críticos, rango de año y clave única."""
+
+    patron_id: str
+    patron_pais: str
+    patron_anio: str
+    criticos: list[str]
+    anio_minimo: int
+    anio_maximo: int
+    clave: list[str]
+
+
+class EventosCarga(ModeloConfig):
+    """Reglas de ``eventos.geojson``: patrón de id, críticos y límites de coordenadas."""
+
+    patron_id: str
+    criticos: list[str]
+    latitud_maxima: int
+    longitud_maxima: int
+
+
+class FuentesCarga(ModeloConfig):
+    """Reglas de ``fuentes.json``: campos críticos."""
+
+    criticos: list[str]
+
+
+class ConfigCarga(ModeloConfig):
+    """Modelo de ``config/carga.yaml``."""
+
+    archivos: ArchivosCarga
+    salida: SalidaCarga
+    fechas: FechasCarga
+    patron_url: str
+    noticias: NoticiasCarga
+    indicadores: IndicadoresCarga
+    eventos: EventosCarga
+    fuentes: FuentesCarga
+
+
+def cargar_carga(carpeta: Path | None = None) -> ConfigCarga:
+    """Atajo para ``config/carga.yaml``."""
+    return cargar_config("carga", ConfigCarga, carpeta)
+
+
+# ------------------------------------------------------------------ contrato.yaml (única fuente de campos)
+
+
+class ConfigContrato(ModeloConfig):
+    """Modelo de ``config/contrato.yaml``: campos del contrato de datos, compartidos por todos."""
+
+    noticias: list[str]
+    indicadores: list[str]
+    indicadores_extra: list[str]
+    eventos: list[str]
+    fuentes: list[str]
+
+
+def cargar_contrato(carpeta: Path | None = None) -> ConfigContrato:
+    """Atajo para ``config/contrato.yaml``."""
+    return cargar_config("contrato", ConfigContrato, carpeta)
 # ------------------------------------------------------------------ exploracion.yaml (E0-09)
 
 
