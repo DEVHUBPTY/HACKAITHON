@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 
 from scripts import catalogo
+from src import carga
 
 DATA = Path(__file__).resolve().parent.parent / "data"
 COLUMNAS_NOTION = [
@@ -22,10 +23,18 @@ def manifest() -> dict:
     return json.loads((DATA / "manifest.json").read_text(encoding="utf-8"))
 
 
+@pytest.fixture(scope="module")
+def reporte_ruta(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """Reporte de calidad real, generado con src.carga en una carpeta temporal."""
+    salida = tmp_path_factory.mktemp("carga")
+    carga.main(["--salida", str(salida), "--validos", str(salida / "validos")])
+    return salida / "reporte_calidad.json"
+
+
 @pytest.fixture()
-def filas(tmp_path: Path) -> list[dict[str, str]]:
+def filas(tmp_path: Path, reporte_ruta: Path) -> list[dict[str, str]]:
     destino = tmp_path / "catalogo.csv"
-    catalogo.generar(DATA, destino)
+    catalogo.generar(DATA, destino, reporte_ruta)
     with destino.open(encoding="utf-8", newline="") as f:
         lector = csv.DictReader(f)
         assert lector.fieldnames == COLUMNAS_NOTION
@@ -39,28 +48,61 @@ def test_columnas_exactas_y_una_fila_por_fuente(filas: list[dict[str, str]]) -> 
 
 
 def test_sha256_coincide_con_manifest_y_con_el_archivo(filas: list[dict[str, str]], manifest: dict) -> None:
-    for fila, archivos in zip(filas[:3], [["noticias.csv", "fuentes.json"], ["indicadores.csv"], ["eventos.geojson"]]):
+    esperados = [["noticias.csv", "fuentes.json", "conversion.json"], ["indicadores.csv"], ["eventos.geojson"]]
+    for fila, archivos in zip(filas[:3], esperados, strict=True):
         for archivo in archivos:
-            esperado = manifest["sha256"][f"processed/{archivo}"]
-            assert f"{archivo}: {esperado}" in fila["SHA-256"]
-            assert hashlib.sha256((DATA / "processed" / archivo).read_bytes()).hexdigest() == esperado
+            sha = manifest["sha256"][f"processed/{archivo}"]
+            assert f"{archivo}: {sha}" in fila["SHA-256"]
+            assert hashlib.sha256((DATA / "processed" / archivo).read_bytes()).hexdigest() == sha
 
 
-def test_conteos_y_excluidos_vienen_del_manifest(filas: list[dict[str, str]], manifest: dict) -> None:
-    cantidad = manifest["cantidad_por_archivo"]
-    assert str(cantidad["noticias.csv"]) in filas[0]["Registros válidos"]
-    assert str(cantidad["indicadores.csv"]) in filas[1]["Registros válidos"]
-    assert str(cantidad["eventos.geojson"]) in filas[2]["Registros válidos"]
-    assert "fuera_de_ventana: 97" in filas[0]["Registros excluidos y motivo"]
+def test_versionado_en_filas_a_b_c(filas: list[dict[str, str]], manifest: dict) -> None:
+    for fila in filas[:3]:
+        assert f"Snapshot v{manifest['version']}" in fila["Fecha de extracción"]
+        assert manifest["fecha_corte_UTC"] in fila["Fecha de extracción"]
+        assert manifest["hash_snapshot"] in fila["Fecha de extracción"]
 
 
-def test_cobertura_honesta(filas: list[dict[str, str]]) -> None:
+def test_validos_y_excluidos_vienen_del_reporte_y_el_manifest(
+    filas: list[dict[str, str]], manifest: dict, reporte_ruta: Path
+) -> None:
+    reporte = json.loads(reporte_ruta.read_text(encoding="utf-8"))
+    for fila, archivo in zip(filas[:3], ["noticias.csv", "indicadores.csv", "eventos.geojson"], strict=True):
+        a = reporte["archivos"][archivo]
+        assert f"{a['validas']} válidas de {a['leidas']} leídas ({archivo})" in fila["Registros válidos"]
+        assert f"{archivo}: {a['rechazadas']} rechazadas por la carga" in fila["Registros excluidos y motivo"]
+    ex = next(h for h in manifest["historial"] if h["version"] == manifest["version"])["registros_excluidos"]
+    motivo, n = next(iter(ex["por_motivo"].items()))
+    assert f"{ex['total']} excluidos" in filas[0]["Registros excluidos y motivo"]
+    assert f"{motivo}: {n}" in filas[0]["Registros excluidos y motivo"]
+    conversion = json.loads((DATA / "processed" / "conversion.json").read_text(encoding="utf-8"))
+    assert f"{conversion['duplicados_descartados']} duplicados" in filas[0]["Registros excluidos y motivo"]
+    assert "descargas repetidas o solapadas" in filas[0]["Registros excluidos y motivo"]
+
+
+def test_rechazos_por_tipo_se_listan(manifest: dict) -> None:
+    reporte = {
+        "archivos": {
+            a: {"leidas": 5, "validas": 3, "rechazadas": 2, "errores_por_tipo": {"fecha_invalida": 2}}
+            for a in manifest["cantidad_por_archivo"]
+        }
+    }
+    filas = catalogo.construir_filas(manifest, DATA / "processed", reporte)
+    assert "noticias.csv: 2 rechazadas por la carga (fecha_invalida: 2)" in filas[0]["Registros excluidos y motivo"]
+    assert "3 válidas de 5 leídas (eventos.geojson)" in filas[2]["Registros válidos"]
+
+
+def test_cobertura_honesta_desde_el_manifest(filas: list[dict[str, str]], manifest: dict) -> None:
     noticias = filas[0]["Cobertura"]
-    assert "PARCIAL" in noticias
-    assert "economia 4 de 30" in noticias
-    assert "eventos_naturales" in noticias and "0 días" in noticias
-    assert "D-74" in noticias and "no trae firma" in noticias
-    assert "D-81" in filas[1]["Cobertura"] and "540" in filas[1]["Cobertura"]
+    assert "PARCIAL" in noticias and "D-74" in noticias and "no trae firma" in noticias
+    for tema, d in manifest["cobertura_efectiva"]["gdelt_dias_por_tema"].items():
+        assert f"{tema} {d['dias_cubiertos']} de {d['dias_esperados']}" in noticias
+        if d["dias_cubiertos"] == 0:
+            assert f"Sin cobertura de GDELT: {tema}" in noticias
+    sin_pub = sum(1 for r in csv.DictReader((DATA / "processed" / "noticias.csv").open(encoding="utf-8")) if not r["fecha_publicacion"])
+    assert f"{sin_pub} de {manifest['cantidad_por_archivo']['noticias.csv']} noticias sin fecha_publicacion" in noticias
+    assert "D-81" in filas[1]["Cobertura"]
+    assert f"{manifest['cantidad_por_archivo']['indicadores.csv']} combinaciones" in filas[1]["Cobertura"]
     assert "no equivale a Panamá" in filas[2]["Cobertura"]
 
 
@@ -70,36 +112,57 @@ def test_licencias_sin_inventar(filas: list[dict[str, str]], manifest: dict) -> 
     assert "Pendiente de verificar" in filas[3]["Licencia / condiciones"]
 
 
-def test_sbp_pendiente_manual(filas: list[dict[str, str]]) -> None:
+def test_sbp_fuente_no_usada(filas: list[dict[str, str]]) -> None:
     sbp = filas[3]
     assert sbp["Etapa"] == "Etapa 3" and sbp["Modalidad"] == "Banca"
-    for columna in ("Fecha de extracción", "Registros válidos", "SHA-256"):
-        assert "Pendiente" in sbp[columna]
+    for columna in ("Cobertura", "Registros válidos", "Registros excluidos y motivo", "SHA-256"):
+        assert "Fuente no usada todavía: pendiente de E3-02, solo si se activa banca" in sbp[columna]
+    assert "Pendiente" in sbp["Fecha de extracción"]
 
 
 def test_valores_siguen_al_manifest(manifest: dict) -> None:
     """Si cambia el manifest, cambia el catálogo: nada va escrito a mano."""
     otro = copy.deepcopy(manifest)
-    otro["cantidad_por_archivo"]["eventos.geojson"] = 7
     otro["sha256"]["processed/eventos.geojson"] = "0" * 64
     otro["cobertura_efectiva"]["gdelt_dias_por_tema"]["turismo"]["dias_cubiertos"] = 9
-    filas = catalogo.construir_filas(otro, DATA / "processed")
-    assert "7 eventos" in filas[2]["Registros válidos"] and "0" * 64 in filas[2]["SHA-256"]
+    otro["version"] = "9.9"
+    otro["consultas"]["banco_mundial"]["plantilla_url"] = otro["consultas"]["banco_mundial"]["plantilla_url"].replace(
+        "2010:2024", "2010:2020"
+    )
+    filas = catalogo.construir_filas(otro, DATA / "processed", None)
+    assert "0" * 64 in filas[2]["SHA-256"]
     assert "turismo 9 de 30" in filas[0]["Cobertura"]
+    assert "Snapshot v9.9" in filas[0]["Fecha de extracción"]
+    assert "2010 a 2020" in filas[1]["Cobertura"] and "11 años" in filas[1]["Cobertura"]
 
 
-def test_salida_determinista(tmp_path: Path) -> None:
+def test_sin_reporte_lo_dice(tmp_path: Path) -> None:
+    destino = tmp_path / "c.csv"
+    catalogo.generar(DATA, destino, tmp_path / "no_existe.json", sin_reporte=True)
+    filas = list(csv.DictReader(destino.open(encoding="utf-8")))
+    assert "reporte de calidad no generado" in filas[0]["Registros válidos"]
+    assert "reporte de calidad no generado" in filas[1]["Registros excluidos y motivo"]
+
+
+def test_falta_el_reporte_falla_con_mensaje_claro(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match=r"src\.carga"):
+        catalogo.generar(DATA, tmp_path / "c.csv", tmp_path / "no_existe.json")
+    assert catalogo.main(["--reporte", str(tmp_path / "no_existe.json"), "--salida", str(tmp_path / "c.csv")]) == 1
+    assert not (tmp_path / "c.csv").exists()
+
+
+def test_salida_determinista(tmp_path: Path, reporte_ruta: Path) -> None:
     a, b = tmp_path / "a.csv", tmp_path / "b.csv"
-    catalogo.generar(DATA, a)
-    catalogo.generar(DATA, b)
+    catalogo.generar(DATA, a, reporte_ruta)
+    catalogo.generar(DATA, b, reporte_ruta)
     assert a.read_bytes() == b.read_bytes()
 
 
-def test_sha_distinto_aborta(tmp_path: Path, manifest: dict) -> None:
+def test_sha_distinto_aborta(tmp_path: Path, manifest: dict, reporte_ruta: Path) -> None:
     datos = tmp_path / "data"
     (datos / "processed").mkdir(parents=True)
     for ruta in manifest["sha256"]:
         (datos / ruta).write_bytes(b"x")
     (datos / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
     with pytest.raises(ValueError, match="no coincide"):
-        catalogo.generar(datos, tmp_path / "c.csv")
+        catalogo.generar(datos, tmp_path / "c.csv", reporte_ruta)
