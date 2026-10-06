@@ -22,7 +22,6 @@ La salida del clasificador son **solo los 6 temas del reto** (sección 3, etapa 
 |---|---|---|
 | `no_es_panama` | La noticia no trata sobre Panamá ni lo afecta | Panama City (Florida), Panama Papers como referencia histórica sin hecho nuevo, sombreros Panamá |
 | `fuera_de_temas` | Es sobre Panamá, pero de un área que el reto no cubre | Deportes, farándula, cultura, política electoral y partidista sin norma de por medio |
-
 | `no_es_noticia` | El titular no es una nota con contenido (decisión del equipo tras revisión, E1-06) | Solo el nombre del medio, una portada o sección, un titular promocional, una página que no es una nota |
 
 Los tres quedan fuera de la bandeja, se conservan y se cuentan por separado en el reporte de calidad.
