@@ -93,10 +93,10 @@ entrada) y está ignorada por git. Columnas: **tipo** (DuckDB), **nullable**, **
 (lo calcula la normalización). Las fechas son texto ISO 8601 UTC con `Z`, tal como el contrato. Una cadena vacía es
 siempre nulo, en CSV y en JSON; los nulos nunca se rellenan con 0.
 
-**Reglas que aplica:** `url_canonica` = esquema `https`, dominio en minúsculas sin `www.`, sin `utm_*` ni parámetros de
-rastreo, sin fragmento ni barra final. Las noticias con la misma URL canónica se fusionan en una (primer valor no nulo
+**Reglas que aplica:** `url_canonica` = esquema `https`, dominio en minúsculas sin `www.`, sin `m.` (móvil), sin `utm_*` ni parámetros de
+rastreo, sin `/amp` ni `?outputType=amp`/`?amp=1`, sin fragmento ni barra final (E1-03b). Las noticias con la misma URL canónica se fusionan en una (primer valor no nulo
 de cada campo; `tema` y `origen` se unen; `fecha_extraccion` es la más antigua) y cada descartada queda en
-`duplicados_eliminados` con su motivo (los duplicados por URL que se eliminan aquí se registran allí; si se marcan en vez de eliminarse se decide en E1-03b). De las duplicadas, `fecha_deteccion` es la más temprana. El `id_noticia` es `NOT-` + 10 caracteres del SHA-1 de la URL canónica
+`duplicados_eliminados` con su motivo (decisión E1-03b: los duplicados por URL **no** se marcan en `noticias`; se fusionan aquí y se cuentan con el motivo `duplicado_url` en `outputs/reporte_calidad.json`, de modo que cada fila de entrada queda en `noticias` o en `duplicados_eliminados`). De las duplicadas, `fecha_deteccion` es la más temprana. El `id_noticia` es `NOT-` + 10 caracteres del SHA-1 de la URL canónica
 (los `SYN-` conservan el suyo), así que no depende del orden de carga. `fecha_publicacion` y `fecha_deteccion` nunca
 se sustituyen entre sí. El nombre de la persona que firma **no se guarda** (D-32), solo `agencia` y `tipo_firma`.
 
@@ -124,6 +124,11 @@ se sustituyen entre sí. El nombre de la persona que firma **no se guarda** (D-3
 | `agencia` | VARCHAR | sí | campo de firma de la entrada | derivado | Agencia de la lista en `config/normalizacion.yaml` (EFE, AFP, AP, Reuters...). |
 | `tipo_firma` | VARCHAR | no | campo de firma de la entrada | derivado | `agencia` · `medio` · `persona` · `sin firma`. Nunca el nombre (D-32). |
 | `es_recirculada` | BOOLEAN | sí | fechas | derivado | Verdadero si la detección es más de 30 días posterior a la publicación (T03). Nulo si falta alguna de las dos fechas. |
+| `titulo_original` | VARCHAR | sí | `titulo` | derivado | Copia del titular recibido (E1-03b). La interfaz muestra este. Nulo hasta correr `python -m src.limpieza`. |
+| `titulo_limpio` | VARCHAR | sí | `titulo` | derivado | Sin sufijo del medio, entidades HTML decodificadas, espacios y comillas normalizados (E1-03b). Los embeddings usan este. |
+| `es_ruido` | BOOLEAN | sí | limpieza | derivado | Verdadero si el registro no es una noticia pertinente sobre Panamá (E1-03b). **El registro se conserva**; el ruido no entra en la bandeja ni en el puntaje. |
+| `motivo_ruido` | VARCHAR | sí | limpieza | derivado | `no_es_panama` · `fuera_de_temas` · `no_es_noticia` · `fuera_de_ventana`; nulo si no es ruido. `duplicado_url` no aparece aquí: lo registra `duplicados_eliminados` (E1-03). |
+| `sospechoso_inyeccion` | BOOLEAN | sí | limpieza | derivado | Verdadero si el titular o la descripción traen patrones de instrucción (D-69). No excluye el registro; la ficha avisa al revisor. |
 
 ### `indicadores`: cuadrícula del Banco Mundial
 

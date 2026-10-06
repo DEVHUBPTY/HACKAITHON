@@ -117,6 +117,24 @@ Un `valor` nulo en indicadores es válido (no es un parámetro: lo exige el cont
 
 Una cadena vacía o en blanco es nulo en CSV y en JSON. Duplicados: en noticias se toma la detección más temprana (por instante) y el primer valor no nulo de los demás campos; en indicadores se conserva la primera aparición completa sin rellenar con otras, como E1-02. Un `valor` ausente en indicadores nunca se rellena con 0 (no es un parámetro: lo exige el contrato).
 
+## Limpieza y ruido (E1-03b, `config/ruido.yaml`, `config/restricciones.yaml`, `config/fuentes.yaml`)
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| Ventana de fechas del ruido | `ventana_noticias.dias_maximo` (90 días) antes de la `fecha_extraccion` del propio registro; base = detección, si falta, publicación | D-74 · `config/fuentes.yaml` (no se agrega número nuevo) | `test_fuera_de_ventana_usa_la_deteccion_y_no_sustituye_fechas` · fila `SYN-RUI-007` |
+| URL canónica ampliada | sin `m.`, sin sufijo `/amp`, sin `?outputType=amp` ni `?amp=1|true` | Spec E1-03b | `test_url_canonica_ampliada_*` · `SYN-RUI-009` a `-011` |
+| `limpieza.max_palabras_sufijo` | 6 palabras | **Supuesto**: los nombres de medio más largos ("Global Finance Magazine") caben; un sufijo mayor es parte del titular | `test_limpiar_titulo` (guion que no es medio no se corta) |
+| `limpieza.min_letras_medio` | 5 letras | **Supuesto**: evita que "AP"/"ABC" coincidan por contención con cualquier sufijo | `test_limpiar_titulo` |
+| Medios conocidos (sufijos) | lista corta de `ruido.yaml` | Exploración E0-09 (sufijos vistos en el snapshot) | `test_limpiar_titulo` |
+| Patrones de falsos Panamá, menciones, deportes, farándula, cultura, política partidista, no-noticia | listas de `ruido.yaml` | `docs/guia_temas.md` + exploración E0-09 (`config/exploracion.yaml`). **Son heurísticas por palabras clave sobre el titular, no etiquetas humanas** | `tests/test_ruido.py` (fixture `ruido.csv`) · precisión/recall reales con `python -m eval.ruido` cuando E1-06 entregue `eval/etiquetas.csv` |
+| Origen sujeto al filtro de mención | `GDELT`; exentos: `TVN RSS` y medios con `pais_medio = Panamá` | **Supuesto** según E0-09: las consultas de GDELT piden "Panama" más un término amplio sin anclarlo al titular | `test_gdelt_sin_mencion_de_panama_*` · `test_medio_panameno_o_tvn_nacional_*` |
+| Secciones dudosas de TVN | `mundo`, `tvmax`, `entretenimiento` (señal candidata: el titular decide) | E0-09, recomendación 5 | `test_la_seccion_de_tvn_solo_sospecha_el_titular_decide` |
+| Patrones de inyección (D-69) | lista en `restricciones.yaml`, sección `inyeccion` | Fixture T07 (4 tipos de ataque, ES/EN) · D-69 | `test_t07_los_ocho_titulares_*` · `test_ruido_csv_no_dispara_falsos_positivos_de_inyeccion` |
+| `similitud_prototipo.activo` | `false` | La similitud con un prototipo de noticia sobre Panamá necesita `src/embeddings.py` (E1-04, aún no existe). Parcial: queda pendiente | — |
+| z del IC de Wilson | 1.96 (el de `carga.yaml`) | Estándar | `test_reporte_de_calidad_cuenta_ruido_por_motivo_con_n_e_ic` |
+
+Todo lo marcado como ruido es una **propuesta por titular**, no una etiqueta humana. El IC de Wilson del reporte es descriptivo: el snapshot no es una muestra aleatoria.
+
 ## Consulta y generación
 
 | Parámetro | Valor | Origen | Cómo se valida |
