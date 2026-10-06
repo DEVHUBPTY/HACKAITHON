@@ -222,3 +222,18 @@ def test_la_cantidad_de_temas_sale_del_yaml(tmp_path: Path) -> None:
     d["cantidad_temas"] = 7
     with pytest.raises(ErrorDeConfiguracion, match="cantidad_temas"):
         cargar_temas(escribir(tmp_path, "temas", d))
+
+
+import pytest as _pytest
+
+from src.configuracion import FORMAS_DE_PUBLICAR
+
+
+@_pytest.mark.parametrize("texto", ["Publicar el borrador", "publíquese hoy", "publicarlo ya", "se publicó", "listo para publicarse"])
+def test_filtro_detecta_formas_de_publicar(texto: str) -> None:
+    assert FORMAS_DE_PUBLICAR.search(texto)
+
+
+@_pytest.mark.parametrize("texto", ["Sin fecha de publicación conocida", "afecta la salud pública", "salud publica sin tilde", "interés público"])
+def test_filtro_no_rechaza_palabras_legitimas(texto: str) -> None:
+    assert not FORMAS_DE_PUBLICAR.search(texto)

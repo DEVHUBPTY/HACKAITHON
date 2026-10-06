@@ -316,3 +316,17 @@ def test_version_nueva_describe_el_archivo_que_cambio_y_el_motivo() -> None:
     assert any("processed/fuentes.json" in c for c in cambios)
     assert not any("noticias.csv" in c for c in cambios)
     assert "Cambió el contenido sin cambiar los conteos" not in cambios
+
+
+def test_manifest_registra_consultas_por_pata_y_el_motivo_del_cambio(data_sintetica: Path, config) -> None:
+    m = json.loads((data_sintetica / "manifest.json").read_text("utf-8"))
+    g = m["consultas"]["gdelt"]
+    assert set(g["consultas_por_tema"]["economia"]) == {"locales", "internacional"}
+    assert "sourcecountry:panama" in g["consultas_por_tema"]["economia"]["locales"]
+    assert g["ampliar_ventana_si_no_alcanza_minimo"] is True
+    # Un manifest previo con las consultas antiguas: el cambio queda en el historial, con su motivo.
+    m["consultas"]["gdelt"]["consultas_por_tema"] = {"economia": "Panama (economia OR economy)"}
+    (data_sintetica / "manifest.json").write_text(json.dumps(m), encoding="utf-8")
+    nuevo = manifest.construir_manifest(data_sintetica, config)
+    notas = " ".join(nuevo["historial"][-1].get("notas", []))
+    assert "Consultas de GDELT modificadas" in notas and "67 %" in notas

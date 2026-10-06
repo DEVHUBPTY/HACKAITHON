@@ -16,6 +16,8 @@ from typing import Literal, TypeVar
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
+from src import consultas_gdelt
+
 RAIZ = Path(__file__).resolve().parent.parent
 CARPETA_CONFIG = RAIZ / "config"
 
@@ -70,6 +72,9 @@ class General(ModeloConfig):
 class VentanaNoticias(ModeloConfig):
     dias_base: int
     dias_maximo: int
+    # Si es true y con dias_base no se alcanza el mínimo de noticias, la extracción amplía hasta
+    # dias_maximo. Si es false, solo avisa y no amplía (docs/parametros.md).
+    ampliar_si_no_alcanza_minimo: bool
     base_de_medicion: str
     intervalo_pdf_seccion_7_no_aplicado: list[str]
 
@@ -99,6 +104,14 @@ class RssTvn(ModeloConfig):
     tema_sin_seccion: str
 
 
+class PataConsulta(ModeloConfig):
+    """Una llamada a GDELT por (tema, rango): filtros de operador + términos unidos con OR."""
+
+    descripcion: str
+    filtros: list[str]
+    terminos: list[str]
+
+
 class Gdelt(ModeloConfig):
     endpoint: str
     modo: str
@@ -112,7 +125,19 @@ class Gdelt(ModeloConfig):
     rango_minimo_horas: int
     carpeta_cruda: str
     idiomas: dict[str, str]
-    consultas: dict[str, str]
+    # tema de origen (D-62) -> pata ('locales', 'internacional') -> definición; ver src/consultas_gdelt.py
+    consultas: dict[str, dict[str, PataConsulta]]
+    motivo_cambio_consultas: str
+    # Consultas reemplazadas (tema -> consulta antigua): sus crudos siguen en raw/ pero no alimentan el snapshot (D-83).
+    consultas_historicas: dict[str, str]
+    largo_minimo_termino: int
+
+    @model_validator(mode="after")
+    def _consultas_validas(self) -> "Gdelt":
+        for patas in self.consultas.values():
+            for pata in patas.values():
+                consultas_gdelt.construir_consulta(pata.model_dump(), self.largo_minimo_termino)  # ValueError si no sirve
+        return self
 
 
 class Indicador(ModeloConfig):
@@ -630,7 +655,11 @@ class MedioReferencia(ModeloConfig):
 
 
 # "publicar" y sus formas; no rechaza "público" ni "pública" (servicio público).
-FORMAS_DE_PUBLICAR = re.compile(r"\bpublic(ar|ar[ée]|ar[áa]n?|ado|ada|ados|adas|ando|arse|aci[óo]n|a|an|ue|uen)\b", re.IGNORECASE)
+# Formas verbales de "publicar" (incluidas enclíticas y pretéritos); no "publicación" ni "público/a".
+FORMAS_DE_PUBLICAR = re.compile(
+    r"\b(publicar(lo|la|los|las|se)?|publicad[oa]s?|publicando|publiqu[eé](n|se|nse)?|publ[ií]quese|publicó|publicaron|publicará[n]?|publicaría[n]?)\b",
+    re.IGNORECASE,
+)
 
 
 class Accion(ModeloConfig):
@@ -867,3 +896,66 @@ def principal(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(principal())
+# ------------------------------------------------------------------ normalizacion.yaml (E1-03)
+
+
+class EntradaNormalizacion(ModeloConfig):
+    carpeta_validos: str
+
+
+class SalidaNormalizacion(ModeloConfig):
+    base_de_datos: str
+
+
+class FechasNormalizacion(ModeloConfig):
+    formato_salida: str
+
+
+class NoticiasNormalizacion(ModeloConfig):
+    prefijo_id: str
+    largo_hash_id: int
+    prefijos_sinteticos: list[str]
+    separador_tema: str
+    separador_origen: str
+    orden_origen: list[str]
+    dias_para_recirculada: int
+    campos_firma: list[str]
+
+
+class TiposFirma(ModeloConfig):
+    agencia: str
+    medio: str
+    persona: str
+    sin_firma: str
+
+
+class FirmaNormalizacion(ModeloConfig):
+    agencias: list[str]
+    nombres_completos: dict[str, list[str]]
+    agencias_genericas: list[str]
+    redaccion: list[str]
+    tipos: TiposFirma
+
+
+class PrefijoId(ModeloConfig):
+    prefijo_id: str
+
+
+class ConfigNormalizacion(ModeloConfig):
+    """Modelo de ``config/normalizacion.yaml``."""
+
+    entrada: EntradaNormalizacion
+    salida: SalidaNormalizacion
+    fechas: FechasNormalizacion
+    noticias: NoticiasNormalizacion
+    firma: FirmaNormalizacion
+    indicadores: PrefijoId
+    sismos: PrefijoId
+
+
+def cargar_normalizacion(carpeta: Path | None = None) -> ConfigNormalizacion:
+    """Atajo para ``config/normalizacion.yaml``."""
+    return cargar_config("normalizacion", ConfigNormalizacion, carpeta)
+
+
+CARGADORES["normalizacion"] = cargar_normalizacion

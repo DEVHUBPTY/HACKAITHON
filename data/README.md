@@ -10,6 +10,10 @@ poetry run python -m scripts.validar_snapshot     # outputs/validacion_snapshot.
 poetry run python -m src.carga                    # processed/validos/ + outputs/errores.csv + outputs/reporte_calidad.json (D-82)
 ```
 
+## Versión del snapshot y receta (D-83)
+
+El snapshot versionado es la v1.1, producido con las consultas antiguas de GDELT, que figuran en `consultas_historicas` de `config/fuentes.yaml` y en el manifest. Las consultas vigentes de `config/fuentes.yaml` son la receta de la próxima extracción. La v1.2 se genera y se versiona solo después de extraer con esas consultas: regenerar `processed/` sobre el `raw/` actual daría solo las noticias de TVN y no debe commitearse.
+
 ## Qué se versiona y qué no (D-72)
 
 | Carpeta | En git | Por qué |

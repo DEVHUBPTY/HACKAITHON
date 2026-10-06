@@ -144,9 +144,10 @@ def data_sintetica(tmp_path: Path, config: dict) -> Path:
     (raw / "banco_mundial").mkdir(parents=True)
     (raw / "usgs").mkdir(parents=True)
     (raw / "rss_tvn" / f"rss_tvn_{SELLO}.xml").write_text(rss_sintetico(RSS_ITEMS), encoding="utf-8")
-    (raw / "gdelt" / f"gdelt_economia_20260930000000_20261006120000_20261006T120500Z.json").write_text(
-        json.dumps({"articles": GDELT_ARTICULOS}), encoding="utf-8"
-    )
+    for pata in ("locales", "internacional"):  # un tema solo se da por cubierto si lo cubren todas sus patas
+        (raw / "gdelt" / f"gdelt_economia__{pata}_20260930000000_20261006120000_20261006T120500Z.json").write_text(
+            json.dumps({"articles": GDELT_ARTICULOS if pata == "locales" else []}), encoding="utf-8"
+        )
     pib = {("PAN", 2022): 10.8, ("PAN", 2023): 7.3, ("PAN", 2024): None}
     pob = {("PAN", 2022): 4400000, ("PAN", 2023): 4450000, ("PAN", 2024): 4500000, ("CRI", 2022): 5100000}
     (raw / "banco_mundial" / "wb_NY.GDP.MKTP.KD.ZG_20261006T120100Z.json").write_text(
