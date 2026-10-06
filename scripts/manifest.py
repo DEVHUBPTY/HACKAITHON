@@ -20,6 +20,7 @@ from typing import Any
 
 from scripts import conversion
 from scripts.conversion import RAIZ, a_iso, sha256_archivo, ts_de_archivo
+from src import consultas_gdelt
 from src.registro import configurar_logging
 
 logger = logging.getLogger(__name__)
@@ -197,7 +198,10 @@ def _consultas(config: dict[str, Any]) -> dict[str, Any]:
             "maxrecords": g["maxrecords"],
             "orden": g["orden"],
             "rango_dias_inicial": g["rango_dias"],
-            "consultas_por_tema": g["consultas"],
+            "consultas_por_tema": consultas_gdelt.consultas_por_tema(g["consultas"], g["largo_minimo_termino"]),
+            "consultas_historicas": g["consultas_historicas"],
+            "motivo_cambio_consultas": g["motivo_cambio_consultas"],
+            "ampliar_ventana_si_no_alcanza_minimo": config["ventana_noticias"]["ampliar_si_no_alcanza_minimo"],
         },
         "banco_mundial": {
             "plantilla_url": (
@@ -259,6 +263,13 @@ def _revisiones_banco_mundial(raw: Path, config: dict[str, Any]) -> list[str]:
     return revisiones
 
 
+def _contar(items: list[dict[str, Any]]) -> dict[str, int]:
+    cuenta: dict[str, int] = {}
+    for x in items:
+        cuenta[x["motivo"]] = cuenta.get(x["motivo"], 0) + 1
+    return dict(sorted(cuenta.items()))
+
+
 def _historial(
     previo: list[dict[str, Any]],
     fecha: str,
@@ -314,6 +325,10 @@ def _historial(
         "cambios_de_fuente": cambios,
         "revisiones_de_datos": revisiones,
         "fallos_de_extraccion": auditoria.get("gdelt_rangos_sin_resolver", []),
+        "crudos_excluidos": {
+            "total": len(auditoria.get("crudos_excluidos", [])),
+            "por_motivo": _contar(auditoria.get("crudos_excluidos", [])),
+        },
         "registros_excluidos": {"total": len(auditoria["excluidos"]), "por_motivo": dict(sorted(motivos.items()))},
         "cantidad_por_archivo": cantidades,
     }
@@ -330,6 +345,12 @@ def construir_manifest(data: Path, config: dict[str, Any], motivo: str | None = 
     fecha = _fecha_corte(raw)
     ruta_previa = data / "manifest.json"
     previo = json.loads(ruta_previa.read_text("utf-8")).get("historial", []) if ruta_previa.exists() else []
+    consultas = _consultas(config)
+    if ruta_previa.exists():
+        antes = json.loads(ruta_previa.read_text("utf-8")).get("consultas", {}).get("gdelt", {})
+        if antes.get("consultas_por_tema") != consultas["gdelt"]["consultas_por_tema"]:
+            cambio = f"Consultas de GDELT modificadas: {config['gdelt']['motivo_cambio_consultas']}"
+            motivo = f"{motivo} | {cambio}" if motivo else cambio
     historial = _historial(
         previo, fecha, hash_snapshot, cantidades, auditoria, _revisiones_banco_mundial(raw, config), config,
         sha, motivo,
@@ -338,7 +359,7 @@ def construir_manifest(data: Path, config: dict[str, Any], motivo: str | None = 
         "version": historial[-1]["version"],
         "fecha_corte_UTC": fecha,
         "hash_snapshot": hash_snapshot,
-        "consultas": _consultas(config),
+        "consultas": consultas,
         "cantidad_por_archivo": cantidades,
         "licencias": _licencias(config),
         "sha256": sha,
@@ -348,6 +369,7 @@ def construir_manifest(data: Path, config: dict[str, Any], motivo: str | None = 
         "nota_intervalo_seccion_7": nota_intervalo_pdf(config),
         "nota_cuadricula_banco_mundial": nota_cuadricula(config),
         "crudos": _crudos(raw),
+        "crudos_excluidos": auditoria.get("crudos_excluidos", []),
         "registro_extraccion": _registro_extraccion(data, config),
         "historial": historial,
     }
