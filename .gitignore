@@ -30,3 +30,6 @@ models/
 # Local tooling
 .claude/worktrees/
 .atl/
+
+# Muestra de exploración y archivos de trabajo (E0-09)
+data/exploracion/
