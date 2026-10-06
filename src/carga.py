@@ -661,6 +661,7 @@ def _texto(valor: Any) -> str:
     if valor is None or valor is pd.NA or (isinstance(valor, float) and math.isnan(valor)):
         return ""
     if isinstance(valor, float):
+        valor = float(valor)  # np.float64 -> float: repr() de numpy 2 agrega "np.float64(...)"
         return str(int(valor)) if valor.is_integer() and abs(valor) < 1e15 else repr(valor)
     return str(valor)
 
@@ -716,6 +717,7 @@ def escribir_validos(resultados: dict[str, ResultadoArchivo], carpeta: Path, con
             _escribir_json(destino, sorted(registros, key=lambda x: x["dominio"]))
         else:
             logger.warning("%s: no se escribe en validos/ (archivo no cargado)", nombre)
+            destino.unlink(missing_ok=True)  # no dejar la copia de una corrida anterior
             continue
         escritos.append(destino)
     return escritos
