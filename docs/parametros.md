@@ -48,8 +48,6 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 | Umbral de agrupación | Por definir | Calibrado (D-16) | F1 de pares con etiquetas · curva documentada |
 | Ventana de agrupación | 7 días | Supuesto | X02 |
 | Similitud para "mismo texto" en procedencias | 0.95 | Supuesto | Test CU-03 · etiquetas |
-| Umbral "sin tema" | Por definir | Calibrado | Etiquetas humanas |
-| Criterio opción A vs. B | IC 95 % de la diferencia de macro-F1 excluye 0 | Práctica estadística | Bootstrap |
 | Umbrales de ruido | Por definir | Calibrado | X01 (precisión/recall) |
 | Coincidencia de sismos (`vinculos.yaml`) | ± 2 días | Supuesto | Revisión con la exploración (E0-09); datos sintéticos en E1-09 |
 | Magnitud mínima USGS | 3 | PDF (sección 6) | — |
@@ -152,13 +150,35 @@ Una cadena vacía o en blanco es nulo en CSV y en JSON. Duplicados: en noticias 
 | Origen sujeto al filtro de mención | `GDELT`; exentos: `TVN RSS` y medios con `pais_medio = Panamá` | **Supuesto** según E0-09: las consultas de GDELT piden "Panama" más un término amplio sin anclarlo al titular (motivo medido con las consultas anteriores a D-83; con las patas de D-83 se revisa al extraer la v1.2 del snapshot) | `test_gdelt_sin_mencion_de_panama_*` · `test_medio_panameno_o_tvn_nacional_*` |
 | Secciones dudosas de TVN | `mundo`, `tvmax`, `entretenimiento` (señal candidata: el titular decide) | E0-09, recomendación 5 | `test_la_seccion_de_tvn_solo_sospecha_el_titular_decide` |
 | Patrones de inyección (D-69) | lista en `restricciones.yaml`, sección `inyeccion` | Fixture T07 (4 tipos de ataque, ES/EN) · D-69 | `test_t07_los_ocho_titulares_*` · `test_ruido_csv_no_dispara_falsos_positivos_de_inyeccion` |
-| `similitud_prototipo.activo` | `false` | La similitud con un prototipo de noticia sobre Panamá necesita embeddings locales de titulares (`src/embeddings.py`, hoy un stub). **Diferido a E1-07**; hasta entonces el filtro es solo por palabras clave | — |
+| `similitud_prototipo.activo` | `false` | **Implementado en E1-07** (`src/clasificacion.py`, con los embeddings locales) pero **sin activar**: sin etiquetas humanas no se puede validar. Ver «Clasificación (E1-07)» | `tests/test_clasificacion.py` (marca, alcance regional, reversibilidad) · `python -m eval.ruido` con E1-06 |
 | Alcance regional (D-84) | `panama.regionales` en `ruido.yaml`: Centroamérica, América Latina/Latinoamérica/LatAm, Caribe, El Niño/La Niña, rutas marítimas | Decisión D-84 (revisión X14): una nota regional o de un fenómeno regional que afecta a Panamá no es ruido; se conserva con `alcance_regional = true` y se cuenta aparte | `test_x14_h2_*` |
 | Autopromoción de TVN | `fuera_de_temas.autopromocion_tvn` (`TVN Media`, `Gente TVN`, `Gente que Inspira` al inicio del titular) | Revisión X14, H5 | `test_x14_h5_*` |
 | Decimales del reporte | 4 (`limpieza.DECIMALES_PRESENTACION`) | Presentación: no afecta ninguna decisión | `test_x14_h8_*` |
 | z del IC de Wilson | 1.96 (el de `carga.yaml`) | Estándar | `test_reporte_de_calidad_cuenta_ruido_por_motivo_con_n_e_ic` |
 
 Todo lo marcado como ruido es una **propuesta por titular**, no una etiqueta humana. El IC de Wilson del reporte es descriptivo: el snapshot no es una muestra aleatoria.
+
+## Clasificación (E1-07, `config/clasificacion.yaml`, `config/ruido.yaml`)
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| Modelo activo | `e5` = `intfloat/multilingual-e5-small` @ `614241f622f53c4eeff9890bdc4f31cfecc418b3` | D-20 (propuesta) | Macro-F1 contra MiniLM con `eval/etiquetas.csv` (E1-06); en 15 casos difíciles no es decidible (`docs/clasificacion.md`) |
+| Modelo de comparación | `minilm` = `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` @ `e8f8c211226b894fcb81acc59f3b34ba3efd5f42` | D-20 | Ídem |
+| Prefijos de e5 | `query: ` (titular) · `passage: ` (descripción, ejemplos, prototipos); MiniLM sin prefijo | Spec E1-07 · ficha del modelo (retrieval asimétrico) | No se midió la alternativa `query: ` en ambos lados |
+| Método activo | `A` | D-21/D-57: A salvo evidencia estadística a favor de B | `python -m eval.clasificacion` (criterio A vs. B) |
+| Criterio A vs. B | IC 95 % bootstrap de B − A excluye el cero a favor de B **y** ningún tema con soporte empeora de forma significativa (límites sin redondear) | D-57 (fijado antes de medir) | `test_criterio_*` (`tests/test_eval_clasificacion.py`) |
+| Remuestreos · confianza · semilla del bootstrap | 1.000 · 0.95 · 42 | Práctica estadística (`criterio_ab`) | `test_el_ic_de_bootstrap_es_reproducible_*` |
+| Semilla global | 42 | Práctica (reproducibilidad) | `test_el_resultado_es_determinista` |
+| Dispositivo · lote | CPU · 32 | Supuesto (determinismo y portabilidad; el lote no cambia el resultado) | — |
+| `umbral_sin_tema` y `margen_secundario` por modelo y método (reemplaza la fila antigua «Umbral "sin tema": por definir») | e5 · A 0.824 / 0.002 · e5 · B 0.797 / 0.004 · MiniLM · A 0.213 / 0.030 · MiniLM · B 0.283 / 0.019 | **Supuesto**: percentil 5 de la similitud máxima y percentil 25 de la brecha entre la 1.ª y la 2.ª, sobre 52 titulares únicos útiles (`python -m eval.calibrar_clasificacion`, recalculado tras corregir las referencias en X15). **No calibrado con etiquetas** | `test_bajo_el_umbral_*` · `test_tema_secundario_*` · recalibrar con las etiquetas de E1-06 |
+| Centroide del método A | Media de la descripción y los ejemplos (peso igual) | Supuesto (el más simple; sin peso extra que calibrar) | Casos difíciles · etiquetas (E1-06) |
+| Tema secundario | El 2.º tema por similitud si su diferencia con el 1.º ≤ `margen_secundario` y supera `umbral_sin_tema` | Supuesto | `test_tema_secundario_solo_si_esta_dentro_del_margen` |
+| Baseline por palabras clave | Dos variantes: `guia` (solo términos literales de `docs/guia_temas.md` fuera de los casos difíciles; principal) y `ampliado` (guía + `extension`); puntaje = términos distintos que coinciden | Supuesto. La extensión la escribió quien ya había leído los casos difíciles y varios términos coinciden con ellos (`asep`, `asamblea`, `homicidio`, `aerolinea`): **no es independiente de los casos difíciles** y se reporta aparte (`baseline_ampliado`) | `test_h3_*` (cada término de `guia` está en la guía) · casos difíciles |
+| `similitud_prototipo.umbral` | 0.774 (e5), **sin efecto** mientras `activo: false` | Supuesto (percentil 5 de la similitud con los prototipos de Panamá) | `eval.ruido` con E1-06; hoy dejaría un falso positivo evidente de 2 marcas (`docs/clasificacion.md`) |
+| Solapamiento máximo de un caso difícil con una referencia | Jaccard de palabras < 0.8 (`eval.clasificacion.BASE_JACCARD`) | Supuesto (detector de fuga, no afecta ninguna decisión) | `test_el_detector_de_fuga_*` |
+| Fuga semántica: coseno máximo entre un caso difícil y un ejemplo o prototipo | < 0.56 con MiniLM, ignorando «Panamá» (`fuga_semantica` en `clasificacion.yaml`); una excepción aceptada de forma explícita (CD-02 con un ejemplo real del snapshot, 0.566) | **Supuesto elegido después de ver los pares**: detecta las paráfrasis de CD-02, CD-11 y CD-12; CD-01 con el prototipo original daba 0.56 | `test_h4_ningun_ejemplo_ni_prototipo_parafrasea_un_caso_dificil` |
+| Clases de la evaluación | 6 temas + `sin_tema` (agrupa `fuera_de_temas` y `no_es_panama`) | `guia_temas.md` | `test_tema_a_id_*` |
+| Macro-F1 | Media de los F1 definidos de las clases con soporte en las etiquetas; un F1 indefinido no cuenta como 0 | Práctica (se declara para no inflar ni hundir la media) | `test_una_clase_sin_soporte_*` |
 
 ## Consulta y generación
 

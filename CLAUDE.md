@@ -36,6 +36,8 @@ poetry run python -m src.config --validar            # valida todo config/*.yaml
 poetry run python -m src.carga                       # carga + validación → data/processed/validos/ y reporte de calidad (D-82)
 poetry run python -m src.normalizacion               # normaliza y crea data/senales.duckdb
 poetry run python -m src.limpieza                    # limpia titulares y marca ruido
+poetry run python -m src.clasificacion               # embeddings locales y tema_clasificado (E1-07)
+poetry run python -m eval.clasificacion              # métricas de clasificación (casos difíciles y etiquetas)
 poetry run python -m scripts.catalogo                # outputs/catalogo.csv (E1-04)
 poetry run python -m scripts.explorar                # docs/exploracion.md (E0-09)
 poetry run python -m scripts.probar_llm --modelo <tag>  # latencia, JSON válido y memoria de un modelo de Ollama (E0-07)
@@ -62,20 +64,20 @@ Lo que existe hoy:
 ```
 CLAUDE.md  README.md  pyproject.toml  poetry.lock  .env.example  .github/pull_request_template.md
 config/      reglas_v1.3.yaml · temas.yaml · ejemplos_excluidos.txt · vinculos.yaml · modalidad_editorial.yaml · salidas.yaml · restricciones.yaml
-             ruido.yaml · fuentes.yaml · contrato.yaml · carga.yaml · normalizacion.yaml · etiquetado.yaml · exploracion.yaml · llm.yaml · benchmark.yaml
+             ruido.yaml · fuentes.yaml · contrato.yaml · carga.yaml · normalizacion.yaml · clasificacion.yaml · etiquetado.yaml · exploracion.yaml · llm.yaml · benchmark.yaml
 templates/   (vacía)
 prompts/     afirmaciones_citadas.txt
 data/        raw/ (inmutable) · processed/ (validos/ fuera de git) · registro_extraccion/ · manifest.json · CHANGELOG.md · diccionario.md · README.md
              senales.duckdb (generado, fuera de git)
-src/         carga · normalizacion · limpieza · db · registro (D-75) · configuracion (D-79; config = alias de su CLI) · consultas_gdelt · esquemas (borrador)
-             solo docstring o esqueleto: embeddings · clasificacion · baseline · agrupacion · procedencias · contexto · puntaje · evidencia
+src/         carga · normalizacion · limpieza · embeddings · clasificacion · baseline · db · registro (D-75) · configuracion (D-79; config = alias de su CLI) · consultas_gdelt · esquemas (borrador)
+             solo docstring o esqueleto: agrupacion · procedencias · contexto · puntaje · evidencia
              ficha · consulta · generacion · validador · cache · revision · exportar
 src/llm/     proveedor.py (interfaz) · ollama.py · deepseek.py (solo docstring)
 scripts/     extraer.py · conversion.py · manifest.py · validar_snapshot.py · catalogo.py · explorar.py · estimar_consultas_gdelt.py · probar_llm.py
-eval/        etiquetar.py · etiquetas/ (una hoja por persona) · etiquetas.csv · ruido.py · validar_benchmark.py
+eval/        etiquetar.py · etiquetas/ (una hoja por persona) · etiquetas.csv · ruido.py · validar_benchmark.py · clasificacion.py · calibrar_clasificacion.py · metricas.py
 benchmark/   benchmark_dev.jsonl (solo desarrollo) · sinteticos.csv · README.md
-tests/       fixtures/ · test_t01_carga.py · test_t03_recirculada.py · test_*.py
-outputs/     catalogo.csv · validacion_snapshot.json · probar_llm_<modelo>.json
+tests/       fixtures/ · test_t01_carga.py · test_t03_recirculada.py · test_casos_dificiles.py · test_*.py
+outputs/     catalogo.csv · clasificacion.json · validacion_snapshot.json · probar_llm_<modelo>.json
 notion/      exportación inicial para importar en Notion (la versión vigente está en Notion)
 specs/  docs/
 ```
@@ -89,7 +91,7 @@ templates/   ficha.md.j2 (E1-10b)
 prompts/     comparar_contradicciones.txt (E1-10) · respuesta_consulta.txt (E1-11) · paquete_editorial.txt (E1-12) · boletin_banca.txt (E2-02)
 scripts/     buscar_casos.py · preparar_demo.py · calentar_cache.py · capturas_demo.py · verificar_offline.py (C-06) · reproducir.py (E1-20)
              empaquetar_datos.py · auditoria_final.py (C-07)
-eval/        run_benchmark.py · metricas.py (E1-18) · precision_at_5.py (E1-19) · y los módulos de métricas que pide cada spec
+eval/        run_benchmark.py (E1-18) · precision_at_5.py (E1-19) · y los módulos de métricas que pide cada spec
 tests/       test_t02_*.py, test_t04_*.py … test_t10_*.py (ver docs/protocolo_evaluacion.md)
 outputs/     fichas.jsonl (E1-16) · pruebas.csv (E1-17) · metricas.json (E1-18)
 ```
