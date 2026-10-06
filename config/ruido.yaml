@@ -67,6 +67,12 @@ panama:
   paises_medio_exentos: ["Panamá"]  # medios panameños: sus notas son sobre Panamá aunque el titular no lo diga
   # TVN: la primera sección de la URL es solo una señal CANDIDATA; con un titular sin mención se marca.
   dominio_con_seccion: tvn-2.com
+  # D-84: una nota que nombra la región (o un fenómeno regional que afecta a Panamá) NO es ruido: se conserva con
+  # alcance_regional = true y se cuenta aparte en el reporte. Un falso Panamá o un deporte siguen siendo ruido.
+  regionales:
+    - '\b(centroamerica|america central|america latina|latinoamerica\w*|latam|latin america|lateinamerika|caribe|caribbean)\b'
+    - '\bel nino\b|\bla nina\b'
+    - '\brutas? maritimas?\b'
   secciones_dudosas: [mundo, tvmax, entretenimiento]   # gente-tvn y videos son contenido propio de TVN: no se filtran por sección
 
 # Es de Panamá, pero de un área que el reto no cubre (docs/guia_temas.md): deportes, farándula, cultura, política partidista.
@@ -75,10 +81,13 @@ fuera_de_temas:
     - '\bf[uú]tbol\b'
     - '\bselecci[oó]n (de f|nacional|mayor|argentina|colombia)\w*'
     - '\b(mlb|playoffs?|torneo|amistoso|goleador|golea\w*|basquet|beisbol|liga de naciones|liga panamena|lpf)\b'
-    - '\b(copa|mundial|eliminatorias|semifinales?)\b'
-    - '\bpartido (de|ante|amistoso)\b'
+    - '\bcopa (del mundo|america|oro|kirin|concacaf|libertadores|sudamericana|davis|mundial)\b'   # no "Copa Airlines"
+    - '\b(mundial (de|sub|femenino|masculino)|(al|el|del|para el|en el) mundial)\b'            # no "Banco Mundial"
+    - '\b(eliminatorias|semifinales?)\b'
+    - '\bpartido (ante|amistoso|de (futbol|beisbol|baloncesto|ida|vuelta))\b'                  # no "partido de gobierno"
   farandula:
-    - '\b(videoclip|cantante|actriz|vida sentimental|carnavalera|famos[oa]s?|gira)\b'
+    - '\b(videoclip|cantante|actriz|vida sentimental|carnavalera|famos[oa]s?)\b'
+    - "\\bgira (musical|mundial|de conciertos)\\b|\\bgira '"                                      # no "Mulino gira instrucciones"
     - '\b(kardashian|lohan|pedro pascal|offset)\b'
     - '\bconcierto\b'
   cultura:
@@ -87,8 +96,13 @@ fuera_de_temas:
   politica_partidista:
     - '\bprimarias?\b'
     - '\bcampana electoral\b'
-    - '\bcandidat[oa]s? (a|presidencial)\b'
+    - '\bcandidat[oa]s? presidencial(es)?\b'                  # no "candidato a contralor" (cargo no partidista)
 
-# Prototipo de noticia sobre Panamá (similitud de embeddings): pendiente de E1-04 (src/embeddings.py aún no existe).
+  # Autopromoción de TVN (H5): no es noticia de los temas. "Contenido Exclusivo: ..." sí puede estarlo y no se marca.
+  autopromocion_tvn:
+    - '^\s*(tvn media|gente tvn|gente que inspira)\b'
+
+# Prototipo de noticia sobre Panamá (similitud de embeddings): DIFERIDO a E1-07 (los embeddings
+# locales de titulares llegan con esa tarea; src/embeddings.py hoy es un stub). Hasta entonces el filtro es solo por palabras clave.
 similitud_prototipo:
   activo: false

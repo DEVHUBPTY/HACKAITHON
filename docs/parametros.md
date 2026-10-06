@@ -130,7 +130,10 @@ Una cadena vacía o en blanco es nulo en CSV y en JSON. Duplicados: en noticias 
 | Origen sujeto al filtro de mención | `GDELT`; exentos: `TVN RSS` y medios con `pais_medio = Panamá` | **Supuesto** según E0-09: las consultas de GDELT piden "Panama" más un término amplio sin anclarlo al titular | `test_gdelt_sin_mencion_de_panama_*` · `test_medio_panameno_o_tvn_nacional_*` |
 | Secciones dudosas de TVN | `mundo`, `tvmax`, `entretenimiento` (señal candidata: el titular decide) | E0-09, recomendación 5 | `test_la_seccion_de_tvn_solo_sospecha_el_titular_decide` |
 | Patrones de inyección (D-69) | lista en `restricciones.yaml`, sección `inyeccion` | Fixture T07 (4 tipos de ataque, ES/EN) · D-69 | `test_t07_los_ocho_titulares_*` · `test_ruido_csv_no_dispara_falsos_positivos_de_inyeccion` |
-| `similitud_prototipo.activo` | `false` | La similitud con un prototipo de noticia sobre Panamá necesita `src/embeddings.py` (E1-04, aún no existe). Parcial: queda pendiente | — |
+| `similitud_prototipo.activo` | `false` | La similitud con un prototipo de noticia sobre Panamá necesita embeddings locales de titulares (`src/embeddings.py`, hoy un stub). **Diferido a E1-07**; hasta entonces el filtro es solo por palabras clave | — |
+| Alcance regional (D-84) | `panama.regionales` en `ruido.yaml`: Centroamérica, América Latina/Latinoamérica/LatAm, Caribe, El Niño/La Niña, rutas marítimas | Decisión D-84 (revisión X14): una nota regional o de un fenómeno regional que afecta a Panamá no es ruido; se conserva con `alcance_regional = true` y se cuenta aparte | `test_x14_h2_*` |
+| Autopromoción de TVN | `fuera_de_temas.autopromocion_tvn` (`TVN Media`, `Gente TVN`, `Gente que Inspira` al inicio del titular) | Revisión X14, H5 | `test_x14_h5_*` |
+| Decimales del reporte | 4 (`limpieza.DECIMALES_PRESENTACION`) | Presentación: no afecta ninguna decisión | `test_x14_h8_*` |
 | z del IC de Wilson | 1.96 (el de `carga.yaml`) | Estándar | `test_reporte_de_calidad_cuenta_ruido_por_motivo_con_n_e_ic` |
 
 Todo lo marcado como ruido es una **propuesta por titular**, no una etiqueta humana. El IC de Wilson del reporte es descriptivo: el snapshot no es una muestra aleatoria.

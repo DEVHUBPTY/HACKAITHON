@@ -129,6 +129,7 @@ se sustituyen entre sí. El nombre de la persona que firma **no se guarda** (D-3
 | `es_ruido` | BOOLEAN | sí | limpieza | derivado | Verdadero si el registro no es una noticia pertinente sobre Panamá (E1-03b). **El registro se conserva**; el ruido no entra en la bandeja ni en el puntaje. |
 | `motivo_ruido` | VARCHAR | sí | limpieza | derivado | `no_es_panama` · `fuera_de_temas` · `no_es_noticia` · `fuera_de_ventana`; nulo si no es ruido. `duplicado_url` no aparece aquí: lo registra `duplicados_eliminados` (E1-03). |
 | `sospechoso_inyeccion` | BOOLEAN | sí | limpieza | derivado | Verdadero si el titular o la descripción traen patrones de instrucción (D-69). No excluye el registro; la ficha avisa al revisor. |
+| `alcance_regional` | BOOLEAN | sí | limpieza | derivado | Verdadero si el titular nombra la región (Centroamérica, América Latina, LatAm, Caribe) o un fenómeno regional que afecta a Panamá (El Niño, rutas marítimas) y no es ruido (D-84). Se cuenta aparte en el reporte. |
 
 ### `indicadores`: cuadrícula del Banco Mundial
 

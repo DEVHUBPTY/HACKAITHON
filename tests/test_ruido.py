@@ -176,7 +176,7 @@ def _fila(titulo: str, **campos: str | None) -> dict:
 
 
 def test_gdelt_sin_mencion_de_panama_es_ruido_pero_el_darien_y_el_canal_no() -> None:
-    assert limpieza.evaluar(_fila("Trump redirige ayuda a Latinoamérica"), REGLAS).motivo_ruido == "no_es_panama"
+    assert limpieza.evaluar(_fila("Trump redirige ayuda a Ucrania"), REGLAS).motivo_ruido == "no_es_panama"
     assert limpieza.evaluar(_fila("Migración por el Darién aumenta"), REGLAS).motivo_ruido is None
     assert limpieza.evaluar(_fila("Decisión de EE. UU. sobre el Canal de Panamá"), REGLAS).motivo_ruido is None
 

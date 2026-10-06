@@ -49,6 +49,7 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("es_ruido", "BOOLEAN"),
         ("motivo_ruido", "VARCHAR"),
         ("sospechoso_inyeccion", "BOOLEAN"),
+        ("alcance_regional", "BOOLEAN"),
     ],
     "indicadores": [
         ("id_indicador", "VARCHAR PRIMARY KEY"),

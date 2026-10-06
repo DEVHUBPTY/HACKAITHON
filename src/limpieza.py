@@ -55,6 +55,9 @@ MOTIVO_FUERA_DE_VENTANA = "fuera_de_ventana"
 MOTIVO_DUPLICADO_URL = "duplicado_url"  # lo registra E1-03 en duplicados_eliminados
 MOTIVOS_MARCADOS = (MOTIVO_NO_ES_PANAMA, MOTIVO_FUERA_DE_TEMAS, MOTIVO_NO_ES_NOTICIA, MOTIVO_FUERA_DE_VENTANA)
 
+# Presentación del reporte (no es un parámetro de decisión): decimales de las proporciones y los IC.
+DECIMALES_PRESENTACION = 4
+
 Fila = dict[str, Any]
 
 
@@ -80,6 +83,7 @@ class Resultado:
     es_ruido: bool
     motivo_ruido: str | None
     sospechoso_inyeccion: bool
+    alcance_regional: bool = False
 
 
 class Reglas:
@@ -107,6 +111,8 @@ class Reglas:
         self.farandula = _compilar(ruido.fuera_de_temas.farandula)
         self.cultura = _compilar(ruido.fuera_de_temas.cultura)
         self.politica = _compilar(ruido.fuera_de_temas.politica_partidista)
+        self.autopromocion = _compilar(ruido.fuera_de_temas.autopromocion_tvn)
+        self.regionales = _compilar(ruido.panama.regionales)
         self.inyeccion = _compilar(restricciones.inyeccion.patrones)
 
     @classmethod
@@ -227,10 +233,14 @@ def _seccion_tvn(fila: Fila, reglas: Reglas) -> str | None:
     return segmentos[0].lower() if segmentos else None
 
 
+def _es_seccion_dudosa(fila: Fila, reglas: Reglas) -> bool:
+    return (_seccion_tvn(fila, reglas) or "") in reglas.ruido.panama.secciones_dudosas
+
+
 def _sujeta_al_filtro_de_mencion(fila: Fila, reglas: Reglas) -> bool:
     """El titular debe nombrar a Panamá o algo que lo afecte: GDELT no anclado, o sección dudosa de TVN."""
     cfg = reglas.ruido.panama
-    if (_seccion_tvn(fila, reglas) or "") in cfg.secciones_dudosas:
+    if _es_seccion_dudosa(fila, reglas):
         return True
     origenes = {o.strip() for o in str(fila.get("origen") or "").split(reglas.separador_origen.strip()) if o.strip()}
     if origenes & set(cfg.origenes_exentos) or fila.get("pais_medio") in cfg.paises_medio_exentos:
@@ -238,24 +248,44 @@ def _sujeta_al_filtro_de_mencion(fila: Fila, reglas: Reglas) -> bool:
     return bool(origenes & set(cfg.origenes_sujetos))
 
 
-def motivo_ruido(fila: Fila, titulo_limpio: str, reglas: Reglas) -> str | None:
-    """Primer motivo que corresponde, en este orden; ``None`` si no es ruido.
+def _fuera_de_temas(texto: str, reglas: Reglas) -> bool:
+    grupos = (reglas.deportes, reglas.farandula, reglas.cultura, reglas.politica)
+    return any(_coincide(g, texto) for g in grupos)
 
-    Una noticia de otro país que afecta a Panamá (migración por el Darién, el Canal) nombra algo de
-    ``panama.menciones`` y por eso no cae en ``no_es_panama``.
+
+def clasificar(fila: Fila, titulo_limpio: str, reglas: Reglas) -> tuple[str | None, bool]:
+    """``(motivo_ruido, alcance_regional)``. El motivo es el primero que corresponde, en este orden.
+
+    1. ``fuera_de_ventana``; 2. ``no_es_noticia``; 3. falso Panamá (``no_es_panama``); 4. autopromoción de TVN y,
+    en una sección dudosa de TVN, deportes/farándula (``fuera_de_temas``: la historia de un panameño en la MLB no
+    es "otro país"); 5. sin mención de Panamá en un origen sujeto: ``no_es_panama``, **salvo** que el titular nombre
+    la región o un fenómeno regional (D-84: se conserva con ``alcance_regional``); 6. deportes, farándula, cultura
+    y política partidista (``fuera_de_temas``).
+
+    Una noticia de otro país que afecta a Panamá (Darién, Canal) nombra algo de ``panama.menciones`` y no es ruido.
     """
     if fuera_de_ventana(fila, reglas):
-        return MOTIVO_FUERA_DE_VENTANA
+        return MOTIVO_FUERA_DE_VENTANA, False
     if es_no_noticia(fila, titulo_limpio, reglas):
-        return MOTIVO_NO_ES_NOTICIA
+        return MOTIVO_NO_ES_NOTICIA, False
     texto = plano(titulo_limpio)
     if _coincide(reglas.falsos, texto):
-        return MOTIVO_NO_ES_PANAMA
-    if _sujeta_al_filtro_de_mencion(fila, reglas) and not _coincide(reglas.menciones, texto):
-        return MOTIVO_NO_ES_PANAMA
-    if any(_coincide(g, texto) for g in (reglas.deportes, reglas.farandula, reglas.cultura, reglas.politica)):
-        return MOTIVO_FUERA_DE_TEMAS
-    return None
+        return MOTIVO_NO_ES_PANAMA, False
+    if _coincide(reglas.autopromocion, texto):
+        return MOTIVO_FUERA_DE_TEMAS, False
+    if _es_seccion_dudosa(fila, reglas) and _fuera_de_temas(texto, reglas):
+        return MOTIVO_FUERA_DE_TEMAS, False
+    regional = _coincide(reglas.regionales, texto)
+    if _sujeta_al_filtro_de_mencion(fila, reglas) and not _coincide(reglas.menciones, texto) and not regional:
+        return MOTIVO_NO_ES_PANAMA, False
+    if _fuera_de_temas(texto, reglas):
+        return MOTIVO_FUERA_DE_TEMAS, False
+    return None, regional
+
+
+def motivo_ruido(fila: Fila, titulo_limpio: str, reglas: Reglas) -> str | None:
+    """Solo el motivo de ``clasificar`` (``None`` si no es ruido)."""
+    return clasificar(fila, titulo_limpio, reglas)[0]
 
 
 def sospechoso_inyeccion(fila: Fila, reglas: Reglas) -> bool:
@@ -270,8 +300,8 @@ def sospechoso_inyeccion(fila: Fila, reglas: Reglas) -> bool:
 def evaluar(fila: Fila, reglas: Reglas) -> Resultado:
     """Limpia el titular y decide ruido e inyección de una noticia. No modifica ``fila``."""
     titulo_limpio = limpiar_titulo(str(fila["titulo"]), fila.get("medio"), fila.get("dominio"), reglas)
-    motivo = motivo_ruido(fila, titulo_limpio, reglas)
-    return Resultado(titulo_limpio, motivo is not None, motivo, sospechoso_inyeccion(fila, reglas))
+    motivo, regional = clasificar(fila, titulo_limpio, reglas)
+    return Resultado(titulo_limpio, motivo is not None, motivo, sospechoso_inyeccion(fila, reglas), regional)
 
 
 def limpiar_filas(filas: list[Fila], reglas: Reglas) -> list[Fila]:
@@ -287,6 +317,7 @@ def limpiar_filas(filas: list[Fila], reglas: Reglas) -> list[Fila]:
                 "es_ruido": r.es_ruido,
                 "motivo_ruido": r.motivo_ruido,
                 "sospechoso_inyeccion": r.sospechoso_inyeccion,
+                "alcance_regional": r.alcance_regional,
             }
         )
     return salida
@@ -301,8 +332,8 @@ def _proporcion(k: int, n: int, z: float) -> dict[str, Any]:
     return {
         "n": k,
         "de": n,
-        "proporcion": None if n == 0 else round(k / n, 4),
-        "ic95": None if ic is None else [round(ic[0], 4), round(ic[1], 4)],
+        "proporcion": None if n == 0 else round(k / n, DECIMALES_PRESENTACION),
+        "ic95": None if ic is None else [round(ic[0], DECIMALES_PRESENTACION), round(ic[1], DECIMALES_PRESENTACION)],
     }
 
 
@@ -323,6 +354,12 @@ def construir_reporte(filas: list[Fila], duplicados: list[Fila], z: float) -> di
         "recibidas_antes_de_fusionar_url": total + n_dup,
         "ruido_total": _proporcion(ruido, total, z),
         "utiles_no_ruido": _proporcion(total - ruido, total, z),
+        "nota_utiles": (
+            "utiles_no_ruido INCLUYE las notas de alcance regional (D-84), que se cuentan aparte en alcance_regional. "
+            "Las reglas son palabras clave sobre el titular y NO están medidas: precisión y recall dependen de "
+            "eval/etiquetas.csv (E1-06; python -m eval.ruido)."
+        ),
+        "alcance_regional": _proporcion(sum(1 for f in filas if f.get("alcance_regional")), total, z),
         "por_motivo": {m: _proporcion(k, total, z) for m, k in por_motivo.items()},
         "duplicado_url": _proporcion(n_dup, total + n_dup, z),
         "sospechoso_inyeccion": _proporcion(sum(1 for f in filas if f.get("sospechoso_inyeccion")), total, z),
@@ -347,7 +384,7 @@ def escribir_reporte(ruta: Path, seccion: dict[str, Any]) -> None:
 
 # ------------------------------------------------------------------ DuckDB
 
-COLUMNAS_NUEVAS = ("titulo_original", "titulo_limpio", "es_ruido", "motivo_ruido", "sospechoso_inyeccion")
+COLUMNAS_NUEVAS = ("titulo_original", "titulo_limpio", "es_ruido", "motivo_ruido", "sospechoso_inyeccion", "alcance_regional")
 
 
 def aplicar_a_base(ruta_base: Path, reglas: Reglas) -> list[Fila]:
@@ -358,7 +395,7 @@ def aplicar_a_base(ruta_base: Path, reglas: Reglas) -> list[Fila]:
         filas = limpiar_filas(db.leer_tabla(con, "noticias", "id_noticia"), reglas)
         con.executemany(
             "UPDATE noticias SET titulo_original = ?, titulo_limpio = ?, es_ruido = ?, motivo_ruido = ?, "
-            "sospechoso_inyeccion = ? WHERE id_noticia = ?",
+            "sospechoso_inyeccion = ?, alcance_regional = ? WHERE id_noticia = ?",
             [[*(f[c] for c in COLUMNAS_NUEVAS), f["id_noticia"]] for f in filas],
         )
         despues = db.contar_filas(con, "noticias")

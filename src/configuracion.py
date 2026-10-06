@@ -1025,12 +1025,13 @@ class PanamaRuido(ModeloConfig):
     origenes_sujetos: list[str]
     origenes_exentos: list[str]
     paises_medio_exentos: list[str]
+    regionales: list[str]
     dominio_con_seccion: str
     secciones_dudosas: list[str]
 
     @model_validator(mode="after")
     def _regex_validas(self) -> PanamaRuido:
-        _compilar_todas([*self.falsos, *self.menciones], "panama")
+        _compilar_todas([*self.falsos, *self.menciones, *self.regionales], "panama")
         return self
 
 
@@ -1039,10 +1040,14 @@ class FueraDeTemasRuido(ModeloConfig):
     farandula: list[str]
     cultura: list[str]
     politica_partidista: list[str]
+    autopromocion_tvn: list[str]
 
     @model_validator(mode="after")
     def _regex_validas(self) -> FueraDeTemasRuido:
-        _compilar_todas([*self.deportes, *self.farandula, *self.cultura, *self.politica_partidista], "fuera_de_temas")
+        _compilar_todas(
+            [*self.deportes, *self.farandula, *self.cultura, *self.politica_partidista, *self.autopromocion_tvn],
+            "fuera_de_temas",
+        )
         return self
 
 
