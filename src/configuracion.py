@@ -275,3 +275,77 @@ class ConfigContrato(ModeloConfig):
 def cargar_contrato(carpeta: Path | None = None) -> ConfigContrato:
     """Atajo para ``config/contrato.yaml``."""
     return cargar_config("contrato", ConfigContrato, carpeta)
+# ------------------------------------------------------------------ exploracion.yaml (E0-09)
+
+
+class EstadisticaExploracion(ModeloConfig):
+    z_95: float
+    top_n: int
+    nota: str
+
+
+class RevisionManual(ModeloConfig):
+    minimo_candidatos_por_tema: int
+    temas_validos: list[str]
+    archivo: str
+
+
+class RssExploracion(ModeloConfig):
+    carpeta_cruda: str
+    carpeta_gdelt: str
+    campos_firma: list[str]
+    claves_excluidas: list[str]
+    agencias: list[str]
+    redaccion: list[str]
+
+
+class PatronesExploracion(ModeloConfig):
+    titulo_generico: list[str]
+    sufijo_medio: str
+    entidad_html: str
+    espacio_antes_de_puntuacion: str
+    separador_barra_tvn: str
+    menciones_panama: list[str]
+    falso_panama: list[str]
+    deportes: list[str]
+    farandula: list[str]
+    autopromocion_tvn: list[str]
+
+
+class DuplicadosExploracion(ModeloConfig):
+    min_caracteres_contencion: int
+
+
+class IndicadoresExploracion(ModeloConfig):
+    anio_fin_esperado: int
+
+
+class UsgsExploracion(ModeloConfig):
+    bins_magnitud: list[float]
+    panama_en_place: list[str]
+
+
+class SalidaExploracion(ModeloConfig):
+    informe: str
+    carpeta_muestra: str
+    ejemplos_excluidos: str
+
+
+class ConfigExploracion(ModeloConfig):
+    """Modelo de ``config/exploracion.yaml``."""
+
+    version: int
+    estadistica: EstadisticaExploracion
+    revision_manual: RevisionManual
+    rss: RssExploracion
+    patrones: PatronesExploracion
+    temas_palabras: dict[str, list[str]]
+    duplicados: DuplicadosExploracion
+    indicadores: IndicadoresExploracion
+    usgs: UsgsExploracion
+    salida: SalidaExploracion
+
+
+def cargar_exploracion(carpeta: Path | None = None) -> ConfigExploracion:
+    """Atajo para ``config/exploracion.yaml``."""
+    return cargar_config("exploracion", ConfigExploracion, carpeta)
