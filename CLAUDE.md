@@ -122,7 +122,7 @@ El `tema` de `noticias.csv` es el **tema de origen** (consulta de GDELT o catego
 - La caja de USGS **no es Panamá**: mostrar siempre el `place` original. Solo sirve para hechos sísmicos.
 - **Ruido: marcar, no borrar.** `es_ruido` + `motivo_ruido`; el registro se conserva y se cuenta en el reporte, pero no entra en la bandeja.
 - Las noticias son **sobre Panamá**; los medios pueden ser internacionales. Una noticia de otro país que afecta a Panamá no es ruido.
-- Los 6 temas, sus límites y las reglas de frontera están en `docs/guia_temas.md`. La salida son solo esos 6 temas. Fuera de ellos: `no_es_panama` o `fuera_de_temas`.
+- Los 6 temas, sus límites y las reglas de frontera están en `docs/guia_temas.md`. La salida son solo esos 6 temas. Fuera de ellos: `no_es_panama` o `fuera_de_temas`; y lo que no es una nota con contenido, `no_es_noticia`. Los tres son motivos de ruido y las personas también pueden asignarlos al etiquetar (D-87).
 - La `descripcion` del RSS se usa **solo internamente** para clasificar; nunca se muestra ni se republica (D-31).
 - Los titulares usados como ejemplo en `config/temas.yaml` están en `config/ejemplos_excluidos.txt` y **nunca** entran en la evaluación.
 - Procedencia sin datos personales: se guarda `agencia` y `tipo_firma`, **nunca el nombre del autor** (D-32).

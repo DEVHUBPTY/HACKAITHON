@@ -2,7 +2,7 @@
 
 Revisión de `CLAUDE.md`, `README.md`, `docs/`, `specs/` y la plantilla de PR contra las decisiones vigentes de Notion (D-74 a D-85 y las anteriores que citan) y contra lo que existe en el repo. Fecha: 2026-10-06.
 
-**Criterio:** no se cambió la sustancia de ninguna decisión ni regla. Solo se alineó texto desactualizado a una decisión, se corrigieron inconsistencias de hecho entre documentos y se actualizaron las listas de comandos y estructura de `CLAUDE.md` a lo que existe (cada comando "disponible" se verificó con `--help`). Donde una spec choca en sustancia con `CLAUDE.md` y ninguna decisión lo resuelve, no se eligió: queda en **Requiere decisión**.
+**Criterio:** no se cambió la sustancia de ninguna decisión ni regla. Solo se alineó texto desactualizado a una decisión, se corrigieron inconsistencias de hecho entre documentos y se actualizaron las listas de comandos y estructura de `CLAUDE.md` a lo que existe (cada comando "disponible" se verificó con `--help`). Donde una spec choca en sustancia con `CLAUDE.md` y ninguna decisión lo resuelve, no se eligió: quedó en **Requiere decisión** y después se resolvió (ver abajo).
 
 Las líneas citadas son las de `main` antes de este cambio (commit `9e09231`).
 
@@ -43,14 +43,16 @@ Las líneas citadas son las de `main` antes de este cambio (commit `9e09231`).
 | 31 | `specs/E1-09b.md:12` | Ventana de sismos en `reglas_v1.3.yaml`; vive en `config/vinculos.yaml` (`ventana_coincidencia_dias`, `docs/parametros.md:54`) | Puntero corregido |
 | 32 | `specs/README.md:8, 21, 34-38` | Roles leídos como personas; rol de E1-06 contra D-85; filas fuera de orden (E1-20 y E2-02 antes de E1-17) | Nota de áreas, rol de E1-06 según D-85 y orden corregido |
 
-## Requiere decisión (4)
+## Decisiones pendientes, ya resueltas (4)
 
-| # | Dónde | Choque | Qué hay que decidir |
+Las cuatro quedaron sin decidir en la primera pasada; el equipo las resolvió y están registradas en Notion.
+
+| # | Dónde | Choque | Resolución |
 |---|---|---|---|
-| A | `CLAUDE.md:84` frente a `docs/guia_temas.md:26`, `specs/E1-06.md:17`, `config/etiquetado.yaml:23-24` y `src/limpieza.py` | `CLAUDE.md` dice que fuera de los 6 temas solo hay `no_es_panama` o `fuera_de_temas`; la guía, la spec E1-06 y el código agregan `no_es_noticia` como "decisión del equipo tras revisión", sin ID de decisión | Registrar la decisión en Notion (D-xx) y, si se acepta, agregar `no_es_noticia` a esa regla de `CLAUDE.md` y a `specs/E1-03b.md:22` ("dos motivos") |
-| B | `specs/E0-06.md:18` frente a `benchmark/README.md:11` | La spec dice que las etiquetas del benchmark las **escriben y aprueban personas**; el README dice que el asistente redactó consultas **y respuestas esperadas** y una persona las revisó y aprobó. D-85 cubre solo los 100 titulares de clasificación, no el benchmark | Extender a E0-06 el método de D-85 (propuesta del asistente + aprobación humana, declarada) con una decisión, o rehacer las etiquetas como pide la spec |
-| C | `specs/E0-03.md:16`, `E0-04.md:18`, `E0-05.md:15`, `E0-06.md:15`, `E0-07.md:15`, `E0-09.md:16` frente al estado del evento | Las specs E0 dicen "se hace antes del evento (D-74) y se registra con fase Preparación", pero el evento ya empezó con tareas E0 abiertas (E0-07 provisional según D-80, con fase *Evento*; E0-08) | Confirmar la fase con que se registran las tareas E0 cerradas durante el evento. `docs/cronograma.md` ya dice *Evento* (D-58); las specs no se tocaron |
-| D | `specs/E1-07.md:30` | Atribuye a D-84 el diferimiento del filtro de similitud con prototipo, pero D-84 solo trata las notas regionales; el diferimiento salió de la revisión X14 | Registrar el diferimiento como decisión o corregir la cita |
+| A | `CLAUDE.md:84` frente a `docs/guia_temas.md:26`, `specs/E1-06.md:17`, `specs/E1-03b.md:22`, `config/etiquetado.yaml:23-24` y `src/limpieza.py` | `CLAUDE.md` decía que fuera de los 6 temas solo hay `no_es_panama` o `fuera_de_temas`; la guía, E1-06 y el código usaban también `no_es_noticia`, sin ID de decisión | **D-87:** `no_es_noticia` es motivo de ruido junto a `no_es_panama` y `fuera_de_temas`, y las personas también pueden asignarlo. Se citó D-87 en `CLAUDE.md`, la guía, E1-03b ("dos motivos" → tres) y E1-06 |
+| B | `specs/E0-06.md:18` frente a `benchmark/README.md:11` | La spec decía que las etiquetas del benchmark las escriben y aprueban personas; en la práctica el asistente las propuso y una persona las aprobó | **D-85 ampliada:** cubre las 100 etiquetas de clasificación y las 40 consultas del benchmark de desarrollo con sus respuestas esperadas (el asistente propone; una persona revisa, edita si hace falta y aprueba). E0-06 lo dice, conservando la revisión humana que exige el PDF |
+| C | `specs/E0-03.md:16`, `E0-04.md:18`, `E0-05.md:15`, `E0-06.md:15`, `E0-07.md:15`, `E0-09.md:16` | "Se hace antes del evento y se registra con fase Preparación", con el evento ya empezado y tareas E0 abiertas | **D-58:** cada tarea se registra con la fase en que realmente se hace: *Preparación* antes del evento y *Evento* desde que empezó (2026-10-06). Las seis specs E0 lo dicen así |
+| D | `specs/E1-07.md:30` (y las mismas citas en `docs/clasificacion.md:37, 272`, `data/diccionario.md:133` y el comentario de `config/ruido.yaml:108`) | Atribuían a D-84 el diferimiento del filtro de similitud con prototipo; D-84 solo trata las notas regionales | Se cita la **revisión X14 de E1-03b**, donde se decidió el diferimiento |
 
 ## Fuera de alcance (no se tocó)
 
