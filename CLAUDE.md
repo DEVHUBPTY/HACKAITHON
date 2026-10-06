@@ -109,7 +109,7 @@ El `tema` de `noticias.csv` es el **tema de origen** (consulta de GDELT o catego
 
 ## Seguridad
 
-- Secretos solo en `.env` (ignorado por git). En el repo, solo `.env.example` con nombres de variables vacíos.
+- Secretos y configuración local solo en `local.env` (ignorado por git; D-77). En el repo, solo `.env.example` con nombres de variables vacíos.
 - No imprimir ni registrar claves, tokens ni prompts con secretos en logs, tests o capturas.
 - `data/demo.duckdb` (snapshot + casos sintéticos marcados) **nunca** se usa para calcular métricas.
 - **Nada con redistribución restringida entra al repositorio ni al paquete de entrega** (descripciones del RSS, `socialimage`, extractos): de esas fuentes solo metadatos y la receta (D-72).

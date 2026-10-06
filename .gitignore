@@ -1,5 +1,6 @@
 # Secrets
 .env
+local.env
 
 # Python
 .venv/

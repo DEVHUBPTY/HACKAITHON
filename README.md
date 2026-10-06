@@ -17,10 +17,10 @@ Requisitos: Python 3.11 y [Poetry](https://python-poetry.org/).
 ```bash
 poetry env use python3.11
 poetry install            # instala las dependencias fijadas en poetry.lock
-cp .env.example .env      # completar localmente; .env no se versiona
+cp .env.example local.env # completar localmente; local.env no se versiona
 ```
 
-Variables de `.env`: `LLM_PROVIDER`, `OLLAMA_HOST`, `OLLAMA_MODEL`, `DEEPSEEK_API_KEY`. Nunca se registran valores de claves en los logs.
+Variables de `local.env`: `LLM_PROVIDER`, `OLLAMA_HOST`, `OLLAMA_MODEL`, `DEEPSEEK_API_KEY`. Nunca se registran valores de claves en los logs.
 
 ## Ejecución
 
