@@ -6,7 +6,7 @@ prueba de aceptación necesita.
 """
 
 import csv
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -33,8 +33,10 @@ ARCHIVOS_NOTICIAS = list(EXTRAS)
 ARCHIVOS = [*ARCHIVOS_NOTICIAS, "t01_indicadores_nulos.csv"]
 
 FORMATO_FECHA = "%Y-%m-%dT%H:%M:%SZ"
-VENTANA_INICIO = datetime(2024, 1, 1)
-VENTANA_FIN = datetime(2025, 10, 1)  # intervalo [inicio, fin)
+# D-74: 30 días previos a la extracción, ampliable a 90; se mide sobre la
+# fecha de detección porque GDELT filtra por seendate. El intervalo de la
+# sección 7 del PDF no se aplica (imposible de extraer).
+VENTANA_MAXIMA = timedelta(days=90)
 CAMPOS_FECHA = ["fecha_publicacion", "fecha_deteccion", "fecha_extraccion"]
 OBLIGATORIOS = [c for c in COLUMNAS_NOTICIAS if c != "alcance_texto"]
 
@@ -132,14 +134,18 @@ def test_publicacion_distinta_de_deteccion(nombre: str) -> None:
         assert fila["fecha_publicacion"] != fila["fecha_deteccion"], fila["id_noticia"]
 
 
+def en_ventana(fila: dict[str, str]) -> bool:
+    """Indica si la detección cae dentro de la ventana de D-74 respecto a la extracción."""
+    deteccion = datetime.strptime(fila["fecha_deteccion"], FORMATO_FECHA)
+    extraccion = datetime.strptime(fila["fecha_extraccion"], FORMATO_FECHA)
+    return extraccion - VENTANA_MAXIMA <= deteccion <= extraccion
+
+
 @pytest.mark.parametrize("nombre", ARCHIVOS_NOTICIAS)
-def test_fechas_dentro_de_la_ventana_salvo_ruido_fuera_de_ventana(nombre: str) -> None:
+def test_deteccion_dentro_de_la_ventana_salvo_ruido_fuera_de_ventana(nombre: str) -> None:
     for fila in filas_validas(nombre):
-        if fila.get("motivo_ruido") == "fuera_de_ventana":
-            continue
-        for campo in ("fecha_publicacion", "fecha_deteccion"):
-            fecha = datetime.strptime(fila[campo], FORMATO_FECHA)
-            assert VENTANA_INICIO <= fecha < VENTANA_FIN, (fila["id_noticia"], campo)
+        fuera = fila.get("motivo_ruido") == "fuera_de_ventana"
+        assert en_ventana(fila) != fuera, fila["id_noticia"]
 
 
 def test_t01_cada_error_esta_presente_y_es_real() -> None:
