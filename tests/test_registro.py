@@ -2,7 +2,11 @@
 
 import io
 import logging
+import os
+import subprocess
+import sys
 from collections.abc import Iterator
+from pathlib import Path
 
 import pytest
 
@@ -88,3 +92,25 @@ def test_configurar_logging_instala_filtro(monkeypatch: pytest.MonkeyPatch) -> N
         assert MARCA_REDACCION in salida.getvalue()
     finally:
         raiz.handlers = antes
+
+
+def test_redacta_clave_en_excepcion_no_capturada() -> None:
+    """Un traceback no capturado (stderr) tampoco expone la clave."""
+    codigo = (
+        "from src.registro import configurar_logging\n"
+        "configurar_logging()\n"
+        f"raise RuntimeError('fallo con {SECRETO}')\n"
+    )
+    entorno = {**os.environ, "DEEPSEEK_API_KEY": SECRETO}
+    resultado = subprocess.run(
+        [sys.executable, "-c", codigo],
+        capture_output=True,
+        text=True,
+        env=entorno,
+        cwd=Path(__file__).resolve().parents[1],
+        check=False,
+    )
+    assert resultado.returncode != 0
+    assert "RuntimeError" in resultado.stderr
+    assert SECRETO not in resultado.stderr
+    assert MARCA_REDACCION in resultado.stderr
