@@ -1,5 +1,5 @@
 {
-  "advertencias": 3,
+  "advertencias": 4,
   "aprobado": true,
   "comprobaciones": [
     {
@@ -43,6 +43,11 @@
       "estado": "ok"
     },
     {
+      "comprobacion": "temas:sin_registros",
+      "detalle": "temas de consulta sin ningún registro en noticias.csv: ['eventos_naturales']",
+      "estado": "advertencia"
+    },
+    {
       "comprobacion": "contrato:fuentes.json",
       "detalle": "un registro por medio con todos los campos",
       "estado": "ok"
@@ -68,6 +73,11 @@
       "estado": "advertencia"
     },
     {
+      "comprobacion": "nulos:no_rellenar_con_cero",
+      "detalle": "540 valores coinciden con los crudos (ningún 0 ni nulo inventado)",
+      "estado": "ok"
+    },
+    {
       "comprobacion": "contrato:eventos.geojson",
       "detalle": "82 eventos con todos los campos",
       "estado": "ok"
@@ -89,7 +99,7 @@
     },
     {
       "comprobacion": "manifest:historial",
-      "detalle": "1 versión(es) con cambios, revisiones y excluidos",
+      "detalle": "2 versión(es) con cambios, revisiones y excluidos",
       "estado": "ok"
     },
     {
@@ -99,8 +109,13 @@
     },
     {
       "comprobacion": "gdelt:rangos_sin_resolver",
-      "detalle": "4 consulta(s) de GDELT sin respuesta: la cobertura de GDELT es incompleta",
+      "detalle": "8 rango(s) de GDELT sin resolver, por tema: {'economia': 2, 'eventos_naturales': 2, 'logistica': 2, 'turismo': 2}; días cubiertos/esperados: {'economia': '4/30', 'eventos_naturales': '0/30', 'logistica': '4/30', 'turismo': '4/30'}. La cobertura de GDELT es incompleta",
       "estado": "advertencia"
+    },
+    {
+      "comprobacion": "cobertura:contra_extraccion",
+      "detalle": "todas las fechas están entre 90 días antes y la extracción",
+      "estado": "ok"
     }
   ],
   "errores": 0,
@@ -110,13 +125,36 @@
       "fecha_final": "2026-10-06T15:45:50Z",
       "fecha_inicial": "2026-09-29T01:23:06Z"
     },
+    "cobertura_por_tema": {
+      "economia": {
+        "desde": "2026-10-01T16:30:00Z",
+        "dias": 4.7,
+        "hasta": "2026-10-06T08:30:00Z"
+      },
+      "logistica": {
+        "desde": "2026-10-01T16:00:00Z",
+        "dias": 4.7,
+        "hasta": "2026-10-06T08:30:00Z"
+      },
+      "turismo": {
+        "desde": "2026-10-01T16:30:00Z",
+        "dias": 4.7,
+        "hasta": "2026-10-06T08:30:00Z"
+      }
+    },
     "eventos": 82,
     "fuentes": 110,
     "indicadores": 540,
     "indicadores_nulos": 0,
-    "manifest_version": "1.0",
+    "manifest_version": "1.1",
     "noticias": 186,
     "noticias_gdelt": 133,
+    "noticias_por_tema_de_consulta": {
+      "economia": 55,
+      "eventos_naturales": 0,
+      "logistica": 95,
+      "turismo": 30
+    },
     "noticias_tvn": 53
   }
 }

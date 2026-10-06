@@ -14,32 +14,91 @@
     "fecha_inicial": "2026-09-29T01:23:06Z",
     "fecha_publicacion_final": "2026-10-06T15:45:50Z",
     "fecha_publicacion_inicial": "2026-09-29T01:23:06Z",
+    "gdelt_dias_por_tema": {
+      "economia": {
+        "dias_cubiertos": 4,
+        "dias_esperados": 30
+      },
+      "eventos_naturales": {
+        "dias_cubiertos": 0,
+        "dias_esperados": 30
+      },
+      "logistica": {
+        "dias_cubiertos": 4,
+        "dias_esperados": 30
+      },
+      "turismo": {
+        "dias_cubiertos": 4,
+        "dias_esperados": 30
+      }
+    },
     "gdelt_rangos_sin_resolver": [
       {
-        "fin": "20261006000000",
-        "inicio": "20261004000000",
-        "motivo": "respuesta {} sin confirmar (posible bloqueo)",
+        "detalle": "ningún crudo ni intento registrado para este día",
+        "dias": 25,
+        "fin": "20261001000000",
+        "inicio": "20260906000000",
+        "motivo": "no_solicitado",
         "tema": "economia"
       },
       {
-        "fin": "20261006000000",
-        "inicio": "20261004000000",
-        "motivo": "no obtenido: GDELT bloqueaba las solicitudes (HTTP 429 sostenido) al cerrar el snapshot",
+        "detalle": "un crudo cubre solo una parte de este día",
+        "dias": 1,
+        "fin": "20261002000000",
+        "inicio": "20261001000000",
+        "motivo": "cobertura_parcial",
+        "tema": "economia"
+      },
+      {
+        "detalle": "ningún crudo ni intento registrado para este día",
+        "dias": 28,
+        "fin": "20261004000000",
+        "inicio": "20260906000000",
+        "motivo": "no_solicitado",
         "tema": "eventos_naturales"
       },
       {
+        "detalle": "no obtenido: GDELT bloqueaba las solicitudes (HTTP 429 sostenido) al cerrar el snapshot",
+        "dias": 2,
         "fin": "20261006000000",
         "inicio": "20261004000000",
-        "motivo": "dos respuestas {} seguidas; sospechoso porque un rango de 5 dias devolvio 93 articulos (posible bloqueo)",
+        "motivo": "bloqueado",
+        "tema": "eventos_naturales"
+      },
+      {
+        "detalle": "ningún crudo ni intento registrado para este día",
+        "dias": 25,
+        "fin": "20261001000000",
+        "inicio": "20260906000000",
+        "motivo": "no_solicitado",
         "tema": "logistica"
       },
       {
-        "fin": "20261006000000",
-        "inicio": "20261004000000",
-        "motivo": "HTTP 429 (rate limit) tras 5 intentos con backoff",
+        "detalle": "un crudo cubre solo una parte de este día",
+        "dias": 1,
+        "fin": "20261002000000",
+        "inicio": "20261001000000",
+        "motivo": "cobertura_parcial",
+        "tema": "logistica"
+      },
+      {
+        "detalle": "ningún crudo ni intento registrado para este día",
+        "dias": 25,
+        "fin": "20261001000000",
+        "inicio": "20260906000000",
+        "motivo": "no_solicitado",
+        "tema": "turismo"
+      },
+      {
+        "detalle": "un crudo cubre solo una parte de este día",
+        "dias": 1,
+        "fin": "20261002000000",
+        "inicio": "20261001000000",
+        "motivo": "cobertura_parcial",
         "tema": "turismo"
       }
     ],
+    "nota_ventana": "ventana_dias_aplicada es el filtro de fechas de las noticias, no la cobertura lograda: GDELT cubre solo los días de gdelt_dias_por_tema.dias_cubiertos y el resto de la ventana, salvo lo que aporta el RSS de TVN, está en gdelt_rangos_sin_resolver.",
     "ventana_ampliada_a_90": false,
     "ventana_dias_aplicada": 30,
     "ventana_fin": "2026-10-06T17:07:06Z",
@@ -123,10 +182,6 @@
       "bytes": 17941,
       "sha256": "e06e40801774c234af8de85ee9f42b0c25c547a8e2d5f454751ba60753939c0f"
     },
-    "raw/gdelt/fallos_gdelt_20261006T171832Z.json": {
-      "bytes": 740,
-      "sha256": "d463f1d7c97b5b247ae58f9dda185bc33a27a40c57016a55690e018c2c73ede2"
-    },
     "raw/gdelt/gdelt_economia_20261001161819_20261006161819_20261006T162308Z.json": {
       "bytes": 26296,
       "sha256": "4edd2e2fc7f3b49c34e2ea56312025f3448c518fb563b9a77ebfcd97ecf144d9"
@@ -172,8 +227,8 @@
       "sha256": "957aeb654c22d0aefdeb1023ad9f0e37f435cc81d52faacf1810a17b9dbd37b3"
     }
   },
-  "fecha_corte_UTC": "2026-10-06T17:18:32Z",
-  "hash_snapshot": "ae297b7491ba381562ba72c7fe86c926f8d8ca11c62732e0597d984142915aec",
+  "fecha_corte_UTC": "2026-10-06T17:07:06Z",
+  "hash_snapshot": "9e5f5d2ad57854efe9b677b4107bedc59220c11a2eaf04d411379c3c82817fb2",
   "historial": [
     {
       "cambios_de_fuente": [
@@ -223,6 +278,94 @@
       },
       "revisiones_de_datos": [],
       "version": "1.0"
+    },
+    {
+      "cambios_de_fuente": [
+        "Cambió el contenido sin cambiar los conteos"
+      ],
+      "cantidad_por_archivo": {
+        "conversion.json": 97,
+        "eventos.geojson": 82,
+        "fuentes.json": 110,
+        "indicadores.csv": 540,
+        "noticias.csv": 186
+      },
+      "fallos_de_extraccion": [
+        {
+          "detalle": "ningún crudo ni intento registrado para este día",
+          "dias": 25,
+          "fin": "20261001000000",
+          "inicio": "20260906000000",
+          "motivo": "no_solicitado",
+          "tema": "economia"
+        },
+        {
+          "detalle": "un crudo cubre solo una parte de este día",
+          "dias": 1,
+          "fin": "20261002000000",
+          "inicio": "20261001000000",
+          "motivo": "cobertura_parcial",
+          "tema": "economia"
+        },
+        {
+          "detalle": "ningún crudo ni intento registrado para este día",
+          "dias": 28,
+          "fin": "20261004000000",
+          "inicio": "20260906000000",
+          "motivo": "no_solicitado",
+          "tema": "eventos_naturales"
+        },
+        {
+          "detalle": "no obtenido: GDELT bloqueaba las solicitudes (HTTP 429 sostenido) al cerrar el snapshot",
+          "dias": 2,
+          "fin": "20261006000000",
+          "inicio": "20261004000000",
+          "motivo": "bloqueado",
+          "tema": "eventos_naturales"
+        },
+        {
+          "detalle": "ningún crudo ni intento registrado para este día",
+          "dias": 25,
+          "fin": "20261001000000",
+          "inicio": "20260906000000",
+          "motivo": "no_solicitado",
+          "tema": "logistica"
+        },
+        {
+          "detalle": "un crudo cubre solo una parte de este día",
+          "dias": 1,
+          "fin": "20261002000000",
+          "inicio": "20261001000000",
+          "motivo": "cobertura_parcial",
+          "tema": "logistica"
+        },
+        {
+          "detalle": "ningún crudo ni intento registrado para este día",
+          "dias": 25,
+          "fin": "20261001000000",
+          "inicio": "20260906000000",
+          "motivo": "no_solicitado",
+          "tema": "turismo"
+        },
+        {
+          "detalle": "un crudo cubre solo una parte de este día",
+          "dias": 1,
+          "fin": "20261002000000",
+          "inicio": "20261001000000",
+          "motivo": "cobertura_parcial",
+          "tema": "turismo"
+        }
+      ],
+      "fecha": "2026-10-06T17:07:06Z",
+      "hash_snapshot": "9e5f5d2ad57854efe9b677b4107bedc59220c11a2eaf04d411379c3c82817fb2",
+      "registros_excluidos": {
+        "por_motivo": {
+          "fuera_de_ventana": 97
+        },
+        "total": 97
+      },
+      "revisiones_de_datos": [],
+      "version": "1.1"
     }
   ],
   "licencias": {
@@ -233,16 +376,26 @@
   },
   "nota_cuadricula_banco_mundial": "El PDF (secciones 6 y 7) declara 1350 combinaciones país × indicador × año, pero 6 países × 6 indicadores × 15 años = 540. El snapshot contiene las 540 combinaciones reales, con nulos explícitos; no se inventan filas para llegar a la cifra del PDF.",
   "nota_intervalo_seccion_7": "Inconsistencia del PDF (D-74): la sección 6 pide noticias de los 30 días previos a la extracción (ampliable a 90) y la sección 7 pide excluir lo que quede fuera del intervalo [2024-01-01, 2025-10-01). Ese intervalo no se aplica porque es imposible de extraer hoy: GDELT DOC solo cubre ~3 meses hacia atrás y el RSS de TVN no conserva todo el histórico. Se aplica la ventana de la sección 6, medida sobre fecha_deteccion (fecha_publicacion si el registro no pasó por GDELT).",
+  "registro_extraccion": {
+    "registro_extraccion/registro_manual_20261006T171832Z.json": {
+      "bytes": 990,
+      "origen": "registro manual a partir del log de la corrida",
+      "sha256": "79a618fa375680b461f6e729e67cb3361ef9e4e69711d6776e9d2a8c7b1a4e72"
+    }
+  },
   "sha256": {
-    "processed/conversion.json": "dd6314ccd795c2bae3716c60feea6e4188b9d12419c9a0afcfbedce83658cc7d",
+    "processed/conversion.json": "b752d3e3627ceca7c4279ddac6c10b75f90aab8431548d524bb6f110c97c6ac2",
     "processed/eventos.geojson": "c43507e5934652ff45fcb0bdae781d498a08167457c9e9d82f67446d6966d411",
-    "processed/fuentes.json": "f1fd34fbc504273fed0002270588eeeff74bda3573811cd5bdb32ed80ea4e741",
+    "processed/fuentes.json": "799b74b1f7766e193659f6c08f41ad9052ed838049812797c80ef75751db9b52",
     "processed/indicadores.csv": "6238f1c008ac313a1cc1f9ebc5e5459c21a47c36460900aa47cce726a8e34b12",
-    "processed/noticias.csv": "6a7318b414b1ab210d3220382113ca0fc59e4ad4371ac779e036dc153fcc44aa"
+    "processed/noticias.csv": "360664c785fa7e3265d9e13d02b7972b6f57b1e805eee860e5a28208b3685fab"
   },
   "transformaciones": [
     "RSS de TVN: feedparser; la descripción se usa solo en crudo y no se copia a processed/ (D-31, D-72).",
     "GDELT: seendate -> fecha_deteccion (nunca fecha_publicacion); socialimage descartado (D-72).",
+    "idioma: código ISO 639-1; GDELT entrega el nombre del idioma y se traduce con la tabla gdelt.idiomas de config/fuentes.yaml.",
+    "fuentes.json: pais = sourcecountry de GDELT traducido al español con paises_es (nulo si no se conoce); 'Pendiente de verificar' solo aplica a condiciones.",
+    "Cobertura de GDELT: un día cuenta como cubierto solo si un crudo con articles lo contiene completo; un {} no prueba ausencia de resultados y queda como vacio_sospechoso (ver cobertura_efectiva).",
     "GDELT sin fecha de publicación: fecha_publicacion queda vacía salvo que la misma URL esté en el RSS.",
     "Deduplicación por URL canónica (esquema https, sin www, sin fragmento ni parámetros de rastreo).",
     "id_noticia = NOT- + primeros 10 caracteres del SHA-1 de la URL canónica (D-63).",
@@ -254,7 +407,7 @@
     "USGS: id = SIS-<id USGS>; time y updated de milisegundos epoch a ISO 8601 UTC; longitude, latitude y depth de la geometría.",
     "Registros excluidos (sin título, sin URL, sin fecha válida, fuera de ventana) se listan en conversion.json."
   ],
-  "version": "1.0",
+  "version": "1.1",
   "volumen_noticias": {
     "meta": 200,
     "minimo": 100,

@@ -25,28 +25,28 @@
     "dominio": "adn.com",
     "nombre_legible": "adn.com",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "afghanistannews.net",
     "nombre_legible": "afghanistannews.net",
     "origen": "GDELT",
-    "pais": "Afghanistan"
+    "pais": "Afganistán"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "africaleader.com",
     "nombre_legible": "africaleader.com",
     "origen": "GDELT",
-    "pais": "South Africa"
+    "pais": "Sudáfrica"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "aif.ru",
     "nombre_legible": "aif.ru",
     "origen": "GDELT",
-    "pais": "Russia"
+    "pais": "Rusia"
   },
   {
     "condiciones": "Pendiente de verificar",
@@ -60,7 +60,7 @@
     "dominio": "asamblea.gob.pa",
     "nombre_legible": "asamblea.gob.pa",
     "origen": "GDELT",
-    "pais": "Panama"
+    "pais": "Panamá"
   },
   {
     "condiciones": "Pendiente de verificar",
@@ -74,21 +74,21 @@
     "dominio": "az-online.de",
     "nombre_legible": "az-online.de",
     "origen": "GDELT",
-    "pais": "Germany"
+    "pais": "Alemania"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "bbc.com",
     "nombre_legible": "bbc.com",
     "origen": "GDELT",
-    "pais": "United Kingdom"
+    "pais": "Reino Unido"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "bignewsnetwork.com",
     "nombre_legible": "bignewsnetwork.com",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
@@ -109,7 +109,7 @@
     "dominio": "britainnews.net",
     "nombre_legible": "britainnews.net",
     "origen": "GDELT",
-    "pais": "United Kingdom"
+    "pais": "Reino Unido"
   },
   {
     "condiciones": "Pendiente de verificar",
@@ -123,7 +123,7 @@
     "dominio": "capital.gr",
     "nombre_legible": "capital.gr",
     "origen": "GDELT",
-    "pais": "Greece"
+    "pais": "Grecia"
   },
   {
     "condiciones": "Pendiente de verificar",
@@ -144,28 +144,28 @@
     "dominio": "critica.com.pa",
     "nombre_legible": "critica.com.pa",
     "origen": "GDELT",
-    "pais": "Panama"
+    "pais": "Panamá"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "cruisehive.com",
     "nombre_legible": "cruisehive.com",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "cruiseindustrynews.com",
     "nombre_legible": "cruiseindustrynews.com",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "dailypolitical.com",
     "nombre_legible": "dailypolitical.com",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
@@ -186,28 +186,28 @@
     "dominio": "diariolibre.com",
     "nombre_legible": "diariolibre.com",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "dominicanoshoy.com",
     "nombre_legible": "dominicanoshoy.com",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "dominicanrepublicpost.com",
     "nombre_legible": "dominicanrepublicpost.com",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "dominicantoday.com",
     "nombre_legible": "dominicantoday.com",
     "origen": "GDELT",
-    "pais": "Dominican Republic"
+    "pais": "República Dominicana"
   },
   {
     "condiciones": "Pendiente de verificar",
@@ -228,14 +228,14 @@
     "dominio": "eldia.com.do",
     "nombre_legible": "eldia.com.do",
     "origen": "GDELT",
-    "pais": "Dominican Republic"
+    "pais": "República Dominicana"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "eleconomista.com.mx",
     "nombre_legible": "eleconomista.com.mx",
     "origen": "GDELT",
-    "pais": "Mexico"
+    "pais": "México"
   },
   {
     "condiciones": "Pendiente de verificar",
@@ -256,7 +256,7 @@
     "dominio": "elmundo.es",
     "nombre_legible": "elmundo.es",
     "origen": "GDELT",
-    "pais": "Spain"
+    "pais": "España"
   },
   {
     "condiciones": "Pendiente de verificar",
@@ -270,7 +270,7 @@
     "dominio": "elsalvador.com",
     "nombre_legible": "elsalvador.com",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
@@ -284,21 +284,21 @@
     "dominio": "english.news.cn",
     "nombre_legible": "english.news.cn",
     "origen": "GDELT",
-    "pais": "Pendiente de verificar"
+    "pais": null
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "europesun.com",
     "nombre_legible": "europesun.com",
     "origen": "GDELT",
-    "pais": "Russia"
+    "pais": "Rusia"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "evrensel.net",
     "nombre_legible": "evrensel.net",
     "origen": "GDELT",
-    "pais": "Turkey"
+    "pais": "Turquía"
   },
   {
     "condiciones": "Pendiente de verificar",
@@ -312,21 +312,21 @@
     "dominio": "fnnews.com",
     "nombre_legible": "fnnews.com",
     "origen": "GDELT",
-    "pais": "South Korea"
+    "pais": "Corea del Sur"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "fnp.de",
     "nombre_legible": "fnp.de",
     "origen": "GDELT",
-    "pais": "Germany"
+    "pais": "Alemania"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "foreignpolicy.com",
     "nombre_legible": "foreignpolicy.com",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
@@ -340,14 +340,14 @@
     "dominio": "hna.de",
     "nombre_legible": "hna.de",
     "origen": "GDELT",
-    "pais": "Germany"
+    "pais": "Alemania"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "hoytamaulipas.net",
     "nombre_legible": "hoytamaulipas.net",
     "origen": "GDELT",
-    "pais": "Mexico"
+    "pais": "México"
   },
   {
     "condiciones": "Pendiente de verificar",
@@ -361,7 +361,7 @@
     "dominio": "irishsun.com",
     "nombre_legible": "irishsun.com",
     "origen": "GDELT",
-    "pais": "Ireland"
+    "pais": "Irlanda"
   },
   {
     "condiciones": "Pendiente de verificar",
@@ -382,28 +382,28 @@
     "dominio": "kpbs.org",
     "nombre_legible": "kpbs.org",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "kreiszeitung.de",
     "nombre_legible": "kreiszeitung.de",
     "origen": "GDELT",
-    "pais": "Germany"
+    "pais": "Alemania"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "laestrella.com.pa",
     "nombre_legible": "laestrella.com.pa",
     "origen": "GDELT",
-    "pais": "Panama"
+    "pais": "Panamá"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "larazon.es",
     "nombre_legible": "larazon.es",
     "origen": "GDELT",
-    "pais": "Spain"
+    "pais": "España"
   },
   {
     "condiciones": "Pendiente de verificar",
@@ -417,14 +417,14 @@
     "dominio": "lineadirectaportal.com",
     "nombre_legible": "lineadirectaportal.com",
     "origen": "GDELT",
-    "pais": "Mexico"
+    "pais": "México"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "listindiario.com",
     "nombre_legible": "listindiario.com",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
@@ -438,28 +438,28 @@
     "dominio": "mainemirror.com",
     "nombre_legible": "mainemirror.com",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "maritimeprofessional.com",
     "nombre_legible": "maritimeprofessional.com",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "massachusettssun.com",
     "nombre_legible": "massachusettssun.com",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "merkur.de",
     "nombre_legible": "merkur.de",
     "origen": "GDELT",
-    "pais": "Germany"
+    "pais": "Alemania"
   },
   {
     "condiciones": "Pendiente de verificar",
@@ -473,91 +473,91 @@
     "dominio": "munhwa.com",
     "nombre_legible": "munhwa.com",
     "origen": "GDELT",
-    "pais": "Pendiente de verificar"
+    "pais": null
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "nacion.com",
     "nombre_legible": "nacion.com",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "net.hr",
     "nombre_legible": "net.hr",
     "origen": "GDELT",
-    "pais": "Croatia"
+    "pais": "Croacia"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "news.mail.ru",
     "nombre_legible": "news.mail.ru",
     "origen": "GDELT",
-    "pais": "Russia"
+    "pais": "Rusia"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "newsroomamerica.com",
     "nombre_legible": "newsroomamerica.com",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "newzealandstar.com",
     "nombre_legible": "newzealandstar.com",
     "origen": "GDELT",
-    "pais": "New Zealand"
+    "pais": "Nueva Zelanda"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "noticiabrasil.net.br",
     "nombre_legible": "noticiabrasil.net.br",
     "origen": "GDELT",
-    "pais": "Pendiente de verificar"
+    "pais": null
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "novinky.cz",
     "nombre_legible": "novinky.cz",
     "origen": "GDELT",
-    "pais": "Czech Republic"
+    "pais": "Chequia"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "oklahomacitysun.com",
     "nombre_legible": "oklahomacitysun.com",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "oklahomastar.com",
     "nombre_legible": "oklahomastar.com",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "op-online.de",
     "nombre_legible": "op-online.de",
     "origen": "GDELT",
-    "pais": "Germany"
+    "pais": "Alemania"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "ovb-online.de",
     "nombre_legible": "ovb-online.de",
     "origen": "GDELT",
-    "pais": "Germany"
+    "pais": "Alemania"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "panamaamerica.com.pa",
     "nombre_legible": "panamaamerica.com.pa",
     "origen": "GDELT",
-    "pais": "Panama"
+    "pais": "Panamá"
   },
   {
     "condiciones": "Pendiente de verificar",
@@ -585,14 +585,14 @@
     "dominio": "prensa.com",
     "nombre_legible": "prensa.com",
     "origen": "GDELT",
-    "pais": "Panama"
+    "pais": "Panamá"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "presidencia.gob.do",
     "nombre_legible": "presidencia.gob.do",
     "origen": "GDELT",
-    "pais": "Dominican Republic"
+    "pais": "República Dominicana"
   },
   {
     "condiciones": "Pendiente de verificar",
@@ -606,84 +606,84 @@
     "dominio": "revistaeyn.com",
     "nombre_legible": "revistaeyn.com",
     "origen": "GDELT",
-    "pais": "Pendiente de verificar"
+    "pais": null
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "rfi.fr",
     "nombre_legible": "rfi.fr",
     "origen": "GDELT",
-    "pais": "France"
+    "pais": "Francia"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "russiaherald.com",
     "nombre_legible": "russiaherald.com",
     "origen": "GDELT",
-    "pais": "Russia"
+    "pais": "Rusia"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "seapowermagazine.org",
     "nombre_legible": "seapowermagazine.org",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "securitycouncilreport.org",
     "nombre_legible": "securitycouncilreport.org",
     "origen": "GDELT",
-    "pais": "Sudan"
+    "pais": "Sudán"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "staradvertiser.com",
     "nombre_legible": "staradvertiser.com",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "texasguardian.com",
     "nombre_legible": "texasguardian.com",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "thailandnews.net",
     "nombre_legible": "thailandnews.net",
     "origen": "GDELT",
-    "pais": "Thailand"
+    "pais": "Tailandia"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "thenews.coop",
     "nombre_legible": "thenews.coop",
     "origen": "GDELT",
-    "pais": "United Kingdom"
+    "pais": "Reino Unido"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "townhall.com",
     "nombre_legible": "townhall.com",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "travelmarketreport.com",
     "nombre_legible": "travelmarketreport.com",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "trinidadtimes.com",
     "nombre_legible": "trinidadtimes.com",
     "origen": "GDELT",
-    "pais": "Trinidad and Tobago"
+    "pais": "Trinidad y Tobago"
   },
   {
     "condiciones": "Feed RSS público; que sea público no implica licencia abierta sobre artículos, videos o imágenes. Solo metadatos; la descripción del RSS es de uso interno y no se guarda en el repositorio (D-31, D-72).",
@@ -697,7 +697,7 @@
     "dominio": "tz.de",
     "nombre_legible": "tz.de",
     "origen": "GDELT",
-    "pais": "Germany"
+    "pais": "Alemania"
   },
   {
     "condiciones": "Pendiente de verificar",
@@ -711,28 +711,28 @@
     "dominio": "wa.de",
     "nombre_legible": "wa.de",
     "origen": "GDELT",
-    "pais": "Germany"
+    "pais": "Alemania"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "wjhg.com",
     "nombre_legible": "wjhg.com",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "wlz-online.de",
     "nombre_legible": "wlz-online.de",
     "origen": "GDELT",
-    "pais": "Germany"
+    "pais": "Alemania"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "woonsocketcall.com",
     "nombre_legible": "woonsocketcall.com",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
@@ -746,27 +746,27 @@
     "dominio": "zerohedge.com",
     "nombre_legible": "zerohedge.com",
     "origen": "GDELT",
-    "pais": "United States"
+    "pais": "Estados Unidos"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "ziarulnational.md",
     "nombre_legible": "ziarulnational.md",
     "origen": "GDELT",
-    "pais": "Moldova"
+    "pais": "Moldavia"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "zimbabwestar.com",
     "nombre_legible": "zimbabwestar.com",
     "origen": "GDELT",
-    "pais": "Zimbabwe"
+    "pais": "Zimbabue"
   },
   {
     "condiciones": "Pendiente de verificar",
     "dominio": "zn.ua",
     "nombre_legible": "zn.ua",
     "origen": "GDELT",
-    "pais": "Ukraine"
+    "pais": "Ucrania"
   }
 ]

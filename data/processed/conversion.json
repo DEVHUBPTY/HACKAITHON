@@ -487,32 +487,91 @@
       "url": "https://www.tvn-2.com/nacionales/tvn-media-refuerza-compromiso-social_1_2217708.html"
     }
   ],
+  "gdelt_cobertura_por_tema": {
+    "economia": {
+      "dias_cubiertos": 4,
+      "dias_esperados": 30
+    },
+    "eventos_naturales": {
+      "dias_cubiertos": 0,
+      "dias_esperados": 30
+    },
+    "logistica": {
+      "dias_cubiertos": 4,
+      "dias_esperados": 30
+    },
+    "turismo": {
+      "dias_cubiertos": 4,
+      "dias_esperados": 30
+    }
+  },
   "gdelt_rangos_sin_resolver": [
     {
-      "fin": "20261006000000",
-      "inicio": "20261004000000",
-      "motivo": "respuesta {} sin confirmar (posible bloqueo)",
+      "detalle": "ningún crudo ni intento registrado para este día",
+      "dias": 25,
+      "fin": "20261001000000",
+      "inicio": "20260906000000",
+      "motivo": "no_solicitado",
       "tema": "economia"
     },
     {
-      "fin": "20261006000000",
-      "inicio": "20261004000000",
-      "motivo": "no obtenido: GDELT bloqueaba las solicitudes (HTTP 429 sostenido) al cerrar el snapshot",
+      "detalle": "un crudo cubre solo una parte de este día",
+      "dias": 1,
+      "fin": "20261002000000",
+      "inicio": "20261001000000",
+      "motivo": "cobertura_parcial",
+      "tema": "economia"
+    },
+    {
+      "detalle": "ningún crudo ni intento registrado para este día",
+      "dias": 28,
+      "fin": "20261004000000",
+      "inicio": "20260906000000",
+      "motivo": "no_solicitado",
       "tema": "eventos_naturales"
     },
     {
+      "detalle": "no obtenido: GDELT bloqueaba las solicitudes (HTTP 429 sostenido) al cerrar el snapshot",
+      "dias": 2,
       "fin": "20261006000000",
       "inicio": "20261004000000",
-      "motivo": "dos respuestas {} seguidas; sospechoso porque un rango de 5 dias devolvio 93 articulos (posible bloqueo)",
+      "motivo": "bloqueado",
+      "tema": "eventos_naturales"
+    },
+    {
+      "detalle": "ningún crudo ni intento registrado para este día",
+      "dias": 25,
+      "fin": "20261001000000",
+      "inicio": "20260906000000",
+      "motivo": "no_solicitado",
       "tema": "logistica"
     },
     {
-      "fin": "20261006000000",
-      "inicio": "20261004000000",
-      "motivo": "HTTP 429 (rate limit) tras 5 intentos con backoff",
+      "detalle": "un crudo cubre solo una parte de este día",
+      "dias": 1,
+      "fin": "20261002000000",
+      "inicio": "20261001000000",
+      "motivo": "cobertura_parcial",
+      "tema": "logistica"
+    },
+    {
+      "detalle": "ningún crudo ni intento registrado para este día",
+      "dias": 25,
+      "fin": "20261001000000",
+      "inicio": "20260906000000",
+      "motivo": "no_solicitado",
+      "tema": "turismo"
+    },
+    {
+      "detalle": "un crudo cubre solo una parte de este día",
+      "dias": 1,
+      "fin": "20261002000000",
+      "inicio": "20261001000000",
+      "motivo": "cobertura_parcial",
       "tema": "turismo"
     }
   ],
+  "idiomas_sin_mapeo": {},
   "registros_crudos_leidos": 520,
   "ventana": {
     "ampliada": false,
