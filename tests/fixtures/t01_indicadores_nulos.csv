@@ -1,0 +1,13 @@
+pais_iso3,indicador_id,anio,valor,unidad,fuente_url,fecha_extraccion,licencia
+PAN,FP.CPI.TOTL.ZG,2021,1.6,% anual,https://indicadores-sintetico.example/sintetico/FP.CPI.TOTL.ZG,2025-09-30T12:00:00Z,sintetico
+PAN,FP.CPI.TOTL.ZG,2022,2.9,% anual,https://indicadores-sintetico.example/sintetico/FP.CPI.TOTL.ZG,2025-09-30T12:00:00Z,sintetico
+PAN,FP.CPI.TOTL.ZG,2023,,% anual,https://indicadores-sintetico.example/sintetico/FP.CPI.TOTL.ZG,2025-09-30T12:00:00Z,sintetico
+PAN,FP.CPI.TOTL.ZG,2024,,% anual,https://indicadores-sintetico.example/sintetico/FP.CPI.TOTL.ZG,2025-09-30T12:00:00Z,sintetico
+PAN,NY.GDP.MKTP.KD.ZG,2022,10.8,% anual,https://indicadores-sintetico.example/sintetico/NY.GDP.MKTP.KD.ZG,2025-09-30T12:00:00Z,sintetico
+PAN,NY.GDP.MKTP.KD.ZG,2023,7.3,% anual,https://indicadores-sintetico.example/sintetico/NY.GDP.MKTP.KD.ZG,2025-09-30T12:00:00Z,sintetico
+PAN,NY.GDP.MKTP.KD.ZG,2024,,% anual,https://indicadores-sintetico.example/sintetico/NY.GDP.MKTP.KD.ZG,2025-09-30T12:00:00Z,sintetico
+CRI,SL.UEM.TOTL.ZS,2022,11.6,% de la fuerza laboral,https://indicadores-sintetico.example/sintetico/SL.UEM.TOTL.ZS,2025-09-30T12:00:00Z,sintetico
+CRI,SL.UEM.TOTL.ZS,2023,,% de la fuerza laboral,https://indicadores-sintetico.example/sintetico/SL.UEM.TOTL.ZS,2025-09-30T12:00:00Z,sintetico
+CRI,SL.UEM.TOTL.ZS,2024,,% de la fuerza laboral,https://indicadores-sintetico.example/sintetico/SL.UEM.TOTL.ZS,2025-09-30T12:00:00Z,sintetico
+COL,NY.GDP.MKTP.KD.ZG,2023,0.6,% anual,https://indicadores-sintetico.example/sintetico/NY.GDP.MKTP.KD.ZG,2025-09-30T12:00:00Z,sintetico
+COL,NY.GDP.MKTP.KD.ZG,2024,,% anual,https://indicadores-sintetico.example/sintetico/NY.GDP.MKTP.KD.ZG,2025-09-30T12:00:00Z,sintetico
