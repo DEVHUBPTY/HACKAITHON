@@ -20,6 +20,8 @@ import csv
 import hashlib
 import json
 import logging
+import re
+import unicodedata
 import sys
 from collections.abc import Iterable, Sequence
 from datetime import UTC, datetime
@@ -205,17 +207,28 @@ def derivar_firma(texto: Any, medio: str | None, config: ConfigNormalizacion) ->
     limpio = vacio_a_none(texto)
     if limpio is None:
         return None, tipos.sin_firma
-    plano = str(limpio).casefold()
-    palabras = {p.strip(".,;:()/-") for p in plano.replace("/", " ").split()}
+    plano = _plano(str(limpio))
     for agencia in config.firma.agencias:
-        nombre = agencia.casefold()
-        encontrada = nombre in plano if " " in nombre else nombre in palabras
-        if encontrada:
+        nombres = [agencia, *config.firma.nombres_completos.get(agencia, [])]
+        if any(_contiene(plano, n) for n in nombres):
             return agencia, tipos.agencia
-    redaccion = {r.casefold() for r in config.firma.redaccion}
-    if plano in redaccion or (medio is not None and plano == medio.casefold()):
+    if any(_contiene(plano, g) for g in config.firma.agencias_genericas):
+        return None, tipos.agencia
+    terminos = [*config.firma.redaccion, *([medio] if medio else [])]
+    if any(_contiene(plano, t) for t in terminos):
         return None, tipos.medio
     return None, tipos.persona
+
+
+def _plano(texto: str) -> str:
+    """Minúsculas y sin tildes, para comparar sin distinguir mayúsculas ni acentos."""
+    sin_marcas = "".join(c for c in unicodedata.normalize("NFKD", texto) if not unicodedata.combining(c))
+    return sin_marcas.casefold()
+
+
+def _contiene(plano: str, termino: str) -> bool:
+    """``termino`` aparece en ``plano`` (ya sin tildes) como palabra completa."""
+    return re.search(rf"(?<!\w){re.escape(_plano(termino))}(?!\w)", plano) is not None
 
 
 # ------------------------------------------------------------------ fusión de duplicados
@@ -337,6 +350,8 @@ def normalizar_noticias(
         fila["origen"] = _unir((f.get("origen") for f in grupo), config.noticias.separador_origen, config.noticias.orden_origen)
         extracciones = [f["fecha_extraccion"] for f in grupo if f.get("fecha_extraccion")]
         fila["fecha_extraccion"] = min(extracciones) if extracciones else None
+        detecciones = [f["fecha_deteccion"] for f in grupo if f.get("fecha_deteccion")]
+        fila["fecha_deteccion"] = min(detecciones, key=lambda t: datetime.strptime(t, config.fechas.formato_salida)) if detecciones else None
         firmada = next((f for f in grupo if f["tipo_firma"] != config.firma.tipos.sin_firma), grupo[0])
         fila["agencia"], fila["tipo_firma"] = firmada["agencia"], firmada["tipo_firma"]
         dominio = dominio_de(canonica)
@@ -382,7 +397,7 @@ def normalizar_indicadores(filas: list[Fila], config: ConfigNormalizacion, regis
                 "licencia": f.get("licencia"),
             }
         )
-    return _deduplicar(candidatas, "id_indicador", "indicadores", MOTIVO_DUPLICADO_CLAVE, registro)
+    return _deduplicar(candidatas, "id_indicador", "indicadores", MOTIVO_DUPLICADO_CLAVE, registro, fusionar=False)
 
 
 def normalizar_sismos(propiedades: list[dict[str, Any]], config: ConfigNormalizacion, registro: Registro) -> list[Fila]:
@@ -411,10 +426,17 @@ def normalizar_sismos(propiedades: list[dict[str, Any]], config: ConfigNormaliza
     return _deduplicar(candidatas, "id", "sismos", MOTIVO_DUPLICADO_ID, registro)
 
 
-def _deduplicar(filas: list[Fila], clave: str, tabla: str, motivo: str, registro: Registro) -> list[Fila]:
-    """Una fila por clave, fusionando de forma determinista; cada duplicado queda registrado."""
+def _deduplicar(
+    filas: list[Fila], clave: str, tabla: str, motivo: str, registro: Registro, fusionar: bool = True
+) -> list[Fila]:
+    """Una fila por clave; cada duplicado queda registrado.
+
+    Con ``fusionar`` se toma el primer valor no nulo de cada campo (orden determinista). Sin él se conserva
+    **la primera aparición completa** (la de menos nulos; desempate por contenido) sin rellenar campos con
+    los de otros duplicados, como E1-02.
+    """
     columnas = db.columnas(tabla)
-    filas = sorted(filas, key=lambda f: _clave_orden(f, columnas))
+    filas = sorted(filas, key=lambda f: (sum(f.get(c) is None for c in columnas), *_clave_orden(f, columnas)))
     grupos: dict[str, list[Fila]] = {}
     for f in filas:
         grupos.setdefault(f[clave], []).append(f)
@@ -423,7 +445,7 @@ def _deduplicar(filas: list[Fila], clave: str, tabla: str, motivo: str, registro
         grupo = grupos[k]
         for _ in grupo[1:]:
             registro.duplicado(tabla, k, k, k, motivo)
-        salida.append(_fusionar(grupo, columnas))
+        salida.append(_fusionar(grupo, columnas) if fusionar else dict(grupo[0]))
     return salida
 
 

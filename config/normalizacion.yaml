@@ -22,6 +22,18 @@ noticias:
 
 firma:
   agencias: [EFE, AFP, AP, Reuters, Europa Press, DPA, ANSA, Xinhua, Prensa Latina, Bloomberg]
+  # Nombre completo de cada agencia de la lista (se busca como palabra completa, sin distinguir tildes ni mayúsculas).
+  nombres_completos:
+    AP: [Associated Press]
+    AFP: [Agence France-Presse, Agence France Presse]
+    EFE: [Agencia EFE]
+    DPA: [Deutsche Presse-Agentur]
+    ANSA: [Agenzia ANSA]
+    Xinhua: [Agencia Xinhua]
+    Reuters: [Thomson Reuters]
+    Bloomberg: [Bloomberg News]
+  agencias_genericas: [agencias, agencia]   # "Agencias" sin nombre: tipo agencia, sin agencia concreta
+  # Términos de redacción: se buscan como palabra completa dentro de la firma (Redacción TVN, TVN Noticias).
   redaccion: [redacción, redaccion, tvn, tvn media, web]
   tipos:
     agencia: agencia

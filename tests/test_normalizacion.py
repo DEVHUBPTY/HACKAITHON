@@ -81,36 +81,36 @@ def _escribir_csv(ruta: Path, filas: list[dict]) -> None:
         w.writerows(filas)
 
 
-def _copia_barajada(destino: Path, semilla: int) -> None:
-    """Copia ``validos/`` (o el snapshot) con filas, features y fuentes en otro orden."""
+def _copia_barajada(origen: Path, destino: Path, semilla: int) -> None:
+    """Copia ``origen``  con filas, features y fuentes en otro orden."""
     destino.mkdir()
     azar = random.Random(semilla)
     for nombre in (NOMBRES.noticias, NOMBRES.indicadores):
-        filas = normalizacion.leer_csv(RAIZ / "data" / "processed" / "validos" / nombre)
+        filas = normalizacion.leer_csv(origen / nombre)
         filas = [{k: "" if v is None else v for k, v in f.items()} for f in filas]
         azar.shuffle(filas)
         _escribir_csv(destino / nombre, filas)
-    geo = json.loads((RAIZ / "data" / "processed" / "validos" / NOMBRES.eventos).read_text(encoding="utf-8"))
+    geo = json.loads((origen / NOMBRES.eventos).read_text(encoding="utf-8"))
     azar.shuffle(geo["features"])
     (destino / NOMBRES.eventos).write_text(json.dumps(geo, ensure_ascii=False), encoding="utf-8")
-    fuentes = json.loads((RAIZ / "data" / "processed" / "validos" / NOMBRES.fuentes).read_text(encoding="utf-8"))
+    fuentes = json.loads((origen / NOMBRES.fuentes).read_text(encoding="utf-8"))
     azar.shuffle(fuentes)
     (destino / NOMBRES.fuentes).write_text(json.dumps(fuentes, ensure_ascii=False), encoding="utf-8")
 
 
 @pytest.fixture(scope="module")
-def validos() -> Path:
-    carpeta = PROCESADOS / "validos"
-    if not carpeta.is_dir():
-        carga.main([])  # D-82: genera validos/ desde el snapshot
-    return carpeta
+def validos(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """``validos/`` generado en una carpeta temporal (D-82): los tests no escriben en el repo."""
+    base = tmp_path_factory.mktemp("carga")
+    carga.main(["--validos", str(base / "validos"), "--salida", str(base / "outputs")])
+    return base / "validos"
 
 
 def test_cargar_el_mismo_snapshot_en_otro_orden_produce_los_mismos_ids(validos: Path, tmp_path: Path) -> None:
     normal = normalizacion.normalizar_carpeta(validos, CONFIG)
     for semilla in (1, 2):
         carpeta = tmp_path / f"orden{semilla}"
-        _copia_barajada(carpeta, semilla)
+        _copia_barajada(validos, carpeta, semilla)
         barajado = normalizacion.normalizar_carpeta(carpeta, CONFIG)
         for tabla, clave in (("noticias", "id_noticia"), ("indicadores", "id_indicador"), ("sismos", "id")):
             assert [f[clave] for f in barajado[tabla]] == [f[clave] for f in normal[tabla]]
@@ -317,3 +317,72 @@ def test_los_campos_minimos_del_diccionario_son_los_del_contrato() -> None:
     for tabla, campos in (("noticias", contrato.noticias), ("indicadores", contrato.indicadores), ("sismos", contrato.eventos)):
         minimos = {c for c, (_, _, clase) in diccionario[tabla].items() if clase == "mínimo"}
         assert minimos == set(campos), tabla
+
+
+# ------------------------------------------------------------------ revisión del PR #7
+
+
+@pytest.mark.parametrize(
+    ("texto", "agencia", "tipo"),
+    [
+        ("Redacción TVN", None, "medio"),
+        ("REDACCIÓN La Prensa", None, "medio"),
+        ("redaccion web", None, "medio"),
+        ("TVN Noticias", None, "medio"),
+        ("La Prensa Panamá", None, "medio"),
+        ("Agencias", None, "agencia"),
+        ("Associated Press", "AP", "agencia"),
+        ("agence france-presse", "AFP", "agencia"),
+        ("Agence France Presse", "AFP", "agencia"),
+        ("Agencia EFE", "EFE", "agencia"),
+        ("Thomson Reuters", "Reuters", "agencia"),
+        ("Xinhua", "Xinhua", "agencia"),
+        ("Redacción EFE", "EFE", "agencia"),
+        ("Webster Pérez", None, "persona"),  # "web" no cuenta dentro de otra palabra
+        ("María Redactora", None, "persona"),
+    ],
+)
+def test_derivar_firma_busca_dentro_del_texto(texto: str, agencia: str | None, tipo: str) -> None:
+    assert normalizacion.derivar_firma(texto, "La Prensa", CONFIG) == (agencia, tipo)
+
+
+def test_la_firma_con_nombre_de_persona_y_agencia_no_guarda_el_nombre() -> None:
+    (fila,), _ = _normalizar([_noticia(firma="Ana Nombresecreto, Associated Press")])
+    assert (fila["agencia"], fila["tipo_firma"]) == ("AP", "agencia")
+    assert "Nombresecreto" not in json.dumps(fila, ensure_ascii=False)
+
+
+def test_duplicados_toman_la_deteccion_mas_temprana_sin_importar_el_orden() -> None:
+    tarde = _noticia(url="https://ejemplo.com/x", fecha_deteccion="2026-10-02T09:00:00Z")
+    temprano = _noticia(url="https://www.ejemplo.com/x/", fecha_deteccion="2026-10-01T23:00:00Z")
+    sin = _noticia(url="http://ejemplo.com/x?utm_source=a", fecha_deteccion="")
+    for orden in ([tarde, temprano, sin], [sin, temprano, tarde], [temprano, sin, tarde]):
+        (fila,), _ = _normalizar(orden)
+        assert fila["fecha_deteccion"] == "2026-10-01T23:00:00Z"
+
+
+def test_deteccion_mas_temprana_compara_instantes_no_texto() -> None:
+    a = _noticia(url="https://ejemplo.com/x", fecha_deteccion="2026-10-01T23:00:00-05:00")  # 2026-10-02T04:00Z
+    b = _noticia(url="https://ejemplo.com/x/", fecha_deteccion="2026-10-02T01:00:00Z")
+    (fila,), _ = _normalizar([a, b])
+    assert fila["fecha_deteccion"] == "2026-10-02T01:00:00Z"
+
+
+def test_indicador_duplicado_conserva_la_primera_aparicion_sin_rellenar_con_otras() -> None:
+    base = {"pais_iso3": "PAN", "indicador_id": "X.Y", "anio": "2020", "fuente_url": "https://x.example/",
+            "fecha_extraccion": "2026-10-06T10:00:00Z", "licencia": "CC"}  # fmt: skip
+    completa = base | {"valor": "1.5", "unidad": "%"}
+    incompleta = base | {"valor": "", "unidad": "otra"}
+    for orden in ([completa, incompleta], [incompleta, completa]):
+        registro = normalizacion.Registro()
+        (fila,) = normalizacion.normalizar_indicadores(orden, CONFIG, registro)
+        assert (fila["valor"], fila["unidad"]) == (1.5, "%")
+        assert len(registro.duplicados) == 1
+    nula_a = base | {"valor": "", "unidad": "%"}
+    nula_b = base | {"valor": "", "unidad": "otra"}
+    (fila,) = normalizacion.normalizar_indicadores([nula_a, nula_b], CONFIG, normalizacion.Registro())
+    assert fila["valor"] is None  # nunca se rellena con el valor de otra fila ni con 0
+
+
+def test_los_tests_no_escriben_en_el_repo(validos: Path) -> None:
+    assert not str(validos).startswith(str(RAIZ))

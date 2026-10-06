@@ -411,6 +411,8 @@ class TiposFirma(ModeloConfig):
 
 class FirmaNormalizacion(ModeloConfig):
     agencias: list[str]
+    nombres_completos: dict[str, list[str]]
+    agencias_genericas: list[str]
     redaccion: list[str]
     tipos: TiposFirma
 

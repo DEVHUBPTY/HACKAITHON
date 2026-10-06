@@ -96,7 +96,7 @@ siempre nulo, en CSV y en JSON; los nulos nunca se rellenan con 0.
 **Reglas que aplica:** `url_canonica` = esquema `https`, dominio en minúsculas sin `www.`, sin `utm_*` ni parámetros de
 rastreo, sin fragmento ni barra final. Las noticias con la misma URL canónica se fusionan en una (primer valor no nulo
 de cada campo; `tema` y `origen` se unen; `fecha_extraccion` es la más antigua) y cada descartada queda en
-`duplicados_eliminados` con su motivo. El `id_noticia` es `NOT-` + 10 caracteres del SHA-1 de la URL canónica
+`duplicados_eliminados` con su motivo (los duplicados por URL que se eliminan aquí se registran allí; si se marcan en vez de eliminarse se decide en E1-03b). De las duplicadas, `fecha_deteccion` es la más temprana. El `id_noticia` es `NOT-` + 10 caracteres del SHA-1 de la URL canónica
 (los `SYN-` conservan el suyo), así que no depende del orden de carga. `fecha_publicacion` y `fecha_deteccion` nunca
 se sustituyen entre sí. El nombre de la persona que firma **no se guarda** (D-32), solo `agencia` y `tipo_firma`.
 
