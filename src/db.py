@@ -50,6 +50,15 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("motivo_ruido", "VARCHAR"),
         ("sospechoso_inyeccion", "BOOLEAN"),
         ("alcance_regional", "BOOLEAN"),
+        # E1-07 (los llena src/clasificacion.py; nulos hasta entonces). `tema` de arriba es el de ORIGEN (D-62).
+        ("similitud_panama", "DOUBLE"),
+        ("ruido_similitud", "BOOLEAN"),
+        ("tema_clasificado", "VARCHAR"),
+        ("tema_similitud", "DOUBLE"),
+        ("subtema_clasificado", "VARCHAR"),
+        ("tema_secundario", "VARCHAR"),
+        ("tema_secundario_similitud", "DOUBLE"),
+        ("tema_baseline", "VARCHAR"),
     ],
     "indicadores": [
         ("id_indicador", "VARCHAR PRIMARY KEY"),
@@ -88,6 +97,13 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("clave", "VARCHAR NOT NULL"),
         ("motivo", "VARCHAR NOT NULL"),
     ],
+    "similitud_tema": [  # E1-07: similitud de cada noticia con cada tema (explicabilidad), por método (A o B)
+        ("id_noticia", "VARCHAR NOT NULL"),
+        ("metodo", "VARCHAR NOT NULL"),
+        ("tema", "VARCHAR NOT NULL"),
+        ("similitud", "DOUBLE NOT NULL"),
+        ("subtema", "VARCHAR"),
+    ],
     "registro_normalizacion": [
         ("tabla", "VARCHAR NOT NULL"),
         ("clave", "VARCHAR NOT NULL"),
@@ -114,6 +130,33 @@ def crear_esquema(con: duckdb.DuckDBPyConnection) -> None:
         con.execute(f'DROP TABLE IF EXISTS "{tabla}"')
         definicion = ", ".join(f'"{c}" {t}' for c, t in cols)
         con.execute(f'CREATE TABLE "{tabla}" ({definicion})')
+
+
+def asegurar_esquema(con: duckdb.DuckDBPyConnection) -> list[str]:
+    """Agrega, sin tocar los datos, las tablas y columnas del ``ESQUEMA`` que una base anterior no tiene.
+
+    Sirve para una ``senales.duckdb`` creada antes de una tarea nueva. Devuelve lo agregado (``tabla`` o
+    ``tabla.columna``). Las columnas nuevas son siempre anulables, así que ``ALTER TABLE`` basta.
+    """
+    agregado: list[str] = []
+    existentes = {fila[0] for fila in con.execute("SELECT table_name FROM information_schema.tables").fetchall()}
+    for tabla, cols in ESQUEMA.items():
+        if tabla not in existentes:
+            definicion = ", ".join(f'"{c}" {t}' for c, t in cols)
+            con.execute(f'CREATE TABLE "{tabla}" ({definicion})')
+            agregado.append(tabla)
+            continue
+        presentes = {
+            fila[0]
+            for fila in con.execute(
+                "SELECT column_name FROM information_schema.columns WHERE table_name = ?", [tabla]
+            ).fetchall()
+        }
+        for columna, tipo in cols:
+            if columna not in presentes:
+                con.execute(f'ALTER TABLE "{tabla}" ADD COLUMN "{columna}" {tipo.replace(" NOT NULL", "")}')
+                agregado.append(f"{tabla}.{columna}")
+    return agregado
 
 
 def insertar(con: duckdb.DuckDBPyConnection, tabla: str, filas: Iterable[Mapping[str, Any]]) -> int:
