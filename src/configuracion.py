@@ -349,3 +349,63 @@ class ConfigExploracion(ModeloConfig):
 def cargar_exploracion(carpeta: Path | None = None) -> ConfigExploracion:
     """Atajo para ``config/exploracion.yaml``."""
     return cargar_config("exploracion", ConfigExploracion, carpeta)
+
+
+# ------------------------------------------------------------------ normalizacion.yaml (E1-03)
+
+
+class EntradaNormalizacion(ModeloConfig):
+    carpeta_validos: str
+
+
+class SalidaNormalizacion(ModeloConfig):
+    base_de_datos: str
+
+
+class FechasNormalizacion(ModeloConfig):
+    formato_salida: str
+
+
+class NoticiasNormalizacion(ModeloConfig):
+    prefijo_id: str
+    largo_hash_id: int
+    prefijos_sinteticos: list[str]
+    separador_tema: str
+    separador_origen: str
+    orden_origen: list[str]
+    dias_para_recirculada: int
+    campos_firma: list[str]
+
+
+class TiposFirma(ModeloConfig):
+    agencia: str
+    medio: str
+    persona: str
+    sin_firma: str
+
+
+class FirmaNormalizacion(ModeloConfig):
+    agencias: list[str]
+    redaccion: list[str]
+    tipos: TiposFirma
+
+
+class PrefijoId(ModeloConfig):
+    prefijo_id: str
+
+
+class ConfigNormalizacion(ModeloConfig):
+    """Modelo de ``config/normalizacion.yaml``."""
+
+    entrada: EntradaNormalizacion
+    salida: SalidaNormalizacion
+    fechas: FechasNormalizacion
+    noticias: NoticiasNormalizacion
+    firma: FirmaNormalizacion
+    indicadores: PrefijoId
+    sismos: PrefijoId
+
+
+def cargar_normalizacion(carpeta: Path | None = None) -> ConfigNormalizacion:
+    """Atajo para ``config/normalizacion.yaml``."""
+    return cargar_config("normalizacion", ConfigNormalizacion, carpeta)

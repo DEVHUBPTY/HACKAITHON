@@ -88,6 +88,20 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 
 Un `valor` nulo en indicadores es válido (no es un parámetro: lo exige el contrato). Un duplicado conserva la primera aparición **válida**.
 
+## Normalización y almacenamiento (E1-03, `config/normalizacion.yaml`)
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| Largo del hash del `id_noticia` | 10 caracteres del SHA-1 de la URL canónica | CLAUDE.md (D-63) | `test_id_noticia_es_sha1_*` · `test_los_ids_recalculados_coinciden_con_los_del_snapshot` |
+| Prefijos de ID | `NOT-` · `IND-` · `SIS-`; los `SYN-` conservan su ID | CLAUDE.md (D-63) | `test_ids_de_indicador_y_sismo` · T03 |
+| Días para marcar una noticia como recirculada | 30 (detección − publicación > 30 días) | Supuesto (igual a la ventana base de D-74; sin dato que la calibre). Es solo una marca derivada, no filtra | T03 (`tests/test_t03_recirculada.py`); revisar con la tasa de recirculadas de E1-03b |
+| Separador de temas / orígenes al fusionar duplicados | `\|` · ` · ` (orden TVN RSS, GDELT) | Formato ya usado por `scripts/conversion.py` (diccionario) | `test_duplicados_por_url_se_fusionan_*` |
+| Agencias y firmas de redacción (D-32) | EFE, AFP, AP, Reuters, Europa Press, DPA, ANSA, Xinhua, Prensa Latina, Bloomberg · redacción, tvn, web | Spec E1-03 · lista de `config/exploracion.yaml` | `test_derivar_firma` · `test_el_nombre_de_la_persona_no_se_guarda_*` |
+| Campos de entrada de la firma | `firma`, `autor`, `author`, `dc_creator`, `creator` (opcionales; el valor nunca se guarda) | Supuesto (el snapshot actual no trae firma: el RSS de TVN no la incluye) | `test_derivar_firma` |
+| Formato de fecha de salida | ISO 8601 UTC con `Z`; una fecha sin zona o ilegible queda nula y se registra | CLAUDE.md · contrato de datos | T03 (`test_una_fecha_ilegible_o_sin_zona_*`) |
+
+Una cadena vacía o en blanco es nulo en CSV y en JSON. Un `valor` ausente en indicadores nunca se rellena con 0 (no es un parámetro: lo exige el contrato).
+
 ## Consulta y generación
 
 | Parámetro | Valor | Origen | Cómo se valida |
