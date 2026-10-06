@@ -18,12 +18,12 @@ from typing import Any
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 import feedparser
-import yaml
+
+from src import configuracion
 
 logger = logging.getLogger(__name__)
 
 RAIZ = Path(__file__).resolve().parent.parent
-RUTA_CONFIG = RAIZ / "config" / "fuentes.yaml"
 
 FORMATO_TS_ARCHIVO = "%Y%m%dT%H%M%SZ"
 FORMATO_ISO = "%Y-%m-%dT%H:%M:%SZ"
@@ -78,10 +78,9 @@ CONDICIONES_PENDIENTES = "Pendiente de verificar"
 # ---------------------------------------------------------------- utilidades
 
 
-def cargar_config(ruta: Path | None = None) -> dict[str, Any]:
-    """Lee ``config/fuentes.yaml`` (o la ruta indicada)."""
-    with (ruta or RUTA_CONFIG).open(encoding="utf-8") as f:
-        return yaml.safe_load(f)
+def cargar_config(carpeta: Path | None = None) -> dict[str, Any]:
+    """Carga ``config/fuentes.yaml`` validado con ``ConfigFuentes`` (D-79) y lo devuelve como dict."""
+    return configuracion.cargar_fuentes(carpeta).model_dump()
 
 
 def sha256_archivo(ruta: Path) -> str:
