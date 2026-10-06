@@ -1,0 +1,210 @@
+# Los 6 temas del reto: descripción ("Incluye" de docs/guia_temas.md), titulares de ejemplo y subtemas con prototipo.
+# Ejemplos: real=true viene del snapshot (su id_noticia está en config/ejemplos_excluidos.txt y NUNCA entra en la evaluación);
+# real=false es ilustrativo, escrito para fijar el criterio, y NO se presenta como real (docs/exploracion.md, recomendaciones E1-05).
+# Opción A (D-21) usa descripción + ejemplos; opción B usa los prototipos de los subtemas. Ambas devuelven solo estos 6 temas.
+version: "1.0"
+cantidad_temas: 6        # los 6 temas del reto (PDF sección 3, etapa 2)
+# Sectores del boletín de banca (D-11, propuesta): servicios públicos y eventos naturales -> continuidad operativa.
+sectores_validos: [economía, logística, turismo, regulación, continuidad operativa]
+
+temas:
+  economia:
+    nombre: "Economía"
+    descripcion: "Crecimiento y PIB, inflación y precios (canasta básica, combustibles), empleo, finanzas públicas (deuda, presupuesto, recaudación), inversión, comercio exterior, banca y calificaciones de riesgo. No incluye ingresos o peajes del Canal (Logística/Canal) ni una ley o impuesto nuevo (Regulación)."
+    ejemplos:
+      - {titulo: "¿ Cómo se fija el precio del combustible en Panamá ? El MEF explica la fórmula quincenal tras aprobarse nuevo subsidio", id_noticia: NOT-1710ce462f, real: true}
+      - {titulo: "Exportaciones de banano superan los $17 millones en junio y marcan recuperación", id_noticia: NOT-623c659be3, real: true}
+      - {titulo: "Gobierno anuncia recorte del presupuesto de inversión", real: false}
+      - {titulo: "Desempleo baja en el último trimestre", real: false}
+      - {titulo: "Banca panameña reporta crecimiento de los depósitos", real: false}
+      - {titulo: "Calificadora mantiene la nota de riesgo de Panamá", real: false}
+      - {titulo: "Precio de la canasta básica sube por tercer mes", real: false}
+    subtemas:
+      crecimiento_pib:
+        nombre: "Crecimiento y PIB"
+        prototipo: "La economía panameña crece según el último dato del PIB"
+      inflacion_precios:
+        nombre: "Inflación y precios (canasta básica, combustibles)"
+        prototipo: "Sube el precio de la canasta básica y de los combustibles"
+      empleo:
+        nombre: "Empleo"
+        prototipo: "Aumenta el desempleo en el país"
+      finanzas_publicas:
+        nombre: "Finanzas públicas (deuda, presupuesto, recaudación)"
+        prototipo: "Gobierno presenta presupuesto y nivel de deuda pública"
+      inversion:
+        nombre: "Inversión"
+        prototipo: "Anuncian nueva inversión extranjera en Panamá"
+      comercio_exterior:
+        nombre: "Comercio exterior"
+        prototipo: "Exportaciones panameñas caen o crecen en el trimestre"
+      banca_calificaciones:
+        nombre: "Banca y calificaciones de riesgo"
+        prototipo: "Agencia calificadora cambia la nota de riesgo soberano de Panamá"
+  logistica:
+    nombre: "Logística/Canal"
+    descripcion: "Operación del Canal (tránsitos, calado, reservas, niveles del lago Gatún), puertos, Zona Libre de Colón, carga aérea, transporte de carga y cadenas de suministro. No incluye vuelos de pasajeros (Turismo) ni reglas nuevas de la ACP (Regulación)."
+    ejemplos:
+      - {titulo: "Inland navigation workers stand with Panama Canal workers after death of tug captain", id_noticia: NOT-052735cae3, real: true}
+      - {titulo: "Canal de Panamá manejará presupuesto de B /. 5 , 555 millones para 2027", id_noticia: NOT-5a4863366a, real: true}
+      - {titulo: "Panamá reforzará su presencia marítima en Vietnam con nueva oficina de servicio técnico de la AMP en Ho Chi Minh", id_noticia: NOT-f7f8b492d1, real: true}
+      - {titulo: "Zona Libre de Colón reporta caída de ventas", real: false}
+      - {titulo: "Puerto de Manzanillo amplía su capacidad de contenedores", real: false}
+      - {titulo: "Naviera anuncia nueva ruta de carga por el Canal", real: false}
+      - {titulo: "Canal habilita cupos adicionales para buques", real: false}
+    subtemas:
+      operacion_canal:
+        nombre: "Operación del Canal (tránsitos, calado, reservas, lago Gatún)"
+        prototipo: "El Canal reduce tránsitos por el nivel del lago Gatún"
+      puertos:
+        nombre: "Puertos"
+        prototipo: "Los puertos de Balboa y Manzanillo mueven más contenedores"
+      zona_libre:
+        nombre: "Zona Libre de Colón"
+        prototipo: "La Zona Libre de Colón reporta caída de reexportaciones"
+      carga_aerea:
+        nombre: "Carga aérea"
+        prototipo: "Aeropuerto despacha más toneladas de carga por vía aérea"
+      transporte_carga:
+        nombre: "Transporte de carga"
+        prototipo: "Transportistas anuncian paro del transporte de carga"
+      cadenas_suministro:
+        nombre: "Cadenas de suministro"
+        prototipo: "Interrupción en la cadena de suministro de mercancías"
+  turismo:
+    nombre: "Turismo"
+    descripcion: "Llegada de visitantes, cruceros, hotelería y ocupación, aviación de pasajeros y conectividad, destinos y promoción. No incluye carga aérea (Logística/Canal)."
+    ejemplos:
+      - {titulo: "Montería estrenará vuelo directo a Panamá con Satena y conexión aérea de menos de una hora", id_noticia: NOT-d25926a799, real: true}
+      - {titulo: "Llegada de cruceristas a Colón supera lo previsto", real: false}
+      - {titulo: "Ocupación hotelera alcanza el 80 % en el feriado", real: false}
+      - {titulo: "Panamá promociona sus playas en feria de turismo", real: false}
+      - {titulo: "Aumentan los vuelos de pasajeros desde Bogotá", real: false}
+      - {titulo: "Autoridad de Turismo reporta más visitantes que el año pasado", real: false}
+      - {titulo: "Hoteles de Bocas del Toro registran temporada alta", real: false}
+      - {titulo: "Turistas extranjeros eligen Boquete para sus vacaciones", real: false}
+      - {titulo: "Nuevo crucero inaugura la ruta del Caribe hacia Panamá", real: false}
+      - {titulo: "Feria de turismo en Madrid promueve a Panamá como destino", real: false}
+    subtemas:
+      llegada_visitantes:
+        nombre: "Llegada de visitantes"
+        prototipo: "Panamá recibe más visitantes extranjeros que el año pasado"
+      cruceros:
+        nombre: "Cruceros"
+        prototipo: "Temporada de cruceros trae miles de turistas a Colón"
+      hoteleria:
+        nombre: "Hotelería y ocupación"
+        prototipo: "Ocupación hotelera sube durante el feriado"
+      aviacion_pasajeros:
+        nombre: "Aviación de pasajeros y conectividad"
+        prototipo: "Conectividad aérea de pasajeros mejora con vuelos directos a Panamá"
+      destinos_promocion:
+        nombre: "Destinos y promoción"
+        prototipo: "Autoridad de Turismo promociona Bocas del Toro en feria internacional"
+  servicios_publicos:
+    nombre: "Servicios públicos"
+    descripcion: "Agua potable, electricidad, telecomunicaciones e internet, transporte público, recolección de basura, salud pública, educación pública y seguridad ciudadana. Una ley o reforma nueva sobre el servicio va a Regulación."
+    ejemplos:
+      - {titulo: "Déficit de personal limita la capacidad operativa de los bomberos en el país", id_noticia: NOT-0d7f10257c, real: true}
+      - {titulo: "Minsa: Adelantan vacunación contra VSR en embarazadas", id_noticia: NOT-3175aafec0, real: true}
+      - {titulo: "Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá", id_noticia: NOT-3be05280f2, real: true}
+      - {titulo: "Colegios particulares atribuyen aumento de matrícula a migración al sector oficial y altos costos de operación", id_noticia: NOT-8921b118ee, real: true}
+      - {titulo: "Contenido Exclusivo: El metro por la Tumba Muerto", id_noticia: NOT-f248fefaf9, real: true}
+      - {titulo: "MiBus responde por filtraciones: lamenta incomodidad de usuarios; afirma que realiza correctivos", id_noticia: NOT-ff1b1ed15c, real: true}
+      - {titulo: "Falta de agua afecta a barrios de Colón por daño en una tubería", real: false}
+      - {titulo: "Docentes exigen pago de salarios atrasados en Veraguas", real: false}
+      - {titulo: "Cortes de luz sorprenden a clientes de la capital", real: false}
+      - {titulo: "Aumentan los robos a comercios en el centro de la ciudad", real: false}
+    subtemas:
+      agua_potable:
+        nombre: "Agua potable"
+        prototipo: "Sectores de la ciudad quedan sin agua potable"
+      electricidad:
+        nombre: "Electricidad"
+        prototipo: "Apagón deja sin luz a varios barrios"
+      telecomunicaciones:
+        nombre: "Telecomunicaciones e internet"
+        prototipo: "Falla en el servicio de internet afecta a miles de usuarios"
+      transporte_publico:
+        nombre: "Transporte público"
+        prototipo: "Usuarios del Metro y MiBus reportan retrasos"
+      recoleccion_basura:
+        nombre: "Recolección de basura"
+        prototipo: "Se acumula la basura por falta de recolección"
+      salud_publica:
+        nombre: "Salud pública (hospitales, CSS, MINSA, medicamentos)"
+        prototipo: "Pacientes denuncian escasez de medicamentos en un hospital público"
+      educacion_publica:
+        nombre: "Educación pública (escuelas, clases, docentes)"
+        prototipo: "Estudiantes pierden clases en escuelas públicas por una suspensión de labores"
+      seguridad_ciudadana:
+        nombre: "Seguridad ciudadana (policía, operativos, cárceles, delitos)"
+        prototipo: "Autoridades informan más delitos violentos en la capital"
+  eventos_naturales:
+    nombre: "Eventos naturales"
+    descripcion: "Sismos, inundaciones y lluvias, deslizamientos, sequía y El Niño, incendios forestales y alertas de protección civil. La interrupción de un servicio causada por el fenómeno va a Servicios públicos."
+    ejemplos:
+      - {titulo: "Clima en Panamá: Martes con lluvias y tormentas eléctricas en varias regiones durante la tarde", id_noticia: NOT-2f73db1173, real: true}
+      - {titulo: "Contenido Exclusivo: Coclé, se seca el campo", id_noticia: NOT-f2f4a261fd, real: true}
+      - {titulo: "Lluvias dejan inundaciones en Arraiján", real: false}
+      - {titulo: "Sinaproc emite alerta por deslizamientos en la región", real: false}
+      - {titulo: "Sequía por El Niño afecta cultivos en Azuero", real: false}
+      - {titulo: "Incendio forestal consume hectáreas en Veraguas", real: false}
+      - {titulo: "Temblor de magnitud moderada se siente en la capital", real: false}
+      - {titulo: "Río se desborda y deja familias afectadas en Darién", real: false}
+      - {titulo: "Alerta por tormentas eléctricas en el Pacífico", real: false}
+      - {titulo: "Aguacero inunda calles de Colón", real: false}
+    subtemas:
+      sismos:
+        nombre: "Sismos"
+        prototipo: "Temblor de magnitud moderada sacude el Pacífico panameño"
+      inundaciones_lluvias:
+        nombre: "Inundaciones y lluvias"
+        prototipo: "Lluvias intensas provocan inundaciones en varios corregimientos"
+      deslizamientos:
+        nombre: "Deslizamientos"
+        prototipo: "Deslizamiento de tierra bloquea la vía principal"
+      sequia_nino:
+        nombre: "Sequía y El Niño"
+        prototipo: "Sequía por El Niño seca el campo en el Arco Seco"
+      incendios_forestales:
+        nombre: "Incendios forestales"
+        prototipo: "Incendio forestal consume hectáreas de bosque"
+      alertas_proteccion_civil:
+        nombre: "Alertas de protección civil"
+        prototipo: "Sinaproc emite alerta por tormentas eléctricas"
+  regulacion:
+    nombre: "Regulación"
+    descripcion: "Leyes y decretos, resoluciones de entes reguladores, reformas, listas internacionales (listas grises, GAFI), contratos y concesiones públicas y sanciones."
+    ejemplos:
+      - {titulo: "Ejecutivo sanciona la Ley 552 del Presupuesto del Canal de Panamá por $5 , 555 millones", id_noticia: NOT-1fce9a0925, real: true}
+      - {titulo: "Panamá apunta a salir de la lista fiscal de la Unión Europea , pero aún enfrenta una revisión clave en 2027", id_noticia: NOT-99c8146e07, real: true}
+      - {titulo: "Ejecutivo sanciona decreto que regula el transporte", real: false}
+      - {titulo: "Autoridad sanciona a empresa con multa millonaria", real: false}
+      - {titulo: "Resolución fija nuevas reglas para las telecomunicaciones", real: false}
+      - {titulo: "Panamá ratifica convenio internacional sobre transporte marítimo", real: false}
+      - {titulo: "Asamblea discute proyecto de ley sobre contratación pública", real: false}
+      - {titulo: "Superintendencia emite acuerdo sobre prevención de blanqueo de capitales", real: false}
+    subtemas:
+      leyes_decretos:
+        nombre: "Leyes y decretos"
+        prototipo: "Ejecutivo sanciona una nueva ley"
+      resoluciones_entes:
+        nombre: "Resoluciones de entes reguladores"
+        prototipo: "Ente regulador emite resolución sobre las tarifas de un servicio"
+      reformas:
+        nombre: "Reformas"
+        prototipo: "Asamblea debate una reforma al sistema de pensiones"
+      listas_internacionales:
+        nombre: "Listas internacionales (listas grises, GAFI)"
+        prototipo: "Organismo internacional revisa el estatus de Panamá en listas de cumplimiento"
+      contratos_concesiones:
+        nombre: "Contratos y concesiones públicas"
+        prototipo: "Gobierno otorga una concesión pública a una empresa"
+      sanciones:
+        nombre: "Sanciones"
+        prototipo: "Autoridad sanciona a una empresa con multa"
+
+fuera_de_temas:
+  no_es_panama: "La noticia no trata sobre Panamá ni lo afecta (Panama City de Florida, sombreros Panamá)."
+  fuera_de_temas: "Es sobre Panamá, pero de un área que el reto no cubre (deportes, farándula, cultura, política electoral sin norma)."

@@ -1,0 +1,111 @@
+# E1-03b · Limpieza de titulares y filtro de ruido (src/limpieza.py). Todo patrón, lista o regla vive aquí (D-79).
+# Orígenes y validación de cada valor: docs/parametros.md, sección "Limpieza y ruido".
+# Los patrones son expresiones regulares y se aplican sobre el texto en minúsculas y SIN tildes (excepto los de
+# `limpieza`, que operan sobre el texto original). Marcar, no borrar: nada de lo que sigue elimina un registro.
+version: 1
+
+limpieza:
+  comillas:                         # comillas tipográficas -> rectas
+    "“": '"'
+    "”": '"'
+    "„": '"'
+    "«": '"'
+    "»": '"'
+    "‘": "'"
+    "’": "'"
+    "‚": "'"
+  # Sufijo del medio (" - La Prensa", " | Medio"): solo se quita si coincide con el nombre o el dominio del medio de
+  # la noticia o con un nombre de esta lista; un guion cualquiera NO es sufijo (podría ser parte del titular).
+  separadores_sufijo: ["-", "|", "–", "—"]
+  max_palabras_sufijo: 6            # un sufijo de medio más largo que esto no se corta
+  min_letras_medio: 5               # nombres de medio más cortos que esto no se comparan por contención ("AP", "ABC")
+  medios_conocidos: ["Xinhua", "Noticias Prensa Latina", "Prensa Latina", "Dominican Today", "Honolulu Star - Advertiser",
+                     "Global Finance Magazine", "Cruise Industry News", "EFE", "AFP", "Reuters", "Europa Press"]
+  # Tokenización de GDELT ("21 , 2 %", "US$84 . 000", "¿ Cómo ?") y barra pegada de TVN ("resultados| texto").
+  # Pares [patrón, reemplazo] aplicados en orden sobre el texto original.
+  reemplazos:
+    - ['(?<=\w) \. (?=(?:com|net|org|co|ar|pa|info|gob|edu)\b)', '.']    # "newsroomamerica . com" -> "newsroomamerica.com"
+    - ['(?<=\d)\s*([.,])\s*(?=\d)', '\1']       # "21 , 2" -> "21,2"; "84 . 000" -> "84.000"
+    - ['\s+([,.;:?!%)\]])', '\1']                 # "cierra , luego" -> "cierra, luego"
+    - ['([¿¡(\[])\s+', '\1']                       # "¿ Cómo" -> "¿Cómo"
+    - ['(?<=\w)\|\s*', ' | ']                      # "resultados| Panamá" -> "resultados | Panamá"
+
+# Titulares que no son noticias: sin contenido, el nombre del medio, promociones y categorías/URL de ítems que no son notas.
+no_noticia:
+  titulo_generico:
+    - '^\s*[\w.\- ]+\s*\.\s*(com|net|org|co|ar|pa|info)\s*$'    # solo un dominio ("newsroomamerica . com")
+    - '^\s*(inicio|preview|home)\b'
+  titulo_promocional:
+    - '^\s*(suscribete|suscribase|descarga la app)\b'
+    - '\bsorteo (semanal|mensual|diario)\b'
+  titulo_igual_al_medio: true       # el titular es solo el nombre o el dominio del medio ("Dominican Today")
+  patrones_url:
+    - '/(promociones|promocion|sorteos?|publicidad|clasificados|horoscopo|newsletter|boletin|suscripcion)(/|$)'
+  categorias_rss: [promociones, publicidad, clasificados, horoscopo]    # categoria_fuente, sin tildes ni mayúsculas
+
+# No es Panamá: ni trata ni afecta a Panamá. El titular decide; la sección del RSS solo hace sospechosa la nota.
+panama:
+  # Falsos Panamá (aplican a todo origen): ciudad de Florida, Panama Papers como referencia, sombreros.
+  falsos:
+    - '\bpanama city\b'
+    - '\bpcb\b'
+    - '\bpanama papers\b'
+    - '\bsombreros? panam\w*'
+  # Menciones de Panamá o de lo que lo afecta directamente (Canal, Darién, instituciones). Una nota de otro país que
+  # nombra algo de esto NO es ruido (migración por el Darién, decisiones sobre el Canal).
+  menciones:
+    - '\bpanam\w*'
+    - '\bcanal de panam\w*'
+    - '\bacp\b'
+    - '\bdarien\b'
+    - '\bzona libre\b'
+    - '\b(colon|chiriqui|veraguas|cocle|bocas del toro|san miguelito|tocumen|la chorrera|gatun)\b'
+    - '\b(mulino|minsa|css|asep|mef|mibus)\b'
+  # La nota está SUJETA al filtro de mención (se marca si no hay mención) cuando:
+  origenes_sujetos: [GDELT]         # las consultas de GDELT piden "Panama" más un término amplio sin anclarlo al titular
+  origenes_exentos: ["TVN RSS"]     # un registro que también viene del RSS de TVN no se filtra por origen
+  paises_medio_exentos: ["Panamá"]  # medios panameños: sus notas son sobre Panamá aunque el titular no lo diga
+  # TVN: la primera sección de la URL es solo una señal CANDIDATA; con un titular sin mención se marca.
+  dominio_con_seccion: tvn-2.com
+  # D-84: una nota que nombra la región (o su comercio/logística) NO es ruido: se conserva con
+  # alcance_regional = true y se cuenta aparte en el reporte. Un falso Panamá o un deporte siguen siendo ruido.
+  regionales:
+    - '\b(centroamerica|central america|america central|america latina|latinoamerica\w*|latam|latin america|latin amerika|lateinamerika)\b'
+    - '\blatinske ameriky\b|\bлатинск\w* америк\w*|\bлатинськ\w* америц\w*'   # checo, ruso, ucraniano
+    # "Caribe" a secas no basta ("Caribbean cricket"): solo junto a un término económico, logístico o marítimo.
+    - '\b(caribe|caribbean)\b.{0,60}\b(econom\w*|comerci\w*|trade|puertos?|ports?|maritim\w*|shipping|carga|cargo|logistic\w*|cruceros?|cruise\w*|buques?|navier\w*)\b'
+    - '\b(econom\w*|comerci\w*|trade|puertos?|ports?|maritim\w*|shipping|carga|cargo|logistic\w*|cruceros?|cruise\w*|buques?|navier\w*)\b.{0,60}\b(caribe|caribbean)\b'
+  secciones_dudosas: [mundo, tvmax, entretenimiento]   # gente-tvn y videos son contenido propio de TVN: no se filtran por sección
+
+# Es de Panamá, pero de un área que el reto no cubre (docs/guia_temas.md): deportes, farándula, cultura, política partidista.
+fuera_de_temas:
+  deportes:
+    - '\bf[uú]tbol\b'
+    - '\bselecci[oó]n (de f|nacional|mayor|argentina|colombia)\w*'
+    - '\b(mlb|playoffs?|torneo|amistoso|goleador|golea\w*|basquet|beisbol|liga de naciones|liga panamena|lpf)\b'
+    - '\bcopa (del mundo|america|oro|kirin|concacaf|libertadores|sudamericana|davis|mundial)\b'   # no "Copa Airlines"
+    - '\b(mundial (de|sub|femenino|masculino)|(al|el|del|para el|en el) mundial)\b'            # no "Banco Mundial"
+    - '\b(eliminatorias|semifinales?)\b'
+    - '\bpartido (ante|amistoso|de (futbol|beisbol|baloncesto|ida|vuelta))\b'                  # no "partido de gobierno"
+  farandula:
+    - '\b(videoclip|vida sentimental|carnavalera|famos[oa]s?|music awards)\b'
+    - '\b(cantante|actriz|actor)\b.{0,50}\b(estrena\w*|lanza\w*|nuevo (album|sencillo|papel)|protagoniza\w*|revela\w* detalles|gira)\b'   # no "cantante denuncia agresión"
+    - "\\bgira (musical|mundial|de conciertos)\\b|\\bgira '"                                      # no "Mulino gira instrucciones"
+    - '\b(kardashian|lohan|pedro pascal|offset)\b'
+    - '\bconcierto\b(?! benefic| solidari)'                                                     # no "concierto benéfico"
+  cultura:
+    - '\bferia del libro\b'
+    - '\bfestival (de|internacional de) (cine|jazz|musica|teatro)\b'
+  politica_partidista:
+    - '\bprimarias?\b'
+    - '\bcampana electoral\b'
+    - '\bcandidat[oa]s? presidencial(es)?\b'                  # no "candidato a contralor" (cargo no partidista)
+
+  # Autopromoción de TVN (H5): no es noticia de los temas. "Contenido Exclusivo: ..." sí puede estarlo y no se marca.
+  autopromocion_tvn:
+    - '^\s*(tvn media|gente tvn|gente que inspira)\b(?!.*\b(inundacion\w*|donacion\w*|damnificad\w*|emergencia|ayuda humanitaria|incendio\w*|tragedia|sismo|lluvias?)\b)'
+
+# Prototipo de noticia sobre Panamá (similitud de embeddings): DIFERIDO a E1-07 (los embeddings
+# locales de titulares llegan con esa tarea; src/embeddings.py hoy es un stub). Hasta entonces el filtro es solo por palabras clave.
+similitud_prototipo:
+  activo: false

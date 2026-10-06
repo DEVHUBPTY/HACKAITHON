@@ -17,6 +17,20 @@ MARCA_REDACCION = "[REDACTADO]"
 SUFIJOS_SENSIBLES = ("_KEY", "_TOKEN", "_SECRET")
 
 
+_EXTRA_SENSIBLES: set[str] = set()
+
+
+def registrar_sensible(valor: str) -> None:
+    """Registra un valor sensible que no está en ``os.environ`` (p. ej. el de ``local.env``)."""
+    if valor:
+        _EXTRA_SENSIBLES.add(valor)
+
+
+def olvidar_sensibles() -> None:
+    """Vacía los valores registrados con ``registrar_sensible`` (para pruebas)."""
+    _EXTRA_SENSIBLES.clear()
+
+
 def valores_sensibles() -> list[str]:
     """Devuelve los valores no vacíos de las variables sensibles, del más largo al más corto."""
     valores = {
@@ -24,6 +38,7 @@ def valores_sensibles() -> list[str]:
         for nombre, valor in os.environ.items()
         if valor and nombre.upper().endswith(SUFIJOS_SENSIBLES)
     }
+    valores |= _EXTRA_SENSIBLES
     return sorted(valores, key=len, reverse=True)
 
 

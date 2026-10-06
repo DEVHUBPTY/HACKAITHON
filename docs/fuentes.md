@@ -10,14 +10,15 @@ Verificado el 2026-10-06 en la documentación pública. **Se vuelve a verificar 
 - **Para qué:** identificar el medio y sus secciones; enlaces de las noticias de TVN.
 
 ### [2] TVN · feed RSS público
-- **Dónde:** URL del feed según el enlace [2] del PDF de la organización (**por confirmar**; no se inventa).
-- **Qué trae:** noticias, fechas y descripciones.
+- **Dónde:** `https://www.tvn-2.com/rss/` (URL tomada del hipervínculo de la referencia [2] del PDF; verificada el 2026-10-06: responde 200 con ~150 ítems).
+- **Qué trae:** noticias, fechas y descripciones. No trae categoría: el tema de origen es la primera sección de la ruta de la URL (ej. `nacionales`, `economia`).
 - **Condiciones:** que el RSS sea público **no implica licencia abierta** sobre artículos, videos o imágenes. Solo metadatos; la descripción, solo para uso interno (D-31).
 - **Cuidado:** el RSS no conserva todo el histórico (R-23).
 
 ### [3] GDELT · API DOC 2.0
 - **Dónde:** `https://api.gdeltproject.org/api/v2/doc/doc` · documentación: https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/
 - **Cómo:** `mode=ArtList`, `format=json`, `maxrecords=250`, filtros de dominio e idioma y ventana temporal. Sin clave ni autenticación.
+- **Consultas (E0-04, seguimiento):** cada tema tiene dos patas, una llamada por pata y rango (`config/fuentes.yaml` → `gdelt.consultas`; las arma `src/consultas_gdelt.py`): `locales` = `(términos en español) sourcecountry:panama` e `internacional` = `("frase específica de Panamá" OR ...) -sourcecountry:panama`. Operadores documentados en el blog de la API: frase entre comillas, `(a OR b)` sin anidar, `sourcecountry:` (nombre o FIPS), prefijo `-` para excluir. Motivo: la versión anterior (`Panama` + palabra genérica) traía ~67 % de ruido (Panama City Beach, Panama Papers, etc.; E0-09). El motivo queda en el manifest (`consultas.gdelt.motivo_cambio_consultas` y el historial). Los crudos se nombran `gdelt_<tema>__<pata>_...`; los de la versión anterior (sin pata) no cuentan como cobertura ni alimentan `noticias.csv` (D-83): siguen intactos en `raw/` y el manifest los lista como `crudos_excluidos`, con su consulta histórica en `consultas.gdelt.consultas_historicas`.
 - **Qué trae por artículo:** `url`, `url_mobile`, `title`, `seendate`, `socialimage`, `domain`, `language`, `sourcecountry`.
 - **Cuidado:**
   - Máximo 250 resultados por consulta → dividir por fechas.
@@ -58,7 +59,7 @@ Verificado el 2026-10-06 en la documentación pública. **Se vuelve a verificar 
 - **Cómo:** manual. Seleccionar informes y columnas **antes del evento**, conservando las advertencias de uso (E3-02).
 
 ## Qué se verifica al congelar el snapshot
-- [ ] URL del RSS de TVN confirmada y funcionando
+- [x] URL del RSS de TVN confirmada y funcionando (2026-10-06)
 - [ ] GDELT responde y la ventana pedida está dentro de su cobertura (~3 meses)
 - [ ] Banco Mundial: excepciones de licencia por indicador revisadas
 - [ ] USGS: condiciones de terceros confirmadas

@@ -1,0 +1,33 @@
+{
+  "fallos": [
+    {
+      "fin": "20261006000000",
+      "inicio": "20261004000000",
+      "motivo": "HTTP 429 (rate limit) tras 5 intentos con backoff",
+      "tema": "turismo",
+      "tipo": "bloqueado"
+    },
+    {
+      "fin": "20261006000000",
+      "inicio": "20261004000000",
+      "motivo": "dos respuestas {} seguidas; sospechoso porque un rango de 5 dias devolvio 93 articulos (posible bloqueo)",
+      "tema": "logistica",
+      "tipo": "vacio_sospechoso"
+    },
+    {
+      "fin": "20261006000000",
+      "inicio": "20261004000000",
+      "motivo": "respuesta {} sin confirmar (posible bloqueo)",
+      "tema": "economia",
+      "tipo": "vacio_sospechoso"
+    },
+    {
+      "fin": "20261006000000",
+      "inicio": "20261004000000",
+      "motivo": "no obtenido: GDELT bloqueaba las solicitudes (HTTP 429 sostenido) al cerrar el snapshot",
+      "tema": "eventos_naturales",
+      "tipo": "bloqueado"
+    }
+  ],
+  "origen": "registro manual a partir del log de la corrida; reconstruido el 2026-10-06 tras un borrado accidental del original (el campo tipo se agregó al reconstruir)"
+}
