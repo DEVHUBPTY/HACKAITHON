@@ -1,0 +1,18 @@
+# Secrets
+.env
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Generated data (never versioned; see specs E0-03 and C-07)
+data/senales.duckdb
+data/demo.duckdb
+outputs/benchmark/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

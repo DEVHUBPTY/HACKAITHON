@@ -1,0 +1,27 @@
+Entrada,Fecha,Autor,Tipo,Fase
+"Planificación inicial: análisis del reto, arquitectura, backlog y decisiones D-01 a D-12",2026-10-06,Equipo,Decisión,Preparación
+"Kit de Claude Code: CLAUDE.md, 23 specs, guía de revisión, plantilla de PR; decisiones D-13 y D-14; backlog en 40 tareas",2026-10-06,Equipo,Decisión,Preparación
+Análisis de opciones por etapa; reglas v1.1; decisiones D-15 a D-25; specs actualizadas,2026-10-06,Equipo,Decisión,Preparación
+"Se agrega limpieza y filtro de ruido: spec E1-03b, decisión D-26, riesgo R-17 y prueba X01",2026-10-06,Equipo,Decisión,Preparación
+Guía de temas y reglas de frontera; decisiones D-27 a D-30; motivos no_es_panama y fuera_de_temas; riesgo R-18,2026-10-06,Equipo,Decisión,Preparación
+Clasificación: medir opciones A y B con criterio previo (D-21); exploración de muestra real (E0-09); descripción solo interna (D-31); procedencia por agencia sin autor (D-32),2026-10-06,Equipo,Decisión,Preparación
+"Etapa 3 del reto definida: vínculos por subtema (D-34), USGS sube a Etapa 1 (D-33, E1-09b)",2026-10-06,Equipo,Decisión,Preparación
+"Reglas v1.2 (D-35), tabla de acciones 3×3, prueba de sensibilidad X02 y auditoría de correcciones pendientes aplicada a las specs",2026-10-06,Equipo,Decisión,Preparación
+"Etapa 5 definida: ficha común a ambas modalidades sin LLM (E1-10b, D-36 a D-38)",2026-10-06,Equipo,Decisión,Preparación
+Tecnologías de la ficha definidas (D-39) y migración a Poetry (D-40),2026-10-06,Equipo,Decisión,Preparación
+"Etapa 6 definida: reglas por tipo, generación según la acción, secciones desde la ficha, llamadas agrupadas y controles de comillas y fechas (D-41 a D-45)",2026-10-06,Equipo,Decisión,Preparación
+Etapa 7 definida (D-46 a D-50) y restricción común aplicada a todas las salidas (D-51),2026-10-06,Equipo,Decisión,Preparación
+"Salidas definidas campo por campo (docs/salidas.md, D-53), léxico bancario (D-54), spec E2-02 y prueba X03",2026-10-06,Equipo,Decisión,Preparación
+"Demo definida: un CU por ficha y recorrido de 4 min (D-52), tecnologías de la demo (D-55), tarea C-06 y guion docs/demo.md",2026-10-06,Equipo,Decisión,Preparación
+Reglas v1.3 (D-56): E con procedencia identificable; mediciones X04 (distribución e independencia) y X05 (baseline por fecha),2026-10-06,Equipo,Decisión,Preparación
+"Auditoría de mediciones: registro de parámetros, intervalos de confianza, criterio A/B corregido, Precision@5 en cortes y X02 ampliada (D-57)",2026-10-06,Equipo,Decisión,Preparación
+"Sección 5 revisada: registro por fase (D-58), estructura de 8 secciones (D-59), checklist de admisión y preguntas nuevas a la organización",2026-10-06,Equipo,Decisión,Preparación
+"Contenido exigido por sección verificado contra la sección 5: tipo de decisión, modelo de datos, versiones y 7 pasos de la presentación (D-60)",2026-10-06,Equipo,Decisión,Preparación
+"Sección 6 revisada: receta completa en E0-04, validación de snapshot, spec E3-02 (SBP) y riesgo R-23 (D-61)",2026-10-06,Equipo,Decisión,Preparación
+"Sección 7 auditada: tema de origen (D-62), IDs estables e historial (D-63), reservado del jurado (D-64), reproducibilidad de punta a punta (D-65, E1-20, X06)",2026-10-06,Equipo,Decisión,Preparación
+"Sección 8 auditada: baselines por tarea y análisis IA vs. baseline (D-66), ficha de modelos y tope de costo (D-67), causalidad y acusaciones (D-68), controles operativos (D-69)",2026-10-06,Equipo,Decisión,Preparación
+"Sección 12 documentada: fuentes [1]–[9] con URLs y condiciones verificadas; hallazgo: GDELT solo cubre ~3 meses (D-70, R-27)",2026-10-06,Equipo,Decisión,Preparación
+"Sección 9 auditada: protocolo de evaluación, runner para el reservado, rúbrica de sustento, acuerdo entre etiquetadores y prueba de tiempo (D-71, X07)",2026-10-06,Equipo,Decisión,Preparación
+"Sección 10 auditada: paquete de entrega, auditoría final automática y autoevaluación con la rúbrica (D-72, C-07, C-08)",2026-10-06,Equipo,Decisión,Preparación
+"Sección 11 auditada: cronograma en horas, punto de corte al 60 %, plan para 24 h, preguntas del jurado y preguntas nuevas a la organización (D-73)",2026-10-06,Equipo,Decisión,Preparación
+"El equipo avanza sin depender de la organización: supuestos documentados, snapshot propio, RSS diario, benchmark propio, revisión interna (D-74)",2026-10-06,Equipo,Decisión,Preparación

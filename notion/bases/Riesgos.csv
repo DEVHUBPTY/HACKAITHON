@@ -1,0 +1,32 @@
+Riesgo,ID,Categoría,Probabilidad,Impacto,Control aplicado,Prueba que lo verifica,Estado
+"Cifras, hechos o fuentes inventadas por el LLM",R-01,Anti-alucinación,Alta,Alto,Validador de citas en código + abstención antes del LLM,"T06, T09",Planificado
+Inyección de instrucciones en titulares o descripciones,R-02,Ataque al agente,Media,Alto,Fuentes delimitadas como datos; instrucciones separadas; sin acciones ni secretos accesibles,T07,Planificado
+Repetición contada como corroboración,R-03,Sesgo,Alta,Alto,Conteo de procedencias independientes; duplicados no suben el puntaje,T02,Planificado
+Dato anual presentado como actual,R-04,Exactitud,Alta,Medio,Año obligatorio en el texto; prohibido 'actual/hoy' junto a datos oficiales,T04,Planificado
+Noticia vieja presentada como nueva,R-05,Exactitud,Media,Medio,Fecha de publicación original separada de la de detección; urgencia por fecha original,T03,Planificado
+Redistribución de contenido de medios sin permiso,R-06,Derechos,Media,Alto,Solo metadatos; condiciones por fuente en el catálogo; nada de cuerpos de artículos,—,Planificado
+Perfiles de personas o acusaciones presentadas como hechos,R-07,Privacidad,Baja,Alto,No agrupar por persona; acusaciones atribuidas como declaraciones,—,Planificado
+"Credenciales expuestas en repo, capturas o Notion",R-08,Seguridad,Media,Alto,Secretos en .env; solo .env.example en el repo; revisión C-05,—,Planificado
+Falla de internet durante la demo,R-09,Operativo,Media,Alto,Snapshot local + caché + modelo local,T10,Planificado
+Sesgo de cobertura por medio o idioma (GDELT),R-10,Sesgo,Media,Medio,Reportar distribución por medio e idioma en el reporte de calidad,—,Planificado
+Sismo fuera de Panamá atribuido a Panamá,R-11,Exactitud,Media,Medio,Mostrar el lugar exacto de USGS; la caja regional no es Panamá,—,Planificado
+"Boletín bancario con recomendaciones, pérdidas o scores",R-12,Ética financiera,Media,Alto,Reglas extra del validador de banca; observación separada de hipótesis,T09,Planificado
+Ventana de fechas inconsistente deja el corpus vacío,R-13,Operativo,Alta,Alto,Se usa la ventana de la sección 6 y el intervalo de la sección 7 se documenta como inconsistencia (D-74),—,Mitigado
+Ranking sesgado por la cobertura de los indicadores,R-14,Sesgo,Alta,Alto,Reglas v1.1: el dato oficial no suma en I (D-15),T08 + Precision@5,Planificado
+Titulares presentados como hechos verificados,R-15,Anti-alucinación,Alta,Alto,Tipo 'declaración' para titulares; 'hecho' solo con datos oficiales (D-18),T09,Planificado
+Agrupación mal calibrada parte o mezcla eventos,R-16,Exactitud,Alta,Alto,Umbral calibrado con etiquetas humanas (D-16),T02,Planificado
+"Ruido en el corpus (falsos Panamá, temas fuera del reto, titulares sucios, URLs duplicadas)",R-17,Exactitud,Alta,Medio,Limpieza y filtro de ruido con marca y motivo (D-26),Test de ruido + precisión/recall del filtro,Planificado
+Noticias de seguridad ciudadana dominan la bandeja o exponen a personas,R-18,Privacidad / Sesgo,Media,Alto,Acusaciones como declaraciones; no agrupar ni resumir por persona; monitorear con Precision@5 (D-27),T09 + Precision@5,Planificado
+Latencia del paquete con modelo local supera la meta,R-19,Operativo,Alta,Medio,"Llamadas agrupadas, bajo demanda, caché y criterio de cambio de proveedor (D-02, D-44)",Métrica de latencia (consulta y paquete),Planificado
+El LLM asigna mal el tipo de afirmación,R-20,Anti-alucinación,Media,Alto,Reglas por tipo en el validador (D-41) y revisión humana del tipo en la muestra de 30 afirmaciones,Validez de sustento,Planificado
+La corrección humana introduce datos sin respaldo,R-21,Anti-alucinación,Media,Alto,Revalidación con advertencias confirmadas y registro de ambas versiones (D-48),% de correcciones con advertencias,Planificado
+Una salida simula haber leído el artículo completo,R-22,Anti-alucinación,Media,Alto,Leyenda obligatoria y frases de lectura simulada prohibidas en el validador (D-51),Tests de D-51,Planificado
+El RSS de TVN no conserva histórico y no se alcanzan 20 noticias de TVN,R-23,Operativo,Media,Alto,Descargar el RSS de TVN a diario desde ya y acumular; validar_snapshot verifica el mínimo de 20 (D-74),validar_snapshot,Planificado
+Gasto descontrolado si se usa el proveedor de pago,R-24,Operativo,Baja,Medio,Tope de tokens y USD con regreso al modelo local (D-67),Test de tope de costo,Planificado
+Secretos filtrados en logs o salidas de error,R-25,Seguridad,Media,Alto,Filtro de redacción en logging (D-69) y revisión C-05,Test de redacción,Planificado
+Causalidad o acusación presentada como hecho,R-26,Privacidad / Reputación,Media,Alto,Reglas léxicas por tipo en el validador (D-68),Tests de D-68,Planificado
+"GDELT DOC solo cubre ~3 meses: la ventana [2024-01-01, 2025-10-01) no se puede extraer hoy",R-27,Operativo,Alta,Alto,Ventana reciente dentro de la cobertura de GDELT; snapshot propio congelado (D-74),validar_snapshot,Mitigado
+Contenido con redistribución restringida en el repositorio o el paquete de datos,R-28,Derechos,Media,Alto,"empaquetar_datos excluye descripciones, socialimage y extractos; auditoria_final lo verifica (D-72)",Test de C-07,Planificado
+Sobrediseño: arquitectura no proporcional al tiempo del evento,R-29,Operativo,Media,Medio,Respetar las etapas; stack simple; explicar cada pieza por su requisito,Autoevaluación (C-08),Planificado
+El reglamento del evento podría no aceptar trabajo preparado antes,R-30,Operativo,Baja,Alto,"Toda la preparación queda registrada con fase Preparación y fecha; si el reglamento lo exige, se declara en el pitch",—,Aceptado
+"Sin persona editorial, las métricas de utilidad son solo exploratorias",R-31,Evaluación,Alta,Medio,Revisión por un integrante que no escribió el código; resultados declarados exploratorios con n e intervalos (D-74),Protocolo de evaluación,Aceptado

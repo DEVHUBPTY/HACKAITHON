@@ -1,0 +1,7 @@
+ID caso,Modalidad,Tema,IDs de fuente,R,I,U,N,E,Versión de reglas,Estado de evidencia,Estado de revisión,Revisor,Fecha de revisión,Comentario del revisor,Qué se reporta,Quién lo reporta,Qué está respaldado,Qué falta comprobar,Acción recomendada,Versión del borrador,Alcance del texto,Última exportación,Caso de uso
+CASO-000 · EJEMPLO ILUSTRATIVO (borrar),Editorial,Logística/Canal,NOT-xxx (ejemplo),0.90,0.67,1.00,0.80,0.33,v1.3,Insuficiente,Nuevo,,,,Restricciones de calado en el Canal (ejemplo),4 medios; 1 procedencia independiente estimada,Que varios medios lo reportan (basado únicamente en titular/metadatos),Confirmación oficial; el corpus no tiene datos de tránsitos,Investigar · la prioridad no habilita publicación,v1,basado únicamente en titular/metadatos,,Ejemplo
+CASO-001 · por elegir con C-06,Editorial,,,,,,,,v1.3,,Nuevo,,,,,,,,,,,,CU-01
+CASO-002 · por elegir con C-06,Editorial,,,,,,,,v1.3,,Nuevo,,,,,,,,,,,,CU-03
+CASO-003 · por elegir con C-06,Editorial,,,,,,,,v1.3,,Nuevo,,,,,,,,,,,,CU-02
+CASO-004 · por elegir con C-06,Editorial,,,,,,,,v1.3,Insuficiente,Nuevo,,,,,,,,,,,,CU-04
+CASO-005 · por elegir con C-06,Banca,,,,,,,,v1.3,,Nuevo,,,,,,,,,,,,CU-05

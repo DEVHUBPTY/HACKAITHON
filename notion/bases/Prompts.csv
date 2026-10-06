@@ -1,0 +1,5 @@
+Prompt,Versión,Modelo / proveedor,Parámetros,Propósito,Costo medido,Limitaciones,Estado,Tokens promedio por llamada
+paquete_editorial,v0.1,Ollama (modelo por definir en E0-07),temperatura 0; salida JSON,"Brief, título, enfoque, preguntas, verificaciones, guion, copy, titulares y resumen web con citas",,,Pendiente,
+respuesta_consulta,v0.1,Ollama (por definir),temperatura 0; salida JSON,Responder consultas en español con citas o abstención,,,Pendiente,
+comparar_contradicciones,v0.1,Ollama (por definir),temperatura 0; salida JSON,Marcar pares de afirmaciones como compatibles o posible contradicción,,,Pendiente,
+boletin_banca,v0.1,Ollama (por definir),temperatura 0; salida JSON,Boletín de entorno con observación / hipótesis separadas,,,Pendiente,
