@@ -1,0 +1,57 @@
+# Vínculos subtema -> dato oficial (D-06, D-15). Un vínculo es CONTEXTO, nunca prueba de causa ni suma a I.
+# Los indicadores deben existir en config/fuentes.yaml (banco_mundial.indicadores); `usgs` apunta a eventos.geojson.
+version: "1.0"
+
+tipos_relacion:
+  mide_directamente: "El indicador mide lo mismo que el subtema."
+  escala_poblacional: "El indicador da la escala de población expuesta; no mide el hecho."
+  coincidencia_temporal: "El evento oficial coincide en el tiempo con la noticia; no prueba que sea el mismo hecho."
+
+ventana_coincidencia_dias: 2        # sismos: ± días entre evento USGS y noticia (supuesto)
+pais_por_defecto: PAN
+
+vinculos:
+  crecimiento_pib:
+    fuente: indicador
+    id: NY.GDP.MKTP.KD.ZG
+    relacion: mide_directamente
+    limitacion: "Dato anual; no describe el estado actual ni el último trimestre."
+  inflacion_precios:
+    fuente: indicador
+    id: FP.CPI.TOTL.ZG
+    relacion: mide_directamente
+    limitacion: "Dato anual de inflación al consumidor; no es el precio de un producto concreto."
+  empleo:
+    fuente: indicador
+    id: SL.UEM.TOTL.ZS
+    relacion: mide_directamente
+    limitacion: "Dato anual de desempleo; el último año suele revisarse."
+  comercio_exterior:
+    fuente: indicador
+    id: NE.EXP.GNFS.ZS
+    relacion: mide_directamente
+    limitacion: "Exportaciones de bienes y servicios como % del PIB, anual; no desglosa por producto."
+  telecomunicaciones:
+    fuente: indicador
+    id: IT.NET.USER.ZS
+    relacion: mide_directamente
+    limitacion: "Uso de internet como % de la población, anual; no mide la falla puntual."
+  agua_potable:
+    fuente: indicador
+    id: SP.POP.TOTL
+    relacion: escala_poblacional
+    limitacion: "Población total anual; solo da escala, no cobertura del servicio."
+  salud_publica:
+    fuente: indicador
+    id: SP.POP.TOTL
+    relacion: escala_poblacional
+    limitacion: "Población total anual; solo da escala, no demanda hospitalaria."
+  educacion_publica:
+    fuente: indicador
+    id: SP.POP.TOTL
+    relacion: escala_poblacional
+    limitacion: "Población total anual; solo da escala, no matrícula."
+  sismos:
+    fuente: usgs
+    relacion: coincidencia_temporal
+    limitacion: "La caja de USGS no es Panamá: mostrar siempre el place original; solo sirve para hechos sísmicos."

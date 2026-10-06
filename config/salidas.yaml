@@ -1,0 +1,22 @@
+# Límites de las salidas (docs/salidas.md). Los valores se miden con el validador (tests por campo).
+version: "1.0"
+
+editorial:
+  titulo_max_palabras: 14
+  titulares_min: 2
+  titulares_max: 3
+  titular_max_palabras: 14
+  brief_max_palabras: 250
+  preguntas: 3
+  guion_segundos_min: 45
+  guion_segundos_max: 60
+  guion_palabras_min: 110       # calibrable cronometrando 5 guiones (X03)
+  guion_palabras_max: 150
+  resumen_web_max_palabras: 120
+  copy_max_palabras: 80
+  copy_max_hashtags: 2
+  transiciones_sin_cita_max_por_seccion: 1
+
+banca:
+  resumen_max_palabras: 250
+  preguntas: 3
