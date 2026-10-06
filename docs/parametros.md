@@ -98,3 +98,17 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 | Sensibilidad X02 | Pesos ± 5; parámetros supuestos ± 20 % | Supuesto | — |
 | Precision@5 | 3 fechas de corte si hay editor; si no, n = 1 y exploratoria | PDF (exploratoria sin especialista) | — |
 | Duración de la demo | 4 min | PDF | Ensayo cronometrado |
+
+## Exploración (E0-09)
+
+Valores en `config/exploracion.yaml`. Todo lo que marcan es **candidato**; las medidas reales son E1-03b y E1-06.
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| Intervalo de confianza de las proporciones | Wilson, z = 1.96 (95 %) | Práctica estadística | `test_wilson_es_un_intervalo_valido` |
+| Filas de cada tabla de conteos | 10 | Supuesto (legibilidad) | — |
+| Mínimo de titulares revisados por tema | 15 | PDF (spec E0-09) | Sección 10 de `docs/exploracion.md` |
+| Largo mínimo para contar un titular contenido en otro como duplicado | 30 caracteres | Supuesto | `test_duplicados_agrupa_sufijos_y_contencion`; revisar con E1-08 |
+| Bins de magnitud USGS | < 3 · 3 · 4 · 5 · 6 | Práctica (escala de magnitud) | — |
+| Año final esperado de la cuadrícula del Banco Mundial | 2024 | Supuesto (config de `fuentes.yaml`) | Sección 8 de `docs/exploracion.md` |
+| Listas de palabras (deportes, farándula, falso Panamá, menciones de Panamá, temas) | En YAML | Supuesto (exploratorias; no clasifican) | Se descartan al medir E1-03b / E1-07 |
