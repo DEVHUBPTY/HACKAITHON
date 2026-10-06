@@ -1,0 +1,2030 @@
+{
+  "modelos": {
+    "e5": {
+      "id": "intfloat/multilingual-e5-small",
+      "revision": "614241f622f53c4eeff9890bdc4f31cfecc418b3"
+    },
+    "minilm": {
+      "id": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42"
+    }
+  },
+  "semilla": 42,
+  "casos_dificiles": {
+    "n": 15,
+    "fuente": "docs/guia_temas.md, sección 'Casos difíciles' (titulares ilustrativos, no del corpus)",
+    "nota": "n = 15: los IC son anchos y NO bastan para elegir modelo (D-20) ni método (D-21); es una prueba de regresión del criterio de frontera. Ningún caso es ejemplo ni prototipo de temas.yaml (comprobado).",
+    "configuraciones": {
+      "baseline": {
+        "exactitud_principal": {
+          "n": 14,
+          "de": 15,
+          "proporcion": 0.9333,
+          "ic95": [
+            0.7018,
+            0.9881
+          ]
+        },
+        "macro_f1": {
+          "n": 15,
+          "macro_f1": 0.9238,
+          "ic95": [
+            0.68,
+            1.0
+          ],
+          "remuestreos": 1000
+        },
+        "clases_en_macro_f1": [
+          "economia",
+          "logistica",
+          "turismo",
+          "servicios_publicos",
+          "eventos_naturales",
+          "regulacion",
+          "sin_tema"
+        ],
+        "por_tema": {
+          "economia": {
+            "soporte": 1,
+            "predichos": 2,
+            "precision": {
+              "n": 1,
+              "de": 2,
+              "proporcion": 0.5,
+              "ic95": [
+                0.0945,
+                0.9055
+              ]
+            },
+            "recall": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ]
+            },
+            "f1": 0.6667
+          },
+          "logistica": {
+            "soporte": 3,
+            "predichos": 2,
+            "precision": {
+              "n": 2,
+              "de": 2,
+              "proporcion": 1.0,
+              "ic95": [
+                0.3424,
+                1.0
+              ]
+            },
+            "recall": {
+              "n": 2,
+              "de": 3,
+              "proporcion": 0.6667,
+              "ic95": [
+                0.2077,
+                0.9385
+              ]
+            },
+            "f1": 0.8
+          },
+          "turismo": {
+            "soporte": 1,
+            "predichos": 1,
+            "precision": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ]
+            },
+            "recall": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ]
+            },
+            "f1": 1.0
+          },
+          "servicios_publicos": {
+            "soporte": 4,
+            "predichos": 4,
+            "precision": {
+              "n": 4,
+              "de": 4,
+              "proporcion": 1.0,
+              "ic95": [
+                0.5101,
+                1.0
+              ]
+            },
+            "recall": {
+              "n": 4,
+              "de": 4,
+              "proporcion": 1.0,
+              "ic95": [
+                0.5101,
+                1.0
+              ]
+            },
+            "f1": 1.0
+          },
+          "eventos_naturales": {
+            "soporte": 1,
+            "predichos": 1,
+            "precision": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ]
+            },
+            "recall": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ]
+            },
+            "f1": 1.0
+          },
+          "regulacion": {
+            "soporte": 4,
+            "predichos": 4,
+            "precision": {
+              "n": 4,
+              "de": 4,
+              "proporcion": 1.0,
+              "ic95": [
+                0.5101,
+                1.0
+              ]
+            },
+            "recall": {
+              "n": 4,
+              "de": 4,
+              "proporcion": 1.0,
+              "ic95": [
+                0.5101,
+                1.0
+              ]
+            },
+            "f1": 1.0
+          },
+          "sin_tema": {
+            "soporte": 1,
+            "predichos": 1,
+            "precision": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ]
+            },
+            "recall": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ]
+            },
+            "f1": 1.0
+          }
+        },
+        "matriz_confusion": {
+          "clases": [
+            "economia",
+            "logistica",
+            "turismo",
+            "servicios_publicos",
+            "eventos_naturales",
+            "regulacion",
+            "sin_tema"
+          ],
+          "filas_real_columnas_predicho": [
+            [
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              1,
+              2,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              4,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1
+            ]
+          ]
+        },
+        "secundario_esperado_acertado": {
+          "n": 3,
+          "de": 7,
+          "proporcion": 0.4286,
+          "ic95": [
+            0.1582,
+            0.7495
+          ]
+        },
+        "secundario_esperado_es_el_segundo_mejor": {
+          "n": 3,
+          "de": 7,
+          "proporcion": 0.4286,
+          "ic95": [
+            0.1582,
+            0.7495
+          ]
+        },
+        "secundario_dado_donde_no_se_espera": {
+          "n": 0,
+          "de": 8,
+          "proporcion": 0.0,
+          "ic95": [
+            0.0,
+            0.3244
+          ]
+        },
+        "fallos": [
+          {
+            "id": "CD-05",
+            "titular": "Ingresos del Canal crecen en el año fiscal",
+            "esperado": "logistica",
+            "predicho": "economia",
+            "secundario_esperado": "economia",
+            "secundario_predicho": "logistica",
+            "similitud": null
+          }
+        ]
+      },
+      "e5/A": {
+        "exactitud_principal": {
+          "n": 11,
+          "de": 15,
+          "proporcion": 0.7333,
+          "ic95": [
+            0.4805,
+            0.891
+          ]
+        },
+        "macro_f1": {
+          "n": 15,
+          "macro_f1": 0.6211,
+          "ic95": [
+            0.3285,
+            0.9207
+          ],
+          "remuestreos": 1000
+        },
+        "clases_en_macro_f1": [
+          "economia",
+          "logistica",
+          "turismo",
+          "servicios_publicos",
+          "eventos_naturales",
+          "regulacion",
+          "sin_tema"
+        ],
+        "por_tema": {
+          "economia": {
+            "soporte": 1,
+            "predichos": 2,
+            "precision": {
+              "n": 1,
+              "de": 2,
+              "proporcion": 0.5,
+              "ic95": [
+                0.0945,
+                0.9055
+              ]
+            },
+            "recall": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ]
+            },
+            "f1": 0.6667
+          },
+          "logistica": {
+            "soporte": 3,
+            "predichos": 2,
+            "precision": {
+              "n": 2,
+              "de": 2,
+              "proporcion": 1.0,
+              "ic95": [
+                0.3424,
+                1.0
+              ]
+            },
+            "recall": {
+              "n": 2,
+              "de": 3,
+              "proporcion": 0.6667,
+              "ic95": [
+                0.2077,
+                0.9385
+              ]
+            },
+            "f1": 0.8
+          },
+          "turismo": {
+            "soporte": 1,
+            "predichos": 2,
+            "precision": {
+              "n": 1,
+              "de": 2,
+              "proporcion": 0.5,
+              "ic95": [
+                0.0945,
+                0.9055
+              ]
+            },
+            "recall": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ]
+            },
+            "f1": 0.6667
+          },
+          "servicios_publicos": {
+            "soporte": 4,
+            "predichos": 3,
+            "precision": {
+              "n": 3,
+              "de": 3,
+              "proporcion": 1.0,
+              "ic95": [
+                0.4385,
+                1.0
+              ]
+            },
+            "recall": {
+              "n": 3,
+              "de": 4,
+              "proporcion": 0.75,
+              "ic95": [
+                0.3006,
+                0.9544
+              ]
+            },
+            "f1": 0.8571
+          },
+          "eventos_naturales": {
+            "soporte": 1,
+            "predichos": 3,
+            "precision": {
+              "n": 1,
+              "de": 3,
+              "proporcion": 0.3333,
+              "ic95": [
+                0.0615,
+                0.7923
+              ]
+            },
+            "recall": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ]
+            },
+            "f1": 0.5
+          },
+          "regulacion": {
+            "soporte": 4,
+            "predichos": 3,
+            "precision": {
+              "n": 3,
+              "de": 3,
+              "proporcion": 1.0,
+              "ic95": [
+                0.4385,
+                1.0
+              ]
+            },
+            "recall": {
+              "n": 3,
+              "de": 4,
+              "proporcion": 0.75,
+              "ic95": [
+                0.3006,
+                0.9544
+              ]
+            },
+            "f1": 0.8571
+          },
+          "sin_tema": {
+            "soporte": 1,
+            "predichos": 0,
+            "precision": {
+              "n": 0,
+              "de": 0,
+              "proporcion": null,
+              "ic95": null
+            },
+            "recall": {
+              "n": 0,
+              "de": 1,
+              "proporcion": 0.0,
+              "ic95": [
+                0.0,
+                0.7935
+              ]
+            },
+            "f1": 0.0
+          }
+        },
+        "matriz_confusion": {
+          "clases": [
+            "economia",
+            "logistica",
+            "turismo",
+            "servicios_publicos",
+            "eventos_naturales",
+            "regulacion",
+            "sin_tema"
+          ],
+          "filas_real_columnas_predicho": [
+            [
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              2,
+              1,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              3,
+              1,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0
+            ],
+            [
+              1,
+              0,
+              0,
+              0,
+              0,
+              3,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0
+            ]
+          ]
+        },
+        "secundario_esperado_acertado": {
+          "n": 1,
+          "de": 7,
+          "proporcion": 0.1429,
+          "ic95": [
+            0.0257,
+            0.5131
+          ]
+        },
+        "secundario_esperado_es_el_segundo_mejor": {
+          "n": 3,
+          "de": 7,
+          "proporcion": 0.4286,
+          "ic95": [
+            0.1582,
+            0.7495
+          ]
+        },
+        "secundario_dado_donde_no_se_espera": {
+          "n": 1,
+          "de": 8,
+          "proporcion": 0.125,
+          "ic95": [
+            0.0224,
+            0.4709
+          ]
+        },
+        "fallos": [
+          {
+            "id": "CD-02",
+            "titular": "Lluvias dejan sin agua a sectores de San Miguelito",
+            "esperado": "servicios_publicos",
+            "predicho": "eventos_naturales",
+            "secundario_esperado": "eventos_naturales",
+            "secundario_predicho": null,
+            "similitud": 0.8625
+          },
+          {
+            "id": "CD-04",
+            "titular": "ASEP aprueba aumento de la tarifa eléctrica",
+            "esperado": "regulacion",
+            "predicho": "economia",
+            "secundario_esperado": "servicios_publicos",
+            "secundario_predicho": null,
+            "similitud": 0.87
+          },
+          {
+            "id": "CD-08",
+            "titular": "Aumenta la carga aérea en Tocumen",
+            "esperado": "logistica",
+            "predicho": "turismo",
+            "secundario_esperado": null,
+            "secundario_predicho": null,
+            "similitud": 0.8871
+          },
+          {
+            "id": "CD-15",
+            "titular": "Selección de fútbol clasifica al Mundial",
+            "esperado": "sin_tema",
+            "predicho": "eventos_naturales",
+            "secundario_esperado": null,
+            "secundario_predicho": null,
+            "similitud": 0.8454
+          }
+        ]
+      },
+      "e5/B": {
+        "exactitud_principal": {
+          "n": 12,
+          "de": 15,
+          "proporcion": 0.8,
+          "ic95": [
+            0.5481,
+            0.9295
+          ]
+        },
+        "macro_f1": {
+          "n": 15,
+          "macro_f1": 0.6891,
+          "ic95": [
+            0.4281,
+            1.0
+          ],
+          "remuestreos": 1000
+        },
+        "clases_en_macro_f1": [
+          "economia",
+          "logistica",
+          "turismo",
+          "servicios_publicos",
+          "eventos_naturales",
+          "regulacion",
+          "sin_tema"
+        ],
+        "por_tema": {
+          "economia": {
+            "soporte": 1,
+            "predichos": 2,
+            "precision": {
+              "n": 1,
+              "de": 2,
+              "proporcion": 0.5,
+              "ic95": [
+                0.0945,
+                0.9055
+              ]
+            },
+            "recall": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ]
+            },
+            "f1": 0.6667
+          },
+          "logistica": {
+            "soporte": 3,
+            "predichos": 2,
+            "precision": {
+              "n": 2,
+              "de": 2,
+              "proporcion": 1.0,
+              "ic95": [
+                0.3424,
+                1.0
+              ]
+            },
+            "recall": {
+              "n": 2,
+              "de": 3,
+              "proporcion": 0.6667,
+              "ic95": [
+                0.2077,
+                0.9385
+              ]
+            },
+            "f1": 0.8
+          },
+          "turismo": {
+            "soporte": 1,
+            "predichos": 1,
+            "precision": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ]
+            },
+            "recall": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ]
+            },
+            "f1": 1.0
+          },
+          "servicios_publicos": {
+            "soporte": 4,
+            "predichos": 4,
+            "precision": {
+              "n": 4,
+              "de": 4,
+              "proporcion": 1.0,
+              "ic95": [
+                0.5101,
+                1.0
+              ]
+            },
+            "recall": {
+              "n": 4,
+              "de": 4,
+              "proporcion": 1.0,
+              "ic95": [
+                0.5101,
+                1.0
+              ]
+            },
+            "f1": 1.0
+          },
+          "eventos_naturales": {
+            "soporte": 1,
+            "predichos": 3,
+            "precision": {
+              "n": 1,
+              "de": 3,
+              "proporcion": 0.3333,
+              "ic95": [
+                0.0615,
+                0.7923
+              ]
+            },
+            "recall": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ]
+            },
+            "f1": 0.5
+          },
+          "regulacion": {
+            "soporte": 4,
+            "predichos": 3,
+            "precision": {
+              "n": 3,
+              "de": 3,
+              "proporcion": 1.0,
+              "ic95": [
+                0.4385,
+                1.0
+              ]
+            },
+            "recall": {
+              "n": 3,
+              "de": 4,
+              "proporcion": 0.75,
+              "ic95": [
+                0.3006,
+                0.9544
+              ]
+            },
+            "f1": 0.8571
+          },
+          "sin_tema": {
+            "soporte": 1,
+            "predichos": 0,
+            "precision": {
+              "n": 0,
+              "de": 0,
+              "proporcion": null,
+              "ic95": null
+            },
+            "recall": {
+              "n": 0,
+              "de": 1,
+              "proporcion": 0.0,
+              "ic95": [
+                0.0,
+                0.7935
+              ]
+            },
+            "f1": 0.0
+          }
+        },
+        "matriz_confusion": {
+          "clases": [
+            "economia",
+            "logistica",
+            "turismo",
+            "servicios_publicos",
+            "eventos_naturales",
+            "regulacion",
+            "sin_tema"
+          ],
+          "filas_real_columnas_predicho": [
+            [
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              1,
+              2,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              4,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              1,
+              3,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0
+            ]
+          ]
+        },
+        "secundario_esperado_acertado": {
+          "n": 0,
+          "de": 7,
+          "proporcion": 0.0,
+          "ic95": [
+            0.0,
+            0.3543
+          ]
+        },
+        "secundario_esperado_es_el_segundo_mejor": {
+          "n": 4,
+          "de": 7,
+          "proporcion": 0.5714,
+          "ic95": [
+            0.2505,
+            0.8418
+          ]
+        },
+        "secundario_dado_donde_no_se_espera": {
+          "n": 1,
+          "de": 8,
+          "proporcion": 0.125,
+          "ic95": [
+            0.0224,
+            0.4709
+          ]
+        },
+        "fallos": [
+          {
+            "id": "CD-04",
+            "titular": "ASEP aprueba aumento de la tarifa eléctrica",
+            "esperado": "regulacion",
+            "predicho": "eventos_naturales",
+            "secundario_esperado": "servicios_publicos",
+            "secundario_predicho": "economia",
+            "similitud": 0.8554
+          },
+          {
+            "id": "CD-05",
+            "titular": "Ingresos del Canal crecen en el año fiscal",
+            "esperado": "logistica",
+            "predicho": "economia",
+            "secundario_esperado": "economia",
+            "secundario_predicho": null,
+            "similitud": 0.8526
+          },
+          {
+            "id": "CD-15",
+            "titular": "Selección de fútbol clasifica al Mundial",
+            "esperado": "sin_tema",
+            "predicho": "eventos_naturales",
+            "secundario_esperado": null,
+            "secundario_predicho": "regulacion",
+            "similitud": 0.8211
+          }
+        ]
+      },
+      "minilm/A": {
+        "exactitud_principal": {
+          "n": 8,
+          "de": 15,
+          "proporcion": 0.5333,
+          "ic95": [
+            0.3012,
+            0.7519
+          ]
+        },
+        "macro_f1": {
+          "n": 15,
+          "macro_f1": 0.5333,
+          "ic95": [
+            0.2095,
+            0.7535
+          ],
+          "remuestreos": 1000
+        },
+        "clases_en_macro_f1": [
+          "economia",
+          "logistica",
+          "turismo",
+          "servicios_publicos",
+          "eventos_naturales",
+          "regulacion",
+          "sin_tema"
+        ],
+        "por_tema": {
+          "economia": {
+            "soporte": 1,
+            "predichos": 2,
+            "precision": {
+              "n": 1,
+              "de": 2,
+              "proporcion": 0.5,
+              "ic95": [
+                0.0945,
+                0.9055
+              ]
+            },
+            "recall": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ]
+            },
+            "f1": 0.6667
+          },
+          "logistica": {
+            "soporte": 3,
+            "predichos": 1,
+            "precision": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ]
+            },
+            "recall": {
+              "n": 1,
+              "de": 3,
+              "proporcion": 0.3333,
+              "ic95": [
+                0.0615,
+                0.7923
+              ]
+            },
+            "f1": 0.5
+          },
+          "turismo": {
+            "soporte": 1,
+            "predichos": 3,
+            "precision": {
+              "n": 1,
+              "de": 3,
+              "proporcion": 0.3333,
+              "ic95": [
+                0.0615,
+                0.7923
+              ]
+            },
+            "recall": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ]
+            },
+            "f1": 0.5
+          },
+          "servicios_publicos": {
+            "soporte": 4,
+            "predichos": 1,
+            "precision": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ]
+            },
+            "recall": {
+              "n": 1,
+              "de": 4,
+              "proporcion": 0.25,
+              "ic95": [
+                0.0456,
+                0.6994
+              ]
+            },
+            "f1": 0.4
+          },
+          "eventos_naturales": {
+            "soporte": 1,
+            "predichos": 3,
+            "precision": {
+              "n": 1,
+              "de": 3,
+              "proporcion": 0.3333,
+              "ic95": [
+                0.0615,
+                0.7923
+              ]
+            },
+            "recall": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ]
+            },
+            "f1": 0.5
+          },
+          "regulacion": {
+            "soporte": 4,
+            "predichos": 2,
+            "precision": {
+              "n": 2,
+              "de": 2,
+              "proporcion": 1.0,
+              "ic95": [
+                0.3424,
+                1.0
+              ]
+            },
+            "recall": {
+              "n": 2,
+              "de": 4,
+              "proporcion": 0.5,
+              "ic95": [
+                0.15,
+                0.85
+              ]
+            },
+            "f1": 0.6667
+          },
+          "sin_tema": {
+            "soporte": 1,
+            "predichos": 3,
+            "precision": {
+              "n": 1,
+              "de": 3,
+              "proporcion": 0.3333,
+              "ic95": [
+                0.0615,
+                0.7923
+              ]
+            },
+            "recall": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ]
+            },
+            "f1": 0.5
+          }
+        },
+        "matriz_confusion": {
+          "clases": [
+            "economia",
+            "logistica",
+            "turismo",
+            "servicios_publicos",
+            "eventos_naturales",
+            "regulacion",
+            "sin_tema"
+          ],
+          "filas_real_columnas_predicho": [
+            [
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              1,
+              1,
+              0,
+              1,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              1,
+              1,
+              0,
+              2
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0
+            ],
+            [
+              1,
+              0,
+              1,
+              0,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1
+            ]
+          ]
+        },
+        "secundario_esperado_acertado": {
+          "n": 0,
+          "de": 7,
+          "proporcion": 0.0,
+          "ic95": [
+            0.0,
+            0.3543
+          ]
+        },
+        "secundario_esperado_es_el_segundo_mejor": {
+          "n": 2,
+          "de": 7,
+          "proporcion": 0.2857,
+          "ic95": [
+            0.0822,
+            0.6411
+          ]
+        },
+        "secundario_dado_donde_no_se_espera": {
+          "n": 0,
+          "de": 8,
+          "proporcion": 0.0,
+          "ic95": [
+            0.0,
+            0.3244
+          ]
+        },
+        "fallos": [
+          {
+            "id": "CD-01",
+            "titular": "Sequía obliga al Canal a reducir tránsitos diarios",
+            "esperado": "logistica",
+            "predicho": "eventos_naturales",
+            "secundario_esperado": "eventos_naturales",
+            "secundario_predicho": "logistica",
+            "similitud": 0.5502
+          },
+          {
+            "id": "CD-02",
+            "titular": "Lluvias dejan sin agua a sectores de San Miguelito",
+            "esperado": "servicios_publicos",
+            "predicho": "eventos_naturales",
+            "secundario_esperado": "eventos_naturales",
+            "secundario_predicho": null,
+            "similitud": 0.6501
+          },
+          {
+            "id": "CD-04",
+            "titular": "ASEP aprueba aumento de la tarifa eléctrica",
+            "esperado": "regulacion",
+            "predicho": "economia",
+            "secundario_esperado": "servicios_publicos",
+            "secundario_predicho": "regulacion",
+            "similitud": 0.2855
+          },
+          {
+            "id": "CD-06",
+            "titular": "Panamá sale de la lista gris del GAFI",
+            "esperado": "regulacion",
+            "predicho": "turismo",
+            "secundario_esperado": "economia",
+            "secundario_predicho": "logistica",
+            "similitud": 0.5536
+          },
+          {
+            "id": "CD-08",
+            "titular": "Aumenta la carga aérea en Tocumen",
+            "esperado": "logistica",
+            "predicho": "turismo",
+            "secundario_esperado": null,
+            "secundario_predicho": null,
+            "similitud": 0.3506
+          },
+          {
+            "id": "CD-11",
+            "titular": "Hospital reporta falta de medicamentos",
+            "esperado": "servicios_publicos",
+            "predicho": "sin_tema",
+            "secundario_esperado": null,
+            "secundario_predicho": null,
+            "similitud": 0.157
+          },
+          {
+            "id": "CD-13",
+            "titular": "Policía reporta aumento de homicidios",
+            "esperado": "servicios_publicos",
+            "predicho": "sin_tema",
+            "secundario_esperado": null,
+            "secundario_predicho": null,
+            "similitud": 0.2052
+          }
+        ]
+      },
+      "minilm/B": {
+        "exactitud_principal": {
+          "n": 13,
+          "de": 15,
+          "proporcion": 0.8667,
+          "ic95": [
+            0.6212,
+            0.9626
+          ]
+        },
+        "macro_f1": {
+          "n": 15,
+          "macro_f1": 0.7891,
+          "ic95": [
+            0.5778,
+            1.0
+          ],
+          "remuestreos": 1000
+        },
+        "clases_en_macro_f1": [
+          "economia",
+          "logistica",
+          "turismo",
+          "servicios_publicos",
+          "eventos_naturales",
+          "regulacion",
+          "sin_tema"
+        ],
+        "por_tema": {
+          "economia": {
+            "soporte": 1,
+            "predichos": 1,
+            "precision": {
+              "n": 0,
+              "de": 1,
+              "proporcion": 0.0,
+              "ic95": [
+                0.0,
+                0.7935
+              ]
+            },
+            "recall": {
+              "n": 0,
+              "de": 1,
+              "proporcion": 0.0,
+              "ic95": [
+                0.0,
+                0.7935
+              ]
+            },
+            "f1": 0.0
+          },
+          "logistica": {
+            "soporte": 3,
+            "predichos": 3,
+            "precision": {
+              "n": 3,
+              "de": 3,
+              "proporcion": 1.0,
+              "ic95": [
+                0.4385,
+                1.0
+              ]
+            },
+            "recall": {
+              "n": 3,
+              "de": 3,
+              "proporcion": 1.0,
+              "ic95": [
+                0.4385,
+                1.0
+              ]
+            },
+            "f1": 1.0
+          },
+          "turismo": {
+            "soporte": 1,
+            "predichos": 1,
+            "precision": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ]
+            },
+            "recall": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ]
+            },
+            "f1": 1.0
+          },
+          "servicios_publicos": {
+            "soporte": 4,
+            "predichos": 4,
+            "precision": {
+              "n": 4,
+              "de": 4,
+              "proporcion": 1.0,
+              "ic95": [
+                0.5101,
+                1.0
+              ]
+            },
+            "recall": {
+              "n": 4,
+              "de": 4,
+              "proporcion": 1.0,
+              "ic95": [
+                0.5101,
+                1.0
+              ]
+            },
+            "f1": 1.0
+          },
+          "eventos_naturales": {
+            "soporte": 1,
+            "predichos": 1,
+            "precision": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ]
+            },
+            "recall": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ]
+            },
+            "f1": 1.0
+          },
+          "regulacion": {
+            "soporte": 4,
+            "predichos": 3,
+            "precision": {
+              "n": 3,
+              "de": 3,
+              "proporcion": 1.0,
+              "ic95": [
+                0.4385,
+                1.0
+              ]
+            },
+            "recall": {
+              "n": 3,
+              "de": 4,
+              "proporcion": 0.75,
+              "ic95": [
+                0.3006,
+                0.9544
+              ]
+            },
+            "f1": 0.8571
+          },
+          "sin_tema": {
+            "soporte": 1,
+            "predichos": 2,
+            "precision": {
+              "n": 1,
+              "de": 2,
+              "proporcion": 0.5,
+              "ic95": [
+                0.0945,
+                0.9055
+              ]
+            },
+            "recall": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ]
+            },
+            "f1": 0.6667
+          }
+        },
+        "matriz_confusion": {
+          "clases": [
+            "economia",
+            "logistica",
+            "turismo",
+            "servicios_publicos",
+            "eventos_naturales",
+            "regulacion",
+            "sin_tema"
+          ],
+          "filas_real_columnas_predicho": [
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1
+            ],
+            [
+              0,
+              3,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              4,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0
+            ],
+            [
+              1,
+              0,
+              0,
+              0,
+              0,
+              3,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1
+            ]
+          ]
+        },
+        "secundario_esperado_acertado": {
+          "n": 1,
+          "de": 7,
+          "proporcion": 0.1429,
+          "ic95": [
+            0.0257,
+            0.5131
+          ]
+        },
+        "secundario_esperado_es_el_segundo_mejor": {
+          "n": 4,
+          "de": 7,
+          "proporcion": 0.5714,
+          "ic95": [
+            0.2505,
+            0.8418
+          ]
+        },
+        "secundario_dado_donde_no_se_espera": {
+          "n": 0,
+          "de": 8,
+          "proporcion": 0.0,
+          "ic95": [
+            0.0,
+            0.3244
+          ]
+        },
+        "fallos": [
+          {
+            "id": "CD-04",
+            "titular": "ASEP aprueba aumento de la tarifa eléctrica",
+            "esperado": "regulacion",
+            "predicho": "economia",
+            "secundario_esperado": "servicios_publicos",
+            "secundario_predicho": null,
+            "similitud": 0.466
+          },
+          {
+            "id": "CD-09",
+            "titular": "Inflación cerró el año en X%",
+            "esperado": "economia",
+            "predicho": "sin_tema",
+            "secundario_esperado": null,
+            "secundario_predicho": null,
+            "similitud": 0.2718
+          }
+        ]
+      }
+    },
+    "comparaciones": {
+      "e5": {
+        "criterio_A_vs_B": {
+          "n": 15,
+          "diferencia_macro_f1": 0.068,
+          "ic95": [
+            -0.1963,
+            0.3715
+          ],
+          "por_clase": {
+            "economia": {
+              "diferencia_f1": 0.0,
+              "ic95": [
+                -0.5,
+                0.5
+              ]
+            },
+            "logistica": {
+              "diferencia_f1": 0.0,
+              "ic95": [
+                -1.0,
+                1.0
+              ]
+            },
+            "turismo": {
+              "diferencia_f1": 0.3333,
+              "ic95": [
+                0.0,
+                0.6
+              ]
+            },
+            "servicios_publicos": {
+              "diferencia_f1": 0.1429,
+              "ic95": [
+                0.0,
+                1.0
+              ]
+            },
+            "eventos_naturales": {
+              "diferencia_f1": 0.0,
+              "ic95": [
+                -0.3333,
+                0.3333
+              ]
+            },
+            "regulacion": {
+              "diferencia_f1": 0.0,
+              "ic95": [
+                0.0,
+                0.0
+              ]
+            },
+            "sin_tema": {
+              "diferencia_f1": 0.0,
+              "ic95": [
+                0.0,
+                0.0
+              ]
+            }
+          },
+          "remuestreos": 1000,
+          "excluye_cero": false,
+          "temas_que_empeoran": [],
+          "decision": "A",
+          "motivo": "el IC95 de B − A incluye el cero: no hay evidencia de que B mejore; se usa A por ser más simple"
+        },
+        "A_menos_baseline": {
+          "n": 15,
+          "diferencia_macro_f1": -0.3027,
+          "ic95": [
+            -0.6383,
+            0.0849
+          ],
+          "por_clase": {
+            "economia": {
+              "diferencia_f1": 0.0,
+              "ic95": [
+                -0.5,
+                0.5
+              ]
+            },
+            "logistica": {
+              "diferencia_f1": 0.0,
+              "ic95": [
+                -1.0,
+                1.0
+              ]
+            },
+            "turismo": {
+              "diferencia_f1": -0.3333,
+              "ic95": [
+                -0.6,
+                0.0
+              ]
+            },
+            "servicios_publicos": {
+              "diferencia_f1": -0.1429,
+              "ic95": [
+                -1.0,
+                0.0
+              ]
+            },
+            "eventos_naturales": {
+              "diferencia_f1": -0.5,
+              "ic95": [
+                -0.6667,
+                0.0
+              ]
+            },
+            "regulacion": {
+              "diferencia_f1": -0.1429,
+              "ic95": [
+                -1.0,
+                0.0
+              ]
+            },
+            "sin_tema": {
+              "diferencia_f1": -1.0,
+              "ic95": [
+                -1.0,
+                -1.0
+              ]
+            }
+          },
+          "remuestreos": 1000
+        },
+        "B_menos_baseline": {
+          "n": 15,
+          "diferencia_macro_f1": -0.2347,
+          "ic95": [
+            -0.3889,
+            0.0
+          ],
+          "por_clase": {
+            "economia": {
+              "diferencia_f1": 0.0,
+              "ic95": [
+                0.0,
+                0.0
+              ]
+            },
+            "logistica": {
+              "diferencia_f1": 0.0,
+              "ic95": [
+                0.0,
+                0.0
+              ]
+            },
+            "turismo": {
+              "diferencia_f1": 0.0,
+              "ic95": [
+                0.0,
+                0.0
+              ]
+            },
+            "servicios_publicos": {
+              "diferencia_f1": 0.0,
+              "ic95": [
+                0.0,
+                0.0
+              ]
+            },
+            "eventos_naturales": {
+              "diferencia_f1": -0.5,
+              "ic95": [
+                -0.6667,
+                0.0
+              ]
+            },
+            "regulacion": {
+              "diferencia_f1": -0.1429,
+              "ic95": [
+                -1.0,
+                0.0
+              ]
+            },
+            "sin_tema": {
+              "diferencia_f1": -1.0,
+              "ic95": [
+                -1.0,
+                -1.0
+              ]
+            }
+          },
+          "remuestreos": 1000
+        }
+      },
+      "minilm": {
+        "criterio_A_vs_B": {
+          "n": 15,
+          "diferencia_macro_f1": 0.2558,
+          "ic95": [
+            0.0185,
+            0.6556
+          ],
+          "por_clase": {
+            "economia": {
+              "diferencia_f1": -0.6667,
+              "ic95": [
+                -1.0,
+                0.0
+              ]
+            },
+            "logistica": {
+              "diferencia_f1": 0.5,
+              "ic95": [
+                0.0,
+                1.0
+              ]
+            },
+            "turismo": {
+              "diferencia_f1": 0.5,
+              "ic95": [
+                0.0,
+                0.7143
+              ]
+            },
+            "servicios_publicos": {
+              "diferencia_f1": 0.6,
+              "ic95": [
+                0.0,
+                1.0
+              ]
+            },
+            "eventos_naturales": {
+              "diferencia_f1": 0.5,
+              "ic95": [
+                0.0,
+                0.6667
+              ]
+            },
+            "regulacion": {
+              "diferencia_f1": 0.1905,
+              "ic95": [
+                0.0,
+                0.9222
+              ]
+            },
+            "sin_tema": {
+              "diferencia_f1": 0.1667,
+              "ic95": [
+                -0.3333,
+                0.6
+              ]
+            }
+          },
+          "remuestreos": 1000,
+          "excluye_cero": true,
+          "temas_que_empeoran": [],
+          "decision": "B",
+          "motivo": "el IC95 de B − A excluye el cero a favor de B y ningún tema empeora de forma significativa"
+        },
+        "A_menos_baseline": {
+          "n": 15,
+          "diferencia_macro_f1": -0.3905,
+          "ic95": [
+            -0.778,
+            -0.0216
+          ],
+          "por_clase": {
+            "economia": {
+              "diferencia_f1": 0.0,
+              "ic95": [
+                -0.5,
+                0.5
+              ]
+            },
+            "logistica": {
+              "diferencia_f1": -0.3,
+              "ic95": [
+                -1.0,
+                1.0
+              ]
+            },
+            "turismo": {
+              "diferencia_f1": -0.5,
+              "ic95": [
+                -0.7143,
+                0.0
+              ]
+            },
+            "servicios_publicos": {
+              "diferencia_f1": -0.6,
+              "ic95": [
+                -1.0,
+                0.0
+              ]
+            },
+            "eventos_naturales": {
+              "diferencia_f1": -0.5,
+              "ic95": [
+                -0.6667,
+                0.0
+              ]
+            },
+            "regulacion": {
+              "diferencia_f1": -0.3333,
+              "ic95": [
+                -1.0,
+                0.0
+              ]
+            },
+            "sin_tema": {
+              "diferencia_f1": -0.5,
+              "ic95": [
+                -0.7143,
+                0.0
+              ]
+            }
+          },
+          "remuestreos": 1000
+        },
+        "B_menos_baseline": {
+          "n": 15,
+          "diferencia_macro_f1": -0.1347,
+          "ic95": [
+            -0.375,
+            0.24
+          ],
+          "por_clase": {
+            "economia": {
+              "diferencia_f1": -0.6667,
+              "ic95": [
+                -1.0,
+                0.0
+              ]
+            },
+            "logistica": {
+              "diferencia_f1": 0.2,
+              "ic95": [
+                0.0,
+                1.0
+              ]
+            },
+            "turismo": {
+              "diferencia_f1": 0.0,
+              "ic95": [
+                0.0,
+                0.0
+              ]
+            },
+            "servicios_publicos": {
+              "diferencia_f1": 0.0,
+              "ic95": [
+                0.0,
+                0.0
+              ]
+            },
+            "eventos_naturales": {
+              "diferencia_f1": 0.0,
+              "ic95": [
+                0.0,
+                0.0
+              ]
+            },
+            "regulacion": {
+              "diferencia_f1": -0.1429,
+              "ic95": [
+                -1.0,
+                0.0
+              ]
+            },
+            "sin_tema": {
+              "diferencia_f1": -0.3333,
+              "ic95": [
+                -0.6,
+                0.0
+              ]
+            }
+          },
+          "remuestreos": 1000
+        }
+      }
+    }
+  },
+  "datos_reales": {
+    "estado": "PENDIENTE_ETIQUETAS",
+    "detalle": "no existe etiquetas.csv (E1-06)"
+  }
+}
