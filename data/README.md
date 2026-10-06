@@ -8,6 +8,7 @@ poetry run python -m scripts.extraer --rss        # solo el RSS de TVN: correr a
 poetry run python -m scripts.manifest             # data/manifest.json + data/CHANGELOG.md
 poetry run python -m scripts.validar_snapshot     # outputs/validacion_snapshot.json
 poetry run python -m src.carga                    # processed/validos/ + outputs/errores.csv + outputs/reporte_calidad.json (D-82)
+poetry run python -m scripts.catalogo             # outputs/catalogo.csv (E1-04): una fila por fuente, desde el manifest
 ```
 
 ## Versión del snapshot y receta (D-83)
