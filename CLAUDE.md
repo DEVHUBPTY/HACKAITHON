@@ -74,7 +74,7 @@ El `tema` de `noticias.csv` es el **tema de origen** (consulta de GDELT o catego
 - `fecha_publicacion` y `fecha_deteccion` (seendate de GDELT) son **distintas**. Nunca sustituir una por otra.
 - **Los nulos son nulos. Nunca rellenar con cero.** Conservar unidades originales.
 - `data/raw/` es inmutable. Todo cambio va a `processed/` y se registra en el manifest, que incluye un **historial** de versiones, cambios de fuente, revisiones de datos y registros excluidos (D-63).
-- La cuadrícula del Banco Mundial tiene **1.350 filas** (6 países × 6 indicadores × 15 años), con nulos explícitos.
+- La cuadrícula del Banco Mundial tiene **540 filas** (6 países × 6 indicadores × 15 años), con nulos explícitos. El PDF dice 1.350, que no cuadra con su propia definición (D-81).
 - Datos del Banco Mundial son **anuales**: nunca describirlos como "actuales" ni "de hoy".
 - Origen, URLs y condiciones de cada fuente: `docs/fuentes.md`.
 - La caja de USGS **no es Panamá**: mostrar siempre el `place` original. Solo sirve para hechos sísmicos.
