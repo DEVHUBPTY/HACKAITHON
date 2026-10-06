@@ -2,11 +2,13 @@
 
 Base de las métricas de la sección 9.1 del reto. Esta carpeta contiene `benchmark_dev.jsonl` (las 40 consultas de desarrollo) y `sinteticos.csv` (fixture sintético de evaluación).
 
-> Estado: el archivo todavía no existe. Las consultas y sus etiquetas las escriben y aprueban personas del equipo; el validador ya está listo.
+> Estado: `benchmark_dev.jsonl` existe con las 40 consultas aprobadas.
 
 ## Origen
 
 Lo construye **el equipo** antes del evento (D-74), con la misma proporción de tipos que fija el reto. Si la organización llegara a entregar un benchmark de desarrollo, se usa el suyo y aquí se documenta ese origen.
+
+Etiquetas revisadas y aprobadas por Javier Acosta el 2026-10-06 a partir de candidatas propuestas y validadas por el asistente (E0-06); cambios documentados en Notion, columna Cambios hechos.
 
 ## Formato
 
