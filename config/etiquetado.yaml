@@ -5,7 +5,13 @@ version: 1
 muestra:
   semilla: 20261006        # semilla fija de la muestra aleatoria (docs/etiquetado.md)
   tamano: 100              # titulares de la muestra (supuesto: tiempo disponible)
-  tamano_acuerdo: 20       # los primeros N de la muestra los etiquetan DOS personas por separado (D-71)
+  tamano_acuerdo: 20       # N titulares los etiquetan DOS personas por separado (D-71)
+  # Muestra estratificada por la decisión del filtro automático (E1-03b): aleatoria dentro de cada estrato.
+  # "no_ruido" incluye las notas de alcance regional (D-84). Si un estrato no alcanza su cuota, el resto
+  # se completa con el otro. Cada fila lleva su estrato y su peso (población / muestra) para reponderar.
+  estratos:
+    no_ruido: {cuota: 70, dobles: 14}
+    ruido: {cuota: 30, dobles: 6}
 
 archivos:
   carpeta_personas: eval/etiquetas      # una hoja por persona: <nombre>.csv
@@ -14,14 +20,15 @@ archivos:
 
 ruido:
   sin_ruido: ninguno
-  motivos: [no_es_panama, fuera_de_temas]   # deben ser los de temas.yaml (fuera_de_temas)
+  # fuera_de_temas de temas.yaml + no_es_noticia (decisión del equipo tras revisión, spec E1-06)
+  motivos: [no_es_panama, fuera_de_temas, no_es_noticia]
 
 acuerdo:
   kappa_minimo: 0.6        # por debajo se revisa la guía antes de usar las etiquetas (D-71)
 
 nombres:
   longitud_minima: 3
-  # Palabras (sin tildes, en minúscula) que delatan que "la persona" es una herramienta o un modelo.
+  # Un nombre se rechaza si alguna de sus palabras (sin tildes, minúscula) es uno de estos marcadores.
   marcadores_ia:
     - claude
     - anthropic
@@ -40,10 +47,6 @@ nombres:
     - sonnet
     - opus
     - haiku
-    - ia
-    - ai
-    - llm
-    - bot
     - modelo
     - asistente
     - agente
@@ -52,6 +55,10 @@ nombres:
     - baseline
     - benchmark
     - script
+
+  # Marcadores tan cortos que podrían ser parte de un nombre real ("Ai", "Ia"): solo se rechaza el nombre
+  # COMPLETO si es exactamente uno de ellos.
+  marcadores_ia_nombre_completo: [ia, ai, llm, bot]
 
 interfaz:
   zona_horaria: America/Panama

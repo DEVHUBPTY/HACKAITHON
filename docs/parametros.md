@@ -201,9 +201,10 @@ Todo lo marcado como ruido es una **propuesta por titular**, no una etiqueta hum
 |---|---|---|---|
 | Semilla de la muestra | 20261006 | Práctica (reproducibilidad) | `test_muestra_reproducible_con_la_semilla_y_del_tamano_pedido` |
 | Tamaño de la muestra | 100 | Supuesto (tiempo disponible; ~100 según el reto) | `eval.etiquetar --muestra` |
-| Titulares dobles (acuerdo) | 20 | PDF (sección 9.1) | `eval.etiquetar --acuerdo` |
+| Cuotas por estrato (no ruido / ruido) | 70 / 30 (real 63 / 37: el estrato no ruido solo tiene 63) | Supuesto (medir el filtro necesita ruido suficiente) | `test_muestra_estratificada_70_30_con_dobles_14_6_y_pesos`; pesos en `eval.etiquetar --muestra` |
+| Titulares dobles (acuerdo) | 20 (14 no ruido + 6 ruido) | D-71 / spec E1-06 | `eval.etiquetar --acuerdo` |
 | Kappa mínimo del acuerdo | 0.6 | Supuesto (umbral "sustancial" de Landis y Koch; con n = 20 es impreciso) | `eval.etiquetar --acuerdo` y `--consolidar` |
-| Marcadores de IA en nombres | `nombres.marcadores_ia` | Supuesto (lista corta; compara palabras completas) | `test_rechaza_nombres_de_herramientas_o_invalidos` |
+| Marcadores de IA en nombres | `nombres.marcadores_ia` (palabra) y `marcadores_ia_nombre_completo` (`ia`, `ai`, `llm`, `bot`: solo el nombre completo) | Supuesto (lista corta; palabra exacta) | `test_rechaza_nombres_de_herramientas_o_invalidos` |
 
 ## Exploración (E0-09)
 

@@ -954,8 +954,9 @@ def validar_coherencia(carpeta: Path | None = None) -> list[str]:
         problemas.append(f"ejemplos_excluidos.txt no coincide con los ejemplos reales de temas.yaml: {sorted(reales ^ excluidos)}")
     if (carpeta / "etiquetado.yaml").exists():
         motivos = set(cargar_etiquetado(carpeta).ruido.motivos)
-        if motivos != set(FueraDeTemas.model_fields):
-            problemas.append(f"etiquetado.yaml: ruido.motivos {sorted(motivos)} no coincide con fuera_de_temas de temas.yaml")
+        esperados = set(FueraDeTemas.model_fields) | MOTIVOS_RUIDO_HUMANO_EXTRA
+        if motivos != esperados:
+            problemas.append(f"etiquetado.yaml: ruido.motivos {sorted(motivos)} debe ser fuera_de_temas de temas.yaml más {sorted(MOTIVOS_RUIDO_HUMANO_EXTRA)}")
     grupos = set(cargar_restricciones(carpeta).grupos)
     for modalidad in MODALIDADES:
         if (carpeta / f"modalidad_{modalidad}.yaml").exists():
@@ -1117,15 +1118,33 @@ def cargar_ruido(carpeta: Path | None = None) -> ConfigRuido:
 # ------------------------------------------------------------------ etiquetado.yaml (E1-06)
 
 
+class EstratoEtiquetado(ModeloConfig):
+    cuota: int = Field(ge=0)
+    dobles: int = Field(ge=0)
+
+
+class EstratosEtiquetado(ModeloConfig):
+    no_ruido: EstratoEtiquetado
+    ruido: EstratoEtiquetado
+
+
 class MuestraEtiquetado(ModeloConfig):
     semilla: int
     tamano: int = Field(ge=1)
     tamano_acuerdo: int = Field(ge=2)
+    estratos: EstratosEtiquetado
 
     @model_validator(mode="after")
     def _acuerdo_cabe(self) -> MuestraEtiquetado:
         if self.tamano_acuerdo > self.tamano:
             raise ValueError("tamano_acuerdo no puede superar tamano")
+        e = self.estratos
+        if e.no_ruido.cuota + e.ruido.cuota != self.tamano:
+            raise ValueError("las cuotas de los estratos deben sumar tamano")
+        if e.no_ruido.dobles + e.ruido.dobles != self.tamano_acuerdo:
+            raise ValueError("los dobles de los estratos deben sumar tamano_acuerdo")
+        if e.no_ruido.dobles > e.no_ruido.cuota or e.ruido.dobles > e.ruido.cuota:
+            raise ValueError("los dobles de un estrato no pueden superar su cuota")
         return self
 
 
@@ -1147,6 +1166,7 @@ class AcuerdoEtiquetado(ModeloConfig):
 class NombresEtiquetado(ModeloConfig):
     longitud_minima: int = Field(ge=1)
     marcadores_ia: list[str]
+    marcadores_ia_nombre_completo: list[str]
 
 
 class InterfazEtiquetado(ModeloConfig):
@@ -1164,6 +1184,10 @@ class ConfigEtiquetado(ModeloConfig):
     acuerdo: AcuerdoEtiquetado
     nombres: NombresEtiquetado
     interfaz: InterfazEtiquetado
+
+
+# Motivo que las personas etiquetan además de los de temas.yaml (decisión del equipo tras revisión, spec E1-06).
+MOTIVOS_RUIDO_HUMANO_EXTRA = frozenset({"no_es_noticia"})
 
 
 def cargar_etiquetado(carpeta: Path | None = None) -> ConfigEtiquetado:

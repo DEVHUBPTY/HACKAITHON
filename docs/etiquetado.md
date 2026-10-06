@@ -2,51 +2,77 @@
 
 Las métricas de clasificación, agrupación y ruido se calculan sobre **etiquetas humanas** (sección 9.1). Este documento dice cómo se etiqueta, con qué muestra y cómo se mide el acuerdo. La herramienta (`eval/etiquetar.py`) **no etiqueta**: solo arma la muestra, la muestra y guarda lo que decide cada persona.
 
-> **Estado:** la herramienta está construida y probada con datos sintéticos. Las **etiquetas reales todavía no existen**: las ponen las personas del equipo. Las secciones "Etiquetadores" y "Acuerdo" se completan con los resultados reales (ver abajo); mientras tanto no hay números.
+> **Estado:** la herramienta está construida y probada con datos sintéticos. Las **etiquetas reales todavía no existen**: las ponen las personas del equipo. Las secciones "Etiquetadores" y "Acuerdo" se completan con los resultados reales; mientras tanto no hay números.
 
 ## Tamaño y método
 
 | | |
 |---|---|
-| Muestra | **100** titulares, elegidos al azar de las noticias de `data/senales.duckdb` (186 en el snapshot actual) |
+| Población | **170** noticias elegibles de `data/senales.duckdb` (186 en el snapshot menos los 16 titulares de ejemplo de `config/temas.yaml`, `config/ejemplos_excluidos.txt`, que nunca entran) |
+| Muestra | **100** titulares, **estratificada** por la decisión del filtro automático de E1-03b, aleatoria dentro de cada estrato |
 | Semilla | **20261006**, en `config/etiquetado.yaml` (`muestra.semilla`). Mismas noticias y misma semilla dan la misma muestra y el mismo orden |
-| Exclusiones | Los 16 titulares de ejemplo de `config/temas.yaml` (`config/ejemplos_excluidos.txt`) nunca entran |
-| Qué se etiqueta | **Ruido** (`ninguno` · `no_es_panama` · `fuera_de_temas`), **tema principal** y **secundario** (opcional) y **grupo de evento** |
-| Guía | `docs/guia_temas.md`; la herramienta la muestra en pantalla, con las reglas de frontera |
-| Ruido incluido | La muestra incluye noticias que el filtro de E1-03b marcó como ruido y otras que no (la persona no ve esa marca), para medir su precisión y recall con `python -m eval.ruido` |
+| Qué se etiqueta | **Ruido** (`ninguno` · `no_es_panama` · `fuera_de_temas` · `no_es_noticia`), **tema principal** y **secundario** (opcional), **grupo de evento** y, si no es ruido, **alcance regional** (D-84) |
+| Guía | `docs/guia_temas.md`; la herramienta la muestra en pantalla, con las reglas de frontera y la regla D-84 |
 | Quién y cuándo | Cada etiqueta guarda `etiquetado_por` y `fecha_etiquetado` (UTC; la interfaz muestra hora de Panamá) |
-| Qué ve la persona | Titular, medio, fechas y URL. **Nunca** la descripción del RSS (D-31), ni la decisión del filtro, ni las etiquetas de otra persona sobre un titular doble |
+| Qué ve la persona | Titular, medio, fechas y URL. **Nunca** la descripción del RSS (D-31), ni la decisión del filtro ni el estrato, ni las etiquetas de otra persona sobre un titular doble |
+| Datos personales | **No** se escriben en la columna `nota` (ni nombres de personas ni contactos); la nota es solo para dudas sobre el criterio |
 
-Los primeros **20** titulares de la muestra los etiquetan **dos personas por separado** (acuerdo, D-71). Los otros 80 se reparten entre quienes etiquetan (`parte K de N`).
+### Composición real (salida de `poetry run python -m eval.etiquetar --muestra`)
+
+| Estrato | Población | Muestra | Peso (población / muestra) | Dobles |
+|---|---|---|---|---|
+| `no_ruido` (incluye 38 notas de alcance regional) | 63 | 63 | 1.000 | 14 |
+| `ruido` | 107 | 37 | 2.892 | 6 |
+| **Total** | **170** | **100** | | **20** |
+
+- La cuota configurada es 70 no ruido y 30 ruido (`muestra.estratos`), pero el estrato "no ruido" solo tiene 63 noticias elegibles: se toma completo y el faltante (7) pasa al estrato de ruido. **Hay que decirlo: la muestra es 63 / 37, no 70 / 30.** Los 16 ejemplos excluidos eran todos "no ruido".
+- Cada fila del consolidado lleva `estrato` y `peso_muestreo` (= población / muestra) para reponderar las métricas de ruido a la población. Las filas del estrato `no_ruido` pesan 1 (son todas); las del estrato `ruido`, 2.892.
+- Los **dobles** (20) son 14 de no ruido y 6 de ruido, para que el acuerdo se mida sobre todo en titulares con tema (11 de los 14 son de alcance regional).
+
+### n efectivo por métrica
+
+El **n efectivo de Kish** de toda la muestra ponderada es (Σw)² / Σw² = **77.6** de 100. Por métrica:
+
+| Métrica | Base | n |
+|---|---|---|
+| Clasificación por tema (macro-F1, F1 por tema) | Titulares que las personas consideran no ruido: los 63 del estrato `no_ruido` más los del estrato `ruido` que la persona no marque como ruido | ≥ 63, sin ponderar (es un censo del estrato) |
+| Precisión del filtro de ruido | Marcados por el filtro = estrato `ruido` | 37, sin ponderar |
+| Recall del filtro de ruido | Todo lo que la persona marque como ruido; los del estrato `ruido` se ponderan por 2.892 | depende de cuántos ruidos marque la persona en el estrato `no_ruido` (se reportan con n e IC; el IC debe usar el n efectivo, no 100) |
+| Alcance regional (`eval.ruido`) | Subconjunto aparte, solo titulares sin ruido | ≤ 38 regionales según el filtro |
+| Agrupación (precisión y recall de pares) | Pares dentro de la muestra de 100. La muestra no fue diseñada para encontrar eventos: pocos pares reales | **exploratoria** |
+| Acuerdo entre etiquetadores | Los 20 dobles | 20 (kappa impreciso: indicativo) |
 
 ## Cómo etiqueta una persona
 
-1. `poetry install` y, una vez, `poetry run python -m src.carga && poetry run python -m src.normalizacion && poetry run python -m src.limpieza` (crea `data/senales.duckdb`).
+1. `poetry install` y, una vez, `poetry run python -m src.carga && poetry run python -m src.normalizacion && poetry run python -m src.limpieza` (crea `data/senales.duckdb`, con la marca de ruido que usa la muestra).
 2. `poetry run streamlit run eval/etiquetar.py`
 3. En la barra lateral: tu **nombre** (el de una persona; se rechazan nombres de herramientas o modelos), **tu parte** y **de cuántas personas** (con dos personas: una es 1 de 2 y la otra 2 de 2). Lee la guía que aparece abajo.
-4. Para cada titular: marca si es ruido; si no lo es, elige tema principal, secundario (opcional) y grupo; pulsa **Guardar y seguir**.
+4. Para cada titular: marca si es ruido; si no lo es, elige tema principal, secundario (opcional), grupo y, si aplica, **alcance regional**; pulsa **Guardar y seguir**.
    - **Grupo:** titulares que cuentan el mismo hecho comparten grupo (nombre corto, ej. `sismo-chiriqui`). Un titular que no repite el hecho de otro va **suelto** ("ninguno").
-   - Un titular **sin contenido** (solo el nombre del medio, una portada): `fuera_de_temas` y explícalo en la nota.
-   - Un titular de ruido no lleva tema ni grupo.
+   - **Alcance regional (D-84):** nota de la región o de un fenómeno regional que afecta a Panamá. **No es ruido**: elige `ninguno`, su tema y marca la casilla.
+   - **`no_es_noticia`:** titular sin contenido (solo el nombre del medio, portada, promoción).
+   - Un titular de ruido no lleva tema, grupo ni alcance regional.
 5. Tu hoja queda en `eval/etiquetas/<tu_nombre>.csv`. Haz commit de ese archivo (cada persona tiene el suyo, no se pisan). Puedes volver a un titular y corregirlo: se reemplaza.
 
 ## Columnas
 
-`id_noticia · titulo · tema_principal · tema_secundario · ruido · grupo · nota · etiquetado_por · fecha_etiquetado`. `eval/etiquetas.csv` (consolidado) agrega `n_etiquetadores`.
+Hojas por persona: `id_noticia · titulo · tema_principal · tema_secundario · ruido · grupo · alcance_regional · nota · etiquetado_por · fecha_etiquetado`. `eval/etiquetas.csv` (consolidado) agrega `estrato · peso_muestreo · n_etiquetadores`.
 
-## Después de etiquetar
+## Después de etiquetar (en este orden)
 
 ```bash
 poetry run python -m eval.etiquetar --validar      # formato de cada hoja
 poetry run python -m eval.etiquetar --acuerdo      # kappa de Cohen sobre los 20 dobles
+poetry run python -m eval.etiquetar --grupos       # nombres de grupo de todas las hojas, con sus titulares
+poetry run python -m eval.etiquetar --desempate    # titulares en disputa (los etiqueta una tercera persona)
 poetry run python -m eval.etiquetar --consolidar   # escribe eval/etiquetas.csv (una fila por titular)
-poetry run python -m eval.ruido                    # precisión y recall del filtro de ruido
+poetry run python -m eval.ruido                    # precisión y recall del filtro; subconjunto regional aparte
 ```
 
-- **Acuerdo:** por cada par de personas, kappa de la categoría (tema o motivo de ruido), kappa del ruido y kappa de los pares de titulares "mismo grupo / distinto grupo" (no se comparan los nombres de grupo, solo qué titulares juntó cada persona). Se reporta también el acuerdo observado con n e intervalo de Wilson al 95 %. Con n = 20 el kappa es impreciso: se reporta como indicativo.
-- **Acuerdo bajo** (kappa < 0.6, `acuerdo.kappa_minimo`): **se revisa la guía antes de usar las etiquetas** (D-71). `--consolidar` se niega a escribir `eval/etiquetas.csv` si el acuerdo es bajo o no hay dos personas (`--forzar` solo después de revisar la guía).
-- **Titulares en disputa:** si dos personas difieren en ruido o tema principal, el titular queda fuera del consolidado hasta que una tercera persona lo etiquete (gana la mayoría). El secundario y el grupo del consolidado son los de la primera persona (orden alfabético); el secundario solo se conserva si coinciden.
-- Los titulares con `sospechoso_inyeccion` se muestran como texto plano: un titular es dato, nunca instrucción.
+- **Acuerdo (D-71):** 20 titulares etiquetados por **dos** personas por separado (spec E1-06 · D-71). Por cada par: kappa de la categoría (tema o motivo de ruido), kappa del ruido y kappa de los pares "mismo grupo / distinto grupo" (no se comparan los nombres de grupo, solo qué titulares juntó cada persona), con el acuerdo observado, su n e intervalo de Wilson al 95 %. Sin hojas, `--acuerdo` termina con código 2. **Acuerdo bajo** (kappa < 0.6): se revisa la guía antes de usar las etiquetas; `--consolidar` se niega a escribir (`--forzar` solo después de revisarla).
+- **Conciliar grupos (`--grupos`):** antes de consolidar, el equipo revisa la lista. Si dos nombres cuentan el mismo hecho, la persona dueña de uno lo unifica: `poetry run python -m eval.etiquetar --renombrar VIEJO NUEVO --persona "Nombre"`. Un grupo de un solo titular se marca para decidir si va suelto. La interfaz no sugiere a una persona los grupos que otra usó en los titulares dobles, para no sesgar el acuerdo; la conciliación se hace después de medirlo.
+- **Disputas y desempate:** si dos personas difieren en ruido o tema principal, el titular queda **fuera** del consolidado. `--consolidar` imprime cuántos excluyó y los lista (id, titular y quiénes lo etiquetaron); nunca los descarta en silencio. Una **tercera persona** abre la interfaz con la opción **Desempate**, que muestra solo esos titulares (sin las etiquetas de las otras dos), y vuelve a consolidar: gana la mayoría. El secundario, el grupo y el alcance regional del consolidado son los de la primera persona (orden alfabético); el secundario y el alcance regional solo se conservan si todas coinciden.
+- Los titulares se muestran como texto plano: un titular es dato, nunca instrucción.
 
 ## Etiquetadores
 
@@ -58,5 +84,5 @@ poetry run python -m eval.ruido                    # precisión y recall del fil
 
 ## Límites
 
-- No hay etiquetas de "no es noticia" ni "fuera de ventana": el humano elige solo entre los tres valores de ruido de la spec; `eval.ruido` compara cualquier motivo marcado por el filtro contra esos tres.
-- Una muestra de ~100 titulares da intervalos amplios; toda proporción se reporta con n e IC (`docs/protocolo_evaluacion.md`).
+- `fuera_de_ventana` no se etiqueta (es un hecho de fecha, no de contenido); `eval.ruido` compara los motivos que el filtro marca con los cuatro valores humanos.
+- Una muestra de 100 titulares da intervalos amplios; toda proporción se reporta con n e IC (`docs/protocolo_evaluacion.md`), usando el n efectivo cuando se pondera.

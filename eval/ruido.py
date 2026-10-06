@@ -21,6 +21,7 @@ from src.carga import intervalo_wilson
 from src.configuracion import RAIZ, cargar_carga, cargar_normalizacion
 
 ETIQUETAS = RAIZ / "eval" / "etiquetas.csv"
+SI_REGIONAL = {"si", "sí", "true", "1", "x"}
 SIN_RUIDO = {"", "ninguno", "ninguna", "no", "false", "0", "none"}
 CODIGO_SIN_ETIQUETAS = 2
 
@@ -64,6 +65,36 @@ def medir(etiquetas: dict[str, str | None], predichas: dict[str, str | None], z:
     return lineas
 
 
+def leer_regional(ruta: Path, columna: str = "alcance_regional") -> dict[str, bool] | None:
+    """``id_noticia -> alcance regional marcado por la persona`` (D-84). ``None`` si el CSV no trae la columna."""
+    with ruta.open(encoding="utf-8", newline="") as f:
+        lector = csv.DictReader(f)
+        if columna not in (lector.fieldnames or []):
+            return None
+        return {fila["id_noticia"].strip(): (fila[columna] or "").strip().casefold() in SI_REGIONAL for fila in lector}
+
+
+def medir_regional(humanos: dict[str, bool], predichas: dict[str, bool], z: float) -> list[str]:
+    """Subconjunto regional (D-84), aparte del ruido: precisión y recall de ``alcance_regional`` del filtro."""
+    comunes = sorted(set(humanos) & set(predichas))
+    tp = sum(1 for i in comunes if humanos[i] and predichas[i])
+    return [
+        f"Alcance regional (D-84), aparte del ruido; titulares comparados: {len(comunes)}",
+        "  Precisión (marcados regionales que la persona confirma): " + _texto_proporcion(tp, sum(predichas[i] for i in comunes), z),
+        "  Recall (regionales según la persona que el filtro marcó): " + _texto_proporcion(tp, sum(humanos[i] for i in comunes), z),
+    ]
+
+
+def regional_de_la_base(ruta_base: Path) -> dict[str, bool]:
+    """``id_noticia -> alcance_regional`` según ``python -m src.limpieza``."""
+    con = db.conectar(ruta_base, solo_lectura=True)
+    try:
+        filas = con.execute("SELECT id_noticia, alcance_regional FROM noticias").fetchall()
+    finally:
+        con.close()
+    return {i: bool(r) for i, r in filas}
+
+
 def predichas_de_la_base(ruta_base: Path) -> dict[str, str | None]:
     """``id_noticia -> motivo_ruido`` según ``python -m src.limpieza`` (``None`` si no es ruido)."""
     con = db.conectar(ruta_base, solo_lectura=True)
@@ -98,6 +129,12 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     resultado: Any = medir(etiquetas, predichas_de_la_base(args.base), cargar_carga().salida.z_intervalo_confianza)
     print("\n".join(resultado))
+    regional = leer_regional(args.etiquetas)
+    if regional is None:
+        print("Sin columna alcance_regional: no se mide el subconjunto regional (D-84).")
+    else:
+        z = cargar_carga().salida.z_intervalo_confianza
+        print("\n".join(medir_regional(regional, regional_de_la_base(args.base), z)))
     return 0
 
 

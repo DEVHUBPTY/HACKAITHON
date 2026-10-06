@@ -1,6 +1,7 @@
 """E1-06: herramienta de etiquetado. Las etiquetas de estas pruebas son SINTÉTICAS (tmp_path); nadie etiqueta aquí."""
 
 import csv
+from collections import Counter
 from pathlib import Path
 
 import pytest
@@ -16,17 +17,26 @@ UTC_FIJA = "2026-10-06T15:00:00Z"
 
 
 def _noticias(n: int = 150) -> list[dict]:
+    """Un tercio son ruido según el filtro (``es_ruido``)."""
     return [
         {"id_noticia": f"NOT-{i:010x}", "titulo": f"Titular sintético {i}", "medio": "m.test", "url": f"https://m.test/{i}",
-         "fecha_publicacion": None, "fecha_deteccion": UTC_FIJA}
+         "fecha_publicacion": None, "fecha_deteccion": UTC_FIJA, "es_ruido": i % 3 == 0}
         for i in range(n)
     ]
 
 
-def _fila(id_: str, por: str, ruido="ninguno", principal="economia", secundario="", grupo="") -> dict:
-    return {"id_noticia": id_, "titulo": "t", "tema_principal": principal if ruido == "ninguno" else "",
-            "tema_secundario": secundario, "ruido": ruido, "grupo": grupo, "nota": "", "etiquetado_por": por,
-            "fecha_etiquetado": UTC_FIJA}
+def _base(ruta: Path, n: int = 150) -> Path:
+    con = db.conectar(ruta)
+    db.crear_esquema(con)
+    db.insertar(con, "noticias", [{**x, "url_canonica": x["url"], "tipo_firma": "sin_firma"} for x in _noticias(n)])
+    con.close()
+    return ruta
+
+
+def _fila(id_: str, por: str, ruido="ninguno", principal="economia", secundario="", grupo="", regional="", titulo="t") -> dict:
+    return {"id_noticia": id_, "titulo": titulo, "tema_principal": principal if ruido == "ninguno" else "",
+            "tema_secundario": secundario, "ruido": ruido, "grupo": grupo, "alcance_regional": regional, "nota": "",
+            "etiquetado_por": por, "fecha_etiquetado": UTC_FIJA}
 
 
 # ---------------------------------------------------------------- config
@@ -34,7 +44,7 @@ def _fila(id_: str, por: str, ruido="ninguno", principal="economia", secundario=
 
 def test_config_etiquetado_valida_y_coincide_con_temas():
     assert "etiquetado" in validar_todo()
-    assert set(CFG.ruido.motivos) == {"no_es_panama", "fuera_de_temas"}
+    assert set(CFG.ruido.motivos) == {"no_es_panama", "fuera_de_temas", "no_es_noticia"}
 
 
 # ---------------------------------------------------------------- muestra
@@ -48,6 +58,39 @@ def test_muestra_reproducible_con_la_semilla_y_del_tamano_pedido():
     assert sum(m["doble"] for m in a) == CFG.muestra.tamano_acuerdo
     assert all(m["doble"] for m in a[: CFG.muestra.tamano_acuerdo])
     assert len({m["id_noticia"] for m in a}) == len(a)
+
+
+def test_muestra_estratificada_70_30_con_dobles_14_6_y_pesos():
+    m = et.construir_muestra(_noticias(), set(), CFG)  # 100 no ruido y 50 ruido en la población
+    nr, r = [x for x in m if x["estrato"] == "no_ruido"], [x for x in m if x["estrato"] == "ruido"]
+    assert (len(nr), len(r)) == (70, 30)
+    assert (sum(x["doble"] for x in nr), sum(x["doble"] for x in r)) == (14, 6)
+    assert all(not x["es_ruido"] for x in nr) and all(x["es_ruido"] for x in r)
+    assert nr[0]["peso"] == pytest.approx(100 / 70) and r[0]["peso"] == pytest.approx(50 / 30)
+    # los pesos reponderan la muestra a la población
+    assert sum(x["peso"] for x in m) == pytest.approx(150)
+    assert 0 < et.n_efectivo(m) <= len(m)
+    assert any("n efectivo" in linea for linea in et.composicion(m))
+
+
+def test_estrato_corto_cede_su_cuota_al_otro_y_el_peso_lo_refleja():
+    noticias = _noticias(150)
+    for n in noticias:  # solo 40 no ruido elegibles
+        n["es_ruido"] = n["id_noticia"] > "NOT-0000000027" or False
+    m = et.construir_muestra(noticias, set(), CFG)
+    por = Counter(x["estrato"] for x in m)
+    assert sum(por.values()) == 100 and por["no_ruido"] < 70
+    nr = [x for x in m if x["estrato"] == "no_ruido"]
+    assert nr[0]["peso"] == pytest.approx(nr[0]["poblacion"] / len(nr))
+
+
+def test_leer_noticias_exige_la_limpieza(tmp_path):
+    con = db.conectar(tmp_path / "s.duckdb")
+    db.crear_esquema(con)
+    db.insertar(con, "noticias", [{"id_noticia": "NOT-1", "titulo": "T", "url": "u", "url_canonica": "u", "medio": "m", "tipo_firma": "sin_firma"}])
+    con.close()
+    with pytest.raises(et.ErrorEtiquetado, match="limpieza"):
+        et.leer_noticias(tmp_path / "s.duckdb")
 
 
 def test_otra_semilla_cambia_la_muestra():
@@ -92,19 +135,19 @@ def test_leer_noticias_no_trae_descripcion_ni_ruido(tmp_path):
                                    "motivo_ruido": "no_es_panama"}])
     con.close()
     filas = et.leer_noticias(ruta)
-    assert set(filas[0]) == {"id_noticia", "titulo", "medio", "url", "fecha_publicacion", "fecha_deteccion"}
+    assert "descripcion" not in filas[0] and "motivo_ruido" not in filas[0]
 
 
 # ---------------------------------------------------------------- nombres
 
 
-@pytest.mark.parametrize("nombre", ["Claude", "GPT-4", "Asistente IA", "bot", "modelo local", "Claude Code", "x", "", "  ", "123", "Gemma 3"])
+@pytest.mark.parametrize("nombre", ["Claude", "GPT-4", "Asistente IA", "bot", "IA", "Ai", "modelo local", "Claude Code", "x", "", "  ", "123", "Gemma 3"])
 def test_rechaza_nombres_de_herramientas_o_invalidos(nombre):
     with pytest.raises(et.ErrorEtiquetado):
         et.validar_nombre(nombre, CFG)
 
 
-@pytest.mark.parametrize("nombre", ["Ana María Pérez", "Claudia", "Javier", "O'Brien", "José-Luis"])
+@pytest.mark.parametrize("nombre", ["Ana María Pérez", "Claudia", "Javier", "O'Brien", "José-Luis", "Ai Lin", "Mia Bot Smith"])
 def test_acepta_nombres_de_personas_incluido_claudia(nombre):
     assert et.validar_nombre(nombre, CFG) == nombre
 
@@ -131,6 +174,10 @@ def test_fila_valida_y_reglas_de_ruido_y_temas():
     assert any("grupo" in e for e in et.validar_fila(_fila("N", "Ana", grupo="Sismo Grande"), CFG, TEMAS))
     assert any("ISO" in e for e in et.validar_fila(_fila("N", "Ana") | {"fecha_etiquetado": "ayer"}, CFG, TEMAS))
     assert et.validar_fila(_fila("N", "Claude"), CFG, TEMAS)  # nombre de IA
+    assert et.validar_fila(_fila("N", "Ana", ruido="no_es_noticia"), CFG, TEMAS) == []
+    assert et.validar_fila(_fila("N", "Ana", regional="si"), CFG, TEMAS) == []
+    assert any("alcance_regional" in e for e in et.validar_fila(_fila("N", "Ana", regional="quizas"), CFG, TEMAS))
+    assert any("solo aplica" in e for e in et.validar_fila(_fila("N", "Ana", ruido="no_es_panama", regional="si"), CFG, TEMAS))
 
 
 def test_guardar_etiqueta_crea_reemplaza_y_registra_quien_y_cuando(tmp_path):
@@ -138,11 +185,12 @@ def test_guardar_etiqueta_crea_reemplaza_y_registra_quien_y_cuando(tmp_path):
     n = _noticias(2)
     et.guardar_etiqueta(ruta, CFG, TEMAS, n[0], {"ruido": "ninguno", "tema_principal": "economia"}, "Ana Pérez")
     et.guardar_etiqueta(ruta, CFG, TEMAS, n[1], {"ruido": "no_es_panama"}, "Ana Pérez")
-    et.guardar_etiqueta(ruta, CFG, TEMAS, n[0], {"ruido": "ninguno", "tema_principal": "turismo", "grupo": "Cruceros 2026", "nota": " dudo "}, "Ana Pérez")
+    et.guardar_etiqueta(ruta, CFG, TEMAS, n[0], {"ruido": "ninguno", "tema_principal": "turismo", "grupo": "Cruceros 2026", "alcance_regional": True, "nota": " dudo "}, "Ana Pérez")
     filas = et.leer_csv(ruta)
     assert [f["id_noticia"] for f in filas] == [n[1]["id_noticia"], n[0]["id_noticia"]]
     ultima = filas[1]
     assert (ultima["tema_principal"], ultima["grupo"], ultima["nota"], ultima["etiquetado_por"]) == ("turismo", "cruceros-2026", "dudo", "Ana Pérez")
+    assert ultima["alcance_regional"] == "si"
     assert ultima["fecha_etiquetado"].endswith("Z") and not et.validar_fila(ultima, CFG, TEMAS)
     with pytest.raises(et.ErrorEtiquetado):
         et.guardar_etiqueta(ruta, CFG, TEMAS, n[0], {"ruido": "ninguno", "tema_principal": "inventado"}, "Ana Pérez")
@@ -254,9 +302,87 @@ def test_consolidar_se_niega_con_acuerdo_bajo_o_ausente(tmp_path, capsys):
     base = ["--base", str(tmp_path / "no_existe.duckdb"), "--raiz", str(tmp_path)]
     assert et.main(["--consolidar", *base]) == 3  # una sola persona: no hay acuerdo
     assert not (tmp_path / CFG.archivos.consolidado).exists()
-    assert et.main(["--consolidar", "--forzar", *base]) == 0
-    assert (tmp_path / CFG.archivos.consolidado).exists()
+    assert et.main(["--consolidar", "--forzar", *base]) == 1  # sin la base no hay estrato ni peso
+    ruta_base = _base(tmp_path / "s.duckdb")
+    muestra = et.muestra_desde_base(ruta_base, CFG)
+    et.escribir_csv(carpeta / "ana.csv", [_fila(muestra[0]["id_noticia"], "Ana")])
+    assert et.main(["--consolidar", "--forzar", "--base", str(ruta_base), "--raiz", str(tmp_path)]) == 0
+    final = et.cargar_etiquetas_finales(tmp_path / CFG.archivos.consolidado)
+    fila = final[muestra[0]["id_noticia"]]
+    assert fila["estrato"] == muestra[0]["estrato"] and float(fila["peso_muestreo"]) == pytest.approx(muestra[0]["peso"], rel=1e-5)
     capsys.readouterr()
+
+
+def test_acuerdo_sin_hojas_sale_con_2(tmp_path, capsys):
+    assert et.main(["--acuerdo", "--base", str(tmp_path / "x.duckdb"), "--raiz", str(tmp_path)]) == 2
+    capsys.readouterr()
+
+
+def test_consolidar_informa_y_lista_los_titulos_en_disputa(tmp_path, capsys):
+    ruta_base = _base(tmp_path / "s.duckdb")
+    m = et.muestra_desde_base(ruta_base, CFG)
+    dobles = [x for x in m if x["doble"]]
+    carpeta = tmp_path / CFG.archivos.carpeta_personas
+    for nombre in ("Ana", "Beto"):
+        filas = [_fila(x["id_noticia"], nombre, principal="turismo" if (nombre == "Beto" and i == 0) else "economia", titulo=x["titulo"])
+                 for i, x in enumerate(dobles)]
+        et.escribir_csv(carpeta / f"{nombre.lower()}.csv", filas)
+    base = ["--base", str(ruta_base), "--raiz", str(tmp_path)]
+    assert et.main(["--desempate", *base]) == 0
+    assert "1 titulares en disputa" in capsys.readouterr().out
+    assert et.main(["--consolidar", "--forzar", *base]) == 0
+    salida = capsys.readouterr().out
+    assert "EXCLUIDOS POR DISPUTA: 1" in salida and dobles[0]["id_noticia"] in salida
+    assert dobles[0]["id_noticia"] not in et.cargar_etiquetas_finales(tmp_path / CFG.archivos.consolidado)
+    # una tercera persona desempata y el titular entra
+    et.escribir_csv(carpeta / "carla.csv", [_fila(dobles[0]["id_noticia"], "Carla", principal="turismo", titulo=dobles[0]["titulo"])])
+    assert et.main(["--consolidar", "--forzar", *base]) == 0
+    assert "Excluidos por disputa: 0" in capsys.readouterr().out
+    assert et.cargar_etiquetas_finales(tmp_path / CFG.archivos.consolidado)[dobles[0]["id_noticia"]]["tema_principal"] == "turismo"
+
+
+def test_en_disputa_solo_titulos_sin_mayoria():
+    hojas = {"Ana": [_fila("A", "Ana"), _fila("B", "Ana")], "Beto": [_fila("A", "Beto"), _fila("B", "Beto", principal="turismo")]}
+    assert et.en_disputa(hojas) == {"B": ["Ana", "Beto"]}
+
+
+def test_grupos_lista_titulares_y_renombrar_unifica(tmp_path, capsys):
+    carpeta = tmp_path / CFG.archivos.carpeta_personas
+    et.escribir_csv(carpeta / "ana.csv", [_fila("A", "Ana", grupo="sismo-chiriqui", titulo="Sismo sacude Chiriquí"), _fila("C", "Ana", grupo="solo-uno", titulo="Otro")])
+    et.escribir_csv(carpeta / "beto.csv", [_fila("B", "Beto", grupo="temblor-chiriqui", titulo="Temblor en Chiriquí")])
+    base = ["--base", str(tmp_path / "x.duckdb"), "--raiz", str(tmp_path)]
+    assert et.main(["--grupos", *base]) == 0
+    salida = capsys.readouterr().out
+    assert "[sismo-chiriqui]" in salida and "Temblor en Chiriquí" in salida and "UN SOLO TITULAR" in salida
+    assert et.main(["--renombrar", "temblor-chiriqui", "Sismo Chiriquí", "--persona", "Beto", *base]) == 0
+    assert et.leer_csv(carpeta / "beto.csv")[0]["grupo"] == "sismo-chiriqui"
+    assert len(et.grupos_usados(et.leer_hojas(tmp_path, CFG))["sismo-chiriqui"]) == 2
+    assert et.main(["--renombrar", "no-existe", "x", "--persona", "Beto", *base]) == 1
+    capsys.readouterr()
+
+
+def test_ruido_mide_el_subconjunto_regional_aparte(tmp_path):
+    ruta = tmp_path / "e.csv"
+    et.escribir_csv(ruta, [_fila("A", "Ana", regional="si"), _fila("B", "Ana"), _fila("C", "Ana", regional="si")])
+    humanos = eval_ruido.leer_regional(ruta)
+    assert humanos == {"A": True, "B": False, "C": True}
+    lineas = eval_ruido.medir_regional(humanos, {"A": True, "B": True, "C": False}, 1.96)
+    assert "1/2" in lineas[1] and "1/2" in lineas[2]
+    sin_columna = tmp_path / "v.csv"
+    sin_columna.write_text("id_noticia,ruido\nA,ninguno\n", encoding="utf-8")
+    assert eval_ruido.leer_regional(sin_columna) is None
+
+
+def test_coherencia_exige_los_motivos_de_temas_mas_no_es_noticia(tmp_path):
+    import shutil
+    from src.configuracion import CARPETA_CONFIG, ErrorDeConfiguracion
+
+    carpeta = tmp_path / "config"
+    shutil.copytree(CARPETA_CONFIG, carpeta)
+    ruta = carpeta / "etiquetado.yaml"
+    ruta.write_text(ruta.read_text(encoding="utf-8").replace("[no_es_panama, fuera_de_temas, no_es_noticia]", "[no_es_panama, fuera_de_temas]"), encoding="utf-8")
+    with pytest.raises(ErrorDeConfiguracion, match="no_es_noticia"):
+        validar_todo(carpeta)
 
 
 def test_validar_sin_etiquetas_sale_con_2(tmp_path, capsys):
@@ -278,19 +404,46 @@ def test_el_csv_tiene_las_columnas_del_contrato(tmp_path):
     assert {"id_noticia", "tema_principal", "ruido", "grupo", "etiquetado_por", "fecha_etiquetado"} <= set(et.COLUMNAS)
 
 
-def test_la_interfaz_corre_sin_excepciones(tmp_path, monkeypatch):
-    """Smoke con AppTest: carga la muestra y guarda una etiqueta sintética en una carpeta temporal."""
+def test_la_interfaz_guarda_una_etiqueta_en_una_carpeta_temporal(tmp_path, monkeypatch):
+    """Smoke con AppTest: abre la interfaz, escribe un nombre, etiqueta un titular y comprueba la fila guardada.
+
+    Base y hojas van a ``tmp_path`` (``HACKIA_BASE`` y ``HACKIA_RAIZ``): no toca ``eval/etiquetas/`` real.
+    """
     from streamlit.testing.v1 import AppTest
 
-    ruta_base = tmp_path / "s.duckdb"
-    con = db.conectar(ruta_base)
-    db.crear_esquema(con)
-    db.insertar(con, "noticias", [{**n, "url_canonica": n["url"], "tipo_firma": "sin_firma"} for n in _noticias(120)])
-    con.close()
-    monkeypatch.setenv("HACKIA_BASE", str(ruta_base))
-    monkeypatch.setattr(et, "RAIZ", tmp_path)
-    app = AppTest.from_file(str(Path(et.__file__)), default_timeout=30)
-    # AppTest ejecuta el script como __main__ en el runtime de Streamlit, con RAIZ real: se verifica solo la carga inicial.
+    monkeypatch.setenv("HACKIA_BASE", str(_base(tmp_path / "s.duckdb")))
+    monkeypatch.setenv("HACKIA_RAIZ", str(tmp_path))
+    app = AppTest.from_file(str(Path(et.__file__)), default_timeout=60)
     app.run()
     assert not app.exception
     assert any("Escribe tu nombre" in i.value for i in app.info)
+    app.sidebar.text_input(key="nombre").set_value("Prueba Humana").run()
+    assert not app.exception
+    clave = next(sel.key for sel in app.selectbox if sel.key and sel.key.startswith("tp-"))
+    app.selectbox(key=clave).select("turismo").run()
+    app.checkbox(key=next(c.key for c in app.checkbox if c.key and c.key.startswith("reg-"))).check().run()
+    app.button[0].click().run()
+    assert not app.exception and not app.error
+    filas = et.leer_csv(tmp_path / CFG.archivos.carpeta_personas / "prueba_humana.csv")
+    assert len(filas) == 1
+    assert (filas[0]["tema_principal"], filas[0]["alcance_regional"], filas[0]["etiquetado_por"]) == ("turismo", "si", "Prueba Humana")
+    assert filas[0]["id_noticia"] == clave.removeprefix("tp-")
+
+
+def test_la_interfaz_en_desempate_muestra_solo_los_titulos_en_disputa(tmp_path, monkeypatch):
+    from streamlit.testing.v1 import AppTest
+
+    ruta_base = _base(tmp_path / "s.duckdb")
+    d = [x for x in et.muestra_desde_base(ruta_base, CFG) if x["doble"]][0]["id_noticia"]
+    carpeta = tmp_path / CFG.archivos.carpeta_personas
+    et.escribir_csv(carpeta / "ana.csv", [_fila(d, "Ana")])
+    et.escribir_csv(carpeta / "beto.csv", [_fila(d, "Beto", principal="turismo")])
+    monkeypatch.setenv("HACKIA_BASE", str(ruta_base))
+    monkeypatch.setenv("HACKIA_RAIZ", str(tmp_path))
+    app = AppTest.from_file(str(Path(et.__file__)), default_timeout=60)
+    app.run()
+    app.sidebar.text_input(key="nombre").set_value("Carla Ruiz").run()
+    app.sidebar.checkbox[0].check().run()
+    assert not app.exception
+    assert [k for k in (s.key for s in app.selectbox) if k and k.startswith("tp-")] == [f"tp-{d}"]
+    assert len(app.selectbox[0].options) == 1  # la lista de titulares tiene solo el que está en disputa

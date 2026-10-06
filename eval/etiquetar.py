@@ -51,11 +51,13 @@ COLUMNAS = (
     "tema_secundario",
     "ruido",
     "grupo",
+    "alcance_regional",
     "nota",
     "etiquetado_por",
     "fecha_etiquetado",
 )
-COLUMNAS_CONSOLIDADO = (*COLUMNAS, "n_etiquetadores")
+COLUMNAS_CONSOLIDADO = (*COLUMNAS, "estrato", "peso_muestreo", "n_etiquetadores")
+SI = "si"  # valor de alcance_regional marcado; vacío = no
 PATRON_GRUPO = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
 PATRON_NOMBRE = re.compile(r"^[^\W\d_]+(?:[ .'-][^\W\d_]+)*\.?$")
 GUIA = RAIZ / "docs" / "guia_temas.md"
@@ -84,6 +86,8 @@ def validar_nombre(nombre: str, cfg: ConfigEtiquetado) -> str:
         raise ErrorEtiquetado(f"nombre inválido {limpio!r}: use el nombre de una persona (solo letras, mínimo {cfg.nombres.longitud_minima})")
     palabras = set(re.findall(r"[^\W\d_]+", plano(limpio)))
     marcadores = palabras & {plano(m) for m in cfg.nombres.marcadores_ia}
+    if plano(limpio) in {plano(m) for m in cfg.nombres.marcadores_ia_nombre_completo}:  # solo el nombre completo: "Ai Lin" pasa
+        marcadores.add(plano(limpio))
     if marcadores:
         raise ErrorEtiquetado(f"nombre inválido {limpio!r}: las etiquetas las ponen personas, no herramientas ({sorted(marcadores)})")
     return limpio
@@ -112,27 +116,86 @@ def cargar_excluidos(ruta: Path) -> set[str]:
 
 
 def leer_noticias(ruta_base: Path) -> list[dict[str, Any]]:
-    """Campos que ve la persona. La descripción del RSS no se lee (D-31) ni la marca de ruido (no sesgar)."""
+    """Campos de las noticias. La descripción del RSS no se lee (D-31). ``es_ruido`` sirve solo para estratificar:
+    la interfaz no lo muestra (no sesgar a la persona). Falla si la limpieza (E1-03b) no se ha corrido."""
     con = db.conectar(ruta_base, solo_lectura=True)
     try:
         cur = con.execute(
-            "SELECT id_noticia, titulo, medio, url, fecha_publicacion, fecha_deteccion FROM noticias ORDER BY id_noticia"
+            "SELECT id_noticia, titulo, medio, url, fecha_publicacion, fecha_deteccion, es_ruido FROM noticias ORDER BY id_noticia"
         )
         nombres = [d[0] for d in cur.description]
-        return [dict(zip(nombres, f, strict=True)) for f in cur.fetchall()]
+        filas = [dict(zip(nombres, f, strict=True)) for f in cur.fetchall()]
     finally:
         con.close()
+    if any(f["es_ruido"] is None for f in filas):
+        raise ErrorEtiquetado("la base no tiene la marca de ruido: ejecute `poetry run python -m src.limpieza` primero")
+    return filas
+
+
+ESTRATOS = ("no_ruido", "ruido")
+
+
+def _cuotas(poblacion: dict[str, int], cfg: ConfigEtiquetado) -> dict[str, int]:
+    """Tamaño de muestra por estrato: la cuota, o todo el estrato si es menor; el faltante pasa al otro estrato."""
+    e = cfg.muestra.estratos
+    cuota = {"no_ruido": e.no_ruido.cuota, "ruido": e.ruido.cuota}
+    n = {k: min(cuota[k], poblacion[k]) for k in ESTRATOS}
+    falta = cfg.muestra.tamano - sum(n.values())
+    for k in ESTRATOS:
+        extra = min(falta, poblacion[k] - n[k])
+        n[k] += extra
+        falta -= extra
+    return n
 
 
 def construir_muestra(noticias: list[dict[str, Any]], excluidos: set[str], cfg: ConfigEtiquetado) -> list[dict[str, Any]]:
-    """Muestra aleatoria reproducible: mismas noticias y misma semilla dan siempre la misma lista y orden.
+    """Muestra estratificada y reproducible (mismas noticias y semilla = misma lista y orden).
 
-    Excluye los ejemplos de ``temas.yaml``. Los primeros ``tamano_acuerdo`` llevan ``doble=True``.
+    Estratos según el filtro automático (``es_ruido``; el alcance regional cuenta como no ruido). Dentro de cada
+    estrato la selección es aleatoria. Cada fila lleva ``estrato``, ``poblacion`` (noticias elegibles del estrato),
+    ``n_estrato`` y ``peso`` = población / muestra, para reponderar las métricas a la población. Los ``dobles``
+    de cada estrato (los etiquetan dos personas) van primero; ``doble`` marca esos titulares. Excluye los ejemplos
+    de ``temas.yaml``.
     """
     elegibles = sorted((n for n in noticias if n["id_noticia"] not in excluidos), key=lambda n: n["id_noticia"])
-    k = min(cfg.muestra.tamano, len(elegibles))
-    elegidas = random.Random(cfg.muestra.semilla).sample(elegibles, k)
-    return [{**n, "orden": i + 1, "doble": i < cfg.muestra.tamano_acuerdo} for i, n in enumerate(elegidas)]
+    por_estrato = {
+        "no_ruido": [n for n in elegibles if not n["es_ruido"]],
+        "ruido": [n for n in elegibles if n["es_ruido"]],
+    }
+    poblacion = {k: len(v) for k, v in por_estrato.items()}
+    tamanos = _cuotas(poblacion, cfg)
+    rng = random.Random(cfg.muestra.semilla)
+    dobles_cfg = {"no_ruido": cfg.muestra.estratos.no_ruido.dobles, "ruido": cfg.muestra.estratos.ruido.dobles}
+    dobles: list[dict[str, Any]] = []
+    resto: list[dict[str, Any]] = []
+    for k in ESTRATOS:
+        elegidas = rng.sample(por_estrato[k], tamanos[k])
+        for pos, n in enumerate(elegidas):
+            fila = {**n, "estrato": k, "poblacion": poblacion[k], "n_estrato": tamanos[k], "peso": poblacion[k] / tamanos[k],
+                    "doble": pos < dobles_cfg[k]}
+            (dobles if fila["doble"] else resto).append(fila)
+    rng.shuffle(dobles)
+    rng.shuffle(resto)
+    return [{**m, "orden": i + 1} for i, m in enumerate(dobles + resto)]
+
+
+def n_efectivo(muestra: list[dict[str, Any]]) -> float:
+    """n efectivo de Kish de la muestra ponderada: (suma de pesos)^2 / suma de pesos^2."""
+    pesos = [m["peso"] for m in muestra]
+    return sum(pesos) ** 2 / sum(p * p for p in pesos) if pesos else 0.0
+
+
+def composicion(muestra: list[dict[str, Any]]) -> list[str]:
+    """Líneas legibles: composición por estrato, pesos, dobles y n efectivo."""
+    lineas = []
+    for k in ESTRATOS:
+        m = [x for x in muestra if x["estrato"] == k]
+        if m:
+            lineas.append(
+                f"{k}: población {m[0]['poblacion']} · muestra {len(m)} (dobles {sum(x['doble'] for x in m)}) · peso {m[0]['peso']:.3f}"
+            )
+    lineas.append(f"n efectivo de Kish con pesos = {n_efectivo(muestra):.1f} de {len(muestra)}")
+    return lineas
 
 
 def asignadas(muestra: list[dict[str, Any]], parte: int, partes: int) -> list[dict[str, Any]]:
@@ -172,6 +235,10 @@ def validar_fila(fila: Fila, cfg: ConfigEtiquetado, temas: ConfigTemas) -> list[
             e.append("un titular de ruido no lleva tema principal ni secundario")
         if fila.get("grupo"):
             e.append("un titular de ruido no lleva grupo")
+    if fila.get("alcance_regional", "") not in ("", SI):
+        e.append(f"alcance_regional {fila.get('alcance_regional')!r} debe ser vacío o {SI!r}")
+    if fila.get("alcance_regional") and ruido != cfg.ruido.sin_ruido:
+        e.append("alcance_regional (D-84) solo aplica a un titular que no es ruido")
     grupo = fila.get("grupo", "")
     if grupo and not PATRON_GRUPO.match(grupo):
         e.append(f"grupo {grupo!r}: use minúsculas, dígitos y guiones (ej. sismo-chiriqui)")
@@ -223,6 +290,7 @@ def guardar_etiqueta(
         "tema_secundario": datos.get("tema_secundario", ""),
         "ruido": datos.get("ruido", ""),
         "grupo": normalizar_grupo(datos.get("grupo", "")),
+        "alcance_regional": SI if datos.get("alcance_regional") in (True, SI) else "",
         "nota": re.sub(r"\s+", " ", datos.get("nota", "")).strip(),
         "etiquetado_por": validar_nombre(nombre, cfg),
         "fecha_etiquetado": datetime.now(UTC).strftime(cargar_normalizacion().fechas.formato_salida),
@@ -358,37 +426,65 @@ def texto_acuerdo(resultados: list[dict[str, Any]], cfg: ConfigEtiquetado) -> li
     return lineas
 
 
-# ------------------------------------------------------------------ consolidación
+# ------------------------------------------------------------------ consolidación, disputas y grupos
 
 
-def consolidar(hojas: dict[str, list[Fila]], cfg: ConfigEtiquetado) -> tuple[list[Fila], list[str]]:
-    """Una fila por titular. Un titular con varias personas se acepta si la mayoría absoluta coincide en
-    ``ruido`` y ``tema_principal``; si no (p. ej. 2 personas en desacuerdo) queda **en disputa** y se excluye hasta
-    que una tercera persona lo etiquete. De las personas que coinciden, el secundario y el grupo son los de la primera
-    (orden alfabético) y el secundario solo se conserva si todas coinciden en él.
-
-    Devuelve ``(filas, ids_en_disputa)``.
-    """
+def _por_id(hojas: dict[str, list[Fila]]) -> dict[str, list[Fila]]:
     por_id: dict[str, list[Fila]] = {}
     for nombre in sorted(hojas):
         for f in hojas[nombre]:
             por_id.setdefault(f["id_noticia"], []).append(f)
+    return por_id
+
+
+def _veredicto(filas: list[Fila]) -> list[Fila] | None:
+    """Etiquetas ganadoras de un titular: mayoría absoluta en (ruido, tema_principal); ``None`` si está en disputa."""
+    conteo = Counter((f["ruido"], f["tema_principal"]) for f in filas)
+    clave, votos = conteo.most_common(1)[0]
+    if votos * 2 <= len(filas):
+        return None
+    return [f for f in filas if (f["ruido"], f["tema_principal"]) == clave]
+
+
+def en_disputa(hojas: dict[str, list[Fila]]) -> dict[str, list[str]]:
+    """``id_noticia -> personas que ya lo etiquetaron`` de los titulares sin mayoría (necesitan una tercera persona)."""
+    return {
+        i: sorted(f["etiquetado_por"] for f in filas)
+        for i, filas in sorted(_por_id(hojas).items())
+        if len(filas) > 1 and _veredicto(filas) is None
+    }
+
+
+def consolidar(
+    hojas: dict[str, list[Fila]], cfg: ConfigEtiquetado, muestra: list[dict[str, Any]] | None = None
+) -> tuple[list[Fila], list[str]]:
+    """Una fila por titular. Un titular con varias personas se acepta si la mayoría absoluta coincide en
+    ``ruido`` y ``tema_principal``; si no (p. ej. 2 personas en desacuerdo) queda **en disputa** y se excluye hasta
+    que una tercera persona lo etiquete (``--desempate``). De las personas que coinciden, el secundario, el grupo y
+    el alcance regional son los de la primera (orden alfabético); el secundario y el alcance regional solo se
+    conservan si todas coinciden. Con ``muestra`` agrega ``estrato`` y ``peso_muestreo``.
+
+    Devuelve ``(filas, ids_en_disputa)``; quien llama debe informar las disputas, nunca callarlas.
+    """
+    info = {m["id_noticia"]: m for m in muestra or []}
     finales: list[Fila] = []
     disputas: list[str] = []
-    for id_noticia in sorted(por_id):
-        filas = por_id[id_noticia]
-        conteo = Counter((f["ruido"], f["tema_principal"]) for f in filas)
-        clave, votos = conteo.most_common(1)[0]
-        if votos * 2 <= len(filas):
+    for id_noticia, filas in sorted(_por_id(hojas).items()):
+        ganadoras = _veredicto(filas)
+        if ganadoras is None:
             disputas.append(id_noticia)
             continue
-        ganadoras = [f for f in filas if (f["ruido"], f["tema_principal"]) == clave]
         base = dict(ganadoras[0])
         if len({f["tema_secundario"] for f in ganadoras}) > 1:
             base["tema_secundario"] = ""
+        if len({f["alcance_regional"] for f in ganadoras}) > 1:
+            base["alcance_regional"] = ""
         base["etiquetado_por"] = "; ".join(f["etiquetado_por"] for f in ganadoras)
         base["fecha_etiquetado"] = max(f["fecha_etiquetado"] for f in ganadoras)
         base["n_etiquetadores"] = str(len(ganadoras))
+        m = info.get(id_noticia)
+        base["estrato"] = m["estrato"] if m else ""
+        base["peso_muestreo"] = f"{m['peso']:.6g}" if m else ""
         finales.append(base)
     return finales, disputas
 
@@ -396,6 +492,45 @@ def consolidar(hojas: dict[str, list[Fila]], cfg: ConfigEtiquetado) -> tuple[lis
 def cargar_etiquetas_finales(ruta: Path) -> dict[str, Fila]:
     """``id_noticia -> fila`` del consolidado (la entrada de E1-07, E1-08 y ``eval.ruido``)."""
     return {f["id_noticia"]: f for f in leer_csv(ruta)}
+
+
+def grupos_usados(hojas: dict[str, list[Fila]]) -> dict[str, list[tuple[str, str, str]]]:
+    """``grupo -> [(id_noticia, titulo, persona)]`` de todas las hojas, para conciliar nombres antes de consolidar."""
+    grupos: dict[str, list[tuple[str, str, str]]] = {}
+    for nombre in sorted(hojas):
+        for f in hojas[nombre]:
+            if f["grupo"]:
+                grupos.setdefault(f["grupo"], []).append((f["id_noticia"], f["titulo"], nombre))
+    return dict(sorted(grupos.items()))
+
+
+def texto_grupos(hojas: dict[str, list[Fila]]) -> list[str]:
+    """Líneas legibles de ``--grupos``: cada grupo con sus titulares y quién lo usó."""
+    grupos = grupos_usados(hojas)
+    if not grupos:
+        return ["SIN GRUPOS: ninguna hoja tiene titulares agrupados."]
+    lineas = [f"{len(grupos)} grupos. Si dos nombres cuentan el mismo hecho, unifíquelos con --renombrar VIEJO NUEVO --persona NOMBRE.", ""]
+    for g, miembros in grupos.items():
+        personas = sorted({p for _, _, p in miembros})
+        aviso = "  (UN SOLO TITULAR: ¿va suelto?)" if len(miembros) == 1 else ""
+        lineas.append(f"[{g}] {len(miembros)} titulares · {', '.join(personas)}{aviso}")
+        lineas += [f"    {i} · {t[:110]} ({p})" for i, t, p in miembros]
+    return lineas
+
+
+def renombrar_grupo(ruta: Path, viejo: str, nuevo: str) -> int:
+    """Cambia el nombre de un grupo en una hoja. Devuelve cuántos titulares cambió."""
+    nuevo_n = normalizar_grupo(nuevo)
+    if not nuevo_n:
+        raise ErrorEtiquetado("el nombre nuevo del grupo está vacío")
+    filas = leer_csv(ruta)
+    n = 0
+    for f in filas:
+        if f["grupo"] == viejo:
+            f["grupo"], n = nuevo_n, n + 1
+    if n:
+        escribir_csv(ruta, filas)
+    return n
 
 
 # ------------------------------------------------------------------ CLI
@@ -410,13 +545,21 @@ def muestra_desde_base(ruta_base: Path, cfg: ConfigEtiquetado) -> list[dict[str,
     return construir_muestra(leer_noticias(ruta_base), excluidos, cfg)
 
 
+def _texto_disputas(disputas: dict[str, list[str]], titulos: dict[str, str]) -> list[str]:
+    return [f"  {i} · {titulos.get(i, '')[:100]} (etiquetaron: {', '.join(p)})" for i, p in disputas.items()]
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="E1-06: etiquetado humano (la interfaz es `streamlit run eval/etiquetar.py`)")
     modo = parser.add_mutually_exclusive_group(required=True)
-    modo.add_argument("--muestra", action="store_true", help="imprime la muestra (id, orden, doble) sin etiquetas")
+    modo.add_argument("--muestra", action="store_true", help="imprime la composición y la muestra (id, orden, doble, estrato)")
     modo.add_argument("--validar", action="store_true", help="valida las hojas por persona y el consolidado")
     modo.add_argument("--acuerdo", action="store_true", help="kappa de Cohen sobre los titulares dobles")
+    modo.add_argument("--grupos", action="store_true", help="lista los grupos usados en todas las hojas, con sus titulares")
+    modo.add_argument("--renombrar", nargs=2, metavar=("VIEJO", "NUEVO"), help="renombra un grupo en la hoja de --persona")
+    modo.add_argument("--desempate", action="store_true", help="lista los titulares en disputa (los etiqueta una tercera persona en la interfaz)")
     modo.add_argument("--consolidar", action="store_true", help="escribe eval/etiquetas.csv")
+    parser.add_argument("--persona", help="con --renombrar: nombre de la persona dueña de la hoja")
     parser.add_argument("--base", type=Path, default=_base_por_defecto())
     parser.add_argument("--raiz", type=Path, default=RAIZ, help="carpeta que contiene eval/etiquetas (por defecto, el repo)")
     parser.add_argument("--forzar", action="store_true", help="con --consolidar: escribir aunque el acuerdo sea bajo o falte")
@@ -425,17 +568,44 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.muestra:
         if not args.base.exists():
-            print(f"No existe {args.base}: ejecute `poetry run python -m src.normalizacion` primero.", file=sys.stderr)
+            print(f"No existe {args.base}: ejecute `poetry run python -m src.normalizacion` y luego `python -m src.limpieza`.", file=sys.stderr)
             return 1
-        muestra = muestra_desde_base(args.base, cfg)
-        print(f"# semilla {cfg.muestra.semilla} · n = {len(muestra)} · dobles = {cfg.muestra.tamano_acuerdo}")
-        print("orden\tdoble\tid_noticia\tmedio")
+        try:
+            muestra = muestra_desde_base(args.base, cfg)
+        except ErrorEtiquetado as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        print(f"# semilla {cfg.muestra.semilla} · n = {len(muestra)} · dobles = {sum(m['doble'] for m in muestra)}")
+        print("\n".join(f"# {linea}" for linea in composicion(muestra)))
+        print("orden\tdoble\testrato\tpeso\tid_noticia\tmedio")
         for m in muestra:
-            print(f"{m['orden']}\t{'si' if m['doble'] else 'no'}\t{m['id_noticia']}\t{m['medio']}")
+            print(f"{m['orden']}\t{'si' if m['doble'] else 'no'}\t{m['estrato']}\t{m['peso']:.3f}\t{m['id_noticia']}\t{m['medio']}")
         return 0
 
-    hojas_en_disco = sorted((args.raiz / cfg.archivos.carpeta_personas).glob("*.csv"))
-    ids_muestra = {m["id_noticia"] for m in muestra_desde_base(args.base, cfg)} if args.base.exists() else None
+    carpeta_hojas = args.raiz / cfg.archivos.carpeta_personas
+    if args.renombrar:
+        if not args.persona:
+            print("--renombrar necesita --persona NOMBRE", file=sys.stderr)
+            return 1
+        ruta = ruta_persona(args.persona, cfg, args.raiz)
+        if not ruta.exists():
+            print(f"No existe la hoja {ruta}", file=sys.stderr)
+            return 1
+        try:
+            n = renombrar_grupo(ruta, args.renombrar[0], args.renombrar[1])
+        except ErrorEtiquetado as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        print(f"{n} titulares pasaron de {args.renombrar[0]!r} a {normalizar_grupo(args.renombrar[1])!r} en {ruta.name}")
+        return 0 if n else 1
+
+    hojas_en_disco = sorted(carpeta_hojas.glob("*.csv"))
+    try:
+        muestra_completa = muestra_desde_base(args.base, cfg) if args.base.exists() else None
+    except ErrorEtiquetado as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    ids_muestra = {m["id_noticia"] for m in muestra_completa} if muestra_completa is not None else None
     problemas: list[str] = []
     for ruta in hojas_en_disco:
         problemas += validar_hoja(ruta, cfg, temas, ids_muestra)
@@ -457,21 +627,39 @@ def main(argv: list[str] | None = None) -> int:
         print("Corrija las hojas (--validar) antes de continuar.", file=sys.stderr)
         return 1
     hojas = leer_hojas(args.raiz, cfg)
+    if not hojas:
+        print("SIN ETIQUETAS: no hay hojas en eval/etiquetas/.", file=sys.stderr)
+        return 2
+    titulos = {f["id_noticia"]: f["titulo"] for filas in hojas.values() for f in filas}
+    if args.grupos:
+        print("\n".join(texto_grupos(hojas)))
+        return 0
+    if args.desempate:
+        disputas = en_disputa(hojas)
+        print(f"{len(disputas)} titulares en disputa (los debe etiquetar una tercera persona: interfaz, opción «Desempate»)")
+        print("\n".join(_texto_disputas(disputas, titulos)))
+        return 0
     resultados = acuerdo(hojas, cfg)
     if args.acuerdo:
         print("\n".join(texto_acuerdo(resultados, cfg)))
         return 3 if any(r["bajo"] for r in resultados) else 0
     # --consolidar
-    finales, disputas = consolidar(hojas, cfg)
     print("\n".join(texto_acuerdo(resultados, cfg)))
-    if not hojas:
-        print("SIN ETIQUETAS: no hay hojas en eval/etiquetas/.", file=sys.stderr)
-        return 2
     if (not resultados or any(r["bajo"] for r in resultados)) and not args.forzar:
         print("NO se escribe eval/etiquetas.csv: acuerdo ausente o bajo (D-71). Use --forzar solo después de revisar la guía.", file=sys.stderr)
         return 3
+    if muestra_completa is None:
+        print(f"No existe {args.base}: sin la base no se pueden registrar el estrato ni los pesos de muestreo.", file=sys.stderr)
+        return 1
+    finales, disputas_ids = consolidar(hojas, cfg, muestra_completa)
     escribir_csv(consolidado, finales, COLUMNAS_CONSOLIDADO)
-    print(f"Escrito {consolidado}: {len(finales)} titulares, {len(disputas)} en disputa{' (' + ', '.join(disputas) + ')' if disputas else ''}")
+    print(f"Escrito {consolidado}: {len(finales)} titulares")
+    if disputas_ids:
+        todas = en_disputa(hojas)
+        print(f"EXCLUIDOS POR DISPUTA: {len(disputas_ids)} titulares (fuera del consolidado hasta que una tercera persona los etiquete con --desempate):")
+        print("\n".join(_texto_disputas({i: todas[i] for i in disputas_ids}, titulos)))
+    else:
+        print("Excluidos por disputa: 0")
     if len(finales) < cfg.muestra.tamano:
         print(f"AVISO: {len(finales)} < {cfg.muestra.tamano} titulares de la muestra.", file=sys.stderr)
     return 0
@@ -513,6 +701,7 @@ def interfaz() -> None:  # pragma: no cover - se prueba a mano y con AppTest
     st.caption("Etiqueta con tu criterio y la guía de la izquierda. Esta herramienta no sugiere ninguna respuesta.")
 
     ruta_base = Path(os.environ.get("HACKIA_BASE", _base_por_defecto()))
+    raiz_etq = Path(os.environ.get("HACKIA_RAIZ", RAIZ))  # dónde viven las hojas (inyectable para pruebas)
     if not ruta_base.exists():
         st.error(f"No existe {ruta_base}. Ejecuta `poetry run python -m src.normalizacion` y luego `python -m src.limpieza`.")
         st.stop()
@@ -523,6 +712,10 @@ def interfaz() -> None:  # pragma: no cover - se prueba a mano y con AppTest
         c1, c2 = st.columns(2)
         parte = c1.number_input("Tu parte", min_value=1, value=1, step=1)
         partes = c2.number_input("de cuántas personas", min_value=1, value=2, step=1)
+        desempate = st.checkbox(
+            "Desempate",
+            help="Para una tercera persona: muestra solo los titulares en disputa entre otras dos personas (sin mostrar sus etiquetas).",
+        )
         with st.expander("Guía de temas y reglas de frontera", expanded=True):
             st.markdown(_seccion_guia())
 
@@ -538,13 +731,21 @@ def interfaz() -> None:  # pragma: no cover - se prueba a mano y con AppTest
         st.stop()
 
     muestra = muestra_desde_base(ruta_base, cfg)
-    mias = asignadas(muestra, int(parte), int(partes))
-    ruta = ruta_persona(nombre, cfg)
-    hojas = leer_hojas(RAIZ, cfg)
+    ruta = ruta_persona(nombre, cfg, raiz_etq)
+    hojas = leer_hojas(raiz_etq, cfg)
+    if desempate:
+        disputados = en_disputa({k: v for k, v in hojas.items() if k != nombre})
+        por_id = {m["id_noticia"]: m for m in muestra}
+        mias = [por_id[i] for i in disputados if i in por_id]
+        if not mias:
+            st.success("No hay titulares en disputa para desempatar.")
+            st.stop()
+    else:
+        mias = asignadas(muestra, int(parte), int(partes))
     hechas = {f["id_noticia"]: f for f in leer_csv(ruta)}
     pendientes = [m for m in mias if m["id_noticia"] not in hechas]
     st.progress((len(mias) - len(pendientes)) / len(mias) if mias else 0.0)
-    st.write(f"**{nombre}**: {len(mias) - len(pendientes)} de {len(mias)} titulares etiquetados (hoja `{ruta.relative_to(RAIZ)}`).")
+    st.write(f"**{nombre}**: {len(mias) - len(pendientes)} de {len(mias)} titulares etiquetados (hoja `{ruta.name}`).")
 
     etiquetas_lista = [f"{'✓' if m['id_noticia'] in hechas else '·'} {m['orden']:>3} · {m['titulo'][:90]}" for m in mias]
     por_defecto = mias.index(pendientes[0]) if pendientes else 0
@@ -553,7 +754,7 @@ def interfaz() -> None:  # pragma: no cover - se prueba a mano y con AppTest
     previa = hechas.get(noticia["id_noticia"])
     nid = noticia["id_noticia"]
 
-    st.subheader(f"Titular {noticia['orden']} de {len(muestra)}" + ("  ·  lo etiquetan dos personas por separado" if noticia["doble"] else ""))
+    st.subheader(f"Titular {noticia['orden']} de {len(muestra)}" + ("  ·  lo etiquetan dos personas por separado" if noticia["doble"] and not desempate else "  ·  desempate" if desempate else ""))
     st.code(noticia["titulo"], language=None, wrap_lines=True)  # texto plano: un titular nunca se interpreta como Markdown/HTML
     st.caption(
         f"Medio: {noticia['medio']} · Publicado: {_fecha_panama(noticia['fecha_publicacion'], cfg)} · "
@@ -569,14 +770,23 @@ def interfaz() -> None:  # pragma: no cover - se prueba a mano y con AppTest
         horizontal=True,
         key=f"ruido-{nid}",
         help="no_es_panama: no trata ni afecta a Panamá. fuera_de_temas: es de Panamá pero de un área que el reto no cubre. "
-        "Un titular sin contenido: fuera_de_temas y explícalo en la nota.",
+        "no_es_noticia: titular sin contenido (portada, solo el nombre del medio, promoción). "
+        "D-84: una nota de la región o de un fenómeno regional que afecta a Panamá NO es ruido: elige ninguno y marca alcance regional.",
     )
     es_ruido = ruido != cfg.ruido.sin_ruido
     lista_temas = list(temas.temas)
     nombre_tema = lambda t: f"{temas.temas[t].nombre} ({t})" if t else "— ninguno —"  # noqa: E731
     principal = secundario = ""
     grupo_final = ""
+    regional = False
     if not es_ruido:
+        regional = st.checkbox(
+            "Alcance regional (D-84)",
+            value=bool(previa and previa["alcance_regional"]),
+            key=f"reg-{nid}",
+            help="Marca si la nota trata de la región (Centroamérica, América Latina, Caribe) o de un fenómeno regional "
+            "(El Niño, rutas marítimas) que afecta a Panamá. Sigue siendo una noticia útil, no ruido.",
+        )
         c1, c2 = st.columns(2)
         principal = c1.selectbox(
             "Tema principal", lista_temas, index=lista_temas.index(previa["tema_principal"]) if previa and previa["tema_principal"] in lista_temas else 0,
@@ -608,13 +818,18 @@ def interfaz() -> None:  # pragma: no cover - se prueba a mano y con AppTest
                 st.caption(f"Se guardará como `{grupo_final}`.")
         else:
             grupo_final = elegido_g
-    nota = st.text_input("Nota (opcional: dudas, por qué)", value=previa["nota"] if previa else "", key=f"nota-{nid}")
+    nota = st.text_input(
+        "Nota (opcional: dudas, por qué)",
+        value=previa["nota"] if previa else "",
+        key=f"nota-{nid}",
+        help="No escribas datos personales (nombres de personas, contactos) en la nota.",
+    )
 
     if st.button("Guardar y seguir", type="primary", key=f"guardar-{nid}"):
         try:
             guardar_etiqueta(
                 ruta, cfg, temas, noticia,
-                {"ruido": ruido, "tema_principal": principal, "tema_secundario": secundario, "grupo": grupo_final, "nota": nota},
+                {"ruido": ruido, "tema_principal": principal, "tema_secundario": secundario, "grupo": grupo_final, "alcance_regional": regional, "nota": nota},
                 nombre,
             )
         except ErrorEtiquetado as exc:
