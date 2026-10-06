@@ -138,6 +138,8 @@ se sustituyen entre sí. El nombre de la persona que firma **no se guarda** (D-3
 | `tema_secundario` | VARCHAR | sí | clasificación | derivado | Segundo tema, solo si está a menos de `margen_secundario` del principal. |
 | `tema_secundario_similitud` | DOUBLE | sí | clasificación | derivado | Similitud del tema secundario. |
 | `tema_baseline` | VARCHAR | sí | clasificación | derivado | Tema del baseline de palabras clave (D-66), con las mismas categorías: 6 temas o `sin_tema`. |
+| `id_grupo` | VARCHAR | sí | agrupación | derivado | `GRP-` + hash de los `NOT-` ordenados del grupo (E1-08, D-63). Cada noticia que no es ruido está en exactamente un grupo. Nulo en el ruido (no entra en la bandeja) y hasta correr `python -m src.agrupacion`. |
+| `procedencia` | VARCHAR | sí | agrupación | derivado | Etiqueta de la procedencia independiente de la noticia dentro de su grupo (agencia, red de sindicación o medio). **Estimada** (CU-03). |
 
 ### `indicadores`: cuadrícula del Banco Mundial
 
@@ -199,6 +201,40 @@ Explicabilidad de la clasificación: una fila por noticia clasificada (no ruido)
 | `tema` | VARCHAR | no | `temas.yaml` | derivado | Uno de los 6 temas. |
 | `similitud` | DOUBLE | no | clasificación | derivado | Coseno entre el titular y el tema (A: centroide; B: el subtema más parecido del tema). |
 | `subtema` | VARCHAR | sí | `temas.yaml` | derivado | Solo con B: el subtema que dio esa similitud. |
+
+### `grupos`: un grupo por evento (E1-08)
+
+Titulares del mismo evento (similitud y ventana de `reglas_v1.3.yaml`). **`n_procedencias` es una estimación** (`estimado = true`):
+cinco medios que replican una agencia son una procedencia. Los reemplaza `python -m src.agrupacion`.
+
+| Campo | Tipo | Nullable | Fuente | Clase | Descripción |
+|---|---|---|---|---|---|
+| `id_grupo` | VARCHAR | no | agrupación | derivado | `GRP-` + hash de los `NOT-` ordenados (D-63): mismo snapshot y mismas reglas, mismos IDs. Clave primaria. |
+| `titular_central` | VARCHAR | no | `noticias` | derivado | `titulo_limpio` del titular más parecido al resto del grupo. |
+| `id_noticia_central` | VARCHAR | no | `noticias` | derivado | ID del titular central. |
+| `n_titulares` | INTEGER | no | agrupación | derivado | Noticias del grupo (ninguna fuente se pierde). |
+| `n_medios` | INTEGER | no | agrupación | derivado | Dominios distintos. |
+| `n_procedencias` | INTEGER | no | `procedencias.yaml` | derivado | Procedencias independientes, **estimadas**: la unión de medios por dominio, red, agencia y texto casi idéntico. |
+| `fecha_inicio` | VARCHAR | sí | `noticias` | derivado | La más antigua de `fecha_publicacion` (o, si falta, `fecha_deteccion`), ISO UTC. |
+| `fecha_fin` | VARCHAR | sí | `noticias` | derivado | La más reciente, con el mismo criterio. |
+| `idiomas` | VARCHAR | sí | `noticias` | derivado | Idiomas de los titulares, ordenados, separados por coma. |
+| `tema_clasificado` | VARCHAR | sí | `noticias` | derivado | Tema más frecuente de sus titulares (empate: orden alfabético); nulo si ninguno está clasificado. |
+| `ids_noticia` | VARCHAR | no | `noticias` | derivado | Los `NOT-` del grupo, ordenados y separados por coma. |
+| `estimado` | BOOLEAN | no | agrupación | derivado | Siempre verdadero: el conteo de procedencias es una estimación y se presenta así. |
+
+### `procedencias`: procedencias independientes de cada grupo (E1-08)
+
+Una fila por procedencia estimada. Nunca guarda el nombre de un autor (D-32): solo agencia, red o medio.
+
+| Campo | Tipo | Nullable | Fuente | Clase | Descripción |
+|---|---|---|---|---|---|
+| `id_grupo` | VARCHAR | no | `grupos` | derivado | Grupo al que pertenece. |
+| `orden` | INTEGER | no | agrupación | derivado | 1, 2, ... por su menor `id_noticia`. |
+| `etiqueta` | VARCHAR | no | `procedencias.yaml` | derivado | Agencia o red (por ejemplo `Xinhua + Big News Network`); si no hay ninguna, el medio más antiguo del conjunto. |
+| `reglas` | VARCHAR | sí | agrupación | derivado | Reglas que unieron sus titulares, separadas por coma (`mismo_medio`, `agencia_campo`, `agencia_dominio`, `agencia_mencionada`, `misma_red`, `texto_casi_identico`). Nulo si es un solo titular. |
+| `n_titulares` | INTEGER | no | agrupación | derivado | Titulares de la procedencia. |
+| `medios` | VARCHAR | no | `noticias` | derivado | Dominios, ordenados, separados por coma. |
+| `ids_noticia` | VARCHAR | no | `noticias` | derivado | Los `NOT-` de la procedencia, ordenados, separados por coma. |
 
 ### `registro_normalizacion`: valores que no se pudieron normalizar
 

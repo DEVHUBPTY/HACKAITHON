@@ -1,0 +1,57 @@
+# E1-08 · Procedencias independientes (CU-03, D-32, D-63). Cada valor está en docs/parametros.md.
+# El RSS de TVN no trae firma (150/150 entradas sin autor), así que la independencia sale de tres señales, todas aquí:
+#   1. el dominio (red de sindicación o agencia dueña del dominio),
+#   2. la agencia nombrada en el titular (lista `agencias` de reglas_v1.3.yaml, más sus alias),
+#   3. el texto casi idéntico (`agrupacion.umbral_mismo_texto` de reglas_v1.3.yaml).
+# Nunca se guarda ni se compara el nombre de un autor.
+version: 1
+
+# Redes que republican el mismo despacho en decenas de sitios espejo. Dominios observados en el snapshot del 2026-10-06
+# con el mismo titular y casi la misma hora (supuesto: pertenecen a la misma red; verificarlo con el medio antes de ampliar).
+redes_sindicacion:
+  big_news_network:
+    nombre: Big News Network
+    dominios:
+      - bignewsnetwork.com
+      - trinidadtimes.com
+      - massachusettssun.com
+      - thailandnews.net
+      - russiaherald.com
+      - jamaicantimes.com
+      - newzealandstar.com
+      - oklahomastar.com
+      - africaleader.com
+      - irishsun.com
+      - argentinastar.com
+      - texasguardian.com
+      - britainnews.net
+      - afghanistannews.net
+      - oklahomacitysun.com
+      - mainemirror.com
+      - zimbabwestar.com
+
+# Dominios que SON de una agencia: lo que publican es su despacho. Las claves son nombres de `agencias` de reglas_v1.3.yaml.
+agencias_por_dominio:
+  Xinhua: [english.news.cn, news.cn, xinhuanet.com]
+  Prensa Latina: [prensa-latina.cu]
+  EFE: [efe.com]
+  AFP: [afp.com]
+  Reuters: [reuters.com]
+  AP: [apnews.com]
+  Europa Press: [europapress.es]
+  DPA: [dpa.com]
+  ANSA: [ansa.it]
+  Bloomberg: [bloomberg.com]
+
+# Otras formas de nombrar a una agencia en un titular (además de su nombre en `agencias`). Se busca como palabra
+# completa, sin distinguir tildes ni mayúsculas.
+alias_agencias:
+  AP: [Associated Press]
+  AFP: [Agence France-Presse]
+  EFE: [Agencia EFE]
+  DPA: [Deutsche Presse-Agentur]
+  Reuters: [Thomson Reuters]
+  Prensa Latina: [Noticias Prensa Latina]
+
+separador_etiqueta: " + "
+etiqueta_estimado: "estimado: procedencias independientes según reglas de dominio, agencia y texto; no es una verificación editorial"

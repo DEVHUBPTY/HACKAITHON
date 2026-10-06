@@ -605,10 +605,29 @@ class EstadoEvidencia(ModeloConfig):
     sin_contradiccion_abierta_para_suficiente: Literal[True]  # diseño: suficiente exige no tener contradicción abierta
 
 
+class CalibracionAgrupacion(ModeloConfig):
+    """Cómo se calibra ``umbral_similitud`` con ``eval/etiquetas.csv`` (``python -m eval.agrupacion``, D-16)."""
+
+    barrido_desde: float = Unidad
+    barrido_hasta: float = Unidad
+    barrido_paso: float = Field(gt=0, le=1)
+    pliegues: int = Field(ge=2)  # partición determinista por hash del id para medir con titulares no usados al calibrar
+
+    @model_validator(mode="after")
+    def _rango(self) -> CalibracionAgrupacion:
+        if self.barrido_desde >= self.barrido_hasta:
+            raise ValueError("barrido_desde debe ser menor que barrido_hasta")
+        return self
+
+
 class Agrupacion(ModeloConfig):
     ventana_dias: int = Field(ge=1)
-    umbral_similitud: float | None = Field(default=None, ge=0, le=1)  # None = por calibrar (E1-08)
+    modelo: str                                                       # modelo de embeddings (clave de clasificacion.yaml) con el que se agrupa
+    umbral_similitud: float | None = Field(default=None, ge=0, le=1)  # similitud coseno mínima promedio; None = sin calibrar
     umbral_mismo_texto: float = Unidad
+    usar_descripcion: bool                                            # la descripción del RSS es de uso interno (D-31)
+    campos_fecha: list[str] = Field(min_length=1)                     # prioridad al fechar un titular (publicación antes que detección)
+    calibracion: CalibracionAgrupacion
 
 
 class Geografia(ModeloConfig):
@@ -961,6 +980,13 @@ def validar_coherencia(carpeta: Path | None = None) -> list[str]:
         esperados = set(FueraDeTemas.model_fields) | MOTIVOS_RUIDO_HUMANO_EXTRA
         if motivos != esperados:
             problemas.append(f"etiquetado.yaml: ruido.motivos {sorted(motivos)} debe ser fuera_de_temas de temas.yaml más {sorted(MOTIVOS_RUIDO_HUMANO_EXTRA)}")
+    if (carpeta / "procedencias.yaml").exists():
+        proc = cargar_procedencias(carpeta)
+        ajenas = (set(proc.agencias_por_dominio) | set(proc.alias_agencias)) - set(reglas.agencias)
+        if ajenas:
+            problemas.append(f"procedencias.yaml: agencias que no están en reglas_v1.3.yaml: {sorted(ajenas)}")
+    if (carpeta / "clasificacion.yaml").exists() and reglas.agrupacion.modelo not in cargar_clasificacion(carpeta).modelos:
+        problemas.append(f"reglas_v1.3.yaml: agrupacion.modelo {reglas.agrupacion.modelo!r} no está en clasificacion.yaml")
     grupos = set(cargar_restricciones(carpeta).grupos)
     for modalidad in MODALIDADES:
         if (carpeta / f"modalidad_{modalidad}.yaml").exists():
@@ -1373,6 +1399,44 @@ def cargar_etiquetado(carpeta: Path | None = None) -> ConfigEtiquetado:
     return cargar_config("etiquetado", ConfigEtiquetado, carpeta)
 
 
+# ------------------------------------------------------------------ procedencias.yaml (E1-08)
+
+
+class RedSindicacion(ModeloConfig):
+    nombre: str
+    dominios: list[str] = Field(min_length=1)
+
+
+class ConfigProcedencias(ModeloConfig):
+    """Modelo de ``config/procedencias.yaml``: qué hace que dos titulares cuenten como UNA procedencia (CU-03, D-32).
+
+    El RSS no trae firma, así que la independencia sale del dominio (red de sindicación o agencia dueña del dominio),
+    de la agencia nombrada en el titular y del texto casi idéntico (``reglas_v1.3.yaml``: ``umbral_mismo_texto``).
+    Las agencias son las de ``reglas_v1.3.yaml`` (``validar_coherencia`` lo cruza); nunca se guarda un nombre de autor.
+    """
+
+    version: int
+    redes_sindicacion: dict[str, RedSindicacion]
+    agencias_por_dominio: dict[str, list[str]]     # agencia -> dominios que son de ella
+    alias_agencias: dict[str, list[str]]           # agencia -> otras formas de nombrarla en un titular
+    separador_etiqueta: str                        # une los nombres cuando una procedencia reúne varias agencias o redes
+    etiqueta_estimado: str                         # leyenda obligatoria: el conteo es una estimación
+
+    @model_validator(mode="after")
+    def _dominios_sin_repetir(self) -> ConfigProcedencias:
+        todos = [d for r in self.redes_sindicacion.values() for d in r.dominios]
+        todos += [d for ds in self.agencias_por_dominio.values() for d in ds]
+        repetidos = sorted({d for d in todos if todos.count(d) > 1})
+        if repetidos:
+            raise ValueError(f"un dominio no puede estar en dos redes o agencias: {repetidos}")
+        return self
+
+
+def cargar_procedencias(carpeta: Path | None = None) -> ConfigProcedencias:
+    """Atajo para ``config/procedencias.yaml``."""
+    return cargar_config("procedencias", ConfigProcedencias, carpeta)
+
+
 MODALIDADES = ("editorial", "banca")
 OPCIONALES = {"modalidad_banca"}  # el esquema la admite aunque todavía no exista
 
@@ -1395,6 +1459,7 @@ CARGADORES = {
     "normalizacion": cargar_normalizacion,
     "clasificacion": cargar_clasificacion,
     "etiquetado": cargar_etiquetado,
+    "procedencias": cargar_procedencias,
 }
 
 
