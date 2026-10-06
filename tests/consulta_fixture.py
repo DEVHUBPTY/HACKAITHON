@@ -17,7 +17,7 @@ def _noticia(id_: str, titulo: str, medio: str = "Medio Uno", es_ruido: bool = F
     return {
         "id_noticia": id_, "titulo": titulo, "url": f"https://x.test/{id_}", "url_canonica": f"https://x.test/{id_}",
         "medio": medio, "tipo_firma": "sin firma", "fecha_publicacion": "2026-10-01T10:00:00Z",
-        "titulo_limpio": titulo, "es_ruido": es_ruido, "sospechoso_inyeccion": False,
+        "titulo_limpio": titulo, "titulo_original": f"{titulo} - {medio}", "es_ruido": es_ruido, "sospechoso_inyeccion": False,
     }
 
 
@@ -41,6 +41,9 @@ INDICADORES = [
     _indicador("PAN", "SL.UEM.TOTL.ZS", 2024, 8.4),
     _indicador("PAN", "FP.CPI.TOTL.ZG", 2024, 0.7),
     _indicador("CRI", "SL.UEM.TOTL.ZS", 2024, 7.1),
+    _indicador("PAN", "NY.GDP.MKTP.KD.ZG", 2010, 5.0),
+    _indicador("PAN", "NY.GDP.MKTP.KD.ZG", 2024, 2.7),
+    _indicador("PAN", "SP.POP.TOTL", 2024, 4515577.0, "personas"),
 ]
 SISMOS = [
     _sismo("SIS-us0001", 5.4, "2024-03-10T08:00:00Z", "10 km al sur de Puerto Armuelles, Panama"),
