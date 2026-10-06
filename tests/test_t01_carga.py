@@ -421,3 +421,29 @@ def test_a1_validos_solo_contiene_filas_validas_y_es_determinista(tmp_path: Path
     leidas = pd.read_csv(rutas[0] / "noticias.csv", dtype=str)
     assert len(leidas) == 6 and leidas["id_noticia"].is_monotonic_increasing and list(leidas.columns) == cargar_contrato().noticias
     assert not leidas["id_noticia"].duplicated().any()
+
+
+def test_x12_validos_conserva_los_valores_de_indicadores(tmp_path: Path) -> None:
+    """Cada valor de validos/indicadores.csv es el mismo número que en el snapshot (X12)."""
+    assert carga.main(["--procesados", str(RAIZ / "data" / "processed"), "--salida", str(tmp_path / "o"), "--validos", str(tmp_path / "v")]) == 0
+    texto = (tmp_path / "v" / "indicadores.csv").read_text("utf-8")
+    assert "np." not in texto
+    clave = ["pais_iso3", "indicador_id", "anio"]
+    original = pd.read_csv(RAIZ / "data" / "processed" / "indicadores.csv").sort_values(clave).reset_index(drop=True)
+    escrito = pd.read_csv(tmp_path / "v" / "indicadores.csv").sort_values(clave).reset_index(drop=True)
+    assert escrito["valor"].isna().equals(original["valor"].isna())
+    assert (escrito["valor"].dropna() == original["valor"].dropna()).all()
+
+
+def test_x12_archivo_ausente_no_deja_copia_vieja_en_validos(tmp_path: Path) -> None:
+    """Si un archivo del snapshot falta, validos/ no conserva la versión de una corrida anterior (X12)."""
+    import shutil
+
+    procesados = tmp_path / "p"
+    shutil.copytree(RAIZ / "data" / "processed", procesados, ignore=shutil.ignore_patterns("validos"))
+    args = ["--procesados", str(procesados), "--salida", str(tmp_path / "o"), "--validos", str(tmp_path / "v")]
+    assert carga.main(args) == 0
+    assert (tmp_path / "v" / "noticias.csv").exists()
+    (procesados / "noticias.csv").unlink()
+    carga.main(args)
+    assert not (tmp_path / "v" / "noticias.csv").exists()
