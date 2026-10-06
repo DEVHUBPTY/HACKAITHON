@@ -1,0 +1,30 @@
+# Modalidad editorial (TVN). Lo único que cambia entre modalidades vive en un YAML como este (D-01, D-38).
+version: "1.0"
+modalidad: editorial
+nombre: "Editorial (TVN)"
+usuario: "Editora o productor de noticias"
+
+medio_referencia:               # alimenta "¿el medio de referencia ya lo cubrió?"
+  nombre: "TVN Panamá"
+  dominio: tvn-2.com
+
+# Grupos de config/restricciones.yaml que validan las salidas de esta modalidad.
+grupos_restricciones: [comunes, editorial]
+
+# Tabla 3×3 rango × estado de evidencia, tal como el diseño de solución "Acción recomendada" (D-35, D-38).
+# Ninguna celda habilita publicar ni emite alerta definitiva. Qué se genera por acción: D-42 (docs/salidas.md).
+tabla_acciones:
+  alto:
+    suficiente: {accion: "Producir borrador", motivo: "Atención alta y evidencia suficiente para el borrador."}
+    parcial: {accion: "Completar evidencia y producir", motivo: "Atención alta con evidencia parcial: se produce el borrador con los vacíos arriba."}
+    insuficiente: {accion: "Investigar ya", motivo: "Atención alta pero evidencia insuficiente: verificar antes de redactar."}
+  medio:
+    suficiente: {accion: "Borrador opcional", motivo: "Atención media con evidencia suficiente: el borrador es opcional."}
+    parcial: {accion: "Vigilar", motivo: "Atención media con evidencia parcial: seguir el tema."}
+    insuficiente: {accion: "Vigilar", motivo: "Atención media con evidencia insuficiente: seguir el tema."}
+  bajo:
+    suficiente: {accion: "Archivar como contexto", motivo: "Atención baja: se conserva como contexto."}
+    parcial: {accion: "Archivar", motivo: "Atención baja con evidencia parcial."}
+    insuficiente: {accion: "Archivar", motivo: "Atención baja con evidencia insuficiente."}
+
+fuentes_sugeridas_extra: []     # editorial: ninguna (D-38); banca: SBP, MEF, INEC

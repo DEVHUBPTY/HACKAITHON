@@ -17,11 +17,15 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 | Foco (Panamá sujeto · otro país que afecta) | 1 · 0.5 | Supuesto | Revisión editorial |
 | Similitudes en percentil | — | Calibrado | X04 (distribución) |
 | Partes de I (subtema · geográfico) | 0.5 · 0.5 | Supuesto | X02 |
-| Alcance por subtema | Tabla en YAML | Supuesto (criterio editorial) | Precision@5 y revisión editorial |
+| Alcance por subtema (38 subtemas, 0.4 a 1.0) | Tabla en `reglas_v1.3.yaml` | Supuesto (criterio editorial; el diseño pide la tabla documentada en YAML, D-35) | Precision@5 y revisión editorial |
 | Alcance geográfico | nacional 1 · provincial 0.6 · local 0.3 · desconocido 0.5 | Supuesto | X02 |
-| Ventana de urgencia U | 1 a < 24 h → 0 a 7 días | Supuesto | X02 |
+| Ventana de urgencia U: horas con U = 1 · días con U = 0 (lineal entre ambos) | 24 h · 7 días | Diseño (v1.3, D-35: <24 h y 7 días) | X02 |
 | Partes de E (procedencias · oficial · identificable) | 0.5 · 0.3 · 0.2 | Supuesto | X02 |
 | Tope de procedencias en E | 3 | Supuesto | X02 |
+| U sin fecha de publicación en ningún titular | Usa `fecha_deteccion` y agrega el vacío "urgencia estimada: fecha de publicación desconocida" | Supuesto (53 de 186 noticias del snapshot traen publicación; GDELT no) | Test de E1-10 |
+| N del primer grupo (sin grupos previos) | 1.0 | Supuesto | Test de E1-10 |
+| Listas de provincias, comarcas y distritos | 10 · 6 · 60 | Práctica (división político-administrativa; lista parcial de distritos) | Titulares reales de TVN; `validar_coherencia` |
+| Agencias de noticias para el tipo de firma | 10 nombres | Práctica (el RSS de TVN no trae firma, no se derivan de datos) | Se usa solo si un titular de GDELT la nombra |
 
 ## Estado de evidencia
 
@@ -29,6 +33,13 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 |---|---|---|---|
 | Procedencias para "parcial" / "suficiente" | 2 | Práctica (regla periodística de las dos fuentes independientes) | Revisión editorial |
 | Dato oficial obligatorio si hay cifras | — | PDF (secciones 7 y 9: toda cifra con evidencia) | Test |
+| Una procedencia + dato o evento oficial = "parcial" | 1 | Diseño (estado de evidencia: parcial = 2 o más procedencias, o 1 + dato oficial) | Test de E1-10 |
+| Tabla de acciones 3×3 (editorial y banca) | Editorial: Alto = Producir borrador · Completar evidencia y producir · Investigar ya; Medio = Borrador opcional · Vigilar · Vigilar; Bajo = Archivar como contexto · Archivar · Archivar. Banca: Alto = Incluir en el boletín como observación · Incluir como señal a confirmar · Seguimiento prioritario; Medio = Incluir como contexto · Seguimiento · Seguimiento; Bajo = Archivar | Diseño (D-35, D-38; página "Diseño de solución", Acción recomendada) | Test que fija las 9 celdas; ninguna dice publicar |
+| "Suficiente" exige sin contradicción abierta y, si hay cifras, dato oficial | Regla | Diseño (estado de evidencia) | Test de E1-10 |
+| Vínculos con evidencia oficial (6 subtemas + Logística/Canal indirecto) y sus 5 motivos sin vínculo | Tabla en `vinculos.yaml` | Diseño ("Vínculos con evidencia oficial") | Test que fija la tabla exacta |
+| Sectores de banca (5) y su mapeo desde los temas | `temas.yaml` y `modalidad_banca.yaml` | Diseño (D-11, propuesta) | Validación del esquema |
+| Alcance por sector (banca, sustituye al del subtema) | Por definir al crear `modalidad_banca.yaml` | Supuesto | X02 |
+| Cantidad de temas | 6 | PDF (sección 3, etapa 2) | `cantidad_temas` en `temas.yaml`, validada |
 
 ## Organizar y contextualizar
 
@@ -40,7 +51,7 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 | Umbral "sin tema" | Por definir | Calibrado | Etiquetas humanas |
 | Criterio opción A vs. B | IC 95 % de la diferencia de macro-F1 excluye 0 | Práctica estadística | Bootstrap |
 | Umbrales de ruido | Por definir | Calibrado | X01 (precisión/recall) |
-| Coincidencia de sismos | ± 2 días | Supuesto | Revisión con la exploración (E0-09) |
+| Coincidencia de sismos (`vinculos.yaml`) | ± 2 días | Supuesto | Revisión con la exploración (E0-09); datos sintéticos en E1-09 |
 | Magnitud mínima USGS | 3 | PDF (sección 6) | — |
 
 ## Extracción del snapshot (E0-04, `config/fuentes.yaml`)
@@ -122,10 +133,11 @@ Una cadena vacía o en blanco es nulo en CSV y en JSON. Duplicados: en noticias 
 |---|---|---|---|
 | Brief · copy · resumen bancario | ≤ 250 · ≤ 80 · ≤ 250 palabras | PDF | Test |
 | Guion | 45–60 s | PDF | X03 |
-| Guion en palabras | 110–150 | Calibrado | X03 (cronometrado) |
+| Guion en palabras | 110–150 (`salidas.yaml`) | Calibrado | X03 (cronometrado) |
 | Preguntas | Exactamente 3 | PDF | Test |
 | Título · titulares · resumen web · hashtags | ≤ 14 · 2–3 · ≤ 120 · ≤ 2 | Supuesto (convención propia) | Tasa de corrección en revisión |
-| Transiciones sin cita por sección | Máximo en YAML | Supuesto | Revisión editorial |
+| Transiciones sin cita por sección | 1 (`salidas.yaml`) | Supuesto | Revisión editorial |
+| Palabras sensacionalistas y frases prohibidas | Grupos `comunes`, `editorial` y `banca` en `restricciones.yaml` | PDF (prohibiciones) · diseño (validador, D-25, D-51); las listas de frases, Supuesto | Un test por frase (E1-13) |
 
 ## Evaluación
 

@@ -1,6 +1,6 @@
 # Titulares usados como ejemplo en config/temas.yaml. NUNCA entran en la evaluación (F1 inflado si no).
 # Formato: id_noticia<TAB>titular. Los de E0-09 son propuestos desde docs/exploracion_revision.csv;
-# E1-05 agrega aquí cada titular nuevo que ponga en temas.yaml.
+# E1-05: son exactamente los 16 ejemplos con real=true de temas.yaml (los 16 propuestos se usaron); test_reglas_config lo verifica.
 NOT-052735cae3	Inland navigation workers stand with Panama Canal workers after death of tug captain
 NOT-0d7f10257c	Déficit de personal limita la capacidad operativa de los bomberos en el país
 NOT-1710ce462f	¿ Cómo se fija el precio del combustible en Panamá ? El MEF explica la fórmula quincenal tras aprobarse nuevo subsidio
