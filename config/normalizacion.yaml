@@ -1,0 +1,48 @@
+# E1-03 · Normalización y almacenamiento (src/normalizacion.py, src/db.py). Todo número, prefijo o lista vive aquí (D-79).
+# Orígenes y validación de cada valor: docs/parametros.md, sección "Normalización y almacenamiento".
+
+entrada:
+  carpeta_validos: validos          # dentro de data/processed/ (D-82)
+
+salida:
+  base_de_datos: senales.duckdb     # dentro de data/ (ignorado por git)
+
+fechas:
+  formato_salida: "%Y-%m-%dT%H:%M:%SZ"   # ISO 8601 UTC con Z; la hora de Panamá solo se muestra en la interfaz
+
+noticias:
+  prefijo_id: "NOT-"
+  largo_hash_id: 10                 # D-63: primeros 10 caracteres del SHA-1 de la URL canónica
+  prefijos_sinteticos: ["SYN-"]     # los datos sintéticos conservan su ID (D-63)
+  separador_tema: "|"
+  separador_origen: " · "
+  orden_origen: ["TVN RSS", "GDELT"]
+  dias_para_recirculada: 30         # detección - publicación mayor a esto = noticia antigua recirculada (T03)
+  campos_firma: [firma, autor, author, dc_creator, creator]   # entrada opcional; el valor nunca se guarda (D-32)
+
+firma:
+  agencias: [EFE, AFP, AP, Reuters, Europa Press, DPA, ANSA, Xinhua, Prensa Latina, Bloomberg]
+  # Nombre completo de cada agencia de la lista (se busca como palabra completa, sin distinguir tildes ni mayúsculas).
+  nombres_completos:
+    AP: [Associated Press]
+    AFP: [Agence France-Presse, Agence France Presse]
+    EFE: [Agencia EFE]
+    DPA: [Deutsche Presse-Agentur]
+    ANSA: [Agenzia ANSA]
+    Xinhua: [Agencia Xinhua]
+    Reuters: [Thomson Reuters]
+    Bloomberg: [Bloomberg News]
+  agencias_genericas: [agencias, agencia]   # "Agencias" sin nombre: tipo agencia, sin agencia concreta
+  # Términos de redacción: se buscan como palabra completa dentro de la firma (Redacción TVN, TVN Noticias).
+  redaccion: [redacción, redaccion, tvn, tvn media, web]
+  tipos:
+    agencia: agencia
+    medio: medio
+    persona: persona
+    sin_firma: sin firma
+
+indicadores:
+  prefijo_id: "IND-"
+
+sismos:
+  prefijo_id: "SIS-"
