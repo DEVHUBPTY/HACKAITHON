@@ -21,3 +21,7 @@ outputs/benchmark/
 # Model caches
 .cache/
 models/
+
+# Local tooling
+.claude/worktrees/
+.atl/
