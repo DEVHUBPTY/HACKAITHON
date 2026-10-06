@@ -33,11 +33,18 @@ reglas:
     necesita: "El texto completo del artículo, que no está en el corpus. Puede abrirse la URL del titular en el medio."
     patrones: ['\bcuerpo (del|de la) (articulo|nota|noticia)', '\btexto completo\b', '\bcontenido (del|de la) (articulo|nota|noticia)',
                '\bque dice (el|la) (articulo|nota|noticia)']
-  - id: autoria_o_perfil
-    motivo: "Solo se guarda la agencia y el tipo de firma; nunca el nombre del autor ni perfiles de personas (D-32, D-68)."
-    necesita: "Una consulta sobre el contenido de la nota, no sobre quién la firmó ni sobre otros casos de una persona."
-    patrones: ['\bquien (redacto|escribio|firmo|firma|es el autor)', '\b(autor|autora|redactor|redactora|periodista) (de|que)',
-               '\botros casos\b', '\bperfil de\b', '\bhistorial (judicial|penal) de\b']
+  - id: autoria
+    motivo: "Solo se guarda la agencia y el tipo de firma; nunca el nombre del autor de una nota (D-32)."
+    necesita: "Una consulta sobre el contenido de la nota, no sobre quién la firmó."
+    patrones: ['\bquien (redacto|escribio|firmo|firma)\b', '\bquien es (el|la) (autor|autora|redactor|redactora|periodista)\b',
+               '\b(autor|autora|redactor|redactora|periodista) (de|que (escribio|redacto|firmo)) (esta|esa|la|el) (nota|articulo|noticia|texto)\b',
+               '\bautor (de|del) (la )?(nota|articulo|noticia|texto)\b']
+  - id: autoria_perfil
+    motivo: "No se crean perfiles de personas ni se agrupan casos por persona (D-68)."
+    necesita: "Una consulta sobre un hecho o tema concreto, no sobre el historial de una persona."
+    patrones: ['\botros casos\b', '\bperfil de\b', '\bhistorial (judicial|penal) de\b']
+    ademas: ['\bpersona\b', '\b(acusad|detenid|imputad|sospechos|aprehendid|recluid|condenad)[oa]s?\b', '\btiene\b', '\btuvo\b',
+             '\bex ?(director|ministro|presidente|funcionario)']
   - id: cifra_de_periodo_relativo
     motivo: "Pide una cifra para un periodo relativo reciente (esta semana, esta quincena, hoy) y el corpus no tiene series con esa granularidad."
     necesita: "Una fuente oficial con la serie al día y su fecha de corte, por ejemplo la que publica la entidad responsable."
@@ -65,12 +72,27 @@ datos_oficiales:
     GTM: [guatemala, guatemalteco, guatemalteca]
   nombres_pais: {PAN: Panamá, CRI: Costa Rica, COL: Colombia, DOM: República Dominicana, MEX: México, GTM: Guatemala}
   indicadores:              # indicador_id -> términos (sin tildes y en minúsculas) con que se pide
-    NY.GDP.MKTP.KD.ZG: [pib, producto interno bruto, crecimiento economico, crecimiento del pib]
+    # NY.GDP.MKTP.KD.ZG es el CRECIMIENTO anual del PIB, no su nivel: el término suelto «pib» no lo pide (ver `relacionados`).
+    NY.GDP.MKTP.KD.ZG: [crecimiento economico, crecimiento del pib, crecimiento de la economia, tasa de crecimiento, pib crecio,
+                        crecio el pib, pib crece, crece el pib, pib crecieron, crecimiento anual]
     FP.CPI.TOTL.ZG: [inflacion, precios al consumidor]
     SL.UEM.TOTL.ZS: [desempleo, tasa de desempleo]
     SP.POP.TOTL: [poblacion, habitantes]
     IT.NET.USER.ZS: [internet, uso de internet]
     NE.EXP.GNFS.ZS: [exportaciones de bienes y servicios, exportaciones del pib, exportaciones como porcentaje]
+  # Términos que nombran una magnitud que el corpus NO tiene pero cuyo indicador más cercano sí: se abstiene y se ofrece
+  # ese indicador solo como dato relacionado (nunca como la cifra pedida).
+  relacionados:
+    NY.GDP.MKTP.KD.ZG: [pib, producto interno bruto]
+  # Calificadores que los indicadores del Banco Mundial (nacionales, totales) no desagregan. Si la consulta nombra alguno,
+  # la cifra nacional NO responde lo pedido: se abstiene y se ofrece como dato disponible. Sin tildes y en minúsculas.
+  calificadores:
+    poblacion: [juvenil, jovenes, joven, adolescentes, menores, ninos, adultos mayores, mujeres, hombres, femenino, masculino,
+                por sexo, por genero, por edad, indigena, indigenas, afrodescendiente, migrantes, rural, urbano, informal]
+    territorio: [provincia, provincial, provincias, distrito, corregimiento, comarca, region, regional, subnacional, ciudad de panama,
+                 colon, darien, chiriqui, bocas del toro, veraguas, herrera, los santos, cocle, panama oeste, guna yala, ngabe bugle,
+                 embera wounaan, david, san miguelito, la chorrera, penonome, santiago]
+    sector: [por sector, por actividad, sector publico, sector privado, agropecuario, industrial]
   # Si la consulta pregunta por noticias, medios o titulares no es una consulta de cifra aunque nombre un indicador.
   intencion_noticia: ['\breporto', '\breportaron', '\binformo', '\binformaron', '\btitular', '\bmedios?\b', '\bprensa\b',
                       '\bnoticias?\b', '\banuncio', '\bpublico\b', '\bdice la\b', '\bdijo\b']
@@ -80,6 +102,7 @@ datos_oficiales:
     palabras: [sismo, sismos, temblor, temblores, terremoto, terremotos]
 
 respuesta:
+  decimales_valor: 2        # decimales con que se MUESTRA un valor no entero; la cita conserva el valor crudo
   maximo_afirmaciones: 5    # lo que se cita de una respuesta basada en titulares (igual a top_k)
   advertencia_titular: "Un titular es lo que un medio reporta, no un hecho verificado; no se leyó el artículo."
   advertencia_anual: "Los datos del Banco Mundial son anuales: no describen la situación actual."

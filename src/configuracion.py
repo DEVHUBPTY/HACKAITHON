@@ -1440,6 +1440,8 @@ class DatosOficialesConsulta(ModeloConfig):
     paises: dict[str, list[str]]
     nombres_pais: dict[str, str]
     indicadores: dict[str, list[str]]
+    relacionados: dict[str, list[str]]
+    calificadores: dict[str, list[str]]
     intencion_noticia: list[str]
     variacion: list[str]
     sismos: SismosConsulta
@@ -1452,11 +1454,16 @@ class DatosOficialesConsulta(ModeloConfig):
             raise ValueError("nombres_pais: debe tener los mismos países que paises")
         if any(not v for v in [*self.paises.values(), *self.indicadores.values()]):
             raise ValueError("paises e indicadores: cada uno necesita al menos un término")
+        if not set(self.relacionados) <= set(self.indicadores):
+            raise ValueError("relacionados: cada clave debe ser un indicador de `indicadores`")
+        if any(not t for t in self.calificadores.values()):
+            raise ValueError("calificadores: cada grupo necesita al menos un término")
         _compilar_todas(self.intencion_noticia, "consulta.datos_oficiales.intencion_noticia")
         return self
 
 
 class RespuestaConsultaConfig(ModeloConfig):
+    decimales_valor: int = Field(ge=0)
     maximo_afirmaciones: int = Field(ge=1)
     advertencia_titular: str
     advertencia_anual: str

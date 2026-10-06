@@ -44,3 +44,24 @@ En titulares los dos empatan (22/38); la diferencia está en los datos oficiales
 - **No cubierto:** una consulta sobre un tema que el corpus sí trata, pero cuyo dato concreto no está en los titulares, solo se rechaza si cae bajo el umbral (BDEV-028 «causa de la muerte»: se rechazó por similitud baja, 0.81, sin garantía de que generalice).
 - Las consultas adversariales respondibles (BDEV-036, 037) se contestan solo con lo que dicen los titulares, atribuido al medio y con la advertencia de que no se leyó el artículo; no se emite ninguna nota ni confirmación.
 - Los 40 de desarrollo también se usan para calibrar; no hay otro conjunto. El conjunto reservado es del jurado y nunca se lee.
+
+## Sesgo hacia abstenerse en consultas genéricas (X16)
+
+El umbral de similitud (0.874, semántica) es el **mínimo** de las 9 consultas respondibles de calibración (percentil 5, truncado), y esas consultas son largas y específicas («¿Qué medios reportaron la sanción del presupuesto del Canal…?»). Una consulta corta y genérica del estilo «¿Qué se dice de X?» puntúa más bajo aunque el corpus tenga titulares sobre X, así que **el sistema se abstiene de más** en ellas (medido con el modelo real, semántica):
+
+| Consulta | Similitud máxima | Resultado |
+|---|---|---|
+| ¿Qué se dice del Canal de Panamá? | 0.855 | abstención (`similitud_baja`) |
+| ¿Qué se dice de Cobre Panamá? | 0.866 | abstención |
+| ¿Qué se dice del turismo en Panamá? | 0.850 | abstención |
+| ¿Qué se dice de Mulino? | 0.839 | abstención |
+| ¿Qué medios reportaron la sanción del presupuesto del Canal de Panamá? | 0.896 | responde |
+
+Es un error del lado seguro (no inventa), pero degrada la utilidad de las consultas abiertas. No se corrigió: bajar el umbral sin ejemplos genéricos de calibración sería ajustar a ciegas. Queda como mejora: agregar consultas genéricas respondibles al benchmark de calibración o calibrar por longitud de consulta.
+
+## Cifras oficiales: calificadores e indicadores en nivel (X16)
+
+- Un **calificador** que el indicador no desagrega (edad, sexo, población indígena, provincias o regiones, sector; lista en `datos_oficiales.calificadores`) hace abstenerse, y la cifra nacional se ofrece **solo** como `ultimo_dato_disponible`. Tampoco se asume Panamá si la consulta nombra otro país o región.
+- `NY.GDP.MKTP.KD.ZG` es el **crecimiento** anual del PIB: el término suelto «PIB» ya no lo pide. «PIB de Panamá en 2010» se abstiene y ofrece el crecimiento como dato relacionado.
+- Los valores se muestran con `respuesta.decimales_valor` decimales; la cita conserva el valor crudo. Las afirmaciones sobre titulares citan también `medio` y `fecha_publicacion` y entrecomillan el titular original literal (`titulo_original`).
+- La regla de autoría exige una referencia a la autoría de la nota (o a una persona junto a «otros casos»): «¿Se reportaron otros casos de dengue en Chiriquí?» y «¿Qué dijo el periodista de TVN sobre el Canal?» ya no se rechazan.

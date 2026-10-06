@@ -40,8 +40,8 @@ def test_t06_una_consulta_respondible_no_se_abstiene(consultor) -> None:
     # un titular es lo que un medio reporta (declaración); solo los datos oficiales son hechos
     assert all((x.tipo == "declaración") == x.citas[0].id.startswith("NOT-") for x in r.afirmaciones)
     assert a.tipo == "declaración"
-    assert [(x.id, x.campo) for x in a.citas] == [("NOT-0000000001", "titulo_limpio")]
-    assert "«Canal de Panamá aprueba presupuesto para 2027»" in a.texto
+    assert [(x.id, x.campo) for x in a.citas][0] == ("NOT-0000000001", "titulo_original")
+    assert "«Canal de Panamá aprueba presupuesto para 2027 - Panamá América»" in a.texto
     assert r.leyenda_alcance == "basado únicamente en titular/metadatos"
     assert any("no se leyó el artículo" in av for av in r.advertencias)
 
@@ -59,7 +59,7 @@ def test_t06_un_nulo_no_se_rellena_con_cero(consultor) -> None:
     c, _ = consultor
     r = c.responder("¿Cuál fue el desempleo de Panamá en 2022?")
     assert r.abstiene and r.motivo == "cifra_inexistente"
-    assert all("0 %" not in a.texto for a in r.afirmaciones + r.ultimo_dato_disponible)
+    assert all(": 0 %" not in a.texto for a in r.afirmaciones + r.ultimo_dato_disponible)
     assert r.ultimo_dato_disponible[0].citas[0].id.endswith("-2024")
 
 

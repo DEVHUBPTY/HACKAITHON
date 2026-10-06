@@ -634,8 +634,10 @@
       },
       "motivos": {
         "cifra_inexistente": [
-          "BDEV-029",
           "BDEV-030"
+        ],
+        "indicador_no_disponible": [
+          "BDEV-029"
         ],
         "inyeccion": [
           "BDEV-035",
@@ -644,7 +646,7 @@
         "periodo_fuera_de_cobertura": [
           "BDEV-033"
         ],
-        "regla:autoria_o_perfil": [
+        "regla:autoria": [
           "BDEV-040"
         ],
         "regla:cifra_de_periodo_relativo": [
@@ -855,8 +857,10 @@
       },
       "motivos": {
         "cifra_inexistente": [
-          "BDEV-029",
           "BDEV-030"
+        ],
+        "indicador_no_disponible": [
+          "BDEV-029"
         ],
         "inyeccion": [
           "BDEV-035",
@@ -865,7 +869,7 @@
         "periodo_fuera_de_cobertura": [
           "BDEV-033"
         ],
-        "regla:autoria_o_perfil": [
+        "regla:autoria": [
           "BDEV-040"
         ],
         "regla:cifra_de_periodo_relativo": [

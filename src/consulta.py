@@ -30,7 +30,6 @@ import re
 import sys
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
-from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
 
@@ -61,11 +60,11 @@ RUTA_SINTETICOS = RAIZ / "benchmark" / "sinteticos.csv"
 
 # Campos que una cita puede nombrar por tipo de registro (CLAUDE.md: cita válida = ID + campo).
 CAMPOS_CITABLES: dict[str, frozenset[str]] = {
-    "noticia": frozenset({"titulo_limpio", "medio", "fecha_publicacion"}),
+    "noticia": frozenset({"titulo_original", "titulo_limpio", "medio", "fecha_publicacion"}),
     "indicador": frozenset({"valor", "anio", "unidad"}),
     "sismo": frozenset({"magnitude", "place", "time"}),
 }
-CAMPO_PRINCIPAL = {"noticia": "titulo_limpio", "indicador": "valor", "sismo": "magnitude"}
+CAMPOS_TITULAR = ("titulo_original", "titulo_limpio")   # campos cuyo valor debe aparecer literal en la afirmación
 TIPO_POR_PREFIJO = {"NOT-": "noticia", "SYN-": "noticia", "IND-": "indicador", "SIS-": "sismo"}
 PATRON_ANIO = re.compile(r"\b(?:19|20)\d{2}\b")
 PATRON_TOKEN = re.compile(r"\w+")
@@ -92,6 +91,7 @@ class Corpus:
     nombres_indicador: dict[str, tuple[str, str]]   # indicador_id -> (nombre, unidad)
     indicadores: dict[tuple[str, str, int], dict[str, Any]]
     sismos: list[dict[str, Any]]
+    paises_del_mundo: tuple[tuple[str, str], ...] = ()   # (nombre en español, sin tildes) de fuentes.yaml `paises_es`
 
     def __post_init__(self) -> None:
         self.por_id = {d.id: d for d in self.documentos}
@@ -130,7 +130,7 @@ def cargar_corpus(
             continue
         f = {**f, "titulo_limpio": f.get("titulo_limpio") or f["titulo"]}
         docs.append(Documento(f["id_noticia"], "noticia", _texto_noticia(f), {
-            "titulo_limpio": f["titulo_limpio"], "medio": f["medio"], "fecha_publicacion": f.get("fecha_publicacion"),
+            "titulo_limpio": f["titulo_limpio"], "titulo_original": f.get("titulo_original") or f["titulo"], "medio": f["medio"], "fecha_publicacion": f.get("fecha_publicacion"),
             "sospechoso_inyeccion": bool(f.get("sospechoso_inyeccion")),
         }))
     if sinteticos and sinteticos.exists():
@@ -140,7 +140,7 @@ def cargar_corpus(
             for f in csv.DictReader(h):
                 f["titulo_limpio"] = f["titulo"]
                 docs.append(Documento(f["id_noticia"], "noticia", _texto_noticia(f), {
-                    "titulo_limpio": f["titulo"], "medio": f["medio"], "fecha_publicacion": f["fecha_publicacion"],
+                    "titulo_limpio": f["titulo"], "titulo_original": f["titulo"], "medio": f["medio"], "fecha_publicacion": f["fecha_publicacion"],
                     "sospechoso_inyeccion": False,
                 }))
     tabla_ind: dict[tuple[str, str, int], dict[str, Any]] = {}
@@ -156,7 +156,8 @@ def cargar_corpus(
         docs.append(Documento(f["id"], "sismo",
                               f"Sismo registrado por USGS de magnitud {f['magnitude']}, {f['place']}, {(f['time'] or '')[:10]}.",
                               {"magnitude": f["magnitude"], "place": f["place"], "time": f["time"]}))
-    return Corpus(docs, nombres, tabla_ind, sis)
+    mundo = tuple((n, plano(n)) for n in fuentes.paises_es.values())
+    return Corpus(docs, nombres, tabla_ind, sis, mundo)
 
 
 # ------------------------------------------------------------------ búsqueda
@@ -287,33 +288,39 @@ def validar_citas(afirmaciones: list[Afirmacion], corpus: Corpus) -> list[str]:
                 problemas.append(f"{a.id}: un titular es una declaración, no un hecho ({c.id})")
             elif a.tipo == "declaración" and doc.tipo != "noticia":
                 problemas.append(f"{a.id}: una declaración solo cita titulares ({c.id})")
-            elif doc.tipo == "noticia" and c.campo == "titulo_limpio" and doc.datos["titulo_limpio"] not in a.texto:
+            elif doc.tipo == "noticia" and c.campo in CAMPOS_TITULAR and doc.datos[c.campo] not in a.texto:
                 problemas.append(f"{a.id}: el titular citado no aparece literal en la afirmación")
+            elif doc.tipo == "noticia" and c.campo == "medio" and doc.datos["medio"] not in a.texto:
+                problemas.append(f"{a.id}: el medio citado no aparece en la afirmación")
+            elif doc.tipo == "noticia" and c.campo == "fecha_publicacion" and (doc.datos["fecha_publicacion"] or "")[:10] not in a.texto:
+                problemas.append(f"{a.id}: la fecha citada no aparece en la afirmación")
         if not a.citas:
             problemas.append(f"{a.id}: sin citas")
     return problemas
 
 
-def _num(v: float) -> str:
-    return f"{v:.15g}"
+def _mostrar(v: float, decimales: int) -> str:
+    """Valor para mostrar: entero sin decimales; si no, con ``decimales`` configurados. La cita conserva el valor crudo."""
+    return str(int(v)) if float(v).is_integer() else f"{v:.{decimales}f}"
 
 
 def _afirmacion_noticia(i: int, d: Documento) -> Afirmacion:
     fecha = (d.datos.get("fecha_publicacion") or "")[:10]
     cuando = f" ({fecha}, fecha de publicación en UTC)" if fecha else ""
-    texto = f"{d.datos['medio']} titula: «{d.datos['titulo_limpio']}»{cuando}."
-    return Afirmacion(id=f"A{i}", tipo="declaración", texto=texto, citas=[Cita(id=d.id, campo="titulo_limpio")])
+    texto = f"{d.datos['medio']} titula: «{d.datos['titulo_original']}»{cuando}."
+    campos = ["titulo_original", "medio", *(["fecha_publicacion"] if fecha else [])]
+    return Afirmacion(id=f"A{i}", tipo="declaración", texto=texto, citas=[Cita(id=d.id, campo=c) for c in campos])
 
 
-def _afirmacion_indicador(i: int, d: Documento, pais: str) -> Afirmacion:
+def _afirmacion_indicador(i: int, d: Documento, pais: str, dec: int) -> Afirmacion:
     dd = d.datos
-    texto = f"{dd['nombre']} de {pais} en {dd['anio']}: {_num(dd['valor'])} {dd['unidad']} (Banco Mundial; dato anual)."
+    texto = f"{dd['nombre']} de {pais} en {dd['anio']}: {_mostrar(dd['valor'], dec)} {dd['unidad']} (Banco Mundial; dato anual)."
     return Afirmacion(id=f"A{i}", tipo="hecho", texto=texto, citas=[Cita(id=d.id, campo="valor")])
 
 
-def _afirmacion_sismo(i: int, d: Documento) -> Afirmacion:
+def _afirmacion_sismo(i: int, d: Documento, dec: int) -> Afirmacion:
     dd = d.datos
-    texto = f"USGS registró un sismo de magnitud {_num(dd['magnitude'])} el {dd['time']}, «{dd['place']}»."
+    texto = f"USGS registró un sismo de magnitud {_mostrar(dd['magnitude'], dec)} el {dd['time']}, «{dd['place']}»."
     return Afirmacion(id=f"A{i}", tipo="hecho", texto=texto, citas=[Cita(id=d.id, campo="magnitude")])
 
 
@@ -333,17 +340,11 @@ def _nombres_pais(cfg: ConfigConsulta) -> dict[str, list[str]]:
     return cfg.datos_oficiales.paises
 
 
-@lru_cache(maxsize=1)
-def _paises_del_mundo() -> tuple[tuple[str, str], ...]:
-    """(nombre en español, sin tildes) de ``paises_es`` de fuentes.yaml."""
-    return tuple((n, plano(n)) for n in cargar_fuentes().paises_es.values())
-
-
-def paises_no_cubiertos(texto_plano: str, cfg: ConfigConsulta) -> list[str]:
+def paises_no_cubiertos(texto_plano: str, cfg: ConfigConsulta, corpus: Corpus) -> list[str]:
     """Países de ``paises_es`` (fuentes.yaml) que la consulta nombra y que NO están en la cuadrícula del Banco Mundial."""
     cubiertos = {t for ts in cfg.datos_oficiales.paises.values() for t in ts}
     fuera = []
-    for nombre, p in _paises_del_mundo():
+    for nombre, p in corpus.paises_del_mundo:
         if p not in cubiertos and _termino_presente(p, texto_plano):
             fuera.append(nombre)
     return fuera
@@ -366,6 +367,27 @@ def _es_consulta_de_noticias(texto: str, cfg: ConfigConsulta) -> bool:
     return _coincide(cfg.datos_oficiales.intencion_noticia, texto)
 
 
+def _indicadores_relacionados(texto: str, cfg: ConfigConsulta) -> list[str]:
+    return [i for i, ts in cfg.datos_oficiales.relacionados.items() if any(_termino_presente(t, texto) for t in ts)]
+
+
+def _calificadores_pedidos(texto: str, cfg: ConfigConsulta) -> list[str]:
+    """Calificadores (edad, sexo, territorio…) que la consulta nombra y que un total nacional no desagrega."""
+    return [t for ts in cfg.datos_oficiales.calificadores.values() for t in ts if _termino_presente(t, texto)]
+
+
+def _ofrecer(corpus: Corpus, paises: list[str], indicadores: list[str], anios: list[int]) -> list[Documento]:
+    """Dato ofrecido como relacionado: el del año pedido si existe con valor; si no, el último disponible de la serie."""
+    salida: dict[str, Documento] = {}
+    for pais in paises:
+        for ind in indicadores:
+            fila = next((corpus.indicadores[(pais, ind, a)] for a in anios if corpus.indicadores.get((pais, ind, a), {}).get("valor") is not None), None)
+            fila = fila or corpus.ultimo_indicador(pais, ind)
+            if fila:
+                salida[fila["id_indicador"]] = corpus.por_id[fila["id_indicador"]]
+    return list(salida.values())
+
+
 def resolver_cifra(an: Analisis, corpus: Corpus, cfg: ConfigConsulta) -> Oficial | None:
     """Interpreta una consulta de cifra de indicador (país, indicador, año). ``None`` si no es una consulta de ese tipo.
 
@@ -375,21 +397,40 @@ def resolver_cifra(an: Analisis, corpus: Corpus, cfg: ConfigConsulta) -> Oficial
     if _es_consulta_de_noticias(an.plana, cfg):
         return None
     indicadores = _indicadores_pedidos(an.plana, cfg)
-    if not indicadores:
+    relacionados = [] if indicadores else _indicadores_relacionados(an.plana, cfg)
+    if not indicadores and not relacionados:
         return None
     pais_defecto = cfg.datos_oficiales.pais_por_defecto
-    sin_datos = paises_no_cubiertos(an.plana, cfg)
+    sin_datos = paises_no_cubiertos(an.plana, cfg, corpus)
     paises = _paises_pedidos(an.plana, cfg)
     anios = sorted({int(a) for a in PATRON_ANIO.findall(an.plana)})
     variacion = any(_termino_presente(v, an.plana) for v in cfg.datos_oficiales.variacion)
 
     if sin_datos:
-        ultimos = [u for i in indicadores if (u := corpus.ultimo_indicador(pais_defecto, i))]
+        ultimos = [u for i in (indicadores or relacionados) if (u := corpus.ultimo_indicador(pais_defecto, i))]
         nombres = ", ".join(sin_datos)
         return Oficial(
             abstencion=("pais_sin_datos", f"El corpus no tiene datos de {nombres}: la cuadrícula del Banco Mundial cubre solo {', '.join(_nombre_pais(p, cfg) for p in cfg.datos_oficiales.paises)}.",
                         f"Una serie oficial de {nombres} para ese indicador; este corpus no la incluye."),
             ultimos=[corpus.por_id[u["id_indicador"]] for u in ultimos],
+        )
+
+    calificadores = _calificadores_pedidos(an.plana, cfg)
+    if calificadores:
+        nombres = ", ".join(calificadores)
+        return Oficial(
+            abstencion=("calificador_no_disponible",
+                        f"Los indicadores del Banco Mundial son totales nacionales: no hay desagregación por «{nombres}»; la cifra nacional no responde lo que se pide.",
+                        f"Una serie oficial desagregada por «{nombres}» (por ejemplo, de la encuesta de hogares del INEC); este corpus no la incluye."),
+            ultimos=_ofrecer(corpus, paises, indicadores or relacionados, anios),
+        )
+    if relacionados:
+        nombres = ", ".join(corpus.nombres_indicador[i][0] for i in relacionados)
+        return Oficial(
+            abstencion=("indicador_no_disponible",
+                        f"El corpus no tiene esa magnitud: el indicador más cercano es «{nombres}» (variación anual, no el nivel); se ofrece solo como dato relacionado.",
+                        "El nivel de esa magnitud en la serie oficial; este corpus no lo incluye."),
+            ultimos=_ofrecer(corpus, paises, relacionados, anios),
         )
 
     registros: list[Documento] = []
@@ -484,8 +525,8 @@ class Consultor:
                     ultimos: Sequence[Documento] = (), similitud: float | None = None) -> RespuestaConsulta:
         ofrecidos = []
         for i, d in enumerate(ultimos, 1):
-            ofrecidos.append(_afirmacion_indicador(i, d, _nombre_pais(d.datos["pais_iso3"], self.cfg)) if d.tipo == "indicador"
-                             else _afirmacion_sismo(i, d))
+            ofrecidos.append(_afirmacion_indicador(i, d, _nombre_pais(d.datos["pais_iso3"], self.cfg), self.cfg.respuesta.decimales_valor) if d.tipo == "indicador"
+                             else _afirmacion_sismo(i, d, self.cfg.respuesta.decimales_valor))
         return RespuestaConsulta(
             consulta=an.limpia, metodo=metodo, estado="abstencion", motivo=codigo, mensaje=mensaje, falta=falta,
             ultimo_dato_disponible=ofrecidos, similitud_maxima=similitud, entrada_sospechosa=an.entrada_sospechosa,
@@ -529,7 +570,7 @@ class Consultor:
             return self._abstencion(an, metodo, codigo, mensaje, falta, ultimos)
         if oficial and oficial.registros:                     # cifra oficial exacta: no depende de la similitud
             docs = oficial.registros
-            afirmaciones = [_afirmacion_indicador(i, d, _nombre_pais(d.datos["pais_iso3"], self.cfg)) for i, d in enumerate(docs, 1)]
+            afirmaciones = [_afirmacion_indicador(i, d, _nombre_pais(d.datos["pais_iso3"], self.cfg), self.cfg.respuesta.decimales_valor) for i, d in enumerate(docs, 1)]
             puntajes: dict[str, float | None] = {d.id: None for d in docs}
             similitud = None
         else:
@@ -551,9 +592,9 @@ class Consultor:
                 elif d.tipo == "indicador":
                     if d.datos["valor"] is None:
                         continue                              # un nulo es un nulo: no se cita ni se rellena
-                    afirmaciones.append(_afirmacion_indicador(i, d, _nombre_pais(d.datos["pais_iso3"], self.cfg)))
+                    afirmaciones.append(_afirmacion_indicador(i, d, _nombre_pais(d.datos["pais_iso3"], self.cfg), self.cfg.respuesta.decimales_valor))
                 else:
-                    afirmaciones.append(_afirmacion_sismo(i, d))
+                    afirmaciones.append(_afirmacion_sismo(i, d, self.cfg.respuesta.decimales_valor))
             if not afirmaciones:
                 return self._abstencion(an, metodo, "similitud_baja", "No se responde: lo recuperado no tiene contenido citable.",
                                         "Titulares o datos oficiales con valor para esa consulta.", similitud=similitud)

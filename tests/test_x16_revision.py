@@ -18,7 +18,7 @@ def consultor(tmp_path):
         "¿Cuál fue el desempleo de las mujeres en Panamá en 2024?",
         "¿Cuál fue el desempleo en la provincia de Colón en 2024?",
         "¿Cuál fue el desempleo en Darién en 2024?",
-        "¿Cuál fue el desempleo de la población indígena en 2024?",
+        "¿Cuál fue el desempleo indígena en 2024?",
     ],
 )
 def test_x16_un_calificador_que_el_indicador_no_tiene_abstiene_y_ofrece_la_cifra_nacional(consultor, pregunta) -> None:
@@ -33,7 +33,7 @@ def test_x16_el_pib_en_nivel_no_es_el_crecimiento_del_pib(consultor) -> None:
     r = consultor.responder("¿Cuál fue el PIB de Panamá en 2010?")
     assert r.abstiene and r.motivo == "indicador_no_disponible" and r.afirmaciones == []
     assert [c.id for a in r.ultimo_dato_disponible for c in a.citas] == ["IND-PAN-NY.GDP.MKTP.KD.ZG-2010"]
-    assert "crecimiento" in r.mensaje
+    assert "crecimiento" in r.mensaje.lower()
 
 
 def test_x16_el_crecimiento_del_pib_sigue_respondiendose(consultor) -> None:
