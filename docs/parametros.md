@@ -22,6 +22,12 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 | Ventana de urgencia U | 1 a < 24 h → 0 a 7 días | Supuesto | X02 |
 | Partes de E (procedencias · oficial · identificable) | 0.5 · 0.3 · 0.2 | Supuesto | X02 |
 | Tope de procedencias en E | 3 | Supuesto | X02 |
+| Horas con U = 1 · días con U = 0 (lineal entre ambos) | 24 h · 7 días | Supuesto | X02 |
+| U sin fecha de publicación en ningún titular | Usa `fecha_deteccion` y agrega el vacío "urgencia estimada: fecha de publicación desconocida" | Supuesto (53 de 186 noticias del snapshot traen publicación; GDELT no) | Test de E1-10 |
+| N del primer grupo (sin grupos previos) | 1.0 | Supuesto | Test de E1-10 |
+| Alcance por subtema (38 subtemas, 0.4 a 1.0) | Tabla en `reglas_v1.3.yaml` | Supuesto (criterio editorial) | Precision@5 y revisión editorial |
+| Listas de provincias, comarcas y distritos | 10 · 6 · 60 | Práctica (división político-administrativa; lista parcial de distritos) | Titulares reales de TVN; `validar_coherencia` |
+| Agencias de noticias para el tipo de firma | 10 nombres | Práctica (el RSS de TVN no trae firma, no se derivan de datos) | Se usa solo si un titular de GDELT la nombra |
 
 ## Estado de evidencia
 
@@ -29,6 +35,8 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 |---|---|---|---|
 | Procedencias para "parcial" / "suficiente" | 2 | Práctica (regla periodística de las dos fuentes independientes) | Revisión editorial |
 | Dato oficial obligatorio si hay cifras | — | PDF (secciones 7 y 9: toda cifra con evidencia) | Test |
+| Una procedencia + dato o evento oficial = "parcial" | 1 | Supuesto | Revisión editorial |
+| Tabla de acciones 3×3 (editorial) | Alto: Investigar ya · Completar evidencia y producir · Producir borrador; Medio: Vigilar · Completar y producir · Producir borrador; Bajo: Archivar · Archivar · Vigilar | Supuesto (D-17; acciones del PDF y E1-12) | Test de las 9 celdas; ninguna dice publicar |
 
 ## Organizar y contextualizar
 
@@ -40,7 +48,7 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 | Umbral "sin tema" | Por definir | Calibrado | Etiquetas humanas |
 | Criterio opción A vs. B | IC 95 % de la diferencia de macro-F1 excluye 0 | Práctica estadística | Bootstrap |
 | Umbrales de ruido | Por definir | Calibrado | X01 (precisión/recall) |
-| Coincidencia de sismos | ± 2 días | Supuesto | Revisión con la exploración (E0-09) |
+| Coincidencia de sismos (`vinculos.yaml`) | ± 2 días | Supuesto | Revisión con la exploración (E0-09); datos sintéticos en E1-09 |
 | Magnitud mínima USGS | 3 | PDF (sección 6) | — |
 
 ## Extracción del snapshot (E0-04, `config/fuentes.yaml`)
@@ -80,10 +88,11 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 |---|---|---|---|
 | Brief · copy · resumen bancario | ≤ 250 · ≤ 80 · ≤ 250 palabras | PDF | Test |
 | Guion | 45–60 s | PDF | X03 |
-| Guion en palabras | 110–150 | Calibrado | X03 (cronometrado) |
+| Guion en palabras | 110–150 (`salidas.yaml`) | Calibrado | X03 (cronometrado) |
 | Preguntas | Exactamente 3 | PDF | Test |
 | Título · titulares · resumen web · hashtags | ≤ 14 · 2–3 · ≤ 120 · ≤ 2 | Supuesto (convención propia) | Tasa de corrección en revisión |
-| Transiciones sin cita por sección | Máximo en YAML | Supuesto | Revisión editorial |
+| Transiciones sin cita por sección | 1 (`salidas.yaml`) | Supuesto | Revisión editorial |
+| Palabras sensacionalistas y frases prohibidas | Listas en `restricciones.yaml` | Supuesto (D-25, D-51) | Un test por frase (E1-13) |
 
 ## Evaluación
 
