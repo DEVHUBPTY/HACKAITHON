@@ -1198,17 +1198,40 @@ class CriterioAB(ModeloConfig):
         return self
 
 
-class BaselineClasificacion(ModeloConfig):
-    """Baseline por palabras clave (D-66): las mismas categorías; expresiones sobre el titular sin tildes y en minúsculas."""
+class TerminosBaseline(ModeloConfig):
+    """Términos de un tema: ``guia`` (literales de docs/guia_temas.md) y ``extension`` (vocabulario agregado)."""
 
-    palabras_clave: dict[str, list[str]]
+    guia: list[str]
+    extension: list[str]
+
+
+class BaselineClasificacion(ModeloConfig):
+    """Baseline por palabras clave (D-66): las mismas categorías; términos literales sin tildes y en minúsculas."""
+
+    variante_activa: Literal["guia", "ampliado"]
+    palabras_clave: dict[str, TerminosBaseline]
 
     @model_validator(mode="after")
-    def _regex_validas(self) -> BaselineClasificacion:
-        for tema, patrones in self.palabras_clave.items():
-            if not patrones:
-                raise ValueError(f"baseline.palabras_clave.{tema}: sin patrones")
-            _compilar_todas(patrones, f"baseline.palabras_clave.{tema}")
+    def _terminos_validos(self) -> BaselineClasificacion:
+        for tema, grupos in self.palabras_clave.items():
+            if not grupos.guia:
+                raise ValueError(f"baseline.palabras_clave.{tema}: sin términos de la guía")
+            if any(not t.strip() or t != t.lower() for t in [*grupos.guia, *grupos.extension]):
+                raise ValueError(f"baseline.palabras_clave.{tema}: términos no vacíos y en minúsculas")
+        return self
+
+
+class FugaSemantica(ModeloConfig):
+    """Detector de fuga por paráfrasis entre los casos difíciles y los ejemplos o prototipos de temas.yaml."""
+
+    modelo: str
+    umbral_coseno: float
+    palabras_ignoradas: list[str]
+
+    @model_validator(mode="after")
+    def _rangos(self) -> FugaSemantica:
+        if not 0.0 < self.umbral_coseno < 1.0:
+            raise ValueError("fuga_semantica.umbral_coseno: entre 0 y 1")
         return self
 
 
@@ -1225,6 +1248,7 @@ class ConfigClasificacion(ModeloConfig):
     usar_descripcion: bool          # texto interno para clasificar; nunca se muestra (D-31)
     carpetas: CarpetasClasificacion
     criterio_ab: CriterioAB
+    fuga_semantica: FugaSemantica
     baseline: BaselineClasificacion
 
     @model_validator(mode="after")
@@ -1233,6 +1257,8 @@ class ConfigClasificacion(ModeloConfig):
             raise ValueError(f"modelo_activo {self.modelo_activo!r} no está en modelos {sorted(self.modelos)}")
         if self.metodo_activo not in METODOS_CLASIFICACION:
             raise ValueError(f"metodo_activo: uno de {list(METODOS_CLASIFICACION)}")
+        if self.fuga_semantica.modelo not in self.modelos:
+            raise ValueError(f"fuga_semantica.modelo {self.fuga_semantica.modelo!r} no está en modelos")
         if self.lote < 1:
             raise ValueError("lote: al menos 1")
         return self

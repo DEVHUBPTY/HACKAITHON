@@ -290,10 +290,7 @@ def escribir_seccion(ruta: Path, clave: str, seccion: dict[str, Any]) -> None:
 
 
 def _reiniciar(con: Any) -> None:
-    """Deja sin efecto una corrida anterior: quita las marcas de ruido por similitud y borra lo clasificado."""
-    con.execute(
-        "UPDATE noticias SET es_ruido = false, motivo_ruido = NULL WHERE ruido_similitud = true"
-    )  # solo las no-ruido por palabras clave se marcan por similitud, así que antes eran es_ruido = false
+    """Borra lo clasificado antes. Se llama DENTRO de la transacción, después de calcular todo (X15, H8)."""
     asignaciones = ", ".join(f"{c} = NULL" for c in COLUMNAS_CLASIFICACION)
     con.execute(f"UPDATE noticias SET {asignaciones}")
     con.execute("DELETE FROM similitud_tema")
@@ -321,11 +318,14 @@ def aplicar_a_base(
     try:
         db.asegurar_esquema(con)
         antes = db.contar_filas(con, "noticias")
-        _reiniciar(con)
         filas = db.leer_tabla(con, "noticias", "id_noticia")
+        # Primero se comprueban los requisitos y se calcula todo; la base no se toca hasta tener el resultado (X15, H8).
         sin_limpiar = [f["id_noticia"] for f in filas if f.get("titulo_limpio") is None or f.get("es_ruido") is None]
         if sin_limpiar:
             raise RuntimeError(f"{len(sin_limpiar)} noticias sin limpiar: ejecute `poetry run python -m src.limpieza`")
+        for f in filas:
+            if f.get("ruido_similitud"):  # una corrida anterior la marcó por similitud: antes no era ruido (solo se marcan las no-ruido)
+                f["es_ruido"], f["motivo_ruido"] = False, None
         for f in filas:
             f["_texto"] = texto_de_entrada(f["titulo_limpio"], f.get("descripcion"), cfg.usar_descripcion)
 
@@ -367,24 +367,31 @@ def aplicar_a_base(
             for j, t in enumerate(ref.temas)
         ]
 
-        con.executemany(
-            "UPDATE noticias SET es_ruido = ?, motivo_ruido = ?, similitud_panama = ?, ruido_similitud = ?, "
-            "tema_clasificado = ?, tema_similitud = ?, subtema_clasificado = ?, tema_secundario = ?, "
-            "tema_secundario_similitud = ?, tema_baseline = ? WHERE id_noticia = ?",
-            [
+        con.begin()  # todo o nada: una falla a mitad de camino deja la corrida anterior intacta
+        try:
+            _reiniciar(con)
+            con.executemany(
+                "UPDATE noticias SET es_ruido = ?, motivo_ruido = ?, similitud_panama = ?, ruido_similitud = ?, "
+                "tema_clasificado = ?, tema_similitud = ?, subtema_clasificado = ?, tema_secundario = ?, "
+                "tema_secundario_similitud = ?, tema_baseline = ? WHERE id_noticia = ?",
                 [
-                    f["es_ruido"], f["motivo_ruido"], f["similitud_panama"], f["ruido_similitud"],
-                    f.get("tema_clasificado"), f.get("tema_similitud"), f.get("subtema_clasificado"),
-                    f.get("tema_secundario"), f.get("tema_secundario_similitud"), f.get("tema_baseline"),
-                    f["id_noticia"],
-                ]
-                for f in filas
-            ],
-        )
-        if detalle:
-            con.executemany("INSERT INTO similitud_tema VALUES (?, ?, ?, ?, ?)", detalle)
-        if db.contar_filas(con, "noticias") != antes:  # no debería ocurrir: solo hay UPDATE
-            raise RuntimeError("la clasificación cambió el número de noticias")
+                    [
+                        f["es_ruido"], f["motivo_ruido"], f["similitud_panama"], f["ruido_similitud"],
+                        f.get("tema_clasificado"), f.get("tema_similitud"), f.get("subtema_clasificado"),
+                        f.get("tema_secundario"), f.get("tema_secundario_similitud"), f.get("tema_baseline"),
+                        f["id_noticia"],
+                    ]
+                    for f in filas
+                ],
+            )
+            if detalle:
+                con.executemany("INSERT INTO similitud_tema VALUES (?, ?, ?, ?, ?)", detalle)
+            if db.contar_filas(con, "noticias") != antes:  # no debería ocurrir: solo hay UPDATE
+                raise RuntimeError("la clasificación cambió el número de noticias")
+            con.commit()
+        except BaseException:
+            con.rollback()
+            raise
         return filas
     finally:
         con.close()

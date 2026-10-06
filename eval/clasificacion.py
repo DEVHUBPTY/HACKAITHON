@@ -54,7 +54,11 @@ ETIQUETAS = RAIZ / "eval" / "etiquetas.csv"
 EXCLUIDOS = RAIZ / "config" / "ejemplos_excluidos.txt"
 SALIDA = RAIZ / "outputs" / "clasificacion.json"
 CODIGO_SIN_ETIQUETAS = 2
-FUERA_DE_LOS_TEMAS = {"fuera_de_temas", "no_es_panama", SIN_TEMA}   # para evaluar, todo esto es "sin tema"
+FUERA_DE_LOS_TEMAS = {"fuera_de_temas", "no_es_panama", "no_es_noticia", SIN_TEMA}   # para evaluar, todo esto es "sin tema"
+SIN_RUIDO = {"", "ninguno", "ninguna", "no", "none", "false", "0"}   # valores de ``ruido`` de E1-06 que no marcan ruido
+COLUMNA_RUIDO = "ruido"             # columnas del consolidado de eval/etiquetar.py (E1-06)
+COLUMNA_PESO = "peso_muestreo"
+COLUMNA_ESTRATO = "estrato"
 SIN_SECUNDARIO = {"", "—", "-", "–", "ninguno", "ninguna", "none"}
 TITULO_SECCION = "## Casos difíciles"
 BASE_JACCARD = 0.8   # un caso difícil con este solapamiento de palabras con un ejemplo cuenta como casi idéntico
@@ -144,7 +148,7 @@ def casos_en_referencias(casos: list[CasoDificil], temas: ConfigTemas, reglas: R
 
 
 def clases_de(temas: ConfigTemas) -> list[str]:
-    """Las clases de la evaluación: los 6 temas y ``sin_tema`` (que incluye fuera_de_temas y no_es_panama)."""
+    """Las clases de la evaluación: los 6 temas y ``sin_tema`` (que incluye fuera_de_temas, no_es_panama y no_es_noticia)."""
     return [*temas.temas, SIN_TEMA]
 
 
@@ -159,11 +163,11 @@ class Prediccion:
 def predecir(
     textos: list[str], cfg: ConfigClasificacion, temas: ConfigTemas, nombre_modelo: str, emb: Embeddings, reglas: Reglas
 ) -> dict[str, list[Prediccion]]:
-    """Predicciones de ``baseline`` y del modelo con los métodos A y B (claves ``baseline``, ``A``, ``B``)."""
-    baseline = Baseline(cfg, temas)
-    salida: dict[str, list[Prediccion]] = {
-        "baseline": [Prediccion(r.principal, r.secundario, None, r.secundario) for r in map(baseline.clasificar, textos)]
-    }
+    """Predicciones de ``baseline`` (variante activa), ``baseline_ampliado`` y del modelo con los métodos A y B."""
+    salida: dict[str, list[Prediccion]] = {}
+    for clave, variante in (("baseline", None), ("baseline_ampliado", "ampliado")):
+        b = Baseline(cfg, temas, variante)
+        salida[clave] = [Prediccion(r.principal, r.secundario, None, r.secundario) for r in map(b.clasificar, textos)]
     ref = construir_referencias(emb, temas, reglas)
     vectores = emb.codificar(textos, "titular")
     for metodo in (METODO_A, METODO_B):
@@ -172,6 +176,53 @@ def predecir(
         )
         salida[metodo] = [Prediccion(d.principal, d.secundario, d.similitud, d.segundo_mejor) for d in decisiones]
     return salida
+
+
+def configuraciones_de(nombre: str, pred: dict[str, list[Prediccion]]) -> list[tuple[str, list[Prediccion]]]:
+    """Nombre y predicciones de cada configuración medida (el baseline se repite en todos los modelos: va una vez)."""
+    return [
+        ("baseline", pred["baseline"]),
+        ("baseline_ampliado", pred["baseline_ampliado"]),
+        (f"{nombre}/A", pred[METODO_A]),
+        (f"{nombre}/B", pred[METODO_B]),
+    ]
+
+
+# ------------------------------------------------------------------ fuga semántica
+
+
+@dataclass(frozen=True)
+class Hallazgo:
+    """Un caso difícil demasiado parecido a un ejemplo o prototipo de ``temas.yaml``."""
+
+    caso: str
+    referencia: str
+    coseno: float
+
+
+def _sin_palabras(texto: str, ignoradas: set[str]) -> str:
+    return " ".join(w for w in re.findall(r"\w+", plano(texto)) if w not in ignoradas)
+
+
+def fuga_semantica(
+    casos: list[CasoDificil], temas: ConfigTemas, reglas: Reglas, emb: Embeddings, umbral: float, ignoradas: list[str]
+) -> list[Hallazgo]:
+    """Pares (caso, ejemplo o prototipo) con coseno >= ``umbral``: una paráfrasis de un caso de prueba es una fuga.
+
+    Se ignoran las palabras de ``ignoradas`` (por ejemplo «Panamá», que comparten casi todos los titulares).
+    """
+    omitir = {plano(w) for w in ignoradas}
+    referencias: list[tuple[str, str]] = []
+    for id_tema, tema in temas.temas.items():
+        referencias += [(f"{id_tema}.ejemplo[{i}]", limpiar_titulo(e.titulo, None, None, reglas)) for i, e in enumerate(tema.ejemplos)]
+        referencias += [(f"{id_tema}.{sub}", s.prototipo) for sub, s in tema.subtemas.items()]
+    vc = emb.codificar([_sin_palabras(c.titular, omitir) for c in casos], "titular")
+    vr = emb.codificar([_sin_palabras(texto, omitir) for _, texto in referencias], "tema")
+    cos = vc @ vr.T
+    return sorted(
+        (Hallazgo(casos[i].id, referencias[j][0], float(cos[i, j])) for i in range(len(casos)) for j in range(len(referencias)) if cos[i, j] >= umbral),
+        key=lambda h: -h.coseno,
+    )
 
 
 # ------------------------------------------------------------------ evaluación de una configuración
@@ -186,16 +237,21 @@ def evaluar_configuracion(
     clases: list[str],
     cfg: ConfigClasificacion,
     z: float,
+    pesos: list[float] | None = None,
 ) -> dict[str, Any]:
-    """Exactitud, macro-F1 (IC bootstrap), F1/precisión/recall por tema, matriz de confusión, secundario y fallos."""
+    """Exactitud, macro-F1 (IC bootstrap), F1/precisión/recall por tema, matriz de confusión, secundario y fallos.
+
+    ``clases`` son todas las posibles: el macro-F1 promedia las que tienen soporte en ``reales``. Con ``pesos`` se
+    agrega ``ponderado`` (exactitud y macro-F1 con ``peso_muestreo``); lo demás va siempre sin ponderar.
+    """
     y_pred = [p.principal for p in predichas]
     aciertos = sum(1 for a, b in zip(reales, y_pred, strict=True) if a == b)
     con_secundario = [i for i, s in enumerate(secundarios) if s is not None]
     sin_secundario = [i for i, s in enumerate(secundarios) if s is None]
     soportadas = [c for c in clases if c in set(reales)]
-    return {
+    resultado = {
         "exactitud_principal": proporcion(aciertos, len(reales), z),
-        "macro_f1": metricas.macro_f1_con_ic(reales, y_pred, soportadas, cfg.criterio_ab),
+        "macro_f1": metricas.macro_f1_con_ic(reales, y_pred, clases, cfg.criterio_ab),
         "clases_en_macro_f1": soportadas,
         "por_tema": metricas.por_clase(reales, y_pred, clases, z),
         "matriz_confusion": {"clases": clases, "filas_real_columnas_predicho": metricas.matriz_confusion(reales, y_pred, clases)},
@@ -222,28 +278,45 @@ def evaluar_configuracion(
             if reales[i] != y_pred[i]
         ],
     }
+    if pesos is not None:
+        resultado["ponderado"] = {
+            "exactitud_principal": metricas.exactitud_ponderada(reales, y_pred, pesos),
+            "macro_f1": metricas.macro_f1_con_ic(reales, y_pred, clases, cfg.criterio_ab, pesos),
+        }
+    return resultado
 
 
 def comparar(
     reales: list[str], predicciones: dict[str, list[Prediccion]], clases: list[str], cfg: ConfigClasificacion
 ) -> dict[str, Any]:
     """Criterio A vs. B (D-57) y diferencias con el baseline, sobre las mismas etiquetas."""
-    soportadas = [c for c in clases if c in set(reales)]
     principal = {k: [p.principal for p in v] for k, v in predicciones.items()}
     return {
-        "criterio_A_vs_B": metricas.aplicar_criterio(reales, principal[METODO_A], principal[METODO_B], soportadas, cfg.criterio_ab),
-        "A_menos_baseline": metricas.diferencia_con_ic(reales, principal["baseline"], principal[METODO_A], soportadas, cfg.criterio_ab),
-        "B_menos_baseline": metricas.diferencia_con_ic(reales, principal["baseline"], principal[METODO_B], soportadas, cfg.criterio_ab),
+        "criterio_A_vs_B": metricas.aplicar_criterio(reales, principal[METODO_A], principal[METODO_B], clases, cfg.criterio_ab),
+        "A_menos_baseline": metricas.diferencia_con_ic(reales, principal["baseline"], principal[METODO_A], clases, cfg.criterio_ab),
+        "B_menos_baseline": metricas.diferencia_con_ic(reales, principal["baseline"], principal[METODO_B], clases, cfg.criterio_ab),
     }
 
 
 def evaluar_casos_dificiles(
-    cfg: ConfigClasificacion, temas: ConfigTemas, nombres_modelos: list[str], motores: dict[str, Any] | None = None
+    cfg: ConfigClasificacion,
+    temas: ConfigTemas,
+    nombres_modelos: list[str],
+    motores: dict[str, Any] | None = None,
+    verificar_fuga: bool = True,
 ) -> dict[str, Any]:
-    """Baseline y, por modelo, A y B sobre los casos difíciles. ``motores`` permite inyectar un codificador de prueba."""
+    """Baseline (con y sin la extensión) y, por modelo, A y B sobre los casos difíciles.
+
+    ``motores`` permite inyectar un codificador de prueba. Se niega a correr si algún caso es una referencia del
+    clasificador, literal (``casos_en_referencias``) o por paráfrasis (``fuga_semantica``).
+    """
     reglas = Reglas.desde_config()
     casos = leer_casos_dificiles(GUIA, temas)
     fugas = casos_en_referencias(casos, temas, reglas)
+    if verificar_fuga:
+        f = cfg.fuga_semantica
+        emb_fuga = crear(cfg, f.modelo, motor=(motores or {}).get(f.modelo))
+        fugas += [f"{h.caso}~{h.referencia} (coseno {h.coseno:.2f})" for h in fuga_semantica(casos, temas, reglas, emb_fuga, f.umbral_coseno, f.palabras_ignoradas)]
     if fugas:
         raise ValueError("casos difíciles que son referencia del clasificador (fuga): " + "; ".join(fugas))
     z = cargar_carga().salida.z_intervalo_confianza
@@ -255,22 +328,32 @@ def evaluar_casos_dificiles(
         "fuente": "docs/guia_temas.md, sección 'Casos difíciles' (titulares ilustrativos, no del corpus)",
         "nota": (
             "n = 15: los IC son anchos y NO bastan para elegir modelo (D-20) ni método (D-21); es una prueba de "
-            "regresión del criterio de frontera. Ningún caso es ejemplo ni prototipo de temas.yaml (comprobado)."
+            "regresión del criterio de frontera. Ningún caso es ejemplo ni prototipo de temas.yaml, ni literal ni por "
+            "paráfrasis (coseno con MiniLM < umbral de fuga_semantica; comprobado)."
         ),
+        "baseline_ampliado_nota": "baseline_ampliado agrega vocabulario escrito después de leer los casos difíciles: no es independiente de ellos.",
         "configuraciones": {},
     }
     for nombre in nombres_modelos:
         emb = crear(cfg, nombre, motor=(motores or {}).get(nombre))
         pred = predecir(textos, cfg, temas, nombre, emb, reglas)
-        for etiqueta, preds in (("baseline", pred["baseline"]), (f"{nombre}/A", pred[METODO_A]), (f"{nombre}/B", pred[METODO_B])):
-            if etiqueta == "baseline" and "baseline" in resultado["configuraciones"]:
-                continue
-            resultado["configuraciones"][etiqueta] = evaluar_configuracion(ids, textos, reales, secundarios, preds, clases, cfg, z)
+        for etiqueta, preds in configuraciones_de(nombre, pred):
+            if etiqueta not in resultado["configuraciones"]:
+                resultado["configuraciones"][etiqueta] = evaluar_configuracion(ids, textos, reales, secundarios, preds, clases, cfg, z)
         resultado.setdefault("comparaciones", {})[nombre] = comparar(reales, pred, clases, cfg)
     return resultado
 
 
-# ------------------------------------------------------------------ datos reales con etiquetas humanas
+# ------------------------------------------------------------------ datos reales con etiquetas humanas (formato de E1-06)
+
+
+@dataclass(frozen=True)
+class EtiquetaHumana:
+    """Lo que una persona decidió de un titular: tema (o ``sin_tema`` si lo marcó ruido), peso de muestreo y estrato."""
+
+    tema: str
+    peso: float = 1.0
+    estrato: str | None = None
 
 
 def ids_excluidos(ruta: Path = EXCLUIDOS) -> set[str]:
@@ -282,18 +365,40 @@ def ids_excluidos(ruta: Path = EXCLUIDOS) -> set[str]:
     }
 
 
-def leer_etiquetas(ruta: Path, columna: str, temas: ConfigTemas) -> dict[str, str]:
-    """``id_noticia -> tema humano`` (id de tema o ``sin_tema``). Falla si falta la columna o hay un tema desconocido."""
+def leer_etiquetas(ruta: Path, columna: str, temas: ConfigTemas) -> dict[str, EtiquetaHumana]:
+    """``id_noticia -> EtiquetaHumana`` del CSV consolidado de E1-06 (``eval/etiquetar.py --consolidar``).
+
+    * Un titular que una persona marcó como ruido (``ruido`` = ``no_es_panama``, ``fuera_de_temas`` o ``no_es_noticia``)
+      es una **abstención correcta**: su etiqueta de oro es ``sin_tema``. No es "sin etiquetar".
+    * Sin ruido y sin ``tema_principal`` (``columna``), el titular no está etiquetado y se omite.
+    * ``peso_muestreo`` (población / muestra del estrato) pondera las métricas; si el CSV no trae la columna, pesa 1.
+    * Falla si falta ``id_noticia`` o ``columna``, o si un tema, un motivo de ruido o un peso no son válidos.
+    """
     with ruta.open(encoding="utf-8", newline="") as f:
         lector = csv.DictReader(f)
         campos = lector.fieldnames or []
         if "id_noticia" not in campos or columna not in campos:
             raise KeyError(f"{ruta.name} no tiene las columnas id_noticia y {columna!r} (tiene: {campos})")
-        etiquetas: dict[str, str] = {}
+        etiquetas: dict[str, EtiquetaHumana] = {}
         for fila in lector:
-            valor = tema_a_id(fila[columna] or "", temas)
-            if valor is not None:   # una celda vacía es "sin etiquetar", no una etiqueta
-                etiquetas[fila["id_noticia"].strip()] = valor
+            id_ = fila["id_noticia"].strip()
+            motivo = plano((fila.get(COLUMNA_RUIDO) or "").strip())
+            if motivo in SIN_RUIDO:
+                tema = tema_a_id(fila[columna] or "", temas)
+                if tema is None:    # una celda vacía sin ruido es "sin etiquetar", no una etiqueta
+                    continue
+            elif motivo in FUERA_DE_LOS_TEMAS:
+                tema = SIN_TEMA
+            else:
+                raise ValueError(f"{id_}: ruido {motivo!r} desconocido (use ninguno o {sorted(FUERA_DE_LOS_TEMAS - {SIN_TEMA})})")
+            bruto = (fila.get(COLUMNA_PESO) or "").strip()
+            try:
+                peso = float(bruto) if bruto else 1.0
+            except ValueError as exc:
+                raise ValueError(f"{id_}: {COLUMNA_PESO} {bruto!r} no es un número") from exc
+            if not peso > 0 or peso == float("inf"):
+                raise ValueError(f"{id_}: {COLUMNA_PESO} debe ser un número positivo (es {bruto!r})")
+            etiquetas[id_] = EtiquetaHumana(tema, peso, (fila.get(COLUMNA_ESTRATO) or "").strip() or None)
     return etiquetas
 
 
@@ -306,44 +411,69 @@ def evaluar_etiquetas(
     nombres_modelos: list[str],
     motores: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Métricas sobre los titulares con etiqueta humana que no son ruido y no son ejemplos de ``temas.yaml``.
+    """Métricas con etiquetas humanas, sin los ejemplos de ``temas.yaml``, en dos vistas.
 
-    El texto sale de ``titulo_limpio``; las columnas ``tema`` (origen, D-62) y ``tema_clasificado`` no se leen: las
-    predicciones se recalculan aquí con cada modelo y método.
+    * **Clasificador** (``configuraciones``, ``comparaciones``): los titulares que el filtro de ruido dejó pasar. Si una
+      persona los marcó ruido, la etiqueta es ``sin_tema`` y el clasificador debería abstenerse.
+    * **Pipeline** (``pipeline``): además los que el filtro descartó, que cuentan como ``sin_tema`` predicho; con
+      métricas sin ponderar y ponderadas por ``peso_muestreo`` (las del estrato de ruido pesan más que las del otro).
+
+    El texto sale de ``titulo_limpio``; ``tema`` (origen, D-62) y ``tema_clasificado`` no se leen: las predicciones se
+    recalculan aquí con cada modelo y método.
     """
     etiquetas = leer_etiquetas(ruta_etiquetas, columna, temas)
     excluidos = ids_excluidos()
     con = db.conectar(ruta_base, solo_lectura=True)
     try:
-        filas = con.execute(
-            "SELECT id_noticia, titulo_limpio, descripcion, es_ruido FROM noticias ORDER BY id_noticia"
-        ).fetchall()
+        filas = con.execute("SELECT id_noticia, titulo_limpio, descripcion, es_ruido FROM noticias ORDER BY id_noticia").fetchall()
     finally:
         con.close()
     en_base = {f[0]: f for f in filas}
     z = cargar_carga().salida.z_intervalo_confianza
+    validos = sorted(i for i in etiquetas if i in en_base and i not in excluidos)
+    pasaron = [i for i in validos if not en_base[i][3]]
     conteo = {
         "etiquetados": len(etiquetas),
         "ejemplos_excluidos": sum(1 for i in etiquetas if i in excluidos),
         "no_estan_en_la_base": sum(1 for i in etiquetas if i not in en_base),
-        "marcados_como_ruido_por_el_sistema": sum(1 for i in etiquetas if i in en_base and i not in excluidos and en_base[i][3]),
+        "marcados_como_ruido_por_el_sistema": len(validos) - len(pasaron),
+        "evaluados": len(pasaron),
     }
-    usados = sorted(i for i in etiquetas if i in en_base and i not in excluidos and not en_base[i][3])
-    conteo["evaluados"] = len(usados)
-    if not usados:
+    if not pasaron:
         return {"estado": "SIN_FILAS_EVALUABLES", "conteo": conteo}
     reglas = Reglas.desde_config()
     clases = clases_de(temas)
-    textos = [texto_de_entrada(en_base[i][1], en_base[i][2], cfg.usar_descripcion) for i in usados]
-    reales = [etiquetas[i] for i in usados]
-    ninguno: list[str | None] = [None] * len(usados)
-    resultado: dict[str, Any] = {"estado": "EVALUADO", "conteo": conteo, "configuraciones": {}, "comparaciones": {}}
+    textos = [texto_de_entrada(en_base[i][1], en_base[i][2], cfg.usar_descripcion) for i in pasaron]
+    reales = [etiquetas[i].tema for i in pasaron]
+    pesos = [etiquetas[i].peso for i in pasaron]
+    ninguno: list[str | None] = [None] * len(pasaron)
+    todos_reales = [etiquetas[i].tema for i in validos]
+    todos_pesos = [etiquetas[i].peso for i in validos]
+    lugar = {i: k for k, i in enumerate(pasaron)}
+    abstencion = Prediccion(SIN_TEMA, None, None, None)     # lo que el filtro de ruido ya decidió
+    resultado: dict[str, Any] = {
+        "estado": "EVALUADO",
+        "conteo": conteo,
+        "nota": "Sin ponderar y ponderado (peso_muestreo) se reportan juntos; los IC de precisión y recall son sin ponderar.",
+        "configuraciones": {},
+        "comparaciones": {},
+        "pipeline": {"conteo": {"evaluados": len(validos)}, "configuraciones": {}},
+    }
     for nombre in nombres_modelos:
         emb = crear(cfg, nombre, motor=(motores or {}).get(nombre))
         pred = predecir(textos, cfg, temas, nombre, emb, reglas)
-        for etiqueta, preds in (("baseline", pred["baseline"]), (f"{nombre}/A", pred[METODO_A]), (f"{nombre}/B", pred[METODO_B])):
-            if etiqueta not in resultado["configuraciones"]:
-                resultado["configuraciones"][etiqueta] = evaluar_configuracion(usados, textos, reales, ninguno, preds, clases, cfg, z)
+        for etiqueta, preds in configuraciones_de(nombre, pred):
+            if etiqueta in resultado["configuraciones"]:
+                continue
+            resultado["configuraciones"][etiqueta] = evaluar_configuracion(pasaron, textos, reales, ninguno, preds, clases, cfg, z, pesos)
+            completas = [preds[lugar[i]] if i in lugar else abstencion for i in validos]
+            resultado["pipeline"]["configuraciones"][etiqueta] = {
+                "sin_ponderar": evaluar_configuracion(validos, validos, todos_reales, [None] * len(validos), completas, clases, cfg, z),
+                "ponderado": {
+                    "exactitud_principal": metricas.exactitud_ponderada(todos_reales, [p.principal for p in completas], todos_pesos),
+                    "macro_f1": metricas.macro_f1_con_ic(todos_reales, [p.principal for p in completas], clases, cfg.criterio_ab, todos_pesos),
+                },
+            }
         resultado["comparaciones"][nombre] = comparar(reales, pred, clases, cfg)
     return resultado
 
@@ -370,6 +500,9 @@ def imprimir(titulo: str, bloque: dict[str, Any], clases: list[str]) -> list[str
         lineas.append(f"\n[{nombre}]")
         lineas.append(f"  exactitud del tema principal: {_p(c['exactitud_principal'])}")
         lineas.append(f"  macro-F1 (clases con soporte: {', '.join(c['clases_en_macro_f1'])}): {_m(c['macro_f1'])}")
+        if "ponderado" in c:
+            pe = c["ponderado"]["exactitud_principal"]
+            lineas.append(f"  ponderado por peso_muestreo: exactitud {pe['suma_pesos_aciertos']}/{pe['suma_pesos']} = {pe['proporcion']}; macro-F1 {_m(c['ponderado']['macro_f1'])}")
         lineas.append("  por tema (F1 · precisión · recall):")
         for tema, v in c["por_tema"].items():
             f1 = "n/d" if v["f1"] is None else f"{v['f1']:.3f}"
@@ -387,6 +520,12 @@ def imprimir(titulo: str, bloque: dict[str, Any], clases: list[str]) -> list[str
         lineas.append(f"  B − A macro-F1: {crit['diferencia_macro_f1']} IC 95 %: {crit['ic95']}; temas que empeoran: {crit['temas_que_empeoran'] or 'ninguno'}")
         for nombre in ("A_menos_baseline", "B_menos_baseline"):
             lineas.append(f"  {nombre}: macro-F1 {comp[nombre]['diferencia_macro_f1']} IC 95 %: {comp[nombre]['ic95']}")
+    if "pipeline" in bloque:
+        lineas.append(f"\n== Pipeline completo (filtro de ruido + clasificador; n = {bloque['pipeline']['conteo']['evaluados']}) ==")
+        for nombre, c in bloque["pipeline"]["configuraciones"].items():
+            sp, pd = c["sin_ponderar"], c["ponderado"]
+            lineas.append(f"[{nombre}] sin ponderar: exactitud {_p(sp['exactitud_principal'])}; macro-F1 {_m(sp['macro_f1'])}")
+            lineas.append(f"    ponderado: exactitud {pd['exactitud_principal']['proporcion']}; macro-F1 {_m(pd['macro_f1'])}")
     return lineas
 
 

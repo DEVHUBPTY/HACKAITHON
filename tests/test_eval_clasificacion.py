@@ -151,8 +151,8 @@ def test_tema_a_id_acepta_nombres_ids_y_fuera_de_temas() -> None:
 
 def test_la_evaluacion_de_casos_dificiles_reporta_todo_lo_que_pide_la_spec(tmp_path) -> None:
     cfg = config_de_prueba()
-    r = evalclas.evaluar_casos_dificiles(cfg, cargar_temas(), ["e5"], {"e5": MotorFalso()})
-    assert set(r["configuraciones"]) == {"baseline", "e5/A", "e5/B"} and r["n"] == 15
+    r = evalclas.evaluar_casos_dificiles(cfg, cargar_temas(), ["e5"], {"e5": MotorFalso()}, verificar_fuga=False)
+    assert set(r["configuraciones"]) == {"baseline", "baseline_ampliado", "e5/A", "e5/B"} and r["n"] == 15
     for c in r["configuraciones"].values():
         assert c["exactitud_principal"]["de"] == 15 and len(c["exactitud_principal"]["ic95"]) == 2
         assert c["macro_f1"]["n"] == 15 and c["macro_f1"]["ic95"] is not None and c["macro_f1"]["remuestreos"] == cfg.criterio_ab.remuestreos
@@ -169,7 +169,7 @@ def test_la_evaluacion_de_casos_dificiles_reporta_todo_lo_que_pide_la_spec(tmp_p
 # ------------------------------------------------------------------ etiquetas humanas
 
 
-def _escribir_etiquetas(ruta: Path, filas: list[dict], columnas=("id_noticia", "tema_principal", "tema_secundario")) -> Path:
+def _escribir_etiquetas(ruta: Path, filas: list[dict], columnas=("id_noticia", "tema_principal", "tema_secundario", "ruido")) -> Path:
     with ruta.open("w", encoding="utf-8", newline="") as f:
         w = csv.DictWriter(f, fieldnames=columnas)
         w.writeheader()
@@ -204,7 +204,7 @@ def test_con_etiquetas_se_evalua_solo_lo_que_no_es_ruido_y_se_cuenta_lo_demas(tm
     assert r["estado"] == "EVALUADO"
     assert r["conteo"] == {"etiquetados": 7, "ejemplos_excluidos": 0, "no_estan_en_la_base": 0, "marcados_como_ruido_por_el_sistema": 1, "evaluados": 6}
     assert r["configuraciones"]["baseline"]["exactitud_principal"]["de"] == 6
-    assert set(r["configuraciones"]) == {"baseline", "e5/A", "e5/B"}
+    assert set(r["configuraciones"]) == {"baseline", "baseline_ampliado", "e5/A", "e5/B"}
 
 
 def test_los_ejemplos_excluidos_no_entran_en_la_evaluacion(tmp_path, monkeypatch) -> None:
@@ -239,9 +239,14 @@ def test_sin_filas_evaluables_no_hay_metricas(tmp_path) -> None:
     assert r["estado"] == "SIN_FILAS_EVALUABLES" and "configuraciones" not in r
 
 
-def test_las_celdas_vacias_son_sin_etiquetar_no_sin_tema(tmp_path) -> None:
-    r = _evaluar(tmp_path, etiquetas=[*ETIQUETAS_OK[:5], {"id_noticia": "NOT-6", "tema_principal": "", "tema_secundario": ""}])
+def test_una_celda_vacia_sin_ruido_es_sin_etiquetar_y_con_ruido_es_abstencion(tmp_path) -> None:
+    """Formato de E1-06 (X15, H2): vacío + ``ruido`` ninguno = sin etiquetar; vacío + un motivo de ruido = ``sin_tema``."""
+    sin = {"id_noticia": "NOT-6", "tema_principal": "", "tema_secundario": "", "ruido": "ninguno"}
+    r = _evaluar(tmp_path / "a", etiquetas=[*ETIQUETAS_OK[:5], sin])
     assert r["conteo"]["etiquetados"] == 5 and r["conteo"]["evaluados"] == 5
+    con = {"id_noticia": "NOT-6", "tema_principal": "", "tema_secundario": "", "ruido": "no_es_noticia"}
+    r = _evaluar(tmp_path / "b", etiquetas=[*ETIQUETAS_OK[:5], con])
+    assert r["conteo"]["etiquetados"] == 6 and r["conteo"]["evaluados"] == 6
 
 
 def test_main_sin_etiquetas_no_inventa_metricas_reales(tmp_path, monkeypatch, capsys) -> None:

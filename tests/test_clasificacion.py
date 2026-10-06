@@ -111,8 +111,8 @@ def _copiar_config(tmp_path, reemplazos: dict[str, str]) -> Path:
         ({"modelo_activo: e5": "modelo_activo: inexistente"}, "modelo_activo"),
         ({"metodo_activo: A": "metodo_activo: C"}, "metodo_activo"),
         ({"version: 1\nsemilla: 42": "version: 1\nextra: 1\nsemilla: 42"}, "extra"),                      # claves desconocidas prohibidas
-        ({"'\\binflacion\\b'": "'(inflacion'"}, "patrón"),                              # regex inválida
-        ({"umbral_sin_tema: 0.823": "umbral_sin_tema: 7.0"}, "umbral_sin_tema"),
+        ({"[crecimiento, pib,": "[Crecimiento, pib,"}, "minúsculas"),                              # término en mayúsculas
+        ({"umbral_sin_tema: 0.825": "umbral_sin_tema: 7.0"}, "umbral_sin_tema"),
     ],
 )
 def test_la_configuracion_invalida_se_rechaza(tmp_path, reemplazos, mensaje) -> None:
@@ -128,8 +128,8 @@ def test_la_coherencia_exige_que_el_baseline_cubra_los_mismos_temas(tmp_path) ->
     shutil.copytree(RAIZ / "config", carpeta)
     ruta = carpeta / "clasificacion.yaml"
     texto = ruta.read_text(encoding="utf-8")
-    assert "    regulacion:\n      - " in texto
-    ruta.write_text(texto.replace("    regulacion:\n      - ", "    regulacionx:\n      - "), encoding="utf-8")
+    assert "    regulacion:\n      guia: " in texto
+    ruta.write_text(texto.replace("    regulacion:\n      guia: ", "    regulacionx:\n      guia: "), encoding="utf-8")
     with pytest.raises(ErrorDeConfiguracion, match="baseline.palabras_clave"):
         validar_todo(carpeta)
 

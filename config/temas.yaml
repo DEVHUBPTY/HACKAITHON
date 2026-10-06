@@ -55,7 +55,7 @@ temas:
     subtemas:
       operacion_canal:
         nombre: "Operación del Canal (tránsitos, calado, reservas, lago Gatún)"
-        prototipo: "El Canal reduce tránsitos por el nivel del lago Gatún"
+        prototipo: "La ACP anuncia nuevas restricciones de calado para los buques neopanamax"
       puertos:
         nombre: "Puertos"
         prototipo: "Los puertos de Balboa y Manzanillo mueven más contenedores"
@@ -64,7 +64,7 @@ temas:
         prototipo: "La Zona Libre de Colón reporta caída de reexportaciones"
       carga_aerea:
         nombre: "Carga aérea"
-        prototipo: "Aeropuerto despacha más toneladas de carga por vía aérea"
+        prototipo: "Exportadores de flores y mariscos envían más toneladas en aviones cargueros"
       transporte_carga:
         nombre: "Transporte de carga"
         prototipo: "Transportistas anuncian paro del transporte de carga"
@@ -79,7 +79,7 @@ temas:
       - {titulo: "Llegada de cruceristas a Colón supera lo previsto", real: false}
       - {titulo: "Ocupación hotelera alcanza el 80 % en el feriado", real: false}
       - {titulo: "Panamá promociona sus playas en feria de turismo", real: false}
-      - {titulo: "Aumentan los vuelos de pasajeros desde Bogotá", real: false}
+      - {titulo: "Avianca anuncia nuevas frecuencias semanales hacia Bogotá y Medellín", real: false}
       - {titulo: "Autoridad de Turismo reporta más visitantes que el año pasado", real: false}
       - {titulo: "Hoteles de Bocas del Toro registran temporada alta", real: false}
       - {titulo: "Turistas extranjeros eligen Boquete para sus vacaciones", real: false}
@@ -97,7 +97,7 @@ temas:
         prototipo: "Ocupación hotelera sube durante el feriado"
       aviacion_pasajeros:
         nombre: "Aviación de pasajeros y conectividad"
-        prototipo: "Conectividad aérea de pasajeros mejora con vuelos directos a Panamá"
+        prototipo: "Copa Airlines suma frecuencias hacia ciudades de Sudamérica y el Caribe"
       destinos_promocion:
         nombre: "Destinos y promoción"
         prototipo: "Autoridad de Turismo promociona Bocas del Toro en feria internacional"
@@ -111,14 +111,14 @@ temas:
       - {titulo: "Colegios particulares atribuyen aumento de matrícula a migración al sector oficial y altos costos de operación", id_noticia: NOT-8921b118ee, real: true}
       - {titulo: "Contenido Exclusivo: El metro por la Tumba Muerto", id_noticia: NOT-f248fefaf9, real: true}
       - {titulo: "MiBus responde por filtraciones: lamenta incomodidad de usuarios; afirma que realiza correctivos", id_noticia: NOT-ff1b1ed15c, real: true}
-      - {titulo: "Falta de agua afecta a barrios de Colón por daño en una tubería", real: false}
-      - {titulo: "Docentes exigen pago de salarios atrasados en Veraguas", real: false}
+      - {titulo: "Vecinos de Colón reclaman por la intermitencia del suministro desde hace semanas", real: false}
+      - {titulo: "Sindicato de maestros rechaza el nuevo calendario escolar propuesto", real: false}
       - {titulo: "Cortes de luz sorprenden a clientes de la capital", real: false}
       - {titulo: "Aumentan los robos a comercios en el centro de la ciudad", real: false}
     subtemas:
       agua_potable:
         nombre: "Agua potable"
-        prototipo: "Sectores de la ciudad quedan sin agua potable"
+        prototipo: "Idaan repara la tubería principal que abastece a varios barrios"
       electricidad:
         nombre: "Electricidad"
         prototipo: "Apagón deja sin luz a varios barrios"
@@ -133,20 +133,20 @@ temas:
         prototipo: "Se acumula la basura por falta de recolección"
       salud_publica:
         nombre: "Salud pública (hospitales, CSS, MINSA, medicamentos)"
-        prototipo: "Pacientes denuncian escasez de medicamentos en un hospital público"
+        prototipo: "La CSS inaugura una nueva sala de urgencias para atender a los asegurados"
       educacion_publica:
         nombre: "Educación pública (escuelas, clases, docentes)"
-        prototipo: "Estudiantes pierden clases en escuelas públicas por una suspensión de labores"
+        prototipo: "Meduca anuncia la entrega de útiles y textos a alumnos del sector oficial"
       seguridad_ciudadana:
         nombre: "Seguridad ciudadana (policía, operativos, cárceles, delitos)"
-        prototipo: "Autoridades informan más delitos violentos en la capital"
+        prototipo: "Operativo conjunto desarticula una banda dedicada al robo de vehículos"
   eventos_naturales:
     nombre: "Eventos naturales"
     descripcion: "Sismos, inundaciones y lluvias, deslizamientos, sequía y El Niño, incendios forestales y alertas de protección civil. La interrupción de un servicio causada por el fenómeno va a Servicios públicos."
     ejemplos:
       - {titulo: "Clima en Panamá: Martes con lluvias y tormentas eléctricas en varias regiones durante la tarde", id_noticia: NOT-2f73db1173, real: true}
       - {titulo: "Contenido Exclusivo: Coclé, se seca el campo", id_noticia: NOT-f2f4a261fd, real: true}
-      - {titulo: "Lluvias dejan inundaciones en Arraiján", real: false}
+      - {titulo: "Quebrada se desborda y anega viviendas en Arraiján", real: false}
       - {titulo: "Sinaproc emite alerta por deslizamientos en la región", real: false}
       - {titulo: "Sequía por El Niño afecta cultivos en Azuero", real: false}
       - {titulo: "Incendio forestal consume hectáreas en Veraguas", real: false}
@@ -157,10 +157,10 @@ temas:
     subtemas:
       sismos:
         nombre: "Sismos"
-        prototipo: "Temblor de magnitud moderada sacude el Pacífico panameño"
+        prototipo: "Réplicas se sienten tras un movimiento telúrico de magnitud 5 en Darién"
       inundaciones_lluvias:
         nombre: "Inundaciones y lluvias"
-        prototipo: "Lluvias intensas provocan inundaciones en varios corregimientos"
+        prototipo: "El desbordamiento del río Juan Díaz obliga a evacuar a decenas de familias"
       deslizamientos:
         nombre: "Deslizamientos"
         prototipo: "Deslizamiento de tierra bloquea la vía principal"
@@ -191,7 +191,7 @@ temas:
         prototipo: "Ejecutivo sanciona una nueva ley"
       resoluciones_entes:
         nombre: "Resoluciones de entes reguladores"
-        prototipo: "Ente regulador emite resolución sobre las tarifas de un servicio"
+        prototipo: "El ente regulador publica una resolución con nuevos requisitos para los operadores"
       reformas:
         nombre: "Reformas"
         prototipo: "Asamblea debate una reforma al sistema de pensiones"

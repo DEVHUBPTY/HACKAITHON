@@ -218,8 +218,8 @@ def test_h4_la_palabra_panama_no_cuenta_como_parecido(tmp_path) -> None:
     temas = temas_de_prueba().model_copy(deep=True)
     temas.temas["turismo"].subtemas["hoteles"] = type(temas.temas["turismo"].subtemas["hoteles"])(nombre="x", prototipo="Panamá recibe más turistas")
     emb = embeddings.crear(config_de_prueba(), motor=MotorFalso(), raiz=tmp_path)
-    con = evalclas.fuga_semantica([caso], temas, REGLAS, emb, 0.3, ["panama"])
-    sin = evalclas.fuga_semantica([caso], temas, REGLAS, emb, 0.3, [])
+    con = evalclas.fuga_semantica([caso], temas, REGLAS, emb, 0.15, ["panama"])
+    sin = evalclas.fuga_semantica([caso], temas, REGLAS, emb, 0.15, [])
     assert not any(h.referencia.endswith("hoteles") for h in con) and any(h.referencia.endswith("hoteles") for h in sin)
 
 

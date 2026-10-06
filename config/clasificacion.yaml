@@ -24,16 +24,16 @@ modelos:
     # percentil 25 de la brecha, sobre titulares únicos no ruido del snapshot del 2026-10-06). e5 comprime las
     # similitudes (0.81-0.91): su umbral y su margen son estrechos. Se recalibran con eval/etiquetas.csv (E1-06).
     umbrales:
-      A: {umbral_sin_tema: 0.823, margen_secundario: 0.002}
-      B: {umbral_sin_tema: 0.794, margen_secundario: 0.004}
+      A: {umbral_sin_tema: 0.825, margen_secundario: 0.003}
+      B: {umbral_sin_tema: 0.797, margen_secundario: 0.003}
   minilm:
     id: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
     revision: e8f8c211226b894fcb81acc59f3b34ba3efd5f42
     prefijo_titular: ""
     prefijo_tema: ""
     umbrales:                       # PROVISIONALES: misma regla que arriba (escala de similitud mucho más amplia)
-      A: {umbral_sin_tema: 0.221, margen_secundario: 0.032}
-      B: {umbral_sin_tema: 0.274, margen_secundario: 0.016}
+      A: {umbral_sin_tema: 0.224, margen_secundario: 0.038}
+      B: {umbral_sin_tema: 0.283, margen_secundario: 0.016}
 
 # Criterio A vs B fijado ANTES de medir (D-21, D-57): B solo si el IC 95 % (bootstrap) de la diferencia de macro-F1
 # B − A excluye el cero y ningún tema empeora de forma significativa (IC 95 % de la diferencia de F1 por tema
@@ -43,70 +43,63 @@ criterio_ab:
   confianza: 0.95
   semilla: 42
 
+# Fuga semántica (revisión X15): los casos difíciles son de prueba, así que ningún ejemplo ni prototipo de temas.yaml
+# puede parafrasearlos. Se mide con el coseno entre cada caso y cada referencia con un modelo de escala amplia (MiniLM: en
+# e5 todo está entre 0.80 y 0.91 y no sirve para detectar paráfrasis). Se ignoran las palabras que todos comparten
+# ("Panamá"). El umbral es un SUPUESTO, elegido DESPUÉS de ver los pares (docs/clasificacion.md): 0.58 detecta las
+# paráfrasis de CD-02, CD-11, CD-12 y las de vocabulario casi idéntico. No alcanza a CD-01 (0.56 con el prototipo que
+# señaló la revisión): ese prototipo se reescribió igual. Con las referencias actuales el par más alto es 0.57.
+fuga_semantica:
+  modelo: minilm
+  umbral_coseno: 0.58
+  palabras_ignoradas: [panama, panameno, panamena, panamenos]
+
 # Baseline por palabras clave (D-66). Las MISMAS categorías que el clasificador: los 6 temas o sin_tema.
-# Patrón = expresión regular sobre el titular en minúsculas y sin tildes. Puntaje de un tema = cantidad de patrones
-# distintos que coinciden; gana el mayor; si empatan, el primero en el orden de temas.yaml; sin coincidencias, sin_tema.
-# Escritas a partir de la columna "Incluye" de docs/guia_temas.md, ANTES de medir y sin mirar los casos difíciles;
-# no se ajustan para ganar una medición (el baseline debe ser un comparador honesto, no uno hecho a la medida).
+# Término = palabra o frase literal en minúsculas y sin tildes; coincide como palabra completa (con "s"/"es" final
+# opcional). Puntaje de un tema = términos distintos que coinciden; gana el mayor; si empatan, el primero en el orden de
+# temas.yaml; sin coincidencias, sin_tema. El segundo con puntaje > 0 es el secundario.
+#
+# Dos variantes, para no presentar como "baseline sin ayuda" lo que no lo es (revisión X15):
+#   guia      = SOLO términos que aparecen literalmente en docs/guia_temas.md fuera de la sección "Casos difíciles"
+#               (columnas "Incluye" / "No incluye" y reglas de frontera). Un test lo verifica término por término.
+#               Es el baseline principal (`variante_activa`).
+#   ampliado  = guia + `extension`: vocabulario que agregó quien escribió el baseline por conocimiento general
+#               (siglas, sinónimos, formas léxicas). Se escribió DESPUÉS de haber leído la guía completa, casos difíciles
+#               incluidos, así que NO puede presentarse como independiente de ellos: varios términos (asep, asamblea,
+#               homicidio, aerolinea) coinciden con casos difíciles. Se reporta aparte como `baseline_ampliado`.
 baseline:
+  variante_activa: guia
   palabras_clave:
     economia:
-      - '\binflacion\b'
-      - '\b(pib|producto interno)\b'
-      - '\b(crecimiento|recesion|economia|economico|economicos|economica|economicas)\b'
-      - '\bcanasta basica\b'
-      - '\bcombustibles?\b'
-      - '\b(desempleo|empleos?|salarios?)\b'
-      - '\b(deuda|presupuesto|recaudacion|fiscal|tributari\w*|impuestos?)\b'
-      - '\b(inversion|inversiones|inversionistas?)\b'
-      - '\b(exportacion|exportaciones|importacion|importaciones|comercio exterior|arancel\w*)\b'
-      - '\b(banca|banco|bancos|bancari\w*|depositos?|prestamos?|credito|creditos)\b'
-      - '\b(calificadora|calificacion de riesgo|nota de riesgo|grado de inversion)\b'
-      - '\b(precio|precios)\b'
+      guia: [crecimiento, pib, inflacion, precios, canasta basica, combustibles, empleo, deuda, presupuesto, recaudacion,
+             inversion, comercio exterior, banca, calificaciones de riesgo, impuesto, finanzas publicas]
+      extension: [producto interno, recesion, economia, economico, economica, salario, fiscal, tributario, banco, deposito,
+                  prestamo, credito, calificadora, nota de riesgo, grado de inversion, exportacion, importacion, arancel,
+                  desempleo, inversionista, precio]
     logistica:
-      - '\bcanal\b'
-      - '\bacp\b'
-      - '\b(transito|transitos|calado|esclusas?|neopanamax)\b'
-      - '\b(gatun|lago gatun)\b'
-      - '\b(puerto|puertos|portuari\w*|contenedor|contenedores|balboa|manzanillo)\b'
-      - '\bzona libre\b'
-      - '\b(carga|cargas|cargamento|mercancia|mercancias|flete|fletes)\b'
-      - '\b(naviera|navieras|buque|buques|maritim\w*|barco|barcos)\b'
-      - '\b(cadena de suministro|cadenas de suministro|logistica|logistico)\b'
-      - '\b(transportistas?|camiones|camioneros)\b'
+      guia: [canal, transito, calado, reservas, lago gatun, gatun, puerto, zona libre, carga aerea, transporte de carga,
+             cadenas de suministro, peaje, acp]
+      extension: [esclusa, neopanamax, contenedor, balboa, manzanillo, carga, cargamento, mercancia, flete, naviera, buque,
+                  maritimo, barco, cadena de suministro, logistica, logistico, transportista, camion, camionero, portuario]
     turismo:
-      - '\b(turismo|turistico|turisticos|turista|turistas)\b'
-      - '\b(visitante|visitantes)\b'
-      - '\b(crucero|cruceros|cruceristas?)\b'
-      - '\b(hotel|hoteles|hotelero|hotelera|hoteleria|ocupacion hotelera|hospedaje)\b'
-      - '\b(aerolinea|aerolineas)\b'
-      - '\b(vuelo|vuelos|ruta aerea|conectividad aerea)\b'
-      - '\b(pasajero|pasajeros)\b'
-      - '\b(destino|destinos|playa|playas|feria de turismo)\b'
+      guia: [turismo, visitantes, cruceros, hoteleria, ocupacion, aviacion de pasajeros, conectividad, destinos, promocion,
+             vuelos, pasajeros]
+      extension: [turistico, turista, visitante, crucero, crucerista, hotel, hotelero, ocupacion hotelera, hospedaje,
+                  aerolinea, vuelo, ruta aerea, conectividad aerea, pasajero, destino, playa, feria de turismo]
     servicios_publicos:
-      - '\b(agua|agua potable|idaan|acueducto|potabilizadora)\b'
-      - '\b(electricidad|energia electrica|apagon|apagones|luz|distribuidora electrica)\b'
-      - '\b(telecomunicaciones|internet|telefonia|senal)\b'
-      - '\b(metro|mibus|transporte publico|autobus|autobuses|buses)\b'
-      - '\b(basura|desechos|recoleccion|relleno sanitario)\b'
-      - '\b(hospital|hospitales|css|minsa|medicamentos?|vacun\w*|pacientes?|salud)\b'
-      - '\b(educacion|escuela|escuelas|colegio|colegios|docentes?|maestros?|estudiantes|clases|meduca)\b'
-      - '\b(policia|delito|delitos|homicidio|homicidios|robo|robos|carcel|carceles|seguridad|operativo|operativos)\b'
+      guia: [agua potable, electricidad, telecomunicaciones, internet, transporte publico, recoleccion de basura, basura,
+             salud publica, hospital, css, minsa, medicamento, educacion publica, escuela, clase, docente, seguridad ciudadana,
+             policia, operativo, carcel, delito]
+      extension: [agua, idaan, acueducto, potabilizadora, energia electrica, apagon, luz, distribuidora electrica, telefonia,
+                  senal, metro, mibus, autobus, bus, desechos, recoleccion, relleno sanitario, paciente, vacuna, vacunacion,
+                  salud, educacion, colegio, maestro, estudiante, meduca, homicidio, robo, seguridad]
     eventos_naturales:
-      - '\b(sismo|sismos|temblor|temblores|terremoto|terremotos|sismica)\b'
-      - '\b(inundacion|inundaciones|inunda|inundan)\b'
-      - '\b(lluvia|lluvias|aguacero|aguaceros|tormenta|tormentas|tempestad)\b'
-      - '\b(deslizamiento|deslizamientos|derrumbe|derrumbes)\b'
-      - '\b(sequia|el nino|la nina)\b'
-      - '\b(incendio forestal|incendios forestales|quema|quemas)\b'
-      - '\b(sinaproc|proteccion civil|alerta|alertas)\b'
-      - '\b(desborda|desbordan|desbordamiento|creciente|huracan|ciclon)\b'
+      guia: [sismo, inundacion, lluvia, deslizamiento, sequia, el nino, incendios forestales, alerta, proteccion civil]
+      extension: [temblor, terremoto, sismica, inunda, aguacero, tormenta, tempestad, derrumbe, la nina, incendio forestal,
+                  quema, sinaproc, desborda, desbordamiento, creciente, huracan, ciclon]
     regulacion:
-      - '\b(ley|leyes|proyecto de ley|legislacion)\b'
-      - '\b(decreto|decretos|resolucion|resoluciones|reglamento|norma|normas|normativa)\b'
-      - '\b(reforma|reformas)\b'
-      - '\b(regula|regulacion|regulador|reguladora|superintendencia|asep)\b'
-      - '\b(gafi|lista gris|lista negra|lista fiscal)\b'
-      - '\b(contrato|contratos|concesion|concesiones|licitacion)\b'
-      - '\b(sancion|sanciones|sanciona|sancionan|multa|multas|multado)\b'
-      - '\b(asamblea|ejecutivo sanciona|gaceta oficial)\b'
+      guia: [ley, decreto, resolucion, entes reguladores, reforma, listas internacionales, listas grises, gafi, contrato,
+             concesion, sancion, reglas nuevas]
+      extension: [proyecto de ley, legislacion, reglamento, norma, normativa, regula, regulacion, regulador, superintendencia,
+                  asep, lista gris, lista negra, lista fiscal, licitacion, sanciona, multa, multado, asamblea, ejecutivo sanciona,
+                  gaceta oficial]

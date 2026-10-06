@@ -25,15 +25,14 @@ CASOS = evalclas.leer_casos_dificiles()
 # Limitaciones conocidas con el modelo y método activos (e5 · A), medidas el 2026-10-06. Ver docs/clasificacion.md.
 LIMITACIONES_PRINCIPAL = {
     "CD-02": "regla 4 (falla de un servicio): se predice Eventos naturales en lugar de Servicios públicos",
-    "CD-04": "regla 2 (norma nueva): se predice Economía en lugar de Regulación",
+    "CD-04": "regla 2 (norma nueva): se predice Servicios públicos en lugar de Regulación",
     "CD-08": "regla 6 (carga aérea): se predice Turismo en lugar de Logística/Canal",
-    "CD-15": "fuera de temas: la similitud máxima (0.845) supera el umbral de 'sin tema' de e5; "
+    "CD-15": "fuera de temas: la similitud máxima (0.844) supera el umbral de 'sin tema' de e5; "
     "en el pipeline lo descarta antes el filtro de ruido (test_el_futbol_se_descarta_antes_...)",
 }
 LIMITACIONES_SECUNDARIO = {
-    "CD-02": "el principal ya está mal",
-    "CD-04": "el principal ya está mal",
-    "CD-10": "el segundo mejor es Economía, no Servicios públicos",
+    "CD-02": "el principal ya está mal: el 2.º mejor es Servicios públicos, no Eventos naturales",
+    "CD-04": "el principal ya está mal: el 2.º mejor es Economía, no Servicios públicos",
     "CD-14": "el segundo mejor es Logística/Canal, no Economía",
 }
 
