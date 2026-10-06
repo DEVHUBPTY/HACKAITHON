@@ -14,5 +14,5 @@ ID: `E?-??` · Spec: `specs/E?-??.md`
 - [ ] Afirmaciones pasan por el validador
 - [ ] Sin números mágicos ni `if modalidad` en `src/`
 - [ ] Nada de "Lo que NUNCA se construye"
-- [ ] Revisado por Claude Code
-- [ ] Aprobado por alguien distinto al autor
+- [ ] Primera pasada contra `docs/REVISION.md` hecha por el autor
+- [ ] Veredicto favorable del agente revisor independiente, escrito en el PR y en Notion (D-78)
