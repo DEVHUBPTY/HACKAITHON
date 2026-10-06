@@ -165,6 +165,7 @@ def _validar_noticias(inf: Informe, processed: Path, config: dict[str, Any], res
     else:
         inf.error("cobertura:efectiva", "no hay fechas para calcular la cobertura")
 
+    _validar_temas(inf, filas, config, resumen)
     ruta_fuentes = processed / "fuentes.json"
     if not ruta_fuentes.exists():
         inf.error("archivo:fuentes.json", "no existe")
@@ -182,6 +183,54 @@ def _validar_noticias(inf: Informe, processed: Path, config: dict[str, Any], res
         inf.error("fuentes:cobertura_de_medios", f"medios sin registro en fuentes.json: {sin_ficha[:5]}")
     else:
         inf.ok("fuentes:cobertura_de_medios", "todos los medios de noticias.csv están en fuentes.json")
+
+
+def _validar_temas(inf: Informe, filas: list[dict[str, str]], config: dict[str, Any], resumen: dict) -> None:
+    """Cada tema de consulta de GDELT debería tener registros; un tema con cero es una advertencia."""
+    por_tema = {t: 0 for t in config["gdelt"]["consultas"]}
+    for f in filas:
+        for t in f["tema"].split("|"):
+            if t in por_tema:
+                por_tema[t] += 1
+    resumen["noticias_por_tema_de_consulta"] = por_tema
+    vacios = sorted(t for t, n in por_tema.items() if n == 0)
+    if vacios:
+        inf.advertencia("temas:sin_registros", f"temas de consulta sin ningún registro en noticias.csv: {vacios}")
+    else:
+        inf.ok("temas:sin_registros", f"todos los temas de consulta tienen registros: {por_tema}")
+
+
+def _validar_cobertura_contra_extraccion(inf: Informe, data: Path, config: dict[str, Any], resumen: dict) -> None:
+    """Compara las fechas de noticias.csv con la fecha de extracción (``fecha_corte_UTC``) del manifest."""
+    ruta_m, ruta_n = data / "manifest.json", data / "processed" / "noticias.csv"
+    if not ruta_m.exists() or not ruta_n.exists():
+        return
+    corte = desde_iso(json.loads(ruta_m.read_text("utf-8")).get("fecha_corte_UTC", ""))
+    if corte is None:
+        return
+    columnas, filas = _leer_csv(ruta_n)
+    if not set(COLUMNAS_NOTICIAS) <= set(columnas):
+        return  # el error de contrato ya se reportó
+    maximo = config["ventana_noticias"]["dias_maximo"]
+    fechas = [d for f in filas if (d := desde_iso(f["fecha_deteccion"] or f["fecha_publicacion"]))]
+    futuras = [d for d in fechas if d > corte]
+    viejas = [d for d in fechas if (corte - d).days > maximo]
+    if futuras:
+        inf.error("cobertura:posterior_a_la_extraccion", f"{len(futuras)} noticias con fecha posterior a la extracción ({corte:%Y-%m-%dT%H:%M:%SZ})")
+    if viejas:
+        inf.error("cobertura:anterior_a_la_ventana", f"{len(viejas)} noticias más de {maximo} días antes de la extracción")
+    if not futuras and not viejas:
+        inf.ok("cobertura:contra_extraccion", f"todas las fechas están entre {maximo} días antes y la extracción")
+    por_tema: dict[str, list[Any]] = {}
+    for f in filas:
+        d = desde_iso(f["fecha_deteccion"] or f["fecha_publicacion"])
+        for t in f["tema"].split("|"):
+            if d and t in config["gdelt"]["consultas"]:
+                por_tema.setdefault(t, []).append(d)
+    resumen["cobertura_por_tema"] = {
+        t: {"desde": f"{min(v):%Y-%m-%dT%H:%M:%SZ}", "hasta": f"{max(v):%Y-%m-%dT%H:%M:%SZ}", "dias": round((max(v) - min(v)).total_seconds() / 86400, 1)}
+        for t, v in sorted(por_tema.items())
+    }
 
 
 def _validar_indicadores(inf: Informe, processed: Path, config: dict[str, Any], resumen: dict) -> None:
@@ -215,9 +264,46 @@ def _validar_indicadores(inf: Informe, processed: Path, config: dict[str, Any], 
             f"el PDF declara {declarada} filas, pero {len(bm['paises'])} países × "
             f"{len(bm['indicadores'])} indicadores × {bm['anio_fin'] - bm['anio_inicio'] + 1} años = {esperado}",
         )
-    ceros_sospechosos = [f for f in filas if f["valor"] in ("0", "0.0") and f["indicador_id"] == "SP.POP.TOTL"]
-    if ceros_sospechosos:
-        inf.error("nulos:no_rellenar_con_cero", "población con valor 0: parece relleno de nulos")
+    _validar_valores_contra_crudos(inf, processed.parent / "raw", config, filas)
+
+
+def _validar_valores_contra_crudos(
+    inf: Informe, raw: Path, config: dict[str, Any], filas: list[dict[str, str]]
+) -> None:
+    """Cada ``valor`` debe coincidir con el crudo: un 0 solo vale si el crudo traía 0; un nulo no se rellena."""
+    crudos = conversion.valores_banco_mundial(raw, config)
+    if not any(ts for ts, _ in crudos.values()):
+        inf.advertencia(
+            "nulos:no_rellenar_con_cero",
+            "no hay crudos del Banco Mundial para comparar: no se pudo comprobar que los 0 y nulos sean del origen",
+        )
+        return
+    ceros, relleno, perdidos, distintos = [], [], [], []
+    for f in filas:
+        if f["indicador_id"] not in crudos:
+            continue
+        _, valores = crudos[f["indicador_id"]]
+        crudo = valores.get((f["pais_iso3"], int(f["anio"])))
+        clave = f"{f['pais_iso3']}/{f['indicador_id']}/{f['anio']}"
+        if f["valor"] == "":
+            if crudo is not None:
+                perdidos.append(clave)
+            continue
+        valor = float(f["valor"])
+        if crudo is None:
+            relleno.append(clave)  # el crudo era nulo o no existía y el procesado trae un número
+        elif valor != float(crudo):
+            distintos.append(clave)
+        if valor == 0 and (crudo is None or float(crudo) != 0):
+            ceros.append(clave)
+    problemas = {"cero que el crudo no trae": ceros, "número donde el crudo es nulo": relleno,
+                 "nulo donde el crudo trae valor": perdidos, "valor distinto del crudo": distintos}
+    malos = {k: v for k, v in problemas.items() if v}
+    if malos:
+        detalle = "; ".join(f"{k}: {len(v)} (ej. {v[:2]})" for k, v in malos.items())
+        inf.error("nulos:no_rellenar_con_cero", f"los valores no coinciden con raw/: {detalle}")
+    else:
+        inf.ok("nulos:no_rellenar_con_cero", f"{len(filas)} valores coinciden con los crudos (ningún 0 ni nulo inventado)")
 
 
 def _validar_eventos(inf: Informe, processed: Path, config: dict[str, Any], resumen: dict) -> None:
@@ -292,9 +378,20 @@ def _validar_manifest(inf: Informe, data: Path, resumen: dict) -> None:
         inf.error("manifest:sha256", f"huellas que no coinciden con los archivos: {diferentes}")
     elif m.get("sha256"):
         inf.ok("manifest:sha256", f"{len(m['sha256'])} huellas verificadas")
-    sin_resolver = (m.get("cobertura_efectiva") or {}).get("gdelt_rangos_sin_resolver") or []
+    cob = m.get("cobertura_efectiva") or {}
+    sin_resolver = cob.get("gdelt_rangos_sin_resolver") or []
     if sin_resolver:
-        inf.advertencia("gdelt:rangos_sin_resolver", f"{len(sin_resolver)} consulta(s) de GDELT sin respuesta: la cobertura de GDELT es incompleta")
+        por_tema: dict[str, int] = {}
+        for r in sin_resolver:
+            por_tema[r.get("tema", "?")] = por_tema.get(r.get("tema", "?"), 0) + 1
+        dias = {t: f"{d.get('dias_cubiertos')}/{d.get('dias_esperados')}" for t, d in (cob.get("gdelt_dias_por_tema") or {}).items()}
+        inf.advertencia(
+            "gdelt:rangos_sin_resolver",
+            f"{len(sin_resolver)} rango(s) de GDELT sin resolver, por tema: {por_tema}; "
+            f"días cubiertos/esperados: {dias}. La cobertura de GDELT es incompleta",
+        )
+    else:
+        inf.ok("gdelt:rangos_sin_resolver", "todos los días de la ventana tienen un crudo de GDELT por tema")
     if "cobertura_efectiva" not in m:
         inf.advertencia("manifest:cobertura_efectiva", "el manifest no registra la cobertura efectiva")
     resumen["manifest_version"] = m.get("version")
@@ -309,6 +406,7 @@ def validar(data: Path, config: dict[str, Any]) -> dict[str, Any]:
     _validar_indicadores(inf, processed, config, resumen)
     _validar_eventos(inf, processed, config, resumen)
     _validar_manifest(inf, data, resumen)
+    _validar_cobertura_contra_extraccion(inf, data, config, resumen)
     return inf.como_dict(resumen)
 
 

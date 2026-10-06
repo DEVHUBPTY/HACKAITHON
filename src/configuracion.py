@@ -61,6 +61,7 @@ class General(ModeloConfig):
     espera_reintento_segundos: int
     alcance_texto: str
     idioma_por_defecto: str
+    carpeta_registro: str
 
 
 class VentanaNoticias(ModeloConfig):
@@ -91,7 +92,8 @@ class UrlCanonica(ModeloConfig):
 class RssTvn(ModeloConfig):
     url: str
     carpeta_cruda: str
-    tema_desde: str
+    segmentos_minimos_para_seccion: int
+    tema_sin_seccion: str
 
 
 class Gdelt(ModeloConfig):
@@ -156,6 +158,7 @@ class ConfigFuentes(ModeloConfig):
     gdelt: Gdelt
     banco_mundial: BancoMundial
     usgs: Usgs
+    paises_es: dict[str, str]
 
 
 def cargar_fuentes(carpeta: Path | None = None) -> ConfigFuentes:

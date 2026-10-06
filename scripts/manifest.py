@@ -31,17 +31,29 @@ ARCHIVOS_PROCESSED = [
     "indicadores.csv",
     "noticias.csv",
 ]
-NOTA_INTERVALO_PDF = (
-    "Inconsistencia del PDF (D-74): la sección 6 pide noticias de los 30 días previos a la "
-    "extracción (ampliable a 90) y la sección 7 pide excluir lo que quede fuera del intervalo "
-    "[2024-01-01, 2025-10-01). Ese intervalo no se aplica porque es imposible de extraer hoy: "
-    "GDELT DOC solo cubre ~3 meses hacia atrás y el RSS de TVN no conserva todo el histórico. "
-    "Se aplica la ventana de la sección 6, medida sobre fecha_deteccion (fecha_publicacion si "
-    "el registro no pasó por GDELT)."
-)
+
+
+def nota_intervalo_pdf(config: dict[str, Any]) -> str:
+    """Documenta la inconsistencia entre las secciones 6 y 7 del PDF (D-74)."""
+    desde, hasta = config["ventana_noticias"]["intervalo_pdf_seccion_7_no_aplicado"]
+    return (
+        "Inconsistencia del PDF (D-74): la sección 6 pide noticias de los 30 días previos a la "
+        "extracción (ampliable a 90) y la sección 7 pide excluir lo que quede fuera del intervalo "
+        f"[{desde}, {hasta}). Ese intervalo no se aplica porque es imposible de extraer hoy: "
+        "GDELT DOC solo cubre ~3 meses hacia atrás y el RSS de TVN no conserva todo el histórico. "
+        "Se aplica la ventana de la sección 6, medida sobre "
+        f"{config['ventana_noticias']['base_de_medicion']} (fecha_publicacion si el registro no pasó por GDELT)."
+    )
+
+
 TRANSFORMACIONES = [
     "RSS de TVN: feedparser; la descripción se usa solo en crudo y no se copia a processed/ (D-31, D-72).",
     "GDELT: seendate -> fecha_deteccion (nunca fecha_publicacion); socialimage descartado (D-72).",
+    "idioma: código ISO 639-1; GDELT entrega el nombre del idioma y se traduce con la tabla gdelt.idiomas de config/fuentes.yaml.",
+    "fuentes.json: pais = sourcecountry de GDELT traducido al español con paises_es (nulo si no se conoce); "
+    "'Pendiente de verificar' solo aplica a condiciones.",
+    "Cobertura de GDELT: un día cuenta como cubierto solo si un crudo con articles lo contiene completo; un {} "
+    "no prueba ausencia de resultados y queda como vacio_sospechoso (ver cobertura_efectiva).",
     "GDELT sin fecha de publicación: fecha_publicacion queda vacía salvo que la misma URL esté en el RSS.",
     "Deduplicación por URL canónica (esquema https, sin www, sin fragmento ni parámetros de rastreo).",
     "id_noticia = NOT- + primeros 10 caracteres del SHA-1 de la URL canónica (D-63).",
@@ -54,6 +66,20 @@ TRANSFORMACIONES = [
     "USGS: id = SIS-<id USGS>; time y updated de milisegundos epoch a ISO 8601 UTC; longitude, latitude y depth de la geometría.",
     "Registros excluidos (sin título, sin URL, sin fecha válida, fuera de ventana) se listan en conversion.json.",
 ]
+
+
+def _transformaciones(auditoria: dict[str, Any]) -> list[str]:
+    """Transformaciones fijas más la alerta de idiomas que no tienen código ISO en la configuración."""
+    sin_mapeo = auditoria.get("idiomas_sin_mapeo") or {}
+    extra = (
+        [
+            "idioma sin código ISO 639-1 en gdelt.idiomas (se conservó el nombre en minúsculas): "
+            + ", ".join(f"{k} ({v})" for k, v in sin_mapeo.items())
+        ]
+        if sin_mapeo
+        else []
+    )
+    return [*TRANSFORMACIONES, *extra]
 
 
 def nota_cuadricula(config: dict[str, Any]) -> str:
@@ -89,7 +115,7 @@ def _cantidad_por_archivo(processed: Path) -> dict[str, int]:
 
 
 def _crudos(raw: Path) -> dict[str, dict[str, Any]]:
-    """Huella de cada crudo (los de RSS y GDELT no se versionan, pero su hash sí se registra)."""
+    """Huella de cada respuesta cruda de la API (los de RSS y GDELT no se versionan, pero su hash sí se registra)."""
     crudos = {}
     for ruta in sorted(p for p in raw.rglob("*") if p.is_file() and not p.name.startswith(".")):
         crudos[ruta.relative_to(raw.parent).as_posix()] = {
@@ -99,12 +125,35 @@ def _crudos(raw: Path) -> dict[str, dict[str, Any]]:
     return crudos
 
 
+def _registro_extraccion(data: Path, config: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """Huella y origen de cada archivo de ``registro_extraccion/`` (fallos y notas; no son respuestas de API)."""
+    carpeta = data / config["general"]["carpeta_registro"]
+    if not carpeta.is_dir():
+        return {}
+    registro = {}
+    for ruta in sorted(p for p in carpeta.glob("*.json") if p.is_file()):
+        cuerpo = json.loads(ruta.read_text("utf-8"))
+        origen = "" if isinstance(cuerpo, list) else cuerpo.get("origen", "")
+        registro[ruta.relative_to(data).as_posix()] = {
+            "bytes": ruta.stat().st_size,
+            "sha256": sha256_archivo(ruta),
+            "origen": origen or "sin origen declarado",
+        }
+    return registro
+
+
+def _es_respuesta_de_api(ruta: Path) -> bool:
+    """Las respuestas de la API llevan marca de tiempo y no son registros de fallos."""
+    return not ruta.name.startswith(("fallos_", ".")) and conversion.PATRON_TS_ARCHIVO.search(ruta.name) is not None
+
+
 def _fecha_corte(raw: Path) -> str:
-    marcas = [ts_de_archivo(p) for p in raw.rglob("*") if p.is_file() and not p.name.startswith(".")]
+    """Marca de tiempo más reciente entre las respuestas reales de la API (nunca fallos ni notas)."""
+    marcas = [ts_de_archivo(p) for p in raw.rglob("*") if p.is_file() and _es_respuesta_de_api(p)]
     return a_iso(max(marcas)) if marcas else ""
 
 
-def _cobertura(processed: Path, auditoria: dict[str, Any]) -> dict[str, Any]:
+def _cobertura(processed: Path, auditoria: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
     """Fechas reales de la bandeja A: primera y última sobre la base de medición de la ventana."""
     with (processed / "noticias.csv").open(encoding="utf-8", newline="") as f:
         filas = list(csv.DictReader(f))
@@ -113,7 +162,7 @@ def _cobertura(processed: Path, auditoria: dict[str, Any]) -> dict[str, Any]:
     publicacion = [r["fecha_publicacion"] for r in filas if r["fecha_publicacion"]]
     deteccion = [r["fecha_deteccion"] for r in filas if r["fecha_deteccion"]]
     return {
-        "base_de_medicion": "fecha_deteccion; fecha_publicacion si el registro no tiene detección",
+        "base_de_medicion": f"{config['ventana_noticias']['base_de_medicion']}; fecha_publicacion si el registro no tiene detección",
         "fecha_inicial": min(referencia, default=""),
         "fecha_final": max(referencia, default=""),
         "fecha_deteccion_inicial": min(deteccion, default=""),
@@ -121,6 +170,12 @@ def _cobertura(processed: Path, auditoria: dict[str, Any]) -> dict[str, Any]:
         "fecha_publicacion_inicial": min(publicacion, default=""),
         "fecha_publicacion_final": max(publicacion, default=""),
         "ventana_dias_aplicada": auditoria["ventana"]["dias_aplicados"],
+        "nota_ventana": (
+            "ventana_dias_aplicada es el filtro de fechas de las noticias, no la cobertura lograda: GDELT cubre "
+            "solo los días de gdelt_dias_por_tema.dias_cubiertos y el resto de la ventana, salvo lo que aporta "
+            "el RSS de TVN, está en gdelt_rangos_sin_resolver."
+        ),
+        "gdelt_dias_por_tema": auditoria.get("gdelt_cobertura_por_tema", {}),
         "ventana_ampliada_a_90": auditoria["ventana"]["ampliada"],
         "ventana_inicio": auditoria["ventana"]["inicio"],
         "ventana_fin": auditoria["ventana"]["fin"],
@@ -263,12 +318,13 @@ def construir_manifest(data: Path, config: dict[str, Any]) -> dict[str, Any]:
         "cantidad_por_archivo": cantidades,
         "licencias": _licencias(config),
         "sha256": sha,
-        "transformaciones": TRANSFORMACIONES,
-        "cobertura_efectiva": _cobertura(processed, auditoria),
+        "transformaciones": _transformaciones(auditoria),
+        "cobertura_efectiva": _cobertura(processed, auditoria, config),
         "volumen_noticias": config["volumen_noticias"],
-        "nota_intervalo_seccion_7": NOTA_INTERVALO_PDF,
+        "nota_intervalo_seccion_7": nota_intervalo_pdf(config),
         "nota_cuadricula_banco_mundial": nota_cuadricula(config),
         "crudos": _crudos(raw),
+        "registro_extraccion": _registro_extraccion(data, config),
         "historial": historial,
     }
 

@@ -70,6 +70,7 @@ CAMPOS_EVENTO = [
     "status",
     "url",
 ]
+FORMATO_GDELT = "%Y%m%d%H%M%S"
 ORIGEN_RSS = "TVN RSS"
 ORIGEN_GDELT = "GDELT"
 CONDICIONES_PENDIENTES = "Pendiente de verificar"
@@ -194,6 +195,12 @@ def dominio_de(url: str) -> str:
     return host[4:] if host.startswith("www.") else host
 
 
+def normalizar_idioma(nombre: str, config: dict[str, Any]) -> str:
+    """Nombre de idioma de GDELT -> ISO 639-1 (sin distinguir mayúsculas); si no se conoce, el nombre en minúsculas."""
+    tabla = {k.lower(): v for k, v in config["gdelt"]["idiomas"].items()}
+    return tabla.get(nombre.strip().lower(), nombre.strip().lower())
+
+
 def _nombre_medio(dominio: str, config: dict[str, Any]) -> str:
     conocido = config.get("medios_conocidos", {}).get(dominio)
     return conocido["nombre"] if conocido else dominio
@@ -202,9 +209,11 @@ def _nombre_medio(dominio: str, config: dict[str, Any]) -> str:
 # ------------------------------------------------------------------- noticias
 
 
-def _seccion_url(url: str) -> str:
+def _seccion_url(url: str, config: dict[str, Any]) -> str:
+    """Primera sección de la ruta; ``tema_sin_seccion`` si la ruta tiene menos segmentos que el mínimo."""
+    cfg = config["rss_tvn"]
     segmentos = [s for s in urlsplit(url).path.split("/") if s]
-    return segmentos[0] if len(segmentos) > 1 else "sin_seccion"
+    return segmentos[0] if len(segmentos) >= cfg["segmentos_minimos_para_seccion"] else cfg["tema_sin_seccion"]
 
 
 def _leer_rss(ruta: Path, config: dict[str, Any]) -> list[dict[str, Any]]:
@@ -226,7 +235,7 @@ def _leer_rss(ruta: Path, config: dict[str, Any]) -> list[dict[str, Any]]:
                 "publicacion": publicada,
                 "deteccion": None,
                 "extraccion": ts,
-                "tema": _seccion_url(url) if url else "",
+                "tema": _seccion_url(url, config) if url else "",
                 "origen": ORIGEN_RSS,
                 "dominio": dominio_de(url),
                 "pais": "",
@@ -243,7 +252,6 @@ def _leer_gdelt(ruta: Path, config: dict[str, Any]) -> list[dict[str, Any]]:
     ts = ts_de_archivo(ruta)
     texto = ruta.read_text(encoding="utf-8")
     datos = json.loads(texto, strict=False) if texto.strip() else {}
-    idiomas = config["gdelt"]["idiomas"]
     entradas = []
     for a in datos.get("articles", []):
         url = (a.get("url") or "").strip()
@@ -258,7 +266,7 @@ def _leer_gdelt(ruta: Path, config: dict[str, Any]) -> list[dict[str, Any]]:
             {
                 "url": url,
                 "titulo": (a.get("title") or "").strip(),
-                "idioma": idiomas.get(lengua, lengua.lower()),
+                "idioma": normalizar_idioma(lengua, config),
                 "publicacion": None,  # GDELT no trae fecha de publicación
                 "deteccion": deteccion,  # seendate → fecha_deteccion, nunca publicación
                 "extraccion": ts,
@@ -358,21 +366,191 @@ def aplicar_ventana(
     return incluidos, excluidos, dias
 
 
-def fallos_gdelt_sin_resolver(carpeta_raw: Path, config: dict[str, Any]) -> list[dict[str, str]]:
-    """Rangos de GDELT que fallaron y todavía no tienen crudo (una corrida posterior pudo cubrirlos)."""
+# ------------------------------------------------------------ cobertura de GDELT
+
+
+def rangos_gdelt(hoy: datetime, dias_atras: int, dias_rango: int) -> list[tuple[datetime, datetime]]:
+    """Rangos alineados a una grilla fija de ``dias_rango`` días (días desde 1970), del más reciente al más antiguo.
+
+    Como los límites no dependen de la hora de ejecución, una segunda corrida pide los mismos
+    rangos. El más antiguo se recorta al inicio de la ventana (nunca pide fechas más atrás de
+    ``dias_atras``, para no salirse de la cobertura de GDELT). Se excluye el día en curso (lo cubre el RSS).
+    """
+    fin_total = hoy.replace(hour=0, minute=0, second=0, microsecond=0)
+    inicio = fin_total - timedelta(days=dias_atras)
+    epoca = datetime(1970, 1, 1, tzinfo=UTC)
+    k0 = (inicio - epoca).days // dias_rango
+    k1 = (fin_total - epoca).days // dias_rango
+    rangos = []
+    for k in range(k1, k0 - 1, -1):
+        ini = max(epoca + timedelta(days=k * dias_rango), inicio)
+        fin = min(epoca + timedelta(days=(k + 1) * dias_rango), fin_total)
+        if ini < fin:
+            rangos.append((ini, fin))
+    return rangos
+
+
+def clasificar_respuesta(texto: str) -> str:
+    """``ok`` = JSON de GDELT con la clave ``articles``; ``vacio`` = ``{}`` o cuerpo vacío; ``invalido`` = lo demás.
+
+    Un ``{}`` NO prueba que no haya resultados: GDELT lo devolvió para un rango que sí tenía
+    artículos (2026-10-06). Por eso un vacío es cobertura sin resolver, nunca un vacío confirmado.
+    """
+    if not texto.strip():
+        return "vacio"
+    try:
+        datos = json.loads(texto, strict=False)
+    except json.JSONDecodeError:
+        return "invalido"
+    if isinstance(datos, dict) and "articles" in datos:
+        return "ok"
+    return "vacio" if datos == {} else "invalido"
+
+
+def rango_divisible(ini: datetime, fin: datetime, config: dict[str, Any]) -> bool:
+    """True si la mitad del rango sigue siendo >= ``rango_minimo_horas`` (se puede subdividir)."""
+    return (fin - ini).total_seconds() / 3600 / 2 >= config["gdelt"]["rango_minimo_horas"]
+
+
+def crudos_gdelt(carpeta_raw: Path, config: dict[str, Any]) -> list[dict[str, Any]]:
+    """Clasifica cada crudo ``gdelt_*.json``.
+
+    Clases: ``ok`` (cubre su rango), ``vacio`` (``{}``: cobertura sin resolver), ``truncado`` (llegó al
+    tope de ``maxrecords`` y el rango se podía subdividir: solo cubren sus mitades) e ``invalido``.
+    """
     carpeta = carpeta_raw / config["gdelt"]["carpeta_cruda"]
-    existentes = {
-        (m["tema"], m["ini"], m["fin"])
-        for p in archivos_crudos(carpeta, "gdelt_*.json")
-        if (m := PATRON_ARCHIVO_GDELT.match(p.name)) and '"articles"' in p.read_text(encoding="utf-8")
-    }
-    pendientes: dict[tuple[str, str, str], dict[str, str]] = {}
-    for ruta in archivos_crudos(carpeta, "fallos_gdelt_*.json"):
-        for f in json.loads(ruta.read_text(encoding="utf-8")):
-            clave = (f["tema"], f["inicio"], f["fin"])
-            if clave not in existentes:
-                pendientes[clave] = {k: f.get(k, "") for k in ("tema", "inicio", "fin", "motivo")}
-    return [pendientes[k] for k in sorted(pendientes)]
+    tope = config["gdelt"]["maxrecords"]
+    salida = []
+    for ruta in archivos_crudos(carpeta, "gdelt_*.json"):
+        m = PATRON_ARCHIVO_GDELT.match(ruta.name)
+        if not m:
+            continue
+        texto = ruta.read_text(encoding="utf-8")
+        clase = clasificar_respuesta(texto)
+        ini = datetime.strptime(m["ini"], FORMATO_GDELT).replace(tzinfo=UTC)
+        fin = datetime.strptime(m["fin"], FORMATO_GDELT).replace(tzinfo=UTC)
+        if clase == "ok":
+            n = len(json.loads(texto, strict=False).get("articles") or [])
+            if n >= tope and rango_divisible(ini, fin, config):
+                clase = "truncado"
+        salida.append({"tema": m["tema"], "ini": ini, "fin": fin, "clase": clase, "archivo": ruta.name})
+    return salida
+
+
+def _fusionar_intervalos(intervalos: list[tuple[datetime, datetime]]) -> list[tuple[datetime, datetime]]:
+    """Une intervalos que se solapan o se tocan."""
+    unidos: list[list[datetime]] = []
+    for a, b in sorted(intervalos):
+        if unidos and a <= unidos[-1][1]:
+            unidos[-1][1] = max(unidos[-1][1], b)
+        else:
+            unidos.append([a, b])
+    return [(a, b) for a, b in unidos]
+
+
+def rango_cubierto(carpeta_raw: Path, config: dict[str, Any], tema: str, ini: datetime, fin: datetime) -> bool:
+    """True si crudos ``ok`` de ese tema (de cualquier alineación) cubren por completo ``[ini, fin]``."""
+    cubiertos = _fusionar_intervalos(
+        [(c["ini"], c["fin"]) for c in crudos_gdelt(carpeta_raw, config) if c["tema"] == tema and c["clase"] == "ok"]
+    )
+    return any(a <= ini and fin <= b for a, b in cubiertos)
+
+
+def registro_extraccion(carpeta_raw: Path, config: dict[str, Any]) -> list[dict[str, str]]:
+    """Fallos anotados en ``registro_extraccion/`` (generados por la herramienta o escritos a mano).
+
+    No son respuestas de la API: nunca viven en ``raw/`` ni definen la fecha de corte.
+    """
+    carpeta = carpeta_raw.parent / config["general"]["carpeta_registro"]
+    entradas = []
+    for ruta in archivos_crudos(carpeta, "*.json"):
+        cuerpo = json.loads(ruta.read_text(encoding="utf-8"))
+        fallos = cuerpo if isinstance(cuerpo, list) else cuerpo.get("fallos", [])
+        origen = "" if isinstance(cuerpo, list) else cuerpo.get("origen", "")
+        for f in fallos:
+            entradas.append({**f, "archivo": ruta.name, "origen": origen})
+    return entradas
+
+
+def _solapa(a: datetime, b: datetime, desde: datetime, hasta: datetime) -> bool:
+    return a < hasta and b > desde
+
+
+def _fecha_registro(texto: str) -> datetime | None:
+    try:
+        return datetime.strptime(texto, FORMATO_GDELT).replace(tzinfo=UTC)
+    except (ValueError, TypeError):
+        return None
+
+
+def _motivo_dia(
+    dia: datetime, propios: list[dict[str, Any]], registro: list[dict[str, str]]
+) -> tuple[str, str]:
+    """Por qué un día de la ventana no está cubierto: (motivo, detalle)."""
+    hasta = dia + timedelta(days=1)
+    en_dia = [c for c in propios if _solapa(c["ini"], c["fin"], dia, hasta)]
+    fallos = []
+    for r in registro:
+        a, b = _fecha_registro(r.get("inicio", "")), _fecha_registro(r.get("fin", ""))
+        if a and b and _solapa(a, b, dia, hasta):
+            fallos.append(r)
+    vacios = [c for c in en_dia if c["clase"] == "vacio"]
+    vacios_anotados = [r for r in fallos if r.get("tipo") == "vacio_sospechoso"]
+    if vacios or vacios_anotados:
+        return (
+            "vacio_sospechoso",
+            "respuesta {} o vacía: no prueba que no haya resultados; cobertura sin resolver, reintentar",
+        )
+    if fallos:
+        return "bloqueado", "; ".join(sorted({r.get("motivo", "") for r in fallos}))
+    if any(c["clase"] == "truncado" for c in en_dia):
+        return "truncado_sin_resolver", "respuesta al tope de maxrecords y sin las mitades del rango"
+    if any(c["clase"] == "ok" for c in en_dia):
+        return "cobertura_parcial", "un crudo cubre solo una parte de este día"
+    return "no_solicitado", "ningún crudo ni intento registrado para este día"
+
+
+def cobertura_gdelt(carpeta_raw: Path, config: dict[str, Any], fin: datetime, dias: int) -> dict[str, Any]:
+    """Cobertura real de GDELT por tema sobre los días de la ventana aplicada.
+
+    Un día cuenta como cubierto solo si un crudo ``ok`` (o la unión de varios contiguos, de
+    cualquier alineación) lo contiene completo. El resto se lista como rangos sin resolver, con motivo
+    (``no_solicitado``, ``bloqueado``, ``vacio_sospechoso``, ``cobertura_parcial``, ``truncado_sin_resolver``).
+    """
+    crudos = crudos_gdelt(carpeta_raw, config)
+    registro = registro_extraccion(carpeta_raw, config)
+    fin_total = fin.replace(hour=0, minute=0, second=0, microsecond=0)
+    ventana = [fin_total - timedelta(days=dias - i) for i in range(dias)]
+    por_tema: dict[str, dict[str, int]] = {}
+    sin_resolver: list[dict[str, Any]] = []
+    for tema in config["gdelt"]["consultas"]:
+        propios = [c for c in crudos if c["tema"] == tema]
+        cubiertos = _fusionar_intervalos([(c["ini"], c["fin"]) for c in propios if c["clase"] == "ok"])
+        pendientes: list[tuple[datetime, str, str]] = []
+        for dia in ventana:
+            if any(a <= dia and dia + timedelta(days=1) <= b for a, b in cubiertos):
+                continue
+            motivo, detalle = _motivo_dia(dia, propios, [r for r in registro if r.get("tema") == tema])
+            pendientes.append((dia, motivo, detalle))
+        por_tema[tema] = {"dias_esperados": len(ventana), "dias_cubiertos": len(ventana) - len(pendientes)}
+        corridas: list[dict[str, Any]] = []
+        for dia, motivo, detalle in pendientes:
+            if corridas and corridas[-1]["fin"] == dia and (corridas[-1]["motivo"], corridas[-1]["detalle"]) == (motivo, detalle):
+                corridas[-1]["fin"] = dia + timedelta(days=1)
+            else:
+                corridas.append({"inicio": dia, "fin": dia + timedelta(days=1), "motivo": motivo, "detalle": detalle})
+        for c in corridas:
+            sin_resolver.append(
+                {
+                    "tema": tema,
+                    "inicio": c["inicio"].strftime(FORMATO_GDELT),
+                    "fin": c["fin"].strftime(FORMATO_GDELT),
+                    "dias": (c["fin"] - c["inicio"]).days,
+                    "motivo": c["motivo"],
+                    "detalle": c["detalle"],
+                }
+            )
+    return {"por_tema": por_tema, "sin_resolver": sorted(sin_resolver, key=lambda x: (x["tema"], x["inicio"]))}
 
 
 def convertir_noticias(
@@ -420,6 +598,9 @@ def convertir_noticias(
         )
 
     fuentes = _construir_fuentes(incluidos, config)
+    conocidos = set(config["gdelt"]["idiomas"].values()) | {config["general"]["idioma_por_defecto"]}
+    sin_mapeo = Counter(f["idioma"] for f in filas if f["idioma"] and f["idioma"] not in conocidos)
+    cobertura = cobertura_gdelt(carpeta_raw, config, fin, dias)
     auditoria = {
         "ventana": {
             "dias_base": config["ventana_noticias"]["dias_base"],
@@ -430,7 +611,9 @@ def convertir_noticias(
             "fin": a_iso(fin),
         },
         "registros_crudos_leidos": len(entradas),
-        "gdelt_rangos_sin_resolver": fallos_gdelt_sin_resolver(carpeta_raw, config),
+        "gdelt_cobertura_por_tema": cobertura["por_tema"],
+        "gdelt_rangos_sin_resolver": cobertura["sin_resolver"],
+        "idiomas_sin_mapeo": dict(sorted(sin_mapeo.items())),
         "duplicados_descartados": len(entradas) - len(unicos) - sum(
             1 for x in excluidos if x["motivo"] in ("sin_url", "sin_titulo")
         ),
@@ -452,14 +635,14 @@ def _construir_fuentes(
         conocido = config.get("medios_conocidos", {}).get(dominio, {})
         paises = Counter(p for r in rs for p in r["paises"])
         pais = conocido.get("pais") or (
-            sorted(paises.items(), key=lambda kv: (-kv[1], kv[0]))[0][0] if paises else ""
+            config["paises_es"].get(sorted(paises.items(), key=lambda kv: (-kv[1], kv[0]))[0][0]) if paises else None
         )
         origenes = sorted({o for r in rs for o in r["origenes"]}, key=[ORIGEN_RSS, ORIGEN_GDELT].index)
         fuentes.append(
             {
                 "dominio": dominio,
                 "nombre_legible": _nombre_medio(dominio, config),
-                "pais": pais or CONDICIONES_PENDIENTES,
+                "pais": pais or None,  # nulo si no se conoce; "Pendiente de verificar" es solo para condiciones
                 "origen": " · ".join(origenes),
                 "condiciones": conocido.get("condiciones", CONDICIONES_PENDIENTES).strip(),
             }
@@ -470,18 +653,19 @@ def _construir_fuentes(
 # ---------------------------------------------------------------- indicadores
 
 
-def convertir_indicadores(carpeta_raw: Path, config: dict[str, Any]) -> list[dict[str, Any]]:
-    """Completa la cuadrícula país × indicador × año; los faltantes quedan nulos, nunca 0."""
+def valores_banco_mundial(
+    carpeta_raw: Path, config: dict[str, Any]
+) -> dict[str, tuple[datetime | None, dict[tuple[str, int], Any]]]:
+    """Por indicador: (marca de tiempo, {(país, año): valor}) del crudo más reciente; ``None`` si no hay crudo."""
     cfg = config["banco_mundial"]
-    anios = range(cfg["anio_inicio"], cfg["anio_fin"] + 1)
     carpeta = carpeta_raw / cfg["carpeta_cruda"]
     ultimo: dict[str, Path] = {}
     for ruta in archivos_crudos(carpeta, "wb_*.json"):
         m = PATRON_ARCHIVO_WB.match(ruta.name)
         if m:  # el orden por nombre deja al final la extracción más reciente
             ultimo[m.group("ind")] = ruta
-    filas = []
-    for ind, meta in cfg["indicadores"].items():
+    salida: dict[str, tuple[datetime | None, dict[tuple[str, int], Any]]] = {}
+    for ind in cfg["indicadores"]:
         valores: dict[tuple[str, int], Any] = {}
         ts = None
         if ind in ultimo:
@@ -492,6 +676,18 @@ def convertir_indicadores(carpeta_raw: Path, config: dict[str, Any]) -> list[dic
                     valores[(reg["countryiso3code"], int(reg["date"]))] = reg.get("value")
                 except (KeyError, ValueError, TypeError):
                     logger.warning("Registro de Banco Mundial con forma inesperada en %s", ind)
+        salida[ind] = (ts, valores)
+    return salida
+
+
+def convertir_indicadores(carpeta_raw: Path, config: dict[str, Any]) -> list[dict[str, Any]]:
+    """Completa la cuadrícula país × indicador × año; los faltantes quedan nulos, nunca 0."""
+    cfg = config["banco_mundial"]
+    anios = range(cfg["anio_inicio"], cfg["anio_fin"] + 1)
+    crudos = valores_banco_mundial(carpeta_raw, config)
+    filas = []
+    for ind, meta in cfg["indicadores"].items():
+        ts, valores = crudos[ind]
         for pais in cfg["paises"]:
             for anio in anios:
                 filas.append(

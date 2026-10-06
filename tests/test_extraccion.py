@@ -87,7 +87,9 @@ def test_fuentes_un_registro_por_medio_con_condiciones(data_sintetica: Path) -> 
     fuentes = {f["dominio"]: f for f in json.loads((data_sintetica / "processed" / "fuentes.json").read_text("utf-8"))}
     assert set(fuentes) == {"ejemplo.test", "otro.test", "tvn-2.com"}
     assert fuentes["ejemplo.test"]["condiciones"] == "Pendiente de verificar"
-    assert fuentes["ejemplo.test"]["pais"] == "United States"
+    assert fuentes["ejemplo.test"]["pais"] == "Estados Unidos"  # sourcecountry traducido al español
+    assert fuentes["otro.test"]["pais"] == "México"
+    assert fuentes["tvn-2.com"]["pais"] == "Panamá"
     assert fuentes["tvn-2.com"]["nombre_legible"] == "TVN Panamá"
 
 
@@ -171,3 +173,58 @@ def test_rangos_de_fechas_cubren_la_ventana_sin_huecos() -> None:
     assert rangos[-1][0] <= datetime(2026, 10, 6, tzinfo=UTC) - timedelta(days=12)
     assert all(a[0] == b[1] for a, b in zip(rangos, rangos[1:], strict=False))
     assert all(r[1] - r[0] <= timedelta(days=5) for r in rangos)
+
+
+# ---------------------------------------------------- H6/H7/H10: idioma, país y sección
+
+
+def _gdelt_extra(data: Path, articulos: list[dict]) -> None:
+    (data / "raw" / "gdelt" / "gdelt_turismo_20260930000000_20261006000000_20261006T121000Z.json").write_text(
+        json.dumps({"articles": articulos}), encoding="utf-8"
+    )
+
+
+def _articulo(n: int, lengua: str, pais: str) -> dict:
+    return {
+        "url": f"https://extra{n}.test/n", "title": f"Extra {n}", "seendate": "20261003T100000Z",
+        "domain": f"extra{n}.test", "language": lengua, "sourcecountry": pais,
+    }
+
+
+def test_idioma_normalizado_a_iso_639_1_y_desconocidos_marcados(data_sintetica: Path, config) -> None:
+    from scripts import manifest
+
+    _gdelt_extra(data_sintetica, [_articulo(1, "Russian", "Russia"), _articulo(2, "SPANISH", ""), _articulo(3, "Klingon", "")])
+    filas, _, auditoria = conversion.convertir_noticias(data_sintetica / "raw", config)
+    idiomas = {f["titulo"]: f["idioma"] for f in filas}
+    assert idiomas["Extra 1"] == "ru" and idiomas["Extra 2"] == "es"  # sin distinguir mayúsculas
+    assert idiomas["Extra 3"] == "klingon"  # se conserva en minúsculas...
+    assert auditoria["idiomas_sin_mapeo"] == {"klingon": 1}  # ...y queda marcado
+    assert any("klingon" in t for t in manifest._transformaciones(auditoria))
+    assert not any("sin código ISO" in t for t in manifest._transformaciones({"idiomas_sin_mapeo": {}}))
+
+
+def test_todos_los_idiomas_de_gdelt_tienen_codigo_de_dos_letras(config) -> None:
+    idiomas = config["gdelt"]["idiomas"]
+    assert len(idiomas) >= 60
+    assert all(len(v) == 2 and v.islower() for v in idiomas.values()), idiomas
+    assert idiomas["Norwegian"] == "no"  # trampa de YAML 1.1: sin comillas sería False
+
+
+def test_pais_de_la_fuente_en_espanol_o_nulo_no_pendiente(data_sintetica: Path, config) -> None:
+    _gdelt_extra(data_sintetica, [_articulo(1, "English", "Atlantis"), _articulo(2, "English", "")])
+    _, fuentes, _ = conversion.convertir_noticias(data_sintetica / "raw", config)
+    por = {f["dominio"]: f for f in fuentes}
+    assert por["extra1.test"]["pais"] is None and por["extra2.test"]["pais"] is None
+    assert por["extra1.test"]["condiciones"] == "Pendiente de verificar"  # solo las condiciones son "pendientes"
+    assert por["ejemplo.test"]["pais"] == "Estados Unidos"
+
+
+def test_seccion_de_la_url_sale_de_la_configuracion(config) -> None:
+    assert conversion._seccion_url("https://www.tvn-2.com/economia/nota_1.html", config) == "economia"
+    assert conversion._seccion_url("https://www.tvn-2.com/nota_1.html", config) == "sin_seccion"
+    config["rss_tvn"]["segmentos_minimos_para_seccion"] = 1
+    assert conversion._seccion_url("https://www.tvn-2.com/nota_1.html", config) == "nota_1.html"
+    config["rss_tvn"]["tema_sin_seccion"] = "otro"
+    config["rss_tvn"]["segmentos_minimos_para_seccion"] = 5
+    assert conversion._seccion_url("https://www.tvn-2.com/a/b", config) == "otro"

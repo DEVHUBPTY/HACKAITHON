@@ -186,3 +186,98 @@ def test_cli_escribe_informe_y_devuelve_codigo(data_sintetica: Path, tmp_path: P
     assert codigo == 0 and json.loads(salida.read_text("utf-8"))["aprobado"] is True
     (data_sintetica / "manifest.json").unlink()
     assert validar_snapshot.main(["--ruta", str(data_sintetica), "--salida", str(salida)]) == 1
+
+
+# ------------------------------------------------- H1: registro fuera de raw/
+
+
+def test_un_registro_de_fallos_no_define_la_fecha_de_corte(data_sintetica: Path, config) -> None:
+    """Un archivo de fallos (aunque esté en raw/) no es una respuesta de la API: no mueve fecha_corte_UTC."""
+    antes = json.loads((data_sintetica / "manifest.json").read_text("utf-8"))["fecha_corte_UTC"]
+    (data_sintetica / "raw" / "gdelt" / "fallos_gdelt_20270101T000000Z.json").write_text("[]", encoding="utf-8")
+    assert manifest._fecha_corte(data_sintetica / "raw") == antes == "2026-10-06T12:05:00Z"
+
+
+def test_manifest_etiqueta_el_origen_de_cada_registro_de_extraccion(data_sintetica: Path, config) -> None:
+    carpeta = data_sintetica / "registro_extraccion"
+    carpeta.mkdir()
+    conversion.escribir_json(
+        carpeta / "registro_manual_20261006T171832Z.json",
+        {"origen": "registro manual a partir del log de la corrida", "fallos": []},
+    )
+    conversion.escribir_json(carpeta / "fallos_gdelt_20261006T180000Z.json", {"origen": "generado por scripts.extraer", "fallos": []})
+    m = escribir_manifest(data_sintetica, config)
+    origenes = {k: v["origen"] for k, v in m["registro_extraccion"].items()}
+    assert origenes == {
+        "registro_extraccion/fallos_gdelt_20261006T180000Z.json": "generado por scripts.extraer",
+        "registro_extraccion/registro_manual_20261006T171832Z.json": "registro manual a partir del log de la corrida",
+    }
+    assert not any("registro_extraccion" in k for k in m["crudos"])
+    assert m["fecha_corte_UTC"] == "2026-10-06T12:05:00Z"
+
+
+# ------------------------------------------------------ H2: cobertura real
+
+
+def test_manifest_reporta_dias_cubiertos_por_tema_y_rangos_sin_resolver(data_sintetica: Path) -> None:
+    m = json.loads((data_sintetica / "manifest.json").read_text("utf-8"))
+    cob = m["cobertura_efectiva"]
+    # el único crudo cubre economia del 30-sep al 6-oct 12:00: 6 días completos de los 30 de la ventana
+    assert cob["gdelt_dias_por_tema"]["economia"] == {"dias_esperados": 30, "dias_cubiertos": 6}
+    assert cob["gdelt_dias_por_tema"]["turismo"]["dias_cubiertos"] == 0
+    motivos = {(r["tema"], r["motivo"]) for r in cob["gdelt_rangos_sin_resolver"]}
+    assert ("turismo", "no_solicitado") in motivos and ("economia", "no_solicitado") in motivos
+    assert "no la cobertura lograda" in cob["nota_ventana"]
+
+
+def test_validar_advierte_temas_sin_registros_y_rangos_sin_resolver(data_sintetica: Path, config) -> None:
+    informe = validar_snapshot.validar(data_sintetica, config)
+    e = estados(informe)
+    assert e["temas:sin_registros"] == "advertencia"
+    assert "turismo" in next(c for c in informe["comprobaciones"] if c["comprobacion"] == "temas:sin_registros")["detalle"]
+    assert e["gdelt:rangos_sin_resolver"] == "advertencia"
+    detalle = next(c for c in informe["comprobaciones"] if c["comprobacion"] == "gdelt:rangos_sin_resolver")["detalle"]
+    assert "turismo" in detalle and "'economia': '6/30'" in detalle
+    assert informe["aprobado"]  # son advertencias, no errores
+
+
+def test_validar_compara_la_cobertura_con_la_fecha_de_extraccion(data_sintetica: Path, config) -> None:
+    assert estados(validar_snapshot.validar(data_sintetica, config))["cobertura:contra_extraccion"] == "ok"
+    ruta = data_sintetica / "manifest.json"
+    m = json.loads(ruta.read_text("utf-8"))
+    m["fecha_corte_UTC"] = "2026-10-02T00:00:00Z"  # hay noticias posteriores a esta "extracción"
+    ruta.write_text(json.dumps(m), encoding="utf-8")
+    assert estados(validar_snapshot.validar(data_sintetica, config))["cobertura:posterior_a_la_extraccion"] == "error"
+
+
+# ------------------------------------------------ H8: valores contra el crudo
+
+
+def test_un_cero_del_crudo_es_valido_y_uno_inventado_no(data_sintetica: Path, config) -> None:
+    raw = data_sintetica / "raw" / "banco_mundial" / "wb_SP.POP.TOTL_20261006T120200Z.json"
+    cuerpo = json.loads(raw.read_text("utf-8"))
+    cuerpo[1][0]["value"] = 0  # el crudo trae un 0 genuino
+    raw.write_text(json.dumps(cuerpo), encoding="utf-8")
+    conversion.convertir_todo(data_sintetica / "raw", data_sintetica / "processed", config)
+    escribir_manifest(data_sintetica, config)
+    assert estados(validar_snapshot.validar(data_sintetica, config))["nulos:no_rellenar_con_cero"] == "ok"
+    # ahora un nulo del crudo reemplazado por 0 en processed
+    ruta = data_sintetica / "processed" / "indicadores.csv"
+    with ruta.open(encoding="utf-8", newline="") as f:
+        filas = list(csv.DictReader(f))
+    for fila in filas:
+        if (fila["pais_iso3"], fila["indicador_id"], fila["anio"]) == ("CRI", "SP.POP.TOTL", "2023"):
+            fila["valor"] = "0"
+    with ruta.open("w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(filas[0]), lineterminator="\n")
+        w.writeheader()
+        w.writerows(filas)
+    escribir_manifest(data_sintetica, config)
+    informe = validar_snapshot.validar(data_sintetica, config)
+    assert estados(informe)["nulos:no_rellenar_con_cero"] == "error" and not informe["aprobado"]
+
+
+def test_sin_crudos_del_banco_mundial_la_comparacion_es_advertencia(data_sintetica: Path, config) -> None:
+    for ruta in (data_sintetica / "raw" / "banco_mundial").iterdir():
+        ruta.unlink()
+    assert estados(validar_snapshot.validar(data_sintetica, config))["nulos:no_rellenar_con_cero"] == "advertencia"
