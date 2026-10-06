@@ -32,3 +32,6 @@ models/
 .atl/
 outputs/errores.csv
 outputs/reporte_calidad.json
+
+# Filas válidas de la carga (E1-02, D-82): derivado y regenerable con `poetry run python -m src.carga`.
+data/processed/validos/

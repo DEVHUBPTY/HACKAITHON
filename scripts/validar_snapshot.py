@@ -31,13 +31,12 @@ from scripts.conversion import (
     id_noticia,
     sha256_archivo,
 )
+from src.configuracion import cargar_contrato
 from src.registro import configurar_logging
 
 logger = logging.getLogger(__name__)
 
-COLUMNAS_INDICADORES_CONTRATO = [
-    "pais_iso3", "indicador_id", "anio", "valor", "unidad", "fuente_url", "fecha_extraccion", "licencia",
-]
+COLUMNAS_INDICADORES_CONTRATO = cargar_contrato().indicadores  # config/contrato.yaml
 CAMPOS_MANIFEST = [
     "version", "fecha_corte_UTC", "consultas", "cantidad_por_archivo", "licencias", "sha256",
     "transformaciones", "historial",

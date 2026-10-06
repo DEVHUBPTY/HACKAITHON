@@ -12,18 +12,14 @@ salida:
   reporte: reporte_calidad.json
   max_caracteres_valor_en_errores: 200   # recorta el valor rechazado que se copia a errores.csv
   top_medios_concentracion: 5            # R-10: cuánto pesan los N medios principales
+  z_intervalo_confianza: 1.96            # IC de Wilson al 95 % (normal estándar) para toda proporción reportada
+  carpeta_validos: validos               # data/processed/validos/: filas válidas (D-82), junto al snapshot
 
-# Formatos de fecha, uno por fuente. "iso_utc" es el de data/processed/ (lo escribe conversion.py).
+# Formato de fecha de data/processed/ (lo escribe scripts/conversion.py, que es quien parsea GDELT, RSS y USGS).
 fechas:
   iso_utc:
     patron: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$'
     formato: "%Y-%m-%dT%H:%M:%SZ"
-  gdelt:
-    formato: "%Y%m%dT%H%M%SZ"            # seendate de GDELT
-  usgs_ms:
-    unidad: milisegundos                 # epoch en milisegundos (campo time/updated)
-  rss_rfc822:
-    descripcion: RFC 822 (pubDate del RSS), se interpreta con email.utils
 
 patron_url: '^https?://[^\s/?#]+([/?#]\S*)?$'
 
@@ -39,6 +35,7 @@ noticias:
 indicadores:
   patron_id: '^IND-[A-Z]{3}-[A-Za-z0-9._]+-[0-9]{4}$'
   patron_pais: '^[A-Z]{3}$'
+  patron_anio: '^\d{4}$'
   criticos: [pais_iso3, indicador_id, anio, unidad, fuente_url, fecha_extraccion, licencia]
   anio_minimo: 1960
   anio_maximo: 2100
@@ -46,6 +43,7 @@ indicadores:
 
 eventos:
   patron_id: '^SIS-\S+$'
+  criticos: [id, magnitude, time, longitude, latitude, url]
   latitud_maxima: 90
   longitud_maxima: 180
 

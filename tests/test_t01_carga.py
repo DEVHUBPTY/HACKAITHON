@@ -294,6 +294,12 @@ def test_low_duplicado_pydantic_conserva_la_primera_valida(tmp_path: Path) -> No
     assert {(e.fila, e.tipo_error) for e in r.errores} == {(1, "fecha_invalida"), (3, "id_duplicado")}
 
 
+def test_low_critico_fuera_del_yaml_de_eventos_ya_no_invalida(tmp_path: Path) -> None:
+    sin_url = CONFIG.model_copy(update={"eventos": CONFIG.eventos.model_copy(update={"criticos": [c for c in CONFIG.eventos.criticos if c != "url"]})})
+    r = carga.cargar_eventos(_eventos_geojson(tmp_path, [{k: v for k, v in BASE_EVENTO.items() if k != "url"}]), sin_url)
+    assert len(r.validas) == 1 and r.rechazadas == 0 and r.nulos_validas["url"] == 1
+
+
 @pytest.mark.parametrize("anio,valido", [("1959", False), ("1960", True), ("2100", True), ("2101", False), ("20x5", False), ("99999", False)])
 def test_low_rango_de_anio(tmp_path: Path, anio: str, valido: bool) -> None:
     ruta = tmp_path / "ind.csv"
@@ -341,7 +347,7 @@ def test_m1_toda_proporcion_lleva_n_e_intervalo_wilson_95(noticias: carga.Result
         c = rep[clave]
         assert c["n"] == 6 and c["k"] == sum(c["principales"].values())
         assert c["ic95_inferior_pct"] <= c["porcentaje_top_n"] <= c["ic95_superior_pct"]
-        assert c["metodo_ic"] == "Wilson 95 %"
+        assert c["metodo_ic"] == f"Wilson (z={CONFIG.salida.z_intervalo_confianza})" and CONFIG.salida.z_intervalo_confianza == 1.96
 
 
 def test_m4_contrato_en_un_solo_lugar() -> None:
@@ -399,6 +405,8 @@ def test_a1_validos_solo_contiene_filas_validas_y_es_determinista(tmp_path: Path
         origen = tmp_path / nombre
         origen.mkdir()
         cuerpo = (FIXTURES / "t01_noticias_invalidas.csv").read_text("utf-8").splitlines()
+        # Con ids repetidos el orden de entrada cambia cuál es la "primera" aparición; aquí solo importa el orden de salida.
+        cuerpo = [cuerpo[0], *(l for l in cuerpo[1:] if l.endswith(","))]
         if lineas:
             cuerpo = [cuerpo[0], *reversed(cuerpo[1:])]
         (origen / "noticias.csv").write_text("\n".join(cuerpo) + "\n", "utf-8")
