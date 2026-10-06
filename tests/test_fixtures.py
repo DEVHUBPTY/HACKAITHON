@@ -6,6 +6,7 @@ prueba de aceptación necesita.
 """
 
 import csv
+import re
 from datetime import datetime, timedelta
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -42,9 +43,19 @@ OBLIGATORIOS = [c for c in COLUMNAS_NOTICIAS if c != "alcance_texto"]
 
 ERRORES_T01 = {"fecha_invalida", "id_duplicado", "url_mal_formada", "obligatorio_vacio"}
 ATAQUES_T07 = {"ignorar_instrucciones", "revelar_prompt", "cambiar_reglas", "pedir_publicar"}
+# Vocabulario de docs/guia_temas.md y specs/E1-03b.md (snake_case).
 MOTIVOS_RUIDO = {
-    "falso_panama", "deportes", "farandula", "no_es_noticia",
+    "no_es_panama", "fuera_de_temas", "no_es_noticia",
     "fuera_de_ventana", "duplicado_url",
+}
+# Categorías originales del spec E0-05, identificadas por ID y título
+# (ya no por motivo, que agrupa varias categorías).
+CATEGORIAS_RUIDO = {
+    "SYN-RUI-001": ("Panama City", "no_es_panama"),
+    "SYN-RUI-002": ("Panama Papers", "no_es_panama"),
+    "SYN-RUI-003": ("sombreros panamá", "no_es_panama"),
+    "SYN-RUI-004": ("fútbol", "fuera_de_temas"),
+    "SYN-RUI-005": ("videoclip", "fuera_de_temas"),
 }
 
 
@@ -167,6 +178,34 @@ def test_t01_cada_error_esta_presente_y_es_real() -> None:
         assert len(repetidos) >= 2
 
 
+def parsea(texto: str) -> datetime | None:
+    try:
+        return datetime.strptime(texto, FORMATO_FECHA)
+    except ValueError:
+        return None
+
+
+def test_t01_filas_con_error_solo_tienen_su_error_declarado() -> None:
+    """Fuera de su error declarado, la detección cae en la ventana de D-74."""
+    _, filas = leer("t01_noticias_invalidas.csv")
+    for fila in filas:
+        if not fila["error_esperado"]:
+            continue
+        deteccion = parsea(fila["fecha_deteccion"])
+        extraccion = parsea(fila["fecha_extraccion"])
+        if deteccion is None or extraccion is None:
+            # La fecha de detección es el error intencional (fecha_invalida).
+            assert fila["error_esperado"] == "fecha_invalida", fila["id_noticia"]
+            continue
+        assert extraccion - VENTANA_MAXIMA <= deteccion <= extraccion, (
+            f"{fila['id_noticia']}: detección fuera de la ventana"
+        )
+        publicacion = parsea(fila["fecha_publicacion"])
+        if publicacion is not None:
+            assert publicacion != deteccion, fila["id_noticia"]
+            assert publicacion <= deteccion, fila["id_noticia"]
+
+
 def test_t01_mezcla_filas_validas_e_invalidas() -> None:
     _, filas = leer("t01_noticias_invalidas.csv")
     validas = [f for f in filas if not f["error_esperado"]]
@@ -201,22 +240,56 @@ def test_t03_publicacion_antigua_y_deteccion_reciente() -> None:
     for fila in filas:
         publicacion = datetime.strptime(fila["fecha_publicacion"], FORMATO_FECHA)
         deteccion = datetime.strptime(fila["fecha_deteccion"], FORMATO_FECHA)
+        extraccion = datetime.strptime(fila["fecha_extraccion"], FORMATO_FECHA)
         assert publicacion.year == 2024
         assert deteccion.year > publicacion.year
+        assert en_ventana(fila), "la detección debe caer en la ventana de D-74"
+        assert publicacion < extraccion - VENTANA_MAXIMA, "la publicación debe ser antigua"
 
 
-def test_t05_dos_titulares_del_mismo_evento_con_cifras_distintas() -> None:
+def cifra(titulo: str) -> tuple[float, bool]:
+    """Extrae la cifra del titular: (valor, es_cota_inferior).
+
+    Acepta coma o punto decimal ("1,5"/"1.5") y trata "más de N" como cota
+    inferior (el valor real es estrictamente mayor que N).
+    """
+    coincidencia = re.search(r"(más de\s+)?(\d+(?:[.,]\d+)?)", titulo, re.IGNORECASE)
+    assert coincidencia, titulo
+    valor = float(coincidencia.group(2).replace(",", "."))
+    return valor, coincidencia.group(1) is not None
+
+
+def test_cifra_acepta_coma_punto_y_cota() -> None:
+    assert cifra("Inflación en 1,5 por ciento") == (1.5, False)
+    assert cifra("Inflación en 1.5 por ciento") == (1.5, False)
+    assert cifra("Más de 40 escuelas") == (40.0, True)
+
+
+def test_t05_dos_titulares_del_mismo_evento_con_cifras_incompatibles() -> None:
     _, filas = leer("t05_contradiccion.csv")
     assert len(filas) == 2
-    assert len({f["medio"] for f in filas}) == 2
-    assert len({f["url"] for f in filas}) == 2
-    cifras = []
-    for fila in filas:
-        numeros = [p for p in fila["titulo"].split() if p.isdigit()]
-        assert len(numeros) == 1, fila["titulo"]
-        cifras.append(int(numeros[0]))
-    assert cifras[0] != cifras[1]
-    assert {f["tema"] for f in filas} == {filas[0]["tema"]}
+    a, b = filas
+    assert a["medio"] != b["medio"]
+    assert a["url"] != b["url"]
+    # Mismo evento: mismo tema, lugar y objeto del conteo.
+    assert a["tema"] == b["tema"]
+    for palabra in ("veraguas", "escuelas", "lluvias"):
+        assert palabra in a["titulo"].lower() and palabra in b["titulo"].lower(), palabra
+    (va, cota_a), (vb, cota_b) = cifra(a["titulo"]), cifra(b["titulo"])
+
+    def compatible(x: tuple[float, bool], y: tuple[float, bool]) -> bool:
+        """Dos cifras son compatibles si pueden describir el mismo valor real."""
+        (vx, cx), (vy, cy) = x, y
+        if cx and cy:
+            return True  # dos cotas inferiores siempre pueden coincidir
+        if cx:
+            return vy > vx
+        if cy:
+            return vx > vy
+        return vx == vy
+
+    assert not compatible((va, cota_a), (vb, cota_b))
+    assert va != vb
 
 
 def test_t07_cubre_ambos_idiomas_y_los_cuatro_ataques() -> None:
@@ -240,13 +313,40 @@ def test_ruido_columnas_y_valores() -> None:
             assert fila["motivo_ruido"] == "", fila["id_noticia"]
 
 
-def test_ruido_cubre_cada_categoria_y_hay_controles() -> None:
+def test_ruido_cubre_cada_motivo_y_hay_controles() -> None:
     _, filas = leer("ruido.csv")
     motivos = {f["motivo_ruido"] for f in filas if f["ruido_esperado"] == "true"}
     assert motivos == MOTIVOS_RUIDO
-    controles = [f for f in filas if f["ruido_esperado"] == "false"]
-    assert len(controles) >= 2
-    assert any(f["medio"] != "Medio Sintético A" and "Canal" in f["titulo"] for f in controles)
+    assert len([f for f in filas if f["ruido_esperado"] == "false"]) >= 2
+
+
+def test_ruido_cubre_cada_categoria_original_por_titulo() -> None:
+    _, filas = leer("ruido.csv")
+    por_id = {f["id_noticia"]: f for f in filas}
+    for id_, (fragmento, motivo) in CATEGORIAS_RUIDO.items():
+        fila = por_id[id_]
+        assert fragmento.lower() in fila["titulo"].lower(), id_
+        assert fila["ruido_esperado"] == "true", id_
+        assert fila["motivo_ruido"] == motivo, id_
+
+
+def test_ruido_papers_no_repite_la_regla_en_el_titular() -> None:
+    _, filas = leer("ruido.csv")
+    titulo = next(f["titulo"] for f in filas if f["id_noticia"] == "SYN-RUI-002")
+    assert "sin hechos nuevos" not in titulo.lower()
+
+
+def test_ruido_otro_pais_que_afecta_a_panama_no_es_ruido() -> None:
+    _, filas = leer("ruido.csv")
+    por_id = {f["id_noticia"]: f for f in filas}
+    for id_, fragmento in (("SYN-RUI-014", "Canal"), ("SYN-RUI-015", "Darién")):
+        fila = por_id[id_]
+        assert fila["ruido_esperado"] == "false", id_
+        assert fila["motivo_ruido"] == "", id_
+        assert fragmento in fila["titulo"], id_
+        # Señal de que la fuente no es panameña: agencia global y sección de mundo.
+        assert fila["medio"].startswith("Agencia Global"), id_
+        assert "/mundo/" in fila["url"], id_
 
 
 def test_ruido_variantes_de_url_colapsan_a_la_misma_canonica() -> None:
@@ -265,6 +365,20 @@ def test_ruido_variantes_de_url_colapsan_a_la_misma_canonica() -> None:
 
 def test_ruido_titulos_con_sufijo_y_entidades_html() -> None:
     _, filas = leer("ruido.csv")
-    titulos = [f["titulo"] for f in filas]
-    assert any("&amp;" in t or "&quot;" in t for t in titulos)
-    assert any(t.endswith(("- Medio Sintético B", "| Medio Sintético C")) for t in titulos)
+    con_entidades = [f for f in filas if "&amp;" in f["titulo"] or "&quot;" in f["titulo"]]
+    con_sufijo = [
+        f for f in filas if f["titulo"].endswith(("- Medio Sintético B", "| Medio Sintético C"))
+    ]
+    assert con_entidades and con_sufijo
+    for fila in [*con_entidades, *con_sufijo]:
+        assert fila["ruido_esperado"] == "false", fila["id_noticia"]
+        assert fila["motivo_ruido"] == "", fila["id_noticia"]
+
+
+def test_ruido_cifras_con_coma_decimal() -> None:
+    _, filas = leer("ruido.csv")
+    inflacion = [f for f in filas if f["titulo"].startswith("Inflación anual")]
+    assert len(inflacion) == 4
+    assert {f["titulo"] for f in inflacion} == {
+        "Inflación anual cierra en 1,5 por ciento según cifras oficiales"
+    }

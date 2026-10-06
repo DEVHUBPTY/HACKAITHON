@@ -9,13 +9,14 @@ Reglas comunes:
 - Las columnas de los archivos de noticias son las de `noticias.csv` del contrato (CLAUDE.md), más las columnas extra de prueba indicadas abajo.
 - **Nunca copiar estos archivos a `data/processed/`** ni usarlos para calcular métricas.
 - Los registros sin error intencional cumplen el contrato de datos.
-- La ventana de fechas es la de D-74: la fecha de detección cae dentro de los 90 días previos a la extracción. El intervalo de la sección 7 del PDF no se usa porque hoy es imposible de extraer.
+- **Cada fila de T01 con error tiene exactamente un error: el declarado en `error_esperado`.** En particular, su fecha de detección cae dentro de la ventana de D-74 (salvo en `SYN-T01-009`, donde la detección es la fecha inválida).
+- La ventana de fechas es la de D-74: la fecha de detección cae dentro de los 90 días previos a la extracción (las filas de `ruido.csv` con motivo `fuera_de_ventana` son la excepción deliberada). El intervalo de la sección 7 del PDF no se usa porque hoy es imposible de extraer.
 
 ## Archivos
 
 | Archivo | Prueba | Qué contiene |
 |---|---|---|
-| `t01_noticias_invalidas.csv` | T01 (carga y validación) | 6 filas válidas y 10 con error intencional. Columna extra `error_esperado`. |
+| `t01_noticias_invalidas.csv` | T01 (carga y validación) | 6 filas válidas y 10 con error intencional (uno por fila, el declarado). Columna extra `error_esperado`. |
 | `t01_indicadores_nulos.csv` | T01 (nulos) | Esquema de `indicadores.csv` con valores `valor` vacíos (nulos válidos; nunca 0). |
 | `t03_recirculada.csv` | T03 (noticia antigua) | Una noticia publicada en 2024 y detectada en septiembre de 2025. |
 | `t05_contradiccion.csv` | T05 (afirmaciones incompatibles) | Dos titulares del mismo evento con cifras incompatibles (12 vs. más de 40 escuelas). |
@@ -43,15 +44,14 @@ Los nulos de `t01_indicadores_nulos.csv` **no son errores**: se conservan como n
 
 ## ruido.csv
 
-`ruido_esperado` es `true` o `false`; `motivo_ruido` va vacío cuando es `false`.
+`ruido_esperado` es `true` o `false`; `motivo_ruido` va vacío cuando es `false`. El vocabulario de motivos es el de `docs/guia_temas.md` y `specs/E1-03b.md` (snake_case): `no_es_panama`, `fuera_de_temas`, `no_es_noticia`, `fuera_de_ventana`, `duplicado_url`. Las pruebas conservan la cobertura de cada categoría original (Panama City, Panama Papers, sombreros, deportes, farándula) por ID y título, no por motivo.
 
 | Motivo | Filas | Notas |
 |---|---|---|
-| `falso_panama` | `SYN-RUI-001` a `-003` | Panama City (Florida), Panama Papers sin hecho nuevo, sombreros panamá |
-| `deportes` | `SYN-RUI-004` | |
-| `farandula` | `SYN-RUI-005` | |
+| `no_es_panama` | `SYN-RUI-001` a `-003` | Panama City (Florida), Panama Papers como referencia histórica (titular sobre un debate académico, sin hecho nuevo), sombreros panamá |
+| `fuera_de_temas` | `SYN-RUI-004`, `-005` | Deportes (fútbol) y farándula (videoclip). Son de Panamá, pero de un área que el reto no cubre |
 | `no_es_noticia` | `SYN-RUI-006` | Ítem de RSS promocional |
 | `fuera_de_ventana` | `SYN-RUI-007` | Detectada más de 90 días antes de la extracción (ventana de D-74) |
 | `duplicado_url` | `SYN-RUI-009` a `-011` | Mismo artículo que `SYN-RUI-008` con URL `/amp`, `m.` y `http`; canonicalizadas coinciden |
 
-No son ruido (controles): `SYN-RUI-008` (URL canónica), `-012` y `-013` (sufijo del medio y entidades HTML que la limpieza debe resolver, pero la noticia se conserva) y `-014` y `-015` (medio extranjero sobre hechos que afectan a Panamá; CLAUDE.md: no es ruido).
+No son ruido (controles): `SYN-RUI-008` (URL canónica; las cuatro variantes de la inflación usan coma decimal, "1,5 por ciento", como en el español de Panamá, y comparten título porque son el mismo artículo), `-012` y `-013` (sufijo del medio y entidades HTML que la limpieza debe resolver, pero la noticia se conserva) y `-014` y `-015` (agencia global, sección `/mundo/`, sobre hechos que afectan a Panamá; CLAUDE.md: no es ruido).
