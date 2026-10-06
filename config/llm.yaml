@@ -1,0 +1,35 @@
+# Parámetros de la prueba de modelos locales (E0-07, D-02).
+# Todo número de este archivo está registrado en docs/parametros.md.
+
+ollama:
+  # Endpoint por defecto si local.env no define OLLAMA_HOST. Nunca se lee OLLAMA_HOST del entorno del shell.
+  host_por_defecto: "http://localhost:11434"
+  timeout_segundos: 180
+  # Se mantiene el modelo cargado durante la prueba; al terminar se descarga con keep_alive = 0.
+  keep_alive_durante_prueba: "10m"
+
+generacion:
+  temperatura: 0.0
+  semilla: 0
+  num_ctx: 4096
+  num_predict: 1024
+  pensar: false
+
+prueba:
+  repeticiones: 4
+  calentamiento: 1          # llamadas previas que NO entran en las estadísticas (carga del modelo)
+  prompt: afirmaciones_citadas
+  confianza: 0.95
+  muestra:
+    medio: "TVN Panamá"
+    idioma: es
+    titulares_por_tema:     # selección determinista: los id más bajos de cada tema de origen
+      nacionales: 2
+      mundo: 1
+      tvmax: 1
+      entretenimiento: 1
+
+criterio_d02:
+  mediana_max_segundos: 15
+  invalidos_max_por_diez: 1
+  validador_rechazo_max: 0.2   # no evaluable aquí: el validador se construye en E1

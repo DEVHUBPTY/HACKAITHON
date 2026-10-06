@@ -164,3 +164,86 @@ class ConfigFuentes(ModeloConfig):
 def cargar_fuentes(carpeta: Path | None = None) -> ConfigFuentes:
     """Atajo para ``config/fuentes.yaml``."""
     return cargar_config("fuentes", ConfigFuentes, carpeta)
+
+
+# ------------------------------------------------------------------ llm.yaml
+
+
+class OllamaConfig(ModeloConfig):
+    host_por_defecto: str
+    timeout_segundos: int
+    keep_alive_durante_prueba: str
+
+
+class GeneracionConfig(ModeloConfig):
+    temperatura: float
+    semilla: int
+    num_ctx: int
+    num_predict: int
+    pensar: bool
+
+
+class MuestraConfig(ModeloConfig):
+    medio: str
+    idioma: str
+    titulares_por_tema: dict[str, int]
+
+
+class PruebaConfig(ModeloConfig):
+    repeticiones: int
+    calentamiento: int
+    prompt: str
+    confianza: float
+    muestra: MuestraConfig
+
+
+class CriterioD02(ModeloConfig):
+    mediana_max_segundos: float
+    invalidos_max_por_diez: int
+    validador_rechazo_max: float
+
+
+class ConfigLlm(ModeloConfig):
+    """Modelo de ``config/llm.yaml``."""
+
+    ollama: OllamaConfig
+    generacion: GeneracionConfig
+    prueba: PruebaConfig
+    criterio_d02: CriterioD02
+
+
+def cargar_llm(carpeta: Path | None = None) -> ConfigLlm:
+    """Atajo para ``config/llm.yaml``."""
+    return cargar_config("llm", ConfigLlm, carpeta)
+
+
+# ------------------------------------------------------------------ local.env
+
+
+def leer_local_env(ruta: Path | None = None) -> dict[str, str]:
+    """Lee ``local.env`` (``CLAVE=VALOR``, ``#`` comenta) sin tocar ``os.environ``.
+
+    Los valores de claves sensibles (``*_KEY``, ``*_TOKEN``, ``*_SECRET``) se registran para
+    que el logging los redacte (D-69). Si el archivo no existe devuelve un dict vacío.
+    """
+    from src.registro import SUFIJOS_SENSIBLES, registrar_sensible
+
+    ruta = ruta or RAIZ / "local.env"
+    try:
+        lineas = ruta.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return {}
+    valores: dict[str, str] = {}
+    for linea in lineas:
+        linea = linea.strip()
+        if not linea or linea.startswith("#") or "=" not in linea:
+            continue
+        clave, _, valor = linea.partition("=")
+        clave = clave.strip().removeprefix("export ").strip()
+        valor = valor.strip()
+        if len(valor) >= 2 and valor[0] == valor[-1] and valor[0] in "\"'":
+            valor = valor[1:-1]
+        valores[clave] = valor
+        if clave.upper().endswith(SUFIJOS_SENSIBLES):
+            registrar_sensible(valor)
+    return valores
