@@ -99,6 +99,7 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 | Criterio D-02: mediana | ≤ 15 s | PDF (meta de 9.1) | `scripts.probar_llm` |
 | Criterio D-02: JSON inválido | ≤ 1 de cada 10 llamadas | Supuesto (D-02) | `scripts.probar_llm` |
 | Criterio D-02: rechazo del validador | ≤ 20 % | Supuesto (D-02) | No evaluable en E0-07 (el validador es de E1); se usa el indicador `hecho_sobre_titular` como aproximación |
+
 ## Carga y validación (E1-02, `config/carga.yaml`)
 
 | Parámetro | Valor | Origen | Cómo se valida |
@@ -147,7 +148,7 @@ Una cadena vacía o en blanco es nulo en CSV y en JSON. Duplicados: en noticias 
 | `limpieza.min_letras_medio` | 5 letras | **Supuesto**: evita que "AP"/"ABC" coincidan por contención con cualquier sufijo | `test_limpiar_titulo` |
 | Medios conocidos (sufijos) | lista corta de `ruido.yaml` | Exploración E0-09 (sufijos vistos en el snapshot) | `test_limpiar_titulo` |
 | Patrones de falsos Panamá, menciones, deportes, farándula, cultura, política partidista, no-noticia | listas de `ruido.yaml` | `docs/guia_temas.md` + exploración E0-09 (`config/exploracion.yaml`). **Son heurísticas por palabras clave sobre el titular, no etiquetas humanas** | `tests/test_ruido.py` (fixture `ruido.csv`) · precisión/recall reales con `python -m eval.ruido` cuando E1-06 entregue `eval/etiquetas.csv` |
-| Origen sujeto al filtro de mención | `GDELT`; exentos: `TVN RSS` y medios con `pais_medio = Panamá` | **Supuesto** según E0-09: las consultas de GDELT piden "Panama" más un término amplio sin anclarlo al titular | `test_gdelt_sin_mencion_de_panama_*` · `test_medio_panameno_o_tvn_nacional_*` |
+| Origen sujeto al filtro de mención | `GDELT`; exentos: `TVN RSS` y medios con `pais_medio = Panamá` | **Supuesto** según E0-09: las consultas de GDELT piden "Panama" más un término amplio sin anclarlo al titular (motivo medido con las consultas anteriores a D-83; con las patas de D-83 se revisa al extraer la v1.2 del snapshot) | `test_gdelt_sin_mencion_de_panama_*` · `test_medio_panameno_o_tvn_nacional_*` |
 | Secciones dudosas de TVN | `mundo`, `tvmax`, `entretenimiento` (señal candidata: el titular decide) | E0-09, recomendación 5 | `test_la_seccion_de_tvn_solo_sospecha_el_titular_decide` |
 | Patrones de inyección (D-69) | lista en `restricciones.yaml`, sección `inyeccion` | Fixture T07 (4 tipos de ataque, ES/EN) · D-69 | `test_t07_los_ocho_titulares_*` · `test_ruido_csv_no_dispara_falsos_positivos_de_inyeccion` |
 | `similitud_prototipo.activo` | `false` | **Implementado en E1-07** (`src/clasificacion.py`, con los embeddings locales) pero **sin activar**: sin etiquetas humanas no se puede validar. Ver «Clasificación (E1-07)» | `tests/test_clasificacion.py` (marca, alcance regional, reversibilidad) · `python -m eval.ruido` con E1-06 |
@@ -206,9 +207,22 @@ independiente del mismo despacho cuenta como otra procedencia porque ninguna reg
 
 ## Consulta y generación
 
+## Consulta y generación (E1-11 · `config/consulta.yaml`; la generación es E1-12)
+
 | Parámetro | Valor | Origen | Cómo se valida |
 |---|---|---|---|
-| Umbral de abstención | Por definir | Calibrado con el benchmark de desarrollo | Abstención correcta vs. abstenciones incorrectas |
+| `abstencion.umbral_similitud` | semántica (e5) **0.874** · BM25 **10.765** | **Calibrado** (E1-11): percentil 5 de la similitud máxima de las 9 consultas respondibles de la mitad de calibración (ids pares del benchmark de desarrollo) que llegan a la puerta de similitud, truncado a 3 decimales (`python -m eval.recuperacion --calibrar`) | `eval.recuperacion` sobre la mitad de evaluación (ids impares); n = 20 por mitad: IC muy anchos |
+| `abstencion.percentil_umbral` | 5 | Supuesto (misma regla que `umbral_sin_tema` en E1-07; por construcción rechaza ~5 % de las respondibles de calibración) | Abstenciones incorrectas |
+| División calibración/evaluación | Pares calibran, impares evalúan (`evaluacion.calibracion`) | Supuesto (determinista y sin azar; con 40 consultas las mitades son de 20) | `test_la_division_calibracion_evaluacion_es_determinista_por_paridad` |
+| `recuperacion.top_k` | 5 | PDF (Recall@5, sección 9.1) | `eval.recuperacion` |
+| `recuperacion.bm25.k1` · `b` | 1.5 · 0.75 | Práctica (valores por defecto de `rank-bm25`) | `eval.recuperacion` (baseline D-66) |
+| `recuperacion.bm25.largo_minimo_token` | 2 | Supuesto | — |
+| `recuperacion.bm25.palabras_vacias` | 52 palabras | Supuesto (lista corta de palabras funcionales en español) | `test_bm25_responde_y_se_abstiene_con_su_propio_umbral` |
+| `reglas` de abstención (lectura del artículo, autoría o perfil, cifra de periodo relativo) | Patrones en `consulta.yaml` | **Supuesto redactado DESPUÉS de leer el benchmark de desarrollo**: su desempeño allí es optimista y no una medida independiente. Origen de fondo: D-51 (no se leyó el artículo), D-32/D-68 (sin autores ni perfiles) | Un test por regla (`test_las_reglas_por_patron_*`) |
+| `datos_oficiales.calificadores` · `relacionados` | Listas en `consulta.yaml` (edad/sexo/etnia, territorios, sector; «PIB» como relacionado del crecimiento) | Supuesto (X16), redactadas tras la revisión del PR #16 | `test_x16_*` |
+| `respuesta.decimales_valor` | 2 | Supuesto (solo presentación) | `test_x16_el_valor_se_muestra_*` |
+| `datos_oficiales.variacion` | `subió`, `bajó`, `cambió`… agregan el año anterior | Supuesto | `test_una_variacion_incluye_el_anio_anterior` |
+| `respuesta.maximo_afirmaciones` | 5 (= `top_k`) | Supuesto | — |
 | Temperatura | 0 | Práctica (reproducibilidad) | — |
 | Reintentos ante JSON inválido | 1 | Supuesto | Tasa de JSON inválido |
 | Cambio de proveedor: latencia | Mediana > 15 s | PDF (meta de 9.1) | Métrica de latencia |
@@ -247,8 +261,8 @@ independiente del mismo despacho cuenta como otra procedencia porque ninguna reg
 | Semilla de la muestra | 20261006 | Práctica (reproducibilidad) | `test_muestra_reproducible_con_la_semilla_y_del_tamano_pedido` |
 | Tamaño de la muestra | 100 | Supuesto (tiempo disponible; ~100 según el reto) | `eval.etiquetar --muestra` |
 | Cuotas por estrato (no ruido / ruido) | 70 / 30 (real 63 / 37: el estrato no ruido solo tiene 63) | Supuesto (medir el filtro necesita ruido suficiente) | `test_muestra_estratificada_70_30_con_dobles_14_6_y_pesos`; pesos en `eval.etiquetar --muestra` |
-| Titulares dobles (acuerdo) | 20 (14 no ruido + 6 ruido) | D-71 / spec E1-06 | `eval.etiquetar --acuerdo` |
-| Kappa mínimo del acuerdo | 0.6 | Supuesto (umbral "sustancial" de Landis y Koch; con n = 20 es impreciso) | `eval.etiquetar --acuerdo` y `--consolidar` |
+| Titulares dobles (acuerdo) | 20 (14 no ruido + 6 ruido) | D-71 / spec E1-06. **No aplicado en las etiquetas actuales:** D-85 reemplazó el doble etiquetado por propuesta del asistente + revisión de una persona | `eval.etiquetar --acuerdo` |
+| Kappa mínimo del acuerdo | 0.6 | Supuesto (umbral "sustancial" de Landis y Koch; con n = 20 es impreciso). Sin doble etiquetado (D-85) no se calcula; `--consolidar` se corrió con `--forzar` (`docs/etiquetado.md`) | `eval.etiquetar --acuerdo` y `--consolidar` |
 | Marcadores de IA en nombres | `nombres.marcadores_ia` (palabra) y `marcadores_ia_nombre_completo` (`ia`, `ai`, `llm`, `bot`: solo el nombre completo) | Supuesto (lista corta; palabra exacta) | `test_rechaza_nombres_de_herramientas_o_invalidos` |
 
 ## Exploración (E0-09)

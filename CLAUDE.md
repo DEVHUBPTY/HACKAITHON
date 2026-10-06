@@ -10,53 +10,97 @@ Copiloto que convierte titulares públicos (TVN RSS + GDELT) y datos oficiales (
 
 El enunciado oficial está en `docs/reto_TVN.pdf`. Toda referencia "PDF sección X" en las specs apunta ahí.
 
-
 1. Cada tarea tiene una spec en `specs/<ID>.md` con **Objetivo · Punteros · Restricciones · Listo cuando**. Léela completa antes de escribir código.
 2. Propón un plan breve (archivos a crear o tocar, enfoque, riesgos) y **espera aprobación** antes de implementar.
 3. Trabaja **solo dentro del alcance de la spec**. Si falta información o algo contradice este archivo, pregunta; no inventes.
 4. Al terminar, ejecuta **todos** los comandos de "Listo cuando" y muestra su salida real.
-5. Commits pequeños con el ID: `E1-02: carga con validación lazy`.
+5. Commits pequeños, *conventional commits* con el ID como ámbito: `feat(E1-02): carga con validación lazy`.
 6. Antes de dar una tarea por cerrada, haz la revisión de `docs/REVISION.md`.
 7. Tramos del evento y punto de corte: `docs/cronograma.md`.
+8. Flujo: una tarea = un worktree → una rama (ej. `e1-02-carga`) → un PR a `main` con la plantilla de `.github/`. Cada PR lo revisa un agente revisor independiente, que deja su veredicto escrito en el PR y en Notion; con veredicto favorable, el asistente integra el PR (D-78).
+
+**Equipo:** David Fen, Javier Acosta y Juan Zhou. Todos hacen de todo; el responsable de cada tarea está en el Backlog de Notion. El evento ya empezó (fase *Evento* en Notion). La demo corre **en local**: no hay despliegue.
 
 ## Comandos
 
+Disponibles hoy:
+
 ```bash
 poetry install                                       # instala todo desde poetry.lock
-poetry run pytest -v                                 # todas las pruebas, incluidas T01–T10
-poetry run python -m src.carga                       # carga + validación + reporte de calidad
+poetry run pytest -v                                 # todas las pruebas (hoy T01 y T03; las demás T llegan con su spec)
+poetry run python -m scripts.extraer --todo          # RSS + GDELT + Banco Mundial + USGS → data/raw/ y data/processed/ (E0-04)
+poetry run python -m scripts.extraer --rss           # solo el RSS de TVN (correr a diario)
+poetry run python -m scripts.manifest                # data/manifest.json + data/CHANGELOG.md
+poetry run python -m scripts.validar_snapshot        # snapshot contra la receta → outputs/validacion_snapshot.json
+poetry run python -m src.config --validar            # valida todo config/*.yaml (D-79)
+poetry run python -m src.carga                       # carga + validación → data/processed/validos/ y reporte de calidad (D-82)
 poetry run python -m src.normalizacion               # normaliza y crea data/senales.duckdb
 poetry run python -m src.limpieza                    # limpia titulares y marca ruido
-poetry run python -m src.clasificacion               # embeddings locales y tema_clasificado
+poetry run python -m src.clasificacion               # embeddings locales y tema_clasificado (E1-07)
 poetry run python -m eval.clasificacion              # métricas de clasificación (casos difíciles y etiquetas)
 poetry run python -m src.agrupacion                  # grupos GRP- y procedencias independientes (estimadas)
 poetry run python -m eval.agrupacion                 # calibra el umbral y mide precisión/recall de pares con etiquetas
+poetry run python -m src.consulta "pregunta"         # consulta en español con abstención (--metodo semantica|bm25)
+poetry run python -m eval.recuperacion               # Recall@5 y abstención, semántica vs. BM25, con n e IC
 poetry run streamlit run app.py                      # interfaz
 poetry run streamlit run app.py -- --demo            # modo demo (data/demo.duckdb)
 poetry run python -m scripts.verificar_offline       # chequeo antes del pitch
+poetry run python -m scripts.catalogo                # outputs/catalogo.csv (E1-04)
+poetry run python -m scripts.explorar                # docs/exploracion.md (E0-09)
 poetry run python -m scripts.probar_llm --modelo <tag>  # latencia, JSON válido y memoria de un modelo de Ollama (E0-07)
-poetry run python -m eval.run_benchmark --split dev  # benchmark → outputs/metricas.json
-poetry run python -m scripts.reproducir --verificar  # reproduce todo y compara con el manifest
-poetry run python -m scripts.auditoria_final         # condiciones previas de la sección 10 antes del cierre
+poetry run streamlit run eval/etiquetar.py           # etiquetado humano (E1-06; ver docs/etiquetado.md)
+poetry run python -m eval.ruido                      # precisión y recall del filtro de ruido contra eval/etiquetas.csv
+poetry run python -m eval.validar_benchmark          # valida benchmark/benchmark_dev.jsonl (E0-06)
+```
+
+Previstos (existirán cuando se implemente su spec):
+
+```bash
+poetry run streamlit run app.py                      # interfaz (E1-15)
+poetry run streamlit run app.py -- --demo            # modo demo con data/demo.duckdb (C-06)
+poetry run python -m scripts.verificar_offline       # chequeo antes del pitch (C-06)
+poetry run python -m eval.run_benchmark --split dev  # benchmark → outputs/metricas.json (E1-18)
+poetry run python -m scripts.reproducir --verificar  # reproduce todo y compara con el manifest (E1-20)
+poetry run python -m scripts.auditoria_final         # condiciones previas de la sección 10 antes del cierre (C-07)
 ```
 
 ## Estructura
 
+Lo que existe hoy:
+
 ```
-CLAUDE.md  README.md  pyproject.toml  poetry.lock  .env.example  app.py
-config/      reglas_v1.3.yaml · salidas.yaml · restricciones.yaml · revision.yaml · ruido.yaml · verificacion.yaml · temas.yaml · vinculos.yaml · modalidad_editorial.yaml · modalidad_banca.yaml · fuentes.yaml
-templates/   ficha.md.j2 (Jinja2)
-prompts/     paquete_editorial.txt · respuesta_consulta.txt · comparar_contradicciones.txt · boletin_banca.txt
-data/        raw/ (inmutable) · processed/ · manifest.json · diccionario.md · senales.duckdb
-src/         carga · normalizacion · limpieza · db · embeddings · clasificacion · baseline · agrupacion · procedencias
-             contexto · puntaje · evidencia · ficha · consulta · esquemas · generacion · validador · cache · revision · exportar · registro · configuracion
-src/llm/     proveedor.py (interfaz) · ollama.py · deepseek.py
-scripts/     extraer_*.py · validar_snapshot.py · explorar.py · buscar_casos.py · preparar_demo.py · calentar_cache.py · capturas_demo.py · verificar_offline.py · reproducir.py · empaquetar_datos.py · auditoria_final.py · manifest.py · catalogo.py · probar_llm.py
-eval/        etiquetar.py · etiquetas.csv · run_benchmark.py · metricas.py · precision_at_5.py
-benchmark/   benchmark_dev.jsonl (solo desarrollo)
-tests/       fixtures/ · test_t01_*.py … test_t10_*.py · test_*.py
-outputs/     fichas.jsonl · metricas.json · catalogo.csv · pruebas.csv
+CLAUDE.md  README.md  pyproject.toml  poetry.lock  .env.example  .github/pull_request_template.md
+config/      reglas_v1.3.yaml · temas.yaml · ejemplos_excluidos.txt · vinculos.yaml · modalidad_editorial.yaml · salidas.yaml · restricciones.yaml
+             ruido.yaml · fuentes.yaml · contrato.yaml · carga.yaml · normalizacion.yaml · clasificacion.yaml · etiquetado.yaml · exploracion.yaml · llm.yaml · benchmark.yaml · consulta.yaml
+templates/   (vacía)
+prompts/     afirmaciones_citadas.txt
+data/        raw/ (inmutable) · processed/ (validos/ fuera de git) · registro_extraccion/ · manifest.json · CHANGELOG.md · diccionario.md · README.md
+             senales.duckdb (generado, fuera de git)
+src/         carga · normalizacion · limpieza · embeddings · clasificacion · baseline · consulta · db · registro (D-75) · configuracion (D-79; config = alias de su CLI) · consultas_gdelt · esquemas (borrador)
+             solo docstring o esqueleto: agrupacion · procedencias · contexto · puntaje · evidencia
+             ficha · generacion · validador · cache · revision · exportar
+src/llm/     proveedor.py (interfaz) · ollama.py · deepseek.py (solo docstring)
+scripts/     extraer.py · conversion.py · manifest.py · validar_snapshot.py · catalogo.py · explorar.py · estimar_consultas_gdelt.py · probar_llm.py
+eval/        etiquetar.py · etiquetas/ (una hoja por persona) · etiquetas.csv · ruido.py · validar_benchmark.py · clasificacion.py · calibrar_clasificacion.py · metricas.py · recuperacion.py
+benchmark/   benchmark_dev.jsonl (solo desarrollo) · sinteticos.csv · README.md
+tests/       fixtures/ · test_t01_carga.py · test_t03_recirculada.py · test_casos_dificiles.py · test_*.py
+outputs/     catalogo.csv · clasificacion.json · recuperacion.json · validacion_snapshot.json · probar_llm_<modelo>.json
+notion/      exportación inicial para importar en Notion (la versión vigente está en Notion)
 specs/  docs/
+```
+
+Previsto (lo crea la spec indicada):
+
+```
+app.py (E1-15) · data/demo.duckdb (C-06)
+config/      verificacion.yaml (E1-10b) · revision.yaml (E1-16) · modalidad_banca.yaml (E2-01)
+templates/   ficha.md.j2 (E1-10b)
+prompts/     comparar_contradicciones.txt (E1-10) · respuesta_consulta.txt (E1-11) · paquete_editorial.txt (E1-12) · boletin_banca.txt (E2-02)
+scripts/     buscar_casos.py · preparar_demo.py · calentar_cache.py · capturas_demo.py · verificar_offline.py (C-06) · reproducir.py (E1-20)
+             empaquetar_datos.py · auditoria_final.py (C-07)
+eval/        run_benchmark.py (E1-18) · precision_at_5.py (E1-19) · y los módulos de métricas que pide cada spec
+tests/       test_t02_*.py, test_t04_*.py … test_t10_*.py (ver docs/protocolo_evaluacion.md)
+outputs/     fichas.jsonl (E1-16) · pruebas.csv (E1-17) · metricas.json (E1-18)
 ```
 
 ## Contrato de datos (sección 7 del reto)
@@ -85,7 +129,7 @@ El `tema` de `noticias.csv` es el **tema de origen** (consulta de GDELT o catego
 - La caja de USGS **no es Panamá**: mostrar siempre el `place` original. Solo sirve para hechos sísmicos.
 - **Ruido: marcar, no borrar.** `es_ruido` + `motivo_ruido`; el registro se conserva y se cuenta en el reporte, pero no entra en la bandeja.
 - Las noticias son **sobre Panamá**; los medios pueden ser internacionales. Una noticia de otro país que afecta a Panamá no es ruido.
-- Los 6 temas, sus límites y las reglas de frontera están en `docs/guia_temas.md`. La salida son solo esos 6 temas. Fuera de ellos: `no_es_panama` o `fuera_de_temas`.
+- Los 6 temas, sus límites y las reglas de frontera están en `docs/guia_temas.md`. La salida son solo esos 6 temas. Fuera de ellos: `no_es_panama` o `fuera_de_temas`; y lo que no es una nota con contenido, `no_es_noticia`. Los tres son motivos de ruido y las personas también pueden asignarlos al etiquetar (D-87).
 - La `descripcion` del RSS se usa **solo internamente** para clasificar; nunca se muestra ni se republica (D-31).
 - Los titulares usados como ejemplo en `config/temas.yaml` están en `config/ejemplos_excluidos.txt` y **nunca** entran en la evaluación.
 - Procedencia sin datos personales: se guarda `agencia` y `tipo_firma`, **nunca el nombre del autor** (D-32).
@@ -106,7 +150,7 @@ El `tema` de `noticias.csv` es el **tema de origen** (consulta de GDELT o catego
 - **La acción de la ficha decide qué se genera**: sin evidencia suficiente no hay guion ni copy, solo paquete de investigación.
 - **Restricción común del reto (D-51):** toda salida (ficha, borrador, consulta, boletín, exportación) lleva la leyenda de alcance: **"basado únicamente en titular/metadatos"**, o "basado en titular, descripción del RSS y metadatos; no se leyó el artículo completo" si se usó la descripción. **Nunca simular haber leído el artículo** ni atribuirle detalles que no estén en la evidencia. Frases prohibidas en `config/restricciones.yaml`.
 - El LLM no tiene herramientas ni acciones disponibles. Solo produce texto estructurado.
-- Proveedor por configuración (`LLM_PROVIDER`), nunca hardcodeado. Primario: Ollama local.
+- Proveedor por configuración (`LLM_PROVIDER`), nunca hardcodeado. Primario: Ollama local (modelo provisional `qwen3.5:9b`, E0-07). DeepSeek es el respaldo provisional, con el tope de costo de D-67 (D-80).
 - Embeddings **siempre locales**.
 - Puntaje, estado de evidencia, **ficha** y validación son **código determinista**, no LLM.
 - **Ningún número mágico en `src/`**: pesos, umbrales y ventanas viven en `config/*.yaml`.

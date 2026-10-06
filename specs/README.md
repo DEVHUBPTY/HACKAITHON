@@ -5,6 +5,8 @@ Para usar una: abre Claude Code y escribe *"Lee specs/<ID>.md y propón un plan"
 
 ## Specs disponibles
 
+La columna **Rol** indica el área de la tarea (D = datos, IA, P = producto), no una persona: el equipo (David Fen, Javier Acosta, Juan Zhou) hace de todo y el responsable de cada tarea está en el Backlog de Notion.
+
 | ID | Tarea | Rol | Depende de | Spec |
 |---|---|---|---|---|
 | E0-03 | Repo base | IA | — | [`E0-03.md`](E0-03.md) |
@@ -18,7 +20,7 @@ Para usar una: abre Claude Code y escribe *"Lee specs/<ID>.md y propón un plan"
 | E1-03b | Limpieza de titulares y filtro de ruido | D | E1-03 | [`E1-03b.md`](E1-03b.md) |
 | E1-04 | Catálogo de datos para Notion | D | E1-03 | [`E1-04.md`](E1-04.md) |
 | E1-05 | Configuración y reglas v1.3 | D | E0-09 | [`E1-05.md`](E1-05.md) |
-| E1-06 | Herramienta de etiquetado humano | IA (construye) · Todos (etiquetan) | E1-03b | [`E1-06.md`](E1-06.md) |
+| E1-06 | Herramienta de etiquetado humano | IA (construye y propone) · una persona (revisa y aprueba, D-85) | E1-03b | [`E1-06.md`](E1-06.md) |
 | E1-07 | Embeddings, clasificación y baseline | IA | E1-03b, E1-05 | [`E1-07.md`](E1-07.md) |
 | E1-08 | Agrupación por evento y procedencias independientes | IA | E1-07 | [`E1-08.md`](E1-08.md) |
 | E1-09 | Contextualización con el Banco Mundial | D | E1-05, E1-08 | [`E1-09.md`](E1-09.md) |
@@ -31,11 +33,11 @@ Para usar una: abre Claude Code y escribe *"Lee specs/<ID>.md y propón un plan"
 | E1-14 | Caché y modo offline | IA | E1-12 | [`E1-14.md`](E1-14.md) |
 | E1-15 | Interfaz Streamlit | P | E1-10b | [`E1-15.md`](E1-15.md) |
 | E1-16 | Revisión humana, versiones y exportación a Notion | P | E1-15, E1-10b | [`E1-16.md`](E1-16.md) |
-| E1-20 | Reproducibilidad de punta a punta | IA + D | E1-18 | [`E1-20.md`](E1-20.md) |
-| E2-02 | Boletín de entorno bancario | IA | E2-01 | [`E2-02.md`](E2-02.md) |
 | E1-17 | Suite T01–T10 y reporte de pruebas | Todos | E1-16 | [`E1-17.md`](E1-17.md) |
 | E1-18 | Benchmark y métricas | IA | E0-06, E1-14 | [`E1-18.md`](E1-18.md) |
 | E1-19 | Precision@5 y prueba de tiempo | P | E1-16 | [`E1-19.md`](E1-19.md) |
+| E1-20 | Reproducibilidad de punta a punta | IA + D | E1-18 | [`E1-20.md`](E1-20.md) |
+| E2-02 | Boletín de entorno bancario | IA | E2-01 | [`E2-02.md`](E2-02.md) |
 | E3-02 | Fuente D · Series agregadas de la SBP | D | E2-03 | [`E3-02.md`](E3-02.md) |
 | C-06 | Casos de demostración por caso de uso | P + D | E1-16 | [`C-06.md`](C-06.md) |
 | C-07 | Paquete de entrega y auditoría final | D + P | C-06 | [`C-07.md`](C-07.md) |
