@@ -364,14 +364,14 @@ def fallos_gdelt_sin_resolver(carpeta_raw: Path, config: dict[str, Any]) -> list
     existentes = {
         (m["tema"], m["ini"], m["fin"])
         for p in archivos_crudos(carpeta, "gdelt_*.json")
-        if (m := PATRON_ARCHIVO_GDELT.match(p.name))
+        if (m := PATRON_ARCHIVO_GDELT.match(p.name)) and '"articles"' in p.read_text(encoding="utf-8")
     }
     pendientes: dict[tuple[str, str, str], dict[str, str]] = {}
     for ruta in archivos_crudos(carpeta, "fallos_gdelt_*.json"):
         for f in json.loads(ruta.read_text(encoding="utf-8")):
             clave = (f["tema"], f["inicio"], f["fin"])
             if clave not in existentes:
-                pendientes[clave] = {k: f[k] for k in ("tema", "inicio", "fin")}
+                pendientes[clave] = {k: f.get(k, "") for k in ("tema", "inicio", "fin", "motivo")}
     return [pendientes[k] for k in sorted(pendientes)]
 
 
