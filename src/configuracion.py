@@ -622,6 +622,9 @@ class CalibracionAgrupacion(ModeloConfig):
 
 class Agrupacion(ModeloConfig):
     ventana_dias: int = Field(ge=1)
+    prefijo_id: str = Field(min_length=1)                             # prefijo del ID de grupo (D-63)
+    largo_hash_id: int = Field(ge=1, le=40)                           # caracteres del SHA-1 de los NOT- ordenados (como en normalizacion.yaml)
+    separador_ids: str = Field(min_length=1)                          # une los NOT- ordenados antes de aplicar el hash
     modelo: str                                                       # modelo de embeddings (clave de clasificacion.yaml) con el que se agrupa
     umbral_similitud: float | None = Field(default=None, ge=0, le=1)  # similitud coseno mínima promedio; None = sin calibrar
     umbral_mismo_texto: float = Unidad

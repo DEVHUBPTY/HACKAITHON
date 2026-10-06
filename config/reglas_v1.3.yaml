@@ -95,11 +95,14 @@ estado_evidencia:           # independiente de P
 
 agrupacion:                 # E1-08 · AgglomerativeClustering(metric='cosine', linkage='average'); distance_threshold = 1 − umbral_similitud
   ventana_dias: 7           # dos titulares separados por más días no se unen (se parte el grupo, no se mueve el umbral)
+  prefijo_id: "GRP-"        # D-63: GRP- = hash de los NOT- del grupo, ordenados
+  largo_hash_id: 10         # caracteres del SHA-1 (el mismo largo que NOT-, normalizacion.yaml)
+  separador_ids: "|"        # une los NOT- ordenados antes del hash
   modelo: minilm            # modelo de clasificacion.yaml con el que se agrupa y con el que se calibró el umbral (no vale para otro)
   umbral_similitud: 0.69    # coseno promedio mínimo para unir; lo fija `python -m eval.agrupacion` (barrido de F1 de pares, D-16)
   umbral_mismo_texto: 0.95  # procedencias: misma nota republicada
   usar_descripcion: false   # se agrupa por titular: la descripción del RSS es de uso interno y los grupos se etiquetaron por titular
-  campos_fecha: [fecha_publicacion, fecha_deteccion]   # prioridad al fechar un titular; la detección solo es cota (D-35)
+  campos_fecha: [fecha_publicacion, fecha_deteccion]   # prioridad al fechar un titular; la detección solo es una cota: la ventana de D-74 se mide sobre ella
   calibracion:
     barrido_desde: 0.50
     barrido_hasta: 0.99

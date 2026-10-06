@@ -95,8 +95,13 @@ El costo: `minilm` deja fuera la copia rusa de «Trump…» (recall 95.2 % frent
 
 Las 20 copias de «Intensifying El Niño…» (17 dominios espejo de Big News Network, dos de ellos con dos copias, y Xinhua) son **una** procedencia. En cambio,
 las 12 copias de «Trump…» dan 3 procedencias, no 1: las traducciones al ucraniano y al checo no comparten dominio, agencia nombrada ni texto casi idéntico con las alemanas,
-aunque probablemente deriven del mismo despacho (la copia rusa dice «WP»). **El conteo es una estimación que puede errar por exceso:** sobrecuenta
+aunque probablemente deriven del mismo despacho (la copia rusa dice «WP»). **Pendiente: una regla entre idiomas.** Hoy no existe (no se agrega ningún umbral nuevo en E1-08): las traducciones cuentan como procedencias separadas y el grupo de «Trump…» da 3. **El conteo es una estimación que puede errar por exceso:** sobrecuenta
 traducciones del mismo despacho, pero no une medios sin una regla que lo justifique.
+
+## Uso en E1-10
+
+La parte de procedencias de E **debe** calcularse con `procedencias.fraccion_de_procedencias(n_procedencias, reglas)` (`min(n, tope) / tope`) y
+**nunca** con `n_titulares`: tres copias de una agencia valen 1/tope, no tope/tope. Lo fija la prueba T02 (`test_el_puntaje_no_se_triplica`).
 
 ## Limitaciones
 

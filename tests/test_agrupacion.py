@@ -45,15 +45,23 @@ INFLACION = "Inflación sube y precios de la canasta suben en todo el país"
 
 
 def test_id_de_grupo_tiene_prefijo_y_no_depende_del_orden() -> None:
-    a = ag.id_de_grupo(["NOT-b", "NOT-a", "NOT-c"])
-    assert a == ag.id_de_grupo(["NOT-c", "NOT-a", "NOT-b"])
-    assert a.startswith("GRP-") and len(a) == len("GRP-") + ag.LARGO_HASH_GRUPO
-    assert int(a.removeprefix("GRP-"), 16) >= 0
+    cfg = cargar_reglas().agrupacion
+    a = ag.id_de_grupo(["NOT-b", "NOT-a", "NOT-c"], cfg)
+    assert a == ag.id_de_grupo(["NOT-c", "NOT-a", "NOT-b"], cfg)
+    assert a.startswith(cfg.prefijo_id) and len(a) == len(cfg.prefijo_id) + cfg.largo_hash_id
+    assert int(a.removeprefix(cfg.prefijo_id), 16) >= 0
+
+
+def test_el_prefijo_y_el_largo_del_id_salen_de_la_configuracion() -> None:
+    cfg = cargar_reglas().agrupacion.model_copy(update={"prefijo_id": "G-", "largo_hash_id": 6})
+    a = ag.id_de_grupo(["NOT-a"], cfg)
+    assert a.startswith("G-") and len(a) == len("G-") + 6
 
 
 def test_un_grupo_con_otros_miembros_tiene_otro_id() -> None:
-    assert ag.id_de_grupo(["NOT-a", "NOT-b"]) != ag.id_de_grupo(["NOT-a", "NOT-b", "NOT-c"])
-    assert ag.id_de_grupo(["NOT-a"]) != ag.id_de_grupo(["NOT-b"])
+    cfg = cargar_reglas().agrupacion
+    assert ag.id_de_grupo(["NOT-a", "NOT-b"], cfg) != ag.id_de_grupo(["NOT-a", "NOT-b", "NOT-c"], cfg)
+    assert ag.id_de_grupo(["NOT-a"], cfg) != ag.id_de_grupo(["NOT-b"], cfg)
 
 
 def test_la_fecha_es_la_publicacion_y_si_falta_la_deteccion() -> None:
@@ -168,6 +176,7 @@ def test_los_campos_del_grupo(tmp_path) -> None:
     assert g.idiomas == ("en", "es")
     assert g.tema_clasificado == "eventos_naturales"
     assert (g.fecha_inicio, g.fecha_fin) == ("2026-09-30T20:00:00Z", "2026-10-03T08:00:00Z")
+    assert (g.fecha_inicio_origen, g.fecha_fin_origen) == ("publicacion", "deteccion")   # no se mezclan sin decirlo
     assert g.id_noticia_central in g.ids_noticia and g.titular_central in {f["titulo_limpio"] for f in filas}
     assert g.n_procedencias == 2   # a.example publicó dos veces (una procedencia) y b.example es otra
 

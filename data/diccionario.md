@@ -215,8 +215,10 @@ cinco medios que replican una agencia son una procedencia. Los reemplaza `python
 | `n_titulares` | INTEGER | no | agrupación | derivado | Noticias del grupo (ninguna fuente se pierde). |
 | `n_medios` | INTEGER | no | agrupación | derivado | Dominios distintos. |
 | `n_procedencias` | INTEGER | no | `procedencias.yaml` | derivado | Procedencias independientes, **estimadas**: la unión de medios por dominio, red, agencia y texto casi idéntico. |
-| `fecha_inicio` | VARCHAR | sí | `noticias` | derivado | La más antigua de `fecha_publicacion` (o, si falta, `fecha_deteccion`), ISO UTC. |
+| `fecha_inicio` | VARCHAR | sí | `noticias` | derivado | La más antigua de los titulares del grupo: `fecha_publicacion` de cada uno y, si le falta, su `fecha_deteccion` (cota, no publicación). ISO UTC. |
+| `fecha_inicio_origen` | VARCHAR | sí | `noticias` | derivado | `publicacion` o `deteccion`: de qué campo sale `fecha_inicio`. Nulo si ningún titular tiene fecha. |
 | `fecha_fin` | VARCHAR | sí | `noticias` | derivado | La más reciente, con el mismo criterio. |
+| `fecha_fin_origen` | VARCHAR | sí | `noticias` | derivado | `publicacion` o `deteccion`: de qué campo sale `fecha_fin`. |
 | `idiomas` | VARCHAR | sí | `noticias` | derivado | Idiomas de los titulares, ordenados, separados por coma. |
 | `tema_clasificado` | VARCHAR | sí | `noticias` | derivado | Tema más frecuente de sus titulares (empate: orden alfabético); nulo si ninguno está clasificado. |
 | `ids_noticia` | VARCHAR | no | `noticias` | derivado | Los `NOT-` del grupo, ordenados y separados por coma. |

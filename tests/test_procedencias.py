@@ -161,6 +161,12 @@ def test_una_procedencia_sin_agencia_ni_red_se_llama_como_su_medio_mas_antiguo()
     assert unica.etiqueta == "Medio A"
 
 
+def test_un_titular_sin_fecha_no_nombra_la_procedencia_aunque_su_id_sea_menor() -> None:
+    filas = [_fila("NOT-0", "sin-fecha.example", medio="Sin fecha"), _fila("NOT-1", "con-fecha.example", medio="Con fecha")]
+    (unica,) = pr.estimar_procedencias(filas, _vectores(2, {(0, 1)}), CFG, REGLAS, fechas=[None, "2026-10-02T08:00:00Z"])
+    assert unica.etiqueta == "Con fecha"
+
+
 def test_el_resultado_no_depende_del_orden_de_entrada() -> None:
     filas = [_fila(f"NOT-{i}", f"m{i}.example", agencia="EFE" if i % 2 else None) for i in range(6)]
     a = pr.estimar_procedencias(filas, _vectores(6), CFG, REGLAS)

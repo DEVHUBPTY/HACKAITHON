@@ -97,4 +97,4 @@ def test_mismo_snapshot_y_mismas_reglas_dan_los_mismos_ids(filas, reglas, tmp_pa
     primero = [g.id_grupo for g in _grupos(filas, reglas, tmp_path)]
     otra_vez = [g.id_grupo for g in _grupos(list(reversed(filas)), reglas, tmp_path)]
     assert primero == otra_vez
-    assert primero == [agrupacion.id_de_grupo(IDS)]
+    assert primero == [agrupacion.id_de_grupo(IDS, REGLAS.agrupacion)]

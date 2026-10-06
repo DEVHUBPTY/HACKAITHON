@@ -206,7 +206,7 @@ def _etiqueta(
     nombres = [a for a in reglas.agencias if a in agencias] + [cfg.redes_sindicacion[r].nombre for r in sorted(redes)]
     if nombres:
         return cfg.separador_etiqueta.join(nombres)
-    primero = min(indices, key=lambda i: (fechas[i] or "", str(miembros[i]["id_noticia"])))
+    primero = min(indices, key=lambda i: (fechas[i] is None, fechas[i] or "", str(miembros[i]["id_noticia"])))  # sin fecha, al final
     return str(miembros[primero].get("medio") or senales[primero].dominio)
 
 

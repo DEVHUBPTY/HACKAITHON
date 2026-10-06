@@ -38,6 +38,7 @@ from src import db
 from src.clasificacion import escribir_seccion, proporcion, texto_de_entrada
 from src.configuracion import (
     RAIZ,
+    Agrupacion,
     ConfigClasificacion,
     ConfigProcedencias,
     ReglasV13,
@@ -53,12 +54,9 @@ from src.registro import configurar_logging
 
 logger = logging.getLogger(__name__)
 
-PREFIJO_GRUPO = "GRP-"
-LARGO_HASH_GRUPO = 10      # caracteres del hash, como ``NOT-`` (D-63)
-SEPARADOR_IDS = "|"        # une los IDs ordenados antes de calcular el hash del grupo
 SEPARADOR_LISTA = ","      # listas dentro de una columna de texto (ids_noticia, idiomas, medios)
 SEGUNDOS_POR_DIA = 86_400
-DECIMALES_PRESENTACION = 4  # presentación de proporciones: no afecta ninguna decisión
+PREFIJO_CAMPO_FECHA = "fecha_"  # ``fecha_publicacion`` -> ``publicacion``
 GRUPOS_EN_REPORTE = 5       # cuántos grupos más grandes se listan en el reporte
 
 class SinCalibrar(RuntimeError):
@@ -68,10 +66,10 @@ class SinCalibrar(RuntimeError):
 # ------------------------------------------------------------------ fechas e IDs
 
 
-def id_de_grupo(ids_noticia: Sequence[str]) -> str:
-    """``GRP-`` + SHA-1 (10 caracteres) de los IDs ``NOT-`` ordenados: no depende del orden de entrada (D-63)."""
-    resumen = hashlib.sha1(SEPARADOR_IDS.join(sorted(ids_noticia)).encode()).hexdigest()
-    return f"{PREFIJO_GRUPO}{resumen[:LARGO_HASH_GRUPO]}"
+def id_de_grupo(ids_noticia: Sequence[str], cfg: Agrupacion) -> str:
+    """Prefijo + SHA-1 de los ``NOT-`` ordenados (prefijo, largo y separador de ``agrupacion`` en ``reglas_v1.3.yaml``, D-63)."""
+    resumen = hashlib.sha1(cfg.separador_ids.join(sorted(ids_noticia)).encode()).hexdigest()
+    return f"{cfg.prefijo_id}{resumen[: cfg.largo_hash_id]}"
 
 
 def fecha_de(fila: Mapping[str, Any], campos: Sequence[str]) -> datetime | None:
@@ -87,6 +85,12 @@ def fecha_de(fila: Mapping[str, Any], campos: Sequence[str]) -> datetime | None:
 def fecha_iso_de(fila: Mapping[str, Any], campos: Sequence[str]) -> str | None:
     """El texto ISO original del campo del que sale ``fecha_de`` (no se reformatea ni se convierte)."""
     return next((str(fila[c]) for c in campos if fila.get(c)), None)
+
+
+def origen_de_fecha(fila: Mapping[str, Any], campos: Sequence[str]) -> str | None:
+    """De qué campo sale la fecha: ``publicacion`` o ``deteccion`` (el nombre del campo sin ``fecha_``); ``None`` sin fecha."""
+    campo = next((c for c in campos if fila.get(c)), None)
+    return None if campo is None else campo.removeprefix(PREFIJO_CAMPO_FECHA)
 
 
 # ------------------------------------------------------------------ agrupación
@@ -169,7 +173,9 @@ class Grupo:
     n_medios: int
     procedencias: tuple[Procedencia, ...]
     fecha_inicio: str | None
+    fecha_inicio_origen: str | None         # ``publicacion`` o ``deteccion``: nunca se mezclan sin decirlo
     fecha_fin: str | None
+    fecha_fin_origen: str | None
     idiomas: tuple[str, ...]
     tema_clasificado: str | None
 
@@ -221,24 +227,29 @@ def construir_grupos(
     campos = reglas.agrupacion.campos_fecha
     fechas = [fecha_de(f, campos) for f in filas]
     iso = [fecha_iso_de(f, campos) for f in filas]
+    origen = [origen_de_fecha(f, campos) for f in filas]
     grupos: list[Grupo] = []
     for indices in agrupar_indices(vectores, fechas, ids, umbral, reglas.agrupacion.ventana_dias):
         miembros = [filas[i] for i in indices]
         fechadas = [i for i in indices if fechas[i] is not None]
+        primera = min(fechadas, key=lambda i: fechas[i]) if fechadas else -1
+        ultima = max(fechadas, key=lambda i: fechas[i]) if fechadas else -1
         central = _central(indices, vectores, fechas, ids)
         procedencias = estimar_procedencias(
             miembros, vectores[indices], proc, reglas, [iso[i] for i in indices]
         )
         grupos.append(
             Grupo(
-                id_grupo=id_de_grupo([ids[i] for i in indices]),
+                id_grupo=id_de_grupo([ids[i] for i in indices], reglas.agrupacion),
                 ids_noticia=tuple(ids[i] for i in indices),
                 id_noticia_central=ids[central],
                 titular_central=str(filas[central]["titulo_limpio"]),
                 n_medios=len({dominio_normalizado(f) for f in miembros}),
                 procedencias=tuple(procedencias),
-                fecha_inicio=iso[min(fechadas, key=lambda i: fechas[i])] if fechadas else None,
-                fecha_fin=iso[max(fechadas, key=lambda i: fechas[i])] if fechadas else None,
+                fecha_inicio=iso[primera] if fechadas else None,
+                fecha_inicio_origen=origen[primera] if fechadas else None,
+                fecha_fin=iso[ultima] if fechadas else None,
+                fecha_fin_origen=origen[ultima] if fechadas else None,
                 idiomas=tuple(sorted({str(f["idioma"]) for f in miembros if f.get("idioma")})),
                 tema_clasificado=_tema_dominante(miembros),
             )
@@ -259,7 +270,7 @@ def _filas_de_grupos(grupos: Sequence[Grupo], estimado: bool) -> tuple[list[list
         filas_grupos.append(
             [
                 g.id_grupo, g.titular_central, g.id_noticia_central, g.n_titulares, g.n_medios, g.n_procedencias,
-                g.fecha_inicio, g.fecha_fin, SEPARADOR_LISTA.join(g.idiomas), g.tema_clasificado,
+                g.fecha_inicio, g.fecha_inicio_origen, g.fecha_fin, g.fecha_fin_origen, SEPARADOR_LISTA.join(g.idiomas), g.tema_clasificado,
                 SEPARADOR_LISTA.join(g.ids_noticia), estimado,
             ]
         )
@@ -270,6 +281,12 @@ def _filas_de_grupos(grupos: Sequence[Grupo], estimado: bool) -> tuple[list[list
             )
             asignaciones.extend([g.id_grupo, p.etiqueta, i] for i in p.ids_noticia)
     return filas_grupos, filas_proc, asignaciones
+
+
+def _insertar(tabla: str) -> str:
+    """INSERT con columnas por nombre: una base creada antes de una columna nueva la tiene al final (``asegurar_esquema``)."""
+    cols = db.columnas(tabla)
+    return f"INSERT INTO {tabla} ({', '.join(cols)}) VALUES ({', '.join('?' * len(cols))})"
 
 
 def codificar_titulares(filas: Sequence[Mapping[str, Any]], emb: Embeddings, usar_descripcion: bool) -> np.ndarray:
@@ -309,8 +326,8 @@ def aplicar_a_base(
             con.execute("DELETE FROM procedencias")
             con.execute("DELETE FROM grupos")
             if filas_grupos:
-                con.executemany(f"INSERT INTO grupos VALUES ({', '.join('?' * len(db.columnas('grupos')))})", filas_grupos)
-                con.executemany(f"INSERT INTO procedencias VALUES ({', '.join('?' * len(db.columnas('procedencias')))})", filas_proc)
+                con.executemany(_insertar("grupos"), filas_grupos)
+                con.executemany(_insertar("procedencias"), filas_proc)
                 con.executemany("UPDATE noticias SET id_grupo = ?, procedencia = ? WHERE id_noticia = ?", asignaciones)
             if db.contar_filas(con, "noticias") != antes:
                 raise RuntimeError("la agrupación cambió el número de noticias")
