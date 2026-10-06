@@ -1,0 +1,525 @@
+{
+  "duplicados_descartados": 237,
+  "excluidos": [
+    {
+      "id_noticia": "NOT-0031e6a574",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/videos/noticias/video-ext-tvn-celebra-63-anos_7_2186633.html"
+    },
+    {
+      "id_noticia": "NOT-01f6001885",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/gente-tvn/tvn-media-udelas-firman-alianza_1_2253105.html"
+    },
+    {
+      "id_noticia": "NOT-02d9d003eb",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-firma-convenio-universidad-latina-fortalecer-formacion-estudiantes_1_2242290.html"
+    },
+    {
+      "id_noticia": "NOT-04cafa518f",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-jump-renuevan-alianza-emprendimiento-panama_1_2237758.html"
+    },
+    {
+      "id_noticia": "NOT-05cdadf2ae",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/periodistas-tvn-media-participan-conversatorio-desinformacion-fake-news-universidad-latina_1_2165356.html"
+    },
+    {
+      "id_noticia": "NOT-0620169205",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/alianza-conocimiento-ciudad-del-saber-tvn-media_1_2203982.html"
+    },
+    {
+      "id_noticia": "NOT-06b2e11acf",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/periodista-claudya-carolina-morales-yenny-caballero-periodismo-sobre-ninez-y-adolescencia-ganador_1_2218367.html"
+    },
+    {
+      "id_noticia": "NOT-06fe2035f7",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-tres-galardones-premios-victoria-usma_1_2160381.html"
+    },
+    {
+      "id_noticia": "NOT-075fbee268",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-presenta-documental-competencia-intercolegial-reciclaje_1_2202782.html"
+    },
+    {
+      "id_noticia": "NOT-0c2265e667",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-loma-brigida-la-chorrera-dia-de-reyes_1_2171661.html"
+    },
+    {
+      "id_noticia": "NOT-0edf42b262",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/economia/empresas/publirreportajes/byd-cofino-presentan-oficialmente-nuevo_1_2256978.html"
+    },
+    {
+      "id_noticia": "NOT-1042758b64",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-quality-leadership-university-acuerdo-educacion-desarrollo_1_2198338.html"
+    },
+    {
+      "id_noticia": "NOT-11021ac306",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/ranking-de-los-lideres-luis-mouynes-gerente-tvn-media_1_2168690.html"
+    },
+    {
+      "id_noticia": "NOT-1486381d53",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/lideres-360/lideres-360-pedro-heilbron-panama-turismo-eficiencia-transparencia_1_2249216.html"
+    },
+    {
+      "id_noticia": "NOT-1488368c6b",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-unicef-despacho-primera-crianza-amoroza-raices-fuertes_1_2183004.html"
+    },
+    {
+      "id_noticia": "NOT-153e62dec0",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-gana-categoria-mejor-merco-empresas-panama-2024-premio-ranking_1_2167542.html"
+    },
+    {
+      "id_noticia": "NOT-161fbba3b4",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-dice-presente-teleton-100-mil-dolares_1_2218658.html"
+    },
+    {
+      "id_noticia": "NOT-1951bc579e",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-impulsa-reality-jump-emprendimientos-jovenes_1_2185537.html"
+    },
+    {
+      "id_noticia": "NOT-1dfd403646",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-nombra-gerente-informacion-digital-magda-maxwell_1_2186722.html"
+    },
+    {
+      "id_noticia": "NOT-20c6db94ef",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/lideres-360/lideres-360-mario-castrellon-chef-gastronomia-panama-maito_1_2254177.html"
+    },
+    {
+      "id_noticia": "NOT-2414d32a0c",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-reafirma-alianza-teleton-20-30_1_2214825.html"
+    },
+    {
+      "id_noticia": "NOT-252abb4b5c",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/colaboradores-tvn-media-participan-voluntariado_1_2230514.html"
+    },
+    {
+      "id_noticia": "NOT-2633a089af",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-carnaval-la-villa-de-los-santos-alianza_1_2225701.html"
+    },
+    {
+      "id_noticia": "NOT-2889c603d1",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-nuevamente-consolida-empresas-mejor-reputacion_1_2211002.html"
+    },
+    {
+      "id_noticia": "NOT-2cdb485b70",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-avanza-merco-talento_1_2250207.html"
+    },
+    {
+      "id_noticia": "NOT-35ba050e80",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-mac-panama-unen_1_2199530.html"
+    },
+    {
+      "id_noticia": "NOT-370815807d",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/lideres-360/lideres-360-estrena-noticias-am-impacto-empresarial-pedro-heilbron_1_2247767.html"
+    },
+    {
+      "id_noticia": "NOT-40e46871bb",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/gente-tvn-fortalece-compromiso-social-jornada-deportiva-inclusiva_1_2245912.html"
+    },
+    {
+      "id_noticia": "NOT-4217201d5e",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/heroes-por-panama-culminan-diplomado-servicio-liderazgo-transformacion_1_2212969.html"
+    },
+    {
+      "id_noticia": "NOT-423c8f1908",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvnmedia-sumarse-firman-convenio_1_2201601.html"
+    },
+    {
+      "id_noticia": "NOT-4442509ea8",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/conape-reconoce-trayectoria-periodistas-tvn-media_1_2215048.html"
+    },
+    {
+      "id_noticia": "NOT-46019d8f01",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-arrasa-premios-victoria-universidad-de-panama_1_2217570.html"
+    },
+    {
+      "id_noticia": "NOT-46cf66e97c",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/economia/empresas/publirreportajes/pacifica-salud-reafirma-compromiso-calidad_1_2256763.html"
+    },
+    {
+      "id_noticia": "NOT-46d06fe7ce",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-une-dias-de-las-buenas-acciones-instituto-oncologico_1_2184947.html"
+    },
+    {
+      "id_noticia": "NOT-47c36c0d24",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/municipio-de-panama-pergamino-llaves-ciudad-hecho-panama_1_2163410.html"
+    },
+    {
+      "id_noticia": "NOT-48c879fc79",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-excom-unen-impulsar_1_2242806.html"
+    },
+    {
+      "id_noticia": "NOT-4a20e7d9ec",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-noticias-trafico-panama-firman-alianza-estrategia-medios_1_2187423.html"
+    },
+    {
+      "id_noticia": "NOT-4e86a019dd",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-ceo-women-summit-potenciar-crecimiento-profesional-mujeres_1_2250211.html"
+    },
+    {
+      "id_noticia": "NOT-5c93d9a62f",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-recibe-reconocimiento-programa-reduce-tu-huella-gestion-ambiental_1_2254331.html"
+    },
+    {
+      "id_noticia": "NOT-5def86a61c",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-conmemora-dia-buenas-acciones-adavion-heroes-por-panama_1_2236132.html"
+    },
+    {
+      "id_noticia": "NOT-5e21186230",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-la-chorrera-celebra-cultura-mural_1_2186471.html"
+    },
+    {
+      "id_noticia": "NOT-60472fb6c3",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/videos/noticias/video-ext-tvn-media-reafirma-alianza-teleton_7_2163364.html"
+    },
+    {
+      "id_noticia": "NOT-63df3c4e87",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-dijo-presente-relevos_1_2205996.html"
+    },
+    {
+      "id_noticia": "NOT-65d473e65a",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-aden-business-school_1_2255801.html"
+    },
+    {
+      "id_noticia": "NOT-6e2e33b1be",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/multitudinario-desfile-carretas-guarare-tvn-media-hecho-en-panama-festival-nacional-de-la-mejorana_1_2208163.html"
+    },
+    {
+      "id_noticia": "NOT-6ef3f98fe7",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/wiss-latam-reune-mujeres-lideres_1_2257812.html"
+    },
+    {
+      "id_noticia": "NOT-7067ffe3aa",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/premios-excelencia-2024-universidad-de-panama-tvn-noticias-facultad-de-comunicacion-social_1_2166104.html"
+    },
+    {
+      "id_noticia": "NOT-76fd315871",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/lideres-360/lideres-360-pedro-heilbron-despegar-copa-airlines-hub-de-las-americas_1_2249044.html"
+    },
+    {
+      "id_noticia": "NOT-7786b2d429",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/economia/empresas/publirreportajes/banco-istmo-banistmo-presenta-nueva_1_2258123.html"
+    },
+    {
+      "id_noticia": "NOT-7864cb959e",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/suenos-diciembre-familia-tvn-noticias-ninos-cerro-cabra-navidad_1_2170326.html"
+    },
+    {
+      "id_noticia": "NOT-7a6631b30e",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-fundamorgan-firman-alianza_1_2238967.html"
+    },
+    {
+      "id_noticia": "NOT-7c8a56c238",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/economia/empresas/publirreportajes/costa-coffee-expande-panama-nuevas_1_2256771.html"
+    },
+    {
+      "id_noticia": "NOT-7d0d78e7e8",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-sabores-colon-gastronomia-cultura-colonense_1_2201366.html"
+    },
+    {
+      "id_noticia": "NOT-87830f152d",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/mundo-verde-reportaje-tvn-gana-premio-nacional-periodismo-cientifico-senacyt_1_2157388.html"
+    },
+    {
+      "id_noticia": "NOT-88979dcfc4",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/documental-panama-llega-pantalla-grande-cine-tvn-media_1_2212034.html"
+    },
+    {
+      "id_noticia": "NOT-894b74ebb3",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-municipio-la-villa-de-los-santos-firman-alianza-carnaval-2025_1_2172852.html"
+    },
+    {
+      "id_noticia": "NOT-8ec87ba73d",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-firma-alianza-promover-mosaico-panama_1_2240535.html"
+    },
+    {
+      "id_noticia": "NOT-926581c42c",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-camara-panamena-desarrollo-social_1_2238469.html"
+    },
+    {
+      "id_noticia": "NOT-92fe0ad729",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-dice-presente-teleton-20-30_1_2169266.html"
+    },
+    {
+      "id_noticia": "NOT-94ae95fd2c",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-presenta-informe-sostenibilidad_1_2199363.html"
+    },
+    {
+      "id_noticia": "NOT-9b996fc56d",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/periodistas-tvn-noticias-premios-forum-de-periodistas_1_2189759.html"
+    },
+    {
+      "id_noticia": "NOT-9dcba1423b",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/dia-de-las-buenas-acciones-fundacion-jupa-tvn-media_1_2182521.html"
+    },
+    {
+      "id_noticia": "NOT-9dd7819ef8",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-dircom-panama-unen_1_2211616.html"
+    },
+    {
+      "id_noticia": "NOT-9f1547c156",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/relevo-vida-fanlyc-24-horas-esfuerzo-esperanza-cinta-costera-tres-cancer_1_2259489.html"
+    },
+    {
+      "id_noticia": "NOT-a012af4aa0",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/videos/noticias/video-ext-tvn-media-fsu-panama-firmaron_7_2197723.html"
+    },
+    {
+      "id_noticia": "NOT-a05f6dbf84",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-consolida-ranking-merco-talento_1_2195639.html"
+    },
+    {
+      "id_noticia": "NOT-a1bb75d2bb",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/voces-femeninas-comparten-liderazgo-experiencias-encuentro-de-speed-mentoring-de-tvn_1_2230766.html"
+    },
+    {
+      "id_noticia": "NOT-a4d55a1b5b",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-estrena-lideres-360-mundial-2026_1_2249178.html"
+    },
+    {
+      "id_noticia": "NOT-a9255cef34",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/gente-tvn/tvn-media-oficializa-patrocinio-feria_1_2250436.html"
+    },
+    {
+      "id_noticia": "NOT-aa4d361f7a",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/lideres-360/mario-castrellon-protagoniza-lideres-360-noticias-am_1_2254164.html"
+    },
+    {
+      "id_noticia": "NOT-ab43ed9df5",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-asociacion-directoras-panama_1_2254586.html"
+    },
+    {
+      "id_noticia": "NOT-af1fb30f15",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/gente-tvn/tvn-media-fundacion-relaciones-sanas_1_2246715.html"
+    },
+    {
+      "id_noticia": "NOT-b001fd25be",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-firma-alianza-panama-jazz-festival-princess-orelia-benskia_1_2171990.html"
+    },
+    {
+      "id_noticia": "NOT-b025c287aa",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-teatro-nacional-sellan-alianza-firma-convenio-cultura_1_2247507.html"
+    },
+    {
+      "id_noticia": "NOT-b16db637e2",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-recibe-reconocimiento-simposio-innovacion-sostenibilidad-en-ambiente_1_2169077.html"
+    },
+    {
+      "id_noticia": "NOT-b5a2644f22",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/macrofest-2025-presenta-cartel-oficial-reconocimiento-tvnmedia_1_2173050.html"
+    },
+    {
+      "id_noticia": "NOT-ba05f03bbe",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/claudya-morales-tvn-media-premio-de-periodismo-ninez-y-adolescencia-unicef-celap_1_2166205.html"
+    },
+    {
+      "id_noticia": "NOT-be4959d45e",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/mundo-verde-ballenas-jorobadas-premio-concurso-comunicadores-sociales-carla-uliantzeff_1_2158333.html"
+    },
+    {
+      "id_noticia": "NOT-c41d9826e7",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-radio-tvmax-dan-kick-carnaval_1_2227551.html"
+    },
+    {
+      "id_noticia": "NOT-c89bb3e682",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-destaca-ranking-merco-responsabilidad-social-empresarial_1_2174203.html"
+    },
+    {
+      "id_noticia": "NOT-c908717299",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-recibe-reconocimiento-compromiso-ambiental-reduce-tu-huella_1_2200815.html"
+    },
+    {
+      "id_noticia": "NOT-c978b32af3",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-encendio-fiesta-publico-sabores-de-colon_1_2229801.html"
+    },
+    {
+      "id_noticia": "NOT-ca701529c9",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/presentan-ganadoras-documental-panama-documentales-cine-fundacion-alberto-motta-noticias-en-panama-hoy_1_2163165.html"
+    },
+    {
+      "id_noticia": "NOT-ca7e7e1e1d",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/escuela-gana-competencia-intercolegial-gente-tvn-media-reciclaje_1_2195259.html"
+    },
+    {
+      "id_noticia": "NOT-d044d66340",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/videos/noticias/video-tvn-media-feria-chorrera-firman_8_2225013.html"
+    },
+    {
+      "id_noticia": "NOT-d204a18046",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-firma-convenio-concurso-nacional-de-oratoria_1_2212606.html"
+    },
+    {
+      "id_noticia": "NOT-dc65bbaa86",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/videos/noticias/video-ext-tvn-media-firma-alianza-concurso_7_2163037.html"
+    },
+    {
+      "id_noticia": "NOT-ddce9252ee",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/entretenimiento/cine-y-tv/tvn-media-iff-panama-firman-convenio-festival-de-cine-de-panama_1_2181612.html"
+    },
+    {
+      "id_noticia": "NOT-e04c93d9e6",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-oficializa-patrocinio-world_1_2251452.html"
+    },
+    {
+      "id_noticia": "NOT-e1da476b50",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-alianza-estrategica-apede-conferencia-anual-de-ejecutivos-2025_1_2182741.html"
+    },
+    {
+      "id_noticia": "NOT-e4acef3fcf",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/gente-tvn/tvn-media-moviliza-colaboradores-convertir_1_2255762.html"
+    },
+    {
+      "id_noticia": "NOT-e9e465137a",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-recibe-reconocimiento-cobertura_1_2172034.html"
+    },
+    {
+      "id_noticia": "NOT-eb6bc14a15",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-realiza-homenaje-luz-maria-noli-dia-del-periodista-heroes-por-panama_1_2165138.html"
+    },
+    {
+      "id_noticia": "NOT-f7a2efc25a",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-comparte-experiencia-transformacion-cumbre-wiss-latam_1_2257996.html"
+    },
+    {
+      "id_noticia": "NOT-f855a65ba6",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-fundacion-florida-state-university-panama-apuestan-industria-audiovisual_1_2190375.html"
+    },
+    {
+      "id_noticia": "NOT-fa1694ffb1",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-senacyt-firman-alianza_1_2208344.html"
+    },
+    {
+      "id_noticia": "NOT-fb0c1811da",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-refuerza-compromiso-social_1_2217708.html"
+    }
+  ],
+  "gdelt_rangos_sin_resolver": [
+    {
+      "fin": "20261006000000",
+      "inicio": "20261004000000",
+      "motivo": "respuesta {} sin confirmar (posible bloqueo)",
+      "tema": "economia"
+    },
+    {
+      "fin": "20261006000000",
+      "inicio": "20261004000000",
+      "motivo": "no obtenido: GDELT bloqueaba las solicitudes (HTTP 429 sostenido) al cerrar el snapshot",
+      "tema": "eventos_naturales"
+    },
+    {
+      "fin": "20261006000000",
+      "inicio": "20261004000000",
+      "motivo": "dos respuestas {} seguidas; sospechoso porque un rango de 5 dias devolvio 93 articulos (posible bloqueo)",
+      "tema": "logistica"
+    },
+    {
+      "fin": "20261006000000",
+      "inicio": "20261004000000",
+      "motivo": "HTTP 429 (rate limit) tras 5 intentos con backoff",
+      "tema": "turismo"
+    }
+  ],
+  "registros_crudos_leidos": 520,
+  "ventana": {
+    "ampliada": false,
+    "dias_aplicados": 30,
+    "dias_base": 30,
+    "dias_maximo": 90,
+    "fin": "2026-10-06T17:07:06Z",
+    "inicio": "2026-09-06T17:07:06Z"
+  }
+}

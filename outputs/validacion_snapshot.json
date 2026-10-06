@@ -1,0 +1,122 @@
+{
+  "advertencias": 3,
+  "aprobado": true,
+  "comprobaciones": [
+    {
+      "comprobacion": "contrato:noticias.csv",
+      "detalle": "todos los campos del contrato presentes",
+      "estado": "ok"
+    },
+    {
+      "comprobacion": "d72:noticias.csv",
+      "detalle": "sin descripción del RSS ni socialimage",
+      "estado": "ok"
+    },
+    {
+      "comprobacion": "noticias:id_estable",
+      "detalle": "todos los NOT- coinciden con el SHA-1 de la URL canónica",
+      "estado": "ok"
+    },
+    {
+      "comprobacion": "volumen:total",
+      "detalle": "186 noticias únicas: sobre el mínimo 100, bajo la meta 200",
+      "estado": "advertencia"
+    },
+    {
+      "comprobacion": "volumen:tvn",
+      "detalle": "53 noticias de TVN (mínimo 20)",
+      "estado": "ok"
+    },
+    {
+      "comprobacion": "noticias:fechas_iso_utc",
+      "detalle": "fechas ISO 8601 UTC",
+      "estado": "ok"
+    },
+    {
+      "comprobacion": "noticias:publicacion_no_es_deteccion",
+      "detalle": "los registros solo-GDELT no tienen fecha_publicacion",
+      "estado": "ok"
+    },
+    {
+      "comprobacion": "cobertura:efectiva",
+      "detalle": "2026-09-29T01:23:06Z a 2026-10-06T15:45:50Z (7.6 días, máximo 90)",
+      "estado": "ok"
+    },
+    {
+      "comprobacion": "contrato:fuentes.json",
+      "detalle": "un registro por medio con todos los campos",
+      "estado": "ok"
+    },
+    {
+      "comprobacion": "fuentes:cobertura_de_medios",
+      "detalle": "todos los medios de noticias.csv están en fuentes.json",
+      "estado": "ok"
+    },
+    {
+      "comprobacion": "contrato:indicadores.csv",
+      "detalle": "todos los campos del contrato presentes",
+      "estado": "ok"
+    },
+    {
+      "comprobacion": "cuadricula:banco_mundial",
+      "detalle": "540 filas completas (0 valores nulos explícitos)",
+      "estado": "ok"
+    },
+    {
+      "comprobacion": "cuadricula:pdf_inconsistente",
+      "detalle": "el PDF declara 1350 filas, pero 6 países × 6 indicadores × 15 años = 540",
+      "estado": "advertencia"
+    },
+    {
+      "comprobacion": "contrato:eventos.geojson",
+      "detalle": "82 eventos con todos los campos",
+      "estado": "ok"
+    },
+    {
+      "comprobacion": "usgs:caja_y_magnitud",
+      "detalle": "todos dentro de la caja regional y con magnitud >= mínima",
+      "estado": "ok"
+    },
+    {
+      "comprobacion": "usgs:fechas",
+      "detalle": "todos entre 2024-01-01T00:00:00 y 2024-12-31T23:59:59",
+      "estado": "ok"
+    },
+    {
+      "comprobacion": "manifest:campos_minimos",
+      "detalle": "version, fecha_corte_UTC, consultas, cantidad, licencias, sha256, transformaciones",
+      "estado": "ok"
+    },
+    {
+      "comprobacion": "manifest:historial",
+      "detalle": "1 versión(es) con cambios, revisiones y excluidos",
+      "estado": "ok"
+    },
+    {
+      "comprobacion": "manifest:sha256",
+      "detalle": "5 huellas verificadas",
+      "estado": "ok"
+    },
+    {
+      "comprobacion": "gdelt:rangos_sin_resolver",
+      "detalle": "4 consulta(s) de GDELT sin respuesta: la cobertura de GDELT es incompleta",
+      "estado": "advertencia"
+    }
+  ],
+  "errores": 0,
+  "resumen": {
+    "cobertura_efectiva": {
+      "dias": 7.6,
+      "fecha_final": "2026-10-06T15:45:50Z",
+      "fecha_inicial": "2026-09-29T01:23:06Z"
+    },
+    "eventos": 82,
+    "fuentes": 110,
+    "indicadores": 540,
+    "indicadores_nulos": 0,
+    "manifest_version": "1.0",
+    "noticias": 186,
+    "noticias_gdelt": 133,
+    "noticias_tvn": 53
+  }
+}
