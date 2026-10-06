@@ -11,7 +11,9 @@ from pathlib import Path
 from typing import TypeVar
 
 import yaml
-from pydantic import BaseModel, ConfigDict, ValidationError
+from pydantic import BaseModel, ConfigDict, ValidationError, model_validator
+
+from src import consultas_gdelt
 
 RAIZ = Path(__file__).resolve().parent.parent
 CARPETA_CONFIG = RAIZ / "config"
@@ -67,6 +69,9 @@ class General(ModeloConfig):
 class VentanaNoticias(ModeloConfig):
     dias_base: int
     dias_maximo: int
+    # Si es true y con dias_base no se alcanza el mínimo de noticias, la extracción amplía hasta
+    # dias_maximo. Si es false, solo avisa y no amplía (docs/parametros.md).
+    ampliar_si_no_alcanza_minimo: bool
     base_de_medicion: str
     intervalo_pdf_seccion_7_no_aplicado: list[str]
 
@@ -96,6 +101,14 @@ class RssTvn(ModeloConfig):
     tema_sin_seccion: str
 
 
+class PataConsulta(ModeloConfig):
+    """Una llamada a GDELT por (tema, rango): filtros de operador + términos unidos con OR."""
+
+    descripcion: str
+    filtros: list[str]
+    terminos: list[str]
+
+
 class Gdelt(ModeloConfig):
     endpoint: str
     modo: str
@@ -109,7 +122,19 @@ class Gdelt(ModeloConfig):
     rango_minimo_horas: int
     carpeta_cruda: str
     idiomas: dict[str, str]
-    consultas: dict[str, str]
+    # tema de origen (D-62) -> pata ('locales', 'internacional') -> definición; ver src/consultas_gdelt.py
+    consultas: dict[str, dict[str, PataConsulta]]
+    motivo_cambio_consultas: str
+    # Consultas reemplazadas (tema -> consulta antigua): sus crudos siguen en raw/ pero no alimentan el snapshot (D-83).
+    consultas_historicas: dict[str, str]
+    largo_minimo_termino: int
+
+    @model_validator(mode="after")
+    def _consultas_validas(self) -> "Gdelt":
+        for patas in self.consultas.values():
+            for pata in patas.values():
+                consultas_gdelt.construir_consulta(pata.model_dump(), self.largo_minimo_termino)  # ValueError si no sirve
+        return self
 
 
 class Indicador(ModeloConfig):
