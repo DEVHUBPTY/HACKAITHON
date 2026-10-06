@@ -49,11 +49,23 @@ TRANSFORMACIONES = [
     "si una URL aparece en varios temas se unen con '|'.",
     "Fechas ISO 8601 UTC con sufijo Z; la hora de Panamá solo se muestra en la interfaz.",
     "Ventana de noticias: 30 días previos a la extracción; si hay menos del mínimo, hasta 90 días (D-74).",
-    "Banco Mundial: una consulta por indicador; cuadrícula completada a 1.350 filas con valor vacío (nulo), nunca 0.",
+    "Banco Mundial: una consulta por indicador; cuadrícula completada con todas las combinaciones país × indicador × año (540; el PDF dice 1.350, ver nota_cuadricula_banco_mundial), valor vacío (nulo), nunca 0.",
     "indicadores.csv: id_indicador = IND-<país>-<indicador>-<año>; unidad tomada de config/fuentes.yaml.",
     "USGS: id = SIS-<id USGS>; time y updated de milisegundos epoch a ISO 8601 UTC; longitude, latitude y depth de la geometría.",
     "Registros excluidos (sin título, sin URL, sin fecha válida, fuera de ventana) se listan en conversion.json.",
 ]
+
+
+def nota_cuadricula(config: dict[str, Any]) -> str:
+    """Documenta la diferencia entre la cuadrícula declarada por el PDF y la aritmética real."""
+    bm = config["banco_mundial"]
+    p, i, a = len(bm["paises"]), len(bm["indicadores"]), bm["anio_fin"] - bm["anio_inicio"] + 1
+    return (
+        f"El PDF (secciones 6 y 7) declara {bm['cuadricula_declarada_en_pdf']} combinaciones "
+        f"país × indicador × año, pero {p} países × {i} indicadores × {a} años = {p * i * a}. "
+        f"El snapshot contiene las {p * i * a} combinaciones reales, con nulos explícitos; no se "
+        "inventan filas para llegar a la cifra del PDF."
+    )
 
 
 def _contar_filas_csv(ruta: Path) -> int:
@@ -253,6 +265,7 @@ def construir_manifest(data: Path, config: dict[str, Any]) -> dict[str, Any]:
         "cobertura_efectiva": _cobertura(processed, auditoria),
         "volumen_noticias": config["volumen_noticias"],
         "nota_intervalo_seccion_7": NOTA_INTERVALO_PDF,
+        "nota_cuadricula_banco_mundial": nota_cuadricula(config),
         "crudos": _crudos(raw),
         "historial": historial,
     }

@@ -51,7 +51,7 @@ gdelt:
   orden: DateDesc
   maxrecords: 250
   pausa_segundos: 6            # GDELT pide ~1 solicitud cada 5 s
-  espera_429_segundos: 30
+  espera_429_segundos: 60
   rango_dias: 5                # tamaño inicial de cada rango de fechas
   rango_minimo_horas: 6        # límite al subdividir cuando una consulta llega al tope
   carpeta_cruda: gdelt
@@ -76,6 +76,8 @@ banco_mundial:
   anio_inicio: 2010
   anio_fin: 2024
   per_page: 1000
+  # El PDF declara 1.350 combinaciones, pero 6 países × 6 indicadores × 15 años = 540 (ver manifest).
+  cuadricula_declarada_en_pdf: 1350
   licencia: "CC BY 4.0 (excepciones de terceros por indicador: pendiente de verificar)"
   carpeta_cruda: banco_mundial
   pausa_segundos: 1

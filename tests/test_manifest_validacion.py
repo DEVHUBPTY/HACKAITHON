@@ -58,6 +58,13 @@ def test_manifest_contenido_minimo(data_sintetica: Path) -> None:
     assert h["version"] == "1.0" and h["registros_excluidos"]["por_motivo"] == {"fuera_de_ventana": 1}
 
 
+def test_cuadricula_documenta_la_inconsistencia_del_pdf(data_sintetica: Path, config) -> None:
+    m = json.loads((data_sintetica / "manifest.json").read_text("utf-8"))
+    assert "1350" in m["nota_cuadricula_banco_mundial"] and "= 12" in m["nota_cuadricula_banco_mundial"]
+    informe = validar_snapshot.validar(data_sintetica, config)
+    assert estados(informe)["cuadricula:pdf_inconsistente"] == "advertencia"
+
+
 def test_historial_agrega_version_solo_si_el_snapshot_cambia(data_sintetica: Path, config) -> None:
     raw = data_sintetica / "raw"
     (raw / "rss_tvn" / "rss_tvn_20261007T120000Z.xml").write_text(

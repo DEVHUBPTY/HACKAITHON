@@ -50,12 +50,12 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 | Ventana de noticias | 30 días, ampliable a 90 | PDF (sección 6) · D-74 | `validar_snapshot` (cobertura efectiva) |
 | Volumen de A: meta · mínimo · TVN | 200 · 100 · 20 | PDF (sección 6) | `validar_snapshot` (mínimos = error, meta = advertencia) |
 | `maxrecords` de GDELT | 250 | PDF (sección 6) · API | Subdivisión del rango si una consulta llega al tope |
-| Banco Mundial: países · años · indicadores | 6 · 2010–2024 · 6 | PDF (sección 6) | Cuadrícula de 1.350 filas |
+| Banco Mundial: países · años · indicadores | 6 · 2010–2024 · 6 | PDF (sección 6) | Cuadrícula completa = 540 filas (6 × 6 × 15). El PDF dice 1.350: inconsistencia aritmética, documentada en el manifest |
 | `per_page` del Banco Mundial | 1000 | PDF · API (evita paginar) | La extracción falla si la API pagina |
 | USGS: caja · fechas · magnitud mínima | lat 5–12, lon −86 a −76 · 2024 · 3 | PDF (sección 6) | `validar_snapshot` |
 | Fin de USGS | 2024-12-31T23:59:59 | Supuesto (el `endtime` es exclusivo; así entra el 31/12 completo) | `validar_snapshot` (fechas) |
 | Pausa entre llamadas a GDELT | 6 s | Práctica (GDELT pide ~1 cada 5 s; 1 s de margen) | Sin 429 sostenidos en la corrida |
-| Espera tras HTTP 429 | 30 s | Supuesto | Corrida real |
+| Espera tras HTTP 429 | 60 s | Supuesto | Corrida real |
 | Reintentos HTTP · espera · timeout | 3 · 15 s · 60 s | Supuesto | Corrida real |
 | Rango inicial de GDELT · mínimo al subdividir | 5 días · 6 h | Supuesto | Se subdivide si la consulta llega a 250 |
 | Pausa entre indicadores del Banco Mundial | 1 s | Supuesto (cortesía) | Corrida real |

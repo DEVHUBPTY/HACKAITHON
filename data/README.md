@@ -31,6 +31,7 @@ por eso se descarga a diario).
 - Ventana de noticias: 30 días previos a la extracción (hasta 90 si faltan registros), medida sobre
   `fecha_deteccion` (o `fecha_publicacion` si no hay detección). El intervalo de la sección 7 del PDF
   no se aplica (inconsistencia documentada en el manifest).
-- `indicadores.csv`: siempre 1.350 filas; lo faltante queda vacío, nunca 0.
+- `indicadores.csv`: cuadrícula completa de 6 países × 6 indicadores × 15 años = **540** filas (el PDF
+  dice 1.350, pero su propia aritmética da 540; se documenta en el manifest). Lo faltante queda vacío, nunca 0.
 - `processed/conversion.json`: ventana aplicada y registros excluidos con motivo.
 - `fecha_corte_UTC` del manifest sale de los crudos, no del reloj: mismo `raw/`, mismo manifest.

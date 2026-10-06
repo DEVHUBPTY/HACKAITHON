@@ -179,11 +179,18 @@ def _extraer_gdelt_rangos(
     cfg = config["gdelt"]
     estado: dict[str, float] = {}
     total = 0
+    fallidas: list[str] = []
     for ini, fin in _rangos(
         ahora - timedelta(days=hasta_dias), ahora - timedelta(days=desde_dias), cfg["rango_dias"]
     ):
         for tema, consulta in cfg["consultas"].items():
-            total += _consultar_gdelt(tema, consulta, ini, fin, raw, config, estado)
+            try:
+                total += _consultar_gdelt(tema, consulta, ini, fin, raw, config, estado)
+            except ErrorDeExtraccion as exc:  # un rango fallido no frena a los demás
+                logger.error("GDELT %s %s..%s falló: %s", tema, ini, fin, exc)
+                fallidas.append(f"{tema} {ini:%Y-%m-%d}..{fin:%Y-%m-%d}")
+    if fallidas:
+        raise ErrorDeExtraccion(f"GDELT: {len(fallidas)} consulta(s) sin respuesta: {fallidas}")
     return total
 
 

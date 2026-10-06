@@ -208,6 +208,13 @@ def _validar_indicadores(inf: Informe, processed: Path, config: dict[str, Any], 
         nulos = sum(1 for f in filas if f["valor"] == "")
         resumen["indicadores_nulos"] = nulos
         inf.ok("cuadricula:banco_mundial", f"{esperado} filas completas ({nulos} valores nulos explícitos)")
+    declarada = bm.get("cuadricula_declarada_en_pdf")
+    if declarada and declarada != esperado:
+        inf.advertencia(
+            "cuadricula:pdf_inconsistente",
+            f"el PDF declara {declarada} filas, pero {len(bm['paises'])} países × "
+            f"{len(bm['indicadores'])} indicadores × {bm['anio_fin'] - bm['anio_inicio'] + 1} años = {esperado}",
+        )
     ceros_sospechosos = [f for f in filas if f["valor"] in ("0", "0.0") and f["indicador_id"] == "SP.POP.TOTL"]
     if ceros_sospechosos:
         inf.error("nulos:no_rellenar_con_cero", "población con valor 0: parece relleno de nulos")
