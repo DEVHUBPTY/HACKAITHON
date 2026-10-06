@@ -164,3 +164,91 @@ class ConfigFuentes(ModeloConfig):
 def cargar_fuentes(carpeta: Path | None = None) -> ConfigFuentes:
     """Atajo para ``config/fuentes.yaml``."""
     return cargar_config("fuentes", ConfigFuentes, carpeta)
+
+
+# ------------------------------------------------------------------ carga.yaml (E1-02)
+
+
+class ArchivosCarga(ModeloConfig):
+    noticias: str
+    indicadores: str
+    eventos: str
+    fuentes: str
+
+
+class SalidaCarga(ModeloConfig):
+    errores: str
+    reporte: str
+    max_caracteres_valor_en_errores: int
+    top_medios_concentracion: int
+
+
+class FechaIso(ModeloConfig):
+    patron: str
+    formato: str
+
+
+class FechaGdelt(ModeloConfig):
+    formato: str
+
+
+class FechaTextoLibre(ModeloConfig):
+    descripcion: str
+
+
+class FechaUsgs(ModeloConfig):
+    unidad: str
+
+
+class FechasCarga(ModeloConfig):
+    iso_utc: FechaIso
+    gdelt: FechaGdelt
+    usgs_ms: FechaUsgs
+    rss_rfc822: FechaTextoLibre
+
+
+class NoticiasCarga(ModeloConfig):
+    patron_id: str
+    criticos: list[str]
+    fechas_alternativas: list[str]
+    fecha_opcional: list[str]
+    opcionales: list[str]
+    columnas_fecha: list[str]
+    columnas_url: list[str]
+
+
+class IndicadoresCarga(ModeloConfig):
+    patron_id: str
+    patron_pais: str
+    criticos: list[str]
+    anio_minimo: int
+    anio_maximo: int
+    clave: list[str]
+
+
+class EventosCarga(ModeloConfig):
+    patron_id: str
+    latitud_maxima: int
+    longitud_maxima: int
+
+
+class FuentesCarga(ModeloConfig):
+    criticos: list[str]
+
+
+class ConfigCarga(ModeloConfig):
+    """Modelo de ``config/carga.yaml``."""
+
+    archivos: ArchivosCarga
+    salida: SalidaCarga
+    fechas: FechasCarga
+    patron_url: str
+    noticias: NoticiasCarga
+    indicadores: IndicadoresCarga
+    eventos: EventosCarga
+    fuentes: FuentesCarga
+
+
+def cargar_carga(carpeta: Path | None = None) -> ConfigCarga:
+    """Atajo para ``config/carga.yaml``."""
+    return cargar_config("carga", ConfigCarga, carpeta)

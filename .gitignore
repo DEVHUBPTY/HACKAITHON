@@ -30,3 +30,5 @@ models/
 # Local tooling
 .claude/worktrees/
 .atl/
+outputs/errores.csv
+outputs/reporte_calidad.json

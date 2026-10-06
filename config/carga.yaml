@@ -1,0 +1,53 @@
+# E1-02 · Carga y validación (src/carga.py). Todo número, patrón o formato vive aquí (D-79).
+# Orígenes y validación de cada valor: docs/parametros.md, sección "Carga y validación".
+
+archivos:
+  noticias: noticias.csv
+  indicadores: indicadores.csv
+  eventos: eventos.geojson
+  fuentes: fuentes.json
+
+salida:
+  errores: errores.csv
+  reporte: reporte_calidad.json
+  max_caracteres_valor_en_errores: 200   # recorta el valor rechazado que se copia a errores.csv
+  top_medios_concentracion: 5            # R-10: cuánto pesan los N medios principales
+
+# Formatos de fecha, uno por fuente. "iso_utc" es el de data/processed/ (lo escribe conversion.py).
+fechas:
+  iso_utc:
+    patron: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$'
+    formato: "%Y-%m-%dT%H:%M:%SZ"
+  gdelt:
+    formato: "%Y%m%dT%H%M%SZ"            # seendate de GDELT
+  usgs_ms:
+    unidad: milisegundos                 # epoch en milisegundos (campo time/updated)
+  rss_rfc822:
+    descripcion: RFC 822 (pubDate del RSS), se interpreta con email.utils
+
+patron_url: '^https?://[^\s/?#]+([/?#]\S*)?$'
+
+noticias:
+  patron_id: '^(NOT-[0-9a-f]{10}|SYN-[A-Z0-9]+-[0-9]+)$'
+  criticos: [id_noticia, titulo, url, medio]
+  fechas_alternativas: [fecha_publicacion, fecha_deteccion]   # al menos una
+  fecha_opcional: [fecha_extraccion]
+  opcionales: [idioma, tema, origen, alcance_texto]
+  columnas_fecha: [fecha_publicacion, fecha_deteccion, fecha_extraccion]
+  columnas_url: [url]
+
+indicadores:
+  patron_id: '^IND-[A-Z]{3}-[A-Za-z0-9._]+-[0-9]{4}$'
+  patron_pais: '^[A-Z]{3}$'
+  criticos: [pais_iso3, indicador_id, anio, unidad, fuente_url, fecha_extraccion, licencia]
+  anio_minimo: 1960
+  anio_maximo: 2100
+  clave: [pais_iso3, indicador_id, anio]
+
+eventos:
+  patron_id: '^SIS-\S+$'
+  latitud_maxima: 90
+  longitud_maxima: 180
+
+fuentes:
+  criticos: [dominio, nombre_legible, origen, condiciones]
