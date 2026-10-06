@@ -431,12 +431,14 @@ def separar_crudos_gdelt(carpeta_raw: Path, config: dict[str, Any]) -> tuple[lis
         if m and (m["tema"], m["pata"]) in vigentes_ok:
             vigentes.append(ruta)
             continue
-        tema = m["tema"] if m else None
+        if not m:
+            raise ValueError(f"nombre de crudo GDELT no reconocido: {ruta.name}")
+        tema = m["tema"]
         excluidos.append(
             {
                 "archivo": ruta.name,
                 "tema": tema,
-                "pata": m["pata"] if m else None,
+                "pata": m["pata"],
                 "motivo": MOTIVO_CONSULTA_REEMPLAZADA,
                 "consulta_historica": historicas.get(tema),
             }
