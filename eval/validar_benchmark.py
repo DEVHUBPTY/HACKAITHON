@@ -48,6 +48,8 @@ PATRON_IA = re.compile(
     r"\b(claude|ia|ai|asistente|assistant|gpt|chatgpt|llm|modelo|bot|copilot|gemini|deepseek|ollama)\b",
     re.IGNORECASE,
 )
+# Textos provisorios de una propuesta sin revisar: no cuentan como etiqueta humana.
+PATRON_PENDIENTE = re.compile(r"pendiente|por\s*asignar|sin\s*etiquetar|tbd|todo|xxx", re.IGNORECASE)
 
 
 class Metas(BaseModel):
@@ -98,6 +100,8 @@ class LineaBenchmark(BaseModel):
     def _persona(cls, valor: str) -> str:
         if PATRON_IA.search(valor):
             raise ValueError("las etiquetas las ponen personas, no una IA")
+        if PATRON_PENDIENTE.search(valor):
+            raise ValueError("etiqueta pendiente de revisión humana")
         return valor
 
     @field_validator("ids_evidencia")

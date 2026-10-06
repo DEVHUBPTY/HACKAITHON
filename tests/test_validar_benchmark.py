@@ -122,6 +122,14 @@ def test_etiquetado_por_ia_falla(nombre: str) -> None:
     assert any("personas" in e for e in errores_de(lineas))
 
 
+@pytest.mark.parametrize("texto", ["PENDIENTE_HUMANO", "pendiente", "por asignar", "TBD"])
+def test_etiquetado_por_provisorio_falla(texto: str) -> None:
+    """Una propuesta sin revisar no cuenta como etiqueta humana."""
+    lineas = lineas_validas()
+    lineas[0]["etiquetado_por"] = texto
+    assert any("pendiente de revisión humana" in e for e in errores_de(lineas))
+
+
 def test_etiquetado_por_vacio_falla() -> None:
     lineas = lineas_validas()
     lineas[0]["etiquetado_por"] = "  "
