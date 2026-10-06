@@ -10,8 +10,8 @@ Verificado el 2026-10-06 en la documentación pública. **Se vuelve a verificar 
 - **Para qué:** identificar el medio y sus secciones; enlaces de las noticias de TVN.
 
 ### [2] TVN · feed RSS público
-- **Dónde:** URL del feed según el enlace [2] del PDF de la organización (**por confirmar**; no se inventa).
-- **Qué trae:** noticias, fechas y descripciones.
+- **Dónde:** `https://www.tvn-2.com/rss/` (URL tomada del hipervínculo de la referencia [2] del PDF; verificada el 2026-10-06: responde 200 con ~150 ítems).
+- **Qué trae:** noticias, fechas y descripciones. No trae categoría: el tema de origen es la primera sección de la ruta de la URL (ej. `nacionales`, `economia`).
 - **Condiciones:** que el RSS sea público **no implica licencia abierta** sobre artículos, videos o imágenes. Solo metadatos; la descripción, solo para uso interno (D-31).
 - **Cuidado:** el RSS no conserva todo el histórico (R-23).
 
@@ -58,7 +58,7 @@ Verificado el 2026-10-06 en la documentación pública. **Se vuelve a verificar 
 - **Cómo:** manual. Seleccionar informes y columnas **antes del evento**, conservando las advertencias de uso (E3-02).
 
 ## Qué se verifica al congelar el snapshot
-- [ ] URL del RSS de TVN confirmada y funcionando
+- [x] URL del RSS de TVN confirmada y funcionando (2026-10-06)
 - [ ] GDELT responde y la ventana pedida está dentro de su cobertura (~3 meses)
 - [ ] Banco Mundial: excepciones de licencia por indicador revisadas
 - [ ] USGS: condiciones de terceros confirmadas

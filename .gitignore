@@ -13,6 +13,11 @@ data/senales.duckdb
 data/demo.duckdb
 outputs/benchmark/
 
+# Crudos con redistribución restringida (D-72): RSS de TVN (trae descripciones) y GDELT (trae socialimage).
+# Se regeneran con `python -m scripts.extraer` (ver data/README.md). Banco Mundial y USGS sí se versionan.
+data/raw/rss_tvn/
+data/raw/gdelt/
+
 # OS / editor
 .DS_Store
 .idea/
