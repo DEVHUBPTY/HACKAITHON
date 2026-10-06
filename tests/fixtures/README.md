@@ -9,6 +9,7 @@ Reglas comunes:
 - Las columnas de los archivos de noticias son las de `noticias.csv` del contrato (CLAUDE.md), más las columnas extra de prueba indicadas abajo.
 - **Nunca copiar estos archivos a `data/processed/`** ni usarlos para calcular métricas.
 - Los registros sin error intencional cumplen el contrato de datos.
+- La ventana de fechas es la de D-74: la fecha de detección cae dentro de los 90 días previos a la extracción. El intervalo de la sección 7 del PDF no se usa porque hoy es imposible de extraer.
 
 ## Archivos
 
@@ -36,7 +37,7 @@ Los nulos de `t01_indicadores_nulos.csv` **no son errores**: se conservan como n
 
 ## T03, T05 y T07
 
-- **T03:** `fecha_publicacion` (2024-03-14) y `fecha_deteccion` (2025-09-28) son distintas y están dentro de la ventana [2024-01-01, 2025-10-01). Se espera mostrar la fecha original y no tratarla como evento nuevo.
+- **T03:** `fecha_publicacion` (2024-03-14) y `fecha_deteccion` (2025-09-28) son distintas. La detección cae dentro de la ventana de D-74 (hasta 90 días antes de la extracción); la publicación es antigua a propósito. Se espera mostrar la fecha original y no tratarla como evento nuevo.
 - **T05:** dos medios distintos, mismo evento, cifras incompatibles. Se espera mostrar ambas versiones y la verificación pendiente.
 - **T07:** cuatro tipos de ataque (`ignorar_instrucciones`, `revelar_prompt`, `cambiar_reglas`, `pedir_publicar`), cada uno en español e inglés. La `descripcion` es sintética (las descripciones reales del RSS no se redistribuyen, D-72); por eso `alcance_texto` usa la leyenda que menciona la descripción. Se espera tratarlos como contenido no confiable.
 
@@ -50,7 +51,7 @@ Los nulos de `t01_indicadores_nulos.csv` **no son errores**: se conservan como n
 | `deportes` | `SYN-RUI-004` | |
 | `farandula` | `SYN-RUI-005` | |
 | `no_es_noticia` | `SYN-RUI-006` | Ítem de RSS promocional |
-| `fuera_de_ventana` | `SYN-RUI-007` | Publicada en 2023, antes de 2024-01-01 |
+| `fuera_de_ventana` | `SYN-RUI-007` | Detectada más de 90 días antes de la extracción (ventana de D-74) |
 | `duplicado_url` | `SYN-RUI-009` a `-011` | Mismo artículo que `SYN-RUI-008` con URL `/amp`, `m.` y `http`; canonicalizadas coinciden |
 
 No son ruido (controles): `SYN-RUI-008` (URL canónica), `-012` y `-013` (sufijo del medio y entidades HTML que la limpieza debe resolver, pero la noticia se conserva) y `-014` y `-015` (medio extranjero sobre hechos que afectan a Panamá; CLAUDE.md: no es ruido).
