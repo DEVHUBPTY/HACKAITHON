@@ -25,6 +25,7 @@ from typing import Any
 import requests
 
 from scripts import conversion
+from src import consultas_gdelt
 from src.registro import configurar_logging
 
 logger = logging.getLogger(__name__)
@@ -108,8 +109,9 @@ _rangos = conversion.rangos_gdelt
 _clasificar_respuesta = conversion.clasificar_respuesta
 
 
-def _prefijo_gdelt(tema: str, ini: datetime, fin: datetime) -> str:
-    return f"gdelt_{tema}_{ini.strftime(FORMATO_GDELT)}_{fin.strftime(FORMATO_GDELT)}"
+def _prefijo_gdelt(tema: str, ini: datetime, fin: datetime, pata: str | None = None) -> str:
+    sufijo = f"__{pata}" if pata else ""
+    return f"gdelt_{tema}{sufijo}_{ini.strftime(FORMATO_GDELT)}_{fin.strftime(FORMATO_GDELT)}"
 
 
 def _pedir_gdelt(params: dict[str, Any], config: dict[str, Any]) -> requests.Response:
@@ -151,10 +153,12 @@ def _pedir_gdelt(params: dict[str, Any], config: dict[str, Any]) -> requests.Res
     raise ErrorDeExtraccion(f"GDELT sin respuesta tras {cfg['max_intentos']} intentos ({ultimo})")
 
 
-def _guardar_gdelt(raw: Path, config: dict[str, Any], tema: str, ini: datetime, fin: datetime, texto: str) -> Path:
+def _guardar_gdelt(
+    raw: Path, config: dict[str, Any], tema: str, ini: datetime, fin: datetime, texto: str, pata: str | None = None
+) -> Path:
     return _guardar(
         raw / config["gdelt"]["carpeta_cruda"],
-        conversion.nombre_con_ts(_prefijo_gdelt(tema, ini, fin), _ahora(), "json"),
+        conversion.nombre_con_ts(_prefijo_gdelt(tema, ini, fin, pata), _ahora(), "json"),
         texto.encode("utf-8"),
     )
 
@@ -167,8 +171,9 @@ def _consultar_gdelt(
     raw: Path,
     config: dict[str, Any],
     estado: dict[str, Any],
+    pata: str | None = None,
 ) -> int:
-    """Consulta un rango: una sola llamada por tema y rango en toda la corrida; si llega al tope lo divide a la mitad.
+    """Consulta un rango: una sola llamada por tema, pata y rango en toda la corrida; si llega al tope lo divide a la mitad.
 
     No llama a la API si crudos ``ok`` ya cubren el rango (de cualquier alineación; salvo
     ``estado['forzar']``) ni si el rango ya se pidió en esta corrida. Un ``{}`` se guarda como crudo y se
@@ -176,14 +181,14 @@ def _consultar_gdelt(
     Devuelve el número de artículos descargados (0 si se reutilizó o se omitió).
     """
     cfg = config["gdelt"]
-    intentados: set[tuple[str, datetime, datetime]] = estado.setdefault("intentados", set())
-    if (tema, ini, fin) in intentados:
+    intentados: set[tuple[str, str | None, datetime, datetime]] = estado.setdefault("intentados", set())
+    if (tema, pata, ini, fin) in intentados:
         return 0
-    if not estado.get("forzar") and conversion.rango_cubierto(raw, config, tema, ini, fin):
+    if not estado.get("forzar") and conversion.rango_cubierto(raw, config, tema, ini, fin, pata):
         logger.info("GDELT %s %s..%s: ya cubierto por crudos existentes, no se vuelve a pedir", tema, ini, fin)
         estado["reutilizados"] = estado.get("reutilizados", 0) + 1
         return 0
-    intentados.add((tema, ini, fin))
+    intentados.add((tema, pata, ini, fin))
     pausa = cfg["pausa_segundos"] - (time.monotonic() - estado.get("ultima", -1e9))
     if pausa > 0:
         time.sleep(pausa)
@@ -202,12 +207,13 @@ def _consultar_gdelt(
         estado["ultima"] = time.monotonic()
     texto = resp.text
     # Toda respuesta válida se guarda sin modificar, también la que se subdivide o viene vacía.
-    _guardar_gdelt(raw, config, tema, ini, fin, texto)
+    _guardar_gdelt(raw, config, tema, ini, fin, texto, pata)
     if _clasificar_respuesta(texto) == "vacio":
         logger.warning("GDELT %s %s..%s: respuesta {}; cobertura sin resolver (no es un vacío confirmado)", tema, ini, fin)
         estado.setdefault("sospechosos", []).append(
             {
                 "tema": tema,
+                "pata": pata,
                 "inicio": ini.strftime(FORMATO_GDELT),
                 "fin": fin.strftime(FORMATO_GDELT),
                 "tipo": "vacio_sospechoso",
@@ -219,8 +225,8 @@ def _consultar_gdelt(
     if n >= cfg["maxrecords"] and conversion.rango_divisible(ini, fin, config):
         logger.info("GDELT %s %s..%s llegó al tope (%s); subdivido", tema, ini, fin, n)
         mitad = (ini + (fin - ini) / 2).replace(microsecond=0)
-        return n + _consultar_gdelt(tema, consulta, ini, mitad, raw, config, estado) + _consultar_gdelt(
-            tema, consulta, mitad, fin, raw, config, estado
+        return n + _consultar_gdelt(tema, consulta, ini, mitad, raw, config, estado, pata) + _consultar_gdelt(
+            tema, consulta, mitad, fin, raw, config, estado, pata
         )
     logger.info("GDELT %s %s..%s: %s artículos", tema, ini, fin, n)
     return n
@@ -233,14 +239,15 @@ def _extraer_gdelt_rangos(
     total = 0
     fallidos: list[dict[str, str]] = []
     for ini, fin in _rangos(ahora, dias, cfg["rango_dias"]):
-        for tema, consulta in cfg["consultas"].items():
+        for tema, pata, consulta in consultas_gdelt.construir_consultas(cfg["consultas"]):
             try:
-                total += _consultar_gdelt(tema, consulta, ini, fin, raw, config, estado)
+                total += _consultar_gdelt(tema, consulta, ini, fin, raw, config, estado, pata)
             except ErrorDeExtraccion as exc:  # un rango fallido no frena a los demás
                 logger.error("GDELT %s %s..%s falló: %s", tema, ini, fin, exc)
                 fallidos.append(
                     {
                         "tema": tema,
+                        "pata": pata,
                         "inicio": ini.strftime(FORMATO_GDELT),
                         "fin": fin.strftime(FORMATO_GDELT),
                         "tipo": "bloqueado",
@@ -274,7 +281,12 @@ def extraer_gdelt(raw: Path, config: dict[str, Any], forzar: bool = False) -> in
     base = copy.deepcopy(config)
     base["ventana_noticias"]["dias_maximo"] = ventana["dias_base"]
     unicas, _, _ = conversion.convertir_noticias(raw, base)
-    if len(unicas) < config["volumen_noticias"]["minimo"]:
+    if len(unicas) < config["volumen_noticias"]["minimo"] and not ventana["ampliar_si_no_alcanza_minimo"]:
+        logger.warning(
+            "Solo %s noticias en %s días (mínimo %s) y ampliar_si_no_alcanza_minimo=false: no se amplía",
+            len(unicas), ventana["dias_base"], config["volumen_noticias"]["minimo"],
+        )
+    elif len(unicas) < config["volumen_noticias"]["minimo"]:
         logger.warning(
             "Solo %s noticias en %s días (mínimo %s): amplío hasta %s días",
             len(unicas), ventana["dias_base"], config["volumen_noticias"]["minimo"], ventana["dias_maximo"],

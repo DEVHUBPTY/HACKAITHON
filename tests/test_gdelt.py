@@ -248,3 +248,49 @@ def test_clasificar_respuesta() -> None:
     assert c('{"articles": []}') == "ok" and c('{"articles": [{"url": "x"}]}') == "ok"
     assert c("{}") == "vacio" and c("") == "vacio" and c("   ") == "vacio"
     assert c("limite de solicitudes") == "invalido" and c('{"error": "x"}') == "invalido"
+
+
+# ------------------------------------------------- E0-04 seguimiento: patas por tema y bandera de ampliación
+
+PATAS = {
+    "economia": {
+        "locales": {"descripcion": "d", "filtros": ["sourcecountry:panama"], "terminos": ["economía", "inflación"]},
+        "internacional": {"descripcion": "d", "filtros": ["-sourcecountry:panama"], "terminos": ["Panama economy", "Panama GDP"]},
+    }
+}
+
+
+def test_cada_pata_hace_una_llamada_con_su_consulta_y_guarda_su_crudo(raw: Path, cfg: dict, red: dict, monkeypatch) -> None:
+    monkeypatch.setattr(extraer, "_ahora", lambda: _dia(6, 12))
+    cfg["gdelt"]["consultas"] = PATAS
+    cfg["ventana_noticias"].update(dias_base=1, dias_maximo=1)
+    extraer.extraer_gdelt(raw, cfg)
+    assert [p["query"] for p in red["llamadas"]] == [
+        "(economía OR inflación) sourcecountry:panama",
+        '("Panama economy" OR "Panama GDP") -sourcecountry:panama',
+    ]
+    nombres = sorted(p.name.split("_2026")[0] for p in (raw / "gdelt").glob("gdelt_*.json"))
+    assert nombres == ["gdelt_economia__internacional", "gdelt_economia__locales"]
+    assert all(c["tema"] == "economia" for c in conversion.crudos_gdelt(raw, cfg))  # D-62: tema = tema
+
+
+def test_un_crudo_de_una_pata_no_cubre_a_la_otra(raw: Path, cfg: dict) -> None:
+    cfg["gdelt"]["consultas"] = PATAS
+    _escribir(raw, "economia", _dia(4), _dia(5), '{"articles": []}')  # sin pata: consulta anterior a E0-04
+    assert not conversion.rango_cubierto(raw, cfg, "economia", _dia(4), _dia(5), "locales")
+    nombre = extraer._prefijo_gdelt("economia", _dia(4), _dia(5), "locales")
+    (raw / "gdelt" / f"{nombre}_20261006T120000Z.json").write_text('{"articles": []}')
+    assert conversion.rango_cubierto(raw, cfg, "economia", _dia(4), _dia(5), "locales")
+    assert not conversion.rango_cubierto(raw, cfg, "economia", _dia(4), _dia(5), "internacional")
+    cob = conversion.cobertura_gdelt(raw, cfg, _dia(5, 12), 1)
+    assert cob["por_tema"]["economia"] == {"dias_esperados": 1, "dias_cubiertos": 0}
+    assert cob["sin_resolver"][0]["detalle"].startswith("[internacional]")
+
+
+@pytest.mark.parametrize("bandera, llamadas", [(True, ["20261005000000", "20261004000000"]), (False, ["20261005000000"])])
+def test_la_ampliacion_a_90_dias_depende_de_la_bandera(raw: Path, cfg: dict, red: dict, monkeypatch, bandera, llamadas) -> None:
+    monkeypatch.setattr(extraer, "_ahora", lambda: _dia(6, 12))
+    cfg["ventana_noticias"].update(dias_base=1, dias_maximo=2, ampliar_si_no_alcanza_minimo=bandera)
+    cfg["volumen_noticias"]["minimo"] = 10
+    extraer.extraer_gdelt(raw, cfg)
+    assert [p["startdatetime"] for p in red["llamadas"]] == llamadas

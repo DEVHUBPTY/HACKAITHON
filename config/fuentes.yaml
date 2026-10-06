@@ -15,6 +15,9 @@ ventana_noticias:
   # D-74: 30 días previos a la extracción; se amplía hasta 90 si no se alcanza el mínimo.
   dias_base: 30
   dias_maximo: 90
+  # E0-09: el mínimo útil (100 no ruido) no se alcanza con 30 días; la spec permite ampliar a 90.
+  # Es una decisión explícita: con false, la extracción avisa pero no amplía. Ver docs/parametros.md.
+  ampliar_si_no_alcanza_minimo: true
   base_de_medicion: fecha_deteccion   # si falta (RSS sin GDELT), fecha_publicacion
   # El intervalo [2024-01-01, 2025-10-01) de la sección 7 del PDF NO se aplica (D-74).
   intervalo_pdf_seccion_7_no_aplicado: ["2024-01-01", "2025-10-01"]
@@ -133,12 +136,52 @@ gdelt:
     Uzbek: "uz"
     Vietnamese: "vi"
     Welsh: "cy"
-  # Tema de origen = clave. 'Panama' combinado con términos en español e inglés.
+  # Tema de origen (D-62) = clave. Cada tema tiene dos patas, una llamada por pata y rango
+  # (src/consultas_gdelt.py arma "(t1 OR "frase dos") filtros"). Operadores: frase entre comillas,
+  # OR entre paréntesis sin anidar, sourcecountry:<país|FIPS>, prefijo '-' para excluir
+  # (https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/). Nunca 'Panama' suelto + sustantivo genérico
+  # (E0-09: ~67 % de lo descargado no era sobre Panamá: Panama City Beach, Panama Papers, etc.).
+  motivo_cambio_consultas: >-
+    E0-04 (seguimiento): las consultas 'Panama + palabra genérica' traían ~67 % de ruido (E0-09; solo 4 de 95
+    de 'logistica' eran logística). Ahora cada tema tiene una pata de medios de Panamá (sourcecountry:panama +
+    términos en español) y una internacional con frases específicas de Panamá (excluye medios de Panamá).
   consultas:
-    logistica: 'Panama (logistica OR logistics OR puerto OR port OR shipping OR canal OR cargo)'
-    turismo: 'Panama (turismo OR tourism OR turistas OR tourists OR hotel OR cruceros)'
-    economia: 'Panama (economia OR economy OR inflacion OR inflation OR inversion OR exportaciones)'
-    eventos_naturales: 'Panama (sismo OR terremoto OR earthquake OR inundacion OR flood OR lluvias OR sequia)'
+    logistica:
+      locales:
+        descripcion: "Medios de Panamá; términos de logística en español"
+        filtros: ["sourcecountry:panama"]
+        terminos: [canal, puerto, puertos, logística, logistica, carga, contenedores, naviera, "Zona Libre", "cadena de suministro"]
+      internacional:
+        descripcion: "Medios de fuera de Panamá; frases específicas"
+        filtros: ["-sourcecountry:panama"]
+        terminos: ["Panama Canal", "Canal de Panamá", "Panama Canal Authority", "Panama Ports", "Colon Free Zone", "Zona Libre de Colón"]
+    turismo:
+      locales:
+        descripcion: "Medios de Panamá; términos de turismo en español"
+        filtros: ["sourcecountry:panama"]
+        terminos: [turismo, turistas, cruceros, hoteles, visitantes, "llegada de turistas"]
+      internacional:
+        descripcion: "Medios de fuera de Panamá; frases específicas"
+        filtros: ["-sourcecountry:panama"]
+        terminos: ["Panama tourism", "Panama tourists", "turismo en Panamá", "turistas en Panamá", "Panama cruise"]
+    economia:
+      locales:
+        descripcion: "Medios de Panamá; términos de economía en español"
+        filtros: ["sourcecountry:panama"]
+        terminos: [economía, economia, inflación, inflacion, exportaciones, inversión, PIB, "canasta básica"]
+      internacional:
+        descripcion: "Medios de fuera de Panamá; frases específicas"
+        filtros: ["-sourcecountry:panama"]
+        terminos: ["Panama's economy", "Panama economy", "Panama GDP", "Panama inflation", "economía panameña", "economía de Panamá"]
+    eventos_naturales:
+      locales:
+        descripcion: "Medios de Panamá; términos de eventos naturales en español"
+        filtros: ["sourcecountry:panama"]
+        terminos: [sismo, temblor, terremoto, inundación, inundaciones, lluvias, sequía, deslizamiento, Sinaproc]
+      internacional:
+        descripcion: "Medios de fuera de Panamá; frases específicas"
+        filtros: ["-sourcecountry:panama"]
+        terminos: ["Panama earthquake", "Panama flood", "Panama floods", "Panama drought", "sismo en Panamá", "terremoto en Panamá", "inundaciones en Panamá"]
 
 # País de la fuente (campo sourcecountry de GDELT, en inglés) -> nombre en español. Si no está aquí,
 # el país de la fuente queda nulo en fuentes.json (no se inventa).

@@ -29,7 +29,7 @@ FORMATO_TS_ARCHIVO = "%Y%m%dT%H%M%SZ"
 FORMATO_ISO = "%Y-%m-%dT%H:%M:%SZ"
 PATRON_TS_ARCHIVO = re.compile(r"_(\d{8}T\d{6}Z)\.[a-z]+$")
 PATRON_ARCHIVO_GDELT = re.compile(
-    r"^gdelt_(?P<tema>[a-z_]+)_(?P<ini>\d{14})_(?P<fin>\d{14})_(?P<ts>\d{8}T\d{6}Z)\.json$"
+    r"^gdelt_(?P<tema>[a-z]+(?:_[a-z]+)*?)(?:__(?P<pata>[a-z]+))?_(?P<ini>\d{14})_(?P<fin>\d{14})_(?P<ts>\d{8}T\d{6}Z)\.json$"
 )
 PATRON_ARCHIVO_WB = re.compile(r"^wb_(?P<ind>[A-Za-z0-9.]+)_(?P<ts>\d{8}T\d{6}Z)\.json$")
 
@@ -433,7 +433,7 @@ def crudos_gdelt(carpeta_raw: Path, config: dict[str, Any]) -> list[dict[str, An
             n = len(json.loads(texto, strict=False).get("articles") or [])
             if n >= tope and rango_divisible(ini, fin, config):
                 clase = "truncado"
-        salida.append({"tema": m["tema"], "ini": ini, "fin": fin, "clase": clase, "archivo": ruta.name})
+        salida.append({"tema": m["tema"], "pata": m["pata"], "ini": ini, "fin": fin, "clase": clase, "archivo": ruta.name})
     return salida
 
 
@@ -448,10 +448,19 @@ def _fusionar_intervalos(intervalos: list[tuple[datetime, datetime]]) -> list[tu
     return [(a, b) for a, b in unidos]
 
 
-def rango_cubierto(carpeta_raw: Path, config: dict[str, Any], tema: str, ini: datetime, fin: datetime) -> bool:
-    """True si crudos ``ok`` de ese tema (de cualquier alineación) cubren por completo ``[ini, fin]``."""
+def rango_cubierto(
+    carpeta_raw: Path, config: dict[str, Any], tema: str, ini: datetime, fin: datetime, pata: str | None = None
+) -> bool:
+    """True si crudos ``ok`` de ese tema y pata (de cualquier alineación) cubren por completo ``[ini, fin]``.
+
+    Los crudos sin pata (consultas anteriores a E0-04) solo cuentan para consultas sin pata.
+    """
     cubiertos = _fusionar_intervalos(
-        [(c["ini"], c["fin"]) for c in crudos_gdelt(carpeta_raw, config) if c["tema"] == tema and c["clase"] == "ok"]
+        [
+            (c["ini"], c["fin"])
+            for c in crudos_gdelt(carpeta_raw, config)
+            if c["tema"] == tema and c["pata"] == pata and c["clase"] == "ok"
+        ]
     )
     return any(a <= ini and fin <= b for a, b in cubiertos)
 
@@ -523,15 +532,23 @@ def cobertura_gdelt(carpeta_raw: Path, config: dict[str, Any], fin: datetime, di
     ventana = [fin_total - timedelta(days=dias - i) for i in range(dias)]
     por_tema: dict[str, dict[str, int]] = {}
     sin_resolver: list[dict[str, Any]] = []
-    for tema in config["gdelt"]["consultas"]:
-        propios = [c for c in crudos if c["tema"] == tema]
-        cubiertos = _fusionar_intervalos([(c["ini"], c["fin"]) for c in propios if c["clase"] == "ok"])
+    for tema, definicion in config["gdelt"]["consultas"].items():
+        # Un día cuenta como cubierto solo si lo cubren TODAS las patas del tema (E0-04).
+        patas: list[str | None] = list(definicion) if isinstance(definicion, dict) else [None]
+        por_pata = {}
+        for pata in patas:
+            propios = [c for c in crudos if c["tema"] == tema and c["pata"] == pata]
+            cubiertos = _fusionar_intervalos([(c["ini"], c["fin"]) for c in propios if c["clase"] == "ok"])
+            regs = [r for r in registro if r.get("tema") == tema and r.get("pata") == pata]
+            por_pata[pata] = (propios, cubiertos, regs)
         pendientes: list[tuple[datetime, str, str]] = []
         for dia in ventana:
-            if any(a <= dia and dia + timedelta(days=1) <= b for a, b in cubiertos):
-                continue
-            motivo, detalle = _motivo_dia(dia, propios, [r for r in registro if r.get("tema") == tema])
-            pendientes.append((dia, motivo, detalle))
+            for pata, (propios, cubiertos, regs) in por_pata.items():
+                if any(a <= dia and dia + timedelta(days=1) <= b for a, b in cubiertos):
+                    continue
+                motivo, detalle = _motivo_dia(dia, propios, regs)
+                pendientes.append((dia, motivo, detalle if pata is None else f"[{pata}] {detalle}"))
+                break
         por_tema[tema] = {"dias_esperados": len(ventana), "dias_cubiertos": len(ventana) - len(pendientes)}
         corridas: list[dict[str, Any]] = []
         for dia, motivo, detalle in pendientes:
