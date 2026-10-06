@@ -146,12 +146,16 @@ def quitar_sufijo_medio(titulo: str, medio: str | None, dominio: str | None, reg
     for m in re.finditer(rf"\s(?:{separadores})\s", titulo):
         sufijo = titulo[m.end() :].strip()
         cabeza = titulo[: m.start()].rstrip()
-        if not cabeza or not sufijo or len(sufijo.split()) > cfg.max_palabras_sufijo:
+        if not cabeza or not sufijo:
             continue
         forma = _alnum(sufijo)
         if not forma:
             continue
-        es_medio = any(
+        # el sufijo EMPIEZA por el nombre del medio ("Dominican Republic Post – Caribbean News, Business...")
+        empieza_por_medio = any(forma.startswith(c) for c in candidatos)
+        if len(sufijo.split()) > cfg.max_palabras_sufijo and not empieza_por_medio:
+            continue
+        es_medio = empieza_por_medio or any(
             forma == c or (len(forma) >= cfg.min_letras_medio and (forma in c or c in forma)) for c in candidatos
         )
         if es_medio or forma in conocidos:

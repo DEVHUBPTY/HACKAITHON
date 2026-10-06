@@ -67,12 +67,14 @@ panama:
   paises_medio_exentos: ["Panamá"]  # medios panameños: sus notas son sobre Panamá aunque el titular no lo diga
   # TVN: la primera sección de la URL es solo una señal CANDIDATA; con un titular sin mención se marca.
   dominio_con_seccion: tvn-2.com
-  # D-84: una nota que nombra la región (o un fenómeno regional que afecta a Panamá) NO es ruido: se conserva con
+  # D-84: una nota que nombra la región (o su comercio/logística) NO es ruido: se conserva con
   # alcance_regional = true y se cuenta aparte en el reporte. Un falso Panamá o un deporte siguen siendo ruido.
   regionales:
-    - '\b(centroamerica|america central|america latina|latinoamerica\w*|latam|latin america|lateinamerika|caribe|caribbean)\b'
-    - '\bel nino\b|\bla nina\b'
-    - '\brutas? maritimas?\b'
+    - '\b(centroamerica|central america|america central|america latina|latinoamerica\w*|latam|latin america|latin amerika|lateinamerika)\b'
+    - '\blatinske ameriky\b|\bлатинск\w* америк\w*|\bлатинськ\w* америц\w*'   # checo, ruso, ucraniano
+    # "Caribe" a secas no basta ("Caribbean cricket"): solo junto a un término económico, logístico o marítimo.
+    - '\b(caribe|caribbean)\b.{0,60}\b(econom\w*|comerci\w*|trade|puertos?|ports?|maritim\w*|shipping|carga|cargo|logistic\w*|cruceros?|cruise\w*|buques?|navier\w*)\b'
+    - '\b(econom\w*|comerci\w*|trade|puertos?|ports?|maritim\w*|shipping|carga|cargo|logistic\w*|cruceros?|cruise\w*|buques?|navier\w*)\b.{0,60}\b(caribe|caribbean)\b'
   secciones_dudosas: [mundo, tvmax, entretenimiento]   # gente-tvn y videos son contenido propio de TVN: no se filtran por sección
 
 # Es de Panamá, pero de un área que el reto no cubre (docs/guia_temas.md): deportes, farándula, cultura, política partidista.
@@ -86,10 +88,11 @@ fuera_de_temas:
     - '\b(eliminatorias|semifinales?)\b'
     - '\bpartido (ante|amistoso|de (futbol|beisbol|baloncesto|ida|vuelta))\b'                  # no "partido de gobierno"
   farandula:
-    - '\b(videoclip|cantante|actriz|vida sentimental|carnavalera|famos[oa]s?)\b'
+    - '\b(videoclip|vida sentimental|carnavalera|famos[oa]s?|music awards)\b'
+    - '\b(cantante|actriz|actor)\b.{0,50}\b(estrena\w*|lanza\w*|nuevo (album|sencillo|papel)|protagoniza\w*|revela\w* detalles|gira)\b'   # no "cantante denuncia agresión"
     - "\\bgira (musical|mundial|de conciertos)\\b|\\bgira '"                                      # no "Mulino gira instrucciones"
     - '\b(kardashian|lohan|pedro pascal|offset)\b'
-    - '\bconcierto\b'
+    - '\bconcierto\b(?! benefic| solidari)'                                                     # no "concierto benéfico"
   cultura:
     - '\bferia del libro\b'
     - '\bfestival (de|internacional de) (cine|jazz|musica|teatro)\b'
@@ -100,7 +103,7 @@ fuera_de_temas:
 
   # Autopromoción de TVN (H5): no es noticia de los temas. "Contenido Exclusivo: ..." sí puede estarlo y no se marca.
   autopromocion_tvn:
-    - '^\s*(tvn media|gente tvn|gente que inspira)\b'
+    - '^\s*(tvn media|gente tvn|gente que inspira)\b(?!.*\b(inundacion\w*|donacion\w*|damnificad\w*|emergencia|ayuda humanitaria|incendio\w*|tragedia|sismo|lluvias?)\b)'
 
 # Prototipo de noticia sobre Panamá (similitud de embeddings): DIFERIDO a E1-07 (los embeddings
 # locales de titulares llegan con esa tarea; src/embeddings.py hoy es un stub). Hasta entonces el filtro es solo por palabras clave.

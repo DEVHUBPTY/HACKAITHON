@@ -351,6 +351,51 @@ def test_x14_h6_deportes_de_tvn_sin_mencion_son_fuera_de_temas_no_no_es_panama()
     assert limpieza.evaluar(tvn, REGLAS).motivo_ruido == "fuera_de_temas"
 
 
+@pytest.mark.parametrize(
+    "titulo",
+    ["Caribbean cricket team wins series", "Latin America music awards in Miami", "El Niño hits Australian wheat"],
+)
+def test_x14_o1_negativos_inventados_no_son_utiles_regionales(titulo: str) -> None:
+    r = limpieza.evaluar(_fila(titulo), REGLAS)
+    assert r.alcance_regional is False and r.es_ruido is True
+
+
+@pytest.mark.parametrize(
+    "titulo",
+    [
+        "Central America Trade Squeeze",
+        "Caribbean shipping lanes reshape cargo flows",
+        "Puertos del Caribe amplían su capacidad de carga",
+        "Rodzina z Ameryki Łacińskiej i América Latina en crisis",
+        "Трамп перенаправил помощь в страны Латинской Америки",
+        "Допомога Латинській Америці",
+        "Trump přesměroval pomoc zemím Latinské Ameriky",
+    ],
+)
+def test_x14_o1_o3_regional_en_varios_idiomas_y_caribe_con_termino_economico(titulo: str) -> None:
+    r = limpieza.evaluar(_fila(titulo), REGLAS)
+    assert r.es_ruido is False and r.alcance_regional is True, titulo
+
+
+def test_x14_o1_sufijo_largo_que_empieza_por_el_medio_se_quita_y_cae_como_su_gemelo() -> None:
+    sucio = "Jóvenes de Haina piden auxilio para retornar al país - Dominican Republic Post – Caribbean News , Business , Travel & Culture"
+    limpio = limpieza.limpiar_titulo(sucio, "dominicanrepublicpost.com", "dominicanrepublicpost.com", REGLAS)
+    assert limpio == "Jóvenes de Haina piden auxilio para retornar al país"
+    assert limpieza.evaluar(_fila(sucio, medio="dominicanrepublicpost.com", dominio="dominicanrepublicpost.com"), REGLAS).motivo_ruido == "no_es_panama"
+
+
+@pytest.mark.parametrize(
+    "titulo",
+    [
+        "Cantante panameño denuncia agresión en Colón",
+        "Concierto benéfico recauda fondos para damnificados",
+        "Gente TVN se suma a jornada de donación por inundaciones",
+    ],
+)
+def test_x14_o2_patrones_anclados_no_marcan_noticias_de_servicio(titulo: str) -> None:
+    assert limpieza.evaluar(_fila(titulo, origen="TVN RSS", pais_medio="Panamá"), REGLAS).motivo_ruido is None
+
+
 def test_x14_h8_los_decimales_del_reporte_son_una_constante_de_presentacion() -> None:
     assert isinstance(limpieza.DECIMALES_PRESENTACION, int)
 
