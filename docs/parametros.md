@@ -45,9 +45,10 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 
 | Parámetro | Valor | Origen | Cómo se valida |
 |---|---|---|---|
-| Umbral de agrupación | Por definir | Calibrado (D-16) | F1 de pares con etiquetas · curva documentada |
-| Ventana de agrupación | 7 días | Supuesto | X02 |
-| Similitud para "mismo texto" en procedencias | 0.95 | Supuesto | Test CU-03 · etiquetas |
+| Umbral de agrupación | 0.69 (coseno promedio, MiniLM; `agrupacion.umbral_similitud`) | **Calibrado** (D-16): mayor F1 de pares con `eval/etiquetas.csv`, mitad de la meseta más larga. Vale solo para MiniLM | `python -m eval.agrupacion` · curva en `docs/calibracion_agrupacion.md` |
+| Ventana de agrupación | 7 días | Supuesto | X02 · `test_dos_titulares_a_mas_de_la_ventana_*` |
+| Similitud para "mismo texto" en procedencias | 0.95 | Supuesto | `test_el_umbral_de_mismo_texto_*` · T02 · los 20 «Intensifying El Niño…» y los 10 «Trump streicht…» dan una procedencia |
+| Detalle de la agrupación y de las procedencias (E1-08) | Ver «Agrupación y procedencias (E1-08)» más abajo | — | — |
 | Umbrales de ruido | Por definir | Calibrado | X01 (precisión/recall) |
 | Coincidencia de sismos (`vinculos.yaml`) | ± 2 días | Supuesto | Revisión con la exploración (E0-09); datos sintéticos en E1-09 |
 | Magnitud mínima USGS | 3 | PDF (sección 6) | — |
@@ -178,6 +179,29 @@ Todo lo marcado como ruido es una **propuesta por titular**, no una etiqueta hum
 | Fuga semántica: coseno máximo entre un caso difícil y un ejemplo o prototipo | < 0.56 con MiniLM, ignorando «Panamá» (`fuga_semantica` en `clasificacion.yaml`); una excepción aceptada de forma explícita (CD-02 con un ejemplo real del snapshot, 0.566) | **Supuesto elegido después de ver los pares**: detecta las paráfrasis de CD-02, CD-11 y CD-12; CD-01 con el prototipo original daba 0.56 | `test_h4_ningun_ejemplo_ni_prototipo_parafrasea_un_caso_dificil` |
 | Clases de la evaluación | 6 temas + `sin_tema` (agrupa `fuera_de_temas` y `no_es_panama`) | `guia_temas.md` | `test_tema_a_id_*` |
 | Macro-F1 | Media de los F1 definidos de las clases con soporte en las etiquetas; un F1 indefinido no cuenta como 0 | Práctica (se declara para no inflar ni hundir la media) | `test_una_clase_sin_soporte_*` |
+
+## Agrupación y procedencias (E1-08, `config/reglas_v1.3.yaml`, `config/procedencias.yaml`)
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| Modelo de la agrupación (`agrupacion.modelo`) | `minilm` | **Supuesto** razonado: con e5 y con MiniLM la validación cruzada empata (F1 0.916 y 0.916), pero con e5 el máximo es un solo punto del barrido al borde de un acantilado (0.845 → 40 falsos positivos a 0.84) y agrupa en el snapshot titulares que no son del mismo evento; MiniLM tiene una meseta de 6 puntos y comete errores por omisión, no por comisión (detalle en `docs/calibracion_agrupacion.md`). Es un modelo aparte del de la clasificación (`modelo_activo`, D-20) | `python -m eval.agrupacion --modelo e5` frente a `--modelo minilm` |
+| Enlace del clustering | `average` con métrica `cosine` | Spec E1-08 | `test_titulares_del_mismo_evento_*` |
+| `distance_threshold` | `1 − umbral_similitud` | Definición (distancia coseno = 1 − similitud) | `test_un_umbral_mas_alto_separa_*` |
+| Barrido de calibración | 0.50 a 0.99 cada 0.005 (99 valores) | **Supuesto**: cubre las escalas de e5 (0.75–0.95) y MiniLM (0.3–0.95) | `test_el_barrido_incluye_los_extremos_*` |
+| Regla de elección del umbral | Mayor F1 de pares; entre empatados, la mediana inferior de la meseta contigua más larga | Fijada antes de medir (D-16): un punto en el borde de una meseta es frágil | `test_en_una_meseta_elige_la_mitad_*` |
+| Pliegues de la validación cruzada | 2, por hash SHA-1 del ID | **Supuesto**: con 100 etiquetas y 4 grupos humanos no cabe un conjunto reservado; la partición determinista da una cifra que la calibración no vio | `test_el_pliegue_es_determinista_*` |
+| Dato de la agrupación | `titulo_limpio` (`usar_descripcion: false`) | Supuesto: los grupos humanos se etiquetaron por titular y la descripción es de uso interno (D-31) | — |
+| Fecha de un titular | `fecha_publicacion`; si falta, `fecha_deteccion` (`campos_fecha`) | D-35: la detección es solo una cota | `test_la_fecha_es_la_publicacion_y_si_falta_la_deteccion` |
+| Hash del `GRP-` | SHA-1, 10 caracteres, de los `NOT-` ordenados unidos con `\|` | D-63 (mismo formato que `NOT-`) | `test_id_de_grupo_*` · `test_mismo_snapshot_y_mismas_reglas_dan_los_mismos_ids` |
+| Redes de sindicación | Big News Network: 17 dominios espejo (`procedencias.yaml`) | **Supuesto**: dominios con titulares idénticos y casi la misma hora en el snapshot del 2026-10-06; no se confirmó con el medio | `test_la_red_de_sindicacion_une_sus_sitios_espejo` · grupo de «Intensifying El Niño…» |
+| Dominios de agencias | Xinhua, Prensa Latina, EFE, AFP, Reuters, AP, Europa Press, DPA, ANSA, Bloomberg (`agencias_por_dominio`) | Práctica: dominios oficiales de las agencias de `agencias` | `test_un_dominio_de_agencia_se_une_con_quien_la_nombra` |
+| Alias de agencias | Associated Press, Agence France-Presse, Agencia EFE, Deutsche Presse-Agentur, Thomson Reuters, Noticias Prensa Latina | Práctica (nombres oficiales) | `test_la_agencia_nombrada_en_el_titular_une_a_sus_replicas` |
+| Siglas sensibles a mayúsculas | EFE, AFP, AP, DPA, ANSA | Diseño: «ap» o «efe» en minúscula no son la agencia | `test_las_siglas_distinguen_mayusculas_y_los_nombres_no` |
+| Tope de procedencias en E | 3 (de `evidencia.tope_procedencias`) | Supuesto (X02) | `test_las_procedencias_aportan_a_e_con_tope_y_sin_contar_titulares` · T02 |
+| Grupos listados en el reporte | 5 (`GRUPOS_EN_REPORTE`) | Presentación: no afecta ninguna decisión | — |
+
+El conteo de procedencias es una **estimación** (`grupos.estimado = true`, leyenda `etiqueta_estimado`): una traducción
+independiente del mismo despacho cuenta como otra procedencia porque ninguna regla sabe que comparten origen.
 
 ## Consulta y generación
 
