@@ -952,6 +952,11 @@ def validar_coherencia(carpeta: Path | None = None) -> list[str]:
     excluidos = _ids_excluidos(carpeta / "ejemplos_excluidos.txt")
     if reales != excluidos:
         problemas.append(f"ejemplos_excluidos.txt no coincide con los ejemplos reales de temas.yaml: {sorted(reales ^ excluidos)}")
+    if (carpeta / "etiquetado.yaml").exists():
+        motivos = set(cargar_etiquetado(carpeta).ruido.motivos)
+        esperados = set(FueraDeTemas.model_fields) | MOTIVOS_RUIDO_HUMANO_EXTRA
+        if motivos != esperados:
+            problemas.append(f"etiquetado.yaml: ruido.motivos {sorted(motivos)} debe ser fuera_de_temas de temas.yaml más {sorted(MOTIVOS_RUIDO_HUMANO_EXTRA)}")
     grupos = set(cargar_restricciones(carpeta).grupos)
     for modalidad in MODALIDADES:
         if (carpeta / f"modalidad_{modalidad}.yaml").exists():
@@ -1110,6 +1115,86 @@ def cargar_ruido(carpeta: Path | None = None) -> ConfigRuido:
     return cargar_config("ruido", ConfigRuido, carpeta)
 
 
+# ------------------------------------------------------------------ etiquetado.yaml (E1-06)
+
+
+class EstratoEtiquetado(ModeloConfig):
+    cuota: int = Field(ge=0)
+    dobles: int = Field(ge=0)
+
+
+class EstratosEtiquetado(ModeloConfig):
+    no_ruido: EstratoEtiquetado
+    ruido: EstratoEtiquetado
+
+
+class MuestraEtiquetado(ModeloConfig):
+    semilla: int
+    tamano: int = Field(ge=1)
+    tamano_acuerdo: int = Field(ge=2)
+    estratos: EstratosEtiquetado
+
+    @model_validator(mode="after")
+    def _acuerdo_cabe(self) -> MuestraEtiquetado:
+        if self.tamano_acuerdo > self.tamano:
+            raise ValueError("tamano_acuerdo no puede superar tamano")
+        e = self.estratos
+        if e.no_ruido.cuota + e.ruido.cuota != self.tamano:
+            raise ValueError("las cuotas de los estratos deben sumar tamano")
+        if e.no_ruido.dobles + e.ruido.dobles != self.tamano_acuerdo:
+            raise ValueError("los dobles de los estratos deben sumar tamano_acuerdo")
+        if e.no_ruido.dobles > e.no_ruido.cuota or e.ruido.dobles > e.ruido.cuota:
+            raise ValueError("los dobles de un estrato no pueden superar su cuota")
+        return self
+
+
+class ArchivosEtiquetado(ModeloConfig):
+    carpeta_personas: str
+    consolidado: str
+    ejemplos_excluidos: str
+
+
+class RuidoEtiquetado(ModeloConfig):
+    sin_ruido: str
+    motivos: list[str]
+
+
+class AcuerdoEtiquetado(ModeloConfig):
+    kappa_minimo: float = Field(gt=0, le=1)
+
+
+class NombresEtiquetado(ModeloConfig):
+    longitud_minima: int = Field(ge=1)
+    marcadores_ia: list[str]
+    marcadores_ia_nombre_completo: list[str]
+
+
+class InterfazEtiquetado(ModeloConfig):
+    zona_horaria: str
+    formato_fecha: str
+
+
+class ConfigEtiquetado(ModeloConfig):
+    """Modelo de ``config/etiquetado.yaml``."""
+
+    version: int
+    muestra: MuestraEtiquetado
+    archivos: ArchivosEtiquetado
+    ruido: RuidoEtiquetado
+    acuerdo: AcuerdoEtiquetado
+    nombres: NombresEtiquetado
+    interfaz: InterfazEtiquetado
+
+
+# Motivo que las personas etiquetan además de los de temas.yaml (decisión del equipo tras revisión, spec E1-06).
+MOTIVOS_RUIDO_HUMANO_EXTRA = frozenset({"no_es_noticia"})
+
+
+def cargar_etiquetado(carpeta: Path | None = None) -> ConfigEtiquetado:
+    """Atajo para ``config/etiquetado.yaml``."""
+    return cargar_config("etiquetado", ConfigEtiquetado, carpeta)
+
+
 MODALIDADES = ("editorial", "banca")
 OPCIONALES = {"modalidad_banca"}  # el esquema la admite aunque todavía no exista
 
@@ -1129,6 +1214,7 @@ CARGADORES = {
     "modalidad_banca": lambda c=None: cargar_modalidad("banca", c),
     "llm": cargar_llm,
     "normalizacion": cargar_normalizacion,
+    "etiquetado": cargar_etiquetado,
 }
 
 

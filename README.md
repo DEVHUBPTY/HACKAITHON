@@ -31,6 +31,7 @@ poetry run python -m src.carga                       # carga y validación de da
 poetry run python -m src.normalizacion               # crea data/senales.duckdb
 poetry run python -m src.limpieza                    # limpia titulares y marca ruido
 poetry run streamlit run app.py                      # interfaz
+poetry run streamlit run eval/etiquetar.py           # etiquetado humano (E1-06; ver docs/etiquetado.md)
 poetry run streamlit run app.py -- --demo            # modo demo (data/demo.duckdb)
 poetry run python -m scripts.verificar_offline       # chequeo antes del pitch
 poetry run python -m eval.run_benchmark --split dev  # benchmark de desarrollo
