@@ -29,6 +29,8 @@ poetry run python -m src.normalizacion               # normaliza y crea data/sen
 poetry run python -m src.limpieza                    # limpia titulares y marca ruido
 poetry run python -m src.clasificacion               # embeddings locales y tema_clasificado
 poetry run python -m eval.clasificacion              # métricas de clasificación (casos difíciles y etiquetas)
+poetry run python -m src.consulta "pregunta"         # consulta en español con abstención (--metodo semantica|bm25)
+poetry run python -m eval.recuperacion               # Recall@5 y abstención, semántica vs. BM25, con n e IC
 poetry run streamlit run app.py                      # interfaz
 poetry run streamlit run app.py -- --demo            # modo demo (data/demo.duckdb)
 poetry run python -m scripts.verificar_offline       # chequeo antes del pitch
