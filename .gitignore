@@ -16,3 +16,7 @@ outputs/benchmark/
 .DS_Store
 .idea/
 .vscode/
+
+# Model caches
+.cache/
+models/

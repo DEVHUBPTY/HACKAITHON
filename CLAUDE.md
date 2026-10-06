@@ -44,7 +44,7 @@ templates/   ficha.md.j2 (Jinja2)
 prompts/     paquete_editorial.txt · respuesta_consulta.txt · comparar_contradicciones.txt · boletin_banca.txt
 data/        raw/ (inmutable) · processed/ · manifest.json · diccionario.md · senales.duckdb
 src/         carga · normalizacion · limpieza · db · embeddings · clasificacion · baseline · agrupacion · procedencias
-             contexto · puntaje · evidencia · ficha · consulta · esquemas · generacion · validador · cache · revision · exportar
+             contexto · puntaje · evidencia · ficha · consulta · esquemas · generacion · validador · cache · revision · exportar · registro
 src/llm/     proveedor.py (interfaz) · ollama.py · deepseek.py
 scripts/     extraer_*.py · validar_snapshot.py · explorar.py · buscar_casos.py · preparar_demo.py · calentar_cache.py · capturas_demo.py · verificar_offline.py · reproducir.py · empaquetar_datos.py · auditoria_final.py · manifest.py · catalogo.py · probar_llm.py
 eval/        etiquetar.py · etiquetas.csv · run_benchmark.py · metricas.py · precision_at_5.py
