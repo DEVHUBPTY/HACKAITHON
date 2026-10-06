@@ -102,6 +102,7 @@ class Gdelt(ModeloConfig):
     maxrecords: int
     pausa_segundos: int
     espera_429_segundos: int
+    max_intentos: int
     rango_dias: int
     rango_minimo_horas: int
     carpeta_cruda: str

@@ -165,9 +165,9 @@ def test_guardar_crudo_nunca_sobrescribe(tmp_path: Path) -> None:
 
 
 def test_rangos_de_fechas_cubren_la_ventana_sin_huecos() -> None:
-    fin = datetime(2026, 10, 6, tzinfo=UTC)
-    inicio = fin - timedelta(days=12)
-    rangos = extraer._rangos(inicio, fin, 5)
-    assert rangos[0][1] == fin and rangos[-1][0] == inicio
+    hoy = datetime(2026, 10, 6, 15, tzinfo=UTC)
+    rangos = extraer._rangos(hoy, 12, 5)
+    assert rangos[0][1] == datetime(2026, 10, 6, tzinfo=UTC)
+    assert rangos[-1][0] <= datetime(2026, 10, 6, tzinfo=UTC) - timedelta(days=12)
     assert all(a[0] == b[1] for a, b in zip(rangos, rangos[1:], strict=False))
     assert all(r[1] - r[0] <= timedelta(days=5) for r in rangos)

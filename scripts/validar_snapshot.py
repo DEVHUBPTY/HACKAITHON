@@ -292,6 +292,9 @@ def _validar_manifest(inf: Informe, data: Path, resumen: dict) -> None:
         inf.error("manifest:sha256", f"huellas que no coinciden con los archivos: {diferentes}")
     elif m.get("sha256"):
         inf.ok("manifest:sha256", f"{len(m['sha256'])} huellas verificadas")
+    sin_resolver = (m.get("cobertura_efectiva") or {}).get("gdelt_rangos_sin_resolver") or []
+    if sin_resolver:
+        inf.advertencia("gdelt:rangos_sin_resolver", f"{len(sin_resolver)} consulta(s) de GDELT sin respuesta: la cobertura de GDELT es incompleta")
     if "cobertura_efectiva" not in m:
         inf.advertencia("manifest:cobertura_efectiva", "el manifest no registra la cobertura efectiva")
     resumen["manifest_version"] = m.get("version")

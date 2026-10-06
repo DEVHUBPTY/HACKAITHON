@@ -124,6 +124,7 @@ def _cobertura(processed: Path, auditoria: dict[str, Any]) -> dict[str, Any]:
         "ventana_ampliada_a_90": auditoria["ventana"]["ampliada"],
         "ventana_inicio": auditoria["ventana"]["inicio"],
         "ventana_fin": auditoria["ventana"]["fin"],
+        "gdelt_rangos_sin_resolver": auditoria.get("gdelt_rangos_sin_resolver", []),
     }
 
 
@@ -234,6 +235,7 @@ def _historial(
         "hash_snapshot": hash_snapshot,
         "cambios_de_fuente": cambios,
         "revisiones_de_datos": revisiones,
+        "fallos_de_extraccion": auditoria.get("gdelt_rangos_sin_resolver", []),
         "registros_excluidos": {"total": len(auditoria["excluidos"]), "por_motivo": dict(sorted(motivos.items()))},
         "cantidad_por_archivo": cantidades,
     }

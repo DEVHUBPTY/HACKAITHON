@@ -55,9 +55,9 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 | USGS: caja · fechas · magnitud mínima | lat 5–12, lon −86 a −76 · 2024 · 3 | PDF (sección 6) | `validar_snapshot` |
 | Fin de USGS | 2024-12-31T23:59:59 | Supuesto (el `endtime` es exclusivo; así entra el 31/12 completo) | `validar_snapshot` (fechas) |
 | Pausa entre llamadas a GDELT | 12 s | Práctica (GDELT pide ~1 cada 5 s; con 6 s hubo 429 sostenidos en la corrida real) | Sin 429 sostenidos en la corrida |
-| Espera tras HTTP 429 | 60 s | Supuesto | Corrida real |
+| Backoff ante 429 · intentos máximos por rango | 30 s base, ×2 por intento (manda `Retry-After`) · 5 | Supuesto (GDELT bloquea ~2 min tras unas pocas llamadas seguidas) | Corrida real; rangos fallidos quedan registrados |
 | Reintentos HTTP · espera · timeout | 3 · 15 s · 60 s | Supuesto | Corrida real |
-| Rango inicial de GDELT · mínimo al subdividir | 5 días · 6 h | Supuesto | Se subdivide si la consulta llega a 250 |
+| Rango inicial de GDELT · mínimo al subdividir | 10 días · 6 h | Supuesto | Se subdivide si la consulta llega a 250 |
 | Pausa entre indicadores del Banco Mundial | 1 s | Supuesto (cortesía) | Corrida real |
 
 ## Consulta y generación

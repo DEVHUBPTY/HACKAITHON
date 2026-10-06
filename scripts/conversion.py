@@ -241,7 +241,8 @@ def _leer_gdelt(ruta: Path, config: dict[str, Any]) -> list[dict[str, Any]]:
     if not m:
         raise ValueError(f"Nombre de archivo GDELT inesperado: {ruta.name}")
     ts = ts_de_archivo(ruta)
-    datos = json.loads(ruta.read_text(encoding="utf-8"), strict=False)
+    texto = ruta.read_text(encoding="utf-8")
+    datos = json.loads(texto, strict=False) if texto.strip() else {}
     idiomas = config["gdelt"]["idiomas"]
     entradas = []
     for a in datos.get("articles", []):
@@ -357,6 +358,23 @@ def aplicar_ventana(
     return incluidos, excluidos, dias
 
 
+def fallos_gdelt_sin_resolver(carpeta_raw: Path, config: dict[str, Any]) -> list[dict[str, str]]:
+    """Rangos de GDELT que fallaron y todavía no tienen crudo (una corrida posterior pudo cubrirlos)."""
+    carpeta = carpeta_raw / config["gdelt"]["carpeta_cruda"]
+    existentes = {
+        (m["tema"], m["ini"], m["fin"])
+        for p in archivos_crudos(carpeta, "gdelt_*.json")
+        if (m := PATRON_ARCHIVO_GDELT.match(p.name))
+    }
+    pendientes: dict[tuple[str, str, str], dict[str, str]] = {}
+    for ruta in archivos_crudos(carpeta, "fallos_gdelt_*.json"):
+        for f in json.loads(ruta.read_text(encoding="utf-8")):
+            clave = (f["tema"], f["inicio"], f["fin"])
+            if clave not in existentes:
+                pendientes[clave] = {k: f[k] for k in ("tema", "inicio", "fin")}
+    return [pendientes[k] for k in sorted(pendientes)]
+
+
 def convertir_noticias(
     carpeta_raw: Path, config: dict[str, Any]
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
@@ -412,6 +430,7 @@ def convertir_noticias(
             "fin": a_iso(fin),
         },
         "registros_crudos_leidos": len(entradas),
+        "gdelt_rangos_sin_resolver": fallos_gdelt_sin_resolver(carpeta_raw, config),
         "duplicados_descartados": len(entradas) - len(unicos) - sum(
             1 for x in excluidos if x["motivo"] in ("sin_url", "sin_titulo")
         ),

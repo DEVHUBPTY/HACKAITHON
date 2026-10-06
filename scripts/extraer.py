@@ -103,15 +103,67 @@ def extraer_rss(raw: Path, config: dict[str, Any]) -> Path:
 # ---------------------------------------------------------------------- GDELT
 
 
-def _rangos(inicio: datetime, fin: datetime, dias: int) -> list[tuple[datetime, datetime]]:
-    """Parte [inicio, fin] en rangos de ``dias`` días, del más reciente al más antiguo."""
+def _rangos(
+    hoy: datetime, dias_atras: int, dias_rango: int
+) -> list[tuple[datetime, datetime]]:
+    """Rangos alineados a una grilla fija de ``dias_rango`` días (días desde 1970), del más reciente al más antiguo.
+
+    Como los límites no dependen de la hora de ejecución, una segunda corrida pide exactamente los
+    mismos rangos y puede reutilizar los crudos. Se excluye el día en curso (el RSS lo cubre).
+    """
+    fin_total = hoy.replace(hour=0, minute=0, second=0, microsecond=0)
+    inicio = fin_total - timedelta(days=dias_atras)
+    epoca = datetime(1970, 1, 1, tzinfo=UTC)
+    k0 = (inicio - epoca).days // dias_rango
+    k1 = (fin_total - epoca).days // dias_rango
     rangos = []
-    tope = fin
-    while tope > inicio:
-        base = max(inicio, tope - timedelta(days=dias))
-        rangos.append((base, tope))
-        tope = base
+    for k in range(k1, k0 - 1, -1):
+        ini = epoca + timedelta(days=k * dias_rango)
+        fin = min(epoca + timedelta(days=(k + 1) * dias_rango), fin_total)
+        if ini < fin:
+            rangos.append((ini, fin))
     return rangos
+
+
+def _prefijo_gdelt(tema: str, ini: datetime, fin: datetime) -> str:
+    return f"gdelt_{tema}_{ini.strftime(FORMATO_GDELT)}_{fin.strftime(FORMATO_GDELT)}"
+
+
+def _crudo_existente(raw: Path, config: dict[str, Any], tema: str, ini: datetime, fin: datetime) -> Path | None:
+    """Crudo ya descargado para exactamente esta consulta y este rango, si existe."""
+    carpeta = raw / config["gdelt"]["carpeta_cruda"]
+    coincidencias = conversion.archivos_crudos(carpeta, f"{_prefijo_gdelt(tema, ini, fin)}_*.json")
+    return coincidencias[-1] if coincidencias else None
+
+
+def _pedir_gdelt(params: dict[str, Any], config: dict[str, Any]) -> requests.Response:
+    """GET a GDELT con backoff: respeta ``Retry-After``; si no, espera base × 2^intento."""
+    cfg = config["gdelt"]
+    gen = config["general"]
+    ultimo = "sin intentos"
+    for intento in range(cfg["max_intentos"]):
+        try:
+            resp = requests.get(
+                cfg["endpoint"],
+                params=params,
+                headers={"User-Agent": gen["agente_http"]},
+                timeout=gen["timeout_segundos"],
+            )
+        except requests.RequestException as exc:
+            ultimo = f"red: {exc}"
+            espera = cfg["espera_429_segundos"] * 2**intento
+        else:
+            if resp.status_code == 200:
+                return resp
+            ultimo = f"HTTP {resp.status_code}"
+            if resp.status_code != 429 and resp.status_code < 500:
+                raise ErrorDeExtraccion(f"GDELT respondió {ultimo}")
+            retry = resp.headers.get("Retry-After", "")
+            espera = int(retry) if retry.isdigit() else cfg["espera_429_segundos"] * 2**intento
+        logger.warning("GDELT %s (intento %s/%s); espero %s s", ultimo, intento + 1, cfg["max_intentos"], espera)
+        if intento + 1 < cfg["max_intentos"]:
+            time.sleep(espera)
+    raise ErrorDeExtraccion(f"GDELT sin respuesta tras {cfg['max_intentos']} intentos ({ultimo})")
 
 
 def _consultar_gdelt(
@@ -121,10 +173,18 @@ def _consultar_gdelt(
     fin: datetime,
     raw: Path,
     config: dict[str, Any],
-    estado: dict[str, float],
+    estado: dict[str, Any],
 ) -> int:
-    """Consulta un rango; si llega al tope de ``maxrecords`` lo divide a la mitad. Devuelve artículos."""
+    """Consulta un rango (una sola llamada por tema y rango); si llega al tope lo divide a la mitad.
+
+    Si ya existe un crudo de esta consulta y rango, no llama a la API (salvo ``estado['forzar']``).
+    Devuelve el número de artículos descargados (0 si se reutilizó un crudo).
+    """
     cfg = config["gdelt"]
+    if not estado.get("forzar") and _crudo_existente(raw, config, tema, ini, fin):
+        logger.info("GDELT %s %s..%s: crudo existente, no se vuelve a pedir", tema, ini, fin)
+        estado["reutilizados"] = estado.get("reutilizados", 0) + 1
+        return 0
     pausa = cfg["pausa_segundos"] - (time.monotonic() - estado.get("ultima", -1e9))
     if pausa > 0:
         time.sleep(pausa)
@@ -137,82 +197,86 @@ def _consultar_gdelt(
         "startdatetime": ini.strftime(FORMATO_GDELT),
         "enddatetime": fin.strftime(FORMATO_GDELT),
     }
-    texto, datos = "", None
-    for intento in range(1, config["general"]["reintentos"] + 1):
-        resp = _get(cfg["endpoint"], params, config, espera_429=cfg["espera_429_segundos"])
+    try:
+        resp = _pedir_gdelt(params, config)
+    finally:
         estado["ultima"] = time.monotonic()
-        texto = resp.text
-        if not texto.strip():
-            datos = {}
-            break
-        try:
-            datos = json.loads(texto, strict=False)
-            break
-        except json.JSONDecodeError:
-            logger.warning("GDELT devolvió algo que no es JSON (%s): %.80s", tema, texto)
-            time.sleep(cfg["pausa_segundos"])
-    if datos is None:
-        raise ErrorDeExtraccion(f"GDELT sin JSON válido para {tema} {ini}..{fin}")
+    texto = resp.text
+    try:
+        datos = json.loads(texto, strict=False) if texto.strip() else {}
+    except json.JSONDecodeError as exc:
+        raise ErrorDeExtraccion(f"GDELT devolvió algo que no es JSON: {texto[:80]!r}") from exc
     n = len(datos.get("articles", []))
-    mitad = ini + (fin - ini) / 2
     horas = (fin - ini).total_seconds() / 3600
     if n >= cfg["maxrecords"] and horas / 2 >= cfg["rango_minimo_horas"]:
         logger.info("GDELT %s %s..%s llegó al tope (%s); subdivido", tema, ini, fin, n)
-        mitad = mitad.replace(microsecond=0)
+        mitad = (ini + (fin - ini) / 2).replace(microsecond=0)
         return _consultar_gdelt(tema, consulta, ini, mitad, raw, config, estado) + _consultar_gdelt(
             tema, consulta, mitad, fin, raw, config, estado
         )
-    if n:
-        prefijo = f"gdelt_{tema}_{ini.strftime(FORMATO_GDELT)}_{fin.strftime(FORMATO_GDELT)}"
-        _guardar(
-            raw / cfg["carpeta_cruda"],
-            conversion.nombre_con_ts(prefijo, _ahora(), "json"),
-            texto.encode("utf-8"),
-        )
+    # Se guarda también la respuesta vacía: así la corrida siguiente no repite la llamada.
+    _guardar(
+        raw / cfg["carpeta_cruda"],
+        conversion.nombre_con_ts(_prefijo_gdelt(tema, ini, fin), _ahora(), "json"),
+        texto.encode("utf-8"),
+    )
     logger.info("GDELT %s %s..%s: %s artículos", tema, ini, fin, n)
     return n
 
 
 def _extraer_gdelt_rangos(
-    raw: Path, config: dict[str, Any], desde_dias: int, hasta_dias: int, ahora: datetime
-) -> int:
+    raw: Path, config: dict[str, Any], dias: int, ahora: datetime, forzar: bool
+) -> tuple[int, list[dict[str, str]]]:
     cfg = config["gdelt"]
-    estado: dict[str, float] = {}
+    estado: dict[str, Any] = {"forzar": forzar}
     total = 0
-    fallidas: list[str] = []
-    for ini, fin in _rangos(
-        ahora - timedelta(days=hasta_dias), ahora - timedelta(days=desde_dias), cfg["rango_dias"]
-    ):
+    fallidos: list[dict[str, str]] = []
+    for ini, fin in _rangos(ahora, dias, cfg["rango_dias"]):
         for tema, consulta in cfg["consultas"].items():
             try:
                 total += _consultar_gdelt(tema, consulta, ini, fin, raw, config, estado)
             except ErrorDeExtraccion as exc:  # un rango fallido no frena a los demás
                 logger.error("GDELT %s %s..%s falló: %s", tema, ini, fin, exc)
-                fallidas.append(f"{tema} {ini:%Y-%m-%d}..{fin:%Y-%m-%d}")
-    if fallidas:
-        raise ErrorDeExtraccion(f"GDELT: {len(fallidas)} consulta(s) sin respuesta: {fallidas}")
-    return total
+                fallidos.append(
+                    {"tema": tema, "inicio": ini.strftime(FORMATO_GDELT), "fin": fin.strftime(FORMATO_GDELT), "motivo": str(exc)}
+                )
+    logger.info("GDELT: %s artículos nuevos, %s rangos reutilizados, %s fallidos", total, estado.get("reutilizados", 0), len(fallidos))
+    return total, fallidos
 
 
-def extraer_gdelt(raw: Path, config: dict[str, Any]) -> int:
-    """GDELT en los últimos 30 días; si no se alcanza el mínimo, amplía hasta 90 (D-74)."""
+def _registrar_fallos(raw: Path, config: dict[str, Any], fallidos: list[dict[str, str]]) -> None:
+    """Guarda los rangos sin respuesta como crudo con marca de tiempo; el manifest los reporta."""
+    if not fallidos:
+        return
+    carpeta = raw / config["gdelt"]["carpeta_cruda"]
+    carpeta.mkdir(parents=True, exist_ok=True)
+    nombre = conversion.nombre_con_ts("fallos_gdelt", _ahora(), "json")
+    conversion.escribir_json(carpeta / nombre, fallidos)
+
+
+def extraer_gdelt(raw: Path, config: dict[str, Any], forzar: bool = False) -> int:
+    """GDELT en los últimos 30 días; si no se alcanza el mínimo, amplía hasta 90 (D-74).
+
+    Reutiliza los crudos existentes (``forzar=True`` los vuelve a pedir). Los rangos que no
+    responden tras el backoff se registran como fallos y se sigue con el resto.
+    """
     ventana = config["ventana_noticias"]
     ahora = _ahora()
-    total = _extraer_gdelt_rangos(raw, config, 0, ventana["dias_base"], ahora)
+    total, fallidos = _extraer_gdelt_rangos(raw, config, ventana["dias_base"], ahora, forzar)
     base = copy.deepcopy(config)
     base["ventana_noticias"]["dias_maximo"] = ventana["dias_base"]
     unicas, _, _ = conversion.convertir_noticias(raw, base)
     if len(unicas) < config["volumen_noticias"]["minimo"]:
         logger.warning(
             "Solo %s noticias en %s días (mínimo %s): amplío hasta %s días",
-            len(unicas),
-            ventana["dias_base"],
-            config["volumen_noticias"]["minimo"],
-            ventana["dias_maximo"],
+            len(unicas), ventana["dias_base"], config["volumen_noticias"]["minimo"], ventana["dias_maximo"],
         )
-        total += _extraer_gdelt_rangos(
-            raw, config, ventana["dias_base"], ventana["dias_maximo"], ahora
-        )
+        mas, mas_fallidos = _extraer_gdelt_rangos(raw, config, ventana["dias_maximo"], ahora, forzar)
+        total += mas
+        fallidos = mas_fallidos
+    _registrar_fallos(raw, config, fallidos)
+    if fallidos:
+        raise ErrorDeExtraccion(f"GDELT: {len(fallidos)} consulta(s) sin respuesta (registradas en el crudo de fallos)")
     return total
 
 
@@ -275,6 +339,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--gdelt", action="store_true")
     p.add_argument("--banco-mundial", action="store_true", dest="banco_mundial")
     p.add_argument("--usgs", action="store_true")
+    p.add_argument("--forzar", action="store_true", help="vuelve a pedir a GDELT rangos que ya tienen crudo")
     p.add_argument("--raw", type=Path, default=RAIZ / "data" / "raw")
     p.add_argument("--processed", type=Path, default=RAIZ / "data" / "processed")
     p.add_argument("--sin-convertir", action="store_true", help="solo descarga, no genera processed/")
@@ -287,7 +352,7 @@ def main(argv: list[str] | None = None) -> int:
     fallos: list[str] = []
     pasos = [
         ("rss", args.todo or args.rss, extraer_rss),
-        ("gdelt", args.todo or args.gdelt, extraer_gdelt),
+        ("gdelt", args.todo or args.gdelt, lambda r, c: extraer_gdelt(r, c, forzar=args.forzar)),
         ("banco_mundial", args.todo or args.banco_mundial, extraer_banco_mundial),
         ("usgs", args.todo or args.usgs, extraer_usgs),
     ]
