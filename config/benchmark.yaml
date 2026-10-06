@@ -1,0 +1,8 @@
+# Metas del benchmark de desarrollo (E0-06 · PDF sección 7 · D-74).
+# El conjunto reservado de 20 es del jurado y no se prepara aquí (D-64).
+total: 40
+tipos:
+  respuesta_sustentada: 20
+  contradiccion_ambiguedad: 7
+  sin_respuesta: 7
+  adversarial: 6

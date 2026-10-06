@@ -11,7 +11,7 @@ import argparse
 import re
 import sys
 from pathlib import Path
-from typing import Literal, TypeVar
+from typing import Literal, TypeVar, get_args
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
@@ -956,6 +956,11 @@ def validar_coherencia(carpeta: Path | None = None) -> list[str]:
         claves = set(cargar_clasificacion(carpeta).baseline.palabras_clave)
         if claves != set(temas.temas):
             problemas.append(f"clasificacion.yaml: baseline.palabras_clave y temas de temas.yaml difieren: {sorted(claves ^ set(temas.temas))}")
+    if (carpeta / "etiquetado.yaml").exists():
+        motivos = set(cargar_etiquetado(carpeta).ruido.motivos)
+        esperados = set(FueraDeTemas.model_fields) | MOTIVOS_RUIDO_HUMANO_EXTRA
+        if motivos != esperados:
+            problemas.append(f"etiquetado.yaml: ruido.motivos {sorted(motivos)} debe ser fuera_de_temas de temas.yaml más {sorted(MOTIVOS_RUIDO_HUMANO_EXTRA)}")
     grupos = set(cargar_restricciones(carpeta).grupos)
     for modalidad in MODALIDADES:
         if (carpeta / f"modalidad_{modalidad}.yaml").exists():
@@ -1236,6 +1241,109 @@ class ConfigClasificacion(ModeloConfig):
 def cargar_clasificacion(carpeta: Path | None = None) -> ConfigClasificacion:
     """Atajo para ``config/clasificacion.yaml``."""
     return cargar_config("clasificacion", ConfigClasificacion, carpeta)
+TipoConsulta = Literal[
+    "respuesta_sustentada", "contradiccion_ambiguedad", "sin_respuesta", "adversarial"
+]
+
+
+class ConfigBenchmark(ModeloConfig):
+    """``config/benchmark.yaml``: total y proporción de tipos del benchmark de desarrollo (E0-06)."""
+
+    total: int = Field(gt=0)
+    tipos: dict[TipoConsulta, int]
+
+    @model_validator(mode="after")
+    def _suma_coherente(self) -> "ConfigBenchmark":
+        if set(self.tipos) != set(get_args(TipoConsulta)):
+            raise ValueError("deben estar los cuatro tipos")
+        if sum(self.tipos.values()) != self.total:
+            raise ValueError("la suma de tipos no coincide con el total")
+        return self
+
+
+def cargar_benchmark(carpeta: Path | None = None) -> ConfigBenchmark:
+    """Atajo para ``config/benchmark.yaml``."""
+    return cargar_config("benchmark", ConfigBenchmark, carpeta)
+
+
+# ------------------------------------------------------------------ etiquetado.yaml (E1-06)
+
+
+class EstratoEtiquetado(ModeloConfig):
+    cuota: int = Field(ge=0)
+    dobles: int = Field(ge=0)
+
+
+class EstratosEtiquetado(ModeloConfig):
+    no_ruido: EstratoEtiquetado
+    ruido: EstratoEtiquetado
+
+
+class MuestraEtiquetado(ModeloConfig):
+    semilla: int
+    tamano: int = Field(ge=1)
+    tamano_acuerdo: int = Field(ge=2)
+    estratos: EstratosEtiquetado
+
+    @model_validator(mode="after")
+    def _acuerdo_cabe(self) -> MuestraEtiquetado:
+        if self.tamano_acuerdo > self.tamano:
+            raise ValueError("tamano_acuerdo no puede superar tamano")
+        e = self.estratos
+        if e.no_ruido.cuota + e.ruido.cuota != self.tamano:
+            raise ValueError("las cuotas de los estratos deben sumar tamano")
+        if e.no_ruido.dobles + e.ruido.dobles != self.tamano_acuerdo:
+            raise ValueError("los dobles de los estratos deben sumar tamano_acuerdo")
+        if e.no_ruido.dobles > e.no_ruido.cuota or e.ruido.dobles > e.ruido.cuota:
+            raise ValueError("los dobles de un estrato no pueden superar su cuota")
+        return self
+
+
+class ArchivosEtiquetado(ModeloConfig):
+    carpeta_personas: str
+    consolidado: str
+    ejemplos_excluidos: str
+
+
+class RuidoEtiquetado(ModeloConfig):
+    sin_ruido: str
+    motivos: list[str]
+
+
+class AcuerdoEtiquetado(ModeloConfig):
+    kappa_minimo: float = Field(gt=0, le=1)
+
+
+class NombresEtiquetado(ModeloConfig):
+    longitud_minima: int = Field(ge=1)
+    marcadores_ia: list[str]
+    marcadores_ia_nombre_completo: list[str]
+
+
+class InterfazEtiquetado(ModeloConfig):
+    zona_horaria: str
+    formato_fecha: str
+
+
+class ConfigEtiquetado(ModeloConfig):
+    """Modelo de ``config/etiquetado.yaml``."""
+
+    version: int
+    muestra: MuestraEtiquetado
+    archivos: ArchivosEtiquetado
+    ruido: RuidoEtiquetado
+    acuerdo: AcuerdoEtiquetado
+    nombres: NombresEtiquetado
+    interfaz: InterfazEtiquetado
+
+
+# Motivo que las personas etiquetan además de los de temas.yaml (decisión del equipo tras revisión, spec E1-06).
+MOTIVOS_RUIDO_HUMANO_EXTRA = frozenset({"no_es_noticia"})
+
+
+def cargar_etiquetado(carpeta: Path | None = None) -> ConfigEtiquetado:
+    """Atajo para ``config/etiquetado.yaml``."""
+    return cargar_config("etiquetado", ConfigEtiquetado, carpeta)
 
 
 MODALIDADES = ("editorial", "banca")
@@ -1244,6 +1352,7 @@ OPCIONALES = {"modalidad_banca"}  # el esquema la admite aunque todavía no exis
 # Un cargador por YAML de config/: `--validar` los recorre todos y falla ante uno sin modelo registrado.
 CARGADORES = {
     "ruido": cargar_ruido,
+    "benchmark": cargar_benchmark,
     "fuentes": cargar_fuentes,
     "exploracion": cargar_exploracion,
     "carga": cargar_carga,
@@ -1258,6 +1367,7 @@ CARGADORES = {
     "llm": cargar_llm,
     "normalizacion": cargar_normalizacion,
     "clasificacion": cargar_clasificacion,
+    "etiquetado": cargar_etiquetado,
 }
 
 
