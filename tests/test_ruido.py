@@ -286,3 +286,75 @@ def test_eval_ruido_mide_precision_y_recall_con_ic(tmp_path: Path, capsys: pytes
     assert eval_ruido.main(["--etiquetas", str(etiquetas), "--base", str(base)]) == 0
     salida = capsys.readouterr().out
     assert "Precisión" in salida and "Recall" in salida and "IC 95 %" in salida
+
+
+# ------------------------------------------------------------------ X14 (revisión del PR #9, D-84)
+
+
+@pytest.mark.parametrize(
+    "titulo",
+    [
+        "Banco Mundial eleva proyección de crecimiento de Panamá",
+        "Copa Airlines suspende vuelos a Venezuela",
+        "Mulino gira instrucciones al MEF",
+        "Candidato a contralor comparece ante la Asamblea",
+        "El partido de gobierno presenta su agenda en la Asamblea de Panamá",
+    ],
+)
+def test_x14_h1_los_patrones_de_fuera_de_temas_no_marcan_palabras_ambiguas(titulo: str) -> None:
+    assert limpieza.evaluar(_fila(titulo, origen="TVN RSS", pais_medio="Panamá"), REGLAS).motivo_ruido is None
+
+
+@pytest.mark.parametrize(
+    "titulo",
+    [
+        "Intensifying El Nino deepens economic risks across LatAm",
+        "Solo dos ciudades de Centroamérica están entre las mejores 300 del mundo, según ranking",
+        "Crecen las rutas marítimas del Caribe",
+        "The Duality of Latin America FDI",
+    ],
+)
+def test_x14_h2_nota_regional_no_es_ruido_y_lleva_alcance_regional(titulo: str) -> None:
+    r = limpieza.evaluar(_fila(titulo), REGLAS)
+    assert r.motivo_ruido is None and r.es_ruido is False and r.alcance_regional is True
+
+
+def test_x14_h2_lo_no_regional_ni_panameno_sigue_siendo_ruido_sin_alcance_regional() -> None:
+    r = limpieza.evaluar(_fila("Trump redirige ayuda a Europa"), REGLAS)
+    assert r.motivo_ruido == "no_es_panama" and r.alcance_regional is False
+
+
+def test_x14_h2_una_nota_regional_con_falso_panama_sigue_siendo_ruido() -> None:
+    r = limpieza.evaluar(_fila("Panama City Beach recibe turistas del Caribe"), REGLAS)
+    assert r.es_ruido is True and r.alcance_regional is False
+
+
+def test_x14_h2_el_reporte_cuenta_el_alcance_regional_por_separado() -> None:
+    filas = limpieza.limpiar_filas(
+        [_fila("Intensifying El Nino deepens risks across LatAm") | {"id_noticia": "A"}, _fila("Trump y Europa") | {"id_noticia": "B"}],
+        REGLAS,
+    )
+    rep = limpieza.construir_reporte(filas, [], 1.96)
+    assert rep["alcance_regional"]["n"] == 1 and rep["utiles_no_ruido"]["n"] == 1
+    assert "regional" in rep["nota_utiles"] and "E1-06" in rep["nota_utiles"]
+
+
+def test_x14_h5_la_autopromocion_de_tvn_es_fuera_de_temas() -> None:
+    for t in ("TVN Media alcanza el primer lugar en reputación", "Gente TVN se sumó a carrera caminata inclusiva de Panamá"):
+        assert limpieza.evaluar(_fila(t, origen="TVN RSS", pais_medio="Panamá"), REGLAS).motivo_ruido == "fuera_de_temas", t
+    assert limpieza.evaluar(_fila("Contenido Exclusivo: El metro por la Tumba Muerto", origen="TVN RSS"), REGLAS).motivo_ruido is None
+
+
+def test_x14_h6_deportes_de_tvn_sin_mencion_son_fuera_de_temas_no_no_es_panama() -> None:
+    tvn = _fila("MLB Playoffs 2026 resultado | Yankees caen ante Rays. José Caballero conecta", origen="TVN RSS",
+                dominio="tvn-2.com", url_canonica="https://tvn-2.com/tvmax/beisbol/mlb/yankees_1.html")  # fmt: skip
+    assert limpieza.evaluar(tvn, REGLAS).motivo_ruido == "fuera_de_temas"
+
+
+def test_x14_h8_los_decimales_del_reporte_son_una_constante_de_presentacion() -> None:
+    assert isinstance(limpieza.DECIMALES_PRESENTACION, int)
+
+
+def test_x14_h3_la_similitud_con_prototipo_se_difiere_a_e1_07() -> None:
+    texto = (RAIZ / "config" / "ruido.yaml").read_text(encoding="utf-8")
+    assert "E1-07" in texto and "E1-04" not in texto
