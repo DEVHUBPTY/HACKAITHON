@@ -7,11 +7,16 @@ límites de ``docs/salidas.md``.
 
 from __future__ import annotations
 
+import re
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 TipoAfirmacion = Literal["hecho", "declaración", "inferencia", "hipótesis"]
+
+# Prefijos de ID estables (CLAUDE.md, D-63). El patrón se valida en código y no en el JSON Schema
+# que se pasa a Ollama, para no depender del soporte de ``pattern`` en su gramática.
+PATRON_ID_REGISTRO = re.compile(r"^(NOT-[0-9a-f]{10}|IND-[A-Z]{3}-[^\s]+-\d{4}|SIS-\S+|SBP-\S+|GRP-\S+|CASO-\d+|SYN-\S+)$")
 
 
 class Cita(BaseModel):
@@ -21,6 +26,13 @@ class Cita(BaseModel):
 
     id: str = Field(min_length=1, description="ID del registro de evidencia, exacto")
     campo: str = Field(min_length=1, description="Campo del registro, exacto")
+
+    @field_validator("id")
+    @classmethod
+    def _id_con_prefijo(cls, valor: str) -> str:
+        if not PATRON_ID_REGISTRO.match(valor):
+            raise ValueError(f"ID sin prefijo estable válido: {valor!r}")
+        return valor
 
 
 class Afirmacion(BaseModel):

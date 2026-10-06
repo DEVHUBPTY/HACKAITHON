@@ -1,0 +1,19 @@
+# Titulares usados como ejemplo en config/temas.yaml. NUNCA entran en la evaluación (F1 inflado si no).
+# Formato: id_noticia<TAB>titular. Los de E0-09 son propuestos desde docs/exploracion_revision.csv;
+# E1-05: son exactamente los 16 ejemplos con real=true de temas.yaml (los 16 propuestos se usaron); test_reglas_config lo verifica.
+NOT-052735cae3	Inland navigation workers stand with Panama Canal workers after death of tug captain
+NOT-0d7f10257c	Déficit de personal limita la capacidad operativa de los bomberos en el país
+NOT-1710ce462f	¿ Cómo se fija el precio del combustible en Panamá ? El MEF explica la fórmula quincenal tras aprobarse nuevo subsidio
+NOT-1fce9a0925	Ejecutivo sanciona la Ley 552 del Presupuesto del Canal de Panamá por $5 , 555 millones
+NOT-2f73db1173	Clima en Panamá: Martes con lluvias y tormentas eléctricas en varias regiones durante la tarde
+NOT-3175aafec0	Minsa: Adelantan vacunación contra VSR en embarazadas
+NOT-3be05280f2	Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá
+NOT-5a4863366a	Canal de Panamá manejará presupuesto de B /. 5 , 555 millones para 2027
+NOT-623c659be3	Exportaciones de banano superan los $17 millones en junio y marcan recuperación
+NOT-8921b118ee	Colegios particulares atribuyen aumento de matrícula a migración al sector oficial y altos costos de operación
+NOT-99c8146e07	Panamá apunta a salir de la lista fiscal de la Unión Europea , pero aún enfrenta una revisión clave en 2027
+NOT-d25926a799	Montería estrenará vuelo directo a Panamá con Satena y conexión aérea de menos de una hora
+NOT-f248fefaf9	Contenido Exclusivo: El metro por la Tumba Muerto
+NOT-f2f4a261fd	Contenido Exclusivo: Coclé, se seca el campo
+NOT-f7f8b492d1	Panamá reforzará su presencia marítima en Vietnam con nueva oficina de servicio técnico de la AMP en Ho Chi Minh
+NOT-ff1b1ed15c	MiBus responde por filtraciones: lamenta incomodidad de usuarios; afirma que realiza correctivos

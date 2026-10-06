@@ -7,7 +7,16 @@ poetry run python -m scripts.extraer --todo       # RSS + GDELT + Banco Mundial 
 poetry run python -m scripts.extraer --rss        # solo el RSS de TVN: correr a diario, agrega un archivo nuevo
 poetry run python -m scripts.manifest             # data/manifest.json + data/CHANGELOG.md
 poetry run python -m scripts.validar_snapshot     # outputs/validacion_snapshot.json
+poetry run python -m src.carga                    # processed/validos/ + outputs/errores.csv + outputs/reporte_calidad.json (D-82)
+poetry run python -m scripts.catalogo             # outputs/catalogo.csv (E1-04): una fila por fuente, desde el manifest
+# requiere outputs/reporte_calidad.json (src.carga); sin él, --sin-reporte marca "reporte de calidad no generado"
 ```
+
+El catálogo (`outputs/catalogo.csv`) lista las 4 fuentes que define la base *Catálogo de datos* de Notion; las que aún no se usan (hoy D, SBP, pendiente de E3-02 y solo si se activa banca) quedan marcadas como "Fuente no usada todavía".
+
+## Versión del snapshot y receta (D-83)
+
+El snapshot versionado es la v1.1, producido con las consultas antiguas de GDELT, que figuran en `consultas_historicas` de `config/fuentes.yaml` y en el manifest. Las consultas vigentes de `config/fuentes.yaml` son la receta de la próxima extracción. La v1.2 se genera y se versiona solo después de extraer con esas consultas: regenerar `processed/` sobre el `raw/` actual daría solo las noticias de TVN y no debe commitearse.
 
 ## Qué se versiona y qué no (D-72)
 
@@ -18,6 +27,7 @@ poetry run python -m scripts.validar_snapshot     # outputs/validacion_snapshot.
 | `raw/banco_mundial/`, `raw/usgs/` | Sí | Datos abiertos (CC BY 4.0 · dominio público de USGS) |
 | `registro_extraccion/` | Sí | Fallos y notas de extracción (rangos, motivos, origen); sin contenido restringido. **No son respuestas de la API** |
 | `processed/` | Sí | Solo metadatos: no contiene `descripcion` ni `socialimage` |
+| `processed/validos/` | **No** (`.gitignore`) | Derivado y regenerable: las filas válidas que deja `python -m src.carga` (D-82). Mismos nombres que el contrato; salida determinista; nunca modifica los archivos de `processed/` ni su manifest. Es la entrada de E1-03 (si una prueba la necesita, la genera con ese comando) |
 | `manifest.json`, `CHANGELOG.md` | Sí | Huellas SHA-256, consultas, historial |
 
 El manifest registra el SHA-256 de los crudos que no se versionan, de modo que quien regenere

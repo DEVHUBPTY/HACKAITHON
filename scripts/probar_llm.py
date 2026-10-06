@@ -15,6 +15,7 @@ import json
 import logging
 import math
 import os
+import re
 import statistics
 import subprocess
 import time
@@ -32,6 +33,7 @@ from src.registro import configurar_logging
 log = logging.getLogger("probar_llm")
 
 CAMPOS_EVIDENCIA = ("titulo", "medio", "fecha_publicacion", "fecha_deteccion")
+ETIQUETA_EVIDENCIA = re.compile(r"<\s*/?\s*evidencia\s*>", re.IGNORECASE)
 CARPETA_PROMPTS = RAIZ / "prompts"
 CARPETA_SALIDAS = RAIZ / "outputs"
 
@@ -60,8 +62,9 @@ def construir_evidencia(fila: dict[str, Any]) -> tuple[str, str, set[str]]:
         valor = fila.get(campo)
         if valor is None or (isinstance(valor, float) and math.isnan(valor)) or str(valor) == "":
             continue
-        # La evidencia es dato: se neutraliza cualquier cierre de la etiqueta delimitadora.
-        campos[campo] = str(valor).replace("</evidencia>", "")
+        # La evidencia es dato: se neutraliza apertura y cierre de la etiqueta delimitadora,
+        # sin distinguir mayúsculas ni espacios.
+        campos[campo] = ETIQUETA_EVIDENCIA.sub("", str(valor))
     lineas = "\n".join(f"  {campo}: {valor}" for campo, valor in campos.items())
     texto = (
         "<evidencia>\n"
@@ -140,6 +143,35 @@ def intervalo_wilson(exitos: int, n: int, confianza: float = 0.95) -> tuple[floa
     return (max(0.0, centro - mitad), min(1.0, centro + mitad))
 
 
+def declaraciones_de(llamadas: list[dict[str, Any]]) -> list[str]:
+    """Textos de las afirmaciones de tipo declaración en las salidas válidas por esquema."""
+    textos: list[str] = []
+    for c in llamadas:
+        if not c["evaluacion"]["esquema_valido"] or not c.get("respuesta_cruda"):
+            continue
+        salida = AfirmacionesCitadas.model_validate_json(c["respuesta_cruda"])
+        textos.extend(a.texto for a in salida.afirmaciones if a.tipo == "declaración")
+    return textos
+
+
+def sin_atribucion(textos: list[str], marcadores: list[str], medio: str) -> int:
+    """Cuántos textos no contienen un verbo de reporte ni el nombre del medio."""
+    claves = [m.lower() for m in marcadores] + [medio.lower()]
+    return sum(1 for t in textos if not any(k in t.lower() for k in claves))
+
+
+def salidas_distintas(llamadas: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Una llamada por cada salida distinta: con temperatura 0 las repeticiones son idénticas."""
+    vistas: set[str] = set()
+    unicas: list[dict[str, Any]] = []
+    for c in llamadas:
+        clave = c.get("respuesta_cruda") or f"error:{c['evaluacion'].get('error')}"
+        if clave not in vistas:
+            vistas.add(clave)
+            unicas.append(c)
+    return unicas
+
+
 def resumir(llamadas: list[dict[str, Any]], cfg: ConfigLlm) -> dict[str, Any]:
     """Resumen de las llamadas medidas (sin calentamiento) y evaluación del criterio D-02."""
     n = len(llamadas)
@@ -153,8 +185,29 @@ def resumir(llamadas: list[dict[str, Any]], cfg: ConfigLlm) -> dict[str, Any]:
     invalidos_por_diez = (n - validas) / n * 10 if n else float("nan")
     mediana = statistics.median(lat) if lat else float("nan")
     crit = cfg.criterio_d02
+    # n efectivo de la validez: salidas distintas (con temperatura 0 las repeticiones son idénticas).
+    distintas = salidas_distintas(llamadas)
+    nd = len(distintas)
+    kd = sum(1 for c in distintas if c["evaluacion"]["esquema_valido"])
+    lod, hid = intervalo_wilson(kd, nd, conf)
+    invalidos_por_diez_d = (nd - kd) / nd * 10 if nd else float("nan")
+    medio = cfg.prueba.muestra.medio
+    decl_todas = declaraciones_de(llamadas)
+    decl_distintas = declaraciones_de(distintas)
+    marc = cfg.prueba.marcadores_atribucion
     return {
         "n_llamadas": n,
+        "json_valido_distintas": {"k": kd, "n": nd, "pct": 100 * kd / nd if nd else None,
+                                  "ic_inf_pct": 100 * lod, "ic_sup_pct": 100 * hid,
+                                  "confianza": conf, "metodo_ic": "Wilson",
+                                  "invalidos_por_diez": invalidos_por_diez_d,
+                                  "invalidos_ok": invalidos_por_diez_d <= crit.invalidos_max_por_diez},
+        "atribucion": {
+            "declaraciones_llamadas": {"n": len(decl_todas),
+                                       "sin_atribucion": sin_atribucion(decl_todas, marc, medio)},
+            "declaraciones_distintas": {"n": len(decl_distintas),
+                                        "sin_atribucion": sin_atribucion(decl_distintas, marc, medio)},
+        },
         "json_valido": {"k": validas, "n": n, "pct": 100 * validas / n if n else None,
                         "ic_inf_pct": 100 * lo, "ic_sup_pct": 100 * hi, "confianza": conf,
                         "metodo_ic": "Wilson"},
@@ -165,9 +218,10 @@ def resumir(llamadas: list[dict[str, Any]], cfg: ConfigLlm) -> dict[str, Any]:
         "criterio_d02": {
             "mediana_ok": mediana <= crit.mediana_max_segundos,
             "invalidos_por_diez": invalidos_por_diez,
-            "invalidos_ok": invalidos_por_diez <= crit.invalidos_max_por_diez,
+            "invalidos_por_diez_distintas": invalidos_por_diez_d,
+            "invalidos_ok": invalidos_por_diez_d <= crit.invalidos_max_por_diez,
             "cumple": mediana <= crit.mediana_max_segundos
-            and invalidos_por_diez <= crit.invalidos_max_por_diez,
+            and invalidos_por_diez_d <= crit.invalidos_max_por_diez,
         },
     }
 
@@ -295,14 +349,22 @@ def imprimir_resumen(res: dict[str, Any]) -> None:
     print(f"Ollama: {res['version_ollama']}  num_ctx: {res['num_ctx']}  prompt: {res['prompt']}  "
           f"carga del sistema (1 min): {res['carga_sistema_1min']['inicio']:.1f} → "
           f"{res['carga_sistema_1min']['fin']:.1f}")
-    print(f"JSON válido: {v['k']}/{v['n']} = {v['pct']:.1f} %  "
+    vd, at = r["json_valido_distintas"], r["atribucion"]
+    print(f"JSON válido (por llamada, n={v['n']}): {v['k']}/{v['n']} = {v['pct']:.1f} %  "
           f"(IC 95 % Wilson {v['ic_inf_pct']:.1f}–{v['ic_sup_pct']:.1f} %)")
+    print(f"JSON válido (salidas DISTINTAS, n efectivo={vd['n']}): {vd['k']}/{vd['n']} = "
+          f"{vd['pct']:.1f} %  (IC 95 % Wilson {vd['ic_inf_pct']:.1f}–{vd['ic_sup_pct']:.1f} %)")
+    print(f"Declaraciones sin atribución al medio: {at['declaraciones_llamadas']['sin_atribucion']}/"
+          f"{at['declaraciones_llamadas']['n']} (todas las llamadas) · "
+          f"{at['declaraciones_distintas']['sin_atribucion']}/{at['declaraciones_distintas']['n']} "
+          "(salidas distintas)")
     print(f"Citas válidas (sobre salidas válidas): {r['citas_validas']['k']}/{r['citas_validas']['n']}")
     print(f"Latencia: mediana {lat['mediana']:.1f} s · p95 {lat['p95']:.1f} s "
           f"(mín {lat['min']:.1f}, máx {lat['max']:.1f})")
     print(f"Memoria: /api/ps total {gb(mem.get('size'))} · VRAM {gb(mem.get('size_vram'))} · "
           f"RSS del servidor {gb(res.get('rss_servidor_bytes'))}")
-    print(f"D-02: mediana ≤ umbral: {d['mediana_ok']} · inválidos {d['invalidos_por_diez']:.1f}/10 "
+    print(f"D-02: mediana ≤ umbral: {d['mediana_ok']} · inválidos "
+          f"{d['invalidos_por_diez_distintas']:.1f}/10 sobre salidas distintas "
           f"(ok: {d['invalidos_ok']}) → cumple: {d['cumple']}")
 
 
@@ -313,7 +375,9 @@ def nombre_archivo(modelo: str, etiqueta: str | None) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--modelo", required=True, help="tag exacto de Ollama, ej. qwen3.5:9b")
+    ap.add_argument("--modelo", help="tag exacto de Ollama, ej. qwen3.5:9b")
+    ap.add_argument("--reanalizar", type=Path, default=None, metavar="ARCHIVO",
+                    help="recalcula el resumen de un outputs/probar_llm_*.json sin llamar a Ollama")
     ap.add_argument("--repeticiones", type=int, default=None)
     ap.add_argument("--num-ctx", type=int, default=None, help="variante de optimización")
     ap.add_argument("--prompt", default=None, help="variante de prompt en prompts/ (sin .txt)")
@@ -322,6 +386,14 @@ def main(argv: list[str] | None = None) -> int:
 
     configurar_logging()
     cfg = cargar_llm()
+    if args.reanalizar:
+        res = json.loads(args.reanalizar.read_text(encoding="utf-8"))
+        res["resumen"] = resumir(res["llamadas"], cfg)
+        args.reanalizar.write_text(json.dumps(res, ensure_ascii=False, indent=2), encoding="utf-8")
+        imprimir_resumen(res)
+        return 0
+    if not args.modelo:
+        ap.error("--modelo es obligatorio salvo con --reanalizar")
     entorno = leer_local_env()
     host = entorno.get("OLLAMA_HOST") or cfg.ollama.host_por_defecto
     cliente = ClienteOllama(host, cfg.ollama.timeout_segundos)

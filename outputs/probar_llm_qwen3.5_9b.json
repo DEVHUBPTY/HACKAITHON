@@ -453,6 +453,27 @@
   ],
   "resumen": {
     "n_llamadas": 20,
+    "json_valido_distintas": {
+      "k": 5,
+      "n": 5,
+      "pct": 100.0,
+      "ic_inf_pct": 56.55175352168255,
+      "ic_sup_pct": 100.0,
+      "confianza": 0.95,
+      "metodo_ic": "Wilson",
+      "invalidos_por_diez": 0.0,
+      "invalidos_ok": true
+    },
+    "atribucion": {
+      "declaraciones_llamadas": {
+        "n": 56,
+        "sin_atribucion": 12
+      },
+      "declaraciones_distintas": {
+        "n": 14,
+        "sin_atribucion": 3
+      }
+    },
     "json_valido": {
       "k": 20,
       "n": 20,
@@ -476,6 +497,7 @@
     "criterio_d02": {
       "mediana_ok": true,
       "invalidos_por_diez": 0.0,
+      "invalidos_por_diez_distintas": 0.0,
       "invalidos_ok": true,
       "cumple": true
     }

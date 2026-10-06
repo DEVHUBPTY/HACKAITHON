@@ -20,6 +20,8 @@ prueba:
   calentamiento: 1          # llamadas previas que NO entran en las estadísticas (carga del modelo)
   prompt: afirmaciones_citadas
   confianza: 0.95
+  # Un texto de tipo declaración cuenta como atribuido si contiene alguno (o el nombre del medio).
+  marcadores_atribucion: [reporta, reportó, reportado, informa, informó, según, señala, indica, publica, publicó]
   muestra:
     medio: "TVN Panamá"
     idioma: es
@@ -28,6 +30,11 @@ prueba:
       mundo: 1
       tvmax: 1
       entretenimiento: 1
+
+entorno:
+  # Los valores de variables sensibles más cortos que esto no se registran para redacción
+  # (evita redactar fragmentos triviales del log).
+  longitud_minima_secreto: 8
 
 criterio_d02:
   mediana_max_segundos: 15

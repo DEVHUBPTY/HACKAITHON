@@ -1,0 +1,66 @@
+# Parámetros de la exploración offline (E0-09). Cada número está en docs/parametros.md.
+# Todo lo que aquí se marca es CANDIDATO: el etiquetado definitivo es E1-03b / E1-06.
+version: 1
+
+estadistica:
+  z_95: 1.96                  # Intervalo de Wilson al 95 %
+  top_n: 10                   # filas de cada tabla de conteos
+  nota: "El IC de Wilson supone una muestra aleatoria; este snapshot NO lo es (ventana corta, consultas dirigidas, cobertura parcial): los intervalos son descriptivos, no inferenciales."
+
+revision_manual:
+  minimo_candidatos_por_tema: 15   # spec E0-09
+  temas_validos: [economia, logistica, turismo, servicios_publicos, eventos_naturales, regulacion, no_es_panama, fuera_de_temas, sin_contenido]
+  archivo: docs/exploracion_revision.csv
+
+rss:
+  # Subcarpetas de data/raw/ (solo lectura; fuera del repositorio, D-72). Otro data/raw: --crudos.
+  carpeta_cruda: rss_tvn
+  carpeta_gdelt: gdelt
+  campos_firma: [author, dc_creator, creator]
+  # Claves del RSS que no se cuentan porque llevan contenido restringido (D-31, D-72).
+  claves_excluidas: [summary, summary_detail, description, content, media_content, links]
+  # Agencias para clasificar el TIPO de firma sin guardar nombres de personas (D-32).
+  agencias: [EFE, AFP, AP, Reuters, Europa Press, DPA, ANSA, Xinhua, Prensa Latina, Bloomberg]
+  redaccion: [redacción, redaccion, tvn, tvn media, web]
+
+patrones:
+  # Titulares sin contenido: solo dominio, "Inicio |", "Preview -".
+  titulo_generico:
+    - '^\s*[\w.\- ]+\s\.\s(com|net|org|co|ar|pa|info)\s*$'
+    - '^\s*(inicio|preview|home)\b'
+  sufijo_medio: '\s[-|–—]\s[^-|–—]{3,45}$'
+  entidad_html: '&(#\d+|#x[0-9a-fA-F]+|[a-zA-Z]+);'
+  espacio_antes_de_puntuacion: '\s[,.:;?!%]\s|\s[,.:;?!]$'   # tokenización de GDELT: "21 , 2 % din"
+  separador_barra_tvn: '\w\|\s'                                # "Liga de Naciones| Panamá..." (TVN)
+  menciones_panama: ['panam', 'canal de panamá', 'acp', 'colón', 'chiriquí', 'veraguas', 'coclé',
+                     'san miguelito', 'tocumen', 'mulino', 'minsa', 'css', 'asep', 'amp', 'mef', 'mibus', 'darién', 'darien']
+  falso_panama: ['panama city beach', 'pcb ', 'panama city, fl', 'panama city, florida', 'sombrero panama']
+  deportes: ['liga de naciones', 'liga ', 'mlb', 'copa ', 'selección', 'seleccion', 'gol', 'mundial', 'playoffs',
+             'torneo', 'jornada', 'partido', 'básquet', 'basquet', 'yankees', 'messi', 'fútbol', 'futbol', 'resultado']
+  farandula: ['kardashian', 'lohan', 'pedro pascal', 'offset', 'gira', 'canciones', 'cine', 'estreno', 'actriz',
+              'cantante', 'carnavalera', 'bebé', 'famoso']
+  autopromocion_tvn: ['tvn media', 'contenido exclusivo', 'gente tvn', 'gente que inspira']
+
+# Palabras para PROPONER candidatos por tema (no clasifican; la decisión es manual).
+temas_palabras:
+  economia: [inflación, precio, combustible, subsidio, exportaciones, banano, pib, deuda, presupuesto, inversión, empleo, bolsa, banca, mef, comercio, déficit]
+  logistica: [canal, acp, puerto, carga, contenedor, zona libre, aeropuerto, tránsitos, buque, marítim, amp, aduana, cadena de suministro]
+  turismo: [turismo, turista, crucero, hotel, vuelo, aerolínea, visitantes, destino, ocupación]
+  servicios_publicos: [minsa, hospital, css, salud, vacunación, escuela, colegio, docente, agua, electricidad, policía, bomberos, cárcel, metro, mibus, transporte, basura, seguridad, homicidio, alerta amber]
+  eventos_naturales: [sismo, temblor, terremoto, inundación, lluvia, tormenta, deslizamiento, sequía, el niño, el nino, incendio forestal, huracán, clima]
+  regulacion: [ley, decreto, reforma, resolución, concesión, contrato, sanción, lista gris, gafi, lista fiscal, asamblea, sanciona]
+
+duplicados:
+  min_caracteres_contencion: 30   # un titular contenido en otro solo cuenta si tiene al menos esto
+
+indicadores:
+  anio_fin_esperado: 2024
+
+usgs:
+  bins_magnitud: [3.0, 4.0, 5.0, 6.0]   # límites inferiores; el último bin es abierto
+  panama_en_place: ['panama']
+
+salida:
+  informe: docs/exploracion.md
+  carpeta_muestra: data/exploracion
+  ejemplos_excluidos: config/ejemplos_excluidos.txt

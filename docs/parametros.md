@@ -17,11 +17,15 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 | Foco (Panamá sujeto · otro país que afecta) | 1 · 0.5 | Supuesto | Revisión editorial |
 | Similitudes en percentil | — | Calibrado | X04 (distribución) |
 | Partes de I (subtema · geográfico) | 0.5 · 0.5 | Supuesto | X02 |
-| Alcance por subtema | Tabla en YAML | Supuesto (criterio editorial) | Precision@5 y revisión editorial |
+| Alcance por subtema (38 subtemas, 0.4 a 1.0) | Tabla en `reglas_v1.3.yaml` | Supuesto (criterio editorial; el diseño pide la tabla documentada en YAML, D-35) | Precision@5 y revisión editorial |
 | Alcance geográfico | nacional 1 · provincial 0.6 · local 0.3 · desconocido 0.5 | Supuesto | X02 |
-| Ventana de urgencia U | 1 a < 24 h → 0 a 7 días | Supuesto | X02 |
+| Ventana de urgencia U: horas con U = 1 · días con U = 0 (lineal entre ambos) | 24 h · 7 días | Diseño (v1.3, D-35: <24 h y 7 días) | X02 |
 | Partes de E (procedencias · oficial · identificable) | 0.5 · 0.3 · 0.2 | Supuesto | X02 |
 | Tope de procedencias en E | 3 | Supuesto | X02 |
+| U sin fecha de publicación en ningún titular | Usa `fecha_deteccion` y agrega el vacío "urgencia estimada: fecha de publicación desconocida" | Supuesto (53 de 186 noticias del snapshot traen publicación; GDELT no) | Test de E1-10 |
+| N del primer grupo (sin grupos previos) | 1.0 | Supuesto | Test de E1-10 |
+| Listas de provincias, comarcas y distritos | 10 · 6 · 60 | Práctica (división político-administrativa; lista parcial de distritos) | Titulares reales de TVN; `validar_coherencia` |
+| Agencias de noticias para el tipo de firma | 10 nombres | Práctica (el RSS de TVN no trae firma, no se derivan de datos) | Se usa solo si un titular de GDELT la nombra |
 
 ## Estado de evidencia
 
@@ -29,6 +33,13 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 |---|---|---|---|
 | Procedencias para "parcial" / "suficiente" | 2 | Práctica (regla periodística de las dos fuentes independientes) | Revisión editorial |
 | Dato oficial obligatorio si hay cifras | — | PDF (secciones 7 y 9: toda cifra con evidencia) | Test |
+| Una procedencia + dato o evento oficial = "parcial" | 1 | Diseño (estado de evidencia: parcial = 2 o más procedencias, o 1 + dato oficial) | Test de E1-10 |
+| Tabla de acciones 3×3 (editorial y banca) | Editorial: Alto = Producir borrador · Completar evidencia y producir · Investigar ya; Medio = Borrador opcional · Vigilar · Vigilar; Bajo = Archivar como contexto · Archivar · Archivar. Banca: Alto = Incluir en el boletín como observación · Incluir como señal a confirmar · Seguimiento prioritario; Medio = Incluir como contexto · Seguimiento · Seguimiento; Bajo = Archivar | Diseño (D-35, D-38; página "Diseño de solución", Acción recomendada) | Test que fija las 9 celdas; ninguna dice publicar |
+| "Suficiente" exige sin contradicción abierta y, si hay cifras, dato oficial | Regla | Diseño (estado de evidencia) | Test de E1-10 |
+| Vínculos con evidencia oficial (6 subtemas + Logística/Canal indirecto) y sus 5 motivos sin vínculo | Tabla en `vinculos.yaml` | Diseño ("Vínculos con evidencia oficial") | Test que fija la tabla exacta |
+| Sectores de banca (5) y su mapeo desde los temas | `temas.yaml` y `modalidad_banca.yaml` | Diseño (D-11, propuesta) | Validación del esquema |
+| Alcance por sector (banca, sustituye al del subtema) | Por definir al crear `modalidad_banca.yaml` | Supuesto | X02 |
+| Cantidad de temas | 6 | PDF (sección 3, etapa 2) | `cantidad_temas` en `temas.yaml`, validada |
 
 ## Organizar y contextualizar
 
@@ -40,7 +51,7 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 | Umbral "sin tema" | Por definir | Calibrado | Etiquetas humanas |
 | Criterio opción A vs. B | IC 95 % de la diferencia de macro-F1 excluye 0 | Práctica estadística | Bootstrap |
 | Umbrales de ruido | Por definir | Calibrado | X01 (precisión/recall) |
-| Coincidencia de sismos | ± 2 días | Supuesto | Revisión con la exploración (E0-09) |
+| Coincidencia de sismos (`vinculos.yaml`) | ± 2 días | Supuesto | Revisión con la exploración (E0-09); datos sintéticos en E1-09 |
 | Magnitud mínima USGS | 3 | PDF (sección 6) | — |
 
 ## Extracción del snapshot (E0-04, `config/fuentes.yaml`)
@@ -50,6 +61,10 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 | Ventana de noticias | 30 días, ampliable a 90 | PDF (sección 6) · D-74 | `validar_snapshot` (cobertura efectiva) |
 | Volumen de A: meta · mínimo · TVN | 200 · 100 · 20 | PDF (sección 6) | `validar_snapshot` (mínimos = error, meta = advertencia) |
 | `maxrecords` de GDELT | 250 | PDF (sección 6) · API | Subdivisión del rango si una consulta llega al tope |
+| `ventana_noticias.ampliar_si_no_alcanza_minimo` | `true` (bandera explícita, no automática) | PDF (sección 6: "ampliar hasta 90 días") · E0-09 | Con `true`, si con 30 días no se llega al mínimo de 100 noticias, la extracción amplía a 90 (nunca más atrás: GDELT cubre ~3 meses). **El ruido no se puede medir en la extracción** (llega con E1-03b): la decisión cuenta registros únicos producidos solo por fuentes vigentes (RSS de TVN + patas vigentes de GDELT; los crudos de consultas reemplazadas no cuentan, D-83), y la comprobación de "no ruido ≥ 100" queda **pendiente de E1-03b**, después de la limpieza. Con `false` solo avisa: **eso se aparta de la spec**, que manda ampliar. `test_la_ampliacion_a_90_dias_depende_de_la_bandera` |
+| Consultas de GDELT: patas por tema · términos | 2 patas (`locales`, `internacional`) × 4 temas = 8 llamadas por rango (antes 4). Los términos de las patas locales evitan palabras ambiguas en medios de Panamá (`canal` = canal de TV, `carga`, `visitantes`, `inversión` suelta): se usan "Canal de Panamá", ACP, "carga marítima", "llegada de visitantes", "inversión extranjera" | Supuesto (cada pata es una llamada porque la API no anida `OR` ni mezcla filtros de país) | Estimación offline con `scripts.estimar_consultas_gdelt` (solo mide ruido filtrado sobre lo que las consultas anteriores devolvieron, no el recall nuevo); la cobertura real se verá tras la nueva extracción. `test_terminos_de_las_patas_locales_no_son_ambiguos` |
+| Consultas reemplazadas (`gdelt.consultas_historicas`) | Los crudos sin pata (consultas anteriores a E0-04) no alimentan `noticias.csv`: quedan en `raw/` y el manifest los lista como `crudos_excluidos` ("consulta reemplazada (D-83)") con su consulta histórica | Decisión D-83 | `test_crudos_de_consultas_reemplazadas_no_alimentan_el_snapshot_y_se_informan` |
+| Longitud mínima de un término de consulta (`gdelt.largo_minimo_termino`) | 3 caracteres | Supuesto (GDELT rechaza palabras muy cortas) | `test_terminos_invalidos_se_rechazan`, `test_el_largo_minimo_sale_de_la_configuracion` |
 | Banco Mundial: países · años · indicadores | 6 · 2010–2024 · 6 | PDF (sección 6) | Cuadrícula completa = 540 filas (6 × 6 × 15). El PDF dice 1.350: inconsistencia aritmética, documentada en el manifest |
 | `per_page` del Banco Mundial | 1000 | PDF · API (evita paginar) | La extracción falla si la API pagina |
 | USGS: caja · fechas · magnitud mínima | lat 5–12, lon −86 a −76 · 2024 · 3 | PDF (sección 6) | `validar_snapshot` |
@@ -79,10 +94,49 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 | Repeticiones por titular | 4 (→ 20 llamadas con 5 titulares) | Supuesto (mínimo para estimar mediana y p95 con n = 20) | IC de Wilson sobre la validez |
 | Llamadas de calentamiento | 1 (fuera de las estadísticas) | Práctica (excluir la carga del modelo en frío) | `load_duration_s` en los resultados |
 | Titulares de la muestra | 5 de TVN Panamá: 2 nacionales, 1 mundo, 1 tvmax, 1 entretenimiento | Spec E0-07 (5 titulares reales); reparto por tema = supuesto | Selección determinista por `id_noticia` ordenado |
+| Marcadores de atribución | reporta, reportó, reportado, informa, informó, según, señala, indica, publica, publicó (o el nombre del medio) | Supuesto (verbos de reporte de `docs/salidas.md`) | Métrica `atribucion` de `scripts.probar_llm`; E1-13 la mide con el validador real |
+| Longitud mínima de un secreto a redactar | 8 caracteres | Supuesto | `test_local_env_ignora_secretos_cortos` |
 | Confianza del IC | 95 % (Wilson para proporciones) | Práctica estadística (CLAUDE.md) | — |
 | Criterio D-02: mediana | ≤ 15 s | PDF (meta de 9.1) | `scripts.probar_llm` |
 | Criterio D-02: JSON inválido | ≤ 1 de cada 10 llamadas | Supuesto (D-02) | `scripts.probar_llm` |
 | Criterio D-02: rechazo del validador | ≤ 20 % | Supuesto (D-02) | No evaluable en E0-07 (el validador es de E1); se usa el indicador `hecho_sobre_titular` como aproximación |
+## Carga y validación (E1-02, `config/carga.yaml`)
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| Campos críticos de noticias | `id_noticia`, `titulo`, `url`, `medio` + al menos una fecha (publicación o detección) | Spec E1-02 · fixtures T01 (`medio` vacío es `obligatorio_vacio`) | `tests/test_t01_carga.py` (T01) |
+| Campos críticos de indicadores, eventos y fuentes | Indicadores: `pais_iso3`, `indicador_id`, `anio`, `unidad`, `fuente_url`, `fecha_extraccion`, `licencia` · Eventos: `id`, `magnitude`, `time`, `longitude`, `latitude`, `url` · Fuentes: `dominio`, `nombre_legible`, `origen`, `condiciones`. Vacío o en blanco invalida la fila | Contrato sección 7 (los opcionales solo cuentan como nulo) | `test_a2_*`, `test_low_criticos_*` |
+| Patrón de `id_noticia` | `NOT-` + 10 hex, o `SYN-<serie>-<n>` | CLAUDE.md (D-63) | T01 |
+| Patrón de `id_indicador` | `IND-<ISO3>-<indicador>-<año>` | CLAUDE.md (D-63) | `test_clave_repetida_de_indicador_es_id_duplicado` y la carga del snapshot real |
+| Patrón de `id` de evento | `SIS-<id USGS>` (sin espacios) | CLAUDE.md (D-63) | `test_eventos_y_fuentes_con_pydantic` |
+| Patrón de `pais_iso3` | 3 mayúsculas | ISO 3166-1 alfa-3 | Carga del snapshot real (6 países) |
+| Patrón de `anio` | 4 dígitos | Contrato (el año es entero de 4 cifras) | `test_low_rango_de_anio` |
+| Patrón de URL | `http(s)://` + host, resto opcional | Supuesto (sintaxis mínima; no se verifica que el sitio exista) | T01 (3 casos de `url_mal_formada`) |
+| Formato de fecha en `processed/` | ISO 8601 UTC con `Z`, fecha real (rechaza 30 de febrero) | CLAUDE.md · contrato de datos | T01 (3 casos de `fecha_invalida`) |
+| Formatos de fecha de origen (GDELT, RFC 822, USGS en ms) | No los lee la carga: los parsea `scripts/conversion.py` | Spec E0-04 | `tests/test_extraccion.py` |
+| Rango de `anio` | 1960–2100 | Supuesto (el Banco Mundial publica desde 1960; el tope es solo defensivo) | `test_low_rango_de_anio` |
+| Límites de latitud y longitud | ±90 · ±180 | Física (coordenadas geográficas) | `test_low_limites_de_latitud_y_longitud` |
+| Clave de indicador | (`pais_iso3`, `indicador_id`, `anio`) | CLAUDE.md (D-63) | T01 (`id_duplicado`) · `test_low_duplicado_*` |
+| Top N de medios en el reporte | 5 | Supuesto (riesgo R-10: concentración de fuentes) | `test_m1_*` (n e IC) |
+| z del intervalo de confianza | 1,96 (Wilson, 95 %) | Práctica estadística (normal estándar; CLAUDE.md exige IC del 95 %) | `test_m1_*` (valores conocidos de Wilson) |
+| Recorte del valor en `errores.csv` | 200 caracteres | Supuesto (legibilidad del archivo) | `test_low_recorte_del_valor_en_errores` |
+| Carpeta de filas válidas | `data/processed/validos/` | Decisión D-82 | `test_a1_*` (no toca el snapshot; salida determinista) |
+
+Un `valor` nulo en indicadores es válido (no es un parámetro: lo exige el contrato). Un duplicado conserva la primera aparición **válida**.
+
+## Normalización y almacenamiento (E1-03, `config/normalizacion.yaml`)
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| Largo del hash del `id_noticia` | 10 caracteres del SHA-1 de la URL canónica | CLAUDE.md (D-63) | `test_id_noticia_es_sha1_*` · `test_los_ids_recalculados_coinciden_con_los_del_snapshot` |
+| Prefijos de ID | `NOT-` · `IND-` · `SIS-`; los `SYN-` conservan su ID | CLAUDE.md (D-63) | `test_ids_de_indicador_y_sismo` · T03 |
+| Días para marcar una noticia como recirculada | 30 (detección − publicación > 30 días) | **Supuesto puro.** El PDF no da ningún umbral para T03: solo pide mostrar la fecha original y no presentarla como evento nuevo. 30 coincide con la ventana base de D-74, sin dato que lo calibre. Es una marca derivada, no filtra. **Con los datos reales es nula en los 186 registros**, porque ninguna fuente aporta publicación y detección a la vez (RSS solo publicación, GDELT solo detección) | T03 (`tests/test_t03_recirculada.py`, con el fixture sintético); revisar si E1-03b o E1-06 cruzan fuentes |
+| Separador de temas / orígenes al fusionar duplicados | `\|` · ` · ` (orden TVN RSS, GDELT) | Formato ya usado por `scripts/conversion.py` (diccionario) | `test_duplicados_por_url_se_fusionan_*` |
+| Agencias, nombres completos y firmas de redacción (D-32) | EFE, AFP, AP, Reuters, Europa Press, DPA, ANSA, Xinhua, Prensa Latina, Bloomberg, con sus nombres completos (Associated Press, Agence France-Presse...) · "agencias" genérico · redacción, tvn, web. Se buscan como palabra completa dentro de la firma, sin distinguir tildes ni mayúsculas | Spec E1-03 · lista de `config/exploracion.yaml`; nombres completos: supuesto (nombres oficiales de las agencias) | `test_derivar_firma_busca_dentro_del_texto` · `test_el_nombre_de_la_persona_no_se_guarda_*` |
+| Campos de entrada de la firma | `firma`, `autor`, `author`, `dc_creator`, `creator` (opcionales; el valor nunca se guarda) | Supuesto (el snapshot actual no trae firma: el RSS de TVN no la incluye) | `test_derivar_firma` |
+| Formato de fecha de salida | ISO 8601 UTC con `Z`; una fecha sin zona o ilegible queda nula y se registra | CLAUDE.md · contrato de datos | T03 (`test_una_fecha_ilegible_o_sin_zona_*`) |
+
+Una cadena vacía o en blanco es nulo en CSV y en JSON. Duplicados: en noticias se toma la detección más temprana (por instante) y el primer valor no nulo de los demás campos; en indicadores se conserva la primera aparición completa sin rellenar con otras, como E1-02. Un `valor` ausente en indicadores nunca se rellena con 0 (no es un parámetro: lo exige el contrato).
 
 ## Consulta y generación
 
@@ -100,10 +154,11 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 |---|---|---|---|
 | Brief · copy · resumen bancario | ≤ 250 · ≤ 80 · ≤ 250 palabras | PDF | Test |
 | Guion | 45–60 s | PDF | X03 |
-| Guion en palabras | 110–150 | Calibrado | X03 (cronometrado) |
+| Guion en palabras | 110–150 (`salidas.yaml`) | Calibrado | X03 (cronometrado) |
 | Preguntas | Exactamente 3 | PDF | Test |
 | Título · titulares · resumen web · hashtags | ≤ 14 · 2–3 · ≤ 120 · ≤ 2 | Supuesto (convención propia) | Tasa de corrección en revisión |
-| Transiciones sin cita por sección | Máximo en YAML | Supuesto | Revisión editorial |
+| Transiciones sin cita por sección | 1 (`salidas.yaml`) | Supuesto | Revisión editorial |
+| Palabras sensacionalistas y frases prohibidas | Grupos `comunes`, `editorial` y `banca` en `restricciones.yaml` | PDF (prohibiciones) · diseño (validador, D-25, D-51); las listas de frases, Supuesto | Un test por frase (E1-13) |
 
 ## Evaluación
 
@@ -118,3 +173,17 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 | Sensibilidad X02 | Pesos ± 5; parámetros supuestos ± 20 % | Supuesto | — |
 | Precision@5 | 3 fechas de corte si hay editor; si no, n = 1 y exploratoria | PDF (exploratoria sin especialista) | — |
 | Duración de la demo | 4 min | PDF | Ensayo cronometrado |
+
+## Exploración (E0-09)
+
+Valores en `config/exploracion.yaml`. Todo lo que marcan es **candidato**; las medidas reales son E1-03b y E1-06.
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| Intervalo de confianza de las proporciones | Wilson, z = 1.96 (95 %) | Práctica estadística | `test_wilson_es_un_intervalo_valido` |
+| Filas de cada tabla de conteos | 10 | Supuesto (legibilidad) | — |
+| Mínimo de titulares revisados por tema | 15 | PDF (spec E0-09) | Sección 10 de `docs/exploracion.md` |
+| Largo mínimo para contar un titular contenido en otro como duplicado | 30 caracteres | Supuesto | `test_duplicados_agrupa_sufijos_y_contencion`; revisar con E1-08 |
+| Bins de magnitud USGS | < 3 · 3 · 4 · 5 · 6 | Práctica (escala de magnitud) | — |
+| Año final esperado de la cuadrícula del Banco Mundial | 2024 | Supuesto (config de `fuentes.yaml`) | Sección 8 de `docs/exploracion.md` |
+| Listas de palabras (deportes, farándula, falso Panamá, menciones de Panamá, temas) | En YAML | Supuesto (exploratorias; no clasifican) | Se descartan al medir E1-03b / E1-07 |

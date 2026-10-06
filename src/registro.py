@@ -26,6 +26,11 @@ def registrar_sensible(valor: str) -> None:
         _EXTRA_SENSIBLES.add(valor)
 
 
+def olvidar_sensibles() -> None:
+    """Vacía los valores registrados con ``registrar_sensible`` (para pruebas)."""
+    _EXTRA_SENSIBLES.clear()
+
+
 def valores_sensibles() -> list[str]:
     """Devuelve los valores no vacíos de las variables sensibles, del más largo al más corto."""
     valores = {
