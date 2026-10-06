@@ -1,0 +1,107 @@
+# E1-07 · Embeddings locales, clasificación temática y baseline (D-03, D-20, D-21, D-57, D-66).
+# Todo número y todo patrón vive aquí (D-79). Origen y validación de cada valor: docs/parametros.md,
+# sección "Clasificación (E1-07)". Los embeddings son SIEMPRE locales (sentence-transformers, sin API).
+version: 1
+semilla: 42                 # semilla global (torch, numpy y bootstrap) para que dos corridas den lo mismo
+modelo_activo: e5           # D-20 (propuesta): multilingual-e5-small; MiniLM se mide aparte y se elige por macro-F1 con E1-06
+metodo_activo: A            # D-21/D-57: A salvo que `python -m eval.clasificacion` demuestre que B es mejor (criterio_ab)
+dispositivo: cpu            # CPU: determinista y sin GPU en la máquina de la demo
+lote: 32                    # titulares por lote al codificar (no cambia el resultado)
+usar_descripcion: true      # si el registro trae descripción del RSS se codifica "titular. descripción"; solo uso interno (D-31)
+
+carpetas:
+  modelos: models           # caché de pesos de Hugging Face (ignorada por git); sin internet después de la primera descarga
+  embeddings: .cache/embeddings   # caché de embeddings por modelo y revisión (ignorada por git)
+
+# Modelos fijados por id y revisión exacta (hash del commit en Hugging Face, consultado el 2026-10-06).
+modelos:
+  e5:
+    id: intfloat/multilingual-e5-small
+    revision: 614241f622f53c4eeff9890bdc4f31cfecc418b3
+    prefijo_titular: "query: "      # el titular es la consulta...
+    prefijo_tema: "passage: "       # ...y la descripción, los ejemplos y los prototipos de cada tema son los pasajes
+    # PROVISIONALES (supuesto): salen de `python -m eval.calibrar_clasificacion` (percentil 5 de la similitud máxima y
+    # percentil 25 de la brecha, sobre titulares únicos no ruido del snapshot del 2026-10-06). e5 comprime las
+    # similitudes (0.81-0.91): su umbral y su margen son estrechos. Se recalibran con eval/etiquetas.csv (E1-06).
+    umbrales:
+      A: {umbral_sin_tema: 0.824, margen_secundario: 0.002}
+      B: {umbral_sin_tema: 0.797, margen_secundario: 0.004}
+  minilm:
+    id: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+    revision: e8f8c211226b894fcb81acc59f3b34ba3efd5f42
+    prefijo_titular: ""
+    prefijo_tema: ""
+    umbrales:                       # PROVISIONALES: misma regla que arriba (escala de similitud mucho más amplia)
+      A: {umbral_sin_tema: 0.213, margen_secundario: 0.03}
+      B: {umbral_sin_tema: 0.283, margen_secundario: 0.019}
+
+# Criterio A vs B fijado ANTES de medir (D-21, D-57): B solo si el IC 95 % (bootstrap) de la diferencia de macro-F1
+# B − A excluye el cero y ningún tema empeora de forma significativa (IC 95 % de la diferencia de F1 por tema
+# enteramente por debajo de cero); si no, A por ser más simple.
+criterio_ab:
+  remuestreos: 1000
+  confianza: 0.95
+  semilla: 42
+
+# Fuga semántica (revisión X15): los casos difíciles son de prueba, así que ningún ejemplo ni prototipo de temas.yaml
+# puede parafrasearlos. Se mide con el coseno entre cada caso y cada referencia con un modelo de escala amplia (MiniLM: en
+# e5 todo está entre 0.80 y 0.91 y no sirve para detectar paráfrasis). Se ignoran las palabras que todos comparten
+# ("Panamá"). El umbral es un SUPUESTO, elegido DESPUÉS de ver los pares (tabla en docs/clasificacion.md): 0.56 detecta
+# las paráfrasis de CD-02, CD-11 y CD-12 y las de vocabulario casi idéntico. Queda UN par por encima (0.566): CD-02 con el
+# ejemplo REAL «Clima en Panamá: Martes con lluvias y tormentas eléctricas...» del snapshot, que no se puede reescribir
+# (su id está en ejemplos_excluidos.txt). Se acepta de forma explícita en `excepciones_aceptadas`.
+fuga_semantica:
+  modelo: minilm
+  umbral_coseno: 0.56
+  palabras_ignoradas: [panama, panameno, panamena, panamenos]
+  excepciones_aceptadas: ["CD-02~eventos_naturales.ejemplo[0]"]
+
+# Baseline por palabras clave (D-66). Las MISMAS categorías que el clasificador: los 6 temas o sin_tema.
+# Término = palabra o frase literal en minúsculas y sin tildes; coincide como palabra completa (con "s"/"es" final
+# opcional). Puntaje de un tema = términos distintos que coinciden; gana el mayor; si empatan, el primero en el orden de
+# temas.yaml; sin coincidencias, sin_tema. El segundo con puntaje > 0 es el secundario.
+#
+# Dos variantes, para no presentar como "baseline sin ayuda" lo que no lo es (revisión X15):
+#   guia      = SOLO términos que aparecen literalmente en docs/guia_temas.md fuera de la sección "Casos difíciles"
+#               (columnas "Incluye" / "No incluye" y reglas de frontera). Un test lo verifica término por término.
+#               Es el baseline principal (`variante_activa`).
+#   ampliado  = guia + `extension`: vocabulario que agregó quien escribió el baseline por conocimiento general
+#               (siglas, sinónimos, formas léxicas). Se escribió DESPUÉS de haber leído la guía completa, casos difíciles
+#               incluidos, así que NO puede presentarse como independiente de ellos: varios términos (asep, asamblea,
+#               homicidio, aerolinea) coinciden con casos difíciles. Se reporta aparte como `baseline_ampliado`.
+baseline:
+  variante_activa: guia
+  palabras_clave:
+    economia:
+      guia: [crecimiento, pib, inflacion, precios, canasta basica, combustibles, empleo, deuda, presupuesto, recaudacion,
+             inversion, comercio exterior, banca, calificaciones de riesgo, impuesto, finanzas publicas]
+      extension: [producto interno, recesion, economia, economico, economica, salario, fiscal, tributario, banco, deposito,
+                  prestamo, credito, calificadora, nota de riesgo, grado de inversion, exportacion, importacion, arancel,
+                  desempleo, inversionista, precio]
+    logistica:
+      guia: [canal, transito, calado, reservas, lago gatun, gatun, puerto, zona libre, carga aerea, transporte de carga,
+             cadenas de suministro, peaje, acp]
+      extension: [esclusa, neopanamax, contenedor, balboa, manzanillo, carga, cargamento, mercancia, flete, naviera, buque,
+                  maritimo, barco, cadena de suministro, logistica, logistico, transportista, camion, camionero, portuario]
+    turismo:
+      guia: [turismo, visitantes, cruceros, hoteleria, ocupacion, aviacion de pasajeros, conectividad, destinos, promocion,
+             vuelos, pasajeros]
+      extension: [turistico, turista, visitante, crucero, crucerista, hotel, hotelero, ocupacion hotelera, hospedaje,
+                  aerolinea, vuelo, ruta aerea, conectividad aerea, pasajero, destino, playa, feria de turismo]
+    servicios_publicos:
+      guia: [agua potable, electricidad, telecomunicaciones, internet, transporte publico, recoleccion de basura, basura,
+             salud publica, hospital, css, minsa, medicamento, educacion publica, escuela, clase, docente, seguridad ciudadana,
+             policia, operativo, carcel, delito]
+      extension: [agua, idaan, acueducto, potabilizadora, energia electrica, apagon, luz, distribuidora electrica, telefonia,
+                  senal, metro, mibus, autobus, bus, desechos, recoleccion, relleno sanitario, paciente, vacuna, vacunacion,
+                  salud, educacion, colegio, maestro, estudiante, meduca, homicidio, robo, seguridad]
+    eventos_naturales:
+      guia: [sismo, inundacion, lluvia, deslizamiento, sequia, el nino, incendios forestales, alerta, proteccion civil]
+      extension: [temblor, terremoto, sismica, inunda, aguacero, tormenta, tempestad, derrumbe, la nina, incendio forestal,
+                  quema, sinaproc, desborda, desbordamiento, creciente, huracan, ciclon]
+    regulacion:
+      guia: [ley, decreto, resolucion, entes reguladores, reforma, listas internacionales, listas grises, gafi, contrato,
+             concesion, sancion, reglas nuevas]
+      extension: [proyecto de ley, legislacion, reglamento, norma, normativa, regula, regulacion, regulador, superintendencia,
+                  asep, lista gris, lista negra, lista fiscal, licitacion, sanciona, multa, multado, asamblea, ejecutivo sanciona,
+                  gaceta oficial]

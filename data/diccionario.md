@@ -130,6 +130,14 @@ se sustituyen entre sí. El nombre de la persona que firma **no se guarda** (D-3
 | `motivo_ruido` | VARCHAR | sí | limpieza | derivado | `no_es_panama` · `fuera_de_temas` · `no_es_noticia` · `fuera_de_ventana`; nulo si no es ruido. `duplicado_url` no aparece aquí: lo registra `duplicados_eliminados` (E1-03). |
 | `sospechoso_inyeccion` | BOOLEAN | sí | limpieza | derivado | Verdadero si el titular o la descripción traen patrones de instrucción (D-69). No excluye el registro; la ficha avisa al revisor. |
 | `alcance_regional` | BOOLEAN | sí | limpieza | derivado | Verdadero si el titular nombra la región (Centroamérica, América Latina, LatAm, Caribe) o un fenómeno regional que afecta a Panamá (El Niño, rutas marítimas) y no es ruido (D-84). Se cuenta aparte en el reporte. |
+| `similitud_panama` | DOUBLE | sí | clasificación | derivado | Mayor similitud coseno del titular con los prototipos de noticia sobre Panamá (`ruido.yaml`, D-84). Se guarda siempre; marca ruido solo si `similitud_prototipo.activo` (hoy `false`). Nula hasta correr `python -m src.clasificacion` (E1-07). |
+| `ruido_similitud` | BOOLEAN | sí | clasificación | derivado | Verdadero si el registro se marcó `no_es_panama` por esa similitud (nunca una nota con `alcance_regional`). Nulo si no se marcó. |
+| `tema_clasificado` | VARCHAR | sí | clasificación | derivado | Salida del clasificador (E1-07): uno de los 6 temas de `temas.yaml` o `sin_tema`. **No es el `tema` de origen** (D-62) y nunca se usan una como etiqueta de la otra. Nulo en el ruido. |
+| `tema_similitud` | DOUBLE | sí | clasificación | derivado | Mayor similitud coseno con un tema (también si el resultado es `sin_tema`). |
+| `subtema_clasificado` | VARCHAR | sí | clasificación | derivado | Solo con el método B: subtema más parecido dentro del tema (por ejemplo `agua_potable`). Nulo con A. |
+| `tema_secundario` | VARCHAR | sí | clasificación | derivado | Segundo tema, solo si está a menos de `margen_secundario` del principal. |
+| `tema_secundario_similitud` | DOUBLE | sí | clasificación | derivado | Similitud del tema secundario. |
+| `tema_baseline` | VARCHAR | sí | clasificación | derivado | Tema del baseline de palabras clave (D-66), con las mismas categorías: 6 temas o `sin_tema`. |
 
 ### `indicadores`: cuadrícula del Banco Mundial
 
@@ -179,6 +187,18 @@ se sustituyen entre sí. El nombre de la persona que firma **no se guarda** (D-3
 | `id_descartado` | VARCHAR | no | normalización | derivado | ID original de la fila descartada (o su URL si no tenía). |
 | `clave` | VARCHAR | no | normalización | derivado | Valor que las hacía iguales (URL canónica, ID...). |
 | `motivo` | VARCHAR | no | normalización | derivado | `duplicado_url`, `duplicado_clave`, `duplicado_id`, `duplicado_dominio`. |
+
+### `similitud_tema`: similitud de cada noticia con cada tema (E1-07)
+
+Explicabilidad de la clasificación: una fila por noticia clasificada (no ruido), método (`A` o `B`) y tema.
+
+| Campo | Tipo | Nullable | Fuente | Clase | Descripción |
+|---|---|---|---|---|---|
+| `id_noticia` | VARCHAR | no | `noticias` | derivado | Noticia clasificada. |
+| `metodo` | VARCHAR | no | clasificación | derivado | `A` (descripción + ejemplos) o `B` (prototipos por subtema), D-21. |
+| `tema` | VARCHAR | no | `temas.yaml` | derivado | Uno de los 6 temas. |
+| `similitud` | DOUBLE | no | clasificación | derivado | Coseno entre el titular y el tema (A: centroide; B: el subtema más parecido del tema). |
+| `subtema` | VARCHAR | sí | `temas.yaml` | derivado | Solo con B: el subtema que dio esa similitud. |
 
 ### `registro_normalizacion`: valores que no se pudieron normalizar
 

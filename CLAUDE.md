@@ -27,6 +27,8 @@ poetry run pytest -v                                 # todas las pruebas, inclui
 poetry run python -m src.carga                       # carga + validación + reporte de calidad
 poetry run python -m src.normalizacion               # normaliza y crea data/senales.duckdb
 poetry run python -m src.limpieza                    # limpia titulares y marca ruido
+poetry run python -m src.clasificacion               # embeddings locales y tema_clasificado
+poetry run python -m eval.clasificacion              # métricas de clasificación (casos difíciles y etiquetas)
 poetry run streamlit run app.py                      # interfaz
 poetry run streamlit run app.py -- --demo            # modo demo (data/demo.duckdb)
 poetry run python -m scripts.verificar_offline       # chequeo antes del pitch

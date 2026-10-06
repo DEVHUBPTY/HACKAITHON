@@ -105,7 +105,16 @@ fuera_de_temas:
   autopromocion_tvn:
     - '^\s*(tvn media|gente tvn|gente que inspira)\b(?!.*\b(inundacion\w*|donacion\w*|damnificad\w*|emergencia|ayuda humanitaria|incendio\w*|tragedia|sismo|lluvias?)\b)'
 
-# Prototipo de noticia sobre Panamá (similitud de embeddings): DIFERIDO a E1-07 (los embeddings
-# locales de titulares llegan con esa tarea; src/embeddings.py hoy es un stub). Hasta entonces el filtro es solo por palabras clave.
+# Prototipo de noticia sobre Panamá (similitud de embeddings, D-84; implementado en E1-07 en src/clasificacion.py).
+# Con el modelo de clasificacion.yaml (modelo_activo): un titular que no está marcado como ruido ni como alcance
+# regional y cuya similitud MÁXIMA con estos prototipos es menor que `umbral` se marca no_es_panama (motivo
+# "no_es_panama", columna ruido_similitud = true). Una nota regional NO se marca nunca por esta vía.
+# `activo: false` hasta medir su precisión y recall con `python -m eval.ruido` contra eval/etiquetas.csv (E1-06):
+# sin etiquetas humanas el umbral no está calibrado (docs/parametros.md).
 similitud_prototipo:
   activo: false
+  umbral: 0.774     # sugerido para e5: percentil 5 de la similitud de los titulares únicos no ruido (eval.calibrar_clasificacion); SIN calibrar con etiquetas
+  prototipos:
+    - "Noticias de Panamá: el gobierno panameño anuncia una medida"
+    - "El Canal de Panamá, los puertos y la economía panameña"
+    - "Panama news: Panamanian government, economy and Canal"

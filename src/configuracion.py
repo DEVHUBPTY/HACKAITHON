@@ -952,6 +952,10 @@ def validar_coherencia(carpeta: Path | None = None) -> list[str]:
     excluidos = _ids_excluidos(carpeta / "ejemplos_excluidos.txt")
     if reales != excluidos:
         problemas.append(f"ejemplos_excluidos.txt no coincide con los ejemplos reales de temas.yaml: {sorted(reales ^ excluidos)}")
+    if (carpeta / "clasificacion.yaml").exists():  # su presencia la exige validar_todo; aquí solo se cruza si está
+        claves = set(cargar_clasificacion(carpeta).baseline.palabras_clave)
+        if claves != set(temas.temas):
+            problemas.append(f"clasificacion.yaml: baseline.palabras_clave y temas de temas.yaml difieren: {sorted(claves ^ set(temas.temas))}")
     if (carpeta / "etiquetado.yaml").exists():
         motivos = set(cargar_etiquetado(carpeta).ruido.motivos)
         esperados = set(FueraDeTemas.model_fields) | MOTIVOS_RUIDO_HUMANO_EXTRA
@@ -1096,7 +1100,23 @@ class FueraDeTemasRuido(ModeloConfig):
 
 
 class SimilitudPrototipo(ModeloConfig):
+    """Filtro de ruido por similitud con prototipos de noticia sobre Panamá (D-84, implementado en E1-07).
+
+    Se aplica con el modelo de ``clasificacion.yaml`` (``modelo_activo``). Una nota con similitud máxima menor que
+    ``umbral`` se marca ``no_es_panama``, salvo que ya tenga ``alcance_regional`` (D-84).
+    """
+
     activo: bool
+    umbral: float
+    prototipos: list[str]
+
+    @model_validator(mode="after")
+    def _valida(self) -> SimilitudPrototipo:
+        if not self.prototipos or any(not p.strip() for p in self.prototipos):
+            raise ValueError("similitud_prototipo.prototipos: debe haber al menos uno y ninguno vacío")
+        if not 0.0 <= self.umbral <= 1.0:
+            raise ValueError("similitud_prototipo.umbral: es una similitud coseno entre 0 y 1")
+        return self
 
 
 class ConfigRuido(ModeloConfig):
@@ -1115,6 +1135,139 @@ def cargar_ruido(carpeta: Path | None = None) -> ConfigRuido:
     return cargar_config("ruido", ConfigRuido, carpeta)
 
 
+# ------------------------------------------------------------------ clasificacion.yaml (E1-07)
+
+METODOS_CLASIFICACION = ("A", "B")
+
+
+class UmbralesMetodo(ModeloConfig):
+    """Umbrales de un método (A o B) para un modelo: la similitud coseno no tiene la misma escala en cada uno."""
+
+    umbral_sin_tema: float
+    margen_secundario: float
+
+    @model_validator(mode="after")
+    def _rangos(self) -> UmbralesMetodo:
+        if not 0.0 <= self.umbral_sin_tema <= 1.0:
+            raise ValueError("umbral_sin_tema: similitud coseno entre 0 y 1")
+        if not 0.0 <= self.margen_secundario <= 1.0:
+            raise ValueError("margen_secundario: entre 0 y 1")
+        return self
+
+
+class ModeloEmbeddings(ModeloConfig):
+    """Un modelo local de sentence-transformers, fijado por nombre y revisión exactos (D-20, D-03)."""
+
+    id: str
+    revision: str
+    prefijo_titular: str      # e5: ``query: `` (el titular es la consulta); MiniLM: sin prefijo
+    prefijo_tema: str         # e5: ``passage: `` (descripciones, ejemplos y prototipos son los pasajes)
+    umbrales: dict[str, UmbralesMetodo]
+
+    @field_validator("revision")
+    @classmethod
+    def _revision_fija(cls, v: str) -> str:
+        if not re.fullmatch(r"[0-9a-f]{40}", v):
+            raise ValueError("revision: debe ser el hash completo (40 hex) del commit del modelo en Hugging Face")
+        return v
+
+    @model_validator(mode="after")
+    def _metodos(self) -> ModeloEmbeddings:
+        if set(self.umbrales) != set(METODOS_CLASIFICACION):
+            raise ValueError(f"umbrales: deben estar los métodos {list(METODOS_CLASIFICACION)}")
+        return self
+
+
+class CarpetasClasificacion(ModeloConfig):
+    modelos: str       # caché de pesos de Hugging Face (ignorada por git)
+    embeddings: str    # caché de embeddings de titulares (ignorada por git)
+
+
+class CriterioAB(ModeloConfig):
+    """Criterio fijado ANTES de medir (D-21, D-57): se usa B solo si el IC de la diferencia B − A excluye el cero
+    y ningún tema empeora de forma significativa; si no, A."""
+
+    remuestreos: int
+    confianza: float
+    semilla: int
+
+    @model_validator(mode="after")
+    def _rangos(self) -> CriterioAB:
+        if self.remuestreos < 1 or not 0.0 < self.confianza < 1.0:
+            raise ValueError("criterio_ab: remuestreos >= 1 y confianza entre 0 y 1")
+        return self
+
+
+class TerminosBaseline(ModeloConfig):
+    """Términos de un tema: ``guia`` (literales de docs/guia_temas.md) y ``extension`` (vocabulario agregado)."""
+
+    guia: list[str]
+    extension: list[str]
+
+
+class BaselineClasificacion(ModeloConfig):
+    """Baseline por palabras clave (D-66): las mismas categorías; términos literales sin tildes y en minúsculas."""
+
+    variante_activa: Literal["guia", "ampliado"]
+    palabras_clave: dict[str, TerminosBaseline]
+
+    @model_validator(mode="after")
+    def _terminos_validos(self) -> BaselineClasificacion:
+        for tema, grupos in self.palabras_clave.items():
+            if not grupos.guia:
+                raise ValueError(f"baseline.palabras_clave.{tema}: sin términos de la guía")
+            if any(not t.strip() or t != t.lower() for t in [*grupos.guia, *grupos.extension]):
+                raise ValueError(f"baseline.palabras_clave.{tema}: términos no vacíos y en minúsculas")
+        return self
+
+
+class FugaSemantica(ModeloConfig):
+    """Detector de fuga por paráfrasis entre los casos difíciles y los ejemplos o prototipos de temas.yaml."""
+
+    modelo: str
+    umbral_coseno: float
+    palabras_ignoradas: list[str]
+    excepciones_aceptadas: list[str]   # "CD-02~eventos_naturales.ejemplo[0]": pares aceptados de forma explícita
+
+    @model_validator(mode="after")
+    def _rangos(self) -> FugaSemantica:
+        if not 0.0 < self.umbral_coseno < 1.0:
+            raise ValueError("fuga_semantica.umbral_coseno: entre 0 y 1")
+        return self
+
+
+class ConfigClasificacion(ModeloConfig):
+    """Modelo de ``config/clasificacion.yaml``."""
+
+    version: int
+    semilla: int
+    modelo_activo: str
+    metodo_activo: str
+    modelos: dict[str, ModeloEmbeddings]
+    dispositivo: str
+    lote: int
+    usar_descripcion: bool          # texto interno para clasificar; nunca se muestra (D-31)
+    carpetas: CarpetasClasificacion
+    criterio_ab: CriterioAB
+    fuga_semantica: FugaSemantica
+    baseline: BaselineClasificacion
+
+    @model_validator(mode="after")
+    def _coherente(self) -> ConfigClasificacion:
+        if self.modelo_activo not in self.modelos:
+            raise ValueError(f"modelo_activo {self.modelo_activo!r} no está en modelos {sorted(self.modelos)}")
+        if self.metodo_activo not in METODOS_CLASIFICACION:
+            raise ValueError(f"metodo_activo: uno de {list(METODOS_CLASIFICACION)}")
+        if self.fuga_semantica.modelo not in self.modelos:
+            raise ValueError(f"fuga_semantica.modelo {self.fuga_semantica.modelo!r} no está en modelos")
+        if self.lote < 1:
+            raise ValueError("lote: al menos 1")
+        return self
+
+
+def cargar_clasificacion(carpeta: Path | None = None) -> ConfigClasificacion:
+    """Atajo para ``config/clasificacion.yaml``."""
+    return cargar_config("clasificacion", ConfigClasificacion, carpeta)
 TipoConsulta = Literal[
     "respuesta_sustentada", "contradiccion_ambiguedad", "sin_respuesta", "adversarial"
 ]
@@ -1240,6 +1393,7 @@ CARGADORES = {
     "modalidad_banca": lambda c=None: cargar_modalidad("banca", c),
     "llm": cargar_llm,
     "normalizacion": cargar_normalizacion,
+    "clasificacion": cargar_clasificacion,
     "etiquetado": cargar_etiquetado,
 }
 
