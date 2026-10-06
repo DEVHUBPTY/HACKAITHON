@@ -23,3 +23,21 @@ grupos:
     recomendacion: ["comprar", "vender", "invertir", "recomendamos", "conviene"]
     certeza: ["ocurrirá", "sin duda", "inevitable", "con certeza"]
     perdidas_en_inferencias: ["pérdidas", "impago", "morosidad", "exposición", "cartera", "default", "riesgo de crédito", "score"]   # solo inferencias e hipótesis
+
+# D-69 · Posible inyección en titulares y descripciones (E1-03b). Patrones de instrucción; regex sobre el texto en
+# minúsculas y sin tildes. Una coincidencia marca `sospechoso_inyeccion = true`: el registro no se borra ni se excluye,
+# y la ficha muestra una advertencia al revisor. El texto sigue siendo dato, nunca instrucción.
+inyeccion:
+  patrones:
+    - '\b(ignora|ignorar|ignore|olvida|disregard|forget)\b.{0,40}\b(instrucciones|reglas|instructions|rules)\b'
+    - '\b(todas )?las instrucciones anteriores\b'
+    - '\b(previous|prior|above) instructions\b'
+    - '\b(prompt del sistema|system prompt|instrucciones internas|hidden instructions|tus instrucciones)\b'
+    - '\b(muestra|imprime|revela|reveal|print|show)\b.{0,40}\b(prompt|claves|credenciales|secret|secreto|credentials|instrucciones)\b'
+    - '\b(a partir de ahora|from now on|nuevas? reglas?|new rules?|you are now|ahora eres)\b'
+    - '\b(unrestricted mode|modo sin restricciones)\b'
+    - '\b(inventar|invent) (cifras|figures|datos)\b'
+    - '\b(no cites|sin citas|skip citations|sin revision humana|skip the human review|human review step)\b'
+    - '\b(publica|publicalo|publicala|publish)\b.{0,40}\b(ahora|ya|inmediatamente|de inmediato|immediately|now)\b'
+    - '\b(marca|mark)\b.{0,40}\b(aprobad[ao]|approved)\b'
+    - '\b(responde solo con|respond only with)\b'

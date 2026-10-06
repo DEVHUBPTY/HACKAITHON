@@ -41,6 +41,11 @@ medio_tvn_dominio: tvn-2.com
 url_canonica:
   esquema: https
   quitar_prefijo_www: true
+  quitar_prefijo_movil: true        # E1-03b: m.dominio.tld -> dominio.tld (solo si queda un dominio con punto)
+  sufijos_ruta_amp: ["/amp"]        # E1-03b: versión AMP del mismo artículo
+  parametros_con_valor_a_quitar:    # E1-03b: ?outputType=amp, ?amp=1
+    outputType: ["amp"]
+    amp: ["1", "true"]
   parametros_a_quitar: [fbclid, gclid, igshid, mc_cid, mc_eid, ref, ref_src, "utm_*"]
 
 rss_tvn:

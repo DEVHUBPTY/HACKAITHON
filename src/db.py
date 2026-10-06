@@ -43,6 +43,13 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("agencia", "VARCHAR"),
         ("tipo_firma", "VARCHAR NOT NULL"),
         ("es_recirculada", "BOOLEAN"),
+        # E1-03b (los llena src/limpieza.py; nulos hasta entonces). Marcar, no borrar.
+        ("titulo_original", "VARCHAR"),
+        ("titulo_limpio", "VARCHAR"),
+        ("es_ruido", "BOOLEAN"),
+        ("motivo_ruido", "VARCHAR"),
+        ("sospechoso_inyeccion", "BOOLEAN"),
+        ("alcance_regional", "BOOLEAN"),
     ],
     "indicadores": [
         ("id_indicador", "VARCHAR PRIMARY KEY"),
