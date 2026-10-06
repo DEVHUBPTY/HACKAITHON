@@ -1,75 +1,15 @@
 {
-  "crudos_excluidos": [
-    {
-      "archivo": "gdelt_economia_20261001161819_20261006161819_20261006T162308Z.json",
-      "consulta_historica": "Panama (economia OR economy OR inflacion OR inflation OR inversion OR exportaciones)",
-      "motivo": "consulta reemplazada (D-83)",
-      "pata": null,
-      "tema": "economia"
-    },
-    {
-      "archivo": "gdelt_economia_20261004000000_20261006000000_20261006T165916Z.json",
-      "consulta_historica": "Panama (economia OR economy OR inflacion OR inflation OR inversion OR exportaciones)",
-      "motivo": "consulta reemplazada (D-83)",
-      "pata": null,
-      "tema": "economia"
-    },
-    {
-      "archivo": "gdelt_logistica_20261001155952_20261006155952_20261006T160046Z.json",
-      "consulta_historica": "Panama (logistica OR logistics OR puerto OR port OR shipping OR canal OR cargo)",
-      "motivo": "consulta reemplazada (D-83)",
-      "pata": null,
-      "tema": "logistica"
-    },
-    {
-      "archivo": "gdelt_logistica_20261001160624_20261006160624_20261006T160908Z.json",
-      "consulta_historica": "Panama (logistica OR logistics OR puerto OR port OR shipping OR canal OR cargo)",
-      "motivo": "consulta reemplazada (D-83)",
-      "pata": null,
-      "tema": "logistica"
-    },
-    {
-      "archivo": "gdelt_logistica_20261001161819_20261006161819_20261006T161836Z.json",
-      "consulta_historica": "Panama (logistica OR logistics OR puerto OR port OR shipping OR canal OR cargo)",
-      "motivo": "consulta reemplazada (D-83)",
-      "pata": null,
-      "tema": "logistica"
-    },
-    {
-      "archivo": "gdelt_logistica_20261004000000_20261006000000_20261006T165223Z.json",
-      "consulta_historica": "Panama (logistica OR logistics OR puerto OR port OR shipping OR canal OR cargo)",
-      "motivo": "consulta reemplazada (D-83)",
-      "pata": null,
-      "tema": "logistica"
-    },
-    {
-      "archivo": "gdelt_logistica_20261004000000_20261006000000_20261006T170706Z.json",
-      "consulta_historica": "Panama (logistica OR logistics OR puerto OR port OR shipping OR canal OR cargo)",
-      "motivo": "consulta reemplazada (D-83)",
-      "pata": null,
-      "tema": "logistica"
-    },
-    {
-      "archivo": "gdelt_turismo_20261001161819_20261006161819_20261006T162016Z.json",
-      "consulta_historica": "Panama (turismo OR tourism OR turistas OR tourists OR hotel OR cruceros)",
-      "motivo": "consulta reemplazada (D-83)",
-      "pata": null,
-      "tema": "turismo"
-    },
-    {
-      "archivo": "gdelt_turismo_20261004000000_20261006000000_20261006T165444Z.json",
-      "consulta_historica": "Panama (turismo OR tourism OR turistas OR tourists OR hotel OR cruceros)",
-      "motivo": "consulta reemplazada (D-83)",
-      "pata": null,
-      "tema": "turismo"
-    }
-  ],
-  "duplicados_descartados": 0,
+  "duplicados_descartados": 237,
   "excluidos": [
     {
       "id_noticia": "NOT-0031e6a574",
       "motivo": "fuera_de_ventana",
       "url": "https://www.tvn-2.com/videos/noticias/video-ext-tvn-celebra-63-anos_7_2186633.html"
+    },
+    {
+      "id_noticia": "NOT-01f6001885",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/gente-tvn/tvn-media-udelas-firman-alianza_1_2253105.html"
     },
     {
       "id_noticia": "NOT-02d9d003eb",
@@ -112,6 +52,11 @@
       "url": "https://www.tvn-2.com/nacionales/tvn-media-loma-brigida-la-chorrera-dia-de-reyes_1_2171661.html"
     },
     {
+      "id_noticia": "NOT-0edf42b262",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/economia/empresas/publirreportajes/byd-cofino-presentan-oficialmente-nuevo_1_2256978.html"
+    },
+    {
       "id_noticia": "NOT-1042758b64",
       "motivo": "fuera_de_ventana",
       "url": "https://www.tvn-2.com/nacionales/tvn-media-quality-leadership-university-acuerdo-educacion-desarrollo_1_2198338.html"
@@ -152,6 +97,11 @@
       "url": "https://www.tvn-2.com/nacionales/tvn-media-nombra-gerente-informacion-digital-magda-maxwell_1_2186722.html"
     },
     {
+      "id_noticia": "NOT-20c6db94ef",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/lideres-360/lideres-360-mario-castrellon-chef-gastronomia-panama-maito_1_2254177.html"
+    },
+    {
       "id_noticia": "NOT-2414d32a0c",
       "motivo": "fuera_de_ventana",
       "url": "https://www.tvn-2.com/nacionales/tvn-media-reafirma-alianza-teleton-20-30_1_2214825.html"
@@ -170,6 +120,11 @@
       "id_noticia": "NOT-2889c603d1",
       "motivo": "fuera_de_ventana",
       "url": "https://www.tvn-2.com/nacionales/tvn-media-nuevamente-consolida-empresas-mejor-reputacion_1_2211002.html"
+    },
+    {
+      "id_noticia": "NOT-2cdb485b70",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-avanza-merco-talento_1_2250207.html"
     },
     {
       "id_noticia": "NOT-35ba050e80",
@@ -207,6 +162,11 @@
       "url": "https://www.tvn-2.com/nacionales/tvn-media-arrasa-premios-victoria-universidad-de-panama_1_2217570.html"
     },
     {
+      "id_noticia": "NOT-46cf66e97c",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/economia/empresas/publirreportajes/pacifica-salud-reafirma-compromiso-calidad_1_2256763.html"
+    },
+    {
       "id_noticia": "NOT-46d06fe7ce",
       "motivo": "fuera_de_ventana",
       "url": "https://www.tvn-2.com/nacionales/tvn-media-une-dias-de-las-buenas-acciones-instituto-oncologico_1_2184947.html"
@@ -225,6 +185,16 @@
       "id_noticia": "NOT-4a20e7d9ec",
       "motivo": "fuera_de_ventana",
       "url": "https://www.tvn-2.com/nacionales/tvn-noticias-trafico-panama-firman-alianza-estrategia-medios_1_2187423.html"
+    },
+    {
+      "id_noticia": "NOT-4e86a019dd",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-ceo-women-summit-potenciar-crecimiento-profesional-mujeres_1_2250211.html"
+    },
+    {
+      "id_noticia": "NOT-5c93d9a62f",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-recibe-reconocimiento-programa-reduce-tu-huella-gestion-ambiental_1_2254331.html"
     },
     {
       "id_noticia": "NOT-5def86a61c",
@@ -247,9 +217,19 @@
       "url": "https://www.tvn-2.com/nacionales/tvn-media-dijo-presente-relevos_1_2205996.html"
     },
     {
+      "id_noticia": "NOT-65d473e65a",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-aden-business-school_1_2255801.html"
+    },
+    {
       "id_noticia": "NOT-6e2e33b1be",
       "motivo": "fuera_de_ventana",
       "url": "https://www.tvn-2.com/nacionales/multitudinario-desfile-carretas-guarare-tvn-media-hecho-en-panama-festival-nacional-de-la-mejorana_1_2208163.html"
+    },
+    {
+      "id_noticia": "NOT-6ef3f98fe7",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/wiss-latam-reune-mujeres-lideres_1_2257812.html"
     },
     {
       "id_noticia": "NOT-7067ffe3aa",
@@ -262,6 +242,11 @@
       "url": "https://www.tvn-2.com/lideres-360/lideres-360-pedro-heilbron-despegar-copa-airlines-hub-de-las-americas_1_2249044.html"
     },
     {
+      "id_noticia": "NOT-7786b2d429",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/economia/empresas/publirreportajes/banco-istmo-banistmo-presenta-nueva_1_2258123.html"
+    },
+    {
       "id_noticia": "NOT-7864cb959e",
       "motivo": "fuera_de_ventana",
       "url": "https://www.tvn-2.com/nacionales/suenos-diciembre-familia-tvn-noticias-ninos-cerro-cabra-navidad_1_2170326.html"
@@ -270,6 +255,11 @@
       "id_noticia": "NOT-7a6631b30e",
       "motivo": "fuera_de_ventana",
       "url": "https://www.tvn-2.com/nacionales/tvn-media-fundamorgan-firman-alianza_1_2238967.html"
+    },
+    {
+      "id_noticia": "NOT-7c8a56c238",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/economia/empresas/publirreportajes/costa-coffee-expande-panama-nuevas_1_2256771.html"
     },
     {
       "id_noticia": "NOT-7d0d78e7e8",
@@ -327,6 +317,11 @@
       "url": "https://www.tvn-2.com/nacionales/tvn-media-dircom-panama-unen_1_2211616.html"
     },
     {
+      "id_noticia": "NOT-9f1547c156",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/relevo-vida-fanlyc-24-horas-esfuerzo-esperanza-cinta-costera-tres-cancer_1_2259489.html"
+    },
+    {
       "id_noticia": "NOT-a012af4aa0",
       "motivo": "fuera_de_ventana",
       "url": "https://www.tvn-2.com/videos/noticias/video-ext-tvn-media-fsu-panama-firmaron_7_2197723.html"
@@ -345,6 +340,21 @@
       "id_noticia": "NOT-a4d55a1b5b",
       "motivo": "fuera_de_ventana",
       "url": "https://www.tvn-2.com/nacionales/tvn-media-estrena-lideres-360-mundial-2026_1_2249178.html"
+    },
+    {
+      "id_noticia": "NOT-a9255cef34",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/gente-tvn/tvn-media-oficializa-patrocinio-feria_1_2250436.html"
+    },
+    {
+      "id_noticia": "NOT-aa4d361f7a",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/lideres-360/mario-castrellon-protagoniza-lideres-360-noticias-am_1_2254164.html"
+    },
+    {
+      "id_noticia": "NOT-ab43ed9df5",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-asociacion-directoras-panama_1_2254586.html"
     },
     {
       "id_noticia": "NOT-af1fb30f15",
@@ -432,9 +442,19 @@
       "url": "https://www.tvn-2.com/entretenimiento/cine-y-tv/tvn-media-iff-panama-firman-convenio-festival-de-cine-de-panama_1_2181612.html"
     },
     {
+      "id_noticia": "NOT-e04c93d9e6",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-oficializa-patrocinio-world_1_2251452.html"
+    },
+    {
       "id_noticia": "NOT-e1da476b50",
       "motivo": "fuera_de_ventana",
       "url": "https://www.tvn-2.com/nacionales/tvn-media-alianza-estrategica-apede-conferencia-anual-de-ejecutivos-2025_1_2182741.html"
+    },
+    {
+      "id_noticia": "NOT-e4acef3fcf",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/gente-tvn/tvn-media-moviliza-colaboradores-convertir_1_2255762.html"
     },
     {
       "id_noticia": "NOT-e9e465137a",
@@ -445,6 +465,11 @@
       "id_noticia": "NOT-eb6bc14a15",
       "motivo": "fuera_de_ventana",
       "url": "https://www.tvn-2.com/nacionales/tvn-media-realiza-homenaje-luz-maria-noli-dia-del-periodista-heroes-por-panama_1_2165138.html"
+    },
+    {
+      "id_noticia": "NOT-f7a2efc25a",
+      "motivo": "fuera_de_ventana",
+      "url": "https://www.tvn-2.com/nacionales/tvn-media-comparte-experiencia-transformacion-cumbre-wiss-latam_1_2257996.html"
     },
     {
       "id_noticia": "NOT-f855a65ba6",
@@ -464,64 +489,96 @@
   ],
   "gdelt_cobertura_por_tema": {
     "economia": {
-      "dias_cubiertos": 0,
-      "dias_esperados": 90
+      "dias_cubiertos": 4,
+      "dias_esperados": 30
     },
     "eventos_naturales": {
       "dias_cubiertos": 0,
-      "dias_esperados": 90
+      "dias_esperados": 30
     },
     "logistica": {
-      "dias_cubiertos": 0,
-      "dias_esperados": 90
+      "dias_cubiertos": 4,
+      "dias_esperados": 30
     },
     "turismo": {
-      "dias_cubiertos": 0,
-      "dias_esperados": 90
+      "dias_cubiertos": 4,
+      "dias_esperados": 30
     }
   },
   "gdelt_rangos_sin_resolver": [
     {
-      "detalle": "[locales] ningún crudo ni intento registrado para este día",
-      "dias": 90,
-      "fin": "20261006000000",
-      "inicio": "20260708000000",
+      "detalle": "ningún crudo ni intento registrado para este día",
+      "dias": 25,
+      "fin": "20261001000000",
+      "inicio": "20260906000000",
       "motivo": "no_solicitado",
       "tema": "economia"
     },
     {
-      "detalle": "[locales] ningún crudo ni intento registrado para este día",
-      "dias": 90,
-      "fin": "20261006000000",
-      "inicio": "20260708000000",
+      "detalle": "un crudo cubre solo una parte de este día",
+      "dias": 1,
+      "fin": "20261002000000",
+      "inicio": "20261001000000",
+      "motivo": "cobertura_parcial",
+      "tema": "economia"
+    },
+    {
+      "detalle": "ningún crudo ni intento registrado para este día",
+      "dias": 28,
+      "fin": "20261004000000",
+      "inicio": "20260906000000",
       "motivo": "no_solicitado",
       "tema": "eventos_naturales"
     },
     {
-      "detalle": "[locales] ningún crudo ni intento registrado para este día",
-      "dias": 90,
+      "detalle": "no obtenido: GDELT bloqueaba las solicitudes (HTTP 429 sostenido) al cerrar el snapshot",
+      "dias": 2,
       "fin": "20261006000000",
-      "inicio": "20260708000000",
+      "inicio": "20261004000000",
+      "motivo": "bloqueado",
+      "tema": "eventos_naturales"
+    },
+    {
+      "detalle": "ningún crudo ni intento registrado para este día",
+      "dias": 25,
+      "fin": "20261001000000",
+      "inicio": "20260906000000",
       "motivo": "no_solicitado",
       "tema": "logistica"
     },
     {
-      "detalle": "[locales] ningún crudo ni intento registrado para este día",
-      "dias": 90,
-      "fin": "20261006000000",
-      "inicio": "20260708000000",
+      "detalle": "un crudo cubre solo una parte de este día",
+      "dias": 1,
+      "fin": "20261002000000",
+      "inicio": "20261001000000",
+      "motivo": "cobertura_parcial",
+      "tema": "logistica"
+    },
+    {
+      "detalle": "ningún crudo ni intento registrado para este día",
+      "dias": 25,
+      "fin": "20261001000000",
+      "inicio": "20260906000000",
       "motivo": "no_solicitado",
+      "tema": "turismo"
+    },
+    {
+      "detalle": "un crudo cubre solo una parte de este día",
+      "dias": 1,
+      "fin": "20261002000000",
+      "inicio": "20261001000000",
+      "motivo": "cobertura_parcial",
       "tema": "turismo"
     }
   ],
   "idiomas_sin_mapeo": {},
-  "registros_crudos_leidos": 150,
+  "registros_crudos_leidos": 520,
   "ventana": {
-    "ampliada": true,
-    "dias_aplicados": 90,
+    "ampliada": false,
+    "dias_aplicados": 30,
     "dias_base": 30,
     "dias_maximo": 90,
-    "fin": "2026-10-06T15:59:52Z",
-    "inicio": "2026-07-08T15:59:52Z"
+    "fin": "2026-10-06T17:07:06Z",
+    "inicio": "2026-09-06T17:07:06Z"
   }
 }
