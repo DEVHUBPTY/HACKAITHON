@@ -952,6 +952,10 @@ def validar_coherencia(carpeta: Path | None = None) -> list[str]:
     excluidos = _ids_excluidos(carpeta / "ejemplos_excluidos.txt")
     if reales != excluidos:
         problemas.append(f"ejemplos_excluidos.txt no coincide con los ejemplos reales de temas.yaml: {sorted(reales ^ excluidos)}")
+    if (carpeta / "etiquetado.yaml").exists():
+        motivos = set(cargar_etiquetado(carpeta).ruido.motivos)
+        if motivos != set(FueraDeTemas.model_fields):
+            problemas.append(f"etiquetado.yaml: ruido.motivos {sorted(motivos)} no coincide con fuera_de_temas de temas.yaml")
     grupos = set(cargar_restricciones(carpeta).grupos)
     for modalidad in MODALIDADES:
         if (carpeta / f"modalidad_{modalidad}.yaml").exists():
@@ -1110,6 +1114,63 @@ def cargar_ruido(carpeta: Path | None = None) -> ConfigRuido:
     return cargar_config("ruido", ConfigRuido, carpeta)
 
 
+# ------------------------------------------------------------------ etiquetado.yaml (E1-06)
+
+
+class MuestraEtiquetado(ModeloConfig):
+    semilla: int
+    tamano: int = Field(ge=1)
+    tamano_acuerdo: int = Field(ge=2)
+
+    @model_validator(mode="after")
+    def _acuerdo_cabe(self) -> MuestraEtiquetado:
+        if self.tamano_acuerdo > self.tamano:
+            raise ValueError("tamano_acuerdo no puede superar tamano")
+        return self
+
+
+class ArchivosEtiquetado(ModeloConfig):
+    carpeta_personas: str
+    consolidado: str
+    ejemplos_excluidos: str
+
+
+class RuidoEtiquetado(ModeloConfig):
+    sin_ruido: str
+    motivos: list[str]
+
+
+class AcuerdoEtiquetado(ModeloConfig):
+    kappa_minimo: float = Field(gt=0, le=1)
+
+
+class NombresEtiquetado(ModeloConfig):
+    longitud_minima: int = Field(ge=1)
+    marcadores_ia: list[str]
+
+
+class InterfazEtiquetado(ModeloConfig):
+    zona_horaria: str
+    formato_fecha: str
+
+
+class ConfigEtiquetado(ModeloConfig):
+    """Modelo de ``config/etiquetado.yaml``."""
+
+    version: int
+    muestra: MuestraEtiquetado
+    archivos: ArchivosEtiquetado
+    ruido: RuidoEtiquetado
+    acuerdo: AcuerdoEtiquetado
+    nombres: NombresEtiquetado
+    interfaz: InterfazEtiquetado
+
+
+def cargar_etiquetado(carpeta: Path | None = None) -> ConfigEtiquetado:
+    """Atajo para ``config/etiquetado.yaml``."""
+    return cargar_config("etiquetado", ConfigEtiquetado, carpeta)
+
+
 MODALIDADES = ("editorial", "banca")
 OPCIONALES = {"modalidad_banca"}  # el esquema la admite aunque todavía no exista
 
@@ -1129,6 +1190,7 @@ CARGADORES = {
     "modalidad_banca": lambda c=None: cargar_modalidad("banca", c),
     "llm": cargar_llm,
     "normalizacion": cargar_normalizacion,
+    "etiquetado": cargar_etiquetado,
 }
 
 

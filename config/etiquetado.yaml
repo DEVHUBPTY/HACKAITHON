@@ -1,0 +1,58 @@
+# Etiquetado humano (E1-06). Parámetros de la muestra, del acuerdo entre etiquetadores y de los nombres.
+# Los temas salen de temas.yaml y las reglas de frontera de docs/guia_temas.md: no se repiten aquí.
+version: 1
+
+muestra:
+  semilla: 20261006        # semilla fija de la muestra aleatoria (docs/etiquetado.md)
+  tamano: 100              # titulares de la muestra (supuesto: tiempo disponible)
+  tamano_acuerdo: 20       # los primeros N de la muestra los etiquetan DOS personas por separado (D-71)
+
+archivos:
+  carpeta_personas: eval/etiquetas      # una hoja por persona: <nombre>.csv
+  consolidado: eval/etiquetas.csv       # una fila por titular; lo genera --consolidar
+  ejemplos_excluidos: config/ejemplos_excluidos.txt
+
+ruido:
+  sin_ruido: ninguno
+  motivos: [no_es_panama, fuera_de_temas]   # deben ser los de temas.yaml (fuera_de_temas)
+
+acuerdo:
+  kappa_minimo: 0.6        # por debajo se revisa la guía antes de usar las etiquetas (D-71)
+
+nombres:
+  longitud_minima: 3
+  # Palabras (sin tildes, en minúscula) que delatan que "la persona" es una herramienta o un modelo.
+  marcadores_ia:
+    - claude
+    - anthropic
+    - gpt
+    - chatgpt
+    - openai
+    - gemini
+    - gemma
+    - qwen
+    - llama
+    - mistral
+    - ollama
+    - deepseek
+    - copilot
+    - codex
+    - sonnet
+    - opus
+    - haiku
+    - ia
+    - ai
+    - llm
+    - bot
+    - modelo
+    - asistente
+    - agente
+    - sistema
+    - automatico
+    - baseline
+    - benchmark
+    - script
+
+interfaz:
+  zona_horaria: America/Panama
+  formato_fecha: "%d/%m/%Y %H:%M"
