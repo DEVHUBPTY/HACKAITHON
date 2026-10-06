@@ -127,18 +127,27 @@ def url_canonica(url: str, config: dict[str, Any]) -> str:
     host = (partes.hostname or "").lower()
     if reglas.get("quitar_prefijo_www") and host.startswith("www."):
         host = host[4:]
+    if reglas.get("quitar_prefijo_movil") and host.startswith("m.") and "." in host[2:]:
+        host = host[2:]
     if partes.port and partes.port not in (80, 443):
         host = f"{host}:{partes.port}"
     quitar = reglas.get("parametros_a_quitar", [])
+    con_valor = {k.lower(): {v.lower() for v in vs} for k, vs in reglas.get("parametros_con_valor_a_quitar", {}).items()}
 
-    def es_rastreo(nombre: str) -> bool:
+    def es_rastreo(nombre: str, valor: str) -> bool:
         n = nombre.lower()
+        if valor.lower() in con_valor.get(n, set()):
+            return True
         return any(n == q or (q.endswith("*") and n.startswith(q[:-1])) for q in quitar)
 
     consulta = sorted(
-        (k, v) for k, v in parse_qsl(partes.query, keep_blank_values=True) if not es_rastreo(k)
+        (k, v) for k, v in parse_qsl(partes.query, keep_blank_values=True) if not es_rastreo(k, v)
     )
     ruta = partes.path.rstrip("/") or "/"
+    for sufijo in reglas.get("sufijos_ruta_amp", []):
+        if ruta.lower().endswith(sufijo.lower()) and ruta != sufijo:
+            ruta = ruta[: -len(sufijo)].rstrip("/") or "/"
+            break
     return urlunsplit((reglas["esquema"], host, ruta, urlencode(consulta), ""))
 
 

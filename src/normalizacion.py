@@ -153,21 +153,30 @@ def _numero(fila: Fila, campo: str, tabla: str, clave: str, registro: Registro) 
 
 
 def url_canonica(url: str, fuentes: ConfigFuentes) -> str:
-    """URL canónica: esquema fijo, dominio en minúsculas sin ``www.``, sin ``utm_*``/rastreo, sin barra final ni fragmento."""
+    """URL canónica: esquema fijo, dominio en minúsculas sin ``www.``/``m.``, sin ``utm_*``/rastreo, sin ``/amp``
+    ni ``?outputType=amp``, sin barra final ni fragmento (E1-03b)."""
     reglas = fuentes.url_canonica
     partes = urlsplit(url.strip())
     host = (partes.hostname or "").lower()
     if reglas.quitar_prefijo_www and host.startswith("www."):
         host = host[4:]
+    if reglas.quitar_prefijo_movil and host.startswith("m.") and "." in host[2:]:
+        host = host[2:]
     if partes.port and partes.port not in (80, 443):
         host = f"{host}:{partes.port}"
 
-    def es_rastreo(nombre: str) -> bool:
+    def es_rastreo(nombre: str, valor: str) -> bool:
         n = nombre.lower()
+        if valor.lower() in {v.lower() for k, vs in reglas.parametros_con_valor_a_quitar.items() if k.lower() == n for v in vs}:
+            return True
         return any(n == q or (q.endswith("*") and n.startswith(q[:-1])) for q in reglas.parametros_a_quitar)
 
-    consulta = sorted((k, v) for k, v in parse_qsl(partes.query, keep_blank_values=True) if not es_rastreo(k))
+    consulta = sorted((k, v) for k, v in parse_qsl(partes.query, keep_blank_values=True) if not es_rastreo(k, v))
     ruta = partes.path.rstrip("/") or "/"
+    for sufijo in reglas.sufijos_ruta_amp:
+        if ruta.lower().endswith(sufijo.lower()) and ruta != sufijo:
+            ruta = ruta[: -len(sufijo)].rstrip("/") or "/"
+            break
     return urlunsplit((reglas.esquema, host, ruta, urlencode(consulta), ""))
 
 

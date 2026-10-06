@@ -56,6 +56,15 @@ def cargar_config(nombre: str, modelo: type[T], carpeta: Path | None = None) -> 
         raise ErrorDeConfiguracion(f"{ruta.name}: {detalle}") from exc
 
 
+def _compilar_todas(patrones: list[str], donde: str) -> None:
+    """Falla con un mensaje claro si algún patrón no es una expresión regular válida."""
+    for p in patrones:
+        try:
+            re.compile(p)
+        except re.error as exc:
+            raise ValueError(f"{donde}: patrón inválido {p!r} ({exc})") from exc
+
+
 # ------------------------------------------------------------------ fuentes.yaml
 
 
@@ -94,6 +103,9 @@ class MedioConocido(ModeloConfig):
 class UrlCanonica(ModeloConfig):
     esquema: str
     quitar_prefijo_www: bool
+    quitar_prefijo_movil: bool
+    sufijos_ruta_amp: list[str]
+    parametros_con_valor_a_quitar: dict[str, list[str]]
     parametros_a_quitar: list[str]
 
 
@@ -777,6 +789,18 @@ class LeyendasAlcance(ModeloConfig):
 GRUPOS_RESTRICCIONES = ("comunes", "editorial", "banca")
 
 
+class InyeccionRestricciones(ModeloConfig):
+    """Patrones de instrucción en titulares y descripciones (D-69, E1-03b)."""
+
+    patrones: list[str]
+
+    @field_validator("patrones")
+    @classmethod
+    def _regex_validas(cls, v: list[str]) -> list[str]:
+        _compilar_todas(v, "inyeccion.patrones")
+        return v
+
+
 class ConfigRestricciones(ModeloConfig):
     """Modelo de ``config/restricciones.yaml`` (D-25, D-51): listas agrupadas; cada modalidad declara las que aplican."""
 
@@ -786,6 +810,7 @@ class ConfigRestricciones(ModeloConfig):
     aviso_banca: str
     leyendas_alcance: LeyendasAlcance
     grupos: dict[str, dict[str, list[str]]]
+    inyeccion: InyeccionRestricciones
 
     @model_validator(mode="after")
     def _grupos_esperados(self) -> ConfigRestricciones:
@@ -959,3 +984,86 @@ def cargar_normalizacion(carpeta: Path | None = None) -> ConfigNormalizacion:
 
 
 CARGADORES["normalizacion"] = cargar_normalizacion
+
+
+# ------------------------------------------------------------------ ruido.yaml (E1-03b)
+
+
+class LimpiezaRuido(ModeloConfig):
+    comillas: dict[str, str]
+    separadores_sufijo: list[str]
+    max_palabras_sufijo: int
+    min_letras_medio: int
+    medios_conocidos: list[str]
+    reemplazos: list[list[str]]
+
+    @field_validator("reemplazos")
+    @classmethod
+    def _regex_validas(cls, v: list[list[str]]) -> list[list[str]]:
+        if any(len(par) != 2 for par in v):
+            raise ValueError("limpieza.reemplazos: cada elemento es [patrón, reemplazo]")
+        _compilar_todas([par[0] for par in v], "limpieza.reemplazos")
+        return v
+
+
+class NoNoticiaRuido(ModeloConfig):
+    titulo_generico: list[str]
+    titulo_promocional: list[str]
+    titulo_igual_al_medio: bool
+    patrones_url: list[str]
+    categorias_rss: list[str]
+
+    @model_validator(mode="after")
+    def _regex_validas(self) -> NoNoticiaRuido:
+        _compilar_todas([*self.titulo_generico, *self.titulo_promocional, *self.patrones_url], "no_noticia")
+        return self
+
+
+class PanamaRuido(ModeloConfig):
+    falsos: list[str]
+    menciones: list[str]
+    origenes_sujetos: list[str]
+    origenes_exentos: list[str]
+    paises_medio_exentos: list[str]
+    dominio_con_seccion: str
+    secciones_dudosas: list[str]
+
+    @model_validator(mode="after")
+    def _regex_validas(self) -> PanamaRuido:
+        _compilar_todas([*self.falsos, *self.menciones], "panama")
+        return self
+
+
+class FueraDeTemasRuido(ModeloConfig):
+    deportes: list[str]
+    farandula: list[str]
+    cultura: list[str]
+    politica_partidista: list[str]
+
+    @model_validator(mode="after")
+    def _regex_validas(self) -> FueraDeTemasRuido:
+        _compilar_todas([*self.deportes, *self.farandula, *self.cultura, *self.politica_partidista], "fuera_de_temas")
+        return self
+
+
+class SimilitudPrototipo(ModeloConfig):
+    activo: bool
+
+
+class ConfigRuido(ModeloConfig):
+    """Modelo de ``config/ruido.yaml``."""
+
+    version: int
+    limpieza: LimpiezaRuido
+    no_noticia: NoNoticiaRuido
+    panama: PanamaRuido
+    fuera_de_temas: FueraDeTemasRuido
+    similitud_prototipo: SimilitudPrototipo
+
+
+def cargar_ruido(carpeta: Path | None = None) -> ConfigRuido:
+    """Atajo para ``config/ruido.yaml``."""
+    return cargar_config("ruido", ConfigRuido, carpeta)
+
+
+CARGADORES["ruido"] = cargar_ruido
