@@ -11,7 +11,7 @@ import argparse
 import re
 import sys
 from pathlib import Path
-from typing import Literal, TypeVar
+from typing import Literal, TypeVar, get_args
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
@@ -1115,6 +1115,31 @@ def cargar_ruido(carpeta: Path | None = None) -> ConfigRuido:
     return cargar_config("ruido", ConfigRuido, carpeta)
 
 
+TipoConsulta = Literal[
+    "respuesta_sustentada", "contradiccion_ambiguedad", "sin_respuesta", "adversarial"
+]
+
+
+class ConfigBenchmark(ModeloConfig):
+    """``config/benchmark.yaml``: total y proporción de tipos del benchmark de desarrollo (E0-06)."""
+
+    total: int = Field(gt=0)
+    tipos: dict[TipoConsulta, int]
+
+    @model_validator(mode="after")
+    def _suma_coherente(self) -> "ConfigBenchmark":
+        if set(self.tipos) != set(get_args(TipoConsulta)):
+            raise ValueError("deben estar los cuatro tipos")
+        if sum(self.tipos.values()) != self.total:
+            raise ValueError("la suma de tipos no coincide con el total")
+        return self
+
+
+def cargar_benchmark(carpeta: Path | None = None) -> ConfigBenchmark:
+    """Atajo para ``config/benchmark.yaml``."""
+    return cargar_config("benchmark", ConfigBenchmark, carpeta)
+
+
 # ------------------------------------------------------------------ etiquetado.yaml (E1-06)
 
 
@@ -1201,6 +1226,7 @@ OPCIONALES = {"modalidad_banca"}  # el esquema la admite aunque todavía no exis
 # Un cargador por YAML de config/: `--validar` los recorre todos y falla ante uno sin modelo registrado.
 CARGADORES = {
     "ruido": cargar_ruido,
+    "benchmark": cargar_benchmark,
     "fuentes": cargar_fuentes,
     "exploracion": cargar_exploracion,
     "carga": cargar_carga,
