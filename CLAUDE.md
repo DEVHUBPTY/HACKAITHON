@@ -30,6 +30,7 @@ poetry run python -m src.limpieza                    # limpia titulares y marca 
 poetry run streamlit run app.py                      # interfaz
 poetry run streamlit run app.py -- --demo            # modo demo (data/demo.duckdb)
 poetry run python -m scripts.verificar_offline       # chequeo antes del pitch
+poetry run python -m scripts.probar_llm --modelo <tag>  # latencia, JSON válido y memoria de un modelo de Ollama (E0-07)
 poetry run python -m eval.run_benchmark --split dev  # benchmark → outputs/metricas.json
 poetry run python -m scripts.reproducir --verificar  # reproduce todo y compara con el manifest
 poetry run python -m scripts.auditoria_final         # condiciones previas de la sección 10 antes del cierre
