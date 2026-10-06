@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 
 from eval import validar_benchmark as vb
+from src.configuracion import ConfigBenchmark, cargar_benchmark
 
 PROPORCION = {
     "respuesta_sustentada": 20,
@@ -56,18 +57,18 @@ def errores_de(
     sinteticos: set[str] | None = None,
 ) -> list[str]:
     textos = [json.dumps(x) for x in lineas]
-    return vb.validar_lineas(textos, vb.cargar_metas(), snapshot, sinteticos)[1]
+    return vb.validar_lineas(textos, cargar_benchmark(), snapshot, sinteticos)[1]
 
 
 def fixture_sinteticos(ruta: Path, *ids: str) -> Path:
     """Escribe un fixture ``sinteticos.csv`` mínimo con los IDs dados."""
-    filas = "".join(f"{i},titular sintético\n" for i in ids)
-    ruta.write_text("id_noticia,titulo\n" + filas, encoding="utf-8")
+    filas = "".join(f"{i},titular sintético,sintetico\n" for i in ids)
+    ruta.write_text("id_noticia,titulo,origen\n" + filas, encoding="utf-8")
     return ruta
 
 
 def test_metas_del_yaml_son_20_7_7_6() -> None:
-    metas = vb.cargar_metas()
+    metas = cargar_benchmark()
     assert metas.total == 40
     assert dict(metas.tipos) == PROPORCION
 
@@ -275,3 +276,20 @@ def test_fixture_sintetico_del_repo_cumple_el_contrato() -> None:
     for f in filas:
         assert f["id_noticia"].startswith("SYN-") and f["origen"] == "sintetico"
         assert f["url"].startswith("https://") and ".example/" in f["url"]
+
+
+def test_fixture_con_origen_distinto_de_sintetico_falla(tmp_path: Path) -> None:
+    ruta = tmp_path / "sinteticos.csv"
+    ruta.write_text(
+        "id_noticia,origen\nSYN-A-0001,sintetico\nSYN-A-0002,GDELT\n", encoding="utf-8"
+    )
+    errores = vb.origenes_no_sinteticos(ruta)
+    assert len(errores) == 1 and "SYN-A-0002" in errores[0]
+    assert vb.origenes_no_sinteticos(vb.RUTA_SINTETICOS) == []
+
+
+def test_config_benchmark_exige_los_cuatro_tipos() -> None:
+    with pytest.raises(ValueError, match="cuatro tipos"):
+        ConfigBenchmark(total=40, tipos={"respuesta_sustentada": 20, "sin_respuesta": 20})
+    with pytest.raises(ValueError):
+        ConfigBenchmark(total=40, tipos={**PROPORCION, "inventado": 0})

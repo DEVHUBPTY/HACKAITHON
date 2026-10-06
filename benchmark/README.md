@@ -8,7 +8,7 @@ Base de las métricas de la sección 9.1 del reto. Esta carpeta contiene `benchm
 
 Lo construye **el equipo** antes del evento (D-74), con la misma proporción de tipos que fija el reto. Si la organización llegara a entregar un benchmark de desarrollo, se usa el suyo y aquí se documenta ese origen.
 
-Etiquetas revisadas y aprobadas por Javier Acosta el 2026-10-06 a partir de candidatas propuestas y validadas por el asistente (E0-06); cambios documentados en Notion, columna Cambios hechos.
+Método: el asistente redactó las consultas candidatas **incluidas las respuestas esperadas** y las validó contra el snapshot. Una persona (Javier Acosta) revisó cada una, pudo editarla y la aprobó el 2026-10-06. Los cambios hechos en la revisión se documentan en Notion, columna Cambios hechos.
 
 ## Formato
 
@@ -23,7 +23,7 @@ Un objeto JSON por línea, con exactamente estos campos (no se admiten otros):
 | `ids_evidencia` | lista de textos | Cada ID con prefijo `NOT-`, `IND-`, `SIS-`, `SBP-`, `GRP-` o `SYN-` |
 | `debe_abstenerse` | booleano | `true` si el sistema debe rechazar la consulta |
 | `sintetico` | booleano | `true` en casos alterados; solo estos pueden citar IDs `SYN-` |
-| `etiquetado_por` | texto | Nombre de la persona que etiquetó; nunca una IA |
+| `etiquetado_por` | texto | Persona que revisó y aprobó la etiqueta; nunca una IA |
 
 ## Tipos y proporción
 
@@ -37,7 +37,7 @@ Un objeto JSON por línea, con exactamente estos campos (no se admiten otros):
 
 ## Regla de etiquetado
 
-**Las personas etiquetan y aprueban.** Claude Code solo puede *proponer* consultas candidatas y el formato; no escribe ni aprueba las etiquetas. Las etiquetas no vienen de GDELT. Los casos alterados llevan `sintetico = true`.
+**Una persona revisa y aprueba cada etiqueta.** El asistente puede redactar candidatas, con su respuesta esperada, y validarlas contra el snapshot; ninguna entra al benchmark sin la aprobación de la persona, que puede editarla. `etiquetado_por` nombra a esa persona. Las etiquetas no vienen de GDELT. Los casos alterados llevan `sintetico = true`.
 
 ## Fixture sintético (`sinteticos.csv`)
 

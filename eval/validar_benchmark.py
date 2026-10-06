@@ -13,8 +13,7 @@ distinto de cero ante cualquier error.
 También comprueba que ningún archivo versionado referencie un conjunto
 reservado (D-64): el equipo nunca lo crea, lo pide ni lo lee.
 
-Nota: las metas se leen aquí con ``yaml.safe_load`` y un modelo pydantic local;
-al integrarse ``src.configuracion`` en main, la carga debe moverse allí.
+Las metas se leen con ``src.configuracion.cargar_benchmark`` (modelo único).
 """
 
 from __future__ import annotations
@@ -28,19 +27,18 @@ import sys
 from collections import Counter
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Literal, get_args
 
-import yaml
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
+
+if __package__ in (None, ""):  # `python eval/validar_benchmark.py`: la raíz no está en sys.path
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from src.configuracion import ConfigBenchmark, TipoConsulta, cargar_benchmark  # noqa: E402
 
 RAIZ = Path(__file__).resolve().parent.parent
-RUTA_CONFIG = RAIZ / "config" / "benchmark.yaml"
 RUTA_BENCHMARK = RAIZ / "benchmark" / "benchmark_dev.jsonl"
 RUTA_SINTETICOS = RAIZ / "benchmark" / "sinteticos.csv"
 
-TipoConsulta = Literal[
-    "respuesta_sustentada", "contradiccion_ambiguedad", "sin_respuesta", "adversarial"
-]
 PREFIJOS_ID = ("NOT-", "IND-", "SIS-", "SBP-", "GRP-", "SYN-")
 PREFIJOS_EN_SNAPSHOT = ("NOT-", "IND-", "SIS-")
 PATRON_ID = re.compile(r"^BDEV-\d{3}$")
@@ -51,21 +49,6 @@ PATRON_IA = re.compile(
 )
 # Textos provisorios de una propuesta sin revisar: no cuentan como etiqueta humana.
 PATRON_PENDIENTE = re.compile(r"pendiente|por\s*asignar|sin\s*etiquetar|tbd|todo|xxx", re.IGNORECASE)
-
-
-class Metas(BaseModel):
-    """Total y proporción de tipos del benchmark de desarrollo."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    total: int = Field(gt=0)
-    tipos: dict[TipoConsulta, int]
-
-    def model_post_init(self, _contexto: object) -> None:
-        if set(self.tipos) != set(get_args(TipoConsulta)):
-            raise ValueError("deben estar los cuatro tipos")
-        if sum(self.tipos.values()) != self.total:
-            raise ValueError("la suma de tipos no coincide con el total")
 
 
 class LineaBenchmark(BaseModel):
@@ -135,11 +118,6 @@ class LineaBenchmark(BaseModel):
         return errores
 
 
-def cargar_metas(ruta: Path = RUTA_CONFIG) -> Metas:
-    """Lee y valida las metas de ``config/benchmark.yaml``."""
-    return Metas.model_validate(yaml.safe_load(ruta.read_text(encoding="utf-8")))
-
-
 def ids_del_snapshot(carpeta: Path) -> set[str]:
     """Reúne los IDs NOT-, IND- y SIS- presentes en los archivos del snapshot."""
     ids: set[str] = set()
@@ -170,9 +148,21 @@ def ids_sinteticos(ruta: Path = RUTA_SINTETICOS) -> set[str]:
         return {fila["id_noticia"] for fila in csv.DictReader(f) if fila.get("id_noticia")}
 
 
+def origenes_no_sinteticos(ruta: Path = RUTA_SINTETICOS) -> list[str]:
+    """Errores por filas del fixture cuyo ``origen`` no sea ``sintetico``."""
+    if not ruta.is_file():
+        return []
+    with ruta.open(encoding="utf-8", newline="") as f:
+        return [
+            f"{ruta.name}: {fila.get('id_noticia')}: origen {fila.get('origen')!r} distinto de 'sintetico'"
+            for fila in csv.DictReader(f)
+            if fila.get("origen") != "sintetico"
+        ]
+
+
 def validar_lineas(
     lineas: Iterable[str],
-    metas: Metas,
+    metas: ConfigBenchmark,
     snapshot: set[str] | None = None,
     sinteticos: set[str] | None = None,
 ) -> tuple[Counter[str], list[str]]:
@@ -262,7 +252,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--sinteticos", type=Path, default=RUTA_SINTETICOS)
     args = parser.parse_args(argv)
 
-    metas = cargar_metas()
+    metas = cargar_benchmark()
     if not args.ruta.is_file():
         print(f"ERROR: no existe {args.ruta}", file=sys.stderr)
         return 1
@@ -273,10 +263,12 @@ def main(argv: list[str] | None = None) -> int:
         else:
             print(f"Aviso: no existe el snapshot {args.snapshot}; se omite ese chequeo")
     sinteticos = ids_sinteticos(args.sinteticos)
+    errores_fixture = origenes_no_sinteticos(args.sinteticos)
     if snapshot is not None:
         snapshot |= sinteticos  # el snapshot también acepta los SYN- del fixture
     lineas = args.ruta.read_text(encoding="utf-8").splitlines()
     conteo, errores = validar_lineas(lineas, metas, snapshot, sinteticos)
+    errores.extend(errores_fixture)
     try:
         errores.extend(referencias_reservado(archivos_versionados()))
     except (subprocess.CalledProcessError, FileNotFoundError):
