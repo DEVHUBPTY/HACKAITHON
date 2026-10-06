@@ -180,11 +180,22 @@ Todo lo marcado como ruido es una **propuesta por titular**, no una etiqueta hum
 | Clases de la evaluación | 6 temas + `sin_tema` (agrupa `fuera_de_temas` y `no_es_panama`) | `guia_temas.md` | `test_tema_a_id_*` |
 | Macro-F1 | Media de los F1 definidos de las clases con soporte en las etiquetas; un F1 indefinido no cuenta como 0 | Práctica (se declara para no inflar ni hundir la media) | `test_una_clase_sin_soporte_*` |
 
-## Consulta y generación
+## Consulta y generación (E1-11 · `config/consulta.yaml`; la generación es E1-12)
 
 | Parámetro | Valor | Origen | Cómo se valida |
 |---|---|---|---|
-| Umbral de abstención | Por definir | Calibrado con el benchmark de desarrollo | Abstención correcta vs. abstenciones incorrectas |
+| `abstencion.umbral_similitud` | semántica (e5) **0.874** · BM25 **10.765** | **Calibrado** (E1-11): percentil 5 de la similitud máxima de las 9 consultas respondibles de la mitad de calibración (ids pares del benchmark de desarrollo) que llegan a la puerta de similitud, truncado a 3 decimales (`python -m eval.recuperacion --calibrar`) | `eval.recuperacion` sobre la mitad de evaluación (ids impares); n = 20 por mitad: IC muy anchos |
+| `abstencion.percentil_umbral` | 5 | Supuesto (misma regla que `umbral_sin_tema` en E1-07; por construcción rechaza ~5 % de las respondibles de calibración) | Abstenciones incorrectas |
+| División calibración/evaluación | Pares calibran, impares evalúan (`evaluacion.calibracion`) | Supuesto (determinista y sin azar; con 40 consultas las mitades son de 20) | `test_la_division_calibracion_evaluacion_es_determinista_por_paridad` |
+| `recuperacion.top_k` | 5 | PDF (Recall@5, sección 9.1) | `eval.recuperacion` |
+| `recuperacion.bm25.k1` · `b` | 1.5 · 0.75 | Práctica (valores por defecto de `rank-bm25`) | `eval.recuperacion` (baseline D-66) |
+| `recuperacion.bm25.largo_minimo_token` | 2 | Supuesto | — |
+| `recuperacion.bm25.palabras_vacias` | 52 palabras | Supuesto (lista corta de palabras funcionales en español) | `test_bm25_responde_y_se_abstiene_con_su_propio_umbral` |
+| `reglas` de abstención (lectura del artículo, autoría o perfil, cifra de periodo relativo) | Patrones en `consulta.yaml` | **Supuesto redactado DESPUÉS de leer el benchmark de desarrollo**: su desempeño allí es optimista y no una medida independiente. Origen de fondo: D-51 (no se leyó el artículo), D-32/D-68 (sin autores ni perfiles) | Un test por regla (`test_las_reglas_por_patron_*`) |
+| `datos_oficiales.calificadores` · `relacionados` | Listas en `consulta.yaml` (edad/sexo/etnia, territorios, sector; «PIB» como relacionado del crecimiento) | Supuesto (X16), redactadas tras la revisión del PR #16 | `test_x16_*` |
+| `respuesta.decimales_valor` | 2 | Supuesto (solo presentación) | `test_x16_el_valor_se_muestra_*` |
+| `datos_oficiales.variacion` | `subió`, `bajó`, `cambió`… agregan el año anterior | Supuesto | `test_una_variacion_incluye_el_anio_anterior` |
+| `respuesta.maximo_afirmaciones` | 5 (= `top_k`) | Supuesto | — |
 | Temperatura | 0 | Práctica (reproducibilidad) | — |
 | Reintentos ante JSON inválido | 1 | Supuesto | Tasa de JSON inválido |
 | Cambio de proveedor: latencia | Mediana > 15 s | PDF (meta de 9.1) | Métrica de latencia |

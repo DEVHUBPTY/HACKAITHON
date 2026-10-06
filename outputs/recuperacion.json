@@ -1,0 +1,942 @@
+{
+  "benchmark": "benchmark/benchmark_dev.jsonl",
+  "n_consultas": 40,
+  "division": {
+    "regla": "pares calibran, el resto evalúa (paridad del número del id)",
+    "calibracion": 20,
+    "evaluacion": 20
+  },
+  "recuperacion": {
+    "k": 5,
+    "n_consultas": 20,
+    "filas": {
+      "semantica": {
+        "total": {
+          "por_ids": {
+            "n": 32,
+            "de": 50,
+            "proporcion": 0.64,
+            "ic95": [
+              0.5014,
+              0.7586
+            ]
+          },
+          "por_ids_acotado": {
+            "n": 32,
+            "de": 35,
+            "proporcion": 0.9143,
+            "ic95": [
+              0.7762,
+              0.9704
+            ]
+          },
+          "consultas_completas": {
+            "n": 17,
+            "de": 20,
+            "proporcion": 0.85,
+            "ic95": [
+              0.6396,
+              0.9476
+            ]
+          },
+          "macro_recall": 0.8958,
+          "fallos": {
+            "BDEV-004": [
+              "NOT-ba54c3921d"
+            ],
+            "BDEV-009": [
+              "NOT-2ece201ac9",
+              "NOT-364916b1e1",
+              "NOT-65049548e8",
+              "NOT-7bc0adfe59",
+              "NOT-9013970ab7",
+              "NOT-9112a370be",
+              "NOT-af2c98a539",
+              "NOT-b0fc5636be",
+              "NOT-b55ac9551b",
+              "NOT-b627063783",
+              "NOT-b9a18baba2",
+              "NOT-bd4d4c3bb9",
+              "NOT-c8859ae7ee",
+              "NOT-dde43008f3",
+              "NOT-e795e93c9d"
+            ],
+            "BDEV-015": [
+              "SIS-us7000n9fn",
+              "SIS-us7000nqwx"
+            ]
+          }
+        },
+        "titulares": {
+          "por_ids": {
+            "n": 22,
+            "de": 38,
+            "proporcion": 0.5789,
+            "ic95": [
+              0.4219,
+              0.7215
+            ]
+          },
+          "por_ids_acotado": {
+            "n": 22,
+            "de": 23,
+            "proporcion": 0.9565,
+            "ic95": [
+              0.7901,
+              0.9923
+            ]
+          },
+          "consultas_completas": {
+            "n": 11,
+            "de": 13,
+            "proporcion": 0.8462,
+            "ic95": [
+              0.5776,
+              0.9567
+            ]
+          },
+          "macro_recall": 0.9167,
+          "fallos": {
+            "BDEV-004": [
+              "NOT-ba54c3921d"
+            ],
+            "BDEV-009": [
+              "NOT-2ece201ac9",
+              "NOT-364916b1e1",
+              "NOT-65049548e8",
+              "NOT-7bc0adfe59",
+              "NOT-9013970ab7",
+              "NOT-9112a370be",
+              "NOT-af2c98a539",
+              "NOT-b0fc5636be",
+              "NOT-b55ac9551b",
+              "NOT-b627063783",
+              "NOT-b9a18baba2",
+              "NOT-bd4d4c3bb9",
+              "NOT-c8859ae7ee",
+              "NOT-dde43008f3",
+              "NOT-e795e93c9d"
+            ]
+          }
+        },
+        "oficiales": {
+          "por_ids": {
+            "n": 10,
+            "de": 12,
+            "proporcion": 0.8333,
+            "ic95": [
+              0.552,
+              0.953
+            ]
+          },
+          "por_ids_acotado": {
+            "n": 10,
+            "de": 12,
+            "proporcion": 0.8333,
+            "ic95": [
+              0.552,
+              0.953
+            ]
+          },
+          "consultas_completas": {
+            "n": 6,
+            "de": 7,
+            "proporcion": 0.8571,
+            "ic95": [
+              0.4869,
+              0.9743
+            ]
+          },
+          "macro_recall": 0.8571,
+          "fallos": {
+            "BDEV-015": [
+              "SIS-us7000n9fn",
+              "SIS-us7000nqwx"
+            ]
+          }
+        }
+      },
+      "bm25": {
+        "total": {
+          "por_ids": {
+            "n": 24,
+            "de": 50,
+            "proporcion": 0.48,
+            "ic95": [
+              0.348,
+              0.6149
+            ]
+          },
+          "por_ids_acotado": {
+            "n": 24,
+            "de": 35,
+            "proporcion": 0.6857,
+            "ic95": [
+              0.5202,
+              0.8145
+            ]
+          },
+          "consultas_completas": {
+            "n": 12,
+            "de": 20,
+            "proporcion": 0.6,
+            "ic95": [
+              0.3866,
+              0.7812
+            ]
+          },
+          "macro_recall": 0.6458,
+          "fallos": {
+            "BDEV-004": [
+              "NOT-ba54c3921d"
+            ],
+            "BDEV-009": [
+              "NOT-0969f86532",
+              "NOT-7170117798",
+              "NOT-9013970ab7",
+              "NOT-9112a370be",
+              "NOT-af2c98a539",
+              "NOT-b0fc5636be",
+              "NOT-b449afb957",
+              "NOT-b55ac9551b",
+              "NOT-b627063783",
+              "NOT-b9a18baba2",
+              "NOT-bac341eccd",
+              "NOT-bd4d4c3bb9",
+              "NOT-c8859ae7ee",
+              "NOT-dde43008f3",
+              "NOT-e795e93c9d"
+            ],
+            "BDEV-010": [
+              "IND-PAN-FP.CPI.TOTL.ZG-2024"
+            ],
+            "BDEV-011": [
+              "IND-PAN-SL.UEM.TOTL.ZS-2023",
+              "IND-PAN-SL.UEM.TOTL.ZS-2024"
+            ],
+            "BDEV-012": [
+              "IND-PAN-NY.GDP.MKTP.KD.ZG-2023",
+              "IND-PAN-NY.GDP.MKTP.KD.ZG-2024"
+            ],
+            "BDEV-013": [
+              "IND-PAN-SP.POP.TOTL-2024"
+            ],
+            "BDEV-014": [
+              "IND-PAN-IT.NET.USER.ZS-2023",
+              "IND-PAN-IT.NET.USER.ZS-2024"
+            ],
+            "BDEV-015": [
+              "SIS-us7000n9fn",
+              "SIS-us7000nqwx"
+            ]
+          }
+        },
+        "titulares": {
+          "por_ids": {
+            "n": 22,
+            "de": 38,
+            "proporcion": 0.5789,
+            "ic95": [
+              0.4219,
+              0.7215
+            ]
+          },
+          "por_ids_acotado": {
+            "n": 22,
+            "de": 23,
+            "proporcion": 0.9565,
+            "ic95": [
+              0.7901,
+              0.9923
+            ]
+          },
+          "consultas_completas": {
+            "n": 11,
+            "de": 13,
+            "proporcion": 0.8462,
+            "ic95": [
+              0.5776,
+              0.9567
+            ]
+          },
+          "macro_recall": 0.9167,
+          "fallos": {
+            "BDEV-004": [
+              "NOT-ba54c3921d"
+            ],
+            "BDEV-009": [
+              "NOT-0969f86532",
+              "NOT-7170117798",
+              "NOT-9013970ab7",
+              "NOT-9112a370be",
+              "NOT-af2c98a539",
+              "NOT-b0fc5636be",
+              "NOT-b449afb957",
+              "NOT-b55ac9551b",
+              "NOT-b627063783",
+              "NOT-b9a18baba2",
+              "NOT-bac341eccd",
+              "NOT-bd4d4c3bb9",
+              "NOT-c8859ae7ee",
+              "NOT-dde43008f3",
+              "NOT-e795e93c9d"
+            ]
+          }
+        },
+        "oficiales": {
+          "por_ids": {
+            "n": 2,
+            "de": 12,
+            "proporcion": 0.1667,
+            "ic95": [
+              0.047,
+              0.448
+            ]
+          },
+          "por_ids_acotado": {
+            "n": 2,
+            "de": 12,
+            "proporcion": 0.1667,
+            "ic95": [
+              0.047,
+              0.448
+            ]
+          },
+          "consultas_completas": {
+            "n": 1,
+            "de": 7,
+            "proporcion": 0.1429,
+            "ic95": [
+              0.0257,
+              0.5131
+            ]
+          },
+          "macro_recall": 0.1429,
+          "fallos": {
+            "BDEV-010": [
+              "IND-PAN-FP.CPI.TOTL.ZG-2024"
+            ],
+            "BDEV-011": [
+              "IND-PAN-SL.UEM.TOTL.ZS-2023",
+              "IND-PAN-SL.UEM.TOTL.ZS-2024"
+            ],
+            "BDEV-012": [
+              "IND-PAN-NY.GDP.MKTP.KD.ZG-2023",
+              "IND-PAN-NY.GDP.MKTP.KD.ZG-2024"
+            ],
+            "BDEV-013": [
+              "IND-PAN-SP.POP.TOTL-2024"
+            ],
+            "BDEV-014": [
+              "IND-PAN-IT.NET.USER.ZS-2023",
+              "IND-PAN-IT.NET.USER.ZS-2024"
+            ],
+            "BDEV-015": [
+              "SIS-us7000n9fn",
+              "SIS-us7000nqwx"
+            ]
+          }
+        }
+      },
+      "sistema": {
+        "total": {
+          "por_ids": {
+            "n": 32,
+            "de": 50,
+            "proporcion": 0.64,
+            "ic95": [
+              0.5014,
+              0.7586
+            ]
+          },
+          "por_ids_acotado": {
+            "n": 32,
+            "de": 35,
+            "proporcion": 0.9143,
+            "ic95": [
+              0.7762,
+              0.9704
+            ]
+          },
+          "consultas_completas": {
+            "n": 17,
+            "de": 20,
+            "proporcion": 0.85,
+            "ic95": [
+              0.6396,
+              0.9476
+            ]
+          },
+          "macro_recall": 0.8958,
+          "fallos": {
+            "BDEV-004": [
+              "NOT-ba54c3921d"
+            ],
+            "BDEV-009": [
+              "NOT-2ece201ac9",
+              "NOT-364916b1e1",
+              "NOT-65049548e8",
+              "NOT-7bc0adfe59",
+              "NOT-9013970ab7",
+              "NOT-9112a370be",
+              "NOT-af2c98a539",
+              "NOT-b0fc5636be",
+              "NOT-b55ac9551b",
+              "NOT-b627063783",
+              "NOT-b9a18baba2",
+              "NOT-bd4d4c3bb9",
+              "NOT-c8859ae7ee",
+              "NOT-dde43008f3",
+              "NOT-e795e93c9d"
+            ],
+            "BDEV-015": [
+              "SIS-us7000n9fn",
+              "SIS-us7000nqwx"
+            ]
+          }
+        },
+        "titulares": {
+          "por_ids": {
+            "n": 22,
+            "de": 38,
+            "proporcion": 0.5789,
+            "ic95": [
+              0.4219,
+              0.7215
+            ]
+          },
+          "por_ids_acotado": {
+            "n": 22,
+            "de": 23,
+            "proporcion": 0.9565,
+            "ic95": [
+              0.7901,
+              0.9923
+            ]
+          },
+          "consultas_completas": {
+            "n": 11,
+            "de": 13,
+            "proporcion": 0.8462,
+            "ic95": [
+              0.5776,
+              0.9567
+            ]
+          },
+          "macro_recall": 0.9167,
+          "fallos": {
+            "BDEV-004": [
+              "NOT-ba54c3921d"
+            ],
+            "BDEV-009": [
+              "NOT-2ece201ac9",
+              "NOT-364916b1e1",
+              "NOT-65049548e8",
+              "NOT-7bc0adfe59",
+              "NOT-9013970ab7",
+              "NOT-9112a370be",
+              "NOT-af2c98a539",
+              "NOT-b0fc5636be",
+              "NOT-b55ac9551b",
+              "NOT-b627063783",
+              "NOT-b9a18baba2",
+              "NOT-bd4d4c3bb9",
+              "NOT-c8859ae7ee",
+              "NOT-dde43008f3",
+              "NOT-e795e93c9d"
+            ]
+          }
+        },
+        "oficiales": {
+          "por_ids": {
+            "n": 10,
+            "de": 12,
+            "proporcion": 0.8333,
+            "ic95": [
+              0.552,
+              0.953
+            ]
+          },
+          "por_ids_acotado": {
+            "n": 10,
+            "de": 12,
+            "proporcion": 0.8333,
+            "ic95": [
+              0.552,
+              0.953
+            ]
+          },
+          "consultas_completas": {
+            "n": 6,
+            "de": 7,
+            "proporcion": 0.8571,
+            "ic95": [
+              0.4869,
+              0.9743
+            ]
+          },
+          "macro_recall": 0.8571,
+          "fallos": {
+            "BDEV-015": [
+              "SIS-us7000n9fn",
+              "SIS-us7000nqwx"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "abstencion": {
+    "semantica": {
+      "metodo": "semantica",
+      "umbral": 0.874,
+      "por_mitad": {
+        "calibracion": {
+          "abstencion_correcta_sin_respuesta": {
+            "n": 4,
+            "de": 4,
+            "proporcion": 1.0,
+            "ic95": [
+              0.5101,
+              1.0
+            ],
+            "fallos": []
+          },
+          "abstencion_correcta_todas": {
+            "n": 5,
+            "de": 5,
+            "proporcion": 1.0,
+            "ic95": [
+              0.5655,
+              1.0
+            ],
+            "fallos": []
+          },
+          "abstencion_incorrecta_sustentada": {
+            "n": 1,
+            "de": 10,
+            "proporcion": 0.1,
+            "ic95": [
+              0.0179,
+              0.4042
+            ],
+            "ids": [
+              "BDEV-004"
+            ]
+          },
+          "abstencion_incorrecta_todas": {
+            "n": 1,
+            "de": 15,
+            "proporcion": 0.0667,
+            "ic95": [
+              0.0119,
+              0.2982
+            ],
+            "ids": [
+              "BDEV-004"
+            ]
+          }
+        },
+        "evaluacion": {
+          "abstencion_correcta_sin_respuesta": {
+            "n": 3,
+            "de": 3,
+            "proporcion": 1.0,
+            "ic95": [
+              0.4385,
+              1.0
+            ],
+            "fallos": []
+          },
+          "abstencion_correcta_todas": {
+            "n": 5,
+            "de": 5,
+            "proporcion": 1.0,
+            "ic95": [
+              0.5655,
+              1.0
+            ],
+            "fallos": []
+          },
+          "abstencion_incorrecta_sustentada": {
+            "n": 1,
+            "de": 10,
+            "proporcion": 0.1,
+            "ic95": [
+              0.0179,
+              0.4042
+            ],
+            "ids": [
+              "BDEV-017"
+            ]
+          },
+          "abstencion_incorrecta_todas": {
+            "n": 1,
+            "de": 15,
+            "proporcion": 0.0667,
+            "ic95": [
+              0.0119,
+              0.2982
+            ],
+            "ids": [
+              "BDEV-017"
+            ]
+          }
+        },
+        "total": {
+          "abstencion_correcta_sin_respuesta": {
+            "n": 7,
+            "de": 7,
+            "proporcion": 1.0,
+            "ic95": [
+              0.6457,
+              1.0
+            ],
+            "fallos": []
+          },
+          "abstencion_correcta_todas": {
+            "n": 10,
+            "de": 10,
+            "proporcion": 1.0,
+            "ic95": [
+              0.7225,
+              1.0
+            ],
+            "fallos": []
+          },
+          "abstencion_incorrecta_sustentada": {
+            "n": 2,
+            "de": 20,
+            "proporcion": 0.1,
+            "ic95": [
+              0.0279,
+              0.301
+            ],
+            "ids": [
+              "BDEV-004",
+              "BDEV-017"
+            ]
+          },
+          "abstencion_incorrecta_todas": {
+            "n": 2,
+            "de": 30,
+            "proporcion": 0.0667,
+            "ic95": [
+              0.0185,
+              0.2132
+            ],
+            "ids": [
+              "BDEV-004",
+              "BDEV-017"
+            ]
+          }
+        }
+      },
+      "motivos": {
+        "cifra_inexistente": [
+          "BDEV-030"
+        ],
+        "indicador_no_disponible": [
+          "BDEV-029"
+        ],
+        "inyeccion": [
+          "BDEV-035",
+          "BDEV-039"
+        ],
+        "periodo_fuera_de_cobertura": [
+          "BDEV-033"
+        ],
+        "regla:autoria": [
+          "BDEV-040"
+        ],
+        "regla:cifra_de_periodo_relativo": [
+          "BDEV-031",
+          "BDEV-034"
+        ],
+        "regla:lectura_del_articulo": [
+          "BDEV-032"
+        ],
+        "responde": [
+          "BDEV-001",
+          "BDEV-002",
+          "BDEV-003",
+          "BDEV-005",
+          "BDEV-006",
+          "BDEV-007",
+          "BDEV-008",
+          "BDEV-009",
+          "BDEV-010",
+          "BDEV-011",
+          "BDEV-012",
+          "BDEV-013",
+          "BDEV-014",
+          "BDEV-015",
+          "BDEV-016",
+          "BDEV-018",
+          "BDEV-019",
+          "BDEV-020",
+          "BDEV-021",
+          "BDEV-022",
+          "BDEV-023",
+          "BDEV-024",
+          "BDEV-025",
+          "BDEV-026",
+          "BDEV-027",
+          "BDEV-036",
+          "BDEV-037",
+          "BDEV-038"
+        ],
+        "similitud_baja": [
+          "BDEV-004",
+          "BDEV-017",
+          "BDEV-028"
+        ]
+      },
+      "solo_umbral_sin_respuesta": {
+        "n": 6,
+        "de": 7,
+        "proporcion": 0.8571,
+        "ic95": [
+          0.4869,
+          0.9743
+        ],
+        "ids": [
+          "BDEV-028",
+          "BDEV-029",
+          "BDEV-030",
+          "BDEV-031",
+          "BDEV-033",
+          "BDEV-034"
+        ]
+      }
+    },
+    "bm25": {
+      "metodo": "bm25",
+      "umbral": 10.765,
+      "por_mitad": {
+        "calibracion": {
+          "abstencion_correcta_sin_respuesta": {
+            "n": 4,
+            "de": 4,
+            "proporcion": 1.0,
+            "ic95": [
+              0.5101,
+              1.0
+            ],
+            "fallos": []
+          },
+          "abstencion_correcta_todas": {
+            "n": 5,
+            "de": 5,
+            "proporcion": 1.0,
+            "ic95": [
+              0.5655,
+              1.0
+            ],
+            "fallos": []
+          },
+          "abstencion_incorrecta_sustentada": {
+            "n": 0,
+            "de": 10,
+            "proporcion": 0.0,
+            "ic95": [
+              0.0,
+              0.2775
+            ],
+            "ids": []
+          },
+          "abstencion_incorrecta_todas": {
+            "n": 0,
+            "de": 15,
+            "proporcion": 0.0,
+            "ic95": [
+              0.0,
+              0.2039
+            ],
+            "ids": []
+          }
+        },
+        "evaluacion": {
+          "abstencion_correcta_sin_respuesta": {
+            "n": 3,
+            "de": 3,
+            "proporcion": 1.0,
+            "ic95": [
+              0.4385,
+              1.0
+            ],
+            "fallos": []
+          },
+          "abstencion_correcta_todas": {
+            "n": 5,
+            "de": 5,
+            "proporcion": 1.0,
+            "ic95": [
+              0.5655,
+              1.0
+            ],
+            "fallos": []
+          },
+          "abstencion_incorrecta_sustentada": {
+            "n": 2,
+            "de": 10,
+            "proporcion": 0.2,
+            "ic95": [
+              0.0567,
+              0.5098
+            ],
+            "ids": [
+              "BDEV-015",
+              "BDEV-019"
+            ]
+          },
+          "abstencion_incorrecta_todas": {
+            "n": 3,
+            "de": 15,
+            "proporcion": 0.2,
+            "ic95": [
+              0.0705,
+              0.4519
+            ],
+            "ids": [
+              "BDEV-015",
+              "BDEV-019",
+              "BDEV-021"
+            ]
+          }
+        },
+        "total": {
+          "abstencion_correcta_sin_respuesta": {
+            "n": 7,
+            "de": 7,
+            "proporcion": 1.0,
+            "ic95": [
+              0.6457,
+              1.0
+            ],
+            "fallos": []
+          },
+          "abstencion_correcta_todas": {
+            "n": 10,
+            "de": 10,
+            "proporcion": 1.0,
+            "ic95": [
+              0.7225,
+              1.0
+            ],
+            "fallos": []
+          },
+          "abstencion_incorrecta_sustentada": {
+            "n": 2,
+            "de": 20,
+            "proporcion": 0.1,
+            "ic95": [
+              0.0279,
+              0.301
+            ],
+            "ids": [
+              "BDEV-015",
+              "BDEV-019"
+            ]
+          },
+          "abstencion_incorrecta_todas": {
+            "n": 3,
+            "de": 30,
+            "proporcion": 0.1,
+            "ic95": [
+              0.0346,
+              0.2562
+            ],
+            "ids": [
+              "BDEV-015",
+              "BDEV-019",
+              "BDEV-021"
+            ]
+          }
+        }
+      },
+      "motivos": {
+        "cifra_inexistente": [
+          "BDEV-030"
+        ],
+        "indicador_no_disponible": [
+          "BDEV-029"
+        ],
+        "inyeccion": [
+          "BDEV-035",
+          "BDEV-039"
+        ],
+        "periodo_fuera_de_cobertura": [
+          "BDEV-033"
+        ],
+        "regla:autoria": [
+          "BDEV-040"
+        ],
+        "regla:cifra_de_periodo_relativo": [
+          "BDEV-031",
+          "BDEV-034"
+        ],
+        "regla:lectura_del_articulo": [
+          "BDEV-032"
+        ],
+        "responde": [
+          "BDEV-001",
+          "BDEV-002",
+          "BDEV-003",
+          "BDEV-004",
+          "BDEV-005",
+          "BDEV-006",
+          "BDEV-007",
+          "BDEV-008",
+          "BDEV-009",
+          "BDEV-010",
+          "BDEV-011",
+          "BDEV-012",
+          "BDEV-013",
+          "BDEV-014",
+          "BDEV-016",
+          "BDEV-017",
+          "BDEV-018",
+          "BDEV-020",
+          "BDEV-022",
+          "BDEV-023",
+          "BDEV-024",
+          "BDEV-025",
+          "BDEV-026",
+          "BDEV-027",
+          "BDEV-036",
+          "BDEV-037",
+          "BDEV-038"
+        ],
+        "similitud_baja": [
+          "BDEV-015",
+          "BDEV-019",
+          "BDEV-021",
+          "BDEV-028"
+        ]
+      },
+      "solo_umbral_sin_respuesta": {
+        "n": 6,
+        "de": 7,
+        "proporcion": 0.8571,
+        "ic95": [
+          0.4869,
+          0.9743
+        ],
+        "ids": [
+          "BDEV-028",
+          "BDEV-029",
+          "BDEV-030",
+          "BDEV-031",
+          "BDEV-033",
+          "BDEV-034"
+        ]
+      }
+    }
+  },
+  "umbrales_de_config": {
+    "semantica": 0.874,
+    "bm25": 10.765
+  },
+  "aviso": "El umbral se calibra con la mitad de calibración y se evalúa en la otra; las reglas por patrón se escribieron viendo las 40 consultas, así que 'total' es optimista y no independiente."
+}

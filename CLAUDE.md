@@ -38,6 +38,11 @@ poetry run python -m src.normalizacion               # normaliza y crea data/sen
 poetry run python -m src.limpieza                    # limpia titulares y marca ruido
 poetry run python -m src.clasificacion               # embeddings locales y tema_clasificado (E1-07)
 poetry run python -m eval.clasificacion              # métricas de clasificación (casos difíciles y etiquetas)
+poetry run python -m src.consulta "pregunta"         # consulta en español con abstención (--metodo semantica|bm25)
+poetry run python -m eval.recuperacion               # Recall@5 y abstención, semántica vs. BM25, con n e IC
+poetry run streamlit run app.py                      # interfaz
+poetry run streamlit run app.py -- --demo            # modo demo (data/demo.duckdb)
+poetry run python -m scripts.verificar_offline       # chequeo antes del pitch
 poetry run python -m scripts.catalogo                # outputs/catalogo.csv (E1-04)
 poetry run python -m scripts.explorar                # docs/exploracion.md (E0-09)
 poetry run python -m scripts.probar_llm --modelo <tag>  # latencia, JSON válido y memoria de un modelo de Ollama (E0-07)
@@ -64,20 +69,20 @@ Lo que existe hoy:
 ```
 CLAUDE.md  README.md  pyproject.toml  poetry.lock  .env.example  .github/pull_request_template.md
 config/      reglas_v1.3.yaml · temas.yaml · ejemplos_excluidos.txt · vinculos.yaml · modalidad_editorial.yaml · salidas.yaml · restricciones.yaml
-             ruido.yaml · fuentes.yaml · contrato.yaml · carga.yaml · normalizacion.yaml · clasificacion.yaml · etiquetado.yaml · exploracion.yaml · llm.yaml · benchmark.yaml
+             ruido.yaml · fuentes.yaml · contrato.yaml · carga.yaml · normalizacion.yaml · clasificacion.yaml · etiquetado.yaml · exploracion.yaml · llm.yaml · benchmark.yaml · consulta.yaml
 templates/   (vacía)
 prompts/     afirmaciones_citadas.txt
 data/        raw/ (inmutable) · processed/ (validos/ fuera de git) · registro_extraccion/ · manifest.json · CHANGELOG.md · diccionario.md · README.md
              senales.duckdb (generado, fuera de git)
-src/         carga · normalizacion · limpieza · embeddings · clasificacion · baseline · db · registro (D-75) · configuracion (D-79; config = alias de su CLI) · consultas_gdelt · esquemas (borrador)
+src/         carga · normalizacion · limpieza · embeddings · clasificacion · baseline · consulta · db · registro (D-75) · configuracion (D-79; config = alias de su CLI) · consultas_gdelt · esquemas (borrador)
              solo docstring o esqueleto: agrupacion · procedencias · contexto · puntaje · evidencia
-             ficha · consulta · generacion · validador · cache · revision · exportar
+             ficha · generacion · validador · cache · revision · exportar
 src/llm/     proveedor.py (interfaz) · ollama.py · deepseek.py (solo docstring)
 scripts/     extraer.py · conversion.py · manifest.py · validar_snapshot.py · catalogo.py · explorar.py · estimar_consultas_gdelt.py · probar_llm.py
-eval/        etiquetar.py · etiquetas/ (una hoja por persona) · etiquetas.csv · ruido.py · validar_benchmark.py · clasificacion.py · calibrar_clasificacion.py · metricas.py
+eval/        etiquetar.py · etiquetas/ (una hoja por persona) · etiquetas.csv · ruido.py · validar_benchmark.py · clasificacion.py · calibrar_clasificacion.py · metricas.py · recuperacion.py
 benchmark/   benchmark_dev.jsonl (solo desarrollo) · sinteticos.csv · README.md
 tests/       fixtures/ · test_t01_carga.py · test_t03_recirculada.py · test_casos_dificiles.py · test_*.py
-outputs/     catalogo.csv · clasificacion.json · validacion_snapshot.json · probar_llm_<modelo>.json
+outputs/     catalogo.csv · clasificacion.json · recuperacion.json · validacion_snapshot.json · probar_llm_<modelo>.json
 notion/      exportación inicial para importar en Notion (la versión vigente está en Notion)
 specs/  docs/
 ```
