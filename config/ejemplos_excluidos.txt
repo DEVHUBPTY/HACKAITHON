@@ -10,7 +10,6 @@ NOT-3175aafec0	Minsa: Adelantan vacunación contra VSR en embarazadas
 NOT-3be05280f2	Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá
 NOT-5a4863366a	Canal de Panamá manejará presupuesto de B /. 5 , 555 millones para 2027
 NOT-623c659be3	Exportaciones de banano superan los $17 millones en junio y marcan recuperación
-NOT-660d940f9d	Reformas electorales: Blandón defiende el 3% para nuevos partidos y rechaza aumento del financiamiento privado
 NOT-8921b118ee	Colegios particulares atribuyen aumento de matrícula a migración al sector oficial y altos costos de operación
 NOT-99c8146e07	Panamá apunta a salir de la lista fiscal de la Unión Europea , pero aún enfrenta una revisión clave en 2027
 NOT-d25926a799	Montería estrenará vuelo directo a Panamá con Satena y conexión aérea de menos de una hora

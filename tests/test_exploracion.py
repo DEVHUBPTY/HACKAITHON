@@ -95,7 +95,7 @@ def test_firma_del_rss_no_guarda_nombres(tmp_path: Path, cfg) -> None:
     carpeta.mkdir(parents=True)
     items = "".join(
         f"<item><title>T{i}</title><link>https://www.tvn-2.com/nacionales/t{i}_1_{i}.html</link>"
-        f"<dc:creator>{c}</dc:creator></item>"
+        f"<dc:creator>{c}</dc:creator><category>Nacionales</category></item>"
         for i, c in enumerate(["Juan Pérez Secreto", "EFE", "Redacción", ""], 1)
     )
     xml = (
@@ -118,7 +118,7 @@ def test_revision_manual_rechaza_tema_o_id_invalido(data_sintetica: Path, cfg) -
     raiz = data_sintetica.parent
     (raiz / "docs").mkdir()
     (raiz / cfg.revision_manual.archivo).write_text(
-        "id_noticia,tema_propuesto,ambiguo,ejemplo,nota\nNOT-nope,inventado,no,no,\n", encoding="utf-8"
+        "id_noticia,tema_propuesto,ambiguo,ejemplo,fuente,nota\nNOT-nope,inventado,no,no,propuesta_agente,\n", encoding="utf-8"
     )
     with pytest.raises(ValueError, match="revisión manual inválida"):
         explorar.seccion_revision(explorar.cargar_datos(raiz), cfg, raiz)
@@ -140,3 +140,53 @@ def test_escribir_ejemplos_es_idempotente(tmp_path: Path) -> None:
     explorar.escribir_ejemplos(ruta, ["NOT-1\tTitular uno", "NOT-2\tTitular dos"])
     ids = [l.split("\t")[0] for l in ruta.read_text("utf-8").splitlines() if not l.startswith("#")]
     assert ids == ["NOT-1", "NOT-2"]
+
+
+def test_categorias_del_rss_solo_se_cuentan(tmp_path: Path, cfg) -> None:
+    carpeta = tmp_path / cfg.rss.carpeta_cruda
+    carpeta.mkdir(parents=True)
+    xml = (
+        '<?xml version="1.0"?><rss version="2.0"><channel><title>x</title>'
+        "<item><title>A</title><link>https://www.tvn-2.com/n/a_1_1.html</link><category>Nacionales</category>"
+        f"<description>{DESCRIPCION_SECRETA}</description></item>"
+        "<item><title>B</title><link>https://www.tvn-2.com/n/b_1_2.html</link></item></channel></rss>"
+    )
+    (carpeta / "rss_tvn_20261006T120000Z.xml").write_text(xml, encoding="utf-8")
+    perfil = explorar.datos_rss_crudo(tmp_path, cfg)
+    assert perfil["categorias"] == {"Nacionales": 1} and perfil["con_categoria"] == 1
+    assert perfil["tipos"]["sin firma"] == 2
+    assert "description" not in perfil["claves"] and DESCRIPCION_SECRETA not in str(perfil)
+
+
+def test_gdelt_crudo_perfila_claves_sin_valores(tmp_path: Path, cfg) -> None:
+    carpeta = tmp_path / cfg.rss.carpeta_gdelt
+    carpeta.mkdir(parents=True)
+    (carpeta / "gdelt_economia_20261001000000_20261002000000_20261006T120000Z.json").write_text(
+        '{"articles": [{"url": "https://a.test/x", "title": "T", "seendate": "20261001T010203Z", "socialimage": ""}]}',
+        encoding="utf-8",
+    )
+    perfil = explorar.datos_gdelt_crudo(tmp_path, cfg)
+    assert perfil["n"] == 1 and set(perfil["claves"]) == {"url", "title", "seendate"}
+    assert explorar.datos_gdelt_crudo(tmp_path / "nada", cfg) is None
+
+
+def test_informe_con_crudos_responde_firma_y_gdelt(data_sintetica: Path) -> None:
+    raiz = data_sintetica.parent
+    informe, _ = explorar.generar(raiz, crudos=raiz / "data" / "raw")
+    assert "Verificado en el crudo" in informe
+    assert "Verificado: el RSS de TVN no trae autor ni firma" in informe
+    assert DESCRIPCION_SECRETA not in informe and IMAGEN_SECRETA not in informe
+
+
+def test_revision_exige_fuente_propuesta_agente(data_sintetica: Path, cfg) -> None:
+    raiz = data_sintetica.parent
+    (raiz / "docs").mkdir()
+    (raiz / cfg.revision_manual.archivo).write_text(
+        "id_noticia,tema_propuesto,ambiguo,ejemplo,fuente,nota\nNOT-x,economia,no,no,humano,\n", encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="fuente"):
+        explorar.seccion_revision(explorar.cargar_datos(raiz), cfg, raiz)
+
+
+def test_ejemplo_electoral_no_esta_excluido(cfg) -> None:
+    assert "NOT-660d940f9d" not in (RAIZ / cfg.salida.ejemplos_excluidos).read_text("utf-8")

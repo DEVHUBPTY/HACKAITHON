@@ -22,7 +22,7 @@ from typing import Any
 
 import pandas as pd
 
-from src.configuracion import RAIZ, ConfigExploracion, cargar_exploracion
+from src.configuracion import RAIZ, ConfigExploracion, cargar_exploracion, cargar_fuentes
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ def wilson(k: int, n: int, z: float) -> tuple[float, float]:
 def prop(k: int, n: int, z: float) -> str:
     """``k/n = p % [IC 95 %: lo–hi %]`` (con n siempre visible)."""
     if n == 0:
-        return f"0/0 (sin datos)"
+        return "0/0 (sin datos)"
     lo, hi = wilson(k, n, z)
     return f"{k}/{n} = {100 * k / n:.1f} % [IC 95 %: {100 * lo:.1f}–{100 * hi:.1f} %]"
 
@@ -98,7 +98,7 @@ def cargar_datos(raiz: Path) -> dict[str, Any]:
 # ----------------------------------------------------------------------- secciones
 
 
-def perfil_campos(df: pd.DataFrame, nombre: str) -> str:
+def perfil_campos(df: pd.DataFrame, nombre: str, z: float) -> str:
     n = len(df)
     filas = []
     for c in df.columns:
@@ -118,16 +118,16 @@ def perfil_campos(df: pd.DataFrame, nombre: str) -> str:
             fmt = f"texto, largo mín {min(largos)} · mediana {int(statistics.median(largos))} · máx {max(largos)}{extra}"
         else:
             fmt = " · ".join(f"`{f}` ×{m}" for f, m in Counter(forma(v) for v in presentes).most_common(2))
-        filas.append([f"`{c}`", f"{100 * k / n:.1f} % ({k}/{n})", f"{100 * (n - k) / n:.1f} % ({n - k}/{n})", fmt])
-    return f"**{nombre}** (n = {n})\n\n" + tabla(filas, ["Campo", "% presente", "% nulo", "Formato observado"])
+        filas.append([f"`{c}`", prop(k, n, z), prop(n - k, n, z), fmt])
+    return f"**{nombre}** (n = {n})\n\n" + tabla(filas, ["Campo", "Presente", "Nulo", "Formato observado"])
 
 
-def conteos(serie: pd.Series, top: int, etiqueta: str) -> str:
+def conteos(serie: pd.Series, top: int, etiqueta: str, z: float) -> str:
     n = int(serie.notna().sum())
-    filas = [[f"`{k}`", v, f"{100 * v / n:.1f} %"] for k, v in serie.value_counts().head(top).items()]
+    filas = [[f"`{k}`", v, prop(int(v), n, z)] for k, v in serie.value_counts().head(top).items()]
     resto = int(serie.nunique()) - len(filas)
     nota = f"\n\n_n = {n}; {serie.nunique()} valores distintos" + (f", se muestran {len(filas)}._" if resto > 0 else "._")
-    return tabla(filas, [etiqueta, "n", "%"]) + nota
+    return tabla(filas, [etiqueta, "n", "% (IC 95 %)"]) + nota
 
 
 def fecha_base(df: pd.DataFrame) -> pd.Series:
@@ -149,15 +149,15 @@ def seccion_conteos(d: dict[str, Any], cfg: ConfigExploracion) -> str:
     filas_dia = [[dia, *[int(v) for v in fila]] for dia, fila in por_dia.iterrows()]
     out = [
         f"Noticias en el snapshot: **{n}**. TVN RSS: **{prop(tvn, n, z)}**.",
-        "### Por medio\n\n" + conteos(nt["medio"], top, "Medio"),
-        "### Por idioma\n\n" + conteos(nt["idioma"], top, "Idioma (ISO 639-1)")
+        "### Por medio\n\n" + conteos(nt["medio"], top, "Medio", z),
+        "### Por idioma\n\n" + conteos(nt["idioma"], top, "Idioma (ISO 639-1)", z)
         + f"\n\nEspañol: {prop(int((nt['idioma'] == 'es').sum()), n, z)}.",
-        "### Por país del medio (`fuentes.json`)\n\n" + conteos(pais.fillna("(sin país)"), top, "País")
+        "### Por país del medio (`fuentes.json`)\n\n" + conteos(pais.fillna("(sin país)"), top, "País", z)
         + f"\n\nSin país conocido: {prop(int(pais.isna().sum()), n, z)}.",
         "### Por categoría del RSS (tema de origen de TVN = primera sección de la URL)\n\n"
-        + conteos(rss["tema"], top, "Sección RSS"),
+        + conteos(rss["tema"], top, "Sección RSS", z),
         "### Por tema de origen de GDELT (una URL puede salir en varios temas)\n\n"
-        + conteos(temas_gdelt, top, "Consulta GDELT"),
+        + conteos(temas_gdelt, top, "Consulta GDELT", z),
         "### Por día (fecha base: detección; publicación si no hay detección; UTC)\n\n"
         + tabla(filas_dia, ["Día", *list(por_dia.columns)])
         + f"\n\n_Días con datos: {len(filas_dia)}. La hora de Panamá solo se usa en la interfaz._",
@@ -165,9 +165,9 @@ def seccion_conteos(d: dict[str, Any], cfg: ConfigExploracion) -> str:
     return "\n\n".join(out)
 
 
-def datos_rss_crudo(raiz: Path, cfg: ConfigExploracion) -> dict[str, Any] | None:
-    """Perfil de firma del RSS crudo si está en disco (está fuera de git, D-72). Nunca devuelve nombres."""
-    carpeta = raiz / cfg.rss.carpeta_cruda
+def datos_rss_crudo(crudos: Path, cfg: ConfigExploracion) -> dict[str, Any] | None:
+    """Perfil de firma y categorías del RSS crudo (solo lectura; fuera del repositorio, D-72). Nunca devuelve nombres."""
+    carpeta = crudos / cfg.rss.carpeta_cruda
     archivos = sorted(carpeta.glob("rss_tvn_*.xml")) if carpeta.exists() else []
     if not archivos:
         return None
@@ -176,13 +176,18 @@ def datos_rss_crudo(raiz: Path, cfg: ConfigExploracion) -> dict[str, Any] | None
     tipos: Counter[str] = Counter()
     agencias: Counter[str] = Counter()
     claves: Counter[str] = Counter()
+    categorias: Counter[str] = Counter()
+    con_categoria = 0
     n = 0
     for ruta in archivos:
         for e in feedparser.parse(ruta.read_bytes()).entries:
             n += 1
             for c in e.keys():
-                if c not in {"summary", "summary_detail", "description", "content", "media_content", "links"}:
+                if c not in cfg.rss.claves_excluidas:
                     claves[c] += 1
+            etiquetas = [str(t.get("term", "")).strip() for t in e.get("tags", []) if t.get("term")]
+            con_categoria += bool(etiquetas)
+            categorias.update(etiquetas)
             firma = next((str(e[c]).strip() for c in cfg.rss.campos_firma if e.get(c)), "")
             if not firma:
                 tipos["sin firma"] += 1
@@ -196,10 +201,38 @@ def datos_rss_crudo(raiz: Path, cfg: ConfigExploracion) -> dict[str, Any] | None
                 tipos["redacción/medio"] += 1
             else:
                 tipos["persona (nombre no guardado)"] += 1
-    return {"n": n, "archivos": len(archivos), "tipos": tipos, "agencias": agencias, "claves": claves}
+    return {"n": n, "archivos": len(archivos), "tipos": tipos, "agencias": agencias, "claves": claves,
+            "categorias": categorias, "con_categoria": con_categoria}
 
 
-def seccion_preguntas(d: dict[str, Any], cfg: ConfigExploracion, rss: dict[str, Any] | None) -> str:
+def datos_gdelt_crudo(crudos: Path, cfg: ConfigExploracion) -> dict[str, Any] | None:
+    """Perfil de campos de los artículos del crudo de GDELT (solo claves y conteos; nunca valores)."""
+    carpeta = crudos / cfg.rss.carpeta_gdelt
+    archivos = sorted(carpeta.glob("gdelt_*.json")) if carpeta.exists() else []
+    if not archivos:
+        return None
+    claves: Counter[str] = Counter()
+    n = 0
+    for ruta in archivos:
+        texto = ruta.read_text(encoding="utf-8")
+        datos = json.loads(texto, strict=False) if texto.strip() else {}
+        for a in datos.get("articles", []):
+            n += 1
+            claves.update(k for k, v in a.items() if v not in (None, ""))
+    return {"n": n, "archivos": len(archivos), "claves": claves}
+
+
+def _evidencia_gdelt(g: dict[str, Any] | None) -> str:
+    if g is None:
+        return ("_Evidencia y límite:_ la lectura de campos está en `scripts/conversion.py::_leer_gdelt` (usa solo `seendate`); "
+                "el crudo de GDELT no estaba disponible en esta corrida, así que la lista de campos de la API **no se verificó**.")
+    claves = ", ".join(f"`{k}` ×{v}" for k, v in g["claves"].most_common())
+    return (f"**Verificado en el crudo** ({g['archivos']} archivos, {g['n']} artículos; los archivos pueden repetir artículos entre rangos): "
+            f"campos con valor: {claves}. Ninguno es una fecha de publicación; `seendate` es la única fecha.")
+
+
+def seccion_preguntas(d: dict[str, Any], cfg: ConfigExploracion, rss: dict[str, Any] | None,
+                      gdelt: dict[str, Any] | None = None) -> str:
     nt, z = d["noticias"], cfg.estadistica.z_95
     solo_gdelt = nt[nt["origen"] == "GDELT"]
     k_pub = int(solo_gdelt["fecha_publicacion"].notna().sum())
@@ -212,9 +245,7 @@ def seccion_preguntas(d: dict[str, Any], cfg: ConfigExploracion, rss: dict[str, 
         f"medio la publicó. En el snapshot, de los registros que vinieron solo de GDELT (n = {len(solo_gdelt)}): "
         f"`fecha_publicacion` presente en {prop(k_pub, len(solo_gdelt), z)}; `fecha_deteccion` presente en "
         f"{prop(k_det, len(solo_gdelt), z)}. Registros presentes en el RSS **y** en GDELT: {ambos} de {len(nt)}.",
-        "_Evidencia y límite:_ la lectura de campos está en `scripts/conversion.py::_leer_gdelt` (usa solo `seendate`); "
-        "el crudo de GDELT no está en el repositorio (D-72), así que la lista exacta de campos de la API no se "
-        "re-verificó en esta corrida offline.",
+        _evidencia_gdelt(gdelt),
         "**Efecto:** U (urgencia) y T03 (noticia recirculada) no pueden usar GDELT como fecha del hecho; solo el RSS de "
         f"TVN la trae ({prop(len(rss_filas), len(nt), z)} de las noticias). Una fecha de detección reciente de una nota "
         "vieja es justo el caso de T03. Ver recomendaciones.",
@@ -222,7 +253,7 @@ def seccion_preguntas(d: dict[str, Any], cfg: ConfigExploracion, rss: dict[str, 
     ]
     if rss is None:
         out.append(
-            "**No verificable en este entorno.** El crudo del RSS está fuera de git (D-72) y `processed/` no guarda autor "
+            "**No verificable en este entorno.** El crudo del RSS está fuera del repositorio (D-72) y `processed/` no guarda autor "
             "(D-32), así que `data/processed/` no permite responder. El conteo de campos del RSS requiere el crudo: "
             "`poetry run python -m scripts.explorar` lo perfila solo si `data/raw/rss_tvn/rss_tvn_*.xml` existe "
             "(en la máquina donde se extrajo). **Pendiente de correr allí**; el informe reportará tipos de firma "
@@ -230,10 +261,17 @@ def seccion_preguntas(d: dict[str, Any], cfg: ConfigExploracion, rss: dict[str, 
         )
     else:
         n = rss["n"]
-        filas = [[t, v, f"{100 * v / n:.1f} %"] for t, v in rss["tipos"].most_common()]
+        z = cfg.estadistica.z_95
+        filas = [[t, v, prop(v, n, z)] for t, v in rss["tipos"].most_common()]
+        sin = rss["tipos"].get("sin firma", 0)
+        veredicto = (f"**Verificado: el RSS de TVN no trae autor ni firma** ({sin}/{n} entradas sin ninguno de los campos buscados)."
+                     if sin == n else "**El RSS trae firma en parte de las entradas** (ver tabla).")
         out.append(
-            f"Entradas en {rss['archivos']} crudos: {n}. Campos de firma buscados: {', '.join(cfg.rss.campos_firma)}.\n\n"
-            + tabla(filas, ["Tipo de firma", "n", "%"])
+            f"{veredicto} Entradas en {rss['archivos']} crudo(s): {n}. Campos de firma buscados: {', '.join(cfg.rss.campos_firma)}.\n\n"
+            + tabla(filas, ["Tipo de firma", "n", "% (IC 95 %)"])
+            + f"\n\nCategorías del RSS (`<category>`, solo conteos): {prop(rss['con_categoria'], n, z)} de las entradas traen alguna; "
+            + (", ".join(f"`{c}` ×{v}" for c, v in rss["categorias"].most_common(cfg.estadistica.top_n)) or "ninguna categoría")
+            + "."
             + "\n\nAgencias: " + (", ".join(f"{a} ×{v}" for a, v in rss["agencias"].most_common()) or "ninguna")
             + "\n\nClaves presentes en las entradas (sin descripción): "
             + ", ".join(f"`{c}` ×{v}" for c, v in rss["claves"].most_common())
@@ -344,16 +382,16 @@ def seccion_duplicados(nt: pd.DataFrame, cfg: ConfigExploracion) -> tuple[str, l
     return t, g
 
 
-def seccion_cobertura(d: dict[str, Any]) -> str:
+def seccion_cobertura(d: dict[str, Any], z: float) -> str:
     cob = d["manifest"]["cobertura_efectiva"]
-    filas = [[t, v["dias_cubiertos"], v["dias_esperados"], f"{100 * v['dias_cubiertos'] / v['dias_esperados']:.0f} %"]
+    filas = [[t, v["dias_cubiertos"], v["dias_esperados"], prop(v["dias_cubiertos"], v["dias_esperados"], z)]
              for t, v in cob["gdelt_dias_por_tema"].items()]
     sin = Counter()
     for r in cob["gdelt_rangos_sin_resolver"]:
         sin[(r["tema"], r["motivo"])] += r["dias"]
     filas2 = [[t, m, v] for (t, m), v in sorted(sin.items())]
     return (
-        tabla(filas, ["Tema GDELT", "Días cubiertos", "Días esperados", "Cobertura"])
+        tabla(filas, ["Tema GDELT", "Días cubiertos", "Días esperados", "Cobertura (IC 95 %)"])
         + "\n\nDías sin resolver (suma de rangos):\n\n" + tabla(filas2, ["Tema", "Motivo", "Días"])
         + f"\n\nRSS: de {cob.get('fecha_publicacion_inicial')} a {cob.get('fecha_publicacion_final')}; "
         f"detección GDELT: de {cob.get('fecha_deteccion_inicial')} a {cob.get('fecha_deteccion_final')}."
@@ -363,6 +401,7 @@ def seccion_cobertura(d: dict[str, Any]) -> str:
 
 
 def seccion_banco_mundial(d: dict[str, Any], cfg: ConfigExploracion) -> str:
+    z = cfg.estadistica.z_95
     ind = d["indicadores"].copy()
     ind["anio"] = ind["anio"].astype(int)
     ind["tiene"] = ind["valor"].notna()
@@ -372,14 +411,13 @@ def seccion_banco_mundial(d: dict[str, Any], cfg: ConfigExploracion) -> str:
         ultimo = g[g["tiene"]].groupby("pais_iso3")["anio"].max()
         ultimos = ", ".join(f"{p} {a}" for p, a in ultimo.items())
         sin_nada = sorted(set(g["pais_iso3"]) - set(ultimo.index))
-        filas.append([f"`{iid}`", g["unidad"].iloc[0], f"{nulos}/{len(g)}", f"{int(ultimo.min())}–{int(ultimo.max())}" if len(ultimo) else "—",
+        filas.append([f"`{iid}`", g["unidad"].iloc[0], prop(nulos, len(g), z), f"{int(ultimo.min())}–{int(ultimo.max())}" if len(ultimo) else "—",
                       ultimos + (f"; sin dato: {', '.join(sin_nada)}" if sin_nada else "")])
     esperado = cfg.indicadores.anio_fin_esperado
     pan = ind[(ind["pais_iso3"] == "PAN") & ~ind["tiene"]]
     texto = tabla(filas, ["Indicador", "Unidad", "Nulos", "Último año con dato (rango)", "Último año por país"])
     texto += (
-        f"\n\nCuadrícula: {len(ind)} filas; valores nulos: {int((~ind['tiene']).sum())} "
-        f"({100 * (~ind['tiene']).sum() / len(ind):.1f} %). Año final de la cuadrícula: {esperado}. Los nulos se conservan "
+        f"\n\nCuadrícula: {len(ind)} filas; valores nulos: {prop(int((~ind['tiene']).sum()), len(ind), z)}. Año final de la cuadrícula: {esperado}. Los nulos se conservan "
         "como nulos; los datos son **anuales** y nunca \"actuales\"."
     )
     if len(pan):
@@ -398,16 +436,16 @@ def seccion_usgs(d: dict[str, Any], cfg: ConfigExploracion) -> str:
         sup = [b for b in lims if m >= b]
         bins[f"M ≥ {sup[-1]:g}" if sup else f"M < {lims[0]:g}"] += 1
     orden = [f"M < {lims[0]:g}"] + [f"M ≥ {b:g}" for b in lims]
-    filas = [[b, bins.get(b, 0), f"{100 * bins.get(b, 0) / n:.1f} %"] for b in orden]
+    filas = [[b, bins.get(b, 0), prop(bins.get(b, 0), n, z)] for b in orden]
     mags = sorted(p["magnitude"] for p in props)
     sufijos = Counter(p["place"].split(", ")[-1] for p in props)
     con_panama = sum(coincide(p["place"], cfg.usgs.panama_en_place) for p in props)
     tiempos = sorted(p["time"] for p in props)
     return (
         f"Eventos: **{n}**, de {tiempos[0]} a {tiempos[-1]}. Magnitud: mín {mags[0]}, mediana {statistics.median(mags)}, máx {mags[-1]}.\n\n"
-        + tabla(filas, ["Magnitud", "n", "%"])
+        + tabla(filas, ["Magnitud", "n", "% (IC 95 %)"])
         + "\n\nValores de `place` (texto tras la última coma):\n\n"
-        + tabla([[f"`{k}`", v, f"{100 * v / n:.1f} %"] for k, v in sufijos.most_common()], ["place (país/zona)", "n", "%"])
+        + tabla([[f"`{k}`", v, prop(v, n, z)] for k, v in sufijos.most_common()], ["place (país/zona)", "n", "% (IC 95 %)"])
         + f"\n\n`place` menciona Panamá: {prop(con_panama, n, z)}. **La caja de USGS no es Panamá**: el resto cae en otros países; "
         "se muestra siempre el `place` original. "
         f"\n\n**Desfase temporal:** los sismos son de {tiempos[0][:4]} (intervalo del PDF) y las noticias de "
@@ -422,13 +460,16 @@ def seccion_revision(d: dict[str, Any], cfg: ConfigExploracion, raiz: Path) -> t
     if not ruta.exists():
         return "_No hay `docs/exploracion_revision.csv`._", {}, []
     rev = pd.read_csv(ruta, dtype=str, keep_default_na=False)
+    fuentes_raras = sorted(set(rev["fuente"]) - {"propuesta_agente"})
+    if fuentes_raras:
+        raise ValueError(f"revisión manual inválida: fuente {fuentes_raras} (solo `propuesta_agente`; las etiquetas humanas son E1-06)")
     invalidos = sorted(set(rev["tema_propuesto"]) - set(cfg.revision_manual.temas_validos))
     desconocidos = sorted(set(rev["id_noticia"]) - set(nt.index))
     if invalidos or desconocidos:
         raise ValueError(f"revisión manual inválida: temas {invalidos}, ids desconocidos {desconocidos}")
     minimo = cfg.revision_manual.minimo_candidatos_por_tema
-    temas = ["economia", "logistica", "turismo", "servicios_publicos", "eventos_naturales", "regulacion"]
     palabras = cfg.temas_palabras
+    temas = list(palabras)
     filas, cuenta = [], {}
     for t in temas:
         sub = rev[rev["tema_propuesto"] == t]
@@ -443,7 +484,7 @@ def seccion_revision(d: dict[str, Any], cfg: ConfigExploracion, raiz: Path) -> t
     cuenta["_total"] = len(rev)
     z = cfg.estadistica.z_95
     pureza = []
-    for q in ("logistica", "turismo", "economia", "eventos_naturales"):
+    for q in cargar_fuentes().gdelt.consultas:
         ids = d["noticias"][d["noticias"]["origen"].str.contains("GDELT") & d["noticias"]["tema"].str.split("|").map(lambda x, q=q: q in x)]["id_noticia"]
         etiquetas = rev[rev["id_noticia"].isin(ids)]["tema_propuesto"]
         if len(etiquetas) == 0:
@@ -454,8 +495,8 @@ def seccion_revision(d: dict[str, Any], cfg: ConfigExploracion, raiz: Path) -> t
     ejemplos = [f"{r.id_noticia}\t{nt.loc[r.id_noticia, 'titulo']}" for r in rev[rev["ejemplo"] == "si"].itertuples()]
     texto = (
         f"Se revisaron **a mano las {len(rev)} filas** del snapshot (no solo una muestra) y se les propuso un tema de la guía "
-        "(`docs/exploracion_revision.csv`). **Es una propuesta del agente de desarrollo, pendiente de confirmación humana; no son "
-        "etiquetas de evaluación (E1-06).**\n\n"
+        "(`docs/exploracion_revision.csv`). **Es una propuesta del agente de desarrollo (`fuente = propuesta_agente`), pendiente de confirmación humana; no son "
+        "etiquetas de evaluación (E1-06).** Las filas dudosas llevan `ambiguo = si`.\n\n"
         + tabla(filas, ["Tema", "Candidatos (palabra clave ∪ propuestos)", "Asignados al tema", "…sin ambigüedad", "Marcados como ejemplo", f"≥ {minimo} del spec"])
         + "\n\nFuera de los 6 temas: "
         + ", ".join(f"`{k}` {v}" for k, v in aparte.items())
@@ -469,7 +510,7 @@ def seccion_revision(d: dict[str, Any], cfg: ConfigExploracion, raiz: Path) -> t
 
 
 def seccion_recomendaciones(d: dict[str, Any], ruido: pd.DataFrame, grupos: list[dict[str, Any]], cuenta: dict[str, int],
-                            cfg: ConfigExploracion) -> str:
+                            cfg: ConfigExploracion, rss: dict[str, Any] | None = None) -> str:
     nt = d["noticias"]
     n = len(nt)
     es_tvn = nt["origen"] == "TVN RSS"
@@ -477,10 +518,20 @@ def seccion_recomendaciones(d: dict[str, Any], ruido: pd.DataFrame, grupos: list
     z = cfg.estadistica.z_95
     np_, ft_, sc_ = cuenta.get("_no_es_panama", 0), cuenta.get("_fuera_de_temas", 0), cuenta.get("_sin_contenido", 0)
     tot = cuenta.get("_total", n)
+    if rss is None:
+        agencias_txt = ("el RSS crudo no se pudo perfilar aquí; la lista `agencias` del YAML debe confirmarse con el perfil de firma "
+                        "corrido donde está el crudo.")
+    elif rss["tipos"].get("sin firma", 0) == rss["n"]:
+        agencias_txt = (f"el RSS de TVN **no trae firma** ({rss['n']}/{rss['n']} entradas sin autor ni `dc:creator`), así que la lista "
+                        "`agencias` no puede derivarse de él. Las procedencias independientes (CU-03) salen del dominio del medio y de "
+                        "la repetición del titular, no de la firma; la lista de agencias solo serviría si un titular de GDELT la nombra "
+                        "(`- EFE`, `Xinhua`) y eso se decide en E1-05/E1-08. No inventar agencias ni tipos de firma.")
+    else:
+        agencias_txt = "el RSS trae firma en parte de las entradas; confirmar la lista `agencias` con el perfil de la sección 3."
     return f"""### Para E1-03b (limpieza y ruido)
 
-1. **El mayor ruido es "no es Panamá", no deportes ni farándula.** En la revisión manual (por titular, que es lo único que ve el
-   sistema): `no_es_panama` {prop(np_, tot, z)}, `fuera_de_temas` {prop(ft_, tot, z)}, sin contenido {prop(sc_, tot, z)}. Además, {nm} de
+1. **Hipótesis: el mayor ruido sería "no es Panamá", no deportes ni farándula.** En la propuesta del agente (por titular, que es lo único que ve el
+   sistema; no es una etiqueta humana): `no_es_panama` {prop(np_, tot, z)}, `fuera_de_temas` {prop(ft_, tot, z)}, sin contenido {prop(sc_, tot, z)}. Además, {nm} de
    {int((~es_tvn).sum())} registros no TVN no nombran Panamá ni un término panameño en el titular. Causa probable (según
    `config/fuentes.yaml`): las consultas de GDELT piden `Panama` más un término amplio (`port`, `cargo`, `hotel`, `economy`…) sin
    anclarlos al titular; GDELT puede resolverlas sobre el texto del artículo (no verificado aquí: el crudo no está en git), así que el
@@ -493,8 +544,11 @@ def seccion_recomendaciones(d: dict[str, Any], ruido: pd.DataFrame, grupos: list
 3. **Falsos Panamá concretos:** `Panama City Beach` / `PCB` (turismo de Florida) cae en el tema Turismo. Lista en YAML, no en código.
 4. **Limpieza:** sufijos de medio, espacios antes de puntuación (`21 , 2 %`, `US$84 . 000`; es la tokenización de GDELT, dañan
    los embeddings y las cifras), barra pegada de TVN (`resultados| texto`) y prefijos de sección de TVN (`Liga de Naciones … resultados|`).
-5. **Secciones de TVN que no son noticias de los temas:** `tvmax` (deportes), `entretenimiento`, `contenido-exclusivo`, `gente-tvn`,
-   `videos`: patrón de categoría/URL del YAML (`fuera_de_temas`, no `no_es_panama`). `mundo` es noticia internacional, casi siempre `no_es_panama`.
+5. **La sección de TVN es solo una señal CANDIDATA de `fuera_de_temas`; decide el titular.** `tvmax`, `entretenimiento`, `gente-tvn` y
+   `videos` suelen ser deportes, farándula o cultura, pero varios de `tvmax`/`entretenimiento` tratan de otros países (`no_es_panama`:
+   p. ej. Messi/Argentina, Pedro Pascal), y los de `contenido-exclusivo` son sobre Panamá y pueden estar en los temas (transporte público,
+   sequía). Un patrón de URL no debe excluir ni etiquetar por sí solo: úsese para subir la sospecha y confirmar con el titular. `mundo` es
+   noticia internacional: `no_es_panama` salvo que afecte a Panamá.
 6. **Duplicados:** {len(grupos)} grupos de titulares casi idénticos; los sindicados (Xinhua, Trump/Europa) aparecen en decenas de
    dominios. Deduplicar por URL no los junta: hay que contar procedencias **independientes**, no republicaciones (E1-08).
 
@@ -508,12 +562,12 @@ def seccion_recomendaciones(d: dict[str, Any], ruido: pd.DataFrame, grupos: list
 3. **`temas.yaml`:** con esta muestra no se llega a ~10 ejemplos reales por tema en todos los temas
    (asignados: {', '.join(f'{t} {v}' for t, v in cuenta.items() if not t.startswith('_'))}). `eventos_naturales` no tiene cobertura de GDELT
    (0 días) y `turismo`/`regulacion` casi no tienen titulares propios. Completar con una extracción nueva cuando GDELT deje de limitar, o
-   redactar esos ejemplos como ilustrativos (como en la guía) y **no** presentarlos como reales. Los ejemplos ya elegidos están en
-   `config/ejemplos_excluidos.txt`; E1-05 agrega ahí los que sume.
+   redactar esos ejemplos como ilustrativos (como en la guía) y **no** presentarlos como reales. Los ejemplos propuestos están en
+   `config/ejemplos_excluidos.txt`; E1-05 agrega ahí los que sume y **elimina de ese archivo los que no use** (excluir de la evaluación
+   un titular que no es ejemplo solo resta datos).
 4. **Alcance geográfico (I):** los titulares de TVN nombran provincia/distrito (Chiriquí, Veraguas, Coclé, Colón, San Miguelito, La Chorrera);
    la lista de provincias y distritos del YAML tiene ejemplos reales para probarla.
-5. **Agencias:** el RSS crudo no se pudo perfilar aquí (ver arriba); la lista `agencias` del YAML debe confirmarse con el perfil de firma
-   corrido donde está el crudo.
+5. **Agencias:** {agencias_txt}
 6. **T01 (nulos):** la cuadrícula del Banco Mundial de esta corrida no tiene ningún nulo (0/540), contra lo que se esperaba; las
    pruebas de nulos (T01, T04) deben usar fixtures sintéticos (`SYN-`), no depender de este snapshot. Los sismos de USGS son de 2024 y las
    noticias de 2026: la coincidencia ± 2 días de E1-09 se prueba con datos sintéticos.
@@ -522,40 +576,44 @@ def seccion_recomendaciones(d: dict[str, Any], ruido: pd.DataFrame, grupos: list
 """
 
 
-def perfil_wb_usgs_campos(d: dict[str, Any]) -> str:
+def perfil_wb_usgs_campos(d: dict[str, Any], z: float) -> str:
     ev = pd.DataFrame([f["properties"] for f in d["eventos"]["features"]]).astype({"magnitude": str, "depth": str, "longitude": str, "latitude": str}, errors="ignore")
-    return perfil_campos(ev, "eventos.geojson (propiedades)")
+    return perfil_campos(ev, "eventos.geojson (propiedades)", z)
 
 
 # ----------------------------------------------------------------------- informe
 
 
-def generar(raiz: Path = RAIZ) -> tuple[str, list[str]]:
+def generar(raiz: Path = RAIZ, crudos: Path | None = None) -> tuple[str, list[str]]:
     """Devuelve (informe Markdown, líneas de ejemplos para ``ejemplos_excluidos.txt``)."""
     cfg = cargar_exploracion()
     d = cargar_datos(raiz)
     nt = d["noticias"]
-    rss = datos_rss_crudo(raiz, cfg)
+    crudos = crudos or raiz / "data" / "raw"
+    rss = datos_rss_crudo(crudos, cfg)
+    gdelt = datos_gdelt_crudo(crudos, cfg)
     cal, ruido = seccion_calidad_titulares(d, cfg)
     dup_txt, grupos = seccion_duplicados(nt, cfg)
     rev_txt, cuenta, ejemplos = seccion_revision(d, cfg, raiz)
     man = d["manifest"]
     partes = [
         "# Exploración de la muestra real (E0-09)\n",
-        "> Generado por `poetry run python -m scripts.explorar`. **Offline:** usa solo `data/processed/` y el crudo versionado de Banco Mundial y "
-        "USGS. Fase: Preparación (D-74). No muestra descripciones del RSS (D-31, D-72) ni nombres de autores (D-32). "
-        "Toda proporción lleva su n y un intervalo de Wilson al 95 %. Todo lo marcado como ruido es **candidato**: el etiquetado es E1-03b / E1-06.\n",
+        "> Generado por `poetry run python -m scripts.explorar`. **Offline:** usa `data/processed/`, el crudo versionado de Banco Mundial y "
+        "USGS y, en solo lectura (`--crudos`), los crudos de RSS y GDELT que no están en el repositorio (no se copian). "
+        "Fase: Preparación (D-74). No muestra descripciones del RSS (D-31, D-72) ni nombres de autores (D-32). "
+        "Los porcentajes llevan su n e intervalo de Wilson al 95 %. **" + cfg.estadistica.nota + "** "
+        "Todo lo marcado como ruido es **candidato**: el etiquetado es E1-03b / E1-06.\n",
         f"**Muestra:** snapshot de E0-04 (`fecha_corte_UTC` {man.get('fecha_corte_UTC')}); no se descargó una muestra nueva "
         "porque GDELT está limitando las solicitudes (HTTP 429). **No es una muestra de 1–3 días con una consulta por tema**: "
         "es lo que quedó cubierto (ver Cobertura).\n",
         "## 1 · Perfil de campos\n",
-        perfil_campos(nt, "noticias.csv"),
-        perfil_campos(d["indicadores"], "indicadores.csv"),
-        perfil_wb_usgs_campos(d),
+        perfil_campos(nt, "noticias.csv", cfg.estadistica.z_95),
+        perfil_campos(d["indicadores"], "indicadores.csv", cfg.estadistica.z_95),
+        perfil_wb_usgs_campos(d, cfg.estadistica.z_95),
         "## 2 · Conteos\n",
         seccion_conteos(d, cfg),
         "## 3 · Preguntas del spec\n",
-        seccion_preguntas(d, cfg, rss),
+        seccion_preguntas(d, cfg, rss, gdelt),
         "## 4 · Calidad de los titulares\n",
         cal,
         "## 5 · Candidatos a ruido\n",
@@ -563,7 +621,7 @@ def generar(raiz: Path = RAIZ) -> tuple[str, list[str]]:
         "## 6 · Titulares casi duplicados (pistas de agrupación de eventos)\n",
         dup_txt,
         "## 7 · Cobertura y vacíos\n",
-        seccion_cobertura(d),
+        seccion_cobertura(d, cfg.estadistica.z_95),
         "## 8 · Banco Mundial\n",
         seccion_banco_mundial(d, cfg),
         "## 9 · USGS\n",
@@ -571,7 +629,7 @@ def generar(raiz: Path = RAIZ) -> tuple[str, list[str]]:
         "## 10 · Revisión manual de titulares por tema\n",
         rev_txt,
         "## 11 · Recomendaciones (no implementadas aquí)\n",
-        seccion_recomendaciones(d, ruido, grupos, cuenta, cfg),
+        seccion_recomendaciones(d, ruido, grupos, cuenta, cfg, rss),
     ]
     # Archivos de trabajo fuera de git.
     muestra = raiz / cfg.salida.carpeta_muestra
@@ -599,9 +657,10 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--raiz", type=Path, default=RAIZ)
+    ap.add_argument("--crudos", type=Path, default=None, help="data/raw de solo lectura (RSS y GDELT); por defecto <raiz>/data/raw")
     args = ap.parse_args()
     cfg = cargar_exploracion()
-    informe, ejemplos = generar(args.raiz)
+    informe, ejemplos = generar(args.raiz, args.crudos)
     (args.raiz / cfg.salida.informe).write_text(informe, encoding="utf-8")
     escribir_ejemplos(args.raiz / cfg.salida.ejemplos_excluidos, ejemplos)
     logger.info("escrito %s (%d ejemplos propuestos)", cfg.salida.informe, len(ejemplos))

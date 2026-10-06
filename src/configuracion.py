@@ -172,6 +172,7 @@ def cargar_fuentes(carpeta: Path | None = None) -> ConfigFuentes:
 class EstadisticaExploracion(ModeloConfig):
     z_95: float
     top_n: int
+    nota: str
 
 
 class RevisionManual(ModeloConfig):
@@ -182,7 +183,9 @@ class RevisionManual(ModeloConfig):
 
 class RssExploracion(ModeloConfig):
     carpeta_cruda: str
+    carpeta_gdelt: str
     campos_firma: list[str]
+    claves_excluidas: list[str]
     agencias: list[str]
     redaccion: list[str]
 
@@ -198,10 +201,6 @@ class PatronesExploracion(ModeloConfig):
     deportes: list[str]
     farandula: list[str]
     autopromocion_tvn: list[str]
-
-
-class DuplicadosExploracion(ModeloConfig):
-    min_caracteres_contencion: int
 
 
 class DuplicadosExploracion(ModeloConfig):

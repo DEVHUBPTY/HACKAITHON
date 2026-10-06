@@ -1,7 +1,7 @@
 # Exploración de la muestra real (E0-09)
 
 
-> Generado por `poetry run python -m scripts.explorar`. **Offline:** usa solo `data/processed/` y el crudo versionado de Banco Mundial y USGS. Fase: Preparación (D-74). No muestra descripciones del RSS (D-31, D-72) ni nombres de autores (D-32). Toda proporción lleva su n y un intervalo de Wilson al 95 %. Todo lo marcado como ruido es **candidato**: el etiquetado es E1-03b / E1-06.
+> Generado por `poetry run python -m scripts.explorar`. **Offline:** usa `data/processed/`, el crudo versionado de Banco Mundial y USGS y, en solo lectura (`--crudos`), los crudos de RSS y GDELT que no están en el repositorio (no se copian). Fase: Preparación (D-74). No muestra descripciones del RSS (D-31, D-72) ni nombres de autores (D-32). Los porcentajes llevan su n e intervalo de Wilson al 95 %. **El IC de Wilson supone una muestra aleatoria; este snapshot NO lo es (ventana corta, consultas dirigidas, cobertura parcial): los intervalos son descriptivos, no inferenciales.** Todo lo marcado como ruido es **candidato**: el etiquetado es E1-03b / E1-06.
 
 
 **Muestra:** snapshot de E0-04 (`fecha_corte_UTC` 2026-10-06T17:07:06Z); no se descargó una muestra nueva porque GDELT está limitando las solicitudes (HTTP 429). **No es una muestra de 1–3 días con una consulta por tema**: es lo que quedó cubierto (ver Cobertura).
@@ -12,48 +12,48 @@
 
 **noticias.csv** (n = 186)
 
-| Campo | % presente | % nulo | Formato observado |
+| Campo | Presente | Nulo | Formato observado |
 |---|---|---|---|
-| `id_noticia` | 100.0 % (186/186) | 0.0 % (0/186) | prefijo `NOT-` ×186; únicos 186/186 |
-| `titulo` | 100.0 % (186/186) | 0.0 % (0/186) | texto, largo mín 9 · mediana 73 · máx 171 |
-| `url` | 100.0 % (186/186) | 0.0 % (0/186) | texto, largo mín 38 · mediana 107 · máx 189; https: 151/186 |
-| `medio` | 100.0 % (186/186) | 0.0 % (0/186) | texto, largo mín 5 · mediana 12 · máx 25 |
-| `idioma` | 100.0 % (186/186) | 0.0 % (0/186) | `a+` ×186 |
-| `fecha_publicacion` | 28.5 % (53/186) | 71.5 % (133/186) | `9+-9+-9+a9+:9+:9+a` ×53 |
-| `fecha_deteccion` | 71.5 % (133/186) | 28.5 % (53/186) | `9+-9+-9+a9+:9+:9+a` ×133 |
-| `fecha_extraccion` | 100.0 % (186/186) | 0.0 % (0/186) | `9+-9+-9+a9+:9+:9+a` ×186 |
-| `tema` | 100.0 % (186/186) | 0.0 % (0/186) | `a+` ×139 · `a+\|a+` ×39 |
-| `origen` | 100.0 % (186/186) | 0.0 % (0/186) | `a+` ×133 · `a+ a+` ×53 |
-| `alcance_texto` | 100.0 % (186/186) | 0.0 % (0/186) | `a+ a+ a+ a+/a+` ×186 |
+| `id_noticia` | 186/186 = 100.0 % [IC 95 %: 98.0–100.0 %] | 0/186 = 0.0 % [IC 95 %: 0.0–2.0 %] | prefijo `NOT-` ×186; únicos 186/186 |
+| `titulo` | 186/186 = 100.0 % [IC 95 %: 98.0–100.0 %] | 0/186 = 0.0 % [IC 95 %: 0.0–2.0 %] | texto, largo mín 9 · mediana 73 · máx 171 |
+| `url` | 186/186 = 100.0 % [IC 95 %: 98.0–100.0 %] | 0/186 = 0.0 % [IC 95 %: 0.0–2.0 %] | texto, largo mín 38 · mediana 107 · máx 189; https: 151/186 |
+| `medio` | 186/186 = 100.0 % [IC 95 %: 98.0–100.0 %] | 0/186 = 0.0 % [IC 95 %: 0.0–2.0 %] | texto, largo mín 5 · mediana 12 · máx 25 |
+| `idioma` | 186/186 = 100.0 % [IC 95 %: 98.0–100.0 %] | 0/186 = 0.0 % [IC 95 %: 0.0–2.0 %] | `a+` ×186 |
+| `fecha_publicacion` | 53/186 = 28.5 % [IC 95 %: 22.5–35.4 %] | 133/186 = 71.5 % [IC 95 %: 64.6–77.5 %] | `9+-9+-9+a9+:9+:9+a` ×53 |
+| `fecha_deteccion` | 133/186 = 71.5 % [IC 95 %: 64.6–77.5 %] | 53/186 = 28.5 % [IC 95 %: 22.5–35.4 %] | `9+-9+-9+a9+:9+:9+a` ×133 |
+| `fecha_extraccion` | 186/186 = 100.0 % [IC 95 %: 98.0–100.0 %] | 0/186 = 0.0 % [IC 95 %: 0.0–2.0 %] | `9+-9+-9+a9+:9+:9+a` ×186 |
+| `tema` | 186/186 = 100.0 % [IC 95 %: 98.0–100.0 %] | 0/186 = 0.0 % [IC 95 %: 0.0–2.0 %] | `a+` ×139 · `a+\|a+` ×39 |
+| `origen` | 186/186 = 100.0 % [IC 95 %: 98.0–100.0 %] | 0/186 = 0.0 % [IC 95 %: 0.0–2.0 %] | `a+` ×133 · `a+ a+` ×53 |
+| `alcance_texto` | 186/186 = 100.0 % [IC 95 %: 98.0–100.0 %] | 0/186 = 0.0 % [IC 95 %: 0.0–2.0 %] | `a+ a+ a+ a+/a+` ×186 |
 
 **indicadores.csv** (n = 540)
 
-| Campo | % presente | % nulo | Formato observado |
+| Campo | Presente | Nulo | Formato observado |
 |---|---|---|---|
-| `id_indicador` | 100.0 % (540/540) | 0.0 % (0/540) | prefijo `IND-` ×540; únicos 540/540 |
-| `pais_iso3` | 100.0 % (540/540) | 0.0 % (0/540) | `a+` ×540 |
-| `indicador_id` | 100.0 % (540/540) | 0.0 % (0/540) | `a+.a+.a+.a+` ×360 · `a+.a+.a+.a+.a+` ×90 |
-| `anio` | 100.0 % (540/540) | 0.0 % (0/540) | `9+` ×540 |
-| `valor` | 100.0 % (540/540) | 0.0 % (0/540) | `9.9+` ×240 · `9+.9+` ×186 |
-| `unidad` | 100.0 % (540/540) | 0.0 % (0/540) | texto, largo mín 7 · mediana 8 · máx 22 |
-| `fuente_url` | 100.0 % (540/540) | 0.0 % (0/540) | texto, largo mín 89 · mediana 92 · máx 95 |
-| `fecha_extraccion` | 100.0 % (540/540) | 0.0 % (0/540) | `9+-9+-9+a9+:9+:9+a` ×540 |
-| `licencia` | 100.0 % (540/540) | 0.0 % (0/540) | texto, largo mín 73 · mediana 73 · máx 73 |
+| `id_indicador` | 540/540 = 100.0 % [IC 95 %: 99.3–100.0 %] | 0/540 = 0.0 % [IC 95 %: 0.0–0.7 %] | prefijo `IND-` ×540; únicos 540/540 |
+| `pais_iso3` | 540/540 = 100.0 % [IC 95 %: 99.3–100.0 %] | 0/540 = 0.0 % [IC 95 %: 0.0–0.7 %] | `a+` ×540 |
+| `indicador_id` | 540/540 = 100.0 % [IC 95 %: 99.3–100.0 %] | 0/540 = 0.0 % [IC 95 %: 0.0–0.7 %] | `a+.a+.a+.a+` ×360 · `a+.a+.a+.a+.a+` ×90 |
+| `anio` | 540/540 = 100.0 % [IC 95 %: 99.3–100.0 %] | 0/540 = 0.0 % [IC 95 %: 0.0–0.7 %] | `9+` ×540 |
+| `valor` | 540/540 = 100.0 % [IC 95 %: 99.3–100.0 %] | 0/540 = 0.0 % [IC 95 %: 0.0–0.7 %] | `9.9+` ×240 · `9+.9+` ×186 |
+| `unidad` | 540/540 = 100.0 % [IC 95 %: 99.3–100.0 %] | 0/540 = 0.0 % [IC 95 %: 0.0–0.7 %] | texto, largo mín 7 · mediana 8 · máx 22 |
+| `fuente_url` | 540/540 = 100.0 % [IC 95 %: 99.3–100.0 %] | 0/540 = 0.0 % [IC 95 %: 0.0–0.7 %] | texto, largo mín 89 · mediana 92 · máx 95 |
+| `fecha_extraccion` | 540/540 = 100.0 % [IC 95 %: 99.3–100.0 %] | 0/540 = 0.0 % [IC 95 %: 0.0–0.7 %] | `9+-9+-9+a9+:9+:9+a` ×540 |
+| `licencia` | 540/540 = 100.0 % [IC 95 %: 99.3–100.0 %] | 0/540 = 0.0 % [IC 95 %: 0.0–0.7 %] | texto, largo mín 73 · mediana 73 · máx 73 |
 
 **eventos.geojson (propiedades)** (n = 82)
 
-| Campo | % presente | % nulo | Formato observado |
+| Campo | Presente | Nulo | Formato observado |
 |---|---|---|---|
-| `depth` | 100.0 % (82/82) | 0.0 % (0/82) | `9+.9` ×47 · `9+.9+` ×30 |
-| `id` | 100.0 % (82/82) | 0.0 % (0/82) | prefijo `SIS-` ×82; únicos 82/82 |
-| `latitude` | 100.0 % (82/82) | 0.0 % (0/82) | `9.9+` ×70 · `9+.9+` ×12 |
-| `longitude` | 100.0 % (82/82) | 0.0 % (0/82) | `-9+.9+` ×82 |
-| `magnitude` | 100.0 % (82/82) | 0.0 % (0/82) | `9.9` ×82 |
-| `place` | 100.0 % (82/82) | 0.0 % (0/82) | texto, largo mín 15 · mediana 30 · máx 39 |
-| `status` | 100.0 % (82/82) | 0.0 % (0/82) | `a+` ×82 |
-| `time` | 100.0 % (82/82) | 0.0 % (0/82) | `9+-9+-9+a9+:9+:9+a` ×82 |
-| `updated` | 100.0 % (82/82) | 0.0 % (0/82) | `9+-9+-9+a9+:9+:9+a` ×82 |
-| `url` | 100.0 % (82/82) | 0.0 % (0/82) | texto, largo mín 60 · mediana 60 · máx 60; https: 82/82 |
+| `depth` | 82/82 = 100.0 % [IC 95 %: 95.5–100.0 %] | 0/82 = 0.0 % [IC 95 %: 0.0–4.5 %] | `9+.9` ×47 · `9+.9+` ×30 |
+| `id` | 82/82 = 100.0 % [IC 95 %: 95.5–100.0 %] | 0/82 = 0.0 % [IC 95 %: 0.0–4.5 %] | prefijo `SIS-` ×82; únicos 82/82 |
+| `latitude` | 82/82 = 100.0 % [IC 95 %: 95.5–100.0 %] | 0/82 = 0.0 % [IC 95 %: 0.0–4.5 %] | `9.9+` ×70 · `9+.9+` ×12 |
+| `longitude` | 82/82 = 100.0 % [IC 95 %: 95.5–100.0 %] | 0/82 = 0.0 % [IC 95 %: 0.0–4.5 %] | `-9+.9+` ×82 |
+| `magnitude` | 82/82 = 100.0 % [IC 95 %: 95.5–100.0 %] | 0/82 = 0.0 % [IC 95 %: 0.0–4.5 %] | `9.9` ×82 |
+| `place` | 82/82 = 100.0 % [IC 95 %: 95.5–100.0 %] | 0/82 = 0.0 % [IC 95 %: 0.0–4.5 %] | texto, largo mín 15 · mediana 30 · máx 39 |
+| `status` | 82/82 = 100.0 % [IC 95 %: 95.5–100.0 %] | 0/82 = 0.0 % [IC 95 %: 0.0–4.5 %] | `a+` ×82 |
+| `time` | 82/82 = 100.0 % [IC 95 %: 95.5–100.0 %] | 0/82 = 0.0 % [IC 95 %: 0.0–4.5 %] | `9+-9+-9+a9+:9+:9+a` ×82 |
+| `updated` | 82/82 = 100.0 % [IC 95 %: 95.5–100.0 %] | 0/82 = 0.0 % [IC 95 %: 0.0–4.5 %] | `9+-9+-9+a9+:9+:9+a` ×82 |
+| `url` | 82/82 = 100.0 % [IC 95 %: 95.5–100.0 %] | 0/82 = 0.0 % [IC 95 %: 0.0–4.5 %] | texto, largo mín 60 · mediana 60 · máx 60; https: 82/82 |
 
 ## 2 · Conteos
 
@@ -62,35 +62,35 @@ Noticias en el snapshot: **186**. TVN RSS: **53/186 = 28.5 % [IC 95 %: 22.5–35
 
 ### Por medio
 
-| Medio | n | % |
+| Medio | n | % (IC 95 %) |
 |---|---|---|
-| `TVN Panamá` | 53 | 28.5 % |
-| `newsroomamerica.com` | 7 | 3.8 % |
-| `panamaamerica.com.pa` | 6 | 3.2 % |
-| `listindiario.com` | 3 | 1.6 % |
-| `prensa.com` | 3 | 1.6 % |
-| `bignewsnetwork.com` | 3 | 1.6 % |
-| `unosantafe.com.ar` | 2 | 1.1 % |
-| `laestrella.com.pa` | 2 | 1.1 % |
-| `trinidadtimes.com` | 2 | 1.1 % |
-| `gfmag.com` | 2 | 1.1 % |
+| `TVN Panamá` | 53 | 53/186 = 28.5 % [IC 95 %: 22.5–35.4 %] |
+| `newsroomamerica.com` | 7 | 7/186 = 3.8 % [IC 95 %: 1.8–7.6 %] |
+| `panamaamerica.com.pa` | 6 | 6/186 = 3.2 % [IC 95 %: 1.5–6.9 %] |
+| `listindiario.com` | 3 | 3/186 = 1.6 % [IC 95 %: 0.6–4.6 %] |
+| `prensa.com` | 3 | 3/186 = 1.6 % [IC 95 %: 0.6–4.6 %] |
+| `bignewsnetwork.com` | 3 | 3/186 = 1.6 % [IC 95 %: 0.6–4.6 %] |
+| `unosantafe.com.ar` | 2 | 2/186 = 1.1 % [IC 95 %: 0.3–3.8 %] |
+| `laestrella.com.pa` | 2 | 2/186 = 1.1 % [IC 95 %: 0.3–3.8 %] |
+| `trinidadtimes.com` | 2 | 2/186 = 1.1 % [IC 95 %: 0.3–3.8 %] |
+| `gfmag.com` | 2 | 2/186 = 1.1 % [IC 95 %: 0.3–3.8 %] |
 
 _n = 186; 110 valores distintos, se muestran 10._
 
 ### Por idioma
 
-| Idioma (ISO 639-1) | n | % |
+| Idioma (ISO 639-1) | n | % (IC 95 %) |
 |---|---|---|
-| `es` | 109 | 58.6 % |
-| `en` | 50 | 26.9 % |
-| `de` | 10 | 5.4 % |
-| `zh` | 3 | 1.6 % |
-| `ru` | 3 | 1.6 % |
-| `ko` | 2 | 1.1 % |
-| `ro` | 1 | 0.5 % |
-| `uk` | 1 | 0.5 % |
-| `hr` | 1 | 0.5 % |
-| `fr` | 1 | 0.5 % |
+| `es` | 109 | 109/186 = 58.6 % [IC 95 %: 51.4–65.4 %] |
+| `en` | 50 | 50/186 = 26.9 % [IC 95 %: 21.0–33.7 %] |
+| `de` | 10 | 10/186 = 5.4 % [IC 95 %: 2.9–9.6 %] |
+| `zh` | 3 | 3/186 = 1.6 % [IC 95 %: 0.6–4.6 %] |
+| `ru` | 3 | 3/186 = 1.6 % [IC 95 %: 0.6–4.6 %] |
+| `ko` | 2 | 2/186 = 1.1 % [IC 95 %: 0.3–3.8 %] |
+| `ro` | 1 | 1/186 = 0.5 % [IC 95 %: 0.1–3.0 %] |
+| `uk` | 1 | 1/186 = 0.5 % [IC 95 %: 0.1–3.0 %] |
+| `hr` | 1 | 1/186 = 0.5 % [IC 95 %: 0.1–3.0 %] |
+| `fr` | 1 | 1/186 = 0.5 % [IC 95 %: 0.1–3.0 %] |
 
 _n = 186; 15 valores distintos, se muestran 10._
 
@@ -98,18 +98,18 @@ Español: 109/186 = 58.6 % [IC 95 %: 51.4–65.4 %].
 
 ### Por país del medio (`fuentes.json`)
 
-| País | n | % |
+| País | n | % (IC 95 %) |
 |---|---|---|
-| `Panamá` | 66 | 35.5 % |
-| `Estados Unidos` | 37 | 19.9 % |
-| `Argentina` | 11 | 5.9 % |
-| `Alemania` | 10 | 5.4 % |
-| `China` | 6 | 3.2 % |
-| `Colombia` | 5 | 2.7 % |
-| `Rusia` | 5 | 2.7 % |
-| `(sin país)` | 4 | 2.2 % |
-| `México` | 4 | 2.2 % |
-| `Reino Unido` | 3 | 1.6 % |
+| `Panamá` | 66 | 66/186 = 35.5 % [IC 95 %: 29.0–42.6 %] |
+| `Estados Unidos` | 37 | 37/186 = 19.9 % [IC 95 %: 14.8–26.2 %] |
+| `Argentina` | 11 | 11/186 = 5.9 % [IC 95 %: 3.3–10.3 %] |
+| `Alemania` | 10 | 10/186 = 5.4 % [IC 95 %: 2.9–9.6 %] |
+| `China` | 6 | 6/186 = 3.2 % [IC 95 %: 1.5–6.9 %] |
+| `Colombia` | 5 | 5/186 = 2.7 % [IC 95 %: 1.2–6.1 %] |
+| `Rusia` | 5 | 5/186 = 2.7 % [IC 95 %: 1.2–6.1 %] |
+| `(sin país)` | 4 | 4/186 = 2.2 % [IC 95 %: 0.8–5.4 %] |
+| `México` | 4 | 4/186 = 2.2 % [IC 95 %: 0.8–5.4 %] |
+| `Reino Unido` | 3 | 3/186 = 1.6 % [IC 95 %: 0.6–4.6 %] |
 
 _n = 186; 36 valores distintos, se muestran 10._
 
@@ -117,25 +117,25 @@ Sin país conocido: 4/186 = 2.2 % [IC 95 %: 0.8–5.4 %].
 
 ### Por categoría del RSS (tema de origen de TVN = primera sección de la URL)
 
-| Sección RSS | n | % |
+| Sección RSS | n | % (IC 95 %) |
 |---|---|---|
-| `nacionales` | 20 | 37.7 % |
-| `mundo` | 10 | 18.9 % |
-| `tvmax` | 9 | 17.0 % |
-| `entretenimiento` | 9 | 17.0 % |
-| `contenido-exclusivo` | 3 | 5.7 % |
-| `videos` | 1 | 1.9 % |
-| `gente-tvn` | 1 | 1.9 % |
+| `nacionales` | 20 | 20/53 = 37.7 % [IC 95 %: 25.9–51.2 %] |
+| `mundo` | 10 | 10/53 = 18.9 % [IC 95 %: 10.6–31.4 %] |
+| `tvmax` | 9 | 9/53 = 17.0 % [IC 95 %: 9.2–29.2 %] |
+| `entretenimiento` | 9 | 9/53 = 17.0 % [IC 95 %: 9.2–29.2 %] |
+| `contenido-exclusivo` | 3 | 3/53 = 5.7 % [IC 95 %: 1.9–15.4 %] |
+| `videos` | 1 | 1/53 = 1.9 % [IC 95 %: 0.3–9.9 %] |
+| `gente-tvn` | 1 | 1/53 = 1.9 % [IC 95 %: 0.3–9.9 %] |
 
 _n = 53; 7 valores distintos._
 
 ### Por tema de origen de GDELT (una URL puede salir en varios temas)
 
-| Consulta GDELT | n | % |
+| Consulta GDELT | n | % (IC 95 %) |
 |---|---|---|
-| `logistica` | 95 | 52.8 % |
-| `economia` | 55 | 30.6 % |
-| `turismo` | 30 | 16.7 % |
+| `logistica` | 95 | 95/180 = 52.8 % [IC 95 %: 45.5–59.9 %] |
+| `economia` | 55 | 55/180 = 30.6 % [IC 95 %: 24.3–37.6 %] |
+| `turismo` | 30 | 30/180 = 16.7 % [IC 95 %: 11.9–22.8 %] |
 
 _n = 180; 3 valores distintos._
 
@@ -159,13 +159,23 @@ _Días con datos: 6. La hora de Panamá solo se usa en la interfaz._
 
 **No.** GDELT DOC 2.0 (`mode=artlist`) entrega `seendate` (cuándo GDELT vio la noticia) y no la fecha en que el medio la publicó. En el snapshot, de los registros que vinieron solo de GDELT (n = 133): `fecha_publicacion` presente en 0/133 = 0.0 % [IC 95 %: 0.0–2.8 %]; `fecha_deteccion` presente en 133/133 = 100.0 % [IC 95 %: 97.2–100.0 %]. Registros presentes en el RSS **y** en GDELT: 0 de 186.
 
-_Evidencia y límite:_ la lectura de campos está en `scripts/conversion.py::_leer_gdelt` (usa solo `seendate`); el crudo de GDELT no está en el repositorio (D-72), así que la lista exacta de campos de la API no se re-verificó en esta corrida offline.
+**Verificado en el crudo** (9 archivos, 370 artículos; los archivos pueden repetir artículos entre rangos): campos con valor: `url` ×370, `title` ×370, `seendate` ×370, `domain` ×370, `language` ×370, `sourcecountry` ×358, `socialimage` ×286, `url_mobile` ×71. Ninguno es una fecha de publicación; `seendate` es la única fecha.
 
 **Efecto:** U (urgencia) y T03 (noticia recirculada) no pueden usar GDELT como fecha del hecho; solo el RSS de TVN la trae (53/186 = 28.5 % [IC 95 %: 22.5–35.4 %] de las noticias). Una fecha de detección reciente de una nota vieja es justo el caso de T03. Ver recomendaciones.
 
 ### ¿El RSS de TVN trae autor o firma?
 
-**No verificable en este entorno.** El crudo del RSS está fuera de git (D-72) y `processed/` no guarda autor (D-32), así que `data/processed/` no permite responder. El conteo de campos del RSS requiere el crudo: `poetry run python -m scripts.explorar` lo perfila solo si `data/raw/rss_tvn/rss_tvn_*.xml` existe (en la máquina donde se extrajo). **Pendiente de correr allí**; el informe reportará tipos de firma (agencia · redacción · persona · sin firma) y agencias, nunca nombres de personas.
+**Verificado: el RSS de TVN no trae autor ni firma** (150/150 entradas sin ninguno de los campos buscados). Entradas en 1 crudo(s): 150. Campos de firma buscados: author, dc_creator, creator.
+
+| Tipo de firma | n | % (IC 95 %) |
+|---|---|---|
+| sin firma | 150 | 150/150 = 100.0 % [IC 95 %: 97.5–100.0 %] |
+
+Categorías del RSS (`<category>`, solo conteos): 150/150 = 100.0 % [IC 95 %: 97.5–100.0 %] de las entradas traen alguna; `TVN Media` ×66, `Panamá` ×7, `Medios de comunicación` ×7, `Musica` ×6, `Medio Ambiente` ×6, `Convenio` ×6, `Líderes 360` ×5, `Liderazgo` ×5, `empresas` ×5, `gente tvn` ×5.
+
+Agencias: ninguna
+
+Claves presentes en las entradas (sin descripción): `title` ×150, `title_detail` ×150, `link` ×150, `id` ×150, `guidislink` ×150, `published` ×150, `published_parsed` ×150, `updated` ×150, `updated_parsed` ×150, `media_thumbnail` ×150, `href` ×150, `media_keywords` ×150, `tags` ×150
 
 ## 4 · Calidad de los titulares
 
@@ -213,12 +223,12 @@ _No detecta traducciones: «Trump streicht Europa-Hilfe…» (de) y «Допом
 ## 7 · Cobertura y vacíos
 
 
-| Tema GDELT | Días cubiertos | Días esperados | Cobertura |
+| Tema GDELT | Días cubiertos | Días esperados | Cobertura (IC 95 %) |
 |---|---|---|---|
-| economia | 4 | 30 | 13 % |
-| eventos_naturales | 0 | 30 | 0 % |
-| logistica | 4 | 30 | 13 % |
-| turismo | 4 | 30 | 13 % |
+| economia | 4 | 30 | 4/30 = 13.3 % [IC 95 %: 5.3–29.7 %] |
+| eventos_naturales | 0 | 30 | 0/30 = 0.0 % [IC 95 %: 0.0–11.4 %] |
+| logistica | 4 | 30 | 4/30 = 13.3 % [IC 95 %: 5.3–29.7 %] |
+| turismo | 4 | 30 | 4/30 = 13.3 % [IC 95 %: 5.3–29.7 %] |
 
 Días sin resolver (suma de rangos):
 
@@ -242,37 +252,37 @@ RSS: de 2026-09-29T01:23:06Z a 2026-10-06T15:45:50Z; detección GDELT: de 2026-1
 
 | Indicador | Unidad | Nulos | Último año con dato (rango) | Último año por país |
 |---|---|---|---|---|
-| `FP.CPI.TOTL.ZG` | % anual | 0/90 | 2024–2024 | COL 2024, CRI 2024, DOM 2024, GTM 2024, MEX 2024, PAN 2024 |
-| `IT.NET.USER.ZS` | % de la población | 0/90 | 2024–2024 | COL 2024, CRI 2024, DOM 2024, GTM 2024, MEX 2024, PAN 2024 |
-| `NE.EXP.GNFS.ZS` | % del PIB | 0/90 | 2024–2024 | COL 2024, CRI 2024, DOM 2024, GTM 2024, MEX 2024, PAN 2024 |
-| `NY.GDP.MKTP.KD.ZG` | % anual | 0/90 | 2024–2024 | COL 2024, CRI 2024, DOM 2024, GTM 2024, MEX 2024, PAN 2024 |
-| `SL.UEM.TOTL.ZS` | % de la fuerza laboral | 0/90 | 2024–2024 | COL 2024, CRI 2024, DOM 2024, GTM 2024, MEX 2024, PAN 2024 |
-| `SP.POP.TOTL` | personas | 0/90 | 2024–2024 | COL 2024, CRI 2024, DOM 2024, GTM 2024, MEX 2024, PAN 2024 |
+| `FP.CPI.TOTL.ZG` | % anual | 0/90 = 0.0 % [IC 95 %: 0.0–4.1 %] | 2024–2024 | COL 2024, CRI 2024, DOM 2024, GTM 2024, MEX 2024, PAN 2024 |
+| `IT.NET.USER.ZS` | % de la población | 0/90 = 0.0 % [IC 95 %: 0.0–4.1 %] | 2024–2024 | COL 2024, CRI 2024, DOM 2024, GTM 2024, MEX 2024, PAN 2024 |
+| `NE.EXP.GNFS.ZS` | % del PIB | 0/90 = 0.0 % [IC 95 %: 0.0–4.1 %] | 2024–2024 | COL 2024, CRI 2024, DOM 2024, GTM 2024, MEX 2024, PAN 2024 |
+| `NY.GDP.MKTP.KD.ZG` | % anual | 0/90 = 0.0 % [IC 95 %: 0.0–4.1 %] | 2024–2024 | COL 2024, CRI 2024, DOM 2024, GTM 2024, MEX 2024, PAN 2024 |
+| `SL.UEM.TOTL.ZS` | % de la fuerza laboral | 0/90 = 0.0 % [IC 95 %: 0.0–4.1 %] | 2024–2024 | COL 2024, CRI 2024, DOM 2024, GTM 2024, MEX 2024, PAN 2024 |
+| `SP.POP.TOTL` | personas | 0/90 = 0.0 % [IC 95 %: 0.0–4.1 %] | 2024–2024 | COL 2024, CRI 2024, DOM 2024, GTM 2024, MEX 2024, PAN 2024 |
 
-Cuadrícula: 540 filas; valores nulos: 0 (0.0 %). Año final de la cuadrícula: 2024. Los nulos se conservan como nulos; los datos son **anuales** y nunca "actuales".
+Cuadrícula: 540 filas; valores nulos: 0/540 = 0.0 % [IC 95 %: 0.0–0.7 %]. Año final de la cuadrícula: 2024. Los nulos se conservan como nulos; los datos son **anuales** y nunca "actuales".
 
 ## 9 · USGS
 
 
 Eventos: **82**, de 2024-01-07T01:02:08Z a 2024-12-29T23:00:10Z. Magnitud: mín 3.2, mediana 4.5, máx 5.8.
 
-| Magnitud | n | % |
+| Magnitud | n | % (IC 95 %) |
 |---|---|---|
-| M < 3 | 0 | 0.0 % |
-| M ≥ 3 | 1 | 1.2 % |
-| M ≥ 4 | 68 | 82.9 % |
-| M ≥ 5 | 13 | 15.9 % |
-| M ≥ 6 | 0 | 0.0 % |
+| M < 3 | 0 | 0/82 = 0.0 % [IC 95 %: 0.0–4.5 %] |
+| M ≥ 3 | 1 | 1/82 = 1.2 % [IC 95 %: 0.2–6.6 %] |
+| M ≥ 4 | 68 | 68/82 = 82.9 % [IC 95 %: 73.4–89.5 %] |
+| M ≥ 5 | 13 | 13/82 = 15.9 % [IC 95 %: 9.5–25.3 %] |
+| M ≥ 6 | 0 | 0/82 = 0.0 % [IC 95 %: 0.0–4.5 %] |
 
 Valores de `place` (texto tras la última coma):
 
-| place (país/zona) | n | % |
+| place (país/zona) | n | % (IC 95 %) |
 |---|---|---|
-| `Panama` | 41 | 50.0 % |
-| `Costa Rica` | 17 | 20.7 % |
-| `Colombia` | 13 | 15.9 % |
-| `Nicaragua` | 6 | 7.3 % |
-| `south of Panama` | 5 | 6.1 % |
+| `Panama` | 41 | 41/82 = 50.0 % [IC 95 %: 39.4–60.6 %] |
+| `Costa Rica` | 17 | 17/82 = 20.7 % [IC 95 %: 13.4–30.7 %] |
+| `Colombia` | 13 | 13/82 = 15.9 % [IC 95 %: 9.5–25.3 %] |
+| `Nicaragua` | 6 | 6/82 = 7.3 % [IC 95 %: 3.4–15.1 %] |
+| `south of Panama` | 5 | 5/82 = 6.1 % [IC 95 %: 2.6–13.5 %] |
 
 `place` menciona Panamá: 46/82 = 56.1 % [IC 95 %: 45.3–66.3 %]. **La caja de USGS no es Panamá**: el resto cae en otros países; se muestra siempre el `place` original. 
 
@@ -281,7 +291,7 @@ Valores de `place` (texto tras la última coma):
 ## 10 · Revisión manual de titulares por tema
 
 
-Se revisaron **a mano las 186 filas** del snapshot (no solo una muestra) y se les propuso un tema de la guía (`docs/exploracion_revision.csv`). **Es una propuesta del agente de desarrollo, pendiente de confirmación humana; no son etiquetas de evaluación (E1-06).**
+Se revisaron **a mano las 186 filas** del snapshot (no solo una muestra) y se les propuso un tema de la guía (`docs/exploracion_revision.csv`). **Es una propuesta del agente de desarrollo (`fuente = propuesta_agente`), pendiente de confirmación humana; no son etiquetas de evaluación (E1-06).** Las filas dudosas llevan `ambiguo = si`.
 
 | Tema | Candidatos (palabra clave ∪ propuestos) | Asignados al tema | …sin ambigüedad | Marcados como ejemplo | ≥ 15 del spec |
 |---|---|---|---|---|---|
@@ -290,9 +300,9 @@ Se revisaron **a mano las 186 filas** del snapshot (no solo una muestra) y se le
 | turismo | 7 | 1 | 1 | 1 | **NO** (faltan 14) |
 | servicios_publicos | 20 | 17 | 12 | 6 | sí |
 | eventos_naturales | 22 | 2 | 2 | 2 | **NO** (faltan 13) |
-| regulacion | 5 | 4 | 3 | 3 | **NO** (faltan 11) |
+| regulacion | 5 | 4 | 3 | 2 | **NO** (faltan 11) |
 
-Fuera de los 6 temas: `no_es_panama` 125, `fuera_de_temas` 15, `sin_contenido` 10. Marcados como ejemplo para `temas.yaml`: 17.
+Fuera de los 6 temas: `no_es_panama` 125, `fuera_de_temas` 15, `sin_contenido` 10. Marcados como ejemplo para `temas.yaml`: 16.
 
 **Tema de origen vs. revisión manual (D-62).** Cuántos de los registros que devolvió cada consulta de GDELT caen en alguno de los 6 temas, y cuántos en el tema de la consulta (por titular):
 
@@ -310,8 +320,8 @@ Por eso el tema de origen **nunca** sirve de etiqueta.
 
 ### Para E1-03b (limpieza y ruido)
 
-1. **El mayor ruido es "no es Panamá", no deportes ni farándula.** En la revisión manual (por titular, que es lo único que ve el
-   sistema): `no_es_panama` 125/186 = 67.2 % [IC 95 %: 60.2–73.5 %], `fuera_de_temas` 15/186 = 8.1 % [IC 95 %: 4.9–12.9 %], sin contenido 10/186 = 5.4 % [IC 95 %: 2.9–9.6 %]. Además, 115 de
+1. **Hipótesis: el mayor ruido sería "no es Panamá", no deportes ni farándula.** En la propuesta del agente (por titular, que es lo único que ve el
+   sistema; no es una etiqueta humana): `no_es_panama` 125/186 = 67.2 % [IC 95 %: 60.2–73.5 %], `fuera_de_temas` 15/186 = 8.1 % [IC 95 %: 4.9–12.9 %], sin contenido 10/186 = 5.4 % [IC 95 %: 2.9–9.6 %]. Además, 115 de
    133 registros no TVN no nombran Panamá ni un término panameño en el titular. Causa probable (según
    `config/fuentes.yaml`): las consultas de GDELT piden `Panama` más un término amplio (`port`, `cargo`, `hotel`, `economy`…) sin
    anclarlos al titular; GDELT puede resolverlas sobre el texto del artículo (no verificado aquí: el crudo no está en git), así que el
@@ -324,8 +334,11 @@ Por eso el tema de origen **nunca** sirve de etiqueta.
 3. **Falsos Panamá concretos:** `Panama City Beach` / `PCB` (turismo de Florida) cae en el tema Turismo. Lista en YAML, no en código.
 4. **Limpieza:** sufijos de medio, espacios antes de puntuación (`21 , 2 %`, `US$84 . 000`; es la tokenización de GDELT, dañan
    los embeddings y las cifras), barra pegada de TVN (`resultados| texto`) y prefijos de sección de TVN (`Liga de Naciones … resultados|`).
-5. **Secciones de TVN que no son noticias de los temas:** `tvmax` (deportes), `entretenimiento`, `contenido-exclusivo`, `gente-tvn`,
-   `videos`: patrón de categoría/URL del YAML (`fuera_de_temas`, no `no_es_panama`). `mundo` es noticia internacional, casi siempre `no_es_panama`.
+5. **La sección de TVN es solo una señal CANDIDATA de `fuera_de_temas`; decide el titular.** `tvmax`, `entretenimiento`, `gente-tvn` y
+   `videos` suelen ser deportes, farándula o cultura, pero varios de `tvmax`/`entretenimiento` tratan de otros países (`no_es_panama`:
+   p. ej. Messi/Argentina, Pedro Pascal), y los de `contenido-exclusivo` son sobre Panamá y pueden estar en los temas (transporte público,
+   sequía). Un patrón de URL no debe excluir ni etiquetar por sí solo: úsese para subir la sospecha y confirmar con el titular. `mundo` es
+   noticia internacional: `no_es_panama` salvo que afecte a Panamá.
 6. **Duplicados:** 7 grupos de titulares casi idénticos; los sindicados (Xinhua, Trump/Europa) aparecen en decenas de
    dominios. Deduplicar por URL no los junta: hay que contar procedencias **independientes**, no republicaciones (E1-08).
 
@@ -339,12 +352,12 @@ Por eso el tema de origen **nunca** sirve de etiqueta.
 3. **`temas.yaml`:** con esta muestra no se llega a ~10 ejemplos reales por tema en todos los temas
    (asignados: economia 7, logistica 5, turismo 1, servicios_publicos 17, eventos_naturales 2, regulacion 4). `eventos_naturales` no tiene cobertura de GDELT
    (0 días) y `turismo`/`regulacion` casi no tienen titulares propios. Completar con una extracción nueva cuando GDELT deje de limitar, o
-   redactar esos ejemplos como ilustrativos (como en la guía) y **no** presentarlos como reales. Los ejemplos ya elegidos están en
-   `config/ejemplos_excluidos.txt`; E1-05 agrega ahí los que sume.
+   redactar esos ejemplos como ilustrativos (como en la guía) y **no** presentarlos como reales. Los ejemplos propuestos están en
+   `config/ejemplos_excluidos.txt`; E1-05 agrega ahí los que sume y **elimina de ese archivo los que no use** (excluir de la evaluación
+   un titular que no es ejemplo solo resta datos).
 4. **Alcance geográfico (I):** los titulares de TVN nombran provincia/distrito (Chiriquí, Veraguas, Coclé, Colón, San Miguelito, La Chorrera);
    la lista de provincias y distritos del YAML tiene ejemplos reales para probarla.
-5. **Agencias:** el RSS crudo no se pudo perfilar aquí (ver arriba); la lista `agencias` del YAML debe confirmarse con el perfil de firma
-   corrido donde está el crudo.
+5. **Agencias:** el RSS de TVN **no trae firma** (150/150 entradas sin autor ni `dc:creator`), así que la lista `agencias` no puede derivarse de él. Las procedencias independientes (CU-03) salen del dominio del medio y de la repetición del titular, no de la firma; la lista de agencias solo serviría si un titular de GDELT la nombra (`- EFE`, `Xinhua`) y eso se decide en E1-05/E1-08. No inventar agencias ni tipos de firma.
 6. **T01 (nulos):** la cuadrícula del Banco Mundial de esta corrida no tiene ningún nulo (0/540), contra lo que se esperaba; las
    pruebas de nulos (T01, T04) deben usar fixtures sintéticos (`SYN-`), no depender de este snapshot. Los sismos de USGS son de 2024 y las
    noticias de 2026: la coincidencia ± 2 días de E1-09 se prueba con datos sintéticos.
