@@ -64,6 +64,23 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 | Cobertura de un día de GDELT | Cubierto solo si un crudo `articles` lo contiene completo; una respuesta al tope (250) subdivisible no cubre sola | Supuesto | `test_cobertura_por_tema_lista_cada_rango_sin_resolver_con_su_motivo` |
 | Tabla de idiomas de GDELT · tabla de países (`paises_es`) | Nombre -> ISO 639-1 · nombre en inglés -> español | Práctica (lista de idiomas de la API DOC 2.0; ISO 639-1) | `test_todos_los_idiomas_de_gdelt_tienen_codigo_de_dos_letras`; lo desconocido se marca en el manifest o queda nulo |
 
+## Carga y validación (E1-02, `config/carga.yaml`)
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| Campos críticos de noticias | `id_noticia`, `titulo`, `url`, `medio` + al menos una fecha (publicación o detección) | Spec E1-02 · fixtures T01 (`medio` vacío es `obligatorio_vacio`) | `tests/test_t01_carga.py` |
+| Patrón de `id_noticia` | `NOT-` + 10 hex, o `SYN-<serie>-<n>` | CLAUDE.md (D-63) | T01 |
+| Patrón de URL | `http(s)://` + host, resto opcional | Supuesto (sintaxis mínima; no se verifica que el sitio exista) | T01 (3 casos de `url_mal_formada`) |
+| Formato de fecha en `processed/` | ISO 8601 UTC con `Z`, fecha real (rechaza 30 de febrero) | CLAUDE.md · contrato de datos | T01 (3 casos de `fecha_invalida`) |
+| Formatos de fecha por fuente | GDELT `%Y%m%dT%H%M%SZ` · RFC 822 · USGS en ms | Spec E1-02 · documentación de cada fuente | Pruebas unitarias de parsers |
+| Rango de `anio` | 1960–2100 | Supuesto (el Banco Mundial publica desde 1960; el tope es solo defensivo) | T01 / `validar_snapshot` |
+| Límites de latitud y longitud | ±90 · ±180 | Física (coordenadas geográficas) | Prueba de eventos |
+| Clave de indicador | (`pais_iso3`, `indicador_id`, `anio`) | CLAUDE.md (D-63) | T01 (`id_duplicado`) |
+| Top N de medios en el reporte | 5 | Supuesto (riesgo R-10: concentración de fuentes) | Revisión del reporte |
+| Recorte del valor en `errores.csv` | 200 caracteres | Supuesto (legibilidad del archivo) | — |
+
+Un `valor` nulo en indicadores es válido (no es un parámetro: lo exige el contrato). Un duplicado conserva la primera aparición.
+
 ## Consulta y generación
 
 | Parámetro | Valor | Origen | Cómo se valida |
