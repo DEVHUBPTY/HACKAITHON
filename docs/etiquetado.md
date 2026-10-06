@@ -2,7 +2,7 @@
 
 Las métricas de clasificación, agrupación y ruido se calculan sobre **etiquetas humanas** (sección 9.1). Este documento dice cómo se etiqueta, con qué muestra y cómo se mide el acuerdo. La herramienta (`eval/etiquetar.py`) **no etiqueta**: solo arma la muestra, la muestra y guarda lo que decide cada persona.
 
-> **Estado:** la herramienta está construida y probada con datos sintéticos. Las **etiquetas reales todavía no existen**: las ponen las personas del equipo. Las secciones "Etiquetadores" y "Acuerdo" se completan con los resultados reales; mientras tanto no hay números.
+> **Estado:** las 100 etiquetas reales existen (2026-10-06): propuestas por el asistente y revisadas por Javier Acosta (D-85). Ver "Etiquetadores" y "Acuerdo"; el kappa entre etiquetadores no se midió.
 
 ## Tamaño y método
 
@@ -76,11 +76,29 @@ poetry run python -m eval.ruido                    # precisión y recall del fil
 
 ## Etiquetadores
 
-*Pendiente: se completa con los nombres reales de las hojas de `eval/etiquetas/`.*
+| | |
+|---|---|
+| Método (D-85) | El asistente **propone** las 100 etiquetas, con una justificación por titular, y una persona **revisa y aprueba** cada una. No hubo doble etiquetado independiente. |
+| Revisora | **Javier Acosta** (hoja `eval/etiquetas/javier_acosta.csv`, 100 titulares, fecha 2026-10-06) |
+| Registro | La misma revisión se llevó a la base Notion "Etiquetas de clasificación (E1-06)" (campos `Aprobada`, `Etiquetado por`, `Cambios hechos`) |
+| Decisiones de grupo | `el-nino-latam` (20 titulares): eventos_naturales + secundario economía (la guía incluye "sequía y El Niño"; regla de frontera 1, hecho central). `trump-ayuda-europa-latam` (13): economía, alcance regional. Ambas se aprobaron como se propusieron. |
+
+Las etiquetas son de **una sola persona** sobre una propuesta del asistente: las métricas que dependen de ellas heredan ese límite (posible sesgo de anclaje hacia la propuesta).
 
 ## Acuerdo entre etiquetadores
 
-*Pendiente: pegar aquí la salida de `poetry run python -m eval.etiquetar --acuerdo` cuando existan las hojas de dos personas, con la decisión sobre la guía si el acuerdo es bajo.*
+**El kappa entre etiquetadores no se midió**: hay una sola hoja y `--acuerdo` termina con "SIN ACUERDO" (necesita dos personas). Por eso `--consolidar` se corrió con `--forzar`. Razón registrada: **D-85: etiquetado por propuesta del asistente y revisión de una persona; sin doble etiquetado**.
+
+Lo que sí se mide es la **coincidencia entre la propuesta del asistente y la revisión humana**: **96 de 100 filas sin cambios = 96.0 % (IC de Wilson 95 %: 90.2 a 98.4 %, n = 100)**. No es un acuerdo entre personas independientes y no debe leerse como tal. Los 4 cambios de la revisora:
+
+| Titular | Propuesta | Revisión |
+|---|---|---|
+| República Dominicana se encuentra entre los países con menor incidencia de dengue… | servicios_publicos, regional | `no_es_panama` (sin vínculo con Panamá) |
+| Negocios de Gilinski y de Ecopetrol son claves para Colombia en América Latina | economía, regional | `no_es_panama` (sin vínculo con Panamá) |
+| Árbol cae sobre dos vehículos en estacionamientos del hospital San Miguel Arcángel | eventos_naturales | `fuera_de_temas` (no se indica fenómeno natural) |
+| Reformas electorales: Blandón defiende el 3%… | regulación | `fuera_de_temas` (postura política, no una norma aprobada; la guía excluye la política electoral sin norma) |
+
+Los 4 titulares quedaron como ruido, sin tema, grupo ni alcance regional (esquema de la herramienta). Los 20 titulares "dobles" de la muestra quedaron con una sola etiqueta.
 
 ## Límites
 
