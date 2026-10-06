@@ -36,6 +36,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_valida
 RAIZ = Path(__file__).resolve().parent.parent
 RUTA_CONFIG = RAIZ / "config" / "benchmark.yaml"
 RUTA_BENCHMARK = RAIZ / "benchmark" / "benchmark_dev.jsonl"
+RUTA_SINTETICOS = RAIZ / "benchmark" / "sinteticos.csv"
 
 TipoConsulta = Literal[
     "respuesta_sustentada", "contradiccion_ambiguedad", "sin_respuesta", "adversarial"
@@ -161,10 +162,25 @@ def ids_del_snapshot(carpeta: Path) -> set[str]:
     return ids
 
 
+def ids_sinteticos(ruta: Path = RUTA_SINTETICOS) -> set[str]:
+    """Lee los IDs ``SYN-`` del fixture sintético del benchmark (vacío si no existe)."""
+    if not ruta.is_file():
+        return set()
+    with ruta.open(encoding="utf-8", newline="") as f:
+        return {fila["id_noticia"] for fila in csv.DictReader(f) if fila.get("id_noticia")}
+
+
 def validar_lineas(
-    lineas: Iterable[str], metas: Metas, snapshot: set[str] | None = None
+    lineas: Iterable[str],
+    metas: Metas,
+    snapshot: set[str] | None = None,
+    sinteticos: set[str] | None = None,
 ) -> tuple[Counter[str], list[str]]:
-    """Valida las líneas JSONL; devuelve el conteo por tipo y la lista de errores."""
+    """Valida las líneas JSONL; devuelve el conteo por tipo y la lista de errores.
+
+    ``sinteticos`` son los IDs del fixture ``benchmark/sinteticos.csv``: si se da,
+    todo ID ``SYN-`` citado debe existir ahí (y el snapshot no los exige).
+    """
     errores: list[str] = []
     conteo: Counter[str] = Counter()
     vistos: set[str] = set()
@@ -186,10 +202,13 @@ def validar_lineas(
             errores.append(f"línea {numero}: id duplicado {linea.id}")
         vistos.add(linea.id)
         errores.extend(f"línea {numero} ({linea.id}): {m}" for m in linea.reglas_cruzadas())
-        if snapshot is not None:
-            for id_ in linea.ids_evidencia:
-                if id_.startswith(PREFIJOS_EN_SNAPSHOT) and id_ not in snapshot:
-                    errores.append(f"línea {numero} ({linea.id}): {id_} no está en el snapshot")
+        for id_ in linea.ids_evidencia:
+            if snapshot is not None and id_.startswith(PREFIJOS_EN_SNAPSHOT) and id_ not in snapshot:
+                errores.append(f"línea {numero} ({linea.id}): {id_} no está en el snapshot")
+            if sinteticos is not None and id_.startswith("SYN-") and id_ not in sinteticos:
+                errores.append(
+                    f"línea {numero} ({linea.id}): {id_} no está en benchmark/sinteticos.csv"
+                )
     if n != metas.total:
         errores.append(f"total {n} distinto de {metas.total}")
     for tipo, meta in metas.tipos.items():
@@ -240,6 +259,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Valida el benchmark de desarrollo (E0-06).")
     parser.add_argument("--ruta", type=Path, default=RUTA_BENCHMARK)
     parser.add_argument("--snapshot", type=Path, default=None)
+    parser.add_argument("--sinteticos", type=Path, default=RUTA_SINTETICOS)
     args = parser.parse_args(argv)
 
     metas = cargar_metas()
@@ -252,8 +272,11 @@ def main(argv: list[str] | None = None) -> int:
             snapshot = ids_del_snapshot(args.snapshot)
         else:
             print(f"Aviso: no existe el snapshot {args.snapshot}; se omite ese chequeo")
+    sinteticos = ids_sinteticos(args.sinteticos)
+    if snapshot is not None:
+        snapshot |= sinteticos  # el snapshot también acepta los SYN- del fixture
     lineas = args.ruta.read_text(encoding="utf-8").splitlines()
-    conteo, errores = validar_lineas(lineas, metas, snapshot)
+    conteo, errores = validar_lineas(lineas, metas, snapshot, sinteticos)
     try:
         errores.extend(referencias_reservado(archivos_versionados()))
     except (subprocess.CalledProcessError, FileNotFoundError):

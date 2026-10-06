@@ -3,6 +3,7 @@
 Todo es sintético y offline: los archivos se generan en ``tmp_path``.
 """
 
+import csv
 import json
 from pathlib import Path
 
@@ -49,9 +50,20 @@ def escribir(ruta: Path, lineas: list[dict[str, object]]) -> Path:
     return ruta
 
 
-def errores_de(lineas: list[dict[str, object]], snapshot: set[str] | None = None) -> list[str]:
+def errores_de(
+    lineas: list[dict[str, object]],
+    snapshot: set[str] | None = None,
+    sinteticos: set[str] | None = None,
+) -> list[str]:
     textos = [json.dumps(x) for x in lineas]
-    return vb.validar_lineas(textos, vb.cargar_metas(), snapshot)[1]
+    return vb.validar_lineas(textos, vb.cargar_metas(), snapshot, sinteticos)[1]
+
+
+def fixture_sinteticos(ruta: Path, *ids: str) -> Path:
+    """Escribe un fixture ``sinteticos.csv`` mínimo con los IDs dados."""
+    filas = "".join(f"{i},titular sintético\n" for i in ids)
+    ruta.write_text("id_noticia,titulo\n" + filas, encoding="utf-8")
+    return ruta
 
 
 def test_metas_del_yaml_son_20_7_7_6() -> None:
@@ -62,7 +74,8 @@ def test_metas_del_yaml_son_20_7_7_6() -> None:
 
 def test_archivo_valido_pasa_e_imprime_conteo(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     ruta = escribir(tmp_path / "dev.jsonl", lineas_validas())
-    assert vb.main(["--ruta", str(ruta)]) == 0
+    sinteticos = fixture_sinteticos(tmp_path / "sinteticos.csv", "SYN-0001")
+    assert vb.main(["--ruta", str(ruta), "--sinteticos", str(sinteticos)]) == 0
     salida = capsys.readouterr().out
     for tipo, cantidad in PROPORCION.items():
         assert f"{tipo}: {cantidad} / {cantidad}" in salida
@@ -227,3 +240,38 @@ def test_ruta_que_nombra_un_conjunto_reservado_se_detecta(tmp_path: Path) -> Non
 
 def test_el_repo_no_referencia_un_conjunto_reservado() -> None:
     assert vb.referencias_reservado(vb.archivos_versionados()) == []
+
+
+def test_syn_debe_existir_en_el_fixture_sintetico() -> None:
+    lineas = lineas_validas()
+    assert errores_de(lineas, sinteticos={"SYN-0001"}) == []
+    errores = errores_de(lineas, sinteticos={"SYN-OTRO-0001"})
+    assert any("SYN-0001" in e and "sinteticos.csv" in e for e in errores)
+
+
+def test_snapshot_acepta_syn_del_fixture(tmp_path: Path) -> None:
+    carpeta = tmp_path / "snap"
+    carpeta.mkdir()
+    (carpeta / "noticias.csv").write_text("id_noticia\nNOT-aaaaaaaaaa\n", encoding="utf-8")
+    sinteticos = fixture_sinteticos(tmp_path / "sinteticos.csv", "SYN-0001")
+    lineas = lineas_validas()
+    lineas[0].update(ids_evidencia=["NOT-aaaaaaaaaa", "SYN-0001"])
+    ruta = escribir(tmp_path / "dev.jsonl", lineas)
+    args = ["--ruta", str(ruta), "--snapshot", str(carpeta), "--sinteticos", str(sinteticos)]
+    assert vb.main(args) == 0
+    vacio = fixture_sinteticos(tmp_path / "vacio.csv")
+    assert vb.main(args[:-1] + [str(vacio)]) == 1
+
+
+def test_fixture_sintetico_del_repo_cumple_el_contrato() -> None:
+    ruta = vb.RUTA_SINTETICOS
+    filas = list(csv.DictReader(ruta.open(encoding="utf-8", newline="")))
+    assert "SYN-CAN-0001" in {f["id_noticia"] for f in filas}
+    columnas = [
+        "id_noticia", "titulo", "url", "medio", "idioma", "fecha_publicacion",
+        "fecha_deteccion", "fecha_extraccion", "tema", "origen", "alcance_texto",
+    ]
+    assert list(filas[0]) == columnas
+    for f in filas:
+        assert f["id_noticia"].startswith("SYN-") and f["origen"] == "sintetico"
+        assert f["url"].startswith("https://") and ".example/" in f["url"]

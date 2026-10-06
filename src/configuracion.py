@@ -1110,12 +1110,31 @@ def cargar_ruido(carpeta: Path | None = None) -> ConfigRuido:
     return cargar_config("ruido", ConfigRuido, carpeta)
 
 
+class ConfigBenchmark(ModeloConfig):
+    """``config/benchmark.yaml``: total y proporción de tipos del benchmark de desarrollo (E0-06)."""
+
+    total: int = Field(gt=0)
+    tipos: dict[str, int]
+
+    @model_validator(mode="after")
+    def _suma_coherente(self) -> "ConfigBenchmark":
+        if sum(self.tipos.values()) != self.total:
+            raise ValueError("la suma de tipos no coincide con el total")
+        return self
+
+
+def cargar_benchmark(carpeta: Path | None = None) -> ConfigBenchmark:
+    """Atajo para ``config/benchmark.yaml``."""
+    return cargar_config("benchmark", ConfigBenchmark, carpeta)
+
+
 MODALIDADES = ("editorial", "banca")
 OPCIONALES = {"modalidad_banca"}  # el esquema la admite aunque todavía no exista
 
 # Un cargador por YAML de config/: `--validar` los recorre todos y falla ante uno sin modelo registrado.
 CARGADORES = {
     "ruido": cargar_ruido,
+    "benchmark": cargar_benchmark,
     "fuentes": cargar_fuentes,
     "exploracion": cargar_exploracion,
     "carga": cargar_carga,
