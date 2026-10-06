@@ -50,7 +50,7 @@ gdelt:
   formato: json
   orden: DateDesc
   maxrecords: 250
-  pausa_segundos: 6            # GDELT pide ~1 solicitud cada 5 s
+  pausa_segundos: 12           # GDELT pide ~1 solicitud cada 5 s; con 6 s respondió 429 sostenidos
   espera_429_segundos: 60
   rango_dias: 5                # tamaño inicial de cada rango de fechas
   rango_minimo_horas: 6        # límite al subdividir cuando una consulta llega al tope
