@@ -1,0 +1,924 @@
+{
+  "modelo": "minilm",
+  "titulares_etiquetados": 100,
+  "titulares_utiles_agrupados": 79,
+  "pares_evaluados": 4950,
+  "pares_positivos": 272,
+  "ventana_dias": 7,
+  "barrido": {
+    "desde": 0.5,
+    "hasta": 0.99,
+    "paso": 0.005
+  },
+  "umbral_elegido": 0.69,
+  "umbral_configurado": 0.69,
+  "modelo_configurado": "minilm",
+  "configuracion_coincide": true,
+  "regla_de_eleccion": "mayor F1 de pares; entre empatados, la mitad de la meseta contigua más larga",
+  "con_el_umbral_elegido": {
+    "nota": "Las mismas etiquetas calibran y evalúan: cifra OPTIMISTA. Véase validacion_cruzada.",
+    "tp": 259,
+    "fp": 0,
+    "fn": 13,
+    "precision": {
+      "n": 259,
+      "de": 259,
+      "proporcion": 1.0,
+      "ic95": [
+        0.9854,
+        1.0
+      ]
+    },
+    "recall": {
+      "n": 259,
+      "de": 272,
+      "proporcion": 0.9522,
+      "ic95": [
+        0.92,
+        0.9719
+      ]
+    },
+    "f1": 0.9755
+  },
+  "validacion_cruzada": {
+    "pliegues": 2,
+    "nota": "Los pares entre titulares de pliegues distintos no se cuentan. Cifra agrupada de los pliegues de prueba.",
+    "por_pliegue": [
+      {
+        "pliegue": 0,
+        "titulares_de_prueba": 54,
+        "umbral_elegido_sin_este_pliegue": 0.535,
+        "tp": 73,
+        "fp": 17,
+        "fn": 0,
+        "precision": {
+          "n": 73,
+          "de": 90,
+          "proporcion": 0.8111,
+          "ic95": [
+            0.7182,
+            0.8786
+          ]
+        },
+        "recall": {
+          "n": 73,
+          "de": 73,
+          "proporcion": 1.0,
+          "ic95": [
+            0.95,
+            1.0
+          ]
+        },
+        "f1": 0.8957
+      },
+      {
+        "pliegue": 1,
+        "titulares_de_prueba": 46,
+        "umbral_elegido_sin_este_pliegue": 0.725,
+        "tp": 52,
+        "fp": 0,
+        "fn": 6,
+        "precision": {
+          "n": 52,
+          "de": 52,
+          "proporcion": 1.0,
+          "ic95": [
+            0.9312,
+            1.0
+          ]
+        },
+        "recall": {
+          "n": 52,
+          "de": 58,
+          "proporcion": 0.8966,
+          "ic95": [
+            0.7921,
+            0.9517
+          ]
+        },
+        "f1": 0.9455
+      }
+    ],
+    "agrupado": {
+      "tp": 125,
+      "fp": 17,
+      "fn": 6,
+      "precision": {
+        "n": 125,
+        "de": 142,
+        "proporcion": 0.8803,
+        "ic95": [
+          0.8166,
+          0.9239
+        ]
+      },
+      "recall": {
+        "n": 125,
+        "de": 131,
+        "proporcion": 0.9542,
+        "ic95": [
+          0.9037,
+          0.9788
+        ]
+      },
+      "f1": 0.9158
+    }
+  },
+  "por_grupo_humano": {
+    "el-nino-latam": {
+      "titulares": 20,
+      "pares": 190,
+      "recuperados": 190
+    },
+    "mina-cobre-panama": {
+      "titulares": 2,
+      "pares": 1,
+      "recuperados": 0
+    },
+    "mulino-gira-asia": {
+      "titulares": 3,
+      "pares": 3,
+      "recuperados": 3
+    },
+    "trump-ayuda-europa-latam": {
+      "titulares": 13,
+      "pares": 78,
+      "recuperados": 66
+    }
+  },
+  "linea_base_titulares_identicos": {
+    "tp": 184,
+    "fp": 0,
+    "fn": 88,
+    "precision": {
+      "n": 184,
+      "de": 184,
+      "proporcion": 1.0,
+      "ic95": [
+        0.9795,
+        1.0
+      ]
+    },
+    "recall": {
+      "n": 184,
+      "de": 272,
+      "proporcion": 0.6765,
+      "ic95": [
+        0.6187,
+        0.7293
+      ]
+    },
+    "f1": 0.807
+  },
+  "falsos_positivos": [],
+  "falsos_negativos": [
+    [
+      "NOT-1ba5a41e46",
+      "NOT-c712a8d7e4"
+    ],
+    [
+      "NOT-203cd5b44e",
+      "NOT-c712a8d7e4"
+    ],
+    [
+      "NOT-213eb698b8",
+      "NOT-c712a8d7e4"
+    ],
+    [
+      "NOT-26fd75f865",
+      "NOT-c712a8d7e4"
+    ],
+    [
+      "NOT-5d839301a6",
+      "NOT-c712a8d7e4"
+    ],
+    [
+      "NOT-6717a15ab7",
+      "NOT-c712a8d7e4"
+    ],
+    [
+      "NOT-8206bf1857",
+      "NOT-f1f1f6e600"
+    ],
+    [
+      "NOT-99ea1a995f",
+      "NOT-c712a8d7e4"
+    ],
+    [
+      "NOT-adb01e330f",
+      "NOT-c712a8d7e4"
+    ],
+    [
+      "NOT-c712a8d7e4",
+      "NOT-d1dad65858"
+    ],
+    [
+      "NOT-c712a8d7e4",
+      "NOT-e80ba5ef9d"
+    ],
+    [
+      "NOT-c712a8d7e4",
+      "NOT-eb363c1b4e"
+    ],
+    [
+      "NOT-c712a8d7e4",
+      "NOT-fb0597e7e5"
+    ]
+  ],
+  "nota_ic": "IC de Wilson sobre pares: los pares comparten titulares y casi todos los positivos salen de dos grupos humanos (el-nino-latam, trump-ayuda-europa-latam), así que el IC es demasiado estrecho.",
+  "curva": [
+    {
+      "umbral": 0.5,
+      "tp": 271,
+      "fp": 30,
+      "fn": 1,
+      "f1": 0.9459
+    },
+    {
+      "umbral": 0.505,
+      "tp": 271,
+      "fp": 30,
+      "fn": 1,
+      "f1": 0.9459
+    },
+    {
+      "umbral": 0.51,
+      "tp": 271,
+      "fp": 30,
+      "fn": 1,
+      "f1": 0.9459
+    },
+    {
+      "umbral": 0.515,
+      "tp": 271,
+      "fp": 30,
+      "fn": 1,
+      "f1": 0.9459
+    },
+    {
+      "umbral": 0.52,
+      "tp": 271,
+      "fp": 29,
+      "fn": 1,
+      "f1": 0.9476
+    },
+    {
+      "umbral": 0.525,
+      "tp": 271,
+      "fp": 29,
+      "fn": 1,
+      "f1": 0.9476
+    },
+    {
+      "umbral": 0.53,
+      "tp": 271,
+      "fp": 29,
+      "fn": 1,
+      "f1": 0.9476
+    },
+    {
+      "umbral": 0.535,
+      "tp": 271,
+      "fp": 29,
+      "fn": 1,
+      "f1": 0.9476
+    },
+    {
+      "umbral": 0.54,
+      "tp": 271,
+      "fp": 29,
+      "fn": 1,
+      "f1": 0.9476
+    },
+    {
+      "umbral": 0.545,
+      "tp": 271,
+      "fp": 27,
+      "fn": 1,
+      "f1": 0.9509
+    },
+    {
+      "umbral": 0.55,
+      "tp": 271,
+      "fp": 27,
+      "fn": 1,
+      "f1": 0.9509
+    },
+    {
+      "umbral": 0.555,
+      "tp": 271,
+      "fp": 27,
+      "fn": 1,
+      "f1": 0.9509
+    },
+    {
+      "umbral": 0.56,
+      "tp": 271,
+      "fp": 27,
+      "fn": 1,
+      "f1": 0.9509
+    },
+    {
+      "umbral": 0.565,
+      "tp": 271,
+      "fp": 27,
+      "fn": 1,
+      "f1": 0.9509
+    },
+    {
+      "umbral": 0.57,
+      "tp": 271,
+      "fp": 27,
+      "fn": 1,
+      "f1": 0.9509
+    },
+    {
+      "umbral": 0.575,
+      "tp": 271,
+      "fp": 27,
+      "fn": 1,
+      "f1": 0.9509
+    },
+    {
+      "umbral": 0.58,
+      "tp": 259,
+      "fp": 3,
+      "fn": 13,
+      "f1": 0.97
+    },
+    {
+      "umbral": 0.585,
+      "tp": 259,
+      "fp": 3,
+      "fn": 13,
+      "f1": 0.97
+    },
+    {
+      "umbral": 0.59,
+      "tp": 259,
+      "fp": 3,
+      "fn": 13,
+      "f1": 0.97
+    },
+    {
+      "umbral": 0.595,
+      "tp": 259,
+      "fp": 3,
+      "fn": 13,
+      "f1": 0.97
+    },
+    {
+      "umbral": 0.6,
+      "tp": 259,
+      "fp": 3,
+      "fn": 13,
+      "f1": 0.97
+    },
+    {
+      "umbral": 0.605,
+      "tp": 259,
+      "fp": 3,
+      "fn": 13,
+      "f1": 0.97
+    },
+    {
+      "umbral": 0.61,
+      "tp": 259,
+      "fp": 3,
+      "fn": 13,
+      "f1": 0.97
+    },
+    {
+      "umbral": 0.615,
+      "tp": 259,
+      "fp": 3,
+      "fn": 13,
+      "f1": 0.97
+    },
+    {
+      "umbral": 0.62,
+      "tp": 259,
+      "fp": 3,
+      "fn": 13,
+      "f1": 0.97
+    },
+    {
+      "umbral": 0.625,
+      "tp": 259,
+      "fp": 1,
+      "fn": 13,
+      "f1": 0.9737
+    },
+    {
+      "umbral": 0.63,
+      "tp": 259,
+      "fp": 1,
+      "fn": 13,
+      "f1": 0.9737
+    },
+    {
+      "umbral": 0.635,
+      "tp": 259,
+      "fp": 1,
+      "fn": 13,
+      "f1": 0.9737
+    },
+    {
+      "umbral": 0.64,
+      "tp": 259,
+      "fp": 1,
+      "fn": 13,
+      "f1": 0.9737
+    },
+    {
+      "umbral": 0.645,
+      "tp": 259,
+      "fp": 1,
+      "fn": 13,
+      "f1": 0.9737
+    },
+    {
+      "umbral": 0.65,
+      "tp": 259,
+      "fp": 1,
+      "fn": 13,
+      "f1": 0.9737
+    },
+    {
+      "umbral": 0.655,
+      "tp": 259,
+      "fp": 1,
+      "fn": 13,
+      "f1": 0.9737
+    },
+    {
+      "umbral": 0.66,
+      "tp": 259,
+      "fp": 1,
+      "fn": 13,
+      "f1": 0.9737
+    },
+    {
+      "umbral": 0.665,
+      "tp": 259,
+      "fp": 1,
+      "fn": 13,
+      "f1": 0.9737
+    },
+    {
+      "umbral": 0.67,
+      "tp": 259,
+      "fp": 1,
+      "fn": 13,
+      "f1": 0.9737
+    },
+    {
+      "umbral": 0.675,
+      "tp": 259,
+      "fp": 1,
+      "fn": 13,
+      "f1": 0.9737
+    },
+    {
+      "umbral": 0.68,
+      "tp": 259,
+      "fp": 0,
+      "fn": 13,
+      "f1": 0.9755
+    },
+    {
+      "umbral": 0.685,
+      "tp": 259,
+      "fp": 0,
+      "fn": 13,
+      "f1": 0.9755
+    },
+    {
+      "umbral": 0.69,
+      "tp": 259,
+      "fp": 0,
+      "fn": 13,
+      "f1": 0.9755
+    },
+    {
+      "umbral": 0.695,
+      "tp": 259,
+      "fp": 0,
+      "fn": 13,
+      "f1": 0.9755
+    },
+    {
+      "umbral": 0.7,
+      "tp": 259,
+      "fp": 0,
+      "fn": 13,
+      "f1": 0.9755
+    },
+    {
+      "umbral": 0.705,
+      "tp": 259,
+      "fp": 0,
+      "fn": 13,
+      "f1": 0.9755
+    },
+    {
+      "umbral": 0.71,
+      "tp": 257,
+      "fp": 0,
+      "fn": 15,
+      "f1": 0.9716
+    },
+    {
+      "umbral": 0.715,
+      "tp": 257,
+      "fp": 0,
+      "fn": 15,
+      "f1": 0.9716
+    },
+    {
+      "umbral": 0.72,
+      "tp": 257,
+      "fp": 0,
+      "fn": 15,
+      "f1": 0.9716
+    },
+    {
+      "umbral": 0.725,
+      "tp": 257,
+      "fp": 0,
+      "fn": 15,
+      "f1": 0.9716
+    },
+    {
+      "umbral": 0.73,
+      "tp": 257,
+      "fp": 0,
+      "fn": 15,
+      "f1": 0.9716
+    },
+    {
+      "umbral": 0.735,
+      "tp": 257,
+      "fp": 0,
+      "fn": 15,
+      "f1": 0.9716
+    },
+    {
+      "umbral": 0.74,
+      "tp": 257,
+      "fp": 0,
+      "fn": 15,
+      "f1": 0.9716
+    },
+    {
+      "umbral": 0.745,
+      "tp": 257,
+      "fp": 0,
+      "fn": 15,
+      "f1": 0.9716
+    },
+    {
+      "umbral": 0.75,
+      "tp": 257,
+      "fp": 0,
+      "fn": 15,
+      "f1": 0.9716
+    },
+    {
+      "umbral": 0.755,
+      "tp": 257,
+      "fp": 0,
+      "fn": 15,
+      "f1": 0.9716
+    },
+    {
+      "umbral": 0.76,
+      "tp": 257,
+      "fp": 0,
+      "fn": 15,
+      "f1": 0.9716
+    },
+    {
+      "umbral": 0.765,
+      "tp": 257,
+      "fp": 0,
+      "fn": 15,
+      "f1": 0.9716
+    },
+    {
+      "umbral": 0.77,
+      "tp": 257,
+      "fp": 0,
+      "fn": 15,
+      "f1": 0.9716
+    },
+    {
+      "umbral": 0.775,
+      "tp": 257,
+      "fp": 0,
+      "fn": 15,
+      "f1": 0.9716
+    },
+    {
+      "umbral": 0.78,
+      "tp": 257,
+      "fp": 0,
+      "fn": 15,
+      "f1": 0.9716
+    },
+    {
+      "umbral": 0.785,
+      "tp": 257,
+      "fp": 0,
+      "fn": 15,
+      "f1": 0.9716
+    },
+    {
+      "umbral": 0.79,
+      "tp": 257,
+      "fp": 0,
+      "fn": 15,
+      "f1": 0.9716
+    },
+    {
+      "umbral": 0.795,
+      "tp": 257,
+      "fp": 0,
+      "fn": 15,
+      "f1": 0.9716
+    },
+    {
+      "umbral": 0.8,
+      "tp": 257,
+      "fp": 0,
+      "fn": 15,
+      "f1": 0.9716
+    },
+    {
+      "umbral": 0.805,
+      "tp": 257,
+      "fp": 0,
+      "fn": 15,
+      "f1": 0.9716
+    },
+    {
+      "umbral": 0.81,
+      "tp": 257,
+      "fp": 0,
+      "fn": 15,
+      "f1": 0.9716
+    },
+    {
+      "umbral": 0.815,
+      "tp": 257,
+      "fp": 0,
+      "fn": 15,
+      "f1": 0.9716
+    },
+    {
+      "umbral": 0.82,
+      "tp": 257,
+      "fp": 0,
+      "fn": 15,
+      "f1": 0.9716
+    },
+    {
+      "umbral": 0.825,
+      "tp": 257,
+      "fp": 0,
+      "fn": 15,
+      "f1": 0.9716
+    },
+    {
+      "umbral": 0.83,
+      "tp": 246,
+      "fp": 0,
+      "fn": 26,
+      "f1": 0.9498
+    },
+    {
+      "umbral": 0.835,
+      "tp": 246,
+      "fp": 0,
+      "fn": 26,
+      "f1": 0.9498
+    },
+    {
+      "umbral": 0.84,
+      "tp": 246,
+      "fp": 0,
+      "fn": 26,
+      "f1": 0.9498
+    },
+    {
+      "umbral": 0.845,
+      "tp": 246,
+      "fp": 0,
+      "fn": 26,
+      "f1": 0.9498
+    },
+    {
+      "umbral": 0.85,
+      "tp": 246,
+      "fp": 0,
+      "fn": 26,
+      "f1": 0.9498
+    },
+    {
+      "umbral": 0.855,
+      "tp": 246,
+      "fp": 0,
+      "fn": 26,
+      "f1": 0.9498
+    },
+    {
+      "umbral": 0.86,
+      "tp": 246,
+      "fp": 0,
+      "fn": 26,
+      "f1": 0.9498
+    },
+    {
+      "umbral": 0.865,
+      "tp": 246,
+      "fp": 0,
+      "fn": 26,
+      "f1": 0.9498
+    },
+    {
+      "umbral": 0.87,
+      "tp": 236,
+      "fp": 0,
+      "fn": 36,
+      "f1": 0.9291
+    },
+    {
+      "umbral": 0.875,
+      "tp": 236,
+      "fp": 0,
+      "fn": 36,
+      "f1": 0.9291
+    },
+    {
+      "umbral": 0.88,
+      "tp": 236,
+      "fp": 0,
+      "fn": 36,
+      "f1": 0.9291
+    },
+    {
+      "umbral": 0.885,
+      "tp": 236,
+      "fp": 0,
+      "fn": 36,
+      "f1": 0.9291
+    },
+    {
+      "umbral": 0.89,
+      "tp": 236,
+      "fp": 0,
+      "fn": 36,
+      "f1": 0.9291
+    },
+    {
+      "umbral": 0.895,
+      "tp": 236,
+      "fp": 0,
+      "fn": 36,
+      "f1": 0.9291
+    },
+    {
+      "umbral": 0.9,
+      "tp": 236,
+      "fp": 0,
+      "fn": 36,
+      "f1": 0.9291
+    },
+    {
+      "umbral": 0.905,
+      "tp": 236,
+      "fp": 0,
+      "fn": 36,
+      "f1": 0.9291
+    },
+    {
+      "umbral": 0.91,
+      "tp": 235,
+      "fp": 0,
+      "fn": 37,
+      "f1": 0.927
+    },
+    {
+      "umbral": 0.915,
+      "tp": 235,
+      "fp": 0,
+      "fn": 37,
+      "f1": 0.927
+    },
+    {
+      "umbral": 0.92,
+      "tp": 235,
+      "fp": 0,
+      "fn": 37,
+      "f1": 0.927
+    },
+    {
+      "umbral": 0.925,
+      "tp": 235,
+      "fp": 0,
+      "fn": 37,
+      "f1": 0.927
+    },
+    {
+      "umbral": 0.93,
+      "tp": 235,
+      "fp": 0,
+      "fn": 37,
+      "f1": 0.927
+    },
+    {
+      "umbral": 0.935,
+      "tp": 235,
+      "fp": 0,
+      "fn": 37,
+      "f1": 0.927
+    },
+    {
+      "umbral": 0.94,
+      "tp": 235,
+      "fp": 0,
+      "fn": 37,
+      "f1": 0.927
+    },
+    {
+      "umbral": 0.945,
+      "tp": 184,
+      "fp": 0,
+      "fn": 88,
+      "f1": 0.807
+    },
+    {
+      "umbral": 0.95,
+      "tp": 184,
+      "fp": 0,
+      "fn": 88,
+      "f1": 0.807
+    },
+    {
+      "umbral": 0.955,
+      "tp": 184,
+      "fp": 0,
+      "fn": 88,
+      "f1": 0.807
+    },
+    {
+      "umbral": 0.96,
+      "tp": 184,
+      "fp": 0,
+      "fn": 88,
+      "f1": 0.807
+    },
+    {
+      "umbral": 0.965,
+      "tp": 184,
+      "fp": 0,
+      "fn": 88,
+      "f1": 0.807
+    },
+    {
+      "umbral": 0.97,
+      "tp": 184,
+      "fp": 0,
+      "fn": 88,
+      "f1": 0.807
+    },
+    {
+      "umbral": 0.975,
+      "tp": 184,
+      "fp": 0,
+      "fn": 88,
+      "f1": 0.807
+    },
+    {
+      "umbral": 0.98,
+      "tp": 184,
+      "fp": 0,
+      "fn": 88,
+      "f1": 0.807
+    },
+    {
+      "umbral": 0.985,
+      "tp": 184,
+      "fp": 0,
+      "fn": 88,
+      "f1": 0.807
+    },
+    {
+      "umbral": 0.99,
+      "tp": 184,
+      "fp": 0,
+      "fn": 88,
+      "f1": 0.807
+    }
+  ]
+}
