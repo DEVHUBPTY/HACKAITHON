@@ -24,18 +24,31 @@ Variables de `local.env`: `LLM_PROVIDER`, `OLLAMA_HOST`, `OLLAMA_MODEL`, `DEEPSE
 
 ## Ejecución
 
-Comandos previstos; cada uno estará disponible cuando se implemente su spec:
+La demo corre en local; no hay despliegue.
+
+Disponibles hoy (receta del snapshot en `data/README.md`):
 
 ```bash
+poetry run python -m scripts.extraer --todo          # extracción del snapshot (E0-04)
+poetry run python -m scripts.validar_snapshot        # valida el snapshot contra la receta
+poetry run python -m src.config --validar            # valida la configuración de config/
 poetry run python -m src.carga                       # carga y validación de datos
 poetry run python -m src.normalizacion               # crea data/senales.duckdb
 poetry run python -m src.limpieza                    # limpia titulares y marca ruido
-poetry run streamlit run app.py                      # interfaz
+poetry run python -m scripts.catalogo                # catálogo de datos (outputs/catalogo.csv)
 poetry run streamlit run eval/etiquetar.py           # etiquetado humano (E1-06; ver docs/etiquetado.md)
-poetry run streamlit run app.py -- --demo            # modo demo (data/demo.duckdb)
-poetry run python -m scripts.verificar_offline       # chequeo antes del pitch
-poetry run python -m eval.run_benchmark --split dev  # benchmark de desarrollo
-poetry run python -m scripts.reproducir --verificar  # reproduce y compara con el manifest
+poetry run python -m eval.ruido                      # precisión y recall del filtro de ruido
+poetry run python -m eval.validar_benchmark          # valida el benchmark de desarrollo
+```
+
+Previstos; cada uno estará disponible cuando se implemente su spec:
+
+```bash
+poetry run streamlit run app.py                      # interfaz (E1-15)
+poetry run streamlit run app.py -- --demo            # modo demo con data/demo.duckdb (C-06)
+poetry run python -m scripts.verificar_offline       # chequeo antes del pitch (C-06)
+poetry run python -m eval.run_benchmark --split dev  # benchmark de desarrollo (E1-18)
+poetry run python -m scripts.reproducir --verificar  # reproduce y compara con el manifest (E1-20)
 ```
 
 ## Pruebas

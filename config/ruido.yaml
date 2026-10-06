@@ -105,7 +105,7 @@ fuera_de_temas:
   autopromocion_tvn:
     - '^\s*(tvn media|gente tvn|gente que inspira)\b(?!.*\b(inundacion\w*|donacion\w*|damnificad\w*|emergencia|ayuda humanitaria|incendio\w*|tragedia|sismo|lluvias?)\b)'
 
-# Prototipo de noticia sobre Panamá (similitud de embeddings, D-84; implementado en E1-07 en src/clasificacion.py).
+# Prototipo de noticia sobre Panamá (similitud de embeddings; diferido desde E1-03b en la revisión X14; implementado en E1-07 en src/clasificacion.py).
 # Con el modelo de clasificacion.yaml (modelo_activo): un titular que no está marcado como ruido ni como alcance
 # regional y cuya similitud MÁXIMA con estos prototipos es menor que `umbral` se marca no_es_panama (motivo
 # "no_es_panama", columna ruido_similitud = true). Una nota regional NO se marca nunca por esta vía.

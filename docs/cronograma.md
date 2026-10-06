@@ -14,12 +14,14 @@ Regla del PDF: *limitarse a una modalidad y un recorrido convincente antes de a�
 | **Pruebas** | 15 % | 36 – 43 h | 18 – 21,5 h | T01–T10 · benchmark · fallos y correcciones |
 | **Cierre** | 10 % | 43 – 48 h | 21,5 – 24 h | Fichas · métricas · pitch · ensayo offline · acceso al repo |
 
-## Qué hace cada rol en cada tramo
+## Qué hace cada área en cada tramo
+
+Las columnas son **áreas de trabajo**, no personas: el equipo (David Fen, Javier Acosta, Juan Zhou) hace de todo y el responsable de cada tarea está en el Backlog de Notion.
 
 | Tramo | Datos (D) | IA | Producto (P) |
 |---|---|---|---|
-| **Inicio** | Verificar el snapshot congelado con `validar_snapshot` y registrar las decisiones con fase *Evento* | Verificar entorno, Ollama y modelos con `verificar_offline` | Confirmar usuario, modalidad y alcance · accesos de Notion y del jurado (E1-01) |
-| **Datos y diseño** | Carga, normalización, limpieza, catálogo (E1-02 a E1-04) · reglas y configuración (E1-05) | Ajustes con lo aprendido en la exploración (E0-09) y el benchmark (E0-06), ya preparados antes | Herramienta y sesión de etiquetado con todos (E1-06) · plantilla de ficha en Notion |
+| **Inicio** | Verificar el snapshot congelado con `validar_snapshot` y registrar las decisiones con fase *Evento* | Verificar entorno, Ollama y modelos con `scripts.probar_llm` (E0-07); `verificar_offline` llega con C-06 | Confirmar usuario, modalidad y alcance · accesos de Notion y del jurado (E1-01) |
+| **Datos y diseño** | Carga, normalización, limpieza, catálogo (E1-02 a E1-04) · reglas y configuración (E1-05) | Ajustes con lo aprendido en la exploración (E0-09) y el benchmark (E0-06), ya preparados antes | Herramienta de etiquetado y revisión humana de las etiquetas que propone el asistente (E1-06, D-85) · plantilla de ficha en Notion |
 | **Construcción** | Contexto, sismos, puntaje y estado de evidencia (E1-09, E1-09b, E1-10) | Embeddings, clasificación, agrupación, consulta, LLM, validador, caché (E1-07, E1-08, E1-11 a E1-14) | Ficha, interfaz, revisión y exportación (E1-10b, E1-15, E1-16) |
 | ↳ **Después del corte** | Apoyo a pruebas | Sigue con lo pendiente | **Banca** (E2-01 a E2-03), solo si se cumplió el criterio |
 | **Pruebas** | T01, T03, T04 · reproducibilidad (E1-20) | Benchmark y métricas (E1-18) · T06, T07 | Precision@5 y prueba de tiempo (E1-19) · registrar fallos en Notion |
@@ -43,6 +45,8 @@ Se recorta, en este orden:
 
 ## Preparación previa (D-74)
 La Etapa 0 completa (repo, snapshot propio, RSS diario, fixtures, benchmark de desarrollo, modelos, exploración) se hace **antes** del evento y queda registrada con fase *Preparación*. El evento arranca verificando, no construyendo desde cero.
+
+**Estado:** el evento ya empezó (fase *Evento* en Notion). Lo que de la Etapa 0 se cierre durante el evento se registra con fase *Evento* (D-58 separa el registro por fase).
 
 ## Ritmo de registro (D-58)
 - Cada decisión, al tomarla. Cada prueba fallida, antes de corregirla.

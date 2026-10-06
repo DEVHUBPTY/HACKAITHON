@@ -34,7 +34,7 @@ intacta.
 | | `subtema_clasificado` | Solo con el método B: el subtema más parecido dentro del tema |
 | | `tema_secundario`, `tema_secundario_similitud` | Segundo tema, solo si está a menos de `margen_secundario` y supera el umbral |
 | | `tema_baseline` | Tema del baseline de palabras clave de la variante `guia` (las mismas categorías) |
-| | `similitud_panama`, `ruido_similitud` | Señal del filtro de ruido por prototipo (D-84) y marca si lo aplicó |
+| | `similitud_panama`, `ruido_similitud` | Señal del filtro de ruido por prototipo (revisión X14 de E1-03b) y marca si lo aplicó |
 | `similitud_tema` | `id_noticia, metodo, tema, similitud, subtema` | Similitud con **cada** tema, por método A y B (explicabilidad) |
 
 Solo se clasifica `titulo_limpio` de los registros con `es_ruido = false` (más la descripción del RSS como texto interno si
@@ -269,7 +269,7 @@ tras corregir las referencias (e5 · A 0.824 / 0.002, e5 · B 0.797 / 0.004, Min
 los útiles, la similitud máxima de e5·A da AUC 0.79 y la de MiniLM·A 0.73, con marcas que **no son etiquetas humanas**. Se
 recalibran con `eval/etiquetas.csv`.
 
-## Filtro de ruido por similitud con un prototipo de Panamá (D-84, diferido desde E1-03b)
+## Filtro de ruido por similitud con un prototipo de Panamá (diferido desde E1-03b en la revisión X14)
 
 **Implementado, pero `activo: false` en `config/ruido.yaml`.** Con él activo, un titular no marcado como ruido ni como alcance
 regional y cuya similitud máxima con los prototipos de Panamá es menor que `umbral` se marca `no_es_panama` (`ruido_similitud =

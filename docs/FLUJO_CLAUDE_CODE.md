@@ -7,8 +7,8 @@ Cada fase tiene una parte que hace el agente y otra que hacen ustedes. El despli
 | **Planificar** | Convierte una tarea del backlog en spec de 4 partes si aún no existe; señala dependencias | Prioriza, estima, asigna y aprueba la spec | Backlog · Decisiones |
 | **Diseñar** | Genera el esqueleto: módulos vacíos, esquemas pandera/pydantic, YAML de configuración | Fija arquitectura, reglas v1.3 y umbrales | Diseño de solución |
 | **Construir** | Implementa una spec a la vez, después de que el plan esté aprobado | Guía el comportamiento y decide los *tradeoffs* | Bitácora |
-| **Probar** | Propone tests desde la spec y desde T01–T10 | Verifica casos borde, intención y etiqueta datos de evaluación | Pruebas · Métricas |
-| **Revisar** | Primera pasada contra `docs/REVISION.md` | Aprueba alguien distinto al autor | Pruebas (falla → corregido) |
+| **Probar** | Propone tests desde la spec y desde T01–T10 | Verifica casos borde, intención y revisa y aprueba las etiquetas de evaluación que propone el asistente (D-85) | Pruebas · Métricas |
+| **Revisar** | Primera pasada contra `docs/REVISION.md`; después, un agente revisor independiente (que no escribió el código) deja su veredicto escrito en el PR y en Notion, y con veredicto favorable el asistente integra el PR (D-78) | Sigue el trabajo por el chat y responde las consultas; revisa y aprueba lo que el reto exige a personas (etiquetas, D-85) | Backlog · Bitácora · Pruebas (falla → corregido) |
 | **Documentar** | README, diccionario de datos, resúmenes de cambios | Narrativa del pitch y registro de decisiones | Todas |
 | **Empaquetar y ensayar** | Verifica instalación limpia y comandos del README | Ensayo con Wi-Fi apagado | Pruebas (T10) |
 
@@ -37,5 +37,5 @@ Cada fase tiene una parte que hace el agente y otra que hacen ustedes. El despli
 1. **Una spec por sesión.** Al cambiar de tarea, empezar una conversación nueva para que el contexto no se mezcle.
 2. **Plan antes que código**, siempre.
 3. **Si la spec y `CLAUDE.md` chocan, manda `CLAUDE.md`** y se corrige la spec.
-5. **Cronograma:** tramos, punto de corte y reparto por rol en `docs/cronograma.md`.
-4. **Tres personas, tres ramas.** Cada quien en su tarea; se integra por PR con la plantilla de `.github/`.
+4. **Una tarea, un worktree, una rama, un PR.** Se integra por PR a `main` con la plantilla de `.github/` y la revisión del paso *Revisar* (D-78). El equipo (David Fen, Javier Acosta, Juan Zhou) hace de todo; el responsable de cada tarea está en el Backlog de Notion.
+5. **Cronograma:** tramos, punto de corte y reparto por área en `docs/cronograma.md`.

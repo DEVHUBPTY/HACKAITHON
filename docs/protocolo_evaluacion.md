@@ -48,7 +48,7 @@ El comando para la evaluación reservada acepta **cualquier archivo con el mismo
 
 ## 4 · Revisión humana de la validez de sustento
 
-**Quién revisa:** una persona que **no** escribió el código de generación; idealmente la persona editorial que designe la organización.
+**Quién revisa:** una persona del equipo que **no** escribió el código de generación. No hay persona editorial de la organización, así que las métricas que la requieren se declaran exploratorias (D-74).
 
 **Muestra:** 30 afirmaciones elegidas al azar (semilla fija) de las salidas del benchmark, o todas si hay menos.
 
@@ -66,7 +66,8 @@ Para la meta de ≥ 90 % **solo cuenta "sustentada"**. "Parcial" y "tipo incorre
 ## 5 · Calidad de las etiquetas
 
 - **Tamaño y método** en `docs/etiquetado.md`: cuántos titulares, cómo se eligieron (semilla), quién etiquetó y con qué guía (`docs/guia_temas.md`).
-- **Acuerdo entre etiquetadores:** 20 titulares etiquetados por **dos** personas por separado; se reporta el acuerdo (kappa de Cohen). Si es bajo, se revisa la guía antes de usar las etiquetas.
+- **Método (D-85):** el asistente propone las etiquetas de los 100 titulares, sin ver la salida del clasificador ni del filtro automático, y una persona del equipo las revisa, corrige y aprueba una por una.
+- **Acuerdo:** el acuerdo entre dos personas (kappa de Cohen sobre 20 titulares dobles, D-71) **no se midió**; D-85 lo reemplaza por la **coincidencia entre la propuesta del asistente y la revisión humana**, que se reporta con n e IC y se declara como tal: no es un acuerdo entre personas independientes. La herramienta conserva el cálculo del kappa por si dos personas etiquetan por separado.
 
 ## 6 · Prueba de ahorro de tiempo
 
