@@ -44,7 +44,7 @@ templates/   ficha.md.j2 (Jinja2)
 prompts/     paquete_editorial.txt · respuesta_consulta.txt · comparar_contradicciones.txt · boletin_banca.txt
 data/        raw/ (inmutable) · processed/ · manifest.json · diccionario.md · senales.duckdb
 src/         carga · normalizacion · limpieza · db · embeddings · clasificacion · baseline · agrupacion · procedencias
-             contexto · puntaje · evidencia · ficha · consulta · esquemas · generacion · validador · cache · revision · exportar · registro
+             contexto · puntaje · evidencia · ficha · consulta · esquemas · generacion · validador · cache · revision · exportar · registro · configuracion
 src/llm/     proveedor.py (interfaz) · ollama.py · deepseek.py
 scripts/     extraer_*.py · validar_snapshot.py · explorar.py · buscar_casos.py · preparar_demo.py · calentar_cache.py · capturas_demo.py · verificar_offline.py · reproducir.py · empaquetar_datos.py · auditoria_final.py · manifest.py · catalogo.py · probar_llm.py
 eval/        etiquetar.py · etiquetas.csv · run_benchmark.py · metricas.py · precision_at_5.py
@@ -74,7 +74,7 @@ El `tema` de `noticias.csv` es el **tema de origen** (consulta de GDELT o catego
 - `fecha_publicacion` y `fecha_deteccion` (seendate de GDELT) son **distintas**. Nunca sustituir una por otra.
 - **Los nulos son nulos. Nunca rellenar con cero.** Conservar unidades originales.
 - `data/raw/` es inmutable. Todo cambio va a `processed/` y se registra en el manifest, que incluye un **historial** de versiones, cambios de fuente, revisiones de datos y registros excluidos (D-63).
-- La cuadrícula del Banco Mundial tiene **1.350 filas** (6 países × 6 indicadores × 15 años), con nulos explícitos.
+- La cuadrícula del Banco Mundial tiene **540 filas** (6 países × 6 indicadores × 15 años), con nulos explícitos. El PDF dice 1.350, que no cuadra con su propia definición (D-81).
 - Datos del Banco Mundial son **anuales**: nunca describirlos como "actuales" ni "de hoy".
 - Origen, URLs y condiciones de cada fuente: `docs/fuentes.md`.
 - La caja de USGS **no es Panamá**: mostrar siempre el `place` original. Solo sirve para hechos sísmicos.
@@ -105,6 +105,7 @@ El `tema` de `noticias.csv` es el **tema de origen** (consulta de GDELT o catego
 - Embeddings **siempre locales**.
 - Puntaje, estado de evidencia, **ficha** y validación son **código determinista**, no LLM.
 - **Ningún número mágico en `src/`**: pesos, umbrales y ventanas viven en `config/*.yaml`.
+- Todo YAML de `config/` se carga con `src.configuracion` y se valida con un modelo pydantic que prohíbe claves desconocidas (D-79).
 - Ningún `if modalidad == ...` en `src/`: las diferencias entre modalidades van en YAML, plantillas y reglas del validador.
 
 ## Seguridad
