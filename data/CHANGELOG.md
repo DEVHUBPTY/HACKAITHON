@@ -7,6 +7,7 @@ No editar a mano.
 
 - Hash del snapshot: `9e5f5d2ad57854efe9b677b4107bedc59220c11a2eaf04d411379c3c82817fb2`
 - Cambio de fuente: Cambió el contenido sin cambiar los conteos
+- Nota: Normalizamos idioma a ISO 639-1 y país en español en fuentes.json, y la cobertura de GDELT pasó a calcularse por tema a partir de los crudos (revisión del PR #2).
 - Registros excluidos: 97 {'fuera_de_ventana': 97}
 - Cantidad por archivo: conversion.json 97, eventos.geojson 82, fuentes.json 110, indicadores.csv 540, noticias.csv 186
 

@@ -358,6 +358,9 @@
       ],
       "fecha": "2026-10-06T17:07:06Z",
       "hash_snapshot": "9e5f5d2ad57854efe9b677b4107bedc59220c11a2eaf04d411379c3c82817fb2",
+      "notas": [
+        "Normalizamos idioma a ISO 639-1 y país en español en fuentes.json, y la cobertura de GDELT pasó a calcularse por tema a partir de los crudos (revisión del PR #2)."
+      ],
       "registros_excluidos": {
         "por_motivo": {
           "fuera_de_ventana": 97
@@ -378,9 +381,9 @@
   "nota_intervalo_seccion_7": "Inconsistencia del PDF (D-74): la sección 6 pide noticias de los 30 días previos a la extracción (ampliable a 90) y la sección 7 pide excluir lo que quede fuera del intervalo [2024-01-01, 2025-10-01). Ese intervalo no se aplica porque es imposible de extraer hoy: GDELT DOC solo cubre ~3 meses hacia atrás y el RSS de TVN no conserva todo el histórico. Se aplica la ventana de la sección 6, medida sobre fecha_deteccion (fecha_publicacion si el registro no pasó por GDELT).",
   "registro_extraccion": {
     "registro_extraccion/registro_manual_20261006T171832Z.json": {
-      "bytes": 990,
-      "origen": "registro manual a partir del log de la corrida",
-      "sha256": "79a618fa375680b461f6e729e67cb3361ef9e4e69711d6776e9d2a8c7b1a4e72"
+      "bytes": 1100,
+      "origen": "registro manual a partir del log de la corrida; reconstruido el 2026-10-06 tras un borrado accidental del original (el campo tipo se agregó al reconstruir)",
+      "sha256": "db038bd00b5faaf0feb531f1f10c910ef128c4a22713c0c755deefc1752444ea"
     }
   },
   "sha256": {

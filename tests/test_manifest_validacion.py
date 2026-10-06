@@ -75,7 +75,9 @@ def test_historial_agrega_version_solo_si_el_snapshot_cambia(data_sintetica: Pat
     m = escribir_manifest(data_sintetica, config)
     assert [h["version"] for h in m["historial"]] == ["1.0", "1.1"]
     assert m["version"] == "1.1"
-    assert m["historial"][1]["cambios_de_fuente"] == ["Cambió el contenido sin cambiar los conteos"]
+    cambios = m["historial"][1]["cambios_de_fuente"]
+    assert "Contenido distinto en processed/noticias.csv (mismo conteo)" in cambios
+    assert "Cambió el contenido sin cambiar los conteos" not in cambios
     assert len(escribir_manifest(data_sintetica, config)["historial"]) == 2  # idempotente
 
 
@@ -281,3 +283,36 @@ def test_sin_crudos_del_banco_mundial_la_comparacion_es_advertencia(data_sinteti
     for ruta in (data_sintetica / "raw" / "banco_mundial").iterdir():
         ruta.unlink()
     assert estados(validar_snapshot.validar(data_sintetica, config))["nulos:no_rellenar_con_cero"] == "advertencia"
+
+
+def _entrada(hash_snapshot: str, sha: dict[str, str]) -> dict:
+    return {
+        "version": "1.0", "fecha": "2026-10-06T00:00:00Z", "hash_snapshot": hash_snapshot,
+        "sha256_por_archivo": sha, "cantidad_por_archivo": {"noticias.csv": 10},
+    }
+
+
+def test_motivo_se_agrega_como_nota_si_el_snapshot_no_cambio() -> None:
+    """Un motivo sobre una versión ya registrada queda como nota, sin duplicarse."""
+    from scripts.manifest import _historial
+
+    previo = [_entrada("h1", {"processed/noticias.csv": "a"})]
+    auditoria = {"excluidos": []}
+    uno = _historial(previo, "f", "h1", {"noticias.csv": 10}, auditoria, [], {}, {}, "Normalizamos idioma")
+    dos = _historial(uno, "f", "h1", {"noticias.csv": 10}, auditoria, [], {}, {}, "Normalizamos idioma")
+    assert len(dos) == 1
+    assert dos[-1]["notas"] == ["Normalizamos idioma"]
+
+
+def test_version_nueva_describe_el_archivo_que_cambio_y_el_motivo() -> None:
+    """Una versión nueva nombra el archivo con contenido distinto y el motivo del equipo."""
+    from scripts.manifest import _historial
+
+    previo = [_entrada("h1", {"processed/noticias.csv": "a", "processed/fuentes.json": "b"})]
+    sha = {"processed/noticias.csv": "a", "processed/fuentes.json": "c"}
+    hist = _historial(previo, "f", "h2", {"noticias.csv": 10}, {"excluidos": []}, [], {}, sha, "Normalizamos país")
+    cambios = hist[-1]["cambios_de_fuente"]
+    assert cambios[0] == "Normalizamos país"
+    assert any("processed/fuentes.json" in c for c in cambios)
+    assert not any("noticias.csv" in c for c in cambios)
+    assert "Cambió el contenido sin cambiar los conteos" not in cambios

@@ -267,18 +267,39 @@ def _historial(
     auditoria: dict[str, Any],
     revisiones: list[str],
     config: dict[str, Any],
+    sha: dict[str, str] | None = None,
+    motivo: str | None = None,
 ) -> list[dict[str, Any]]:
-    """Agrega una versión solo si el snapshot cambió; si no, devuelve el historial intacto."""
+    """Agrega una versión solo si el snapshot cambió; si no, devuelve el historial intacto.
+
+    ``motivo`` describe el cambio con palabras del equipo. Si el snapshot no cambió,
+    se agrega como nota a la última versión (sin duplicarse), para poder explicar
+    un cambio ya registrado con un texto genérico.
+    """
+    sha = sha or {}
     if previo and previo[-1]["hash_snapshot"] == hash_snapshot:
+        if motivo and motivo not in previo[-1].get("notas", []):
+            ultima = {**previo[-1], "notas": [*previo[-1].get("notas", []), motivo]}
+            return [*previo[:-1], ultima]
         return previo
     motivos: dict[str, int] = {}
     for x in auditoria["excluidos"]:
         motivos[x["motivo"]] = motivos.get(x["motivo"], 0) + 1
     if previo:
         anterior = previo[-1]["cantidad_por_archivo"]
+        sha_previo = previo[-1].get("sha256_por_archivo", {})
         cambios = [
             f"{k}: {anterior.get(k, 0)} -> {v}" for k, v in cantidades.items() if anterior.get(k) != v
-        ] or ["Cambió el contenido sin cambiar los conteos"]
+        ]
+        cambios += [
+            f"Contenido distinto en {k} (mismo conteo)"
+            for k in sorted(sha)
+            if sha_previo and sha_previo.get(k) != sha[k] and k.split("/")[-1] not in
+            {c.split(":")[0] for c in cambios}
+        ]
+        if motivo:
+            cambios.insert(0, motivo)
+        cambios = cambios or ["Cambió el contenido sin cambiar los conteos"]
     else:
         cambios = [
             "Snapshot inicial construido por el equipo con la receta de scripts.extraer (D-74).",
@@ -287,7 +308,9 @@ def _historial(
     entrada = {
         "version": f"1.{len(previo)}",
         "fecha": fecha,
+        "nota_fecha": "fecha de corte de los datos (último crudo real), no la fecha en que se generó la versión",
         "hash_snapshot": hash_snapshot,
+        "sha256_por_archivo": sha,
         "cambios_de_fuente": cambios,
         "revisiones_de_datos": revisiones,
         "fallos_de_extraccion": auditoria.get("gdelt_rangos_sin_resolver", []),
@@ -297,7 +320,7 @@ def _historial(
     return [*previo, entrada]
 
 
-def construir_manifest(data: Path, config: dict[str, Any]) -> dict[str, Any]:
+def construir_manifest(data: Path, config: dict[str, Any], motivo: str | None = None) -> dict[str, Any]:
     """Arma el manifest a partir de ``data/raw`` y ``data/processed`` (y del manifest previo)."""
     raw, processed = data / "raw", data / "processed"
     auditoria = json.loads((processed / "conversion.json").read_text("utf-8"))
@@ -308,7 +331,8 @@ def construir_manifest(data: Path, config: dict[str, Any]) -> dict[str, Any]:
     ruta_previa = data / "manifest.json"
     previo = json.loads(ruta_previa.read_text("utf-8")).get("historial", []) if ruta_previa.exists() else []
     historial = _historial(
-        previo, fecha, hash_snapshot, cantidades, auditoria, _revisiones_banco_mundial(raw, config), config
+        previo, fecha, hash_snapshot, cantidades, auditoria, _revisiones_banco_mundial(raw, config), config,
+        sha, motivo,
     )
     return {
         "version": historial[-1]["version"],
@@ -342,6 +366,7 @@ def escribir_changelog(ruta: Path, manifest: dict[str, Any]) -> None:
         lineas += [f"## v{h['version']} · {h['fecha']}", "", f"- Hash del snapshot: `{h['hash_snapshot']}`"]
         lineas += [f"- Cambio de fuente: {c}" for c in h["cambios_de_fuente"]]
         lineas += [f"- Revisión de datos: {r}" for r in h["revisiones_de_datos"]] or []
+        lineas += [f"- Nota: {n}" for n in h.get("notas", [])]
         ex = h["registros_excluidos"]
         lineas.append(f"- Registros excluidos: {ex['total']} {ex['por_motivo'] or ''}".rstrip())
         lineas.append(
@@ -356,10 +381,11 @@ def main(argv: list[str] | None = None) -> int:
     """Punto de entrada de ``python -m scripts.manifest``."""
     p = argparse.ArgumentParser(description="Escribe data/manifest.json y data/CHANGELOG.md.")
     p.add_argument("--data", type=Path, default=RAIZ / "data")
+    p.add_argument("--motivo", help="Descripción del cambio con palabras del equipo (D-63).")
     args = p.parse_args(argv)
     configurar_logging()
     config = conversion.cargar_config()
-    manifest = construir_manifest(args.data, config)
+    manifest = construir_manifest(args.data, config, args.motivo)
     conversion.escribir_json(args.data / "manifest.json", manifest)
     escribir_changelog(args.data / "CHANGELOG.md", manifest)
     logger.info("Manifest v%s escrito (corte %s)", manifest["version"], manifest["fecha_corte_UTC"])

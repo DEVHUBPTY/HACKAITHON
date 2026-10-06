@@ -29,5 +29,5 @@
       "tipo": "bloqueado"
     }
   ],
-  "origen": "registro manual a partir del log de la corrida"
+  "origen": "registro manual a partir del log de la corrida; reconstruido el 2026-10-06 tras un borrado accidental del original (el campo tipo se agregó al reconstruir)"
 }
