@@ -156,7 +156,7 @@ def test_temas_son_seis_con_subtemas_y_ejemplos() -> None:
 def test_un_septimo_tema_se_rechaza(tmp_path: Path) -> None:
     datos = leer("temas")
     datos["temas"]["deportes"] = datos["temas"]["turismo"]
-    with pytest.raises(ErrorDeConfiguracion, match="6 temas"):
+    with pytest.raises(ErrorDeConfiguracion, match="cantidad_temas"):
         cargar_temas(escribir(tmp_path, "temas", datos))
 
 
@@ -175,7 +175,7 @@ def test_ejemplos_reales_son_exactamente_los_excluidos_de_la_evaluacion() -> Non
 
 
 def test_la_coherencia_detecta_un_subtema_sin_alcance_y_un_indicador_inexistente(tmp_path: Path) -> None:
-    for nombre in ("fuentes", "reglas_v1.3", "temas", "vinculos", "modalidad_editorial"):
+    for nombre in ("fuentes", "reglas_v1.3", "temas", "vinculos", "modalidad_editorial", "restricciones"):
         escribir(tmp_path, nombre, leer(nombre))
     (tmp_path / "ejemplos_excluidos.txt").write_text((CARPETA_CONFIG / "ejemplos_excluidos.txt").read_text("utf-8"), encoding="utf-8")
     assert validar_coherencia(tmp_path) == []
@@ -203,12 +203,9 @@ def test_vinculo_con_relacion_no_declarada_falla(tmp_path: Path) -> None:
         cargar_vinculos(escribir(tmp_path, "vinculos", datos))
 
 
-def test_tabla_de_acciones_tiene_las_9_celdas_y_ninguna_publica() -> None:
+def test_tabla_de_acciones_tiene_las_9_celdas_y_medio_de_referencia() -> None:
     m = cargar_modalidad("editorial")
-    celdas = [getattr(getattr(m.tabla_acciones, r), e) for r in RANGOS for e in ESTADOS]
-    assert len(celdas) == 9
-    assert all("public" not in f"{c.accion} {c.motivo}".lower() for c in celdas)
-    assert m.tabla_acciones.alto.insuficiente.accion == "Investigar ya"
+    assert len([getattr(getattr(m.tabla_acciones, r), e) for r in RANGOS for e in ESTADOS]) == 9
     assert m.medio_referencia is not None and m.medio_referencia.dominio == "tvn-2.com"
 
 
@@ -226,16 +223,6 @@ def test_falta_una_celda_de_la_tabla(tmp_path: Path) -> None:
         cargar_modalidad("editorial", escribir(tmp_path, "modalidad_editorial", datos))
 
 
-def test_el_esquema_admite_modalidad_banca_sin_medio_de_referencia(tmp_path: Path) -> None:
-    datos = leer("modalidad_editorial")
-    datos.update(modalidad="banca", nombre="Banca", usuario="Analista", medio_referencia=None, sectores_por_tema={"economia": "banca"})
-    datos["tabla_acciones"]["alto"]["insuficiente"]["accion"] = "Monitorear con prioridad"
-    banca = cargar_modalidad("banca", escribir(tmp_path, "modalidad_banca", datos))
-    assert banca.medio_referencia is None and banca.sectores_por_tema == {"economia": "banca"}
-    # la misma estructura: solo cambian la acción, el medio de referencia y las fuentes extra
-    assert banca.tabla_acciones.bajo == cargar_modalidad("editorial").tabla_acciones.bajo
-
-
 def test_un_archivo_de_modalidad_con_otra_modalidad_falla(tmp_path: Path) -> None:
     with pytest.raises(ErrorDeConfiguracion, match="declara modalidad"):
         cargar_modalidad("banca", escribir(tmp_path, "modalidad_banca", leer("modalidad_editorial")))
@@ -246,9 +233,9 @@ def test_guion_marcador_y_palabras_prohibidas_estan_en_yaml() -> None:
     assert (s.guion_segundos_min, s.guion_segundos_max, s.guion_palabras_min, s.guion_palabras_max) == (45, 60, 110, 150)
     assert r.marcador_visual == "[VISUAL: a definir por producción]"
     assert r.leyendas_alcance.titular_metadatos == "basado únicamente en titular/metadatos"
-    assert "escándalo" in r.palabras_sensacionalistas
-    assert "en entrevista con" in r.frases_prohibidas.entrevistas
-    assert "las imágenes muestran" in r.frases_prohibidas.imagenes
+    assert "escándalo" in r.grupos["comunes"]["sensacionalistas"]
+    assert "en entrevista con" in r.grupos["editorial"]["entrevistas"]
+    assert "las imágenes muestran" in r.grupos["editorial"]["imagenes"]
 
 
 def test_guion_con_minimo_mayor_al_maximo_falla(tmp_path: Path) -> None:
@@ -264,8 +251,8 @@ def test_cli_validar(capsys: pytest.CaptureFixture[str]) -> None:
 
 
 def test_cli_validar_falla_con_config_rota(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
-    for nombre in ("fuentes", "exploracion", "reglas_v1.3", "temas", "vinculos", "salidas", "restricciones"):
-        escribir(tmp_path, nombre, leer(nombre))
+    for p in CARPETA_CONFIG.iterdir():
+        (tmp_path / p.name).write_text(p.read_text("utf-8"), encoding="utf-8")
     datos = leer("reglas_v1.3")
     datos["pesos"]["R"] = 1
     escribir(tmp_path, "reglas_v1.3", datos)

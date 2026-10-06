@@ -1,57 +1,53 @@
-# Vínculos subtema -> dato oficial (D-06, D-15). Un vínculo es CONTEXTO, nunca prueba de causa ni suma a I.
-# Los indicadores deben existir en config/fuentes.yaml (banco_mundial.indicadores); `usgs` apunta a eventos.geojson.
+# Vínculos con evidencia oficial (etapa 3), tal como el diseño de solución "Vínculos con evidencia oficial".
+# Un vínculo es CONTEXTO, nunca prueba de causa ni suma a I (D-15). Los indicadores deben existir en config/fuentes.yaml.
+# Los subtemas y temas que no aparecen aquí quedan sin dato con el motivo `motivo_por_defecto`.
 version: "1.0"
 
 tipos_relacion:
-  mide_directamente: "El indicador mide lo mismo que el subtema."
-  escala_poblacional: "El indicador da la escala de población expuesta; no mide el hecho."
-  coincidencia_temporal: "El evento oficial coincide en el tiempo con la noticia; no prueba que sea el mismo hecho."
+  directa: "El indicador mide lo mismo que el subtema."
+  indirecta: "El indicador es un contexto lejano del tema; no mide el hecho."
+  evento: "Evento oficial (USGS) que puede coincidir en el tiempo con la noticia."
+
+motivos_sin_vinculo: [tema_sin_indicador, sin_dato_en_periodo, sin_evento_coincidente, fuera_de_cobertura, candidatos_ambiguos]
+motivo_por_defecto: tema_sin_indicador
 
 ventana_coincidencia_dias: 2        # sismos: ± días entre evento USGS y noticia (supuesto)
 pais_por_defecto: PAN
 
-vinculos:
+vinculos:                           # por subtema
   crecimiento_pib:
     fuente: indicador
     id: NY.GDP.MKTP.KD.ZG
-    relacion: mide_directamente
+    relacion: directa
     limitacion: "Dato anual; no describe el estado actual ni el último trimestre."
   inflacion_precios:
     fuente: indicador
     id: FP.CPI.TOTL.ZG
-    relacion: mide_directamente
+    relacion: directa
     limitacion: "Dato anual de inflación al consumidor; no es el precio de un producto concreto."
   empleo:
     fuente: indicador
     id: SL.UEM.TOTL.ZS
-    relacion: mide_directamente
+    relacion: directa
     limitacion: "Dato anual de desempleo; el último año suele revisarse."
   comercio_exterior:
     fuente: indicador
     id: NE.EXP.GNFS.ZS
-    relacion: mide_directamente
+    relacion: directa
     limitacion: "Exportaciones de bienes y servicios como % del PIB, anual; no desglosa por producto."
   telecomunicaciones:
     fuente: indicador
     id: IT.NET.USER.ZS
-    relacion: mide_directamente
+    relacion: directa
     limitacion: "Uso de internet como % de la población, anual; no mide la falla puntual."
-  agua_potable:
-    fuente: indicador
-    id: SP.POP.TOTL
-    relacion: escala_poblacional
-    limitacion: "Población total anual; solo da escala, no cobertura del servicio."
-  salud_publica:
-    fuente: indicador
-    id: SP.POP.TOTL
-    relacion: escala_poblacional
-    limitacion: "Población total anual; solo da escala, no demanda hospitalaria."
-  educacion_publica:
-    fuente: indicador
-    id: SP.POP.TOTL
-    relacion: escala_poblacional
-    limitacion: "Población total anual; solo da escala, no matrícula."
   sismos:
     fuente: usgs
-    relacion: coincidencia_temporal
+    relacion: evento
     limitacion: "La caja de USGS no es Panamá: mostrar siempre el place original; solo sirve para hechos sísmicos."
+
+vinculos_por_tema:                  # cualquier subtema del tema
+  logistica:
+    fuente: indicador
+    id: NE.EXP.GNFS.ZS
+    relacion: indirecta
+    limitacion: "No mide tránsitos ni carga; es solo el contexto de exportaciones como % del PIB, anual."

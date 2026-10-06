@@ -8,12 +8,13 @@ escritas y trampas de YAML como ``no`` → ``False``.
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from pathlib import Path
 from typing import Literal, TypeVar
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
 RAIZ = Path(__file__).resolve().parent.parent
 CARPETA_CONFIG = RAIZ / "config"
@@ -356,7 +357,7 @@ def cargar_exploracion(carpeta: Path | None = None) -> ConfigExploracion:
 # ------------------------------------------------------------------ reglas_v1.3.yaml (E1-05)
 
 Unidad = Field(ge=0, le=1)
-TOLERANCIA = 1e-9
+TOLERANCIA = 1e-9  # épsilon numérico de la comparación de sumas en coma flotante; no es un parámetro del negocio
 
 
 def _suma_es(valores: list[float], objetivo: float, que: str) -> None:
@@ -391,7 +392,16 @@ class Rangos(ModeloConfig):
     def _contiguos(self) -> Rangos:
         if not (self.bajo.desde < self.bajo.hasta == self.medio.desde < self.medio.hasta == self.alto.desde < self.alto.hasta):
             raise ValueError("los rangos deben ser contiguos y crecientes (bajo, medio, alto)")
+        if self.bajo.desde != 0 or self.alto.hasta != 100:
+            raise ValueError("los rangos deben cubrir de 0 a 100")
         return self
+
+
+class Percentil(ModeloConfig):
+    """Las similitudes se convierten a percentil dentro del snapshot antes de usarse (D-35)."""
+
+    ambito: Literal["snapshot"]
+    aplica_a: list[str]
 
 
 class Relevancia(ModeloConfig):
@@ -461,6 +471,7 @@ class EstadoEvidencia(ModeloConfig):
     procedencias_suficiente: int = Field(ge=1)
     procedencias_parcial_con_oficial: int = Field(ge=1)
     oficial_obligatorio_si_hay_cifras: bool
+    sin_contradiccion_abierta_para_suficiente: Literal[True]  # diseño: suficiente exige no tener contradicción abierta
 
 
 class Agrupacion(ModeloConfig):
@@ -483,6 +494,7 @@ class ReglasV13(ModeloConfig):
     pesos: Pesos
     rangos: Rangos
     desempate: list[Literal["u_desc", "id_asc"]]
+    percentil: Percentil
     relevancia: Relevancia
     impacto: Impacto
     urgencia: Urgencia
@@ -492,6 +504,13 @@ class ReglasV13(ModeloConfig):
     agrupacion: Agrupacion
     agencias: list[str]
     geografia: Geografia
+
+    @field_validator("desempate")
+    @classmethod
+    def _desempate_valido(cls, v: list[str]) -> list[str]:
+        if not v or len(set(v)) != len(v):
+            raise ValueError("desempate: debe tener al menos un criterio y no repetirlos")
+        return v
 
 
 def cargar_reglas(carpeta: Path | None = None) -> ReglasV13:
@@ -535,13 +554,15 @@ class ConfigTemas(ModeloConfig):
     """Modelo de ``config/temas.yaml``: exactamente los 6 temas del reto."""
 
     version: str
+    cantidad_temas: int
+    sectores_validos: list[str]  # D-11 (propuesta): sectores del boletín de banca
     temas: dict[str, Tema]
     fuera_de_temas: FueraDeTemas
 
     @model_validator(mode="after")
-    def _seis_temas(self) -> ConfigTemas:
-        if len(self.temas) != 6:
-            raise ValueError(f"deben ser 6 temas, hay {len(self.temas)}")
+    def _cantidad_de_temas(self) -> ConfigTemas:
+        if len(self.temas) != self.cantidad_temas:
+            raise ValueError(f"cantidad_temas: son {self.cantidad_temas} y hay {len(self.temas)} temas")
         ids = [s for t in self.temas.values() for s in t.subtemas]
         if len(ids) != len(set(ids)):
             raise ValueError("un subtema se repite entre temas")
@@ -574,13 +595,18 @@ class ConfigVinculos(ModeloConfig):
 
     version: str
     tipos_relacion: dict[str, str]
+    motivos_sin_vinculo: list[str]
+    motivo_por_defecto: str
     ventana_coincidencia_dias: int = Field(ge=0)
     pais_por_defecto: str
-    vinculos: dict[str, Vinculo]
+    vinculos: dict[str, Vinculo]  # por subtema
+    vinculos_por_tema: dict[str, Vinculo]  # cualquier subtema del tema
 
     @model_validator(mode="after")
     def _relaciones_declaradas(self) -> ConfigVinculos:
-        malas = {v.relacion for v in self.vinculos.values()} - set(self.tipos_relacion)
+        if self.motivo_por_defecto not in self.motivos_sin_vinculo:
+            raise ValueError("motivo_por_defecto debe estar en motivos_sin_vinculo")
+        malas = {v.relacion for v in (*self.vinculos.values(), *self.vinculos_por_tema.values())} - set(self.tipos_relacion)
         if malas:
             raise ValueError(f"relaciones no declaradas en tipos_relacion: {sorted(malas)}")
         return self
@@ -603,13 +629,17 @@ class MedioReferencia(ModeloConfig):
     dominio: str
 
 
+# "publicar" y sus formas; no rechaza "público" ni "pública" (servicio público).
+FORMAS_DE_PUBLICAR = re.compile(r"\bpublic(ar|ar[ée]|ar[áa]n?|ado|ada|ados|adas|ando|arse|aci[óo]n|a|an|ue|uen)\b", re.IGNORECASE)
+
+
 class Accion(ModeloConfig):
     accion: str
     motivo: str
 
     @model_validator(mode="after")
     def _sin_publicar(self) -> Accion:
-        if "public" in f"{self.accion} {self.motivo}".lower():
+        if FORMAS_DE_PUBLICAR.search(f"{self.accion} {self.motivo}"):
             raise ValueError("ninguna acción ni motivo puede hablar de publicar")
         return self
 
@@ -634,9 +664,12 @@ class ConfigModalidad(ModeloConfig):
     nombre: str
     usuario: str
     medio_referencia: MedioReferencia | None = None
+    grupos_restricciones: list[str]  # grupos de restricciones.yaml que aplican a la modalidad
     tabla_acciones: TablaAcciones
     fuentes_sugeridas_extra: list[str]
-    sectores_por_tema: dict[str, str] = Field(default_factory=dict)  # banca: tema -> sector
+    # Banca (D-11): tema -> sector; el alcance de I se mide por sector en lugar de subtema (diseño, reglas v1.3).
+    sectores_por_tema: dict[str, str] = Field(default_factory=dict)
+    alcance_por_sector: dict[str, float] = Field(default_factory=dict)
 
 
 def cargar_modalidad(modalidad: str, carpeta: Path | None = None) -> ConfigModalidad:
@@ -644,7 +677,23 @@ def cargar_modalidad(modalidad: str, carpeta: Path | None = None) -> ConfigModal
     cfg = cargar_config(f"modalidad_{modalidad}", ConfigModalidad, carpeta)
     if cfg.modalidad != modalidad:
         raise ErrorDeConfiguracion(f"modalidad_{modalidad}.yaml: declara modalidad '{cfg.modalidad}'")
+    _validar_sectores(cfg, carpeta)
     return cfg
+
+
+def _validar_sectores(cfg: ConfigModalidad, carpeta: Path | None) -> None:
+    """Los temas y sectores de la banca deben existir en temas.yaml (sectores de D-11)."""
+    if not cfg.sectores_por_tema and not cfg.alcance_por_sector:
+        return
+    ruta = carpeta if carpeta is not None and (carpeta / "temas.yaml").exists() else CARPETA_CONFIG
+    temas = cargar_temas(ruta)
+    problemas = [f"tema desconocido en sectores_por_tema: {t}" for t in cfg.sectores_por_tema if t not in temas.temas]
+    problemas += [f"sector fuera de D-11 en sectores_por_tema: {s}" for s in cfg.sectores_por_tema.values() if s not in temas.sectores_validos]
+    problemas += [f"sector desconocido en alcance_por_sector: {s}" for s in cfg.alcance_por_sector if s not in temas.sectores_validos]
+    problemas += [f"alcance_por_sector sin valor en [0, 1] para {s}" for s, v in cfg.alcance_por_sector.items() if not 0 <= v <= 1]
+    problemas += [f"sector sin alcance_por_sector: {s}" for s in set(cfg.sectores_por_tema.values()) if s not in cfg.alcance_por_sector]
+    if problemas:
+        raise ErrorDeConfiguracion(f"modalidad_{cfg.modalidad}.yaml: " + "; ".join(problemas))
 
 
 # ------------------------------------------------------------------ salidas.yaml y restricciones.yaml (E1-05)
@@ -696,25 +745,24 @@ class LeyendasAlcance(ModeloConfig):
     con_descripcion: str
 
 
-class FrasesProhibidas(ModeloConfig):
-    lectura_simulada: list[str]
-    entrevistas: list[str]
-    imagenes: list[str]
-    recomendacion: list[str]
-    certeza: list[str]
+GRUPOS_RESTRICCIONES = ("comunes", "editorial", "banca")
 
 
 class ConfigRestricciones(ModeloConfig):
-    """Modelo de ``config/restricciones.yaml`` (D-25, D-51)."""
+    """Modelo de ``config/restricciones.yaml`` (D-25, D-51): listas agrupadas; cada modalidad declara las que aplican."""
 
     version: str
     marca_borrador: str
     marcador_visual: str
     aviso_banca: str
     leyendas_alcance: LeyendasAlcance
-    frases_prohibidas: FrasesProhibidas
-    frases_prohibidas_en_inferencias: list[str]
-    palabras_sensacionalistas: list[str]
+    grupos: dict[str, dict[str, list[str]]]
+
+    @model_validator(mode="after")
+    def _grupos_esperados(self) -> ConfigRestricciones:
+        if set(self.grupos) != set(GRUPOS_RESTRICCIONES):
+            raise ValueError(f"grupos debe tener exactamente {GRUPOS_RESTRICCIONES}")
+        return self
 
 
 def cargar_restricciones(carpeta: Path | None = None) -> ConfigRestricciones:
@@ -745,33 +793,61 @@ def validar_coherencia(carpeta: Path | None = None) -> list[str]:
     desconocidos = set(vinculos.vinculos) - subtemas
     if desconocidos:
         problemas.append(f"vinculos.yaml: subtemas inexistentes: {sorted(desconocidos)}")
+    sin_tema = set(vinculos.vinculos_por_tema) - set(temas.temas)
+    if sin_tema:
+        problemas.append(f"vinculos.yaml: temas inexistentes en vinculos_por_tema: {sorted(sin_tema)}")
     indicadores = set(cargar_fuentes(carpeta).banco_mundial.indicadores)
-    for sub, v in vinculos.vinculos.items():
+    for sub, v in (*vinculos.vinculos.items(), *vinculos.vinculos_por_tema.items()):
         if v.fuente == "indicador" and v.id not in indicadores:
             problemas.append(f"vinculos.yaml: {sub} usa el indicador {v.id}, que no está en fuentes.yaml")
     reales = {e.id_noticia for t in temas.temas.values() for e in t.ejemplos if e.real}
     excluidos = _ids_excluidos(carpeta / "ejemplos_excluidos.txt")
     if reales != excluidos:
         problemas.append(f"ejemplos_excluidos.txt no coincide con los ejemplos reales de temas.yaml: {sorted(reales ^ excluidos)}")
-    for modalidad in ("editorial", "banca"):
+    grupos = set(cargar_restricciones(carpeta).grupos)
+    for modalidad in MODALIDADES:
         if (carpeta / f"modalidad_{modalidad}.yaml").exists():
-            cargar_modalidad(modalidad, carpeta)
+            faltan = set(cargar_modalidad(modalidad, carpeta).grupos_restricciones) - grupos
+            if faltan:
+                problemas.append(f"modalidad_{modalidad}.yaml: grupos_restricciones inexistentes: {sorted(faltan)}")
     return problemas
 
 
-ARCHIVOS_VALIDADOS = ["fuentes", "exploracion", "reglas_v1.3", "temas", "vinculos", "modalidad_editorial", "salidas", "restricciones"]
+MODALIDADES = ("editorial", "banca")
+OPCIONALES = {"modalidad_banca"}  # el esquema la admite aunque todavía no exista
+
+# Un cargador por YAML de config/: `--validar` los recorre todos y falla ante uno sin modelo registrado.
+CARGADORES = {
+    "fuentes": cargar_fuentes,
+    "exploracion": cargar_exploracion,
+    "carga": cargar_carga,
+    "contrato": cargar_contrato,
+    "reglas_v1.3": cargar_reglas,
+    "temas": cargar_temas,
+    "vinculos": cargar_vinculos,
+    "salidas": cargar_salidas,
+    "restricciones": cargar_restricciones,
+    "modalidad_editorial": lambda c=None: cargar_modalidad("editorial", c),
+    "modalidad_banca": lambda c=None: cargar_modalidad("banca", c),
+}
 
 
 def validar_todo(carpeta: Path | None = None) -> list[str]:
-    """Carga cada YAML con su modelo estricto y valida la coherencia; lanza el primer error."""
-    cargar_fuentes(carpeta)
-    cargar_exploracion(carpeta)
-    cargar_salidas(carpeta)
-    cargar_restricciones(carpeta)
+    """Carga cada YAML de la carpeta con su modelo estricto y valida la coherencia; lanza el primer error."""
+    carpeta = carpeta or CARPETA_CONFIG
+    presentes = sorted(p.stem for p in carpeta.glob("*.yaml"))
+    sin_modelo = [n for n in presentes if n not in CARGADORES]
+    if sin_modelo:
+        raise ErrorDeConfiguracion(f"YAML sin modelo registrado en configuracion.CARGADORES: {sin_modelo}")
+    faltan = sorted(set(CARGADORES) - set(presentes) - OPCIONALES)
+    if faltan:
+        raise ErrorDeConfiguracion(f"faltan YAML obligatorios en {carpeta}: {faltan}")
+    for nombre in presentes:
+        CARGADORES[nombre](carpeta)
     problemas = validar_coherencia(carpeta)
     if problemas:
         raise ErrorDeConfiguracion("; ".join(problemas))
-    return ARCHIVOS_VALIDADOS
+    return presentes
 
 
 def principal(argv: list[str] | None = None) -> int:

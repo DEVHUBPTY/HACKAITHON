@@ -1,5 +1,6 @@
-# Restricciones comunes de toda salida (D-25, D-51, docs/salidas.md). La leyenda de alcance no cuenta para los
-# límites de palabras y el validador no la revisa contra las frases prohibidas.
+# Restricciones de las salidas (D-25, D-51, docs/salidas.md). La leyenda de alcance no cuenta para los límites de
+# palabras y el validador no la revisa contra las frases prohibidas.
+# Cada modalidad declara en `grupos_restricciones` qué grupos le aplican (sin `if modalidad` en el código).
 version: "1.0"
 
 marca_borrador: "BORRADOR · requiere revisión"
@@ -10,17 +11,15 @@ leyendas_alcance:
   titular_metadatos: "basado únicamente en titular/metadatos"
   con_descripcion: "basado en titular, descripción del RSS y metadatos; no se leyó el artículo completo"
 
-# Frases prohibidas por categoría (comparación sin tildes ni mayúsculas). Se rechazan salvo que estén literalmente
-# en un titular citado como declaración.
-frases_prohibidas:
-  lectura_simulada: ["según el artículo", "el artículo completo detalla", "al leer la nota", "en el cuerpo de la nota", "tras leer el artículo", "como explica la nota"]
-  entrevistas: ["en entrevista con", "declaró a este medio", "consultado por", "en conversación con", "dijo a este medio"]
-  imagenes: ["en estas imágenes", "como vemos", "las imágenes muestran", "en el video se ve", "como se aprecia en la foto"]
-  recomendacion: ["comprar", "vender", "invertir", "recomendamos", "conviene"]
-  certeza: ["ocurrirá", "sin duda", "inevitable", "con certeza"]
-
-# Solo en inferencias e hipótesis (permitido en una declaración que lo cite literalmente de un titular).
-frases_prohibidas_en_inferencias: ["pérdidas", "impago", "morosidad", "exposición", "cartera", "default", "riesgo de crédito", "score"]
-
-# Palabras sensacionalistas prohibidas en títulos, titulares, brief, guion y copy (D-25).
-palabras_sensacionalistas: [escándalo, bombazo, impactante, alarmante, increíble, aterrador, caos, brutal, explosivo, devastador, urgente]
+# Comparación sin tildes ni mayúsculas. Se rechazan salvo que estén literalmente en un titular citado como declaración.
+grupos:
+  comunes:                          # toda modalidad
+    lectura_simulada: ["según el artículo", "el artículo completo detalla", "al leer la nota", "en el cuerpo de la nota", "tras leer el artículo", "como explica la nota"]
+    sensacionalistas: [escándalo, bombazo, impactante, alarmante, increíble, aterrador, caos, brutal, explosivo, devastador, urgente]
+  editorial:                        # docs/salidas.md §1: PDF prohíbe inventar entrevistas e imágenes
+    entrevistas: ["en entrevista con", "declaró a este medio", "consultado por", "en conversación con", "dijo a este medio"]
+    imagenes: ["en estas imágenes", "como vemos", "las imágenes muestran", "en el video se ve", "como se aprecia en la foto"]
+  banca:                            # docs/salidas.md §2: PDF prohíbe recomendar, inferir pérdidas y alertas definitivas
+    recomendacion: ["comprar", "vender", "invertir", "recomendamos", "conviene"]
+    certeza: ["ocurrirá", "sin duda", "inevitable", "con certeza"]
+    perdidas_en_inferencias: ["pérdidas", "impago", "morosidad", "exposición", "cartera", "default", "riesgo de crédito", "score"]   # solo inferencias e hipótesis

@@ -16,6 +16,10 @@ rangos:                     # [desde, hasta): el último incluye su límite supe
 
 desempate: [u_desc, id_asc]  # mayor U; si empatan, menor ID
 
+percentil:                  # las similitudes se convierten a percentil dentro del snapshot antes de usarse (D-35)
+  ambito: snapshot
+  aplica_a: [similitud_tematica_r, similitud_maxima_n]
+
 relevancia:                 # R = peso_foco × foco + peso_tematica × percentil(similitud temática)
   peso_foco: 0.5
   peso_tematica: 0.5
@@ -85,8 +89,9 @@ evidencia:                  # E (v1.3, D-56)
 
 estado_evidencia:           # independiente de P
   procedencias_suficiente: 2
-  procedencias_parcial_con_oficial: 1   # una procedencia + dato o evento oficial = parcial
+  procedencias_parcial_con_oficial: 1   # diseño: parcial = 2+ procedencias, o 1 procedencia + dato oficial
   oficial_obligatorio_si_hay_cifras: true
+  sin_contradiccion_abierta_para_suficiente: true   # diseño: suficiente = 2+ procedencias, sin contradicción abierta y cifras con dato oficial
 
 agrupacion:
   ventana_dias: 7

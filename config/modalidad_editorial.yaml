@@ -1,4 +1,4 @@
-# Modalidad editorial (TVN). Lo único que cambia entre modalidades vive en un YAML como este (D-01).
+# Modalidad editorial (TVN). Lo único que cambia entre modalidades vive en un YAML como este (D-01, D-38).
 version: "1.0"
 modalidad: editorial
 nombre: "Editorial (TVN)"
@@ -8,20 +8,23 @@ medio_referencia:               # alimenta "¿el medio de referencia ya lo cubri
   nombre: "TVN Panamá"
   dominio: tvn-2.com
 
-# Tabla 3×3 rango × estado de evidencia (D-17). Ninguna acción habilita publicar ni emite alerta definitiva.
-# Todo lo que se produce es BORRADOR. Qué se genera por acción: D-42 (docs/salidas.md).
+# Grupos de config/restricciones.yaml que validan las salidas de esta modalidad.
+grupos_restricciones: [comunes, editorial]
+
+# Tabla 3×3 rango × estado de evidencia, tal como el diseño de solución "Acción recomendada" (D-35, D-38).
+# Ninguna celda habilita publicar ni emite alerta definitiva. Qué se genera por acción: D-42 (docs/salidas.md).
 tabla_acciones:
   alto:
-    insuficiente: {accion: "Investigar ya", motivo: "Mucha atención potencial pero poco respaldo: conviene verificar antes de redactar."}
-    parcial: {accion: "Completar evidencia y producir", motivo: "Atención alta con respaldo parcial: se produce el borrador con los vacíos destacados."}
-    suficiente: {accion: "Producir borrador", motivo: "Atención alta y respaldo suficiente."}
+    suficiente: {accion: "Producir borrador", motivo: "Atención alta y evidencia suficiente para el borrador."}
+    parcial: {accion: "Completar evidencia y producir", motivo: "Atención alta con evidencia parcial: se produce el borrador con los vacíos arriba."}
+    insuficiente: {accion: "Investigar ya", motivo: "Atención alta pero evidencia insuficiente: verificar antes de redactar."}
   medio:
-    insuficiente: {accion: "Vigilar", motivo: "Atención media y poco respaldo: seguir el tema hasta que haya más fuentes."}
-    parcial: {accion: "Completar evidencia y producir", motivo: "Atención media con respaldo parcial."}
-    suficiente: {accion: "Producir borrador", motivo: "Atención media y respaldo suficiente."}
+    suficiente: {accion: "Borrador opcional", motivo: "Atención media con evidencia suficiente: el borrador es opcional."}
+    parcial: {accion: "Vigilar", motivo: "Atención media con evidencia parcial: seguir el tema."}
+    insuficiente: {accion: "Vigilar", motivo: "Atención media con evidencia insuficiente: seguir el tema."}
   bajo:
-    insuficiente: {accion: "Archivar", motivo: "Atención baja y poco respaldo."}
-    parcial: {accion: "Archivar", motivo: "Atención baja: no justifica completar la evidencia."}
-    suficiente: {accion: "Vigilar", motivo: "Bien respaldado pero de atención baja: puede crecer."}
+    suficiente: {accion: "Archivar como contexto", motivo: "Atención baja: se conserva como contexto."}
+    parcial: {accion: "Archivar", motivo: "Atención baja con evidencia parcial."}
+    insuficiente: {accion: "Archivar", motivo: "Atención baja con evidencia insuficiente."}
 
-fuentes_sugeridas_extra: []     # sugerencias editoriales adicionales por subtema (D-37); nunca son evidencia
+fuentes_sugeridas_extra: []     # editorial: ninguna (D-38); banca: SBP, MEF, INEC
