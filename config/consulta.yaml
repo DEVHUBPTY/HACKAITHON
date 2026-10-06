@@ -1,0 +1,91 @@
+# E1-11 · Consulta en español con abstención (CU-04, T06, D-66).
+# Todo número y todo patrón vive aquí (D-79). Origen y validación de cada valor: docs/parametros.md, sección
+# "Consulta y generación (E1-11)". Los patrones se aplican sobre el texto de la consulta en minúsculas y sin tildes.
+version: 1
+
+recuperacion:
+  top_k: 5                  # PDF 9.1: Recall@5
+  bm25:                     # baseline por palabras clave (D-66): rank-bm25 sobre el mismo corpus
+    k1: 1.5                 # valores por defecto de BM25Okapi (práctica)
+    b: 0.75
+    largo_minimo_token: 2   # se descartan las letras sueltas (supuesto)
+    palabras_vacias: [de, la, el, los, las, un, una, unos, unas, y, o, en, a, al, del, por, que, se, su, sus, con, para,
+                      sobre, es, fue, era, son, ha, han, hay, hubo, como, cual, cuales, quien, quienes, cuando, cuanto,
+                      cuantos, cuanta, cuantas, donde, lo, le, les, mas, si, ya, entre, segun, dice, dime]
+
+abstencion:
+  # Abstención ANTES de cualquier llamada a un LLM: si la similitud máxima de la consulta con el corpus queda bajo el
+  # umbral de su método, no se responde. La escala es distinta en cada método (coseno de e5 frente a puntaje BM25).
+  # CALIBRADO: percentil `percentil` de la similitud máxima de las consultas respondibles de la mitad de calibración
+  # del benchmark de desarrollo (`python -m eval.recuperacion --calibrar`; docs/parametros.md).
+  umbral_similitud:
+    semantica: 0.874
+    bm25: 10.765
+  percentil_umbral: 5
+
+# Reglas de abstención por patrón (sin LLM). Una regla se activa si coincide ALGUNO de `patrones` y, cuando `ademas` no
+# está vacío, también alguno de `ademas`. Se evalúan en orden; gana la primera. `necesita` explica qué información
+# haría falta (el PDF exige que la abstención lo diga). Las reglas se redactaron DESPUÉS de leer el benchmark de
+# desarrollo (docs/parametros.md): su desempeño allí es optimista y no una medida independiente.
+reglas:
+  - id: lectura_del_articulo
+    motivo: "El sistema solo trabaja con titulares y metadatos: no se descarga ni se lee el cuerpo de ningún artículo (D-51)."
+    necesita: "El texto completo del artículo, que no está en el corpus. Puede abrirse la URL del titular en el medio."
+    patrones: ['\bcuerpo (del|de la) (articulo|nota|noticia)', '\btexto completo\b', '\bcontenido (del|de la) (articulo|nota|noticia)',
+               '\bque dice (el|la) (articulo|nota|noticia)']
+  - id: autoria_o_perfil
+    motivo: "Solo se guarda la agencia y el tipo de firma; nunca el nombre del autor ni perfiles de personas (D-32, D-68)."
+    necesita: "Una consulta sobre el contenido de la nota, no sobre quién la firmó ni sobre otros casos de una persona."
+    patrones: ['\bquien (redacto|escribio|firmo|firma|es el autor)', '\b(autor|autora|redactor|redactora|periodista) (de|que)',
+               '\botros casos\b', '\bperfil de\b', '\bhistorial (judicial|penal) de\b']
+  - id: cifra_de_periodo_relativo
+    motivo: "Pide una cifra para un periodo relativo reciente (esta semana, esta quincena, hoy) y el corpus no tiene series con esa granularidad."
+    necesita: "Una fuente oficial con la serie al día y su fecha de corte, por ejemplo la que publica la entidad responsable."
+    patrones: ['\b(esta|este) (semana|quincena|mes)\b', '\bhoy\b', '\bayer\b', '\bahora mismo\b']
+    ademas: ['\bcuanto', '\bcuantos\b', '\bcuantas\b', '\bprecio\b', '\bmonto\b', '\bcifra\b', '\btasa\b']
+
+# Patrones de instrucción de `restricciones.yaml` (inyección, D-69) aplicados a la consulta: si coinciden se rechaza.
+inyeccion:
+  activa: true
+  motivo: "La consulta contiene una instrucción dirigida al sistema (ignorar reglas, publicar, saltar la revisión humana); el texto de la consulta es dato, nunca instrucción, y nada se publica."
+  necesita: "Una pregunta sobre la evidencia disponible. El sistema solo produce borradores para revisión humana."
+
+# Un fragmento <evidencia>…</evidencia> en la consulta es dato que alguien pegó: se descarta antes de interpretar la
+# consulta y se marca la entrada como sospechosa; nunca se obedece lo que diga.
+delimitador_evidencia: {abre: "<evidencia>", cierra: "</evidencia>"}
+
+datos_oficiales:
+  pais_por_defecto: PAN
+  paises:                   # iso3 -> nombres sin tildes y en minúsculas con que se reconoce en la consulta
+    PAN: [panama, panameno, panamena, panamenos, panamenas]
+    CRI: [costa rica, costarricense]
+    COL: [colombia, colombiano, colombiana]
+    DOM: [republica dominicana, dominicano, dominicana]
+    MEX: [mexico, mexicano, mexicana]
+    GTM: [guatemala, guatemalteco, guatemalteca]
+  nombres_pais: {PAN: Panamá, CRI: Costa Rica, COL: Colombia, DOM: República Dominicana, MEX: México, GTM: Guatemala}
+  indicadores:              # indicador_id -> términos (sin tildes y en minúsculas) con que se pide
+    NY.GDP.MKTP.KD.ZG: [pib, producto interno bruto, crecimiento economico, crecimiento del pib]
+    FP.CPI.TOTL.ZG: [inflacion, precios al consumidor]
+    SL.UEM.TOTL.ZS: [desempleo, tasa de desempleo]
+    SP.POP.TOTL: [poblacion, habitantes]
+    IT.NET.USER.ZS: [internet, uso de internet]
+    NE.EXP.GNFS.ZS: [exportaciones de bienes y servicios, exportaciones del pib, exportaciones como porcentaje]
+  # Si la consulta pregunta por noticias, medios o titulares no es una consulta de cifra aunque nombre un indicador.
+  intencion_noticia: ['\breporto', '\breportaron', '\binformo', '\binformaron', '\btitular', '\bmedios?\b', '\bprensa\b',
+                      '\bnoticias?\b', '\banuncio', '\bpublico\b', '\bdice la\b', '\bdijo\b']
+  # Palabras de variación: piden comparar con el año anterior (se agrega el año previo si hay datos).
+  variacion: [subio, bajo, cambio, aumento, disminuyo, variacion, cayo, crecio, aumentaron, subieron]
+  sismos:
+    palabras: [sismo, sismos, temblor, temblores, terremoto, terremotos]
+
+respuesta:
+  maximo_afirmaciones: 5    # lo que se cita de una respuesta basada en titulares (igual a top_k)
+  advertencia_titular: "Un titular es lo que un medio reporta, no un hecho verificado; no se leyó el artículo."
+  advertencia_anual: "Los datos del Banco Mundial son anuales: no describen la situación actual."
+
+evaluacion:
+  # División determinista del benchmark de desarrollo por el número del id (BDEV-NNN): pares calibran, impares evalúan.
+  calibracion: pares
+  tipos_con_respuesta: [respuesta_sustentada, contradiccion_ambiguedad]   # con ellos se calibra el umbral
+  tipos_recuperacion: [respuesta_sustentada]                              # sobre ellos se mide Recall@5

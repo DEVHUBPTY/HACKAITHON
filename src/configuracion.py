@@ -961,6 +961,12 @@ def validar_coherencia(carpeta: Path | None = None) -> list[str]:
         esperados = set(FueraDeTemas.model_fields) | MOTIVOS_RUIDO_HUMANO_EXTRA
         if motivos != esperados:
             problemas.append(f"etiquetado.yaml: ruido.motivos {sorted(motivos)} debe ser fuera_de_temas de temas.yaml más {sorted(MOTIVOS_RUIDO_HUMANO_EXTRA)}")
+    if (carpeta / "consulta.yaml").exists():
+        oficiales = cargar_consulta(carpeta).datos_oficiales
+        if set(oficiales.indicadores) != indicadores:
+            problemas.append(f"consulta.yaml: datos_oficiales.indicadores y fuentes.yaml difieren: {sorted(set(oficiales.indicadores) ^ indicadores)}")
+        if set(oficiales.paises) != set(cargar_fuentes(carpeta).banco_mundial.paises):
+            problemas.append("consulta.yaml: datos_oficiales.paises y banco_mundial.paises de fuentes.yaml difieren")
     grupos = set(cargar_restricciones(carpeta).grupos)
     for modalidad in MODALIDADES:
         if (carpeta / f"modalidad_{modalidad}.yaml").exists():
@@ -1373,6 +1379,123 @@ def cargar_etiquetado(carpeta: Path | None = None) -> ConfigEtiquetado:
     return cargar_config("etiquetado", ConfigEtiquetado, carpeta)
 
 
+# ------------------------------------------------------------------ consulta.yaml (E1-11)
+
+
+class Bm25Consulta(ModeloConfig):
+    k1: float = Field(gt=0)
+    b: float = Field(ge=0, le=1)
+    largo_minimo_token: int = Field(ge=1)
+    palabras_vacias: list[str]
+
+
+class RecuperacionConsulta(ModeloConfig):
+    top_k: int = Field(ge=1)
+    bm25: Bm25Consulta
+
+
+class AbstencionConsulta(ModeloConfig):
+    umbral_similitud: dict[str, float]
+    percentil_umbral: float = Field(gt=0, lt=100)
+
+    @model_validator(mode="after")
+    def _metodos(self) -> AbstencionConsulta:
+        if set(self.umbral_similitud) != {"semantica", "bm25"}:
+            raise ValueError("umbral_similitud: deben estar exactamente 'semantica' y 'bm25'")
+        return self
+
+
+class ReglaAbstencion(ModeloConfig):
+    """Regla de abstención por patrón: coincide algún patrón y, si hay `ademas`, también alguno de ellos."""
+
+    id: str
+    motivo: str
+    necesita: str
+    patrones: list[str] = Field(min_length=1)
+    ademas: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _regex(self) -> ReglaAbstencion:
+        _compilar_todas([*self.patrones, *self.ademas], f"consulta.reglas.{self.id}")
+        return self
+
+
+class InyeccionConsulta(ModeloConfig):
+    activa: bool
+    motivo: str
+    necesita: str
+
+
+class Delimitador(ModeloConfig):
+    abre: str = Field(min_length=1)
+    cierra: str = Field(min_length=1)
+
+
+class SismosConsulta(ModeloConfig):
+    palabras: list[str] = Field(min_length=1)
+
+
+class DatosOficialesConsulta(ModeloConfig):
+    pais_por_defecto: str
+    paises: dict[str, list[str]]
+    nombres_pais: dict[str, str]
+    indicadores: dict[str, list[str]]
+    intencion_noticia: list[str]
+    variacion: list[str]
+    sismos: SismosConsulta
+
+    @model_validator(mode="after")
+    def _coherente(self) -> DatosOficialesConsulta:
+        if self.pais_por_defecto not in self.paises:
+            raise ValueError("pais_por_defecto: debe estar en paises")
+        if set(self.nombres_pais) != set(self.paises):
+            raise ValueError("nombres_pais: debe tener los mismos países que paises")
+        if any(not v for v in [*self.paises.values(), *self.indicadores.values()]):
+            raise ValueError("paises e indicadores: cada uno necesita al menos un término")
+        _compilar_todas(self.intencion_noticia, "consulta.datos_oficiales.intencion_noticia")
+        return self
+
+
+class RespuestaConsultaConfig(ModeloConfig):
+    maximo_afirmaciones: int = Field(ge=1)
+    advertencia_titular: str
+    advertencia_anual: str
+
+
+class EvaluacionConsulta(ModeloConfig):
+    calibracion: Literal["pares", "impares"]
+    tipos_con_respuesta: list[TipoConsulta]
+    tipos_recuperacion: list[TipoConsulta]
+
+
+class ConfigConsulta(ModeloConfig):
+    """Modelo de ``config/consulta.yaml``."""
+
+    version: int
+    recuperacion: RecuperacionConsulta
+    abstencion: AbstencionConsulta
+    reglas: list[ReglaAbstencion]
+    inyeccion: InyeccionConsulta
+    delimitador_evidencia: Delimitador
+    datos_oficiales: DatosOficialesConsulta
+    respuesta: RespuestaConsultaConfig
+    evaluacion: EvaluacionConsulta
+
+    @model_validator(mode="after")
+    def _coherente(self) -> ConfigConsulta:
+        ids = [r.id for r in self.reglas]
+        if len(ids) != len(set(ids)):
+            raise ValueError("reglas: ids repetidos")
+        if self.respuesta.maximo_afirmaciones > self.recuperacion.top_k:
+            raise ValueError("respuesta.maximo_afirmaciones no puede superar recuperacion.top_k")
+        return self
+
+
+def cargar_consulta(carpeta: Path | None = None) -> ConfigConsulta:
+    """Atajo para ``config/consulta.yaml``."""
+    return cargar_config("consulta", ConfigConsulta, carpeta)
+
+
 MODALIDADES = ("editorial", "banca")
 OPCIONALES = {"modalidad_banca"}  # el esquema la admite aunque todavía no exista
 
@@ -1395,6 +1518,7 @@ CARGADORES = {
     "normalizacion": cargar_normalizacion,
     "clasificacion": cargar_clasificacion,
     "etiquetado": cargar_etiquetado,
+    "consulta": cargar_consulta,
 }
 
 
