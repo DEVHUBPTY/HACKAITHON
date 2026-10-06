@@ -93,10 +93,21 @@ estado_evidencia:           # independiente de P
   oficial_obligatorio_si_hay_cifras: true
   sin_contradiccion_abierta_para_suficiente: true   # diseño: suficiente = 2+ procedencias, sin contradicción abierta y cifras con dato oficial
 
-agrupacion:
-  ventana_dias: 7
-  umbral_similitud: null    # calibrado con etiquetas en E1-08 (D-16); aún por definir
+agrupacion:                 # E1-08 · AgglomerativeClustering(metric='cosine', linkage='average'); distance_threshold = 1 − umbral_similitud
+  ventana_dias: 7           # dos titulares separados por más días no se unen (se parte el grupo, no se mueve el umbral)
+  prefijo_id: "GRP-"        # D-63: GRP- = hash de los NOT- del grupo, ordenados
+  largo_hash_id: 10         # caracteres del SHA-1 (el mismo largo que NOT-, normalizacion.yaml)
+  separador_ids: "|"        # une los NOT- ordenados antes del hash
+  modelo: minilm            # modelo de clasificacion.yaml con el que se agrupa y con el que se calibró el umbral (no vale para otro)
+  umbral_similitud: 0.69    # coseno promedio mínimo para unir; lo fija `python -m eval.agrupacion` (barrido de F1 de pares, D-16)
   umbral_mismo_texto: 0.95  # procedencias: misma nota republicada
+  usar_descripcion: false   # se agrupa por titular: la descripción del RSS es de uso interno y los grupos se etiquetaron por titular
+  campos_fecha: [fecha_publicacion, fecha_deteccion]   # prioridad al fechar un titular; la detección solo es una cota: la ventana de D-74 se mide sobre ella
+  calibracion:
+    barrido_desde: 0.50
+    barrido_hasta: 0.99
+    barrido_paso: 0.005
+    pliegues: 2             # partición determinista por hash del id: se calibra en un pliegue y se mide en el otro
 
 # Agencias de noticias para clasificar el TIPO de firma sin guardar nombres de personas (D-32).
 # El RSS de TVN no trae firma: solo sirve si un titular de GDELT la nombra.
