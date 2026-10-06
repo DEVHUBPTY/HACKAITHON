@@ -24,16 +24,16 @@ modelos:
     # percentil 25 de la brecha, sobre titulares únicos no ruido del snapshot del 2026-10-06). e5 comprime las
     # similitudes (0.81-0.91): su umbral y su margen son estrechos. Se recalibran con eval/etiquetas.csv (E1-06).
     umbrales:
-      A: {umbral_sin_tema: 0.825, margen_secundario: 0.003}
-      B: {umbral_sin_tema: 0.797, margen_secundario: 0.003}
+      A: {umbral_sin_tema: 0.824, margen_secundario: 0.002}
+      B: {umbral_sin_tema: 0.797, margen_secundario: 0.004}
   minilm:
     id: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
     revision: e8f8c211226b894fcb81acc59f3b34ba3efd5f42
     prefijo_titular: ""
     prefijo_tema: ""
     umbrales:                       # PROVISIONALES: misma regla que arriba (escala de similitud mucho más amplia)
-      A: {umbral_sin_tema: 0.224, margen_secundario: 0.038}
-      B: {umbral_sin_tema: 0.283, margen_secundario: 0.016}
+      A: {umbral_sin_tema: 0.213, margen_secundario: 0.03}
+      B: {umbral_sin_tema: 0.283, margen_secundario: 0.019}
 
 # Criterio A vs B fijado ANTES de medir (D-21, D-57): B solo si el IC 95 % (bootstrap) de la diferencia de macro-F1
 # B − A excluye el cero y ningún tema empeora de forma significativa (IC 95 % de la diferencia de F1 por tema
@@ -46,13 +46,15 @@ criterio_ab:
 # Fuga semántica (revisión X15): los casos difíciles son de prueba, así que ningún ejemplo ni prototipo de temas.yaml
 # puede parafrasearlos. Se mide con el coseno entre cada caso y cada referencia con un modelo de escala amplia (MiniLM: en
 # e5 todo está entre 0.80 y 0.91 y no sirve para detectar paráfrasis). Se ignoran las palabras que todos comparten
-# ("Panamá"). El umbral es un SUPUESTO, elegido DESPUÉS de ver los pares (docs/clasificacion.md): 0.58 detecta las
-# paráfrasis de CD-02, CD-11, CD-12 y las de vocabulario casi idéntico. No alcanza a CD-01 (0.56 con el prototipo que
-# señaló la revisión): ese prototipo se reescribió igual. Con las referencias actuales el par más alto es 0.57.
+# ("Panamá"). El umbral es un SUPUESTO, elegido DESPUÉS de ver los pares (tabla en docs/clasificacion.md): 0.56 detecta
+# las paráfrasis de CD-02, CD-11 y CD-12 y las de vocabulario casi idéntico. Queda UN par por encima (0.566): CD-02 con el
+# ejemplo REAL «Clima en Panamá: Martes con lluvias y tormentas eléctricas...» del snapshot, que no se puede reescribir
+# (su id está en ejemplos_excluidos.txt). Se acepta de forma explícita en `excepciones_aceptadas`.
 fuga_semantica:
   modelo: minilm
-  umbral_coseno: 0.58
+  umbral_coseno: 0.56
   palabras_ignoradas: [panama, panameno, panamena, panamenos]
+  excepciones_aceptadas: ["CD-02~eventos_naturales.ejemplo[0]"]
 
 # Baseline por palabras clave (D-66). Las MISMAS categorías que el clasificador: los 6 temas o sin_tema.
 # Término = palabra o frase literal en minúsculas y sin tildes; coincide como palabra completa (con "s"/"es" final

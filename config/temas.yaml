@@ -55,7 +55,7 @@ temas:
     subtemas:
       operacion_canal:
         nombre: "Operación del Canal (tránsitos, calado, reservas, lago Gatún)"
-        prototipo: "La ACP anuncia nuevas restricciones de calado para los buques neopanamax"
+        prototipo: "Buques esperan varios días en las áreas de fondeo antes de cruzar las esclusas"
       puertos:
         nombre: "Puertos"
         prototipo: "Los puertos de Balboa y Manzanillo mueven más contenedores"
@@ -79,7 +79,7 @@ temas:
       - {titulo: "Llegada de cruceristas a Colón supera lo previsto", real: false}
       - {titulo: "Ocupación hotelera alcanza el 80 % en el feriado", real: false}
       - {titulo: "Panamá promociona sus playas en feria de turismo", real: false}
-      - {titulo: "Avianca anuncia nuevas frecuencias semanales hacia Bogotá y Medellín", real: false}
+      - {titulo: "Se anuncian nuevas frecuencias semanales hacia ciudades de Colombia", real: false}
       - {titulo: "Autoridad de Turismo reporta más visitantes que el año pasado", real: false}
       - {titulo: "Hoteles de Bocas del Toro registran temporada alta", real: false}
       - {titulo: "Turistas extranjeros eligen Boquete para sus vacaciones", real: false}
@@ -97,7 +97,7 @@ temas:
         prototipo: "Ocupación hotelera sube durante el feriado"
       aviacion_pasajeros:
         nombre: "Aviación de pasajeros y conectividad"
-        prototipo: "Copa Airlines suma frecuencias hacia ciudades de Sudamérica y el Caribe"
+        prototipo: "Suman conexiones semanales hacia ciudades de Sudamérica y el Caribe desde el hub panameño"
       destinos_promocion:
         nombre: "Destinos y promoción"
         prototipo: "Autoridad de Turismo promociona Bocas del Toro en feria internacional"
@@ -112,13 +112,13 @@ temas:
       - {titulo: "Contenido Exclusivo: El metro por la Tumba Muerto", id_noticia: NOT-f248fefaf9, real: true}
       - {titulo: "MiBus responde por filtraciones: lamenta incomodidad de usuarios; afirma que realiza correctivos", id_noticia: NOT-ff1b1ed15c, real: true}
       - {titulo: "Vecinos de Colón reclaman por la intermitencia del suministro desde hace semanas", real: false}
-      - {titulo: "Sindicato de maestros rechaza el nuevo calendario escolar propuesto", real: false}
+      - {titulo: "Gremios del magisterio piden revisar el plan de estudios de secundaria", real: false}
       - {titulo: "Cortes de luz sorprenden a clientes de la capital", real: false}
       - {titulo: "Aumentan los robos a comercios en el centro de la ciudad", real: false}
     subtemas:
       agua_potable:
         nombre: "Agua potable"
-        prototipo: "Idaan repara la tubería principal que abastece a varios barrios"
+        prototipo: "Idaan anuncia obras para garantizar el suministro de agua potable en La Chorrera"
       electricidad:
         nombre: "Electricidad"
         prototipo: "Apagón deja sin luz a varios barrios"

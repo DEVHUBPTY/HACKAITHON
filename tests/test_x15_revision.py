@@ -233,8 +233,22 @@ def test_h4_ningun_ejemplo_ni_prototipo_parafrasea_un_caso_dificil() -> None:
     cfg = cargar_clasificacion()
     f = cfg.fuga_semantica
     emb = embeddings.crear(cfg, f.modelo)
-    hallazgos = evalclas.fuga_semantica(evalclas.leer_casos_dificiles(), TEMAS, REGLAS, emb, f.umbral_coseno, f.palabras_ignoradas)
+    hallazgos = evalclas.fuga_semantica(evalclas.leer_casos_dificiles(), TEMAS, REGLAS, emb, f.umbral_coseno, f.palabras_ignoradas, f.excepciones_aceptadas)
     assert hallazgos == [], "; ".join(f"{h.caso}~{h.referencia} ({h.coseno:.2f})" for h in hallazgos)
+
+
+@pytest.mark.skipif(not _modelo_disponible("minilm"), reason="MiniLM no descargado")
+def test_h4_las_excepciones_aceptadas_son_ejemplos_reales_y_siguen_sobre_el_umbral() -> None:
+    """Una excepción solo vale para un ejemplo REAL del snapshot (no se puede reescribir) y mientras siga sobre el umbral."""
+    cfg = cargar_clasificacion()
+    f = cfg.fuga_semantica
+    pares = evalclas.pares_mas_parecidos(evalclas.leer_casos_dificiles(), TEMAS, REGLAS, embeddings.crear(cfg, f.modelo), f.palabras_ignoradas)
+    por_clave = {f"{h.caso}~{h.referencia}": h for h in pares}
+    assert f.excepciones_aceptadas
+    for clave in f.excepciones_aceptadas:
+        assert clave in por_clave and por_clave[clave].coseno >= f.umbral_coseno, f"{clave} ya no supera el umbral: quítela"
+        tema, indice = re.search(r"~(\w+)\.ejemplo\[(\d+)\]", clave).groups()
+        assert TEMAS.temas[tema].ejemplos[int(indice)].real, f"{clave} no es un ejemplo real: se reescribe, no se acepta"
 
 
 def test_h4_los_prototipos_de_la_revision_ya_no_parafrasean_los_casos() -> None:

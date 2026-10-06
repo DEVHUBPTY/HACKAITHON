@@ -112,7 +112,7 @@ def _copiar_config(tmp_path, reemplazos: dict[str, str]) -> Path:
         ({"metodo_activo: A": "metodo_activo: C"}, "metodo_activo"),
         ({"version: 1\nsemilla: 42": "version: 1\nextra: 1\nsemilla: 42"}, "extra"),                      # claves desconocidas prohibidas
         ({"[crecimiento, pib,": "[Crecimiento, pib,"}, "minúsculas"),                              # término en mayúsculas
-        ({"umbral_sin_tema: 0.825": "umbral_sin_tema: 7.0"}, "umbral_sin_tema"),
+        ({"umbral_sin_tema: 0.824": "umbral_sin_tema: 7.0"}, "umbral_sin_tema"),
     ],
 )
 def test_la_configuracion_invalida_se_rechaza(tmp_path, reemplazos, mensaje) -> None:

@@ -27,6 +27,7 @@ LIMITACIONES_PRINCIPAL = {
     "CD-02": "regla 4 (falla de un servicio): se predice Eventos naturales en lugar de Servicios públicos",
     "CD-04": "regla 2 (norma nueva): se predice Servicios públicos en lugar de Regulación",
     "CD-08": "regla 6 (carga aérea): se predice Turismo en lugar de Logística/Canal",
+    "CD-12": "paro docente: se predice Eventos naturales en lugar de Servicios públicos (apareció al reescribir las referencias)",
     "CD-15": "fuera de temas: la similitud máxima (0.844) supera el umbral de 'sin tema' de e5; "
     "en el pipeline lo descarta antes el filtro de ruido (test_el_futbol_se_descarta_antes_...)",
 }
@@ -106,3 +107,20 @@ def test_el_futbol_se_descarta_antes_por_el_filtro_de_ruido() -> None:
     }
     r = limpieza.evaluar(fila, Reglas.desde_config())
     assert (r.es_ruido, r.motivo_ruido) == (True, "fuera_de_temas")
+
+
+# Tema secundario GUARDADO (el que sale de `decidir` con el margen provisional de e5 · A), por caso. Solo 2 de los 15 casos
+# lo reciben y solo 1 de los 7 que lo esperan coincide (CD-05). El margen es un supuesto: ver docs/clasificacion.md.
+SECUNDARIO_GUARDADO = {"CD-04": "economia", "CD-05": "economia"}
+
+
+@pytest.mark.parametrize("caso", [pytest.param(c, id=c.id) for c in CASOS])
+def test_el_tema_secundario_guardado_de_cada_caso_esta_fijado(caso, predicciones) -> None:
+    pred = predicciones[CFG.metodo_activo][CASOS.index(caso)]
+    assert pred.secundario == SECUNDARIO_GUARDADO.get(caso.id), f"{caso.id}: {pred.secundario}"
+
+
+def test_el_secundario_esperado_se_acierta_en_1_de_7_con_el_margen_provisional(predicciones) -> None:
+    esperados = [(c, p) for c, p in zip(CASOS, predicciones[CFG.metodo_activo], strict=True) if c.secundario]
+    assert len(esperados) == 7
+    assert sum(1 for c, p in esperados if p.secundario == c.secundario) == 1

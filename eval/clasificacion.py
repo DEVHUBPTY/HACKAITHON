@@ -204,10 +204,10 @@ def _sin_palabras(texto: str, ignoradas: set[str]) -> str:
     return " ".join(w for w in re.findall(r"\w+", plano(texto)) if w not in ignoradas)
 
 
-def fuga_semantica(
-    casos: list[CasoDificil], temas: ConfigTemas, reglas: Reglas, emb: Embeddings, umbral: float, ignoradas: list[str]
+def pares_mas_parecidos(
+    casos: list[CasoDificil], temas: ConfigTemas, reglas: Reglas, emb: Embeddings, ignoradas: list[str], n: int | None = None
 ) -> list[Hallazgo]:
-    """Pares (caso, ejemplo o prototipo) con coseno >= ``umbral``: una paráfrasis de un caso de prueba es una fuga.
+    """Todos los pares (caso, ejemplo o prototipo) ordenados por coseno descendente (los ``n`` primeros si se pide).
 
     Se ignoran las palabras de ``ignoradas`` (por ejemplo «Panamá», que comparten casi todos los titulares).
     """
@@ -219,10 +219,32 @@ def fuga_semantica(
     vc = emb.codificar([_sin_palabras(c.titular, omitir) for c in casos], "titular")
     vr = emb.codificar([_sin_palabras(texto, omitir) for _, texto in referencias], "tema")
     cos = vc @ vr.T
-    return sorted(
-        (Hallazgo(casos[i].id, referencias[j][0], float(cos[i, j])) for i in range(len(casos)) for j in range(len(referencias)) if cos[i, j] >= umbral),
+    pares = sorted(
+        (Hallazgo(casos[i].id, referencias[j][0], float(cos[i, j])) for i in range(len(casos)) for j in range(len(referencias))),
         key=lambda h: -h.coseno,
     )
+    return pares if n is None else pares[:n]
+
+
+def fuga_semantica(
+    casos: list[CasoDificil],
+    temas: ConfigTemas,
+    reglas: Reglas,
+    emb: Embeddings,
+    umbral: float,
+    ignoradas: list[str],
+    aceptadas: list[str] | None = None,
+) -> list[Hallazgo]:
+    """Pares (caso, ejemplo o prototipo) con coseno >= ``umbral``: una paráfrasis de un caso de prueba es una fuga.
+
+    ``aceptadas`` (``"CD-02~eventos_naturales.ejemplo[0]"``) son excepciones aceptadas de forma explícita en la
+    configuración, para un ejemplo REAL del snapshot que no se puede reescribir.
+    """
+    permitidas = set(aceptadas or [])
+    return [
+        h for h in pares_mas_parecidos(casos, temas, reglas, emb, ignoradas)
+        if h.coseno >= umbral and f"{h.caso}~{h.referencia}" not in permitidas
+    ]
 
 
 # ------------------------------------------------------------------ evaluación de una configuración
@@ -316,7 +338,7 @@ def evaluar_casos_dificiles(
     if verificar_fuga:
         f = cfg.fuga_semantica
         emb_fuga = crear(cfg, f.modelo, motor=(motores or {}).get(f.modelo))
-        fugas += [f"{h.caso}~{h.referencia} (coseno {h.coseno:.2f})" for h in fuga_semantica(casos, temas, reglas, emb_fuga, f.umbral_coseno, f.palabras_ignoradas)]
+        fugas += [f"{h.caso}~{h.referencia} (coseno {h.coseno:.2f})" for h in fuga_semantica(casos, temas, reglas, emb_fuga, f.umbral_coseno, f.palabras_ignoradas, f.excepciones_aceptadas)]
     if fugas:
         raise ValueError("casos difíciles que son referencia del clasificador (fuga): " + "; ".join(fugas))
     z = cargar_carga().salida.z_intervalo_confianza

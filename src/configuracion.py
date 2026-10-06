@@ -1227,6 +1227,7 @@ class FugaSemantica(ModeloConfig):
     modelo: str
     umbral_coseno: float
     palabras_ignoradas: list[str]
+    excepciones_aceptadas: list[str]   # "CD-02~eventos_naturales.ejemplo[0]": pares aceptados de forma explícita
 
     @model_validator(mode="after")
     def _rangos(self) -> FugaSemantica:
