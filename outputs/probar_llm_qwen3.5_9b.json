@@ -1,0 +1,483 @@
+{
+  "modelo": "qwen3.5:9b",
+  "digest": "56671c2ab9385f9cfcb404638e32cd62d88e3501d44822208363c010179a3c90",
+  "version_ollama": "0.34.1",
+  "num_ctx": 4096,
+  "prompt": "afirmaciones_citadas",
+  "carga_sistema_1min": {
+    "inicio": 3.57568359375,
+    "fin": 12.64501953125
+  },
+  "parametros": {
+    "temperatura": 0.0,
+    "semilla": 0,
+    "num_ctx": 4096,
+    "num_predict": 1024,
+    "pensar": false
+  },
+  "titulares": [
+    "NOT-0d91fa48b0",
+    "NOT-220be165b5",
+    "NOT-19d534ddba",
+    "NOT-099a437ecb",
+    "NOT-50c2fa1e7c"
+  ],
+  "memoria_bytes": {
+    "size": 6170177698,
+    "size_vram": 6170177698,
+    "context_length": 4096
+  },
+  "rss_servidor_bytes": 7235239936,
+  "calentamiento": [
+    {
+      "id_noticia": "NOT-0d91fa48b0",
+      "latencia_s": 15.984633666001173,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": false,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"Más de 30 mujeres han muerto de forma violenta en Panamá este año.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-0d91fa48b0\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"El titular fue reportado por el medio TVN Panamá.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-0d91fa48b0\",\n          \"campo\": \"medio\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A3\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"La fecha de publicación del reporte es 2026-10-06T01:30:01Z.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-0d91fa48b0\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 291,
+      "prompt_eval_count": 924,
+      "load_duration_s": 1.308422291,
+      "total_duration_s": 15.980805458
+    }
+  ],
+  "llamadas": [
+    {
+      "id_noticia": "NOT-0d91fa48b0",
+      "latencia_s": 12.222196709000855,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": false,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"Más de 30 mujeres han muerto de forma violenta en Panamá este año.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-0d91fa48b0\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"El titular fue reportado por el medio TVN Panamá.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-0d91fa48b0\",\n          \"campo\": \"medio\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A3\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"La fecha de publicación del reporte es 2026-10-06T01:30:01Z.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-0d91fa48b0\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 291,
+      "prompt_eval_count": 924,
+      "load_duration_s": 0.003811958,
+      "total_duration_s": 12.220033375,
+      "repeticion": 1
+    },
+    {
+      "id_noticia": "NOT-220be165b5",
+      "latencia_s": 16.56273420800062,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": false,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"Según el medio TVN Panamá, César Caicedo se encuentra actualmente recluido en el Hospital Santo Tomás.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"El medio TVN Panamá reporta que César Caicedo había sido trasladado previamente a la isla de Coiba.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A3\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"La información sobre el traslado de César Caicedo a Coiba y su posterior recluido en el Hospital Santo Tomás fue publicada por TVN Panamá el 5 de octubre de 2026.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"titulo\"\n        },\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"medio\"\n        },\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 384,
+      "prompt_eval_count": 929,
+      "load_duration_s": 0.003267583,
+      "total_duration_s": 16.559999875,
+      "repeticion": 1
+    },
+    {
+      "id_noticia": "NOT-19d534ddba",
+      "latencia_s": 13.272990790999756,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": true,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"Un exinvestigador de OpenAI ha emitido una alerta pública sobre la falta de control en la inteligencia artificial.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-19d534ddba\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"La noticia sobre la alerta del exinvestigador fue reportada por el medio de comunicación TVN Panamá.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-19d534ddba\",\n          \"campo\": \"medio\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A3\",\n      \"tipo\": \"hecho\",\n      \"texto\": \"La fecha de publicación del registro que contiene la información sobre la alerta es 2026-10-05T19:30:40Z.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-19d534ddba\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 312,
+      "prompt_eval_count": 924,
+      "load_duration_s": 0.003244167,
+      "total_duration_s": 13.269608458,
+      "repeticion": 1
+    },
+    {
+      "id_noticia": "NOT-099a437ecb",
+      "latencia_s": 12.97828870900048,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": false,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"El medio TVN Panamá reporta que Panamá ya tiene un rival definido para los cuartos de final.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-099a437ecb\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"Según el titular del medio, Guatemala y Jamaica han cerrado su clasificación a la competición.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-099a437ecb\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A3\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"La información sobre los resultados de la Liga de Naciones Concacaf fue publicada el 6 de octubre de 2026.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-099a437ecb\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 298,
+      "prompt_eval_count": 934,
+      "load_duration_s": 0.005534166,
+      "total_duration_s": 12.974324875,
+      "repeticion": 1
+    },
+    {
+      "id_noticia": "NOT-50c2fa1e7c",
+      "latencia_s": 13.126816125000914,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": false,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"La banda La Oreja de Van Gogh llevará sus canciones al cine con la película titulada 'Puedes contar conmigo'.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-50c2fa1e7c\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"El titular sobre la película fue reportado por el medio TVN Panamá.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-50c2fa1e7c\",\n          \"campo\": \"medio\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A3\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"La publicación de este titular ocurrió el 5 de octubre de 2026 a las 20:57:31 UTC.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-50c2fa1e7c\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 305,
+      "prompt_eval_count": 928,
+      "load_duration_s": 0.005260584,
+      "total_duration_s": 13.118990875,
+      "repeticion": 1
+    },
+    {
+      "id_noticia": "NOT-0d91fa48b0",
+      "latencia_s": 12.963401500001055,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": false,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"Más de 30 mujeres han muerto de forma violenta en Panamá este año.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-0d91fa48b0\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"El titular fue reportado por el medio TVN Panamá.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-0d91fa48b0\",\n          \"campo\": \"medio\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A3\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"La fecha de publicación del reporte es 2026-10-06T01:30:01Z.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-0d91fa48b0\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 291,
+      "prompt_eval_count": 924,
+      "load_duration_s": 0.005973416,
+      "total_duration_s": 12.960146416,
+      "repeticion": 2
+    },
+    {
+      "id_noticia": "NOT-220be165b5",
+      "latencia_s": 15.942919540997536,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": false,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"Según el medio TVN Panamá, César Caicedo se encuentra actualmente recluido en el Hospital Santo Tomás.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"El medio TVN Panamá reporta que César Caicedo había sido trasladado previamente a la isla de Coiba.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A3\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"La información sobre el traslado de César Caicedo a Coiba y su posterior recluido en el Hospital Santo Tomás fue publicada por TVN Panamá el 5 de octubre de 2026.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"titulo\"\n        },\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"medio\"\n        },\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 384,
+      "prompt_eval_count": 929,
+      "load_duration_s": 0.003222292,
+      "total_duration_s": 15.940172375,
+      "repeticion": 2
+    },
+    {
+      "id_noticia": "NOT-19d534ddba",
+      "latencia_s": 13.570771500002593,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": true,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"Un exinvestigador de OpenAI ha emitido una alerta pública sobre la falta de control en la inteligencia artificial.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-19d534ddba\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"La noticia sobre la alerta del exinvestigador fue reportada por el medio de comunicación TVN Panamá.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-19d534ddba\",\n          \"campo\": \"medio\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A3\",\n      \"tipo\": \"hecho\",\n      \"texto\": \"La fecha de publicación del registro que contiene la información sobre la alerta es 2026-10-05T19:30:40Z.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-19d534ddba\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 312,
+      "prompt_eval_count": 924,
+      "load_duration_s": 0.002645458,
+      "total_duration_s": 13.567940625,
+      "repeticion": 2
+    },
+    {
+      "id_noticia": "NOT-099a437ecb",
+      "latencia_s": 13.282684332996723,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": false,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"El medio TVN Panamá reporta que Panamá ya tiene un rival definido para los cuartos de final.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-099a437ecb\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"Según el titular del medio, Guatemala y Jamaica han cerrado su clasificación a la competición.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-099a437ecb\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A3\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"La información sobre los resultados de la Liga de Naciones Concacaf fue publicada el 6 de octubre de 2026.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-099a437ecb\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 298,
+      "prompt_eval_count": 934,
+      "load_duration_s": 0.00703825,
+      "total_duration_s": 13.279093417,
+      "repeticion": 2
+    },
+    {
+      "id_noticia": "NOT-50c2fa1e7c",
+      "latencia_s": 13.519040541999857,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": false,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"La banda La Oreja de Van Gogh llevará sus canciones al cine con la película titulada 'Puedes contar conmigo'.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-50c2fa1e7c\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"El titular sobre la película fue reportado por el medio TVN Panamá.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-50c2fa1e7c\",\n          \"campo\": \"medio\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A3\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"La publicación de este titular ocurrió el 5 de octubre de 2026 a las 20:57:31 UTC.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-50c2fa1e7c\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 305,
+      "prompt_eval_count": 928,
+      "load_duration_s": 0.003548416,
+      "total_duration_s": 13.516693083,
+      "repeticion": 2
+    },
+    {
+      "id_noticia": "NOT-0d91fa48b0",
+      "latencia_s": 13.157851374999154,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": false,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"Más de 30 mujeres han muerto de forma violenta en Panamá este año.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-0d91fa48b0\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"El titular fue reportado por el medio TVN Panamá.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-0d91fa48b0\",\n          \"campo\": \"medio\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A3\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"La fecha de publicación del reporte es 2026-10-06T01:30:01Z.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-0d91fa48b0\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 291,
+      "prompt_eval_count": 924,
+      "load_duration_s": 0.004669792,
+      "total_duration_s": 13.151078792,
+      "repeticion": 3
+    },
+    {
+      "id_noticia": "NOT-220be165b5",
+      "latencia_s": 16.838837082999817,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": false,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"Según el medio TVN Panamá, César Caicedo se encuentra actualmente recluido en el Hospital Santo Tomás.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"El medio TVN Panamá reporta que César Caicedo había sido trasladado previamente a la isla de Coiba.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A3\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"La información sobre el traslado de César Caicedo a Coiba y su posterior recluido en el Hospital Santo Tomás fue publicada por TVN Panamá el 5 de octubre de 2026.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"titulo\"\n        },\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"medio\"\n        },\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 384,
+      "prompt_eval_count": 929,
+      "load_duration_s": 0.003077667,
+      "total_duration_s": 16.83611175,
+      "repeticion": 3
+    },
+    {
+      "id_noticia": "NOT-19d534ddba",
+      "latencia_s": 14.56435254200187,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": true,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"Un exinvestigador de OpenAI ha emitido una alerta pública sobre la falta de control en la inteligencia artificial.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-19d534ddba\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"La noticia sobre la alerta del exinvestigador fue reportada por el medio de comunicación TVN Panamá.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-19d534ddba\",\n          \"campo\": \"medio\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A3\",\n      \"tipo\": \"hecho\",\n      \"texto\": \"La fecha de publicación del registro que contiene la información sobre la alerta es 2026-10-05T19:30:40Z.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-19d534ddba\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 312,
+      "prompt_eval_count": 924,
+      "load_duration_s": 0.004201792,
+      "total_duration_s": 14.561833917,
+      "repeticion": 3
+    },
+    {
+      "id_noticia": "NOT-099a437ecb",
+      "latencia_s": 15.086628999997629,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": false,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"El medio TVN Panamá reporta que Panamá ya tiene un rival definido para los cuartos de final.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-099a437ecb\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"Según el titular del medio, Guatemala y Jamaica han cerrado su clasificación a la competición.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-099a437ecb\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A3\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"La información sobre los resultados de la Liga de Naciones Concacaf fue publicada el 6 de octubre de 2026.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-099a437ecb\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 298,
+      "prompt_eval_count": 934,
+      "load_duration_s": 0.0029345,
+      "total_duration_s": 15.083882667,
+      "repeticion": 3
+    },
+    {
+      "id_noticia": "NOT-50c2fa1e7c",
+      "latencia_s": 15.207827332997113,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": false,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"La banda La Oreja de Van Gogh llevará sus canciones al cine con la película titulada 'Puedes contar conmigo'.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-50c2fa1e7c\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"El titular sobre la película fue reportado por el medio TVN Panamá.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-50c2fa1e7c\",\n          \"campo\": \"medio\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A3\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"La publicación de este titular ocurrió el 5 de octubre de 2026 a las 20:57:31 UTC.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-50c2fa1e7c\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 305,
+      "prompt_eval_count": 928,
+      "load_duration_s": 0.006428916,
+      "total_duration_s": 15.204072458,
+      "repeticion": 3
+    },
+    {
+      "id_noticia": "NOT-0d91fa48b0",
+      "latencia_s": 14.072224540999741,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": false,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"Más de 30 mujeres han muerto de forma violenta en Panamá este año.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-0d91fa48b0\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"El titular fue reportado por el medio TVN Panamá.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-0d91fa48b0\",\n          \"campo\": \"medio\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A3\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"La fecha de publicación del reporte es 2026-10-06T01:30:01Z.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-0d91fa48b0\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 291,
+      "prompt_eval_count": 924,
+      "load_duration_s": 0.004293667,
+      "total_duration_s": 14.069123625,
+      "repeticion": 4
+    },
+    {
+      "id_noticia": "NOT-220be165b5",
+      "latencia_s": 18.3111862500009,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": false,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"Según el medio TVN Panamá, César Caicedo se encuentra actualmente recluido en el Hospital Santo Tomás.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"El medio TVN Panamá reporta que César Caicedo había sido trasladado previamente a la isla de Coiba.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A3\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"La información sobre el traslado de César Caicedo a Coiba y su posterior recluido en el Hospital Santo Tomás fue publicada por TVN Panamá el 5 de octubre de 2026.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"titulo\"\n        },\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"medio\"\n        },\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 384,
+      "prompt_eval_count": 929,
+      "load_duration_s": 0.005158125,
+      "total_duration_s": 18.307372333,
+      "repeticion": 4
+    },
+    {
+      "id_noticia": "NOT-19d534ddba",
+      "latencia_s": 15.2915619589985,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": true,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"Un exinvestigador de OpenAI ha emitido una alerta pública sobre la falta de control en la inteligencia artificial.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-19d534ddba\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"La noticia sobre la alerta del exinvestigador fue reportada por el medio de comunicación TVN Panamá.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-19d534ddba\",\n          \"campo\": \"medio\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A3\",\n      \"tipo\": \"hecho\",\n      \"texto\": \"La fecha de publicación del registro que contiene la información sobre la alerta es 2026-10-05T19:30:40Z.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-19d534ddba\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 312,
+      "prompt_eval_count": 924,
+      "load_duration_s": 0.00498375,
+      "total_duration_s": 15.28014825,
+      "repeticion": 4
+    },
+    {
+      "id_noticia": "NOT-099a437ecb",
+      "latencia_s": 14.77882766699986,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": false,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"El medio TVN Panamá reporta que Panamá ya tiene un rival definido para los cuartos de final.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-099a437ecb\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"Según el titular del medio, Guatemala y Jamaica han cerrado su clasificación a la competición.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-099a437ecb\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A3\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"La información sobre los resultados de la Liga de Naciones Concacaf fue publicada el 6 de octubre de 2026.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-099a437ecb\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 298,
+      "prompt_eval_count": 934,
+      "load_duration_s": 0.051590792,
+      "total_duration_s": 14.775388917,
+      "repeticion": 4
+    },
+    {
+      "id_noticia": "NOT-50c2fa1e7c",
+      "latencia_s": 15.22226412499731,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": false,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"La banda La Oreja de Van Gogh llevará sus canciones al cine con la película titulada 'Puedes contar conmigo'.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-50c2fa1e7c\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"El titular sobre la película fue reportado por el medio TVN Panamá.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-50c2fa1e7c\",\n          \"campo\": \"medio\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A3\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"La publicación de este titular ocurrió el 5 de octubre de 2026 a las 20:57:31 UTC.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-50c2fa1e7c\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 305,
+      "prompt_eval_count": 928,
+      "load_duration_s": 0.005352375,
+      "total_duration_s": 15.218995333,
+      "repeticion": 4
+    }
+  ],
+  "resumen": {
+    "n_llamadas": 20,
+    "json_valido": {
+      "k": 20,
+      "n": 20,
+      "pct": 100.0,
+      "ic_inf_pct": 83.88748419471807,
+      "ic_sup_pct": 100.0,
+      "confianza": 0.95,
+      "metodo_ic": "Wilson"
+    },
+    "json_parseable_k": 20,
+    "citas_validas": {
+      "k": 20,
+      "n": 20
+    },
+    "latencia_s": {
+      "mediana": 14.318288541500806,
+      "p95": 16.91245454134987,
+      "min": 12.222196709000855,
+      "max": 18.3111862500009
+    },
+    "criterio_d02": {
+      "mediana_ok": true,
+      "invalidos_por_diez": 0.0,
+      "invalidos_ok": true,
+      "cumple": true
+    }
+  }
+}

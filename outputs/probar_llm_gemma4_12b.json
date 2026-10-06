@@ -1,0 +1,483 @@
+{
+  "modelo": "gemma4:12b",
+  "digest": "6114515d63c17436a7c0417d82820ac65ad643e2806c5a3c89cb62846436ed0b",
+  "version_ollama": "0.34.1",
+  "num_ctx": 4096,
+  "prompt": "afirmaciones_citadas",
+  "carga_sistema_1min": {
+    "inicio": 12.11279296875,
+    "fin": 4.92724609375
+  },
+  "parametros": {
+    "temperatura": 0.0,
+    "semilla": 0,
+    "num_ctx": 4096,
+    "num_predict": 1024,
+    "pensar": false
+  },
+  "titulares": [
+    "NOT-0d91fa48b0",
+    "NOT-220be165b5",
+    "NOT-19d534ddba",
+    "NOT-099a437ecb",
+    "NOT-50c2fa1e7c"
+  ],
+  "memoria_bytes": {
+    "size": 1128204860,
+    "size_vram": 1128204860,
+    "context_length": 4096
+  },
+  "rss_servidor_bytes": 9330819072,
+  "calentamiento": [
+    {
+      "id_noticia": "NOT-0d91fa48b0",
+      "latencia_s": 20.9531711669988,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": true,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"TVN Panamá reporta que más de 30 mujeres han muerto de forma violenta en Panamá este año.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-0d91fa48b0\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"hecho\",\n      \"texto\": \"La noticia fue publicada el 6 de octubre de 2026.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-0d91fa48b0\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 201,
+      "prompt_eval_count": 914,
+      "load_duration_s": 6.650157041,
+      "total_duration_s": 20.949158666
+    }
+  ],
+  "llamadas": [
+    {
+      "id_noticia": "NOT-0d91fa48b0",
+      "latencia_s": 12.719637792000867,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": true,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"TVN Panamá reporta que más de 30 mujeres han muerto de forma violenta en Panamá este año.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-0d91fa48b0\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"hecho\",\n      \"texto\": \"La noticia fue publicada el 6 de octubre de 2026.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-0d91fa48b0\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 201,
+      "prompt_eval_count": 914,
+      "load_duration_s": 0.002354041,
+      "total_duration_s": 12.716846208,
+      "repeticion": 1
+    },
+    {
+      "id_noticia": "NOT-220be165b5",
+      "latencia_s": 16.428352708000602,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": true,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"TVN Panamá reporta que César Caicedo se encuentra recluido en el Hospital Santo Tomás tras haber sido trasladado a Coiba.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"hecho\",\n      \"texto\": \"La noticia fue publicada por el medio TVN Panamá el 5 de octubre de 2026.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"medio\"\n        },\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 244,
+      "prompt_eval_count": 919,
+      "load_duration_s": 0.006668667,
+      "total_duration_s": 16.426340042,
+      "repeticion": 1
+    },
+    {
+      "id_noticia": "NOT-19d534ddba",
+      "latencia_s": 14.297689916998934,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": true,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"TVN Panamá reporta que un exinvestigador de OpenAI advierte sobre la falta de control en la inteligencia artificial.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-19d534ddba\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"hecho\",\n      \"texto\": \"La noticia fue publicada el 5 de octubre de 2026.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-19d534ddba\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 201,
+      "prompt_eval_count": 913,
+      "load_duration_s": 0.002080375,
+      "total_duration_s": 14.29534125,
+      "repeticion": 1
+    },
+    {
+      "id_noticia": "NOT-099a437ecb",
+      "latencia_s": 14.37275920799948,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": true,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"TVN Panamá reporta que Panamá ya tiene rival para cuartos de final y que Guatemala y Jamaica cerraron la clasificación.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-099a437ecb\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"hecho\",\n      \"texto\": \"El titular fue publicado el 6 de octubre de 2026.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-099a437ecb\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 203,
+      "prompt_eval_count": 923,
+      "load_duration_s": 0.002414583,
+      "total_duration_s": 14.371410958,
+      "repeticion": 1
+    },
+    {
+      "id_noticia": "NOT-50c2fa1e7c",
+      "latencia_s": 14.375813915998151,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": true,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"TVN Panamá reporta que La Oreja de Van Gogh llevará sus canciones al cine con 'Puedes contar conmigo'\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-50c2fa1e7c\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"hecho\",\n      \"texto\": \"La fecha de publicación de la noticia es el 5 de octubre de 2026\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-50c2fa1e7c\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 205,
+      "prompt_eval_count": 915,
+      "load_duration_s": 0.002514083,
+      "total_duration_s": 14.371755375,
+      "repeticion": 1
+    },
+    {
+      "id_noticia": "NOT-0d91fa48b0",
+      "latencia_s": 14.439553625001281,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": true,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"TVN Panamá reporta que más de 30 mujeres han muerto de forma violenta en Panamá este año.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-0d91fa48b0\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"hecho\",\n      \"texto\": \"La noticia fue publicada el 6 de octubre de 2026.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-0d91fa48b0\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 201,
+      "prompt_eval_count": 914,
+      "load_duration_s": 0.002925375,
+      "total_duration_s": 14.4345205,
+      "repeticion": 2
+    },
+    {
+      "id_noticia": "NOT-220be165b5",
+      "latencia_s": 16.411527666001348,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": true,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"TVN Panamá reporta que César Caicedo se encuentra recluido en el Hospital Santo Tomás tras haber sido trasladado a Coiba.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"hecho\",\n      \"texto\": \"La noticia fue publicada por el medio TVN Panamá el 5 de octubre de 2026.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"medio\"\n        },\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 244,
+      "prompt_eval_count": 919,
+      "load_duration_s": 0.003350041,
+      "total_duration_s": 16.40772425,
+      "repeticion": 2
+    },
+    {
+      "id_noticia": "NOT-19d534ddba",
+      "latencia_s": 14.657502750000276,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": true,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"TVN Panamá reporta que un exinvestigador de OpenAI advierte sobre la falta de control en la inteligencia artificial.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-19d534ddba\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"hecho\",\n      \"texto\": \"La noticia fue publicada el 5 de octubre de 2026.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-19d534ddba\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 201,
+      "prompt_eval_count": 913,
+      "load_duration_s": 0.0020385,
+      "total_duration_s": 14.655913541,
+      "repeticion": 2
+    },
+    {
+      "id_noticia": "NOT-099a437ecb",
+      "latencia_s": 15.2301135839989,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": true,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"TVN Panamá reporta que Panamá ya tiene rival para cuartos de final y que Guatemala y Jamaica cerraron la clasificación.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-099a437ecb\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"hecho\",\n      \"texto\": \"El titular fue publicado el 6 de octubre de 2026.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-099a437ecb\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 203,
+      "prompt_eval_count": 923,
+      "load_duration_s": 0.002717333,
+      "total_duration_s": 15.228718666,
+      "repeticion": 2
+    },
+    {
+      "id_noticia": "NOT-50c2fa1e7c",
+      "latencia_s": 14.152866167001775,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": true,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"TVN Panamá reporta que La Oreja de Van Gogh llevará sus canciones al cine con 'Puedes contar conmigo'\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-50c2fa1e7c\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"hecho\",\n      \"texto\": \"La fecha de publicación de la noticia es el 5 de octubre de 2026\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-50c2fa1e7c\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 205,
+      "prompt_eval_count": 915,
+      "load_duration_s": 0.002489333,
+      "total_duration_s": 14.151742,
+      "repeticion": 2
+    },
+    {
+      "id_noticia": "NOT-0d91fa48b0",
+      "latencia_s": 14.023885500002507,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": true,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"TVN Panamá reporta que más de 30 mujeres han muerto de forma violenta en Panamá este año.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-0d91fa48b0\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"hecho\",\n      \"texto\": \"La noticia fue publicada el 6 de octubre de 2026.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-0d91fa48b0\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 201,
+      "prompt_eval_count": 914,
+      "load_duration_s": 0.001489833,
+      "total_duration_s": 14.022741166,
+      "repeticion": 3
+    },
+    {
+      "id_noticia": "NOT-220be165b5",
+      "latencia_s": 16.31993920899913,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": true,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"TVN Panamá reporta que César Caicedo se encuentra recluido en el Hospital Santo Tomás tras haber sido trasladado a Coiba.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"hecho\",\n      \"texto\": \"La noticia fue publicada por el medio TVN Panamá el 5 de octubre de 2026.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"medio\"\n        },\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 244,
+      "prompt_eval_count": 919,
+      "load_duration_s": 0.003985708,
+      "total_duration_s": 16.317903583,
+      "repeticion": 3
+    },
+    {
+      "id_noticia": "NOT-19d534ddba",
+      "latencia_s": 14.618288792000385,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": true,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"TVN Panamá reporta que un exinvestigador de OpenAI advierte sobre la falta de control en la inteligencia artificial.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-19d534ddba\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"hecho\",\n      \"texto\": \"La noticia fue publicada el 5 de octubre de 2026.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-19d534ddba\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 201,
+      "prompt_eval_count": 913,
+      "load_duration_s": 0.000959292,
+      "total_duration_s": 14.617104584,
+      "repeticion": 3
+    },
+    {
+      "id_noticia": "NOT-099a437ecb",
+      "latencia_s": 14.060659374998068,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": true,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"TVN Panamá reporta que Panamá ya tiene rival para cuartos de final y que Guatemala y Jamaica cerraron la clasificación.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-099a437ecb\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"hecho\",\n      \"texto\": \"El titular fue publicado el 6 de octubre de 2026.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-099a437ecb\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 203,
+      "prompt_eval_count": 923,
+      "load_duration_s": 0.003469875,
+      "total_duration_s": 14.058034125,
+      "repeticion": 3
+    },
+    {
+      "id_noticia": "NOT-50c2fa1e7c",
+      "latencia_s": 13.82152195800154,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": true,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"TVN Panamá reporta que La Oreja de Van Gogh llevará sus canciones al cine con 'Puedes contar conmigo'\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-50c2fa1e7c\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"hecho\",\n      \"texto\": \"La fecha de publicación de la noticia es el 5 de octubre de 2026\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-50c2fa1e7c\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 205,
+      "prompt_eval_count": 915,
+      "load_duration_s": 0.001918208,
+      "total_duration_s": 13.819223583,
+      "repeticion": 3
+    },
+    {
+      "id_noticia": "NOT-0d91fa48b0",
+      "latencia_s": 14.819460582999454,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": true,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"TVN Panamá reporta que más de 30 mujeres han muerto de forma violenta en Panamá este año.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-0d91fa48b0\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"hecho\",\n      \"texto\": \"La noticia fue publicada el 6 de octubre de 2026.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-0d91fa48b0\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 201,
+      "prompt_eval_count": 914,
+      "load_duration_s": 0.003858375,
+      "total_duration_s": 14.81802525,
+      "repeticion": 4
+    },
+    {
+      "id_noticia": "NOT-220be165b5",
+      "latencia_s": 17.17259729199941,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": true,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"TVN Panamá reporta que César Caicedo se encuentra recluido en el Hospital Santo Tomás tras haber sido trasladado a Coiba.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"hecho\",\n      \"texto\": \"La noticia fue publicada por el medio TVN Panamá el 5 de octubre de 2026.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"medio\"\n        },\n        {\n          \"id\": \"NOT-220be165b5\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 244,
+      "prompt_eval_count": 919,
+      "load_duration_s": 0.001736708,
+      "total_duration_s": 17.171440583,
+      "repeticion": 4
+    },
+    {
+      "id_noticia": "NOT-19d534ddba",
+      "latencia_s": 15.1615923749996,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": true,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"TVN Panamá reporta que un exinvestigador de OpenAI advierte sobre la falta de control en la inteligencia artificial.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-19d534ddba\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"hecho\",\n      \"texto\": \"La noticia fue publicada el 5 de octubre de 2026.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-19d534ddba\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 201,
+      "prompt_eval_count": 913,
+      "load_duration_s": 0.002797584,
+      "total_duration_s": 15.159228834,
+      "repeticion": 4
+    },
+    {
+      "id_noticia": "NOT-099a437ecb",
+      "latencia_s": 15.265422417000082,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": true,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"TVN Panamá reporta que Panamá ya tiene rival para cuartos de final y que Guatemala y Jamaica cerraron la clasificación.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-099a437ecb\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"hecho\",\n      \"texto\": \"El titular fue publicado el 6 de octubre de 2026.\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-099a437ecb\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 203,
+      "prompt_eval_count": 923,
+      "load_duration_s": 0.002208792,
+      "total_duration_s": 15.263859292,
+      "repeticion": 4
+    },
+    {
+      "id_noticia": "NOT-50c2fa1e7c",
+      "latencia_s": 14.102325125000789,
+      "evaluacion": {
+        "json_parseable": true,
+        "esquema_valido": true,
+        "citas_validas": true,
+        "bases_validas": true,
+        "hecho_sobre_titular": true,
+        "error": null
+      },
+      "respuesta_cruda": "{\n  \"afirmaciones\": [\n    {\n      \"id\": \"A1\",\n      \"tipo\": \"declaración\",\n      \"texto\": \"TVN Panamá reporta que La Oreja de Van Gogh llevará sus canciones al cine con 'Puedes contar conmigo'\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-50c2fa1e7c\",\n          \"campo\": \"titulo\"\n        }\n      ]\n    },\n    {\n      \"id\": \"A2\",\n      \"tipo\": \"hecho\",\n      \"texto\": \"La fecha de publicación de la noticia es el 5 de octubre de 2026\",\n      \"citas\": [\n        {\n          \"id\": \"NOT-50c2fa1e7c\",\n          \"campo\": \"fecha_publicacion\"\n        }\n      ]\n    }\n  ]\n}",
+      "pensamiento_presente": false,
+      "done_reason": "stop",
+      "eval_count": 205,
+      "prompt_eval_count": 915,
+      "load_duration_s": 0.003218,
+      "total_duration_s": 14.099819708,
+      "repeticion": 4
+    }
+  ],
+  "resumen": {
+    "n_llamadas": 20,
+    "json_valido": {
+      "k": 20,
+      "n": 20,
+      "pct": 100.0,
+      "ic_inf_pct": 83.88748419471807,
+      "ic_sup_pct": 100.0,
+      "confianza": 0.95,
+      "metodo_ic": "Wilson"
+    },
+    "json_parseable_k": 20,
+    "citas_validas": {
+      "k": 20,
+      "n": 20
+    },
+    "latencia_s": {
+      "mediana": 14.528921208500833,
+      "p95": 16.465564937200543,
+      "min": 12.719637792000867,
+      "max": 17.17259729199941
+    },
+    "criterio_d02": {
+      "mediana_ok": true,
+      "invalidos_por_diez": 0.0,
+      "invalidos_ok": true,
+      "cumple": true
+    }
+  }
+}
