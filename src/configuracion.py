@@ -206,6 +206,100 @@ def cargar_fuentes(carpeta: Path | None = None) -> ConfigFuentes:
     return cargar_config("fuentes", ConfigFuentes, carpeta)
 
 
+
+# ------------------------------------------------------------------ llm.yaml
+
+
+class OllamaConfig(ModeloConfig):
+    host_por_defecto: str
+    timeout_segundos: int
+    keep_alive_durante_prueba: str
+
+
+class GeneracionConfig(ModeloConfig):
+    temperatura: float
+    semilla: int
+    num_ctx: int
+    num_predict: int
+    pensar: bool
+
+
+class MuestraConfig(ModeloConfig):
+    medio: str
+    idioma: str
+    titulares_por_tema: dict[str, int]
+
+
+class PruebaConfig(ModeloConfig):
+    repeticiones: int
+    calentamiento: int
+    prompt: str
+    confianza: float
+    marcadores_atribucion: list[str]
+    muestra: MuestraConfig
+
+
+class CriterioD02(ModeloConfig):
+    mediana_max_segundos: float
+    invalidos_max_por_diez: int
+    validador_rechazo_max: float
+
+
+class EntornoConfig(ModeloConfig):
+    longitud_minima_secreto: int
+
+
+class ConfigLlm(ModeloConfig):
+    """Modelo de ``config/llm.yaml``."""
+
+    ollama: OllamaConfig
+    generacion: GeneracionConfig
+    prueba: PruebaConfig
+    entorno: EntornoConfig
+    criterio_d02: CriterioD02
+
+
+def cargar_llm(carpeta: Path | None = None) -> ConfigLlm:
+    """Atajo para ``config/llm.yaml``."""
+    return cargar_config("llm", ConfigLlm, carpeta)
+
+
+# ------------------------------------------------------------------ local.env
+
+
+def leer_local_env(ruta: Path | None = None) -> dict[str, str]:
+    """Lee ``local.env`` (``CLAVE=VALOR``, ``#`` comenta) sin tocar ``os.environ``.
+
+    Los valores de claves sensibles (``*_KEY``, ``*_TOKEN``, ``*_SECRET``) se registran para
+    que el logging los redacte (D-69) si miden al menos ``entorno.longitud_minima_secreto``.
+    Un comentario en línea (`` # ...``) se descarta en valores sin comillas. Si el archivo no
+    existe devuelve un dict vacío.
+    """
+    from src.registro import SUFIJOS_SENSIBLES, registrar_sensible
+
+    minimo = cargar_llm().entorno.longitud_minima_secreto
+    ruta = ruta or RAIZ / "local.env"
+    try:
+        lineas = ruta.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return {}
+    valores: dict[str, str] = {}
+    for linea in lineas:
+        linea = linea.strip()
+        if not linea or linea.startswith("#") or "=" not in linea:
+            continue
+        clave, _, valor = linea.partition("=")
+        clave = clave.strip().removeprefix("export ").strip()
+        valor = valor.strip()
+        if len(valor) >= 2 and valor[0] == valor[-1] and valor[0] in "\"'":
+            valor = valor[1:-1]
+        else:
+            valor = re.split(r"\s+#", valor, maxsplit=1)[0].strip()  # comentario en línea
+        valores[clave] = valor
+        if clave.upper().endswith(SUFIJOS_SENSIBLES) and len(valor) >= minimo:
+            registrar_sensible(valor)
+    return valores
+
 # ------------------------------------------------------------------ carga.yaml (E1-02)
 
 
@@ -867,60 +961,6 @@ def validar_coherencia(carpeta: Path | None = None) -> list[str]:
     return problemas
 
 
-MODALIDADES = ("editorial", "banca")
-OPCIONALES = {"modalidad_banca"}  # el esquema la admite aunque todavía no exista
-
-# Un cargador por YAML de config/: `--validar` los recorre todos y falla ante uno sin modelo registrado.
-CARGADORES = {
-    "fuentes": cargar_fuentes,
-    "exploracion": cargar_exploracion,
-    "carga": cargar_carga,
-    "contrato": cargar_contrato,
-    "reglas_v1.3": cargar_reglas,
-    "temas": cargar_temas,
-    "vinculos": cargar_vinculos,
-    "salidas": cargar_salidas,
-    "restricciones": cargar_restricciones,
-    "modalidad_editorial": lambda c=None: cargar_modalidad("editorial", c),
-    "modalidad_banca": lambda c=None: cargar_modalidad("banca", c),
-}
-
-
-def validar_todo(carpeta: Path | None = None) -> list[str]:
-    """Carga cada YAML de la carpeta con su modelo estricto y valida la coherencia; lanza el primer error."""
-    carpeta = carpeta or CARPETA_CONFIG
-    presentes = sorted(p.stem for p in carpeta.glob("*.yaml"))
-    sin_modelo = [n for n in presentes if n not in CARGADORES]
-    if sin_modelo:
-        raise ErrorDeConfiguracion(f"YAML sin modelo registrado en configuracion.CARGADORES: {sin_modelo}")
-    faltan = sorted(set(CARGADORES) - set(presentes) - OPCIONALES)
-    if faltan:
-        raise ErrorDeConfiguracion(f"faltan YAML obligatorios en {carpeta}: {faltan}")
-    for nombre in presentes:
-        CARGADORES[nombre](carpeta)
-    problemas = validar_coherencia(carpeta)
-    if problemas:
-        raise ErrorDeConfiguracion("; ".join(problemas))
-    return presentes
-
-
-def principal(argv: list[str] | None = None) -> int:
-    """CLI: ``python -m src.config --validar``."""
-    parser = argparse.ArgumentParser(description="Valida los YAML de config/")
-    parser.add_argument("--validar", action="store_true", required=True)
-    parser.add_argument("--config", type=Path, default=None, help="carpeta alternativa (por defecto config/)")
-    args = parser.parse_args(argv)
-    try:
-        cargados = validar_todo(args.config)
-    except ErrorDeConfiguracion as exc:
-        print(f"ERROR: {exc}", file=sys.stderr)
-        return 1
-    print(f"OK: {len(cargados)} archivos de configuración válidos ({', '.join(cargados)})")
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(principal())
 # ------------------------------------------------------------------ normalizacion.yaml (E1-03)
 
 
@@ -983,7 +1023,6 @@ def cargar_normalizacion(carpeta: Path | None = None) -> ConfigNormalizacion:
     return cargar_config("normalizacion", ConfigNormalizacion, carpeta)
 
 
-CARGADORES["normalizacion"] = cargar_normalizacion
 
 
 # ------------------------------------------------------------------ ruido.yaml (E1-03b)
@@ -1071,4 +1110,60 @@ def cargar_ruido(carpeta: Path | None = None) -> ConfigRuido:
     return cargar_config("ruido", ConfigRuido, carpeta)
 
 
-CARGADORES["ruido"] = cargar_ruido
+MODALIDADES = ("editorial", "banca")
+OPCIONALES = {"modalidad_banca"}  # el esquema la admite aunque todavía no exista
+
+# Un cargador por YAML de config/: `--validar` los recorre todos y falla ante uno sin modelo registrado.
+CARGADORES = {
+    "ruido": cargar_ruido,
+    "fuentes": cargar_fuentes,
+    "exploracion": cargar_exploracion,
+    "carga": cargar_carga,
+    "contrato": cargar_contrato,
+    "reglas_v1.3": cargar_reglas,
+    "temas": cargar_temas,
+    "vinculos": cargar_vinculos,
+    "salidas": cargar_salidas,
+    "restricciones": cargar_restricciones,
+    "modalidad_editorial": lambda c=None: cargar_modalidad("editorial", c),
+    "modalidad_banca": lambda c=None: cargar_modalidad("banca", c),
+    "llm": cargar_llm,
+    "normalizacion": cargar_normalizacion,
+}
+
+
+def validar_todo(carpeta: Path | None = None) -> list[str]:
+    """Carga cada YAML de la carpeta con su modelo estricto y valida la coherencia; lanza el primer error."""
+    carpeta = carpeta or CARPETA_CONFIG
+    presentes = sorted(p.stem for p in carpeta.glob("*.yaml"))
+    sin_modelo = [n for n in presentes if n not in CARGADORES]
+    if sin_modelo:
+        raise ErrorDeConfiguracion(f"YAML sin modelo registrado en configuracion.CARGADORES: {sin_modelo}")
+    faltan = sorted(set(CARGADORES) - set(presentes) - OPCIONALES)
+    if faltan:
+        raise ErrorDeConfiguracion(f"faltan YAML obligatorios en {carpeta}: {faltan}")
+    for nombre in presentes:
+        CARGADORES[nombre](carpeta)
+    problemas = validar_coherencia(carpeta)
+    if problemas:
+        raise ErrorDeConfiguracion("; ".join(problemas))
+    return presentes
+
+
+def principal(argv: list[str] | None = None) -> int:
+    """CLI: ``python -m src.config --validar``."""
+    parser = argparse.ArgumentParser(description="Valida los YAML de config/")
+    parser.add_argument("--validar", action="store_true", required=True)
+    parser.add_argument("--config", type=Path, default=None, help="carpeta alternativa (por defecto config/)")
+    args = parser.parse_args(argv)
+    try:
+        cargados = validar_todo(args.config)
+    except ErrorDeConfiguracion as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
+    print(f"OK: {len(cargados)} archivos de configuración válidos ({', '.join(cargados)})")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(principal())
