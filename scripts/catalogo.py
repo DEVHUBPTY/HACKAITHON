@@ -118,7 +118,7 @@ def _cobertura_banco_mundial(manifest: dict[str, Any], nulos: int) -> str:
     return (
         f"{', '.join(paises)} · 2010 a 2024 · {len(indicadores)} indicadores · cuadrícula de {filas} combinaciones "
         f"({len(paises)} países x {len(indicadores)} indicadores x 15 años; D-81). El PDF declara 1.350, pero "
-        f"esa cifra no cuadra con esos factores y no se inventaron filas. {nulos} valores nulos explícitos. "
+        f"esa cifra no cuadra con esos factores y no se inventaron filas. Valores nulos en el snapshot: {nulos} (los nulos se conservan como nulos, nunca como 0). "
         "Datos anuales: no son actuales."
     )
 
@@ -198,7 +198,7 @@ def construir_filas(manifest: dict[str, Any], processed: Path) -> list[dict[str,
         "Campos": ", ".join([*contrato.indicadores_extra, *contrato.indicadores]),
         "Licencia / condiciones": lic["banco_mundial"],
         "Transformaciones": _transformaciones(manifest, ("Banco Mundial", "indicadores.csv")),
-        "Registros válidos": f"{cantidad['indicadores.csv']} filas (incluye nulos explícitos)",
+        "Registros válidos": f"{cantidad['indicadores.csv']} filas ({_nulos_indicadores(processed)} con valor nulo)",
         "Registros excluidos y motivo": "0: no hay exclusiones registradas en el manifest; "
         "los nulos se conservan como nulos, nunca como 0.",
         "SHA-256": f"indicadores.csv: {_sha(manifest, 'indicadores.csv')}",
