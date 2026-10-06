@@ -14,7 +14,9 @@ import argparse
 import json
 import logging
 import math
+import os
 import statistics
+import subprocess
 import time
 from pathlib import Path
 from typing import Any
@@ -182,6 +184,28 @@ def memoria_modelo(cliente: ClienteOllama, modelo: str) -> dict[str, Any] | None
     return None
 
 
+def rss_servidor_bytes(salida_ps: str | None = None) -> int | None:
+    """RSS (bytes) del proceso que sirve el modelo (``llama-server`` / ``ollama runner``).
+
+    ``/api/ps`` puede subcontar (modelos con parte mapeada a disco), así que se contrasta con el
+    RSS del proceso. ``salida_ps`` permite inyectar la salida de ``ps -Ao rss,comm`` en pruebas.
+    """
+    if salida_ps is None:
+        try:
+            salida_ps = subprocess.run(
+                ["ps", "-Ao", "rss,comm"], capture_output=True, text=True, timeout=10, check=True
+            ).stdout
+        except (OSError, subprocess.SubprocessError):
+            return None
+    rss = [
+        int(linea.split(None, 1)[0]) * 1024
+        for linea in salida_ps.splitlines()[1:]
+        if linea.split(None, 1)[0].isdigit()
+        and ("llama-server" in linea or "ollama runner" in linea or "ollama_llama_server" in linea)
+    ]
+    return max(rss) if rss else None
+
+
 def una_llamada(
     cliente: ClienteOllama, modelo: str, system: str, esquema: dict[str, Any], cfg: ConfigLlm,
     num_ctx: int, titular: dict[str, Any],
@@ -217,11 +241,13 @@ def una_llamada(
 
 def ejecutar(
     cliente: ClienteOllama, modelo: str, cfg: ConfigLlm, noticias: pd.DataFrame,
-    repeticiones: int, num_ctx: int,
+    repeticiones: int, num_ctx: int, prompt: str | None = None,
 ) -> dict[str, Any]:
     """Corre calentamiento + ``repeticiones`` pasadas sobre los titulares y arma el resultado."""
     titulares = seleccionar_titulares(noticias, cfg)
-    system = cargar_system(cfg.prueba.prompt)
+    prompt = prompt or cfg.prueba.prompt
+    system = cargar_system(prompt)
+    carga_inicio = os.getloadavg()
     esquema = esquema_json_afirmaciones()
     log.info("Modelo %s · %d titulares × %d repeticiones · num_ctx=%d",
              modelo, len(titulares), repeticiones, num_ctx)
@@ -248,9 +274,12 @@ def ejecutar(
         "digest": cliente.digest(modelo),
         "version_ollama": cliente.version(),
         "num_ctx": num_ctx,
+        "prompt": prompt,
+        "carga_sistema_1min": {"inicio": carga_inicio[0], "fin": os.getloadavg()[0]},
         "parametros": cfg.generacion.model_dump(),
         "titulares": [t["id_noticia"] for t in titulares],
         "memoria_bytes": memoria,
+        "rss_servidor_bytes": rss_servidor_bytes(),
         "calentamiento": calentamiento,
         "llamadas": llamadas,
         "resumen": resumir(llamadas, cfg),
@@ -263,13 +292,16 @@ def imprimir_resumen(res: dict[str, Any]) -> None:
     mem = res["memoria_bytes"] or {}
     gb = lambda b: f"{b / 1e9:.1f} GB" if b else "n/d"  # noqa: E731
     print(f"Modelo: {res['modelo']}  digest: {res['digest']}")
-    print(f"Ollama: {res['version_ollama']}  num_ctx: {res['num_ctx']}")
+    print(f"Ollama: {res['version_ollama']}  num_ctx: {res['num_ctx']}  prompt: {res['prompt']}  "
+          f"carga del sistema (1 min): {res['carga_sistema_1min']['inicio']:.1f} → "
+          f"{res['carga_sistema_1min']['fin']:.1f}")
     print(f"JSON válido: {v['k']}/{v['n']} = {v['pct']:.1f} %  "
           f"(IC 95 % Wilson {v['ic_inf_pct']:.1f}–{v['ic_sup_pct']:.1f} %)")
     print(f"Citas válidas (sobre salidas válidas): {r['citas_validas']['k']}/{r['citas_validas']['n']}")
     print(f"Latencia: mediana {lat['mediana']:.1f} s · p95 {lat['p95']:.1f} s "
           f"(mín {lat['min']:.1f}, máx {lat['max']:.1f})")
-    print(f"Memoria: total {gb(mem.get('size'))} · VRAM/GPU {gb(mem.get('size_vram'))}")
+    print(f"Memoria: /api/ps total {gb(mem.get('size'))} · VRAM {gb(mem.get('size_vram'))} · "
+          f"RSS del servidor {gb(res.get('rss_servidor_bytes'))}")
     print(f"D-02: mediana ≤ umbral: {d['mediana_ok']} · inválidos {d['invalidos_por_diez']:.1f}/10 "
           f"(ok: {d['invalidos_ok']}) → cumple: {d['cumple']}")
 
@@ -284,6 +316,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--modelo", required=True, help="tag exacto de Ollama, ej. qwen3.5:9b")
     ap.add_argument("--repeticiones", type=int, default=None)
     ap.add_argument("--num-ctx", type=int, default=None, help="variante de optimización")
+    ap.add_argument("--prompt", default=None, help="variante de prompt en prompts/ (sin .txt)")
     ap.add_argument("--etiqueta", default=None, help="sufijo del archivo de resultados")
     args = ap.parse_args(argv)
 
@@ -298,7 +331,7 @@ def main(argv: list[str] | None = None) -> int:
     repeticiones = args.repeticiones or cfg.prueba.repeticiones
     num_ctx = args.num_ctx or cfg.generacion.num_ctx
     try:
-        res = ejecutar(cliente, args.modelo, cfg, noticias, repeticiones, num_ctx)
+        res = ejecutar(cliente, args.modelo, cfg, noticias, repeticiones, num_ctx, args.prompt)
     finally:
         try:
             cliente.descargar(args.modelo)

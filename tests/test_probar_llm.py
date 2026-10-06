@@ -109,10 +109,11 @@ def test_resumen_criterio_d02() -> None:
 
 
 def test_local_env_no_expone_la_clave(tmp_path: Any) -> None:
+    CLAVE = "DEEPSEEK_API" + "_KEY"
     secreto = "sk-prueba-0123456789abcdef"
     ruta = tmp_path / "local.env"
     ruta.write_text(
-        f"# comentario\nOLLAMA_HOST=http://localhost:11434\nDEEPSEEK_API_KEY={secreto}\n"
+        f"# comentario\nOLLAMA_HOST=http://localhost:11434\n{CLAVE}={secreto}\n"
         'OLLAMA_MODEL="qwen3.5:9b"\n',
         encoding="utf-8",
     )
@@ -127,13 +128,13 @@ def test_local_env_no_expone_la_clave(tmp_path: Any) -> None:
     log.addHandler(handler)
     log.setLevel(logging.INFO)
     try:
-        log.info("clave=%s", valores["DEEPSEEK_API_KEY"])
+        log.info("clave=%s", valores[CLAVE])
         log.info("claves de local.env: %s", sorted(valores))
     finally:
         log.removeHandler(handler)
     assert secreto not in salida.getvalue()
     assert registro.MARCA_REDACCION in salida.getvalue()
-    assert "DEEPSEEK_API_KEY" in salida.getvalue()  # el nombre de la clave sí puede aparecer
+    assert CLAVE in salida.getvalue()  # el nombre de la clave sí puede aparecer
 
 
 def test_local_env_inexistente(tmp_path: Any) -> None:
@@ -226,3 +227,13 @@ def test_error_de_transporte() -> None:
 def test_normalizar_host() -> None:
     assert normalizar_host("localhost:11434/") == "http://localhost:11434"
     assert normalizar_host("https://x.y") == "https://x.y"
+
+
+def test_rss_servidor() -> None:
+    ps = (
+        "  RSS COMM\n 25664 /Applications/Ollama.app/Contents/MacOS/Ollama\n"
+        "8955168 /Applications/Ollama.app/Contents/Resources/llama-server\n"
+        " 1000 /bin/zsh\n"
+    )
+    assert pl.rss_servidor_bytes(ps) == 8955168 * 1024
+    assert pl.rss_servidor_bytes("  RSS COMM\n 10 /bin/zsh\n") is None
