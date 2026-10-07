@@ -1449,11 +1449,22 @@ class TerminosBaseline(ModeloConfig):
 
 
 class CedeAnteBaseline(ModeloConfig):
-    """Los ``terminos`` de ``tema`` no suman si ``ante`` tiene al menos una coincidencia (fenómeno y obra, regla 5)."""
+    """Los ``terminos`` de ``tema`` no suman si el texto cuenta un ``fenomenos`` que daña la obra (regla 5).
+
+    ``fenomenos`` son expresiones regulares sobre texto sin tildes ni mayúsculas, en tiempo de evento presente
+    («deslizamiento destruye…»); un término suelto de Eventos naturales («lluvia», «alerta») no basta (X82).
+    """
 
     tema: str
-    ante: str
+    fenomenos: list[str] = Field(min_length=1)
     terminos: list[str] = Field(min_length=1)
+
+    @field_validator("fenomenos")
+    @classmethod
+    def _regex_validas(cls, v: list[str]) -> list[str]:
+        for x in v:
+            re.compile(x)
+        return v
 
 
 class BaselineClasificacion(ModeloConfig):

@@ -233,6 +233,37 @@ def test_x79_el_deslizamiento_que_daña_la_carretera_es_evento_natural_en_el_bas
         assert Baseline(variante=variante).clasificar(titular).principal == "eventos_naturales"
 
 
+@pytest.mark.parametrize(
+    "titular",
+    [
+        "Deslizamiento destruye un tramo de la carretera a Boquete",
+        "Puente colapsa por sismo en Darién",
+        "Inundación arrasa el puente de acceso a Metetí",
+    ],
+)
+def test_x82_el_fenomeno_que_daña_la_obra_es_evento_natural(titular: str) -> None:
+    assert Baseline(variante="guia").clasificar(titular).principal == "eventos_naturales"
+
+
+@pytest.mark.parametrize(
+    "titular",
+    [
+        "MOP repara la carretera antes de la temporada de lluvias",
+        "Rehabilitan la carretera dañada por las lluvias del año pasado",
+        "MOP emite alerta por cierre del puente de Las Américas",
+    ],
+)
+def test_x82_la_reparacion_o_planificacion_con_lluvia_o_alerta_sigue_en_servicios_publicos(titular: str) -> None:
+    for variante in ("guia", "ampliado"):
+        assert Baseline(variante=variante).clasificar(titular).principal == "servicios_publicos"
+
+
+def test_x82_cede_ante_tiene_su_lista_propia_de_fenomenos_en_el_yaml() -> None:
+    from src.configuracion import cargar_clasificacion
+    (regla,) = cargar_clasificacion().baseline.cede_ante
+    assert regla.fenomenos and "lluvia" not in " ".join(regla.fenomenos)
+
+
 def test_x79_la_obra_sin_fenomeno_sigue_siendo_servicios_publicos_en_el_baseline() -> None:
     assert Baseline(variante="guia").clasificar("Inauguran el puente sobre el río Chagres").principal == "servicios_publicos"
     assert Baseline(variante="guia").clasificar("MOP rehabilita la carretera Panamericana").principal == "servicios_publicos"

@@ -75,11 +75,15 @@ baseline:
   anula_terminos:
     servicios_publicos:
       puente: [puente aereo, puente festivo, puente de asueto, puente de carnaval, puente de noviembre, puente humanitario, puente diplomatico]
-  # E1-07c (X79, regla 5 de docs/guia_temas.md): si el hecho es el fenómeno (deslizamiento, crecida) que daña una carretera o un
-  # puente, es Eventos naturales: la obra no suma a Servicios públicos cuando el texto ya nombra un término de Eventos naturales.
+  # E1-07c (X79, X82, regla 5 de docs/guia_temas.md): si el hecho es el fenómeno que daña una carretera o un puente (deslizamiento,
+  # crecida, inundación...), es Eventos naturales: la obra no suma a Servicios públicos. Lo decide una lista PROPIA de fenómenos
+  # dañinos en tiempo de evento presente (expresiones regulares sobre texto sin tildes), no cualquier término del tema: «lluvia» o
+  # «alerta» sueltos no bastan, y la obra de reparación o planificación sigue siendo Servicios públicos.
   cede_ante:
     - tema: servicios_publicos
-      ante: eventos_naturales
+      fenomenos:
+        - '\b(?:deslizamientos?|derrumbes?|crecidas?|inundaciones|inundacion|desbordamientos?|aludes?|sismo|temblor|terremoto)\s+(?:\w+\s+)?(?:destruye|destruyen|arrasa|arrasan|dana|danan|bloquea|bloquean|interrumpe|interrumpen|inhabilita|inhabilitan|cierra|cierran|corta|cortan|aisla|aislan|colapsa|colapsan|se lleva|se llevan|deja|dejan)\b'
+        - '\b(?:colapso|colapsa|colapsan|se derrumba|se desploma)\s+(?:\w+\s+){0,4}?por\s+(?:un\s+|el\s+|la\s+)?(?:sismo|temblor|terremoto|crecida|inundacion|deslizamiento|derrumbe)\b'
       terminos: [obras publicas, carretera, puente, mop, autopista, obra vial, infraestructura vial]
   palabras_clave:
     economia:

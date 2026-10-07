@@ -65,7 +65,9 @@ class Baseline:
             for t, por_termino in cfg.baseline.anula_terminos.items()
             for term, frases in por_termino.items()
         }
-        self.cede_ante = [(c.tema, c.ante, {plano(x) for x in c.terminos}) for c in cfg.baseline.cede_ante]
+        self.cede_ante = [
+            (c.tema, [re.compile(x) for x in c.fenomenos], {plano(x) for x in c.terminos}) for c in cfg.baseline.cede_ante
+        ]
 
     def puntuar(self, texto: str) -> dict[str, int]:
         """Cantidad de términos distintos de cada tema que coinciden con ``texto``."""
@@ -77,8 +79,8 @@ class Baseline:
             ]
             for t in self.temas
         }
-        for tema, ante, cedidos in self.cede_ante:
-            if coincide.get(ante) and tema in coincide:
+        for tema, fenomenos, cedidos in self.cede_ante:
+            if tema in coincide and any(f.search(limpio) for f in fenomenos):
                 coincide[tema] = [x for x in coincide[tema] if plano(x) not in cedidos]
         return {t: len(coincide[t]) for t in self.temas}
 
