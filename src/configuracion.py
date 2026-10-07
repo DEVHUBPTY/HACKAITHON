@@ -744,6 +744,12 @@ class Vinculo(ModeloConfig):
         return self
 
 
+class SubtemaVinculo(ModeloConfig):
+    """D-92: el grupo toma el subtema más cercano solo si supera al segundo por este margen; si no, queda sin subtema."""
+
+    margen_minimo: float = Field(ge=0)
+
+
 class SismosVinculo(ModeloConfig):
     """Presentación y textos fijos del vínculo con eventos de USGS (E1-09b)."""
 
@@ -836,6 +842,7 @@ class ConfigVinculos(ModeloConfig):
     motivo_por_defecto: str
     ventana_coincidencia_dias: int = Field(ge=0)
     pais_por_defecto: str
+    subtema: SubtemaVinculo
     sismos: SismosVinculo
     vinculos: dict[str, Vinculo]  # por subtema
     vinculos_por_tema: dict[str, Vinculo]  # cualquier subtema del tema

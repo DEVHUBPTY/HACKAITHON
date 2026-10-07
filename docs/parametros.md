@@ -62,6 +62,7 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 | Patrones de cifra (`%`) y año (`20xx`) del titular | Ver `vinculos.yaml` | Supuesto | `test_misma_anio_con_cifra_distinta_*` · `test_periodo_distinto_*` · `test_titular_sin_anio_*` |
 | Subtema del grupo | Voto de los titulares (método B, tema del grupo); empate: suma de similitudes, luego nombre | Supuesto | `test_el_subtema_gana_por_votos_luego_por_similitud_y_es_determinista` |
 | Coincidencia de sismos (`vinculos.yaml`) | ± 2 días | Supuesto | Revisión con la exploración (E0-09); datos sintéticos en E1-09 |
+| Margen mínimo del subtema (`vinculos.subtema.margen_minimo`, D-92) | 0.015 | Supuesto. Margen = promedio, sobre los titulares del grupo, de (similitud del 1.º subtema − similitud del 2.º) dentro del tema asignado, método B (`similitud_tema.margen_subtema`); se exige `>=`. Un titular sin margen guardado no respalda subtema. Simulación sobre los 57 grupos con tema del snapshot del 2026-10-06 con juicio del agente, **no etiquetas humanas**: sin margen 57 con subtema y 15 correctos; con 0.015, 17 con subtema y 8 correctos (47 %); con 0.020, 11 y 7. Con e5 las similitudes están entre 0.78 y 0.89 y el 1.º−2.º es menor a 0.01 en la mitad de los grupos. Se recalibra con etiquetas humanas de subtema (n e IC 95 %) | `test_d92_*` (`tests/test_d92_subtema_margen.py`) |
 | Magnitud mínima USGS | 3 | PDF (sección 6) | — |
 
 ## Extracción del snapshot (E0-04, `config/fuentes.yaml`)

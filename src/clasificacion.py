@@ -127,25 +127,30 @@ class Puntajes:
 
     similitud: np.ndarray                   # (n, temas)
     subtema: list[list[str | None]]         # (n, temas); None en el método A
+    margen: np.ndarray                      # (n, temas): 1.º − 2.º subtema del tema (D-92); NaN en el método A
 
 
 def puntuar(vectores: np.ndarray, ref: Referencias, metodo: str) -> Puntajes:
     """Similitud coseno de ``vectores`` (ya normalizados) con los 6 temas según el método."""
     n = vectores.shape[0]
     if metodo == METODO_A:
-        return Puntajes(vectores @ ref.centroides.T, [[None] * len(ref.temas) for _ in range(n)])
+        return Puntajes(vectores @ ref.centroides.T, [[None] * len(ref.temas) for _ in range(n)], np.full((n, len(ref.temas)), np.nan))
     if metodo != METODO_B:
         raise ValueError(f"método desconocido: {metodo!r} (A o B)")
     sims = vectores @ ref.prototipos.T                                     # (n, subtemas)
     similitud = np.full((n, len(ref.temas)), -np.inf, dtype=np.float64)
+    margen = np.full((n, len(ref.temas)), np.nan, dtype=np.float64)
     elegido: list[list[str | None]] = [[None] * len(ref.temas) for _ in range(n)]
     for j, id_tema in enumerate(ref.temas):
         columnas = [k for k, (t, _) in enumerate(ref.subtemas) if t == id_tema]
         mejor = np.argmax(sims[:, columnas], axis=1)                       # el primero gana un empate
+        if len(columnas) > 1:                                              # con un solo subtema no hay segundo: margen nulo
+            ordenadas = np.sort(sims[:, columnas], axis=1)
+            margen[:, j] = ordenadas[:, -1] - ordenadas[:, -2]
         similitud[:, j] = sims[np.arange(n), np.array(columnas)[mejor]]
         for i in range(n):
             elegido[i][j] = ref.subtemas[columnas[int(mejor[i])]][1]
-    return Puntajes(similitud, elegido)
+    return Puntajes(similitud, elegido, margen)
 
 
 @dataclass(frozen=True)
@@ -361,7 +366,10 @@ def aplicar_a_base(
             )
         # similitud con cada tema, por método (explicabilidad); el subtema solo existe en B
         detalle = [
-            [f["id_noticia"], m, t, float(puntajes[m].similitud[i, j]), puntajes[m].subtema[i][j]]
+            [
+                f["id_noticia"], m, t, float(puntajes[m].similitud[i, j]), puntajes[m].subtema[i][j],
+                None if np.isnan(puntajes[m].margen[i, j]) else float(puntajes[m].margen[i, j]),
+            ]
             for m in (METODO_A, METODO_B)
             for i, f in enumerate(utiles)
             for j, t in enumerate(ref.temas)
@@ -385,7 +393,7 @@ def aplicar_a_base(
                 ],
             )
             if detalle:
-                con.executemany("INSERT INTO similitud_tema VALUES (?, ?, ?, ?, ?)", detalle)
+                con.executemany("INSERT INTO similitud_tema VALUES (?, ?, ?, ?, ?, ?)", detalle)
             if db.contar_filas(con, "noticias") != antes:  # no debería ocurrir: solo hay UPDATE
                 raise RuntimeError("la clasificación cambió el número de noticias")
             con.commit()

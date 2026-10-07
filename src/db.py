@@ -106,6 +106,7 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("tema", "VARCHAR NOT NULL"),
         ("similitud", "DOUBLE NOT NULL"),
         ("subtema", "VARCHAR"),
+        ("margen_subtema", "DOUBLE"),  # D-92: similitud del 1.º menos la del 2.º subtema del tema (solo método B)
     ],
     "grupos": [  # E1-08: un grupo por evento; el conteo de procedencias es una ESTIMACIÓN (CU-03)
         ("id_grupo", "VARCHAR PRIMARY KEY"),

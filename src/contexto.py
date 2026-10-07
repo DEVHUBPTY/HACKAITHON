@@ -5,6 +5,8 @@ Cada grupo (``GRP-``) se vincula con el indicador que le corresponde **por subte
 
 * **Subtema:** el subtema más cercano dentro del tema asignado al grupo (método B de ``src/clasificacion.py``, tabla
   ``similitud_tema``), aunque el método activo sea el A. Voto de los titulares del grupo; desempata la suma de similitudes.
+  **Solo si** el margen promedio de los titulares (1.º − 2.º subtema del tema, ``similitud_tema.margen_subtema``) alcanza
+  ``vinculos.subtema.margen_minimo``; si no, el grupo queda sin subtema (D-92) y recibe el vínculo por tema o ``tema_sin_indicador``.
 * **Vínculo:** primero ``vinculos`` (por subtema), después ``vinculos_por_tema``; si no hay, ``tema_sin_indicador``.
   Un indicador sin ningún valor no nulo de Panamá es ``sin_dato_en_periodo``.
 * **Panamá:** el último año con valor no nulo, declarado en la limitación junto con los años posteriores sin valor.
@@ -81,6 +83,19 @@ def subtema_del_grupo(candidatos: Sequence[tuple[str, float]]) -> str | None:
     for subtema, similitud in candidatos:
         suma[subtema] += similitud
     return min(votos, key=lambda s: (-votos[s], -suma[s], s))
+
+
+def subtema_con_margen(candidatos: Sequence[tuple[str, float, float | None]], margen_minimo: float) -> str | None:
+    """Subtema del grupo (``subtema_del_grupo``) solo si el margen promedio de sus titulares alcanza ``margen_minimo`` (D-92).
+
+    ``candidatos`` son ``(subtema, similitud, margen)`` por titular; el margen es 1.º − 2.º subtema dentro del tema asignado.
+    Un titular sin margen guardado (base anterior a D-92) no lo respalda: sin margen conocido no se afirma subtema.
+    """
+    elegido = subtema_del_grupo([(s, sim) for s, sim, _ in candidatos])
+    margenes = [m for _, _, m in candidatos]
+    if elegido is None or any(m is None for m in margenes):
+        return None
+    return elegido if sum(margenes) / len(margenes) >= margen_minimo else None   # type: ignore[arg-type]
 
 
 # ------------------------------------------------------------------ cifra del titular
@@ -284,17 +299,17 @@ def _anio_de(fecha: str | None) -> int | None:
     return int(fecha[POSICION_ANIO]) if fecha and fecha[POSICION_ANIO].isdigit() else None
 
 
-def leer_grupos(con: Any) -> list[dict[str, Any]]:
-    """Cada grupo con su tema, el subtema más cercano (método B), el titular central y su año de publicación."""
-    votos: defaultdict[str, list[tuple[str, float]]] = defaultdict(list)
-    for id_grupo, subtema, similitud in con.execute(
-        """SELECT n.id_grupo, s.subtema, s.similitud FROM noticias n
+def leer_grupos(con: Any, margen_minimo: float) -> list[dict[str, Any]]:
+    """Cada grupo con su tema, el subtema más cercano (método B) si pasa el margen mínimo (D-92), el titular central y el año."""
+    votos: defaultdict[str, list[tuple[str, float, float | None]]] = defaultdict(list)
+    for id_grupo, subtema, similitud, margen in con.execute(
+        """SELECT n.id_grupo, s.subtema, s.similitud, s.margen_subtema FROM noticias n
            JOIN grupos g ON g.id_grupo = n.id_grupo
            JOIN similitud_tema s ON s.id_noticia = n.id_noticia AND s.tema = g.tema_clasificado AND s.metodo = ?
            WHERE s.subtema IS NOT NULL""",
         [METODO_SUBTEMA],
     ).fetchall():
-        votos[id_grupo].append((subtema, similitud))
+        votos[id_grupo].append((subtema, similitud, margen))
     grupos = []
     for id_grupo, tema, titular, publicacion, deteccion in con.execute(
         """SELECT g.id_grupo, g.tema_clasificado, g.titular_central, n.fecha_publicacion, n.fecha_deteccion
@@ -304,7 +319,7 @@ def leer_grupos(con: Any) -> list[dict[str, Any]]:
             {
                 "id_grupo": id_grupo,
                 "tema": tema,
-                "subtema": subtema_del_grupo(votos.get(id_grupo, [])),
+                "subtema": subtema_con_margen(votos.get(id_grupo, []), margen_minimo),
                 "titular": titular,
                 "anio_publicacion": _anio_de(publicacion or deteccion),
             }
@@ -340,7 +355,7 @@ def aplicar_a_base(ruta_base: Path, cfg: ConfigVinculos, con: Any | None = None)
     try:
         if propia:
             db.asegurar_esquema(con)
-        grupos = leer_grupos(con)
+        grupos = leer_grupos(con, cfg.subtema.margen_minimo)
         indicadores = db.leer_tabla(con, "indicadores")
         filas, delegados = construir_vinculos(grupos, indicadores, cfg)
         _reemplazar(con, FUENTE_INDICADOR, filas, propia)
@@ -384,7 +399,7 @@ def aplicar_sismos(
             db.asegurar_esquema(con)
         fechas = contexto_sismos.leer_noticias_por_grupo(con)
         resultados = []
-        for g in leer_grupos(con):
+        for g in leer_grupos(con, cfg.subtema.margen_minimo):
             vinculo, _ = elegir_vinculo(g["tema"], g["subtema"], cfg)
             if vinculo is None or vinculo.fuente != contexto_sismos.FUENTE_USGS:
                 continue

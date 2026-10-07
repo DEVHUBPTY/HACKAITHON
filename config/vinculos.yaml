@@ -14,6 +14,9 @@ motivo_por_defecto: tema_sin_indicador
 ventana_coincidencia_dias: 2        # sismos: ± días entre evento USGS y noticia (supuesto)
 pais_por_defecto: PAN
 
+subtema:                            # D-92 (enmienda a E1-09): el subtema del grupo exige un margen mínimo
+  margen_minimo: 0.015              # supuesto: promedio de (1.º − 2.º subtema) del tema asignado; docs/parametros.md
+
 sismos:                             # E1-09b: presentación y textos fijos del vínculo con eventos USGS
   zona_horaria: America/Panama      # solo para mostrar; los datos siguen en UTC
   formato_hora: "%Y-%m-%d %H:%M"
