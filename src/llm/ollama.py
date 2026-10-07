@@ -12,6 +12,9 @@ from typing import Any, Protocol
 
 import requests
 
+from src.configuracion import ConfigLlm
+from src.llm.proveedor import ErrorProveedor
+
 log = logging.getLogger(__name__)
 
 
@@ -103,3 +106,26 @@ class ClienteOllama:
         """Saca el modelo de memoria (``keep_alive`` 0)."""
         self._pedir("post", "/api/generate", json={"model": modelo, "keep_alive": 0})
         log.info("Modelo descargado de memoria: %s", modelo)
+
+
+class ProveedorOllama:
+    """``Proveedor`` sobre Ollama local: salida estructurada (``format``), temperatura y semilla de ``config/llm.yaml``."""
+
+    nombre = "ollama"
+
+    def __init__(self, host: str, modelo: str, cfg: ConfigLlm, sesion: SesionHttp | None = None) -> None:
+        self.modelo = modelo
+        self.cfg = cfg
+        self.cliente = ClienteOllama(host, cfg.ollama.timeout_segundos, sesion)
+
+    def generar_json(self, system: str, usuario: str, esquema: dict[str, Any]) -> str:
+        g = self.cfg.generacion
+        opciones = {"temperature": g.temperatura, "seed": g.semilla, "num_ctx": g.num_ctx, "num_predict": g.num_predict}
+        try:
+            resp = self.cliente.chat(self.modelo, system, usuario, esquema, opciones, g.pensar, self.cfg.ollama.keep_alive_durante_prueba)
+        except ErrorOllama as exc:
+            raise ErrorProveedor(str(exc)) from exc
+        contenido = resp.get("message", {}).get("content")
+        if not isinstance(contenido, str) or not contenido.strip():
+            raise ErrorProveedor("Ollama devolvió una respuesta vacía")
+        return contenido

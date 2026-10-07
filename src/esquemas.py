@@ -69,3 +69,38 @@ class AfirmacionesCitadas(BaseModel):
 def esquema_json_afirmaciones() -> dict[str, Any]:
     """JSON Schema de ``AfirmacionesCitadas``, para el parámetro ``format`` de Ollama."""
     return AfirmacionesCitadas.model_json_schema()
+
+
+class ParComparado(BaseModel):
+    """Resultado de comparar dos titulares candidatos a contradicción (D-23).
+
+    El LLM solo dice si el par es una **posible** contradicción y cita, literalmente, el fragmento de cada titular en que se
+    nota. No hay texto libre: lo que se muestra al usuario es la etiqueta fija de ``config/prioridad.yaml``.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    id_a: str = Field(min_length=1, description="ID de la noticia A, exacto")
+    id_b: str = Field(min_length=1, description="ID de la noticia B, exacto")
+    posible_contradiccion: bool
+    fragmento_a: str = Field(default="", description="Fragmento literal del titular A; vacío si no hay posible contradicción")
+    fragmento_b: str = Field(default="", description="Fragmento literal del titular B; vacío si no hay posible contradicción")
+
+    @model_validator(mode="after")
+    def _con_fragmentos(self) -> ParComparado:
+        if self.posible_contradiccion and not (self.fragmento_a.strip() and self.fragmento_b.strip()):
+            raise ValueError(f"{self.id_a}/{self.id_b}: una posible contradicción cita un fragmento literal de cada titular")
+        return self
+
+
+class ComparacionContradicciones(BaseModel):
+    """Salida de la comparación de los pares candidatos de un grupo (uno por par, en cualquier orden)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    pares: list[ParComparado] = Field(min_length=1)
+
+
+def esquema_json_comparacion() -> dict[str, Any]:
+    """JSON Schema de ``ComparacionContradicciones``, para el parámetro ``format`` de Ollama."""
+    return ComparacionContradicciones.model_json_schema()

@@ -1,0 +1,76 @@
+# E1-10 · Prioridad: lo que `reglas_v1.3.yaml` no fija (geografía, cifras, contradicciones, vacíos, sensibilidad).
+# Cada número está en docs/parametros.md con su origen. Los pesos, rangos, U, N, E y el estado de evidencia viven en
+# reglas_v1.3.yaml; la tabla de acciones, en modalidad_<modalidad>.yaml. Aquí no hay ninguna diferencia entre modalidades.
+version: 1
+
+comparacion:
+  decimales_p: 9                  # P se compara redondeado a estos decimales antes del desempate (evita empates rotos por ruido de coma flotante)
+
+impacto:
+  alcance_subtema_desconocido: 0.5   # grupo sin subtema (tema `sin_tema`): alcance neutro, igual que `alcance_geografico.desconocido`
+
+geografia:                        # alcance geográfico de I: se buscan los términos de reglas_v1.3.yaml:geografia en los titulares
+  # Términos que nombran al país y a una provincia a la vez: solo cuentan como la provincia si los precede alguno de estos prefijos.
+  prefijos_obligatorios:
+    Panamá: ["provincia de"]
+
+medios:
+  desconocidos: ["", "desconocido", "unknown", "n/a"]   # valores de `medio` que no identifican un medio (componente identificable de E)
+
+cifras:                           # ¿el grupo trae cifras? (estado de evidencia: `oficial_obligatorio_si_hay_cifras`) y base de las contradicciones por cifras
+  patron: '(?<![\w.,])(?P<numero>\d[\d.,]*\d|\d)(?:\s*(?P<unidad>%|[^\W\d_]+))?'
+  patron_fecha: '\b\d{1,2}\s+de\s+(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre)\b'
+  anio_desde: 1900                # un entero entre estos años, sin `%`, es un año y no una cifra
+  anio_hasta: 2100
+  digitos_por_grupo_de_miles: 3   # «84.000» son 84 mil; «3,2» y «3.5» son decimales
+  palabras_previas_no_cifra: [ley, decreto, resolucion, articulo, numero, "no", fase, grupo, covid, expediente, proyecto]
+  unidades_ignoradas: [de, del, la, el, los, las, en, a, al, y, o, por, para, con, que, se, es, son, han, fue, ha, un, una]
+  raiz_unidad_caracteres: 5       # «escuela» y «escuelas» comparten raíz; una unidad más corta se usa entera
+
+contradicciones:
+  etiqueta: "posible contradicción, verificar"   # única forma en que se presenta; nunca un veredicto (D-23)
+  solo_entre_procedencias: false  # true: dos titulares de la misma procedencia (misma agencia o medio) no se comparan. false: dos versiones distintas de un mismo origen también se muestran
+  maximo_candidatos_por_grupo: 6  # tope de pares que se comparan con el LLM (costo y contexto)
+  prompt: comparar_contradicciones
+  # Verbos opuestos (sin tildes, minúsculas, palabra completa). Un par es candidato si un titular usa una forma del lado `a` y otro del lado `b`.
+  pares_opuestos:
+    - nombre: sube / baja
+      a: [sube, suben, subio, subieron, aumenta, aumentan, aumento, aumentaron, crece, crecen, crecio, crecieron, incrementa, incrementan, rises, rise, rose, climbs, climbed, jumps, jumped, surges, surged]
+      b: [cae, caen, cayo, cayeron, disminuye, disminuyen, disminuyo, descendio, desciende, reduce, reducen, redujo, falls, fall, fell, drops, dropped, declines, declined, plunges, plunged]
+    - nombre: aprueba / rechaza
+      a: [aprueba, aprueban, aprobo, aprobaron, approves, approved, acepta, aceptan, acepto]
+      b: [rechaza, rechazan, rechazo, rechazaron, veta, vetan, veto, archiva, archivan, archivo, rejects, rejected, vetoes, vetoed]
+    - nombre: confirma / niega
+      a: [confirma, confirman, confirmo, confirmaron, confirms, confirmed]
+      b: [niega, niegan, nego, negaron, desmiente, desmienten, desmintio, denies, denied, refutes, refuted]
+    - nombre: abre / cierra
+      a: [abre, abren, abrio, abrieron, reabre, reabren, reabrio, opens, opened, reopens, reopened]
+      b: [cierra, cierran, cerro, cerraron, closes, closed]
+    - nombre: suspende / reanuda
+      a: [suspende, suspenden, suspendio, suspendieron, suspends, suspended]
+      b: [reanuda, reanudan, reanudo, reanudaron, resumes, resumed]
+    - nombre: gana / pierde
+      a: [gana, ganan, gano, ganaron, wins, won]
+      b: [pierde, pierden, perdio, perdieron, loses, lost]
+    - nombre: condena / absuelve
+      a: [condena, condenan, condeno, condenaron, convicts, convicted]
+      b: [absuelve, absuelven, absolvio, absolvieron, acquits, acquitted]
+
+vacios:                           # textos de los vacíos de verificación (plantillas con {campos})
+  procedencias_insuficientes: "{n} procedencia(s) independiente(s) estimada(s); se necesitan al menos {minimo} para evidencia suficiente"
+  cifras_sin_dato_oficial: "los titulares traen cifras y no hay dato oficial vinculado"
+  sin_dato_oficial: "sin dato oficial vinculado ({motivo})"
+  contradiccion_abierta: "posible contradicción, verificar: {n} par(es) de titulares con versiones distintas"
+  medios_o_fechas_desconocidos: "{n} de {total} titulares sin medio o fecha de publicación conocidos"
+  noticia_recirculada: "noticia recirculada: publicada originalmente el {fecha}; no se trata como nueva"
+  subtema_desconocido: "subtema no determinado: se usó el alcance neutro de impacto"
+  motivo_sin_dato_oficial_por_defecto: "sin vínculo en la tabla de contexto"
+
+sensibilidad:                     # eval/sensibilidad.py
+  variacion_peso: 5               # puntos de peso (PDF: «permitir justificar cambios de pesos»)
+  variacion_supuesto: 0.2         # ±20 % de cada parámetro supuesto (spec E1-10)
+  tamano_ranking: 5               # top 5 (CU-01)
+
+puntaje_eval:                     # eval/puntaje.py
+  casi_constante_desviacion: 0.05 # un componente con desviación estándar menor a esto casi no ordena (se marca)
+  top_en_reporte: 10              # filas del ranking en outputs/prioridad.json
