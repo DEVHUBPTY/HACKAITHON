@@ -604,8 +604,8 @@
     },
     "decimales_del_hash": 4,
     "ejecucion": {
-      "arbol_con_cambios": true,
-      "commit": "7c283ca9a66b349eeea565bcf7fd2cbff7aacb3c",
+      "arbol_con_cambios": false,
+      "commit": "6d13cbc45d93831bf1ce5bd782112bceca83664c",
       "embeddings": {
         "clave": "minilm",
         "id": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
