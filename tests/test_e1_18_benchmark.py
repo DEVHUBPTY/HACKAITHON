@@ -300,3 +300,64 @@ def test_medir_embeddings_con_un_motor_falso_reporta_cifras_sin_costo() -> None:
     r = medir_embeddings.medir("e5", ["titular uno", "titular dos", "titular tres"], motor=MotorFalso())
     assert r["modelo"] == "e5" and r["n_textos"] == 3 and r["dimension"] == 256 and r["costo_usd"] == 0.0
     assert r["codificar_s"] >= 0 and r["rss_maximo_bytes"] > 0 and r["parametros"] is None
+
+
+# ------------------------------------------------------------------ observaciones de la revisión independiente (X38 y menores)
+
+
+def _correr_jurado(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, archivo: Path = FIXTURE) -> dict:
+    consultor, _ = crear_consultor(tmp_path)
+    monkeypatch.setattr(run_benchmark, "crear_consultor_real", lambda: consultor)
+    salida = tmp_path / "eval"
+    assert run_benchmark.main(["--archivo", str(archivo), "--salida", str(salida)]) == 0
+    return json.loads((salida / "metricas.json").read_text(encoding="utf-8"))
+
+
+def test_sin_medicion_del_llm_se_advierte_en_consola_y_en_las_metricas(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    m = _correr_jurado(tmp_path, monkeypatch)
+    err = capsys.readouterr().err
+    assert "ADVERTENCIA" in err and "medicion_llm.json" in err
+    assert any("medicion_llm.json" in a for a in m["avisos"])
+    assert m["latencia"]["paquete_completo"]["estado"] == "no_corrido"
+
+
+def test_la_medicion_del_llm_del_benchmark_de_desarrollo_se_versiona() -> None:
+    import subprocess
+
+    raiz = Path(__file__).resolve().parent.parent
+    ignorado = subprocess.run(["git", "check-ignore", "-q", "outputs/benchmark/medicion_llm.json"], cwd=raiz, check=False)
+    assert ignorado.returncode == 1   # 1 = no está ignorado: un clon limpio la recibe
+    assert (raiz / "outputs" / "benchmark" / "medicion_llm.json").is_file()
+
+
+def test_un_id_esperado_que_no_existe_en_el_corpus_se_advierte(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    lineas = FIXTURE.read_text(encoding="utf-8").splitlines()
+    primera = json.loads(lineas[0])
+    primera["ids_evidencia"] = [*primera["ids_evidencia"], "NOT-noexiste99"]
+    archivo = tmp_path / "con_id_malo.jsonl"
+    archivo.write_text("\n".join([json.dumps(primera, ensure_ascii=False), *lineas[1:]]) + "\n", encoding="utf-8")
+    m = _correr_jurado(tmp_path, monkeypatch, archivo)
+    assert m["ids_esperados_inexistentes"] == {primera["id"]: ["NOT-noexiste99"]}
+    assert "NOT-noexiste99" in capsys.readouterr().err
+
+
+def test_un_percentil_con_una_sola_observacion_marca_el_bootstrap_degenerado() -> None:
+    r = metricas.percentil_con_ic([17.155], 50, CRITERIO)
+    assert r["n"] == 1 and r["bootstrap_degenerado"] is True
+    assert "bootstrap_degenerado" not in metricas.percentil_con_ic([1.0, 2.0, 3.0, 9.0], 50, CRITERIO)
+
+
+def test_las_metas_de_abstencion_y_latencia_viven_en_la_configuracion() -> None:
+    cfg = cargar_benchmark()
+    assert cfg.metas.abstencion_correcta == 0.8 and cfg.metas.latencia_mediana_s == 15
+
+
+def test_la_consola_imprime_la_latencia_por_tipo_de_paquete(capsys: pytest.CaptureFixture[str]) -> None:
+    raiz = Path(__file__).resolve().parent.parent
+    run_benchmark.imprimir(json.loads((raiz / "outputs" / "metricas.json").read_text(encoding="utf-8")))
+    salida = capsys.readouterr().out
+    assert "editorial" in salida and "investigacion" in salida

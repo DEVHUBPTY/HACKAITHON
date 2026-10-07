@@ -188,3 +188,11 @@ def test_alcance_puede_ser_una_matriz_de_pares() -> None:
     r = iv.pares_cluster_bootstrap(real, pred, alcance, CRITERIO)
     assert (r["ia"]["tp"], r["ia"]["fp"], r["ia"]["fn"]) == (2, 1, 0)
     assert (r["baseline"]["tp"], r["baseline"]["fp"], r["baseline"]["fn"]) == (1, 0, 1)
+
+
+def test_la_consola_usa_el_mismo_numero_de_remuestreos_que_el_documento() -> None:
+    import json
+
+    informe = json.loads((iv.RAIZ / "outputs" / "ia_vs_baseline.json").read_text(encoding="utf-8"))
+    ic = informe["clasificacion"]["vista_clasificador"]["con_criterio_de_benchmark"]["diferencia_macro_f1"]["ic95"]
+    assert str(ic) in iv.resumen(informe)[0]
