@@ -392,3 +392,75 @@ def test_el_historial_exportado_rotula_el_texto_corregido_como_el_selector(rev) 
     assert rotulo == "Resumen · Hipótesis de impacto · 1"
     assert f"Versión 2 · {rotulo}" in md
     assert "hipotesis\\_impacto.0" not in md and "hipotesis_impacto.0" not in md
+
+
+# ============================================================================================ X80 · ubicar el fragmento con la normalización del validador
+
+NBSP = " "
+OBS_SE_ESPERA_1 = "Según laestrella.com.pa, Mulino se espera que viaje a Asia y suscriba convenios con Singapur y Vietnam."
+OBS_SE_ESPERA_2 = f"El medio revistaeyn.com reporta que se{NBSP}espera{NBSP}que el Presidente de Panamá visite Singapur y Vietnam."
+OBS_ANCHO_COMPLETO = "El medio revistaeyn.com reporta que el Presidente de Panamá ｐｏｄｒíａ visitar Singapur y Vietnam."
+
+
+def test_el_marcador_con_espacio_duro_en_otra_observacion_advierte_aunque_se_limpie_la_primera() -> None:
+    previo = aplicar_ediciones(boletin(), {f"{OBS}.1": OBS_SE_ESPERA_1})                # «se espera que» ya confirmado en la observación 2
+    lista = avisos({f"{OBS}.1": OBS_VALIDA, f"{OBS}.2": OBS_SE_ESPERA_2}, previo)       # se limpia esa y se escribe en otra, con U+00A0
+    assert [(a.clave, a.mensaje.split("]")[0]) for a in lista] == [(f"{OBS}.2", "[observacion_condicional")]
+
+
+def test_el_marcador_en_ancho_completo_advierte_aunque_se_limpie_la_primera() -> None:
+    previo = aplicar_ediciones(boletin(), {f"{OBS}.1": OBS_CONDICIONAL_1})
+    lista = avisos({f"{OBS}.1": OBS_VALIDA, f"{OBS}.2": OBS_ANCHO_COMPLETO}, previo)
+    assert [a.clave for a in lista if "observacion_condicional" in a.mensaje] == [f"{OBS}.2"]
+
+
+def test_corregir_con_espacio_duro_no_se_guarda_sin_confirmar_ni_escribe_nada(rev) -> None:
+    c = _caso(rev)
+    e = entrada()
+    t1 = {f"{OBS}.1": OBS_SE_ESPERA_1}
+    rev.corregir(c, ANALISTA, t1, confirmadas=[a.id for a in rev.revisar_correccion(c, t1, e)], comentario="confirmo", entrada=e)
+    t2 = {f"{OBS}.1": OBS_VALIDA, f"{OBS}.2": OBS_SE_ESPERA_2}
+    assert rev.revisar_correccion(c, t2, e)
+    antes = _filas(rev, c)
+    with pytest.raises(AdvertenciasSinConfirmar):
+        rev.corregir(c, ANALISTA, t2, confirmadas=(), entrada=e)
+    assert _filas(rev, c) == antes and len(rev.versiones(c)) == 2
+
+
+def test_un_rechazo_que_no_se_ubica_en_ninguna_oracion_de_una_seccion_editada_es_nuevo() -> None:
+    from src.validador import Rechazo
+
+    textos = {f"{OBS}.1": "una oración", f"{OBS}.2": "otra oración"}
+    sin_ubicar = Rechazo("regla", "motivo", fragmento="algo que no está")
+    assert rv._ubicar(OBS, sin_ubicar, textos, {f"{OBS}.2": "otra oración"}) == (True, None)           # hay edición en la sección: no se puede probar que ya existía
+    assert rv._ubicar(OBS, sin_ubicar, textos, {f"{HIP}.0": "x"}) == (False, None)                       # la sección no se tocó: se compara por conteo
+
+
+def test_las_advertencias_previas_sin_tocar_no_se_repiten_con_otra_oracion_editada() -> None:
+    previo = aplicar_ediciones(boletin(), {f"{OBS}.1": OBS_SE_ESPERA_1})
+    limpia = boletin()[OBS][3]["texto"] + " "
+    assert avisos({f"{OBS}.3": limpia}, previo) == []
+    assert avisos({f"{HIP}.0": HIP_VALIDA}, previo) == []
+
+
+def test_el_paquete_editorial_con_espacio_duro_advierte_la_causalidad_en_la_oracion_nueva() -> None:
+    ent = EntradaFicha(**_leer("e2_03_cu05_ficha_editorial.json"))
+    p = _leer("e2_03_cu05_paquete_editorial.json")
+    b1 = "El medio laestrella.com.pa reporta que Mulino viajará a Asia debido a los convenios bilaterales con Singapur y Vietnam."
+    previo = aplicar_ediciones(p, {"brief.1": b1})
+    b2 = f"El medio revistaeyn.com reporta que el presidente de Panamá visita Singapur y Vietnam debido{NBSP}a las inversiones."
+    cambios = {"brief.1": p["brief"][1]["texto"], "brief.2": b2}
+    lista = revalidar_correccion(ent, previo, aplicar_ediciones(previo, cambios), cambios)
+    assert [a.clave for a in lista if a.mensaje.startswith("[causalidad]")] == ["brief.2"]
+    otra = {"resumen_web.0": "El medio prensa-latina.cu reporta que el presidente panameño visitará Singapur y Vietnam pronto."}
+    assert revalidar_correccion(ent, previo, aplicar_ediciones(previo, otra), otra) == []              # lo ya confirmado en brief.1 no vuelve
+
+
+# ============================================================================================ la advertencia apunta a la oración que la causa
+
+
+def test_con_dos_oraciones_editadas_la_advertencia_apunta_a_la_que_la_causa() -> None:
+    lista = avisos({f"{OBS}.1": OBS_VALIDA, f"{OBS}.2": OBS_CONDICIONAL_2})
+    assert [a.clave for a in lista if "observacion_condicional" in a.mensaje] == [f"{OBS}.2"]
+    lista = avisos({f"{OBS}.1": OBS_CONDICIONAL_1, f"{OBS}.2": OBS_VALIDA})
+    assert [a.clave for a in lista if "observacion_condicional" in a.mensaje] == [f"{OBS}.1"]

@@ -34,7 +34,6 @@ import json
 import logging
 import re
 import sys
-import unicodedata
 from collections import Counter
 from collections.abc import Callable, Collection, Iterator, Mapping, Sequence
 from contextlib import contextmanager
@@ -47,6 +46,7 @@ import duckdb
 from pydantic import BaseModel
 
 from src import db
+from src.limpieza import plano
 from src.configuracion import (
     MODALIDADES,
     RAIZ,
@@ -310,22 +310,28 @@ def _rechazos_del_borrador(entrada: Any, contenido: Mapping[str, Any], secciones
     return salida
 
 
-def _sin_tildes(texto: str) -> str:
-    return "".join(c for c in unicodedata.normalize("NFD", texto.lower()) if unicodedata.category(c) != "Mn")
+def _ubicar(clave: str, r: Rechazo, textos: Mapping[str, str], editados: Mapping[str, str]) -> tuple[bool, str | None]:
+    """``(es_nuevo, clave_de_la_oración)`` de un rechazo del validador (X74, X80).
 
-
-def _es_de_texto_nuevo(clave: str, r: Rechazo, editados: Mapping[str, str]) -> bool:
-    """``True`` si el rechazo cae en una oración cuyo texto la persona acaba de escribir (X74).
-
-    Una afirmación se identifica por su clave. En una sección, el rechazo se atribuye a la oración que contiene su fragmento; sin fragmento
-    (límites de palabras) no hay oración que señalar y se compara por conteo contra el borrador anterior.
+    Una afirmación se identifica por su clave. En una sección, el rechazo se atribuye a la oración que contiene su fragmento, buscado con la
+    misma normalización del validador (``plano`` y ``contiene``): una oración editada lo vuelve nuevo; si solo está en oraciones que no se
+    tocaron se compara por conteo contra el borrador anterior; si no se ubica en ninguna y la persona editó la sección, es nuevo (no se puede
+    probar que ya existía). Sin fragmento (límites de palabras) tampoco hay oración que señalar y se compara por conteo.
     """
+    from src.validador import contiene
+
     if clave.startswith("afirmaciones."):
-        return clave in editados
+        return clave in editados, clave
     if not r.fragmento:
-        return False
-    fragmento = _sin_tildes(r.fragmento)                                 # el validador devuelve el fragmento normalizado (sin tildes ni mayúsculas)
-    return any(k.partition(".")[0] == clave and fragmento in _sin_tildes(t) for k, t in editados.items())
+        return False, None
+    fragmento = plano(r.fragmento)
+    de_la_seccion = {k: t for k, t in textos.items() if k.partition(".")[0] == clave}
+    ubicadas = [k for k, t in de_la_seccion.items() if contiene(plano(t), fragmento) or fragmento in plano(t)]
+    if editadas := [k for k in ubicadas if k in editados]:
+        return True, editadas[0]
+    if ubicadas:
+        return False, ubicadas[0]
+    return any(k in editados for k in de_la_seccion), None
 
 
 def revalidar_correccion(
@@ -352,21 +358,23 @@ def revalidar_correccion(
             secciones.add(nombre)
     previos = Counter((c, r.regla, r.motivo, r.fragmento) for c, r in _rechazos_del_borrador(entrada, antes, secciones))
     textos_antes = {k: e.texto for k, e in elementos_editables(antes).items()}
-    editados = {k: e.texto for k, e in elementos_editables(despues).items() if k in claves and e.texto != textos_antes.get(k)}   # el texto de estas oraciones es nuevo
+    textos_despues = {k: e.texto for k, e in elementos_editables(despues).items()}
+    editados = {k: t for k, t in textos_despues.items() if k in claves and t != textos_antes.get(k)}   # el texto de estas oraciones es nuevo
     primera_clave = {s: next((k for k in sorted(claves) if k == s or k.startswith(f"{s}.")), s) for s in secciones}
     primera_resumen = next((k for k in sorted(claves) if k.partition(".")[0] in BLOQUES_RESUMEN), None)
     avisos: list[Advertencia] = []
     for texto_vacio in [k for k, e in elementos_editables(despues).items() if k in claves and not e.texto.strip()]:
         avisos.append(Advertencia(texto_vacio, cfg.correccion.advertencia_vacio))
     for clave, r in _rechazos_del_borrador(entrada, despues, secciones):
-        if not _es_de_texto_nuevo(clave, r, editados):                  # X74: un rechazo en una oración editada es siempre nuevo; en las demás, solo si sobra uno
+        es_nuevo, oracion = _ubicar(clave, r, textos_despues, editados)
+        if not es_nuevo:                                                # X74: un rechazo en una oración editada es siempre nuevo; en las demás, solo si sobra uno
             llave = (clave, r.regla, r.motivo, r.fragmento)
             if previos[llave] > 0:
                 previos[llave] -= 1
                 continue
         # El límite del resumen (conjunto) es uno solo: se avisa una vez y en la primera oración editada de los bloques (X75).
         conjunto = r.regla == LIMITE_PALABRAS and clave in BLOQUES_RESUMEN and r.seccion == clave and primera_resumen and not r.fragmento
-        aviso = Advertencia(primera_clave.get(clave, clave) if not conjunto else primera_resumen, f"[{r.regla}] {r.mensaje}")
+        aviso = Advertencia(oracion or primera_clave.get(clave, clave) if not conjunto else primera_resumen, f"[{r.regla}] {r.mensaje}")
         if aviso not in avisos and not (conjunto and any(a.mensaje == aviso.mensaje for a in avisos)):
             avisos.append(aviso)
     return avisos
