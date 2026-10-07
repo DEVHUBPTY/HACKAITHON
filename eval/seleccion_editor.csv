@@ -1,9 +1,9 @@
 corte,id_grupo,tema,titular,fecha_reciente,seleccion,origen_juicio
-2026-10-07T00:41:03Z,GRP-1e2c34f6bf,Servicios públicos,Pase-U: Largas filas en Changuinola en el segundo día de entrega de tarjetas Punch del Ifarhu,2026-10-06T18:12:50Z,,asistente_provisional
+2026-10-07T00:41:03Z,GRP-1e2c34f6bf,Servicios públicos,Pase-U: Largas filas en Changuinola en el segundo día de entrega de tarjetas Punch del Ifarhu,2026-10-06T18:12:50Z,x,asistente_provisional
 2026-10-07T00:41:03Z,GRP-e78a143f9a,Logística/Canal,"Ejecutivo sanciona la Ley 552 del Presupuesto del Canal de Panamá por $5,555 millones",,x,asistente_provisional
 2026-10-07T00:41:03Z,GRP-6e737ecad5,Servicios públicos,MOP solicita $43.1 millones para pagar compromisos y continuar obras en ejecución,2026-10-06T18:57:35Z,,asistente_provisional
 2026-10-07T00:41:03Z,GRP-ad0e219d38,Servicios públicos,Contenido Exclusivo: Turismo en transporte público,2026-09-29T01:23:06Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-5e6531917f,Economía,Más de 30 mujeres han muerto de forma violenta en Panamá este año,2026-10-06T01:30:01Z,x,asistente_provisional
+2026-10-07T00:41:03Z,GRP-5e6531917f,Servicios públicos,Más de 30 mujeres han muerto de forma violenta en Panamá este año,2026-10-06T01:30:01Z,x,asistente_provisional
 2026-10-07T00:41:03Z,GRP-45aebb27b2,Eventos naturales,"Contenido Exclusivo: Coclé, se seca el campo",2026-10-01T01:31:04Z,,asistente_provisional
 2026-10-07T00:41:03Z,GRP-9fea8ec754,Economía,Exportaciones de banano superan los $17 millones en junio y marcan recuperación,,,asistente_provisional
 2026-10-07T00:41:03Z,GRP-1083f5e540,Logística/Canal,Inland navigation workers stand with Panama Canal workers after death of tug captain,,,asistente_provisional
@@ -17,7 +17,7 @@ corte,id_grupo,tema,titular,fecha_reciente,seleccion,origen_juicio
 2026-10-07T00:41:03Z,GRP-551ba86248,Servicios públicos,El abrir para cerrar de la mina de cobre genera dudas y cuestionamientos en el frente ambiental y financiero,,,asistente_provisional
 2026-10-07T00:41:03Z,GRP-d420b7bd51,Regulación,"WP: США перенаправят в Латинскую Америку $52 млн, выделенные на проекты в Европе",,,asistente_provisional
 2026-10-07T00:41:03Z,GRP-d08b11be1c,Servicios públicos,Las manzanas de Sodoma o la ilusión minera,,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-39773bed5a,Eventos naturales,Árbol cae sobre dos vehículos en estacionamientos del hospital San Miguel Arcángel,2026-10-05T22:10:32Z,,asistente_provisional
+2026-10-07T00:41:03Z,GRP-39773bed5a,Servicios públicos,Árbol cae sobre dos vehículos en estacionamientos del hospital San Miguel Arcángel,2026-10-05T22:10:32Z,,asistente_provisional
 2026-10-07T00:41:03Z,GRP-84a6b3a04b,Servicios públicos,Colegios particulares atribuyen aumento de matrícula a migración al sector oficial y altos costos de operación,2026-10-06T12:41:06Z,,asistente_provisional
 2026-10-07T00:41:03Z,GRP-5ab17b45cd,Servicios públicos,Asesinan a taxista en Remedios; fue hallado dentro de su vehículo con varias heridas,2026-10-06T18:13:55Z,,asistente_provisional
 2026-10-07T00:41:03Z,GRP-9442098153,Servicios públicos,Contenido Exclusivo: El metro por la Tumba Muerto,2026-10-06T00:47:04Z,,asistente_provisional
@@ -37,14 +37,16 @@ corte,id_grupo,tema,titular,fecha_reciente,seleccion,origen_juicio
 2026-10-07T00:41:03Z,GRP-87e128925b,Eventos naturales,Veraguas: Preocupación por aumento de muertes por enfermedades transmisibles y respiratorias,2026-10-07T00:17:42Z,,asistente_provisional
 2026-10-07T00:41:03Z,GRP-79f3183472,Eventos naturales,Intensifying El Nino deepens economic risks across LatAm,,,asistente_provisional
 2026-10-07T00:41:03Z,GRP-038c4f0643,Eventos naturales,Clima en Panamá: Martes con lluvias y tormentas eléctricas en varias regiones durante la tarde,2026-10-06T11:27:43Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-0f8fb5a5bb,Regulación,Caso Pandora: Legalizan aprehensión de exejecutivo bancario señalado por autorizar pagos de créditos fiscales de la DGI,2026-10-06T23:57:05Z,x,asistente_provisional
+2026-10-07T00:41:03Z,GRP-0f8fb5a5bb,Regulación,Caso Pandora: Legalizan aprehensión de exejecutivo bancario señalado por autorizar pagos de créditos fiscales de la DGI,2026-10-06T23:57:05Z,,asistente_provisional
 2026-10-07T00:41:03Z,GRP-f2aa06ea27,Turismo,Montería estrenará vuelo directo a Panamá con Satena y conexión aérea de menos de una hora,,,asistente_provisional
 2026-10-07T00:41:03Z,GRP-0a10e8fec2,Regulación,"El BID moviliza proyectos por US$84.000 millones desde Miami: Quiero cerrar acuerdos que beneficien a América Latina, dice su nuevo director",,,asistente_provisional
 2026-10-07T00:41:03Z,GRP-96eb79d57a,Economía,"Panamá apunta a salir de la lista fiscal de la Unión Europea, pero aún enfrenta una revisión clave en 2027",,,asistente_provisional
 2026-10-07T00:41:03Z,GRP-e2e32056c3,Servicios públicos,Tres hombres asaltan casino y despojan a clientes de sus pertenencias en San Miguelito,2026-10-05T22:12:26Z,,asistente_provisional
+2026-10-07T00:41:03Z,GRP-67dc144457,Logística/Canal,Exportaciones chinas sostienen la demanda de carga contenerizada pese a la debilidad de EE. UU.,,,asistente_provisional
 2026-10-07T00:41:03Z,GRP-2820cdd711,Servicios públicos,Aduanas decomisa de cigarrillos y ropa falsificada en puestos de control de Chiriquí,,,asistente_provisional
 2026-10-07T00:41:03Z,GRP-8af4196527,Servicios públicos,César Caicedo ahora está recluido en el Hospital Santo Tomás; había sido trasladado a Coiba,2026-10-05T19:03:37Z,,asistente_provisional
 2026-10-07T00:41:03Z,GRP-81a11a5998,Economía,¿Cómo se fija el precio del combustible en Panamá? El MEF explica la fórmula quincenal tras aprobarse nuevo subsidio,,,asistente_provisional
+2026-10-07T00:41:03Z,GRP-3fd5126822,Logística/Canal,"US LNG Exports Increase in September, Europe Outbids Asia for Cargoes",,,asistente_provisional
 2026-10-07T00:41:03Z,GRP-39dfe8d714,Regulación,Aeropuerto panameño suscribe convenio con empresa asiática,,,asistente_provisional
 2026-10-07T00:41:03Z,GRP-d03e52e97f,Servicios públicos,Alcaldesa Stefany Peñalba: residentes protestan frente al Municipio de Arraiján y exigen auditorías contra su gestión,2026-10-06T18:24:07Z,,asistente_provisional
 2026-10-07T00:41:03Z,GRP-f4a44182b1,Logística/Canal,Panamá reforzará su presencia marítima en Vietnam con nueva oficina de servicio técnico de la AMP en Ho Chi Minh,2026-10-06T11:57:42Z,,asistente_provisional
@@ -53,7 +55,7 @@ corte,id_grupo,tema,titular,fecha_reciente,seleccion,origen_juicio
 2026-10-07T00:41:03Z,GRP-4d3630957d,Turismo,Semana de la RSE busca impulsar la sostenibilidad en las empresas,2026-10-06T13:35:00Z,,asistente_provisional
 2026-10-07T00:41:03Z,GRP-1df3ab1e22,Regulación,Mides solicita $47 millones para completar último pago de transferencias monetarias de 2026,2026-10-07T00:14:52Z,,asistente_provisional
 2026-10-07T00:41:03Z,GRP-da35c3dead,Logística/Canal,Presidente de Panamá visita Singapur y Vietnam en busca de inversiones,,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-1b52bb958d,Eventos naturales,Disparan contra el vehículo del exdiputado Pedro Torres en Colón,2026-10-06T01:25:08Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-5c66ab40e9,Economía,"Descentralización explica qué incluye el proyecto de $293,715 para 15 juntas comunales",2026-10-06T14:51:46Z,,asistente_provisional
+2026-10-07T00:41:03Z,GRP-1b52bb958d,Servicios públicos,Disparan contra el vehículo del exdiputado Pedro Torres en Colón,2026-10-06T01:25:08Z,,asistente_provisional
+2026-10-07T00:41:03Z,GRP-5c66ab40e9,Servicios públicos,"Descentralización explica qué incluye el proyecto de $293,715 para 15 juntas comunales",2026-10-06T14:51:46Z,,asistente_provisional
 2026-10-07T00:41:03Z,GRP-f394306d06,Servicios públicos,Déficit de personal limita la capacidad operativa de los bomberos en el país,,,asistente_provisional
 2026-10-07T00:41:03Z,GRP-3aebb6f23a,Logística/Canal,Miguel Lorenzo Fábrega toma posesión como nuevo subadministrador del Canal de Panamá,,,asistente_provisional

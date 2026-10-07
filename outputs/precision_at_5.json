@@ -7,14 +7,15 @@
   "cortes": [
     {
       "corte": "2026-10-07T00:41:03Z",
-      "candidatos": 58,
+      "candidatos": 60,
       "elegidos": [
-        "GRP-0f8fb5a5bb",
+        "GRP-1e2c34f6bf",
         "GRP-4776222797",
         "GRP-5e6531917f",
         "GRP-e78a143f9a",
         "GRP-fcdfc2a3cc"
       ],
+      "criterio_de_empate": "Empates en el corte: el sistema los resuelve con la regla del reto (P mostrado, luego mayor urgencia, luego ID); el baseline, por ID. Se informa cuántos grupos empatan en el corte y cuántos quedan fuera del top.",
       "sistema": {
         "k": 0,
         "n": 5,
@@ -24,27 +25,28 @@
           0.4345
         ],
         "top": [
-          "GRP-84a6b3a04b",
-          "GRP-ef3acec21e",
-          "GRP-65d565abd0",
-          "GRP-8af4196527",
-          "GRP-6e737ecad5"
+          "GRP-21ad932d54",
+          "GRP-038c4f0643",
+          "GRP-29baaf270e",
+          "GRP-1c2f1d950d",
+          "GRP-f4a44182b1"
         ],
         "ids_fallidos": [
-          "GRP-84a6b3a04b",
-          "GRP-ef3acec21e",
-          "GRP-65d565abd0",
-          "GRP-8af4196527",
-          "GRP-6e737ecad5"
-        ]
+          "GRP-21ad932d54",
+          "GRP-038c4f0643",
+          "GRP-29baaf270e",
+          "GRP-1c2f1d950d",
+          "GRP-f4a44182b1"
+        ],
+        "empate_en_el_corte": null
       },
       "baseline": {
-        "k": 1,
+        "k": 0,
         "n": 5,
-        "proporcion": 0.2,
+        "proporcion": 0.0,
         "ic95": [
-          0.0362,
-          0.6245
+          0.0,
+          0.4345
         ],
         "top": [
           "GRP-f9e3ba0bd2",
@@ -57,10 +59,12 @@
           "GRP-f9e3ba0bd2",
           "GRP-87e128925b",
           "GRP-0c210ad795",
-          "GRP-1df3ab1e22"
-        ]
+          "GRP-1df3ab1e22",
+          "GRP-0f8fb5a5bb"
+        ],
+        "empate_en_el_corte": null
       },
-      "baseline_sin_fecha_publicacion": 23
+      "baseline_sin_fecha_publicacion": 25
     }
   ],
   "nota": "Los temas de un mismo corte no son independientes: el intervalo es orientativo. No se infiere audiencia, rentabilidad ni reducción de riesgo.",
@@ -78,12 +82,12 @@
     ]
   },
   "baseline": {
-    "k": 1,
+    "k": 0,
     "n": 5,
-    "proporcion": 0.2,
+    "proporcion": 0.0,
     "ic95": [
-      0.0362,
-      0.6245
+      0.0,
+      0.4345
     ]
   }
 }
