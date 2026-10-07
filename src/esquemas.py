@@ -179,6 +179,7 @@ class TitularReportado(ModeloFicha):
 
     id_noticia: str = Field(min_length=1)
     titular: str
+    campo_titular: str = "titulo_limpio"      # campo de ``noticias`` del que sale ``titular`` (la cita lo nombra: «texto citado = campo citado»)
     medio: str
     dominio: str
     pais_medio: str | None = None

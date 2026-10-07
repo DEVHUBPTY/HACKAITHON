@@ -14,6 +14,7 @@ las fuentes sugeridas extra. No hay ningún ``if modalidad``.
 * Las fuentes sugeridas son una **sugerencia** para quien verifica (D-37): nunca evidencia ni con formato de cita.
 * Nunca el nombre de un autor (D-32), nunca la descripción del RSS (D-31). Fechas en ISO 8601 UTC en los datos; la hora de Panamá
   solo al mostrar. Una publicación desconocida se dice «desconocida»: no se sustituye por la detección.
+* Los vacíos los calcula E1-10 (tabla `evidencia`): la ficha los lee y no recalcula ninguno. Un texto citado lleva el campo citado literal (`titulo_limpio`).
 * El titular central es el más cercano al centroide del grupo según los embeddings **cacheados** (nunca recarga el modelo),
   prefiriendo español y medio panameño entre los más centrales.
 
@@ -87,12 +88,11 @@ FORMATOS = ("markdown", "jsonl")
 PLANTILLA = "ficha.md.j2"
 CARPETA_PLANTILLAS = RAIZ / "templates"
 SEPARADOR_LISTA = ","
+ESPACIOS = re.compile(r"\s+")
+URL = re.compile(r"https?://\S+")
+ESPECIALES_MARKDOWN = re.compile(r"([\\`*_\[\]<>&|~])")
+ESPECIALES_EN_URL = re.compile(r"([\[\]<>])")
 SEPARADOR_FUENTES = "; "
-CODIGO_SIN_DATO_OFICIAL = "sin_dato_oficial"
-CODIGO_SOLO_INDIRECTO = "solo_vinculo_indirecto"
-CODIGO_CIFRA_DISCREPANTE = "cifra_discrepante"
-CODIGO_CIFRA_PERIODO = "cifra_periodo_distinto"
-CODIGO_EVENTO_SIN_REVISAR = "evento_sin_revisar"
 ROL_PANAMA, ROL_COMPARABLE, ROL_TENDENCIA = "panama", "comparable", "tendencia"
 ORDEN_DE_ROLES = (ROL_PANAMA, ROL_COMPARABLE, ROL_TENDENCIA)
 FUENTE_INDICADOR = "indicador"
@@ -121,6 +121,10 @@ class Linea:
     texto: str
     nivel: int = 0
     desplegable: bool = False
+
+    def __post_init__(self) -> None:
+        # Una línea nunca trae saltos de línea ni espacios repetidos: un titular no puede abrir una sección falsa (M1).
+        object.__setattr__(self, "texto", ESPACIOS.sub(" ", self.texto).strip())
 
 
 @dataclass(frozen=True)
@@ -270,6 +274,7 @@ def _titulares(datos: Datos) -> list[TitularReportado]:
         TitularReportado(
             id_noticia=str(n["id_noticia"]),
             titular=str(n.get("titulo_limpio") or n["titulo"]),
+            campo_titular="titulo_limpio" if n.get("titulo_limpio") else "titulo",
             medio=_nombre_medio(n, datos.fuentes),
             dominio=str(n.get("dominio") or ""),
             pais_medio=n.get("pais_medio"),
@@ -307,10 +312,15 @@ def _contradicciones(datos: Datos, cfg: ConfigVerificacion) -> list[Contradiccio
 
 
 def _alcance(datos: Datos) -> str:
-    """Leyenda de alcance (D-51): solo cambia si el agrupamiento usó la descripción interna del RSS."""
+    """Leyenda de alcance (D-51): declara la descripción del RSS si se usó en algún paso que da forma a lo que muestra la ficha.
+
+    La descripción es de uso interno y nunca se muestra (D-31), pero si se codificó junto al titular para **clasificar** (tema y
+    subtema, ``clasificacion.yaml``) o para **agrupar** (``reglas_v1.3.yaml``), la ficha depende de ella y la leyenda debe decirlo.
+    Solo cuenta si algún titular del grupo la trae: sin descripción no hay nada que declarar.
+    """
     leyendas = cargar_restricciones().leyendas_alcance
-    usa_descripcion = cargar_reglas().agrupacion.usar_descripcion and any(n.get("descripcion") for n in datos.noticias)
-    return leyendas.con_descripcion if usa_descripcion else leyendas.titular_metadatos
+    uso_en_pasos = cargar_clasificacion().usar_descripcion or cargar_reglas().agrupacion.usar_descripcion
+    return leyendas.con_descripcion if uso_en_pasos and any(n.get("descripcion") for n in datos.noticias) else leyendas.titular_metadatos
 
 
 def _que_se_reporta(datos: Datos, titulares: list[TitularReportado], emb: Embeddings | None, cfg: ConfigVerificacion, subtema: str | None) -> QueSeReporta:
@@ -417,7 +427,7 @@ def _respaldado(datos: Datos, titulares: list[TitularReportado], cfg: ConfigVeri
     n_titulares, n_medios, n_proc = int(g["n_titulares"]), int(g["n_medios"]), int(g["n_procedencias"])
     reportes = [
         LineaRespaldo(
-            tipo="hecho", texto=f"{_plural(n_titulares, 'titular', 'titulares')} de {_plural(n_medios, 'medio', 'medios')} {'reporta' if n_titulares == 1 else 'reportan'} este hecho",
+            tipo="hecho", texto=f"{_plural(n_titulares, 'titular', 'titulares')} de {_plural(n_medios, 'medio', 'medios')} {'reporta' if n_titulares == 1 else 'reportan'} este tema",
             citas=[Cita(id=id_grupo, campo="n_titulares"), Cita(id=id_grupo, campo="n_medios")],
         ),
         LineaRespaldo(
@@ -450,40 +460,24 @@ def _respaldado(datos: Datos, titulares: list[TitularReportado], cfg: ConfigVeri
         if str(v["id_evidencia"]).startswith("SIS-")
     ]
     declaraciones = [
-        LineaRespaldo(tipo="declaración", texto=f"{t.medio} reporta: «{t.titular}»", citas=[Cita(id=t.id_noticia, campo="titulo")], atribucion=t.medio)
+        LineaRespaldo(tipo="declaración", texto=f"{t.medio} reporta: «{t.titular}»", citas=[Cita(id=t.id_noticia, campo=t.campo_titular)], atribucion=t.medio)
         for t in titulares
     ]
     return Respaldado(reportes=reportes, datos_oficiales=datos_oficiales, eventos_oficiales=eventos, declaraciones=declaraciones)
 
 
 def _vacios(datos: Datos, cfg: ConfigVerificacion) -> list[VacioFicha]:
-    """Vacíos que calculó E1-10 más los que solo detecta la ficha, ordenados por importancia (``orden_importancia``)."""
+    """Los vacíos que guardó E1-10 (``puntajes.vacios`` y ``evidencia.vacios``: única fuente), ordenados por importancia.
+
+    La ficha no recalcula ninguno: solo les agrega la verificación sugerida de ``verificacion.yaml``.
+    """
     v = cfg.vacios
-    almacenados = [*_json(datos.puntaje.get("vacios"), []), *_json(datos.evidencia.get("vacios"), [])]
     por_codigo: dict[str, str] = {}
-    for x in almacenados:
+    for x in [*_json(datos.puntaje.get("vacios"), []), *_json(datos.evidencia.get("vacios"), [])]:
         por_codigo.setdefault(x["codigo"], x["texto"])
-    aceptadas = cargar_prioridad().dato_oficial.relaciones_aceptadas
-    # X22: si lo único que hay es un vínculo indirecto, el vacío lo dice con su propio texto
-    indirectos = [x for x in datos.vinculos if _tiene_dato(x) and x.get("tipo") not in aceptadas]
-    if CODIGO_SIN_DATO_OFICIAL in por_codigo and indirectos:
-        del por_codigo[CODIGO_SIN_DATO_OFICIAL]
-        por_codigo[CODIGO_SOLO_INDIRECTO] = str(v.catalogo[CODIGO_SOLO_INDIRECTO].texto)
-    etiquetas = cargar_vinculos().cifra_titular.etiquetas
-    oficiales = _vinculos_oficiales(datos, aceptadas)
-    for fila in oficiales:
-        etiqueta = fila.get("comparacion_titular")
-        codigo = CODIGO_CIFRA_DISCREPANTE if etiqueta == etiquetas.discrepancia else CODIGO_CIFRA_PERIODO if etiqueta == etiquetas.periodo_distinto else None
-        if codigo:
-            por_codigo.setdefault(codigo, str(v.catalogo[codigo].texto).format(id=fila["id_evidencia"]))
-        if fila.get("estado_evento") == v.estado_evento_automatico and str(fila["id_evidencia"]).startswith("SIS-"):
-            por_codigo.setdefault(CODIGO_EVENTO_SIN_REVISAR, str(v.catalogo[CODIGO_EVENTO_SIN_REVISAR].texto).format(id=fila["id_evidencia"]))
     orden = {c: i for i, c in enumerate(v.orden_importancia)}
     return [
-        VacioFicha(
-            codigo=c, texto=t,
-            verificacion=v.catalogo[c].verificacion if c in v.catalogo else v.verificacion_por_defecto,
-        )
+        VacioFicha(codigo=c, texto=t, verificacion=v.catalogo[c].verificacion if c in v.catalogo else v.verificacion_por_defecto)
         for c, t in sorted(por_codigo.items(), key=lambda ct: orden.get(ct[0], len(orden)))
     ]
 
@@ -627,10 +621,31 @@ def vista(ficha: Ficha, cfg: ConfigVerificacion | None = None) -> Vista:
     return Vista(id_grupo=ficha.id_grupo, marca=ficha.marca_borrador, secciones=tuple(secciones))
 
 
+def escapar_markdown(texto: str) -> str:
+    """Neutraliza el Markdown y el HTML de un texto que viene de los datos (titulares, medios): se ve igual, pero no se interpreta.
+
+    Las URL conservan sus caracteres (para que sigan siendo enlaces que escribió el sistema) salvo los que abren HTML o enlaces.
+    """
+    partes: list[str] = []
+    ultimo = 0
+    for m in URL.finditer(texto):
+        partes.append(ESPECIALES_MARKDOWN.sub(r"\\\1", texto[ultimo : m.start()]))
+        partes.append(ESPECIALES_EN_URL.sub(r"\\\1", m.group(0)))
+        ultimo = m.end()
+    partes.append(ESPECIALES_MARKDOWN.sub(r"\\\1", texto[ultimo:]))
+    return "".join(partes)
+
+
 def a_markdown(ficha: Ficha, cfg: ConfigVerificacion | None = None) -> str:
-    """Markdown de la ficha (Jinja2 sobre la misma vista de la app): exactamente lo mismo que ve la persona."""
-    entorno = Environment(loader=FileSystemLoader(CARPETA_PLANTILLAS), autoescape=False, trim_blocks=True, lstrip_blocks=True, keep_trailing_newline=True)  # noqa: S701 - Markdown, no HTML
-    return entorno.get_template(PLANTILLA).render(v=vista(ficha, cfg))
+    """Markdown de la ficha (Jinja2 sobre la misma vista de la app): lo mismo que ve la persona, con los textos de los datos escapados."""
+    v = vista(ficha, cfg)
+    seguro = Vista(
+        id_grupo=escapar_markdown(v.id_grupo),
+        marca=v.marca,
+        secciones=tuple(Seccion(s.clave, s.titulo, tuple(Linea(escapar_markdown(l.texto), l.nivel, l.desplegable) for l in s.lineas)) for s in v.secciones),
+    )
+    entorno = Environment(loader=FileSystemLoader(CARPETA_PLANTILLAS), autoescape=False, trim_blocks=True, lstrip_blocks=True, keep_trailing_newline=True)  # noqa: S701 - Markdown; el escape lo hace escapar_markdown
+    return entorno.get_template(PLANTILLA).render(v=seguro)
 
 
 def a_registro(ficha: Ficha) -> dict[str, Any]:

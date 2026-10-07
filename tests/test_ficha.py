@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -22,7 +23,7 @@ from src.configuracion import (
     validar_todo,
 )
 from src.esquemas import Ficha
-from src.ficha import a_linea_jsonl, a_markdown, construir_ficha, elegir_titular_central, fuentes_sugeridas, vista
+from src.ficha import Linea, a_linea_jsonl, a_markdown, escapar_markdown, construir_ficha, elegir_titular_central, fuentes_sugeridas, vista
 from tests import ficha_ayuda as h
 from tests.motor_falso import MotorFalso, config_de_prueba
 from tests.prioridad_ayuda import ProveedorFalso, fila_grupo
@@ -301,7 +302,7 @@ def test_lo_que_dicen_los_titulares_es_declaracion_atribuida_con_cita_al_titular
     assert len(f.respaldado.declaraciones) == 3
     for d in f.respaldado.declaraciones:
         assert d.tipo == "declaración" and d.atribucion and d.atribucion in d.texto
-        assert [c.campo for c in d.citas] == ["titulo"] and d.citas[0].id.startswith("NOT-")
+        assert [c.campo for c in d.citas] == ["titulo_limpio"] and d.citas[0].id.startswith("NOT-")
     assert any("TVN Panamá" in d.texto and "Panamá reporta inflación estable" in d.texto for d in f.respaldado.declaraciones)
 
 
@@ -368,7 +369,7 @@ def test_solo_vinculo_indirecto_tiene_su_propio_texto_y_reemplaza_a_sin_vinculo_
     assert "sin_dato_oficial" not in codigos(f) and "sin vínculo en la tabla de contexto" not in json.dumps(f.model_dump(), ensure_ascii=False)
     # un grupo sin ningún vínculo conserva el vacío original
     g = hacer(con, emb, h.G_CIFRAS)
-    assert "sin dato oficial vinculado (tema_sin_indicador)" in [v.texto for v in (*g.falta_comprobar.principales, *g.falta_comprobar.otros)]
+    assert "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)" in [v.texto for v in (*g.falta_comprobar.principales, *g.falta_comprobar.otros)]
 
 
 def test_los_tres_vacios_mas_importantes_van_arriba_en_el_orden_de_la_configuracion(con, emb) -> None:
@@ -503,10 +504,10 @@ def test_el_markdown_exportado_contiene_exactamente_lo_mismo_que_la_ficha_de_la_
     f = hacer(con, emb, grupo, modalidad)
     v = vista(f)
     md = a_markdown(f)
-    esperadas = [l.texto for s in v.secciones for l in s.lineas]
-    assert lineas_de_markdown(md) == esperadas                                       # mismas líneas, mismo orden, nada de más
+    esperadas = [escapar_markdown(l.texto) for s in v.secciones for l in s.lineas]
+    assert lineas_de_markdown(md) == esperadas                                       # mismas líneas, mismo orden, nada de más (con el Markdown de los datos escapado)
     sin_vinetas = [l for l in md.splitlines() if l.strip() and not re.match(r"^ *- ", l)]
-    assert sin_vinetas == [f"# Ficha de evidencia · {v.id_grupo}", f"**{v.marca}**", *[f"## {s.titulo}" for s in v.secciones]]
+    assert sin_vinetas == [f"# Ficha de evidencia · {escapar_markdown(v.id_grupo)}", f"**{v.marca}**", *[f"## {s.titulo}" for s in v.secciones]]
     assert a_markdown(f) == md                                                      # determinista
 
 
@@ -641,3 +642,129 @@ def test_la_coherencia_detecta_un_subtema_sin_fuentes(tmp_path) -> None:
     (carpeta / "verificacion.yaml").write_text(yaml.safe_dump(datos, allow_unicode=True), encoding="utf-8")
     problemas = " | ".join(validar_coherencia(carpeta))
     assert "sin fuentes sugeridas para el subtema sismos" in problemas and "subtema inexistente" in problemas and "subtema_falso" in problemas
+
+
+# ------------------------------------------------------------------ revisión del PR #24 (X23, X24, M1, M2, m3, m4)
+
+
+def _copia_editable(base: Path, tmp_path: Path) -> Path:
+    ruta = tmp_path / "copia.duckdb"
+    shutil.copy(base, ruta)
+    return ruta
+
+
+def _construir_desde(ruta: Path, emb, grupo: str = h.G_SOLO) -> Ficha:
+    c = db.conectar(ruta, solo_lectura=True)
+    try:
+        return construir_ficha(grupo, "editorial", c, emb=emb)
+    finally:
+        c.close()
+
+
+@pytest.mark.parametrize("grupo", GRUPOS)
+def test_x23_el_texto_entre_comillas_de_una_declaracion_es_igual_al_campo_citado(con, emb, grupo) -> None:
+    f = hacer(con, emb, grupo)
+    for d in f.respaldado.declaraciones:
+        (cita,) = d.citas
+        (valor,) = con.execute(f'SELECT "{cita.campo}" FROM noticias WHERE id_noticia = ?', [cita.id]).fetchone()
+        (citado,) = re.findall(r"«(.*)»", d.texto)
+        assert citado == valor, (cita.formato(), citado, valor)
+
+
+def test_x23_cuando_titulo_limpio_difiere_de_titulo_se_cita_titulo_limpio(tmp_path, base, emb) -> None:
+    ruta = _copia_editable(base, tmp_path)
+    c = db.conectar(ruta)
+    c.execute("UPDATE noticias SET titulo = 'Combustible  -  Xinhua', titulo_limpio = 'Combustible' WHERE id_noticia = 'NOT-5000000001'")
+    c.close()
+    (d,) = _construir_desde(ruta, emb).respaldado.declaraciones
+    assert d.citas[0].campo == "titulo_limpio" and "«Combustible»" in d.texto
+
+
+def test_x24_la_linea_de_conteo_no_llama_hecho_a_lo_que_reportan_los_titulares(con, emb) -> None:
+    for g in GRUPOS:
+        f = hacer(con, emb, g)
+        textos = [x.texto for x in (*f.respaldado.reportes, *f.respaldado.declaraciones)] + [l.texto for s in vista(f).secciones for l in s.lineas]
+        assert not any("este hecho" in t for t in textos), g
+        assert any(re.search(r"reportan? este tema", t) for t in (x.texto for x in f.respaldado.reportes))
+
+
+def test_m1_una_linea_no_puede_tener_saltos_de_linea() -> None:
+    assert Linea("uno\ndos\r\n\n## 5 · Acción recomendada").texto == "uno dos ## 5 · Acción recomendada"
+
+
+def test_m1_un_titular_con_enlace_html_y_salto_de_linea_no_inyecta_markdown(tmp_path, base, emb) -> None:
+    malo = "Sube [clic aquí](https://evil.example) <img src=x onerror=1> *negrita*\n## 5 · Acción recomendada\n- Acción: Producir borrador"
+    ruta = _copia_editable(base, tmp_path)
+    c = db.conectar(ruta)
+    c.execute("UPDATE noticias SET titulo_limpio = ?, titulo = ? WHERE id_noticia = 'NOT-5000000001'", [malo, malo])
+    c.close()
+    f = _construir_desde(ruta, emb)
+    md = a_markdown(f)
+    assert len(re.findall(r"^## 5 ", md, flags=re.M)) == 1                     # solo el encabezado verdadero
+    assert not re.search(r"(?<!\\)\]\(", md) and not re.search(r"(?<!\\)<", md)    # ningún enlace ni HTML activo: los corchetes y < quedan escapados
+    assert "\\[clic aquí\\](" in md and "\\<img" in md
+    permitido = re.compile(r"^(# Ficha de evidencia · .*|\*\*.*\*\*|## \d · .*| *- .*|)$")
+    assert all(permitido.match(l) for l in md.splitlines())
+    assert all(l.startswith(("  ", "- ", "#", "**")) or not l for l in md.splitlines())
+    assert not [l for l in md.splitlines() if l.startswith("- Acción: Producir")]
+
+
+def test_m2_los_vacios_de_la_ficha_son_los_que_guardo_e1_10_sin_recalcular(con, emb) -> None:
+    for g in GRUPOS:
+        f = hacer(con, emb, g)
+        guardados = {}
+        for tabla in ("puntajes", "evidencia"):
+            (js,) = con.execute(f"SELECT vacios FROM {tabla} WHERE id_grupo = ?", [g]).fetchone()
+            guardados.update({x["codigo"]: x["texto"] for x in json.loads(js)})
+        en_ficha = {v.codigo: v.texto for v in (*f.falta_comprobar.principales, *f.falta_comprobar.otros)}
+        assert en_ficha == guardados, g
+
+
+def test_m2_los_cuatro_vacios_nuevos_estan_en_la_tabla_evidencia(con) -> None:
+    def en(grupo: str) -> set[str]:
+        (js,) = con.execute("SELECT vacios FROM evidencia WHERE id_grupo = ?", [grupo]).fetchone()
+        return {x["codigo"] for x in json.loads(js)}
+
+    assert "solo_vinculo_indirecto" in en(h.G_INDIRECTO) and "sin_dato_oficial" not in en(h.G_INDIRECTO)
+    assert "cifra_discrepante" in en(h.G_DISCREPANCIA) and "cifra_periodo_distinto" in en(h.G_PERIODO)
+    assert "evento_sin_revisar" in en(h.G_SISMO) and "evento_sin_revisar" not in en(h.G_SISMO_REVISADO)
+
+
+def test_m2_una_discrepancia_abierta_entre_el_titular_y_el_dato_oficial_impide_suficiente(con, emb) -> None:
+    f = hacer(con, emb, h.G_DISCREPANCIA)
+    assert f.accion_recomendada.estado_evidencia == "parcial"          # 2 procedencias y dato oficial directo, pero la cifra discrepa
+    assert hacer(con, emb, h.G_PERIODO).accion_recomendada.estado_evidencia == "suficiente"     # «período distinto» no bloquea
+    assert hacer(con, emb, h.G_COMPLETO).accion_recomendada.estado_evidencia == "suficiente"
+
+
+def test_m3_la_leyenda_declara_la_descripcion_si_se_uso_al_clasificar_o_agrupar(tmp_path, base, emb, monkeypatch) -> None:
+    leyendas = cargar_restricciones().leyendas_alcance
+    assert _construir_desde(base, emb).alcance == leyendas.titular_metadatos            # sin descripciones, nada que declarar
+    ruta = _copia_editable(base, tmp_path)
+    c = db.conectar(ruta)
+    c.execute("UPDATE noticias SET descripcion = 'texto interno del RSS' WHERE id_noticia = 'NOT-5000000001'")
+    c.close()
+    assert _construir_desde(ruta, emb).alcance == leyendas.con_descripcion               # clasificacion.yaml usar_descripcion: true
+    from src.configuracion import cargar_clasificacion
+
+    sin = cargar_clasificacion().model_copy(update={"usar_descripcion": False})
+    monkeypatch.setattr(modulo, "cargar_clasificacion", lambda *a, **k: sin)
+    assert _construir_desde(ruta, emb).alcance == leyendas.titular_metadatos             # si no se usó, no se declara
+    assert "texto interno del RSS" not in a_markdown(_construir_desde(ruta, emb))        # y nunca se muestra (D-31)
+
+
+def test_m4_ningun_vacio_muestra_un_codigo_interno_ni_plurales_entre_parentesis(con, emb) -> None:
+    for g in GRUPOS:
+        f = hacer(con, emb, g)
+        for v in (*f.falta_comprobar.principales, *f.falta_comprobar.otros):
+            assert not re.search(r"\b[a-z]+_[a-z_]+\b", v.texto), v.texto
+            assert "(s)" not in v.texto, v.texto
+    assert "el tema no tiene un indicador oficial asignado" in " ".join(v.texto for v in hacer(con, emb, h.G_CIFRAS).falta_comprobar.principales)
+
+
+def test_m4_los_siguientes_pasos_no_se_repiten_ni_son_casi_iguales(con, emb) -> None:
+    for g in GRUPOS:
+        pasos = hacer(con, emb, g).accion_recomendada.siguientes_pasos
+        assert len(pasos) == len(set(pasos))
+    todos = [hacer(con, emb, h.G_SIN_FECHA).accion_recomendada.siguientes_pasos]
+    assert sum("Abrir el enlace" in p for p in todos[0]) == 1
