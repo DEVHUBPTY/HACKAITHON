@@ -22,7 +22,10 @@ subtema:                            # D-92 (enmienda a E1-09): el subtema del gr
   # léxicas directas de esas mismas palabras; no de los titulares del snapshot. Los subtemas sin lista usan solo el margen.
   terminos_por_subtema:
     crecimiento_pib: [pib, producto interno bruto, crecimiento economico]
-    inflacion_precios: [inflacion, precio, precios, canasta basica, combustible, combustibles]
+    # «precio(s)» suelto no es un término (confirmaría un vínculo directo con el IPC para «precio del cobre»): solo frases
+    # que nombran la inflación o los precios que la guía incluye en el subtema (canasta básica, combustibles).
+    inflacion_precios: [inflacion, ipc, indice de precios, costo de la vida, canasta basica, precio del combustible,
+                        precio de los combustibles, precios del combustible, precios de los combustibles]
     empleo: [empleo, empleos, desempleo]
     comercio_exterior: [comercio exterior, exportacion, exportaciones, importacion, importaciones]
     telecomunicaciones: [telecomunicacion, telecomunicaciones, internet]

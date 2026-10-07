@@ -337,8 +337,12 @@ def leer_grupos(con: Any, cfg: SubtemaVinculo | None = None) -> list[dict[str, A
         if titulo:
             titulares[id_grupo].append(titulo)
     votos: defaultdict[str, list[tuple[str, float, float | None]]] = defaultdict(list)
+    columnas = {f[0] for f in con.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'similitud_tema'").fetchall()}
+    if "margen_subtema" not in columnas:
+        logger.warning("similitud_tema no tiene margen_subtema (base anterior a D-92): ningún grupo se acepta por margen; ejecute `python -m src.clasificacion`")
+    margen_sql = "s.margen_subtema" if "margen_subtema" in columnas else "NULL"
     for id_grupo, subtema, similitud, margen in con.execute(
-        """SELECT n.id_grupo, s.subtema, s.similitud, s.margen_subtema FROM noticias n
+        f"""SELECT n.id_grupo, s.subtema, s.similitud, {margen_sql} FROM noticias n
            JOIN grupos g ON g.id_grupo = n.id_grupo
            JOIN similitud_tema s ON s.id_noticia = n.id_noticia AND s.tema = g.tema_clasificado AND s.metodo = ?
            WHERE s.subtema IS NOT NULL""",

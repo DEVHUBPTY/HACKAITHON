@@ -21,6 +21,8 @@ logger = logging.getLogger(__name__)
 RUTA_BASE = RAIZ / "data" / "senales.duckdb"
 
 # Tabla -> [(columna, tipo)]. El orden es el de la tabla.
+# SIEMPRE se agregan columnas nuevas AL FINAL de su tabla: `asegurar_esquema` las agrega con ALTER TABLE (quedan al final en una
+# base ya creada) y los inserts son posicionales; una columna en medio desordena las bases viejas (error de conversión).
 ESQUEMA: dict[str, list[tuple[str, str]]] = {
     "noticias": [
         ("id_noticia", "VARCHAR PRIMARY KEY"),

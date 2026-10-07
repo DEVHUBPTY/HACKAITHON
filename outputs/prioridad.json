@@ -70,7 +70,7 @@
     "pares": []
   },
   "llm": {
-    "estado": "sin_llm",
+    "estado": "sin_candidatos",
     "proveedor": null,
     "modelo": null,
     "motivos_pendientes": {}

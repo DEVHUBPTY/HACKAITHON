@@ -162,3 +162,22 @@ def test_el_vinculo_de_sismos_guarda_el_criterio(tmp_path: Path) -> None:
     ruta = _base(tmp_path, {"GRP-vsr": 0.0, "GRP-sismo": 0.005}, {"GRP-sismo": "Fuerte sismo en Chiriquí"})
     _, filas, _ = contexto.aplicar_sismos(ruta, geojson, CFG)
     assert [(f["id_grupo"], f["criterio_subtema"]) for f in filas] == [("GRP-sismo", "lexico")]
+
+
+def test_precio_suelto_no_respalda_inflacion_pero_el_precio_del_combustible_si() -> None:
+    for titular in ("Sube el precio del cobre", "Precios del oro récord", "Precio de la vivienda sube"):
+        assert decidir([("inflacion_precios", 0.83, 0.005)], [titular]) == (None, None), titular
+    assert decidir([("inflacion_precios", 0.83, 0.005)], ["¿Cómo se fija el precio del combustible en Panamá?"]) == ("inflacion_precios", "lexico")
+    assert decidir([("inflacion_precios", 0.83, 0.005)], ["Inflación de septiembre"]) == ("inflacion_precios", "lexico")
+    assert decidir([("inflacion_precios", 0.83, 0.005)], ["Sube el costo de la vida en Panamá"]) == ("inflacion_precios", "lexico")
+
+
+def test_una_base_anterior_a_d92_avisa_que_no_tiene_margen(tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
+    ruta = tmp_path / "vieja.duckdb"
+    db.guardar_todo(ruta, {})
+    con = db.conectar(ruta)
+    con.execute("ALTER TABLE similitud_tema DROP COLUMN margen_subtema")
+    with caplog.at_level("WARNING"):
+        grupos = contexto.leer_grupos(con, SUB)
+    con.close()
+    assert grupos == [] and any("margen_subtema" in r.message for r in caplog.records)
