@@ -216,6 +216,11 @@ def test_x51_la_preposicion_pese_a_no_es_el_distrito() -> None:
     assert _nivel("Pese a la lluvia, sigue el festival") != "local"
 
 
+@pytest.mark.parametrize("titular", ["Exportaciones crecen pese al alza del petróleo", "Pese al calor, sigue la jornada", "Sigue la obra pese al paro"])
+def test_x58_pese_al_tampoco_es_el_distrito(titular: str) -> None:
+    assert _nivel(titular) != "local"
+
+
 @pytest.mark.parametrize("titular", ["Inundaciones en Pesé dejan familias evacuadas", "Productores de Pese reclaman pagos", "PESÉ: corte de agua"])
 def test_x51_el_distrito_de_pese_sigue_siendo_local(titular: str) -> None:
     assert _nivel(titular) == "local"
