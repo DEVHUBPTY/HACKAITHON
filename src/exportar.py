@@ -31,7 +31,7 @@ from jinja2 import Environment, FileSystemLoader
 from src.configuracion import RAIZ, ConfigRevision, cargar_interfaz, cargar_revision, cargar_temas, cargar_verificacion
 from src.esquemas import ETIQUETA_BORRADOR, Ficha, RegistroFichasJsonl
 from src.ficha import CARPETA_PLANTILLAS, a_registro, escapar_markdown, vista
-from src.interfaz import hora_panama, secciones_de_paquete
+from src.interfaz import hora_panama, rotulo_de_elemento, secciones_de_paquete
 from src.revision import ErrorDeRevision, Fila, Revisiones, huellas_de_exportacion, ruta_de_revision, rutas_de_exportacion
 
 PLANTILLA_CASO = "caso.md.j2"
@@ -127,7 +127,7 @@ def a_markdown(rev: Revisiones, id_caso: str, ficha: Ficha, ahora: datetime | No
     diferencias: list[dict[str, Any]] = []
     for f in historial:
         for x in f.diferencias:
-            diferencias.append({"version": f.version, "clave": escapar_markdown(x["clave"]), "antes": escapar_markdown(x["antes"]), "despues": escapar_markdown(x["despues"])})
+            diferencias.append({"version": f.version, "clave": escapar_markdown(rotulo_de_elemento(x["clave"], etiquetas)), "antes": escapar_markdown(x["antes"]), "despues": escapar_markdown(x["despues"])})
     datos = {
         "id_caso": escapar_markdown(id_caso),
         "id_grupo": escapar_markdown(caso.id_grupo),
