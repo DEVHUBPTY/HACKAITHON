@@ -9,6 +9,8 @@ import re
 from typing import Any
 
 import pytest
+
+pytestmark = pytest.mark.t04
 from pydantic import ValidationError
 
 from src import contexto, db
@@ -487,3 +489,12 @@ def test_el_reporte_cuenta_con_y_sin_vinculo_por_motivo(base, tmp_path) -> None:
     assert r["con_vinculo"]["ic95"] is not None  # toda proporción con n e IC
     assert r["sin_vinculo_por_motivo"] == {"tema_sin_indicador": 1}
     assert r["comparacion_con_cifra_del_titular"] == {"posible discrepancia, verificar": 1}
+
+
+def test_t04_aceptacion_mantiene_pais_anio_unidad_cita_el_dato_y_no_lo_describe_como_de_hoy() -> None:
+    """PDF T04: mantener país, año y unidad; citar el dato y no describirlo como cifra de hoy."""
+    filas = vincular("inflacion_precios", "economia")
+    (panama,) = por_rol(filas, contexto.ROL_PANAMA)
+    assert (panama["pais_iso3"], panama["anio"], panama["unidad"]) == ("PAN", 2023, "% anual")
+    assert panama["id_evidencia"] == f"IND-PAN-{IND_INFLACION}-2023"           # cita válida: ID del dato
+    assert all("anual" in f["limitacion"].lower() and not PALABRA_PROHIBIDA.search(f["limitacion"]) for f in filas)

@@ -39,6 +39,9 @@ poetry run python -m scripts.catalogo                # catálogo de datos (outpu
 poetry run streamlit run eval/etiquetar.py           # etiquetado humano (E1-06; ver docs/etiquetado.md)
 poetry run python -m eval.ruido                      # precisión y recall del filtro de ruido
 poetry run python -m eval.validar_benchmark          # valida el benchmark de desarrollo
+poetry run python -m eval.run_benchmark --split dev  # benchmark de desarrollo (E1-18)
+poetry run python -m eval.ia_vs_baseline             # IA contra su línea base con IC (docs/ia_vs_baseline.md, E1-18)
+poetry run python -m eval.sustento                   # validez de sustento, cuando una persona completó outputs/revision_sustento.csv (E1-18)
 ```
 
 Previstos; cada uno estará disponible cuando se implemente su spec:
@@ -47,9 +50,22 @@ Previstos; cada uno estará disponible cuando se implemente su spec:
 poetry run streamlit run app.py                      # interfaz (E1-15)
 poetry run streamlit run app.py -- --demo            # modo demo con data/demo.duckdb (C-06)
 poetry run python -m scripts.verificar_offline       # chequeo antes del pitch (C-06)
-poetry run python -m eval.run_benchmark --split dev  # benchmark de desarrollo (E1-18)
 poetry run python -m scripts.reproducir --verificar  # reproduce y compara con el manifest (E1-20)
 ```
+
+## Evaluación reservada (para el jurado)
+
+El jurado corre su propio conjunto de consultas **sin internet** y sin copiarlo al repositorio. El runner solo **lee** el archivo y solo **escribe** en la carpeta de salida.
+
+```bash
+poetry run python -m eval.run_benchmark --archivo <ruta-al-archivo.jsonl> --salida <carpeta-de-salida>
+```
+
+- **Formato del archivo:** un objeto JSON por línea, el mismo de `benchmark/README.md`. Obligatorios: `id`, `tipo` (`respuesta_sustentada`, `contradiccion_ambiguedad`, `sin_respuesta` o `adversarial`), `consulta` y `debe_abstenerse` (booleano). `respuesta_esperada`, `ids_evidencia`, `sintetico` y `etiquetado_por` son opcionales; con `ids_evidencia` se calcula el Recall@5.
+- **Requisitos:** `poetry install` y la base `data/senales.duckdb` (se crea con `poetry run python -m src.normalizacion`; el snapshot y su receta están en `data/README.md`). El modelo de embeddings es local y la consulta no usa LLM: no hace falta red ni clave. Si el modelo ya está en la caché local de Hugging Face, `HF_HUB_OFFLINE=1` evita cualquier intento de conexión.
+- **Salidas en `<carpeta-de-salida>`:** `metricas.json` (cobertura de citas, abstención correcta, abstenciones incorrectas, Recall@5 semántica y BM25, latencia p50 y p95, tokens y costo; toda proporción con numerador, denominador, IC 95 % bootstrap y los IDs de los fallos), `consultas.jsonl` (la respuesta a cada consulta) y `revision_sustento.csv`.
+- **Qué no calcula solo:** la validez de sustento necesita a una persona. El runner genera la muestra (30 afirmaciones elegidas al azar con semilla fija) en `revision_sustento.csv`; una persona completa la columna `veredicto` (`sustentada`, `parcial`, `no sustentada` o `tipo incorrecto`) y luego `poetry run python -m eval.sustento --archivo <carpeta-de-salida>/revision_sustento.csv --salida <carpeta-de-salida>/validez_sustento.json` calcula la validez con su intervalo.
+- En `metricas.json` el archivo se identifica por su nombre y su SHA-256, nunca por su ruta.
 
 ## Pruebas
 

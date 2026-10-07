@@ -7,6 +7,8 @@ from pathlib import Path
 
 import pytest
 
+pytestmark = pytest.mark.t02
+
 from src import agrupacion, db, embeddings, limpieza, normalizacion, procedencias
 from src.configuracion import cargar_normalizacion, cargar_procedencias, cargar_fuentes, cargar_reglas
 from tests.motor_falso import MotorFalso, config_de_prueba
@@ -98,3 +100,11 @@ def test_mismo_snapshot_y_mismas_reglas_dan_los_mismos_ids(filas, reglas, tmp_pa
     otra_vez = [g.id_grupo for g in _grupos(list(reversed(filas)), reglas, tmp_path)]
     assert primero == otra_vez
     assert primero == [agrupacion.id_de_grupo(IDS, REGLAS.agrupacion)]
+
+
+def test_t02_aceptacion_agrupa_sin_perder_fuentes_ni_triplicar_la_corroboracion(filas, reglas, tmp_path) -> None:
+    """PDF T02: agrupar sin perder fuentes; no triplicar importancia ni corroboración."""
+    (g,) = _grupos(filas, reglas, tmp_path)
+    assert g.ids_noticia == tuple(IDS) and g.n_medios == 3                  # un grupo, las tres fuentes
+    assert g.n_procedencias == 1                                            # una sola procedencia independiente (EFE)
+    assert procedencias.fraccion_de_procedencias(g.n_procedencias, REGLAS) < procedencias.fraccion_de_procedencias(g.n_titulares, REGLAS)

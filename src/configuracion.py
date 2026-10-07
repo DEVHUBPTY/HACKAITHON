@@ -1445,11 +1445,50 @@ TipoConsulta = Literal[
 ]
 
 
+class ConfigSustento(ModeloConfig):
+    """Muestra y veredictos de la revisión humana de la validez de sustento (E1-18)."""
+
+    muestra: int = Field(gt=0)
+    semilla: int
+    meta_validez: float = Field(gt=0, le=1)
+    veredictos: list[str] = Field(min_length=4, max_length=4)
+
+
+class ConfigAnalisisUmbral(ModeloConfig):
+    """Rejilla de la curva descriptiva de abstención por umbral (E1-18)."""
+
+    desde: float = Field(gt=0)
+    hasta: float = Field(gt=0)
+    paso: float = Field(gt=0)
+
+    @model_validator(mode="after")
+    def _rango(self) -> "ConfigAnalisisUmbral":
+        if self.hasta < self.desde:
+            raise ValueError("analisis_umbral: hasta debe ser >= desde")
+        return self
+
+
+class ConfigLlmBenchmark(ModeloConfig):
+    modalidad: Literal["editorial", "banca"]
+
+
+class ConfigMetasBenchmark(ModeloConfig):
+    """Metas de la sección 9.1 que el runner compara con lo medido (E1-18)."""
+
+    abstencion_correcta: float = Field(gt=0, le=1)
+    latencia_mediana_s: float = Field(gt=0)
+
+
 class ConfigBenchmark(ModeloConfig):
-    """``config/benchmark.yaml``: total y proporción de tipos del benchmark de desarrollo (E0-06)."""
+    """``config/benchmark.yaml``: total y proporción de tipos del benchmark de desarrollo (E0-06) y parámetros de E1-18."""
 
     total: int = Field(gt=0)
     tipos: dict[TipoConsulta, int]
+    intervalos: CriterioAB
+    sustento: ConfigSustento
+    analisis_umbral: ConfigAnalisisUmbral
+    llm: ConfigLlmBenchmark
+    metas: ConfigMetasBenchmark
 
     @model_validator(mode="after")
     def _suma_coherente(self) -> "ConfigBenchmark":
@@ -2456,6 +2495,33 @@ def cargar_precision(carpeta: Path | None = None) -> ConfigPrecision:
     return cargar_config("precision", ConfigPrecision, carpeta)
 
 
+# ------------------------------------------------------------------ pruebas.yaml (E1-17)
+
+IDS_PRUEBAS_ACEPTACION = tuple(f"T{n:02d}" for n in range(1, 11))
+
+
+class ConfigPruebas(ModeloConfig):
+    """Modelo de ``config/pruebas.yaml``: por prueba T01–T10, la parte que el test no cubre y por qué sigue pendiente."""
+
+    pendientes: dict[str, str]
+
+    @field_validator("pendientes")
+    @classmethod
+    def _ids_y_causas(cls, v: dict[str, str]) -> dict[str, str]:
+        ajenos = sorted(set(v) - set(IDS_PRUEBAS_ACEPTACION))
+        if ajenos:
+            raise ValueError(f"ids que no son T01–T10: {ajenos}")
+        vacias = sorted(k for k, causa in v.items() if not causa.strip())
+        if vacias:
+            raise ValueError(f"causa vacía en {vacias}")
+        return v
+
+
+def cargar_pruebas(carpeta: Path | None = None) -> ConfigPruebas:
+    """Atajo para ``config/pruebas.yaml``."""
+    return cargar_config("pruebas", ConfigPruebas, carpeta)
+
+
 CODIGO_URGENCIA_SIN_PUBLICACION ="urgencia_sin_publicacion"   # el único vacío de E1-10 cuyo texto vive en reglas_v1.3.yaml
 MODALIDADES = ("editorial", "banca")
 OPCIONALES = {"modalidad_banca"}  # el esquema la admite aunque todavía no exista
@@ -2489,6 +2555,7 @@ CARGADORES = {
     "cache": cargar_cache,
     "revision": cargar_revision,
     "precision": cargar_precision,
+    "pruebas": cargar_pruebas,
 }
 
 

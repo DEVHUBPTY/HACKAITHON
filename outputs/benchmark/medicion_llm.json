@@ -1,0 +1,585 @@
+{
+  "fecha_utc": "2026-10-07T04:20:13Z",
+  "proveedor": "deepseek",
+  "modelo": "deepseek-flash",
+  "grupos": [
+    {
+      "id_grupo": "GRP-da35c3dead",
+      "estado": "con_vacios",
+      "accion": "Borrador opcional",
+      "tipo_paquete": "editorial",
+      "secciones_vacias": [
+        "titulares",
+        "copy_digital"
+      ],
+      "latencia_primera_respuesta_s": 5.354,
+      "latencia_paquete_s": 17.155
+    },
+    {
+      "id_grupo": "GRP-84a6b3a04b",
+      "estado": "completo",
+      "accion": "Investigar ya",
+      "tipo_paquete": "investigacion",
+      "secciones_vacias": [],
+      "latencia_primera_respuesta_s": 4.739,
+      "latencia_paquete_s": 6.731
+    },
+    {
+      "id_grupo": "GRP-79f3183472",
+      "estado": "completo",
+      "accion": "Vigilar",
+      "tipo_paquete": "investigacion",
+      "secciones_vacias": [],
+      "latencia_primera_respuesta_s": 6.048,
+      "latencia_paquete_s": 7.582
+    },
+    {
+      "id_grupo": "GRP-ef3acec21e",
+      "estado": "completo",
+      "accion": "Investigar ya",
+      "tipo_paquete": "investigacion",
+      "secciones_vacias": [],
+      "latencia_primera_respuesta_s": 4.152,
+      "latencia_paquete_s": 5.992
+    },
+    {
+      "id_grupo": "GRP-65d565abd0",
+      "estado": "completo",
+      "accion": "Investigar ya",
+      "tipo_paquete": "investigacion",
+      "secciones_vacias": [],
+      "latencia_primera_respuesta_s": 2.183,
+      "latencia_paquete_s": 3.711
+    },
+    {
+      "id_grupo": "GRP-8af4196527",
+      "estado": "completo",
+      "accion": "Investigar ya",
+      "tipo_paquete": "investigacion",
+      "secciones_vacias": [],
+      "latencia_primera_respuesta_s": 4.246,
+      "latencia_paquete_s": 7.798
+    },
+    {
+      "id_grupo": "GRP-6e737ecad5",
+      "estado": "con_vacios",
+      "accion": "Investigar ya",
+      "tipo_paquete": "investigacion",
+      "secciones_vacias": [
+        "enfoque"
+      ],
+      "latencia_primera_respuesta_s": 4.293,
+      "latencia_paquete_s": 8.524
+    },
+    {
+      "id_grupo": "GRP-39773bed5a",
+      "estado": "completo",
+      "accion": "Investigar ya",
+      "tipo_paquete": "investigacion",
+      "secciones_vacias": [],
+      "latencia_primera_respuesta_s": 2.345,
+      "latencia_paquete_s": 4.234
+    },
+    {
+      "id_grupo": "GRP-fcdfc2a3cc",
+      "estado": "completo",
+      "accion": "Investigar ya",
+      "tipo_paquete": "investigacion",
+      "secciones_vacias": [],
+      "latencia_primera_respuesta_s": 4.036,
+      "latencia_paquete_s": 5.917
+    },
+    {
+      "id_grupo": "GRP-9442098153",
+      "estado": "completo",
+      "accion": "Investigar ya",
+      "tipo_paquete": "investigacion",
+      "secciones_vacias": [],
+      "latencia_primera_respuesta_s": 1.868,
+      "latencia_paquete_s": 3.482
+    },
+    {
+      "id_grupo": "GRP-45aebb27b2",
+      "estado": "completo",
+      "accion": "Investigar ya",
+      "tipo_paquete": "investigacion",
+      "secciones_vacias": [],
+      "latencia_primera_respuesta_s": 3.778,
+      "latencia_paquete_s": 6.945
+    },
+    {
+      "id_grupo": "GRP-f4a44182b1",
+      "estado": "completo",
+      "accion": "Investigar ya",
+      "tipo_paquete": "investigacion",
+      "secciones_vacias": [],
+      "latencia_primera_respuesta_s": 3.943,
+      "latencia_paquete_s": 5.842
+    }
+  ],
+  "n_grupos": 12,
+  "n_paquetes_medidos": 12,
+  "latencia": {
+    "primera_respuesta": {
+      "n": 12,
+      "unidad": "s",
+      "p50": {
+        "n": 12,
+        "valor": 4.094,
+        "ic95": [
+          3.0615,
+          4.516
+        ],
+        "remuestreos": 2000
+      },
+      "p95": {
+        "n": 12,
+        "valor": 5.6663,
+        "ic95": [
+          4.293,
+          6.048
+        ],
+        "remuestreos": 2000
+      }
+    },
+    "paquete_completo": {
+      "n": 12,
+      "unidad": "s",
+      "p50": {
+        "n": 12,
+        "valor": 6.3615,
+        "ic95": [
+          5.038,
+          7.69
+        ],
+        "remuestreos": 2000
+      },
+      "p95": {
+        "n": 12,
+        "valor": 12.4079,
+        "ic95": [
+          7.2316,
+          17.155
+        ],
+        "remuestreos": 2000
+      }
+    },
+    "por_tipo_de_paquete": {
+      "editorial": {
+        "n": 1,
+        "unidad": "s",
+        "p50": {
+          "n": 1,
+          "valor": 17.155,
+          "ic95": [
+            17.155,
+            17.155
+          ],
+          "remuestreos": 2000
+        },
+        "p95": {
+          "n": 1,
+          "valor": 17.155,
+          "ic95": [
+            17.155,
+            17.155
+          ],
+          "remuestreos": 2000
+        }
+      },
+      "investigacion": {
+        "n": 11,
+        "unidad": "s",
+        "p50": {
+          "n": 11,
+          "valor": 5.992,
+          "ic95": [
+            4.234,
+            7.582
+          ],
+          "remuestreos": 2000
+        },
+        "p95": {
+          "n": 11,
+          "valor": 8.161,
+          "ic95": [
+            6.945,
+            8.524
+          ],
+          "remuestreos": 2000
+        }
+      }
+    },
+    "por_llamada": {
+      "n": 41,
+      "unidad": "s",
+      "p50": {
+        "n": 41,
+        "valor": 1.941,
+        "ic95": [
+          1.86,
+          2.051
+        ],
+        "remuestreos": 2000
+      },
+      "p95": {
+        "n": 41,
+        "valor": 2.849,
+        "ic95": [
+          2.3,
+          2.941
+        ],
+        "remuestreos": 2000
+      }
+    }
+  },
+  "tokens_por_paquete": {
+    "entrada": {
+      "n": 12,
+      "valor": 5528.5,
+      "ic95": [
+        4559.0,
+        7392.5
+      ],
+      "remuestreos": 2000
+    },
+    "salida": {
+      "n": 12,
+      "valor": 1066.5,
+      "ic95": [
+        834.5,
+        1365.0
+      ],
+      "remuestreos": 2000
+    },
+    "llamadas_por_paquete": {
+      "n": 12,
+      "valor": 3.0,
+      "ic95": [
+        2.5,
+        4.0
+      ],
+      "remuestreos": 2000
+    },
+    "estadistico": "mediana"
+  },
+  "tokens_totales": {
+    "entrada": 76825,
+    "salida": 14759
+  },
+  "costo_usd": {
+    "por_paquete_mediana": {
+      "n": 12,
+      "valor": 0.0031,
+      "ic95": [
+        0.0024,
+        0.0038
+      ],
+      "remuestreos": 2000
+    },
+    "total_estimado": 0.040758,
+    "precios_usd_por_millon_tokens": {
+      "entrada": 0.3,
+      "salida": 1.2
+    },
+    "nota": "Cota superior (D-97): tokens de la API × el precio pico, sin descuento por caché. La consola de DeepSeek marcó ≈ 2,6 veces menos en una comparación (docs/parametros.md)."
+  },
+  "rechazos_del_validador": {
+    "unidades_evaluadas": 154,
+    "por_modelo": {
+      "deepseek/deepseek-flash": {
+        "k": 25,
+        "n": 154,
+        "tasa": 0.16233766233766234,
+        "ic95": [
+          0.1124,
+          0.2287
+        ]
+      }
+    },
+    "por_unidad": {
+      "deepseek/deepseek-flash": {
+        "afirmacion": {
+          "k": 16,
+          "n": 107,
+          "tasa": 0.14953271028037382,
+          "ic95": [
+            0.0942,
+            0.2292
+          ]
+        },
+        "seccion:brief": {
+          "k": 0,
+          "n": 1,
+          "tasa": 0.0,
+          "ic95": [
+            0.0,
+            0.7935
+          ]
+        },
+        "seccion:copy_digital": {
+          "k": 2,
+          "n": 2,
+          "tasa": 1.0,
+          "ic95": [
+            0.3424,
+            1.0
+          ]
+        },
+        "seccion:enfoque": {
+          "k": 4,
+          "n": 15,
+          "tasa": 0.26666666666666666,
+          "ic95": [
+            0.109,
+            0.5195
+          ]
+        },
+        "seccion:guion": {
+          "k": 0,
+          "n": 1,
+          "tasa": 0.0,
+          "ic95": [
+            0.0,
+            0.7935
+          ]
+        },
+        "seccion:preguntas": {
+          "k": 0,
+          "n": 12,
+          "tasa": 0.0,
+          "ic95": [
+            0.0,
+            0.2425
+          ]
+        },
+        "seccion:resumen_web": {
+          "k": 1,
+          "n": 2,
+          "tasa": 0.5,
+          "ic95": [
+            0.0945,
+            0.9055
+          ]
+        },
+        "seccion:titulares": {
+          "k": 2,
+          "n": 2,
+          "tasa": 1.0,
+          "ic95": [
+            0.3424,
+            1.0
+          ]
+        },
+        "seccion:titulo": {
+          "k": 0,
+          "n": 1,
+          "tasa": 0.0,
+          "ic95": [
+            0.0,
+            0.7935
+          ]
+        },
+        "seccion:titulo_trabajo": {
+          "k": 0,
+          "n": 11,
+          "tasa": 0.0,
+          "ic95": [
+            0.0,
+            0.2588
+          ]
+        }
+      }
+    },
+    "por_regla": {
+      "base_invalida": {
+        "deepseek/deepseek-flash": {
+          "afirmacion": {
+            "k": 3,
+            "n": 107,
+            "tasa": 0.028037383177570093,
+            "ic95": [
+              0.0096,
+              0.0792
+            ]
+          }
+        }
+      },
+      "causalidad": {
+        "deepseek/deepseek-flash": {
+          "afirmacion": {
+            "k": 11,
+            "n": 107,
+            "tasa": 0.102803738317757,
+            "ic95": [
+              0.0584,
+              0.1748
+            ]
+          },
+          "seccion:enfoque": {
+            "k": 4,
+            "n": 15,
+            "tasa": 0.26666666666666666,
+            "ic95": [
+              0.109,
+              0.5195
+            ]
+          }
+        }
+      },
+      "cifra_no_coincide": {
+        "deepseek/deepseek-flash": {
+          "seccion:copy_digital": {
+            "k": 1,
+            "n": 2,
+            "tasa": 0.5,
+            "ic95": [
+              0.0945,
+              0.9055
+            ]
+          },
+          "seccion:resumen_web": {
+            "k": 1,
+            "n": 2,
+            "tasa": 0.5,
+            "ic95": [
+              0.0945,
+              0.9055
+            ]
+          }
+        }
+      },
+      "enfoque_como_hecho": {
+        "deepseek/deepseek-flash": {
+          "seccion:enfoque": {
+            "k": 2,
+            "n": 15,
+            "tasa": 0.13333333333333333,
+            "ic95": [
+              0.0374,
+              0.3788
+            ]
+          }
+        }
+      },
+      "hipotesis_sin_condicional": {
+        "deepseek/deepseek-flash": {
+          "afirmacion": {
+            "k": 2,
+            "n": 107,
+            "tasa": 0.018691588785046728,
+            "ic95": [
+              0.0051,
+              0.0656
+            ]
+          },
+          "seccion:enfoque": {
+            "k": 2,
+            "n": 15,
+            "tasa": 0.13333333333333333,
+            "ic95": [
+              0.0374,
+              0.3788
+            ]
+          }
+        }
+      },
+      "nombre_nuevo": {
+        "deepseek/deepseek-flash": {
+          "seccion:copy_digital": {
+            "k": 2,
+            "n": 2,
+            "tasa": 1.0,
+            "ic95": [
+              0.3424,
+              1.0
+            ]
+          },
+          "seccion:titulares": {
+            "k": 2,
+            "n": 2,
+            "tasa": 1.0,
+            "ic95": [
+              0.3424,
+              1.0
+            ]
+          }
+        }
+      }
+    }
+  },
+  "paquetes": [
+    {
+      "id_grupo": "GRP-da35c3dead",
+      "tokens_entrada": 14174,
+      "tokens_salida": 3075,
+      "llamadas": 8
+    },
+    {
+      "id_grupo": "GRP-84a6b3a04b",
+      "tokens_entrada": 5587,
+      "tokens_salida": 1338,
+      "llamadas": 3
+    },
+    {
+      "id_grupo": "GRP-79f3183472",
+      "tokens_entrada": 7915,
+      "tokens_salida": 1778,
+      "llamadas": 3
+    },
+    {
+      "id_grupo": "GRP-ef3acec21e",
+      "tokens_entrada": 5470,
+      "tokens_salida": 996,
+      "llamadas": 3
+    },
+    {
+      "id_grupo": "GRP-65d565abd0",
+      "tokens_entrada": 3514,
+      "tokens_salida": 625,
+      "llamadas": 2
+    },
+    {
+      "id_grupo": "GRP-8af4196527",
+      "tokens_entrada": 7323,
+      "tokens_salida": 1221,
+      "llamadas": 4
+    },
+    {
+      "id_grupo": "GRP-6e737ecad5",
+      "tokens_entrada": 7462,
+      "tokens_salida": 1392,
+      "llamadas": 4
+    },
+    {
+      "id_grupo": "GRP-39773bed5a",
+      "tokens_entrada": 3678,
+      "tokens_salida": 723,
+      "llamadas": 2
+    },
+    {
+      "id_grupo": "GRP-fcdfc2a3cc",
+      "tokens_entrada": 5440,
+      "tokens_salida": 946,
+      "llamadas": 3
+    },
+    {
+      "id_grupo": "GRP-9442098153",
+      "tokens_entrada": 3540,
+      "tokens_salida": 558,
+      "llamadas": 2
+    },
+    {
+      "id_grupo": "GRP-45aebb27b2",
+      "tokens_entrada": 7259,
+      "tokens_salida": 1137,
+      "llamadas": 4
+    },
+    {
+      "id_grupo": "GRP-f4a44182b1",
+      "tokens_entrada": 5463,
+      "tokens_salida": 970,
+      "llamadas": 3
+    }
+  ]
+}
