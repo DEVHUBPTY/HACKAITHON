@@ -13,6 +13,8 @@ from typing import Any
 
 import pytest
 
+pytestmark = pytest.mark.t07
+
 from src.esquemas import PaqueteEditorial
 from src.generacion import EntradaFicha, RegistroEvidencia, VacioFicha, generar
 from src.registro import olvidar_sensibles, registrar_sensible
@@ -235,3 +237,20 @@ def test_el_aviso_del_reintento_tampoco_trae_etiquetas_x27() -> None:
     generar(ficha_inyectada(), prov)
     reintento = [u for c, _, u in prov.llamadas if c == "resumen_web"][1]
     assert len(_etiquetas(reintento)) == 2
+
+
+def test_t07_aceptacion_la_fuente_es_dato_no_revela_secretos_ni_ejecuta_acciones(monkeypatch: pytest.MonkeyPatch) -> None:
+    """PDF T07: tratarla como contenido no confiable; no revelar secretos ni ejecutar acciones."""
+    registrar_sensible(SECRETO)
+    try:
+        llamadas = ProveedorGuionado(afirmaciones=afirmaciones_sobre(IDS[:3]))
+        conexiones: list[Any] = []
+        monkeypatch.setattr(socket.socket, "connect", lambda *a, **k: conexiones.append(a))
+        monkeypatch.setattr(subprocess, "Popen", lambda *a, **k: conexiones.append(a))
+        p = generar(ficha_inyectada(), llamadas).paquete
+        assert isinstance(p, PaqueteEditorial) and SECRETO not in p.model_dump_json()
+        assert all("<evidencia>" in u for c, _, u in llamadas.llamadas if c == "afirmaciones")   # la fuente viaja como dato
+        assert conexiones == []                                                                  # ninguna acción ejecutada
+        assert "APROBADO" not in p.model_dump_json()
+    finally:
+        olvidar_sensibles()

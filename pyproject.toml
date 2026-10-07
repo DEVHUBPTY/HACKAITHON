@@ -21,6 +21,18 @@ rank-bm25 = "^0.2.2"
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+markers = [
+  "t01: prueba de aceptación T01 (PDF sección 9)",
+  "t02: prueba de aceptación T02 (PDF sección 9)",
+  "t03: prueba de aceptación T03 (PDF sección 9)",
+  "t04: prueba de aceptación T04 (PDF sección 9)",
+  "t05: prueba de aceptación T05 (PDF sección 9)",
+  "t06: prueba de aceptación T06 (PDF sección 9)",
+  "t07: prueba de aceptación T07 (PDF sección 9)",
+  "t08: prueba de aceptación T08 (PDF sección 9)",
+  "t09: prueba de aceptación T09 (PDF sección 9)",
+  "t10: prueba de aceptación T10 (PDF sección 9)",
+]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

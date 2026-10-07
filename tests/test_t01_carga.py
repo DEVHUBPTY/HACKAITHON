@@ -8,6 +8,8 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
+pytestmark = pytest.mark.t01
+
 from src import carga
 from scripts import conversion, validar_snapshot
 from src.configuracion import cargar_carga, cargar_contrato
@@ -447,3 +449,11 @@ def test_x12_archivo_ausente_no_deja_copia_vieja_en_validos(tmp_path: Path) -> N
     (procesados / "noticias.csv").unlink()
     carga.main(args)
     assert not (tmp_path / "v" / "noticias.csv").exists()
+
+
+def test_t01_aceptacion_valida_separa_errores_y_conserva_nulos_sin_bloquear_la_carga(noticias: carga.ResultadoArchivo, indicadores: carga.ResultadoArchivo) -> None:
+    """PDF T01: validar, separar errores y conservar nulos; no bloquear toda la carga."""
+    assert noticias.leidas == 16 and len(noticias.validas) == 6 and noticias.rechazadas == 10   # la carga termina con lo válido
+    assert len(noticias.errores) >= 10 and all(e.motivo and e.tipo_error for e in noticias.errores)   # errores separados y con motivo
+    assert len(indicadores.validas) == 12 and indicadores.validas["valor"].isna().sum() == 6   # nulos conservados
+    assert not (indicadores.validas["valor"] == 0).any()                                       # nunca rellenados con cero
