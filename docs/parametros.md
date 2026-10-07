@@ -394,8 +394,19 @@ Las listas de frases prohibidas siguen en `config/restricciones.yaml` y los lím
 | Semillas aleatorias | Fijas en `config/` (etiquetado, bootstrap, clustering si aplica) | Práctica (reproducibilidad) | `scripts.reproducir` (D-65) |
 | Benchmark del equipo (si la organización no lo entrega) | 40 de desarrollo: 20 · 7 · 7 · 6 | PDF (proporciones de la sección 7) | `eval.validar_benchmark` |
 | Sensibilidad X02 | Pesos ± 5; parámetros supuestos ± 20 % | Supuesto (spec E1-10) | `python -m eval.sensibilidad` (E1-10): top 5 de cada variante, con n e IC de Wilson de las variantes que no lo cambian |
-| Precision@5 | 3 fechas de corte si hay editor; si no, n = 1 y exploratoria | PDF (exploratoria sin especialista) | — |
+| Precision@5 | 3 fechas de corte si hay editor; si no, n = 1 y exploratoria | PDF (exploratoria sin especialista) | `python -m eval.precision_at_5` (E1-19; ver sección siguiente) |
 | Duración de la demo | 4 min | PDF | Ensayo cronometrado |
+
+## Precision@5 y prueba de tiempo (E1-19 · `config/precision.yaml`)
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| `k` | 5 | PDF 9.1 (Precision@5: el editor elige 5 temas) | `eval/precision_at_5.py` exige exactamente `k` marcas por corte |
+| `cortes_minimos` | 3 | Spec E1-19 y D-57 (3 fechas de corte distintas si hay editor) | Con menos cortes el resultado se declara exploratorio; con 1, n = 1 |
+| `hoja_ciega.semilla` | `e1-19-hoja-ciega` | Práctica (orden reproducible que no depende de P, posición ni fecha) | `tests/test_e1_19_precision.py`: el orden no cambia si cambian P y fechas |
+| `hoja_ciega.marca` | `x` | Convención de la hoja | Lectura de `eval/seleccion_editor.csv` |
+| Baseline «ranking por fecha» | Fecha reciente del grupo (`fecha_fin`) descendente; empate por ID | PDF sección 8 | Test del baseline; el reporte cuenta los grupos cuya fecha es de detección, no de publicación |
+| Pruebas de tiempo por condición | ≥ 3 (6 en total, orden alternado) | `docs/protocolo_evaluacion.md` sección 6 (D-71) | `docs/prueba_tiempo.md`: se reporta n; con pocas pruebas, exploratorio |
 
 ## Etiquetado humano (E1-06, `config/etiquetado.yaml`)
 
