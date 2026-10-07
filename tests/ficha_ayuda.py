@@ -46,7 +46,7 @@ def subtema(grupo: str, ids: list[str], nombre: str | None, tema: str = "economi
     """Filas de ``similitud_tema`` (método B) que fijan el subtema de un grupo."""
     if nombre is None:
         return []
-    return [{"id_noticia": i, "metodo": "B", "tema": tema, "similitud": 0.8, "subtema": nombre} for i in ids]
+    return [{"id_noticia": i, "metodo": "B", "tema": tema, "similitud": 0.8, "subtema": nombre, "margen_subtema": 0.1} for i in ids]
 
 
 def indicador(grupo: str, anio: int = 2024, rol: str = "panama", pais: str = "PAN", valor: float = 0.69322, tipo: str = "directa", **cambios: Any) -> dict[str, Any]:

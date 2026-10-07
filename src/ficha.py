@@ -330,6 +330,7 @@ def _que_se_reporta(datos: Datos, titulares: list[TitularReportado], emb: Embedd
     return QueSeReporta(
         tema=g.get("tema_clasificado"),
         subtema=subtema,
+        criterio_subtema=next((str(v["criterio_subtema"]) for v in datos.vinculos if subtema and v.get("criterio_subtema")), None),
         titular_central=TitularCentral(id_noticia=central.id_noticia, titular=central.titular, medio=central.medio, url=central.url),
         cobertura=Cobertura(
             n_titulares=int(g["n_titulares"]), n_medios=int(g["n_medios"]), fecha_inicio=g.get("fecha_inicio"), fecha_fin=g.get("fecha_fin"),
@@ -562,7 +563,7 @@ def vista(ficha: Ficha, cfg: ConfigVerificacion | None = None) -> Vista:
     s1 = [
         Linea(f"Titular central: «{q.titular_central.titular}» — {q.titular_central.medio}"),
         Linea(f"Cobertura: {_plural(c.n_titulares, 'titular', 'titulares')} · {_plural(c.n_medios, 'medio', 'medios')} · {fechas}"),
-        Linea(f"Tema: {nombre_tema} · Subtema: {nombre_subtema}"),
+        Linea(f"Tema: {nombre_tema} · Subtema: {nombre_subtema}" + (f" (criterio: {q.criterio_subtema})" if q.criterio_subtema else "")),
         Linea(f"Alcance: {ficha.alcance}"),
     ]
     for x in q.contradicciones:

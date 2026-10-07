@@ -147,6 +147,13 @@ def test_el_titular_central_es_determinista_ante_empates() -> None:
     assert miembros[elegir_titular_central(miembros, v, CFG)]["id_noticia"] == "NOT-a"
 
 
+def test_el_criterio_del_subtema_se_muestra_si_el_vinculo_lo_trae(con, emb) -> None:
+    f = hacer(con, emb, h.G_COMPLETO)
+    assert f.que_se_reporta.criterio_subtema is None            # la base sintética no lo trae
+    v = vista(f.model_copy(update={"que_se_reporta": f.que_se_reporta.model_copy(update={"criterio_subtema": "margen"})}))
+    assert any("(criterio: margen)" in l.texto for l in v.secciones[0].lineas)
+
+
 def test_la_ficha_usa_embeddings_cacheados_y_no_carga_el_modelo(con, emb) -> None:
     antes = emb.codificados
     hacer(con, emb, h.G_COMPLETO)

@@ -166,6 +166,7 @@ class Cobertura(ModeloFicha):
 class QueSeReporta(ModeloFicha):
     tema: str | None = None
     subtema: str | None = None
+    criterio_subtema: str | None = None      # D-92: por qué se aceptó el subtema (`margen` o `lexico`); nulo si no hay subtema
     titular_central: TitularCentral
     cobertura: Cobertura
     contradicciones: list[ContradiccionFicha]
