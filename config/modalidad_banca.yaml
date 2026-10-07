@@ -1,0 +1,37 @@
+# Modalidad bancaria (D-01, D-38). ARCHIVO PARCIAL (D-90): E1-10b solo trae lo que necesita la ficha de evidencia
+# (tabla de acciones 3×3 y fuentes sugeridas extra). E2-01 lo completa: mapeo tema → sector (D-11), alcance por sector
+# para I, horizonte temporal y bandeja bancaria. Mientras `parcial` sea true, la modalidad NO puntúa por sector.
+# El modelo es el mismo que el de la modalidad editorial (`ConfigModalidad`): no hay ningún `if modalidad` en el código.
+version: "1.0"
+modalidad: banca
+nombre: "Banca"
+usuario: "Analista bancario"
+parcial: true
+
+# Sin medio de referencia: el analista no compara contra un medio concreto (D-38). La ficha omite ese indicador.
+medio_referencia: null
+
+# Grupos de config/restricciones.yaml que validan las salidas de esta modalidad (docs/salidas.md §2, D-54).
+grupos_restricciones: [comunes, banca]
+
+# Tabla 3×3 rango × estado de evidencia (parametros.md · D-35, D-38). El PDF prohíbe recomendar compra o venta, inferir
+# pérdidas o exposición de una cartera y emitir una alerta definitiva: ninguna celda lo hace ni habla de publicar.
+tabla_acciones:
+  alto:
+    suficiente: {accion: "Incluir en el boletín como observación", motivo: "Atención alta y evidencia suficiente: entra al boletín como observación, con sus citas."}
+    parcial: {accion: "Incluir como señal a confirmar", motivo: "Atención alta con evidencia parcial: entra como señal a confirmar, con los vacíos a la vista."}
+    insuficiente: {accion: "Seguimiento prioritario", motivo: "Atención alta pero evidencia insuficiente: seguir el tema y verificar antes de incluirlo."}
+  medio:
+    suficiente: {accion: "Incluir como contexto", motivo: "Atención media con evidencia suficiente: entra como contexto del entorno."}
+    parcial: {accion: "Seguimiento", motivo: "Atención media con evidencia parcial: seguir el tema."}
+    insuficiente: {accion: "Seguimiento", motivo: "Atención media con evidencia insuficiente: seguir el tema."}
+  bajo:
+    suficiente: {accion: "Archivar", motivo: "Atención baja: se conserva como registro del entorno."}
+    parcial: {accion: "Archivar", motivo: "Atención baja con evidencia parcial: se conserva como registro."}
+    insuficiente: {accion: "Archivar", motivo: "Atención baja con evidencia insuficiente: se conserva como registro."}
+
+# Fuentes que el analista suele consultar además de las del subtema (sugerencia, nunca evidencia; D-37).
+fuentes_sugeridas_extra:
+  - "Superintendencia de Bancos de Panamá"
+  - "Ministerio de Economía y Finanzas"
+  - "Contraloría General de la República (INEC)"

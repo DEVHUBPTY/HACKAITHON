@@ -1,0 +1,9 @@
+# Ficha de evidencia · {{ v.id_grupo }}
+**{{ v.marca }}**
+{% for s in v.secciones %}
+
+## {{ s.titulo }}
+{% for l in s.lineas %}
+{{ "  " * l.nivel }}- {{ l.texto }}
+{% endfor %}
+{% endfor %}

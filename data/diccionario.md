@@ -201,6 +201,7 @@ Explicabilidad de la clasificación: una fila por noticia clasificada (no ruido)
 | `tema` | VARCHAR | no | `temas.yaml` | derivado | Uno de los 6 temas. |
 | `similitud` | DOUBLE | no | clasificación | derivado | Coseno entre el titular y el tema (A: centroide; B: el subtema más parecido del tema). |
 | `subtema` | VARCHAR | sí | `temas.yaml` | derivado | Solo con B: el subtema que dio esa similitud. |
+| `margen_subtema` | DOUBLE | sí | clasificación | derivado | Solo con B (D-92): similitud del 1.º subtema menos la del 2.º dentro del tema. Nulo con A. |
 
 ### `grupos`: un grupo por evento (E1-08)
 
@@ -253,7 +254,7 @@ Una fila por dato (o una por grupo sin vínculo). Es **contexto, nunca prueba de
 | `motivo_sin_vinculo` | VARCHAR | sí | `vinculos.yaml` | derivado | `tema_sin_indicador`, `sin_dato_en_periodo` (y los de sismos de E1-09b). Sin vínculo lleva `id_evidencia` nulo; la excepción es `candidatos_ambiguos` (USGS, E1-09b), que puede traer a la vez el `SIS-` del candidato y el motivo. |
 | `fuente` | VARCHAR | no | contexto | derivado | Quién escribe la fila: `indicador` (`src.contexto`) o `usgs` (`src.contexto_sismos`). |
 | `rol` | VARCHAR | sí | contexto | derivado | `panama` (último año con valor), `comparable` (otros países, mismo año, con dato), `tendencia` (últimos años de Panamá) o `evento` (USGS). |
-| `subtema` | VARCHAR | sí | `similitud_tema` | derivado | Subtema más cercano del grupo dentro de su tema (método B). |
+| `subtema` | VARCHAR | sí | `similitud_tema` | derivado | Subtema más cercano del grupo dentro de su tema (método B) solo si supera el margen mínimo (D-92); si no, nulo (`sin_subtema`). |
 | `pais_iso3` | VARCHAR | sí | `indicadores` | derivado | País del dato. |
 | `indicador_id` | VARCHAR | sí | `indicadores` | derivado | Indicador del Banco Mundial. |
 | `anio` | INTEGER | sí | `indicadores` | derivado | Año del dato. |
@@ -269,6 +270,7 @@ Una fila por dato (o una por grupo sin vínculo). Es **contexto, nunca prueba de
 | `estado_evento` | VARCHAR | sí | `eventos.geojson` | derivado | Solo filas `usgs`: `automatic` o `reviewed`; un evento automático puede cambiar. |
 | `url_evento` | VARCHAR | sí | `eventos.geojson` | derivado | Solo filas `usgs`: página del evento en USGS. |
 | `diferencia_horas` | DOUBLE | sí | contexto | derivado | Solo filas `usgs`: horas entre el evento y la noticia más cercana del grupo. |
+| `criterio_subtema` | VARCHAR | sí | contexto | derivado | D-92: por qué se aceptó el subtema del grupo, `margen` (1.º − 2.º subtema ≥ mínimo) o `lexico` (un titular nombra un término del subtema). Nulo si no hay subtema. |
 
 En las filas `usgs`, `valor` es la magnitud y `unidad` es `magnitud`. `tipo` es `evento` solo con un `SIS-` (vinculado o candidato ambiguo) y nulo si no hay vínculo; `rol` es siempre `evento`.
 
@@ -308,7 +310,7 @@ Los reemplaza `python -m src.puntaje`.
 | `tiene_oficial` | BOOLEAN | no | `vinculos` | derivado | Hay un dato oficial `directa` o un evento `evento` (USGS) vinculado con valor. Un vínculo `indirecta` no cuenta (X22): no mide el hecho. |
 | `hay_cifras` | BOOLEAN | no | `noticias` | derivado | Algún titular trae una cifra (sin contar fechas, años ni identificadores). |
 | `contradicciones_abiertas` | INTEGER | no | `contradicciones` | derivado | Pares detectados por reglas: todos cuentan, diga lo que diga el LLM (solo una persona puede cerrarlos). |
-| `vacios` | VARCHAR | no | evidencia | derivado | JSON: vacíos de verificación de la evidencia (procedencias, dato oficial, contradicciones, titulares sin medio o fecha). |
+| `vacios` | VARCHAR | no | evidencia | derivado | JSON: vacíos de verificación de la evidencia (procedencias, dato oficial o solo vínculo indirecto, contradicciones, cifra del titular discrepante o de otro período, evento oficial sin revisar, titulares sin medio o fecha). Es la única fuente de vacíos de la ficha. Una cifra discrepante abierta impide `suficiente`. |
 | `modalidad` | VARCHAR | no | `modalidad_<modalidad>.yaml` | derivado | Modalidad cuya tabla de acciones se aplicó (`editorial`). |
 | `rango` | VARCHAR | no | `puntajes` | derivado | Rango de P usado para elegir la celda. |
 | `accion` | VARCHAR | no | `modalidad_<modalidad>.yaml` | derivado | Acción recomendada de la celda (rango × estado). Nunca «publicar». |
@@ -335,8 +337,8 @@ El LLM solo agrega una nota (`nota_llm`); **nunca cierra un par** (X21): si no e
 | `estado` | VARCHAR | no | contradicciones | derivado | Siempre `verificar`: abierta hasta que una persona la cierre en la revisión (E1-16). |
 | `nota_llm` | VARCHAR | no | LLM | derivado | Anotación para la persona: `posible_contradiccion`, `compatible` o `pendiente` (sin LLM, falló o respondió algo inválido). No cambia el estado de evidencia ni oculta el par. |
 | `etiqueta` | VARCHAR | no | `prioridad.yaml` | derivado | «posible contradicción, verificar». |
-| `fragmento_a` | VARCHAR | sí | LLM | derivado | Fragmento literal del titular A que cita el LLM (validado como subcadena); solo con `verificar`. |
-| `fragmento_b` | VARCHAR | sí | LLM | derivado | Fragmento literal del titular B; solo con `verificar`. |
+| `fragmento_a` | VARCHAR | sí | LLM | derivado | Fragmento literal del titular A que cita el LLM (validado como subcadena); solo con `nota_llm = posible_contradiccion`. |
+| `fragmento_b` | VARCHAR | sí | LLM | derivado | Fragmento literal del titular B; solo con `nota_llm = posible_contradiccion`. |
 | `proveedor` | VARCHAR | sí | `local.env` | derivado | Proveedor del LLM (`ollama`); nulo si no hubo. |
 | `modelo` | VARCHAR | sí | `local.env` | derivado | Modelo del proveedor. |
 | `motivo_pendiente` | VARCHAR | sí | contradicciones | derivado | Solo con `nota_llm = pendiente`: por qué no se comparó (sin proveedor, proveedor caído, salida inválida, sobre el tope). |

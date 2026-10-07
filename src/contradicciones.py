@@ -241,5 +241,5 @@ def evaluar_grupo(
 
 
 def abiertas(contradicciones: Sequence[Contradiccion]) -> int:
-    """Cuántas contradicciones siguen abiertas (posibles o sin comparar)."""
+    """Cuántas contradicciones siguen abiertas: todas las que detectaron las reglas (el LLM solo anota; no cierra un par, X21)."""
     return sum(1 for c in contradicciones if c.abierta)

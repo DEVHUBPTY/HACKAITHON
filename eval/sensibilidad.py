@@ -19,7 +19,7 @@ El estado de evidencia no depende de P, así que no entra aquí.
 
 **Lo que no se mueve, y por qué:** supuestos que no afectan a P (cifra del titular, voto del subtema para el contexto, los
 umbrales de contradicción: solo afectan al estado de evidencia o al contexto), la coincidencia de sismos (± 2 días; el snapshot
-no tiene grupos de sismos) y los de banca (la modalidad no existe todavía). El detalle va en el JSON (``fuera_del_alcance``).
+no tiene grupos de sismos) y los de banca (modalidad_banca.yaml es parcial hasta E2-01, D-90). El detalle va en el JSON (``fuera_del_alcance``).
 
 Uso: ``poetry run python -m eval.sensibilidad [--salida outputs/sensibilidad.json] [--ahora ISO]``.
 """
@@ -67,7 +67,7 @@ FUERA_DEL_ALCANCE = {
     "cifra_titular.* (ventana, palabras, patrones)": "solo cambia la etiqueta de comparación del contexto, no P ni el estado",
     "subtema del grupo (voto)": "método de contexto; I usa el subtema ya elegido",
     "coincidencia de sismos (± 2 días)": "el snapshot no tiene grupos de sismos con vínculo de USGS que dependan de ella",
-    "alcance por sector (banca)": "la modalidad de banca todavía no existe",
+    "alcance por sector (banca)": "modalidad_banca.yaml es parcial (D-90): no define el alcance por sector hasta E2-01",
     "contradicciones.* (tope, verbos, solo_entre_procedencias)": "cambian el estado de evidencia y la acción, no P ni el ranking",
     "umbral de agrupación (calibrado, no supuesto)": "se calibra con etiquetas humanas (python -m eval.agrupacion)",
 }
@@ -210,7 +210,7 @@ class Insumos:
     entradas: list[EntradaGrupo]
     filas: list[dict[str, Any]]                      # titulares que no son ruido, con ``titulo_limpio``
     vectores: np.ndarray
-    subtema_de_noticia: dict[str, dict[str, tuple[str, float]]]   # id_noticia -> tema -> (subtema, similitud) del método B
+    subtema_de_noticia: dict[str, dict[str, tuple[str, float, float | None]]]   # id_noticia -> tema -> (subtema, similitud, margen) del método B (D-92)
     indicadores: list[dict[str, Any]]
     oficial_en_base: dict[str, bool]                 # id_grupo (de la base) -> había dato oficial
     vinculos: ConfigVinculos
@@ -221,11 +221,12 @@ def leer_insumos(ruta_base: Path, reglas: ReglasV13, emb: Embeddings) -> Insumos
     try:
         entradas, _, _ = prioridad.leer_entradas(con, reglas, emb)
         filas = [n for n in db.leer_tabla(con, "noticias", "id_noticia") if n.get("id_grupo")]
-        similitudes: dict[str, dict[str, tuple[str, float]]] = {}
-        for id_noticia, tema, subtema, similitud in con.execute(
-            "SELECT id_noticia, tema, subtema, similitud FROM similitud_tema WHERE metodo = ? AND subtema IS NOT NULL", [METODO_SUBTEMA]
+        similitudes: dict[str, dict[str, tuple[str, float, float | None]]] = {}
+        for id_noticia, tema, subtema, similitud, margen in con.execute(
+            "SELECT id_noticia, tema, subtema, similitud, margen_subtema FROM similitud_tema WHERE metodo = ? AND subtema IS NOT NULL",
+            [METODO_SUBTEMA],
         ).fetchall():
-            similitudes.setdefault(id_noticia, {})[tema] = (subtema, similitud)
+            similitudes.setdefault(id_noticia, {})[tema] = (subtema, similitud, margen)
         indicadores = db.leer_tabla(con, "indicadores")
     finally:
         con.close()
@@ -251,10 +252,15 @@ def entradas_reagrupadas(insumos: Insumos, reglas: ReglasV13) -> list[EntradaGru
     for g in grupos:
         miembros = [insumos.filas[por_id[i]] for i in g.ids_noticia]
         candidatos = [insumos.subtema_de_noticia.get(str(m["id_noticia"]), {}).get(g.tema_clasificado) for m in miembros]
-        subtema = contexto.subtema_del_grupo([c for c in candidatos if c is not None]) if g.tema_clasificado else None
+        titulares = [str(m.get("titulo_limpio") or m.get("titulo") or "") for m in miembros]
+        subtema, criterio = (
+            contexto.decidir_subtema([c for c in candidatos if c is not None], titulares, insumos.vinculos.subtema)
+            if g.tema_clasificado
+            else (None, None)
+        )
         central = insumos.filas[por_id[g.id_noticia_central]]
         fecha = central.get("fecha_publicacion") or central.get("fecha_deteccion")
-        vinculables.append({"id_grupo": g.id_grupo, "tema": g.tema_clasificado, "subtema": subtema, "titular": g.titular_central, "anio_publicacion": _anio_de(fecha)})
+        vinculables.append({"id_grupo": g.id_grupo, "tema": g.tema_clasificado, "subtema": subtema, "criterio_subtema": criterio, "titular": g.titular_central, "anio_publicacion": _anio_de(fecha)})
     filas_vinculo, _ = contexto.construir_vinculos(vinculables, insumos.indicadores, insumos.vinculos)
     aceptadas = cargar_prioridad().dato_oficial.relaciones_aceptadas
     oficial = {f["id_grupo"] for f in filas_vinculo if f["id_evidencia"] and f["tipo"] in aceptadas and not f["motivo_sin_vinculo"] and f["valor"] is not None}

@@ -411,7 +411,7 @@ def _grupo(id_grupo: str, id_noticia: str, titular: str, tema: str) -> dict[str,
 
 
 def _sim(id_noticia: str, tema: str, subtema: str) -> dict[str, Any]:
-    return {"id_noticia": id_noticia, "metodo": "B", "tema": tema, "similitud": 0.7, "subtema": subtema}
+    return {"id_noticia": id_noticia, "metodo": "B", "tema": tema, "similitud": 0.7, "subtema": subtema, "margen_subtema": 0.05}
 
 
 @pytest.fixture

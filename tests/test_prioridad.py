@@ -74,7 +74,7 @@ def test_el_dato_oficial_ambiguo_no_cuenta_y_el_vinculado_si(base, tmp_path, emb
     e = {x["id_grupo"]: x for x in _tabla(base, "evidencia", "id_grupo")}
     assert e["GRP-b"]["tiene_oficial"] is True
     assert e["GRP-a"]["tiene_oficial"] is False     # el candidato ambiguo de USGS no es evidencia
-    assert "tema_sin_indicador" in e["GRP-c"]["vacios"]
+    assert "el tema no tiene un indicador oficial asignado" in e["GRP-c"]["vacios"]
 
 
 def test_dos_corridas_producen_las_mismas_filas_y_el_mismo_ranking(base, tmp_path, emb) -> None:
@@ -224,3 +224,13 @@ def test_x22_un_grupo_solo_con_vinculo_indirecto_no_tiene_dato_oficial_ni_e_ofic
     assert e["tiene_oficial"] is False
     (p,) = _tabla(ruta, "puntajes", "posicion")
     assert json.loads(p["componentes"])["E"]["explicacion"]["tiene_oficial"] is False
+
+
+def test_sin_candidatos_el_estado_del_llm_no_depende_del_proveedor(tmp_path, emb) -> None:
+    """El prioridad.json versionado no cambia según Ollama esté prendido o no (revisión del PR #23)."""
+    noticias = [fila_noticia("NOT-z000000001", "Panamá reporta inflación estable", "medio.example", "GRP-z")]
+    ruta = tmp_path / "s.duckdb"
+    db.guardar_todo(ruta, {"noticias": noticias, "grupos": [fila_grupo("GRP-z", ["NOT-z000000001"], "Inflación", 1)], "procedencias": filas_procedencias("GRP-z", ["NOT-z000000001"])})
+    sin = prioridad.ejecutar(ruta, tmp_path / "p1.json", CORTE, None, emb=emb)["llm"]
+    con = prioridad.ejecutar(ruta, tmp_path / "p2.json", CORTE, ProveedorFalso({"pares": []}), emb=emb)["llm"]
+    assert sin == con == {"estado": "sin_candidatos", "proveedor": None, "modelo": None, "motivos_pendientes": {}}

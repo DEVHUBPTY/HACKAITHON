@@ -744,6 +744,13 @@ class Vinculo(ModeloConfig):
         return self
 
 
+class SubtemaVinculo(ModeloConfig):
+    """D-92: el grupo toma el subtema más cercano solo si supera al segundo por este margen o un titular nombra un término."""
+
+    margen_minimo: float = Field(ge=0)
+    terminos_por_subtema: dict[str, list[str]]   # apoyo léxico: un término en el titular acepta el subtema aunque el margen no llegue
+
+
 class SismosVinculo(ModeloConfig):
     """Presentación y textos fijos del vínculo con eventos de USGS (E1-09b)."""
 
@@ -836,6 +843,7 @@ class ConfigVinculos(ModeloConfig):
     motivo_por_defecto: str
     ventana_coincidencia_dias: int = Field(ge=0)
     pais_por_defecto: str
+    subtema: SubtemaVinculo
     sismos: SismosVinculo
     vinculos: dict[str, Vinculo]  # por subtema
     vinculos_por_tema: dict[str, Vinculo]  # cualquier subtema del tema
@@ -933,6 +941,7 @@ class ConfigModalidad(ModeloConfig):
     grupos_restricciones: list[str]  # grupos de restricciones.yaml que aplican a la modalidad
     tabla_acciones: TablaAcciones
     fuentes_sugeridas_extra: list[str]
+    parcial: bool = False  # true: el archivo solo trae lo que necesita la ficha (D-90); la etapa que lo completa lo apaga
     # Banca (D-11): tema -> sector; el alcance de I se mide por sector en lugar de subtema (diseño, reglas v1.3).
     sectores_por_tema: dict[str, str] = Field(default_factory=dict)
     alcance_por_sector: dict[str, float] = Field(default_factory=dict)
@@ -1111,6 +1120,19 @@ def validar_coherencia(carpeta: Path | None = None) -> list[str]:
             problemas.append(f"consulta.yaml: datos_oficiales.indicadores y fuentes.yaml difieren: {sorted(set(oficiales.indicadores) ^ indicadores)}")
         if set(oficiales.paises) != set(cargar_fuentes(carpeta).banco_mundial.paises):
             problemas.append("consulta.yaml: datos_oficiales.paises y banco_mundial.paises de fuentes.yaml difieren")
+    if (carpeta / "verificacion.yaml").exists():
+        ver = cargar_verificacion(carpeta)
+        problemas += [f"verificacion.yaml: subtema inexistente en fuentes.por_subtema: {s}" for s in sorted(set(ver.fuentes.por_subtema) - subtemas)]
+        problemas += [f"verificacion.yaml: tema inexistente en fuentes.por_tema: {t}" for t in sorted(set(ver.fuentes.por_tema) - set(temas.temas))]
+        problemas += [f"verificacion.yaml: sin fuentes sugeridas para el tema {t}" for t in sorted(set(temas.temas) - set(ver.fuentes.por_tema))]
+        problemas += [f"verificacion.yaml: sin fuentes sugeridas para el subtema {s}" for s in sorted(subtemas - set(ver.fuentes.por_subtema))]
+        codigos = set(ver.vacios.catalogo)
+        emitidos = (set(VaciosPrioridad.model_fields) - {"motivo_sin_dato_oficial_por_defecto", "motivos_sin_vinculo"}) | {CODIGO_URGENCIA_SIN_PUBLICACION}
+        faltan = emitidos - codigos
+        problemas += [f"verificacion.yaml: vacío de prioridad.yaml sin entrada en vacios.catalogo: {c}" for c in sorted(faltan)]
+        motivos = set(cargar_prioridad(carpeta).vacios.motivos_sin_vinculo)
+        if motivos != set(vinculos.motivos_sin_vinculo):
+            problemas.append(f"prioridad.yaml: vacios.motivos_sin_vinculo y vinculos.yaml difieren: {sorted(motivos ^ set(vinculos.motivos_sin_vinculo))}")
     grupos = set(cargar_restricciones(carpeta).grupos)
     for modalidad in MODALIDADES:
         if (carpeta / f"modalidad_{modalidad}.yaml").exists():
@@ -1695,7 +1717,8 @@ class ImpactoPrioridad(ModeloConfig):
 
 
 class DatoOficialPrioridad(ModeloConfig):
-    relaciones_aceptadas: list[str] = Field(min_length=1)
+    relaciones_aceptadas: list[str]
+    estado_evento_automatico: str = Field(min_length=1)
 
 
 class GeografiaPrioridad(ModeloConfig):
@@ -1761,11 +1784,16 @@ class VaciosPrioridad(ModeloConfig):
     procedencias_insuficientes: str
     cifras_sin_dato_oficial: str
     sin_dato_oficial: str
+    solo_vinculo_indirecto: str
+    cifra_discrepante: str
+    cifra_periodo_distinto: str
+    evento_sin_revisar: str
     contradiccion_abierta: str
     medios_o_fechas_desconocidos: str
     noticia_recirculada: str
     subtema_desconocido: str
     motivo_sin_dato_oficial_por_defecto: str
+    motivos_sin_vinculo: dict[str, str]
 
 
 class SensibilidadPrioridad(ModeloConfig):
@@ -1905,6 +1933,113 @@ def cargar_generacion(carpeta: Path | None = None) -> ConfigGeneracionBorrador:
     return cargar_config("generacion", ConfigGeneracionBorrador, carpeta)
 
 
+# ------------------------------------------------------------------ verificacion.yaml (E1-10b)
+
+
+class VacioCatalogo(ModeloConfig):
+    """Un tipo de vacío: qué hacer para cerrarlo. El texto del vacío lo calcula E1-10 (``prioridad.yaml``)."""
+
+    verificacion: str = Field(min_length=1)
+
+
+class VaciosVerificacion(ModeloConfig):
+    principales: int = Field(ge=1)
+    orden_importancia: list[str] = Field(min_length=1)
+    verificacion_por_defecto: str = Field(min_length=1)
+    catalogo: dict[str, VacioCatalogo]
+
+    @model_validator(mode="after")
+    def _orden_y_catalogo_coinciden(self) -> VaciosVerificacion:
+        if len(set(self.orden_importancia)) != len(self.orden_importancia):
+            raise ValueError("orden_importancia repite un código")
+        if set(self.orden_importancia) != set(self.catalogo):
+            raise ValueError(f"orden_importancia y catalogo difieren: {sorted(set(self.orden_importancia) ^ set(self.catalogo))}")
+        return self
+
+
+class FuentesVerificacion(ModeloConfig):
+    subtema_desconocido: str
+    nota: str
+    por_subtema: dict[str, list[str]]
+    por_tema: dict[str, list[str]]
+
+    @field_validator("por_subtema", "por_tema")
+    @classmethod
+    def _fuentes_con_nombre(cls, v: dict[str, list[str]]) -> dict[str, list[str]]:
+        if any(not fuentes or any(not f.strip() for f in fuentes) for fuentes in v.values()):
+            raise ValueError("cada entrada necesita fuentes con nombre")
+        return v
+
+
+class TitularCentralVerificacion(ModeloConfig):
+    candidatos: int = Field(ge=1)
+    idioma_preferido: str
+    pais_medio_preferido: str
+
+
+class ProcedenciasVerificacion(ModeloConfig):
+    explicacion: str
+    reglas: dict[str, str]
+
+
+class MedioReferenciaVerificacion(ModeloConfig):
+    cubrio: str
+    sin_titular: str
+
+
+class PresentacionVerificacion(ModeloConfig):
+    zona_horaria: str
+    formato_fecha: str
+    sufijo_zona: str
+    fecha_desconocida: str
+    decimales_valor: int = Field(ge=0)
+    origen_fecha: dict[str, str]
+    fuentes_oficiales: dict[str, str]
+    roles: dict[str, str]
+    advertencia_inyeccion: str
+    advertencia_recirculada: str
+
+    @field_validator("zona_horaria")
+    @classmethod
+    def _zona_existe(cls, v: str) -> str:
+        try:
+            ZoneInfo(v)
+        except (ZoneInfoNotFoundError, ValueError) as exc:
+            raise ValueError(f"zona horaria desconocida: {v}") from exc
+        return v
+
+
+class SiguientesPasosVerificacion(ModeloConfig):
+    maximo: int = Field(ge=1)
+
+
+class ConfigVerificacion(ModeloConfig):
+    """Modelo de ``config/verificacion.yaml``: vacíos, fuentes sugeridas y presentación de la ficha (común a las modalidades)."""
+
+    version: str
+    vacios: VaciosVerificacion
+    fuentes: FuentesVerificacion
+    titular_central: TitularCentralVerificacion
+    procedencias: ProcedenciasVerificacion
+    medio_referencia: MedioReferenciaVerificacion
+    presentacion: PresentacionVerificacion
+    siguientes_pasos: SiguientesPasosVerificacion
+
+    @model_validator(mode="after")
+    def _sin_publicar(self) -> ConfigVerificacion:
+        textos = [self.vacios.verificacion_por_defecto, self.fuentes.nota]
+        textos += [v.verificacion for v in self.vacios.catalogo.values()]
+        if any(FORMAS_DE_PUBLICAR.search(t) for t in textos):
+            raise ValueError("ningún texto de la ficha puede hablar de publicar")
+        return self
+
+
+def cargar_verificacion(carpeta: Path | None = None) -> ConfigVerificacion:
+    """Atajo para ``config/verificacion.yaml``."""
+    return cargar_config("verificacion", ConfigVerificacion, carpeta)
+
+
+CODIGO_URGENCIA_SIN_PUBLICACION = "urgencia_sin_publicacion"   # el único vacío de E1-10 cuyo texto vive en reglas_v1.3.yaml
 MODALIDADES = ("editorial", "banca")
 OPCIONALES = {"modalidad_banca"}  # el esquema la admite aunque todavía no exista
 
@@ -1931,6 +2066,7 @@ CARGADORES = {
     "consulta": cargar_consulta,
     "prioridad": cargar_prioridad,
     "generacion": cargar_generacion,
+    "verificacion": cargar_verificacion,
 }
 
 
