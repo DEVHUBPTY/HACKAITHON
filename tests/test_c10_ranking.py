@@ -45,6 +45,12 @@ def test_d3_ciudad_de_panama_sigue_siendo_local_y_no_el_pais() -> None:
     assert _alcance("Alerta en la ciudad de Panamá por lluvias en Costa Rica").nivel == "local"
 
 
+def test_d3_ciudad_de_panama_no_cuenta_como_mencion_del_pais() -> None:
+    # Si «Ciudad de Panamá» contara como el país, la primera daría True; el prefijo excluido la deja en False.
+    assert not puntaje.nombra_al_pais("Alerta en Ciudad de Panamá por lluvias", REGLAS, CFG)
+    assert puntaje.nombra_al_pais("Alerta en Panamá por lluvias", REGLAS, CFG)
+
+
 # ------------------------------------------------------------------ D6 · Panamá como parte del hecho manda sobre el exterior
 
 
@@ -88,6 +94,41 @@ def test_d6_la_mencion_de_panama_vale_por_titular_y_no_borra_el_exterior_de_otro
     assert _alcance("Panamá firma tratado con Costa Rica", "Brote de dengue en México").nivel == "exterior"
 
 
+@pytest.mark.parametrize(
+    "titular",
+    ["Hurricane hits Panama City, Florida", "Tormenta golpea Panama City Beach", "Hurricane hits Panamá City"],
+)
+def test_d6_un_lugar_extranjero_con_el_nombre_del_pais_no_es_una_mencion_del_pais(titular: str) -> None:
+    assert not puntaje.nombra_al_pais(titular, REGLAS, CFG)
+    assert _alcance(titular).nivel == "exterior"
+
+
+def test_d6_panama_city_florida_es_exterior_pero_panama_city_con_panama_sigue_nombrando_al_pais() -> None:
+    assert _alcance("Hurricane hits Panama City, Florida").nivel == "exterior"
+    assert puntaje.nombra_al_pais("Panama City recibe a la presidenta de Panamá", REGLAS, CFG)
+    assert _alcance("Panamá firma tratado con Costa Rica").nivel == "nacional"
+    assert _alcance("Canal de Panamá recibe barco de China").nivel == "nacional"
+
+
+def test_d6_la_configuracion_valida_los_nombres_extranjeros_con_el_pais(tmp_path: Path) -> None:
+    datos = leer("reglas_v1.3")
+    datos["geografia"]["panama_nombres_extranjeros"] = ["Panama City", "panama city"]
+    with pytest.raises(ErrorDeConfiguracion, match="repetidos"):
+        cargar_reglas(escribir(tmp_path, "reglas_v1.3", datos))
+    datos = leer("reglas_v1.3")
+    datos["geografia"]["panama_nombres_extranjeros"] = ["Panama City", ""]
+    with pytest.raises(ErrorDeConfiguracion, match="vacío"):
+        cargar_reglas(escribir(tmp_path, "reglas_v1.3", datos))
+    datos = leer("reglas_v1.3")
+    datos["geografia"]["panama_nombres_extranjeros"] = ["Springfield"]
+    with pytest.raises(ErrorDeConfiguracion, match="no contiene el país"):
+        cargar_reglas(escribir(tmp_path, "reglas_v1.3", datos))
+    datos = leer("reglas_v1.3")
+    del datos["geografia"]["panama_nombres_extranjeros"]
+    with pytest.raises(ErrorDeConfiguracion):
+        cargar_reglas(escribir(tmp_path, "reglas_v1.3", datos))
+
+
 # ------------------------------------------------------------------ D7 · estados y provincias extranjeras no ambiguos
 
 
@@ -108,7 +149,8 @@ def test_d7_un_lugar_de_panama_manda_sobre_un_estado_extranjero() -> None:
     assert _alcance("Inundaciones en Colón y en Texas").nivel == "provincial"
 
 
-AMBIGUOS = ["Georgia", "Washington", "Santiago", "Lima", "Mali", "India", "Jordania", "Guinea", "Ghana"]
+AMBIGUOS = ["Georgia", "Washington", "Santiago"]   # siguen fuera: Georgia Meloni es persona; Washington es apellido o el gobierno de EE. UU.
+RESTAURADOS = ["India", "Ghana", "Guinea", "Mali", "Jordania", "Lima"]   # decisión del dueño, 2026-10-07: vuelven a la lista
 
 
 @pytest.mark.parametrize("nombre", AMBIGUOS)
@@ -117,12 +159,24 @@ def test_d7_los_nombres_ambiguos_no_estan_en_la_lista_del_exterior(nombre: str) 
     assert puntaje.normalizar_geografia(nombre) not in normalizados
 
 
+@pytest.mark.parametrize("nombre", RESTAURADOS)
+def test_d7_los_nombres_restaurados_estan_en_la_lista_del_exterior(nombre: str) -> None:
+    normalizados = {puntaje.normalizar_geografia(t) for t in REGLAS.geografia.exterior_terminos}
+    assert puntaje.normalizar_geografia(nombre) in normalizados
+
+
+@pytest.mark.parametrize("nombre", RESTAURADOS)
+def test_d7_cada_nombre_restaurado_da_alcance_exterior(nombre: str) -> None:
+    assert _alcance(f"Brote de dengue en {nombre}").nivel == "exterior"
+
+
 @pytest.mark.parametrize(
     "titular",
-    ["Georgia Meloni visita Panamá", "Lima Duarte presenta su libro", "Mali Gómez gana el torneo", "Washington Pérez inaugura obra"],
+    ["Georgia Meloni presenta su libro", "Washington Pérez inaugura obra"],
 )
 def test_d7_un_nombre_ambiguo_de_persona_no_da_alcance_exterior(titular: str) -> None:
-    assert _alcance(titular).nivel != "exterior"
+    # Sin «Panamá» en el titular: si Georgia o Washington volvieran a la lista, el alcance sería `exterior`.
+    assert _alcance(titular).nivel == "desconocido"
 
 
 # ------------------------------------------------------------------ validación de la configuración

@@ -157,8 +157,10 @@ geografia:                  # alcance geográfico (comparación sin tildes ni ma
     Nairobi, Nueva Delhi, New Delhi, Nueva York, New York, Nueva Orleans, New Orleans, Oslo, Pekín, Beijing, París, Quito, Riad,
     Riyadh, Río de Janeiro, Roma, Rome, San Salvador, Santiago de Chile, Santo Domingo, São Paulo, Seúl, Seoul, Shanghái, Sídney,
     Sydney, Tegucigalpa, Teherán, Tehran, Tel Aviv, Tokio, Tokyo, Toronto, Varsovia, Warsaw, Viena, Vienna, Zúrich,
-    # C-10 (D7): estados y provincias extranjeras no ambiguos. Quedan fuera los nombres que también son persona, lugar de otro país o palabra
-    # común (Georgia, Washington, Santiago, Lima, Mali, India, Jordania, Guinea, Ghana): ver docs/parametros.md.
+    # C-10 (D7): estados y provincias extranjeras no ambiguos. Quedan fuera los nombres con colisión real (Georgia: «Georgia Meloni» es una
+    # persona; Washington: apellido o el gobierno de EE. UU.; Santiago: solo «Santiago de Chile»). India, Ghana, Guinea, Mali, Jordania y
+    # Lima se restauraron por decisión del dueño (2026-10-07): ver docs/parametros.md.
+    India, Ghana, Guinea, Mali, Jordania, Lima,
     Texas, California, Arizona, Quebec, Ontario, Alberta, Cataluña, Catalonia, Andalucía, Baviera, Bavaria, Jalisco, Sicilia, Sicily
   ]
   # C-10 (D6): cómo se nombra al país. Un titular que lo nombra como parte del hecho no suma su lugar o contraparte extranjera al exterior
@@ -166,6 +168,9 @@ geografia:                  # alcance geográfico (comparación sin tildes ni ma
   pais_terminos: [Panamá]
   # C-10 (D3): nombres propios con «Panamá» que cuentan como mención del país («Cobre Panamá: gobierno de Canadá negocia» no es exterior).
   panama_nombres_propios: [Canal de Panamá, Cobre Panamá]
+  # C-10 (D6): lugares extranjeros cuyo nombre contiene el del país («Hurricane hits Panama City, Florida»). No son una mención del país:
+  # cuentan como exterior y no como el lugar o el país de Panamá.
+  panama_nombres_extranjeros: [Panama City, Panama City Beach]
   provincias: [Bocas del Toro, Chiriquí, Coclé, Colón, Darién, Herrera, Los Santos, Panamá, Panamá Oeste, Veraguas]
   comarcas: [Guna Yala, Emberá-Wounaan, Ngäbe-Buglé, Madugandí, Wargandí, Naso Tjër Di]
   distritos:

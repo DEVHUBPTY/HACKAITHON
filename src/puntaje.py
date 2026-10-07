@@ -275,9 +275,11 @@ def exterior_en(titular: str, terminos: Sequence[str]) -> tuple[list[str], str]:
 def nombra_al_pais(titular: str, reglas: ReglasV13, cfg: ConfigPrioridad) -> bool:
     """C-10 (D3, D6): el titular nombra a Panamá, el país, por su nombre o por un nombre propio de ``panama_nombres_propios``.
 
-    No cuenta el gentilicio («panameños») ni un prefijo excluido («Ciudad de Panamá» es el lugar, no el país).
+    No cuenta el gentilicio («panameños»), un prefijo excluido («Ciudad de Panamá» es el lugar, no el país) ni un lugar extranjero
+    de ``panama_nombres_extranjeros`` («Panama City, Florida»).
     """
     g = reglas.geografia
+    _, titular = exterior_en(titular, g.panama_nombres_extranjeros)
     return bool(terminos_sin_prefijo_excluido(titular, [*g.pais_terminos, *g.panama_nombres_propios], cfg.geografia.prefijos_excluidos))
 
 
@@ -299,7 +301,7 @@ def alcance_geografico(miembros: Sequence[Mapping[str, Any]], reglas: ReglasV13,
     exteriores: list[str] = []
     for m in miembros:
         crudo = str(m.get("titulo_limpio") or "")
-        del_exterior, titular = exterior_en(crudo, g.exterior_terminos)
+        del_exterior, titular = exterior_en(crudo, [*g.exterior_terminos, *g.panama_nombres_extranjeros])   # «Panama City, Florida» es exterior
         if not nombra_al_pais(titular, reglas, cfg):   # C-10 (D6): Panamá como parte del hecho manda sobre el lugar o la contraparte extranjera
             exteriores.extend(del_exterior)
         for nivel in NIVELES_GEOGRAFICOS:

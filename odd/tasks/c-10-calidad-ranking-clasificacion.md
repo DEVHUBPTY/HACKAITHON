@@ -43,6 +43,12 @@ exactitud de tema en 35/64 (54,7 %). Fuera de alcance por ahora: generación (ca
 - Asserts cambiados en `tests/test_e1_10d_ranking.py`: Texas pasa de `desconocido` a `exterior` (D7); dos titulares con Panamá
   nombrado pasan de `exterior` a `nacional` (D6).
 - Revisión independiente (D-78) del PR #45: favorable con observaciones (3); no se publicó en GitHub ni en Notion.
+- Revisión nativa de T1/T2 (riesgo medio, lente `review-reliability`): aprobada y reconocida (autoridad quemada). Hallazgos no
+  bloqueantes: «Panama City» extranjero contaba como mención del país (WARNING) y un test de Georgia que no probaba nada.
+- Seguimiento (ruta delegada, un writer): el dueño decidió restaurar India, Ghana, Guinea, Mali, Jordania y Lima (siguen fuera
+  Georgia y Washington); nueva lista `geografia.panama_nombres_extranjeros` («Panama City», «Panama City Beach»); tests
+  reescritos. RED 17 failed y 38 passed; GREEN 165 passed en los tres archivos, suite completa 2679 passed, 3 skipped, 6 xfailed,
+  `src.config --validar` OK. Verificación del padre: 165 passed y `--validar` OK.
 
 ## Próximo paso
 T3 (clasificación y D4).
