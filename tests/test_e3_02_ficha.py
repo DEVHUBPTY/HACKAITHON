@@ -89,7 +89,7 @@ def test_el_subtema_de_banca_vincula_el_ultimo_periodo_de_cada_serie(tmp_path: P
     filas = [f for f in filas_sbp(base) if f["fuente"] == "sbp"]
     assert [f["id_evidencia"] for f in filas] == ["SBP-MOROSIDAD-SISTEMA-2024-12", "SBP-MOROSOS-SISTEMA-2024-12", "SBP-PROVISIONES-SISTEMA-2024-12"]
     for f in filas:
-        assert f["id_grupo"] == G_BANCA and f["rol"] == "sistema" and f["tipo"] == "directa" and f["subtema"] == "banca_calificaciones"
+        assert f["id_grupo"] == G_BANCA and f["rol"] == "sistema" and f["tipo"] == "indirecta" and f["subtema"] == "banca_calificaciones"
         assert f["periodo"] == "2024-12" and f["unidad"] and f["pagina"].startswith("hoja «") and f["informe"] and f["url_fuente"].startswith("https://")
         assert f["valor"] is not None and "no del mes de la noticia" in f["limitacion"] and "opinión oficial de la SBP" in f["limitacion"]
     assert r["sbp"]["grupos_de_banca"] == 1 and r["sbp"]["con_dato"]["n"] == 1 and r["sbp"]["con_dato"]["de"] == 1
@@ -176,8 +176,8 @@ def test_la_ficha_bancaria_muestra_un_dato_sbp_con_periodo_unidad_pagina_y_limit
     assert "período 2024-12" in markdown and "página: hoja «Morosos», celda L6" in markdown
 
 
-def test_el_dato_directo_de_la_sbp_cuenta_como_dato_oficial_en_el_puntaje(tmp_path: Path, emb) -> None:
-    """Antes de vincular, el grupo de banca no tiene dato oficial (E = 0, vacío); después sí. Es el efecto de la relación `directa`."""
+def test_el_dato_indirecto_de_la_sbp_no_sube_la_evidencia_ni_el_puntaje(tmp_path: Path, emb) -> None:
+    """X89: la relación es `indirecta` (contexto): vincular la SBP no cambia ni la evidencia ni el puntaje de nadie, pero la ficha sí muestra el dato."""
     base = base_de_banca(tmp_path / "antes.duckdb")
     prioridad.ejecutar(base, base.with_name("a.json"), h.CORTE, None, "banca", emb=emb)
     antes = _evidencia(base)
@@ -185,7 +185,7 @@ def test_el_dato_directo_de_la_sbp_cuenta_como_dato_oficial_en_el_puntaje(tmp_pa
     prioridad.ejecutar(base, base.with_name("d.json"), h.CORTE, None, "banca", emb=emb)
     despues = _evidencia(base)
     assert antes[G_OTRO] == despues[G_OTRO]                      # lo que no es banca no cambia
-    assert antes[G_BANCA] != despues[G_BANCA]
+    assert antes[G_BANCA] == despues[G_BANCA]                    # contexto: no suma a E ni al estado de evidencia
 
 
 def _evidencia(base: Path) -> dict[str, tuple]:

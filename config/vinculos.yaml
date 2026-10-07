@@ -196,12 +196,11 @@ vinculos:                           # por subtema
     fuente: usgs
     relacion: evento
     limitacion: "La caja de USGS no es Panamá: mostrar siempre el place original; solo sirve para hechos sísmicos."
-  # E3-02 (PROVISIONAL, ver «Preguntas abiertas» de specs/E3-02.md): morosidad y provisiones del sistema bancario como contexto del
-  # subtema de banca. `directa` porque miden el sistema bancario que el subtema nombra; si el dueño prefiere `indirecta`, el dato deja de
-  # contar como dato oficial en E y en el estado de evidencia y ya no se muestra en la ficha.
+  # E3-02 (X89): morosidad y provisiones del sistema bancario como CONTEXTO del subtema de banca. `indirecta` porque las series no miden una
+  # calificación de riesgo (el hecho del subtema): no cuentan como dato oficial en E ni en el estado de evidencia, pero la ficha las muestra.
   banca_calificaciones:
     fuente: sbp
-    relacion: directa
+    relacion: indirecta
     limitacion: "Series agregadas del sistema bancario; no describen una entidad ni un cliente, ni miden una calificación de riesgo ni una pérdida."
 
 vinculos_por_tema:                  # cualquier subtema del tema

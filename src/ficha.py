@@ -474,7 +474,7 @@ def _respaldado(datos: Datos, titulares: list[TitularReportado], cfg: ConfigVeri
         (v for v in oficiales if v.get("fuente") == FUENTE_INDICADOR and v.get("rol") in ORDEN_DE_ROLES),
         key=lambda v: (ORDEN_DE_ROLES.index(v["rol"]), -int(v["anio"] or 0), str(v["id_evidencia"])),
     )
-    datos_oficiales = _lineas_de_indicadores(indicadores, cfg) + _lineas_de_sbp([v for v in oficiales if v.get("fuente") == FUENTE_SBP], cfg)
+    datos_oficiales = _lineas_de_indicadores(indicadores, cfg) + _lineas_de_sbp([v for v in datos.vinculos if _tiene_dato(v) and v.get("fuente") == FUENTE_SBP], cfg)   # contexto: se muestra aunque la relación sea `indirecta` (X89)
     eventos = [
         LineaRespaldo(
             tipo="hecho",
