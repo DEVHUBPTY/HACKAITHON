@@ -29,7 +29,6 @@ def decidir(subtema: str, margen: float, titular: str, tema: str = "servicios_pu
         # el margen pasa (D-92), pero el titular no nombra nada del subtema: obras del MOP no son agua potable
         ("agua_potable", 0.0402, "MOP solicita $43.1 millones para pagar compromisos y continuar obras en ejecución"),
         ("agua_potable", 0.0444, "La Chorrera proyecta renovar el parque Tomás Martín Feuillet con una inversión de 620 mil dólares"),
-        ("agua_potable", 0.0152, "Contenido Exclusivo: El metro por la Tumba Muerto"),
     ],
 )
 def test_x41_el_margen_solo_no_basta_para_afirmar_un_subtema(subtema: str, margen: float, titular: str) -> None:
@@ -231,3 +230,47 @@ def test_x51_el_distrito_de_pese_sigue_siendo_local(titular: str) -> None:
 )
 def test_x52_la_ciudad_o_el_distrito_de_panama_son_un_lugar_concreto(titular: str) -> None:
     assert _nivel(titular) == "local"
+
+
+# ------------------------------------------------------------------ X53 · el léxico elige el subtema, no solo confirma
+
+
+@pytest.mark.parametrize(
+    ("mas_cercano", "titular", "tema", "esperado"),
+    [
+        ("agua_potable", "Minsa: Adelantan vacunación contra VSR en embarazadas", "servicios_publicos", "salud_publica"),
+        ("agua_potable", "Contenido Exclusivo: El metro por la Tumba Muerto", "servicios_publicos", "transporte_publico"),
+        ("inversion", "Fitch mantiene el grado de inversión de Panamá", "economia", "banca_calificaciones"),   # «inversión» va dentro del término más largo
+    ],
+)
+def test_x53_el_subtema_cuyo_termino_aparece_se_asigna_aunque_no_sea_el_mas_cercano(mas_cercano: str, titular: str, tema: str, esperado: str) -> None:
+    assert decidir(mas_cercano, 0.001, titular, tema) == (esperado, "lexico")
+
+
+def test_x53_dos_subtemas_nombrados_siguen_sin_subtema() -> None:
+    assert decidir("agua_potable", 0.001, "Aprehenden a Enrique Lau, exdirector de la CSS, por supuesto enriquecimiento injustificado") == (None, None)
+
+
+@pytest.mark.parametrize(
+    ("subtema", "titular", "tema"),
+    [
+        ("sequia_nino", "Contenido Exclusivo: Coclé, se seca el campo", "eventos_naturales"),         # «seca» no está en la guía
+        ("agua_potable", "Lluvias: el agua arrastró vehículos en la vía", "servicios_publicos"),       # «agua» suelta no es el servicio
+        ("alertas_proteccion_civil", "Minsa enciende alertas por el dengue", "eventos_naturales"),    # «alerta» suelta no es protección civil
+        ("leyes_decretos", "Cumplir la ley de tránsito, piden autoridades", "regulacion"),            # «ley» suelta no es una norma nueva
+    ],
+)
+def test_x53_palabras_sueltas_ambiguas_no_respaldan_el_subtema(subtema: str, titular: str, tema: str) -> None:
+    assert decidir(subtema, 0.001, titular, tema) == (None, None)
+
+
+@pytest.mark.parametrize(
+    ("subtema", "titular", "tema"),
+    [
+        ("agua_potable", "Lluvias dejan sin agua a sectores de San Miguelito", "servicios_publicos"),   # caso difícil de la guía
+        ("alertas_proteccion_civil", "Protección Civil declara alerta en Chiriquí", "eventos_naturales"),
+        ("leyes_decretos", "Asamblea aprueba proyecto de ley de APP", "regulacion"),
+    ],
+)
+def test_x53_con_contexto_las_mismas_palabras_si_respaldan(subtema: str, titular: str, tema: str) -> None:
+    assert decidir(subtema, 0.001, titular, tema) == (subtema, "lexico")
