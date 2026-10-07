@@ -81,6 +81,9 @@ revision:                           # los cinco estados del reto (sección 8); l
   estado_inicial: "nuevo"
 
 textos:
+  empate:                           # D-105: el empate en P se muestra; el orden dentro del empate es la regla del reto
+    uno: "Empatado en P con 1 grupo; orden por urgencia y luego ID (regla del reto)"
+    varios: "Empatado en P con {n} grupos; orden por urgencia y luego ID (regla del reto)"
   alerta: "Una alerta es una invitación a investigar: ni el tono, ni el volumen, ni la repetición equivalen a una verdad comprobada."
   sintetico: "SINTÉTICO"
   sintetico_ayuda: "Registro de prueba creado por el equipo; no es una noticia real."

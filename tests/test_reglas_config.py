@@ -129,7 +129,7 @@ def test_formulas_de_la_spec_estan_en_el_yaml() -> None:
     assert r.desempate == ["u_desc", "id_asc"]
     assert (r.relevancia.foco_panama_sujeto, r.relevancia.foco_otro_pais_afecta) == (1.0, 0.5)
     ag = r.impacto.alcance_geografico
-    assert (ag.nacional, ag.provincial, ag.local, ag.desconocido) == (1.0, 0.6, 0.3, 0.5)
+    assert (ag.nacional, ag.provincial, ag.local, ag.desconocido) == (1.0, 0.6, 0.3, 0.3)   # D-109: desconocido = local
     e = r.evidencia
     assert (e.peso_procedencias, e.peso_oficial, e.peso_identificables, e.tope_procedencias) == (0.5, 0.3, 0.2, 3)
     assert r.agrupacion.ventana_dias == 7

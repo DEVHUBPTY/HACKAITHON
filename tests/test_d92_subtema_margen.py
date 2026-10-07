@@ -26,10 +26,13 @@ def test_el_margen_minimo_esta_en_la_configuracion_y_no_admite_claves_extra(tmp_
 
 
 SUB = CFG.subtema
+# E1-10c (X41): la configuración ya no acepta por margen; el mecanismo de D-92 se prueba con el margen activado.
+SUB_D92 = SUB.model_copy(update={"criterios": ["margen", "lexico"]})
+CFG_D92 = CFG.model_copy(update={"subtema": SUB_D92})
 
 
-def decidir(candidatos, titulares):
-    return contexto.decidir_subtema(candidatos, titulares, SUB)
+def decidir(candidatos, titulares, cfg=SUB_D92):
+    return contexto.decidir_subtema(candidatos, titulares, cfg)
 
 
 def test_margen_diminuto_y_sin_termino_queda_sin_subtema_y_margen_claro_lo_conserva() -> None:
@@ -94,7 +97,7 @@ def test_leer_grupos_aplica_el_margen(tmp_path: Path) -> None:
     ruta = _base(tmp_path, {"GRP-vsr": 0.012, "GRP-sismo": 0.040})
     con = db.conectar(ruta, solo_lectura=True)
     try:
-        subtemas = {g["id_grupo"]: g["subtema"] for g in contexto.leer_grupos(con, SUB)}
+        subtemas = {g["id_grupo"]: g["subtema"] for g in contexto.leer_grupos(con, SUB_D92)}
     finally:
         con.close()
     assert subtemas == {"GRP-vsr": None, "GRP-sismo": "sismos"}
@@ -127,11 +130,11 @@ def test_el_grupo_de_sismos_con_margen_claro_sigue_vinculado_y_sin_margen_no(tmp
     from tests.test_e1_09b_sismos import escribir_eventos   # noqa: PLC0415
 
     geojson = escribir_eventos(tmp_path / "eventos.geojson", [{"id": "SIS-us0001", "magnitude": 4.5, "time": "2024-05-10T12:00:00Z"}])
-    ok, _, _ = contexto.aplicar_sismos(_base(tmp_path, {"GRP-vsr": 0.012, "GRP-sismo": 0.040}), geojson, CFG)
+    ok, _, _ = contexto.aplicar_sismos(_base(tmp_path, {"GRP-vsr": 0.012, "GRP-sismo": 0.040}), geojson, CFG_D92)
     assert [(r.id_grupo, r.subtema) for r in ok] == [("GRP-sismo", "sismos")]
     tmp2 = tmp_path / "b"
     tmp2.mkdir()
-    ninguno, _, _ = contexto.aplicar_sismos(_base(tmp2, {"GRP-vsr": 0.012, "GRP-sismo": 0.005}), geojson, CFG)
+    ninguno, _, _ = contexto.aplicar_sismos(_base(tmp2, {"GRP-vsr": 0.012, "GRP-sismo": 0.005}), geojson, CFG_D92)
     assert ninguno == []
 
 

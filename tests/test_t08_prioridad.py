@@ -121,25 +121,11 @@ def test_un_empate_por_ruido_de_coma_flotante_no_decide_el_orden() -> None:
     assert [p.id_grupo for p in puntaje.ordenar(lista, REGLAS, CFG)] == ["GRP-a", "GRP-b"]
 
 
-# ------------------------------------------------------------------ percentil
+# ------------------------------------------------------------------ similitudes (D-103: ya no hay percentiles en R ni en N)
 
 
-def test_los_percentiles_ocupan_el_rango_completo_aunque_las_similitudes_esten_comprimidas() -> None:
-    similitudes = [0.80, 0.81, 0.82, 0.83, 0.84]
-    resultado = puntaje.percentiles(similitudes)
-    assert resultado[0] == 0.0 and resultado[-1] == 1.0
-    assert resultado == pytest.approx([0.0, 0.25, 0.5, 0.75, 1.0])
-    assert puntaje.percentiles(list(reversed(similitudes))) == pytest.approx(list(reversed(resultado)))
-
-
-def test_los_empates_comparten_el_percentil_medio_y_un_solo_valor_es_neutro() -> None:
-    assert puntaje.percentiles([0.5, 0.5, 0.5]) == pytest.approx([0.5, 0.5, 0.5])
-    assert puntaje.percentiles([0.1, 0.5, 0.5, 0.9]) == pytest.approx([0.0, 0.5, 0.5, 1.0])
-    assert puntaje.percentiles([0.7]) == [0.5]
-    assert puntaje.percentiles([]) == []
-
-
-def test_r_y_n_usan_percentil_dentro_del_snapshot_en_el_rango_0_1() -> None:
+def test_r_y_n_quedan_en_el_rango_0_1_y_n_declara_el_umbral_de_agrupacion() -> None:
+    """D-103 reemplaza al test de percentiles de D-35: R no usa la similitud temática y N usa el umbral de agrupación."""
     sims = [0.80, 0.81, 0.82, 0.83, 0.84]
     grupos = [
         entrada(
@@ -150,13 +136,9 @@ def test_r_y_n_usan_percentil_dentro_del_snapshot_en_el_rango_0_1() -> None:
         for i, s in enumerate(sims)
     ]
     resultado = _calcular(grupos)
-    percentiles_r = sorted(p.componentes["R"].explicacion["percentil_similitud_tematica"] for p in resultado.values())
-    assert percentiles_r[0] == 0.0 and percentiles_r[-1] == 1.0
-    assert percentiles_r == pytest.approx([0.0, 0.25, 0.5, 0.75, 1.0])
-    novedades = [p.componentes["N"].explicacion for p in resultado.values() if p.componentes["N"].explicacion["grupos_previos"] > 0]
-    pcts = sorted(e["percentil_similitud_maxima"] for e in novedades)
-    assert pcts[0] == 0.0 and pcts[-1] == 1.0
-    assert all(0.0 <= p.componentes["N"].valor <= 1.0 for p in resultado.values())
+    assert all(0.0 <= p.componentes[k].valor <= 1.0 for p in resultado.values() for k in ("R", "N"))
+    assert {p.componentes["R"].valor for p in resultado.values()} == {REGLAS.relevancia.foco_panama_sujeto}
+    assert {p.componentes["N"].explicacion["umbral_similitud"] for p in resultado.values()} == {REGLAS.agrupacion.umbral_similitud}
 
 
 # ------------------------------------------------------------------ R · foco
@@ -170,9 +152,9 @@ def test_noticia_de_otro_pais_que_afecta_a_panama_tiene_foco_medio_y_sobre_panam
     r = _calcular(grupos)
     assert r["GRP-pa"].componentes["R"].explicacion["foco"] == REGLAS.relevancia.foco_panama_sujeto == 1.0
     assert r["GRP-otro"].componentes["R"].explicacion["foco"] == REGLAS.relevancia.foco_otro_pais_afecta == 0.5
-    mismo_percentil = r["GRP-pa"].componentes["R"].explicacion["percentil_similitud_tematica"]
-    assert r["GRP-pa"].componentes["R"].valor == pytest.approx(0.5 * 1.0 + 0.5 * mismo_percentil)
-    assert r["GRP-otro"].componentes["R"].valor == pytest.approx(0.5 * 0.5 + 0.5 * mismo_percentil)
+    # D-103: R = peso_foco × foco (sin la parte temática)
+    assert r["GRP-pa"].componentes["R"].valor == pytest.approx(REGLAS.relevancia.peso_foco * 1.0)
+    assert r["GRP-otro"].componentes["R"].valor == pytest.approx(REGLAS.relevancia.peso_foco * 0.5)
 
 
 def test_un_grupo_con_un_titular_sobre_panama_tiene_foco_pleno_aunque_otros_sean_regionales() -> None:
@@ -196,7 +178,7 @@ def test_un_grupo_con_un_titular_sobre_panama_tiene_foco_pleno_aunque_otros_sean
         ("Cierran escuela en David", "local"),
         ("Corte de agua en Arraiján", "local"),
         ("Se reúne el comité técnico", "desconocido"),
-        ("Presidente de Panamá visita Singapur", "desconocido"),   # «Panamá» es el país, no la provincia
+        ("Presidente de Panamá visita Singapur", "nacional"),   # «Panamá» es el país, no la provincia (E1-10c, X42: el país da alcance nacional)
         ("Corte de agua en la provincia de Panamá", "provincial"),
     ],
 )
@@ -252,7 +234,7 @@ def test_u_es_lineal_entre_los_dos_extremos() -> None:
 
 def test_u_usa_la_publicacion_original_mas_reciente_del_grupo() -> None:
     c = _u(miembro("NOT-1", publicado_hace=24 * 30), miembro("NOT-2", publicado_hace=3), miembro("NOT-3", publicado_hace=24 * 3))
-    assert c.valor == 1.0
+    assert c.valor == pytest.approx(1 - 3 / (REGLAS.urgencia.dias_nulo * 24))   # D-106: la de 3 h, sin meseta
     assert c.explicacion["fecha_origen"] == "publicacion"
     assert c.explicacion["fecha"] == iso(3)
 
@@ -266,7 +248,7 @@ def test_sin_fecha_de_publicacion_u_usa_la_deteccion_y_agrega_el_vacio() -> None
     c = p.componentes["U"]
     assert c.explicacion["fecha_origen"] == "deteccion"
     assert c.explicacion["fecha"] == iso(10)            # la más reciente
-    assert c.valor == 1.0
+    assert c.valor == pytest.approx(1 - 10 / (REGLAS.urgencia.dias_nulo * 24))   # D-106: la de 10 h, sin meseta
     assert [v.texto for v in p.vacios if v.codigo == "urgencia_sin_publicacion"] == [REGLAS.urgencia.vacio_sin_publicacion]
 
 

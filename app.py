@@ -196,6 +196,7 @@ def tabla_de_bandeja(ctx: ui.Contexto, filas: Sequence[ui.FilaBandeja], modalida
                 "#": f.posicion, "Tema": f.tema, "Titular representativo": f.titular, "P": round(f.puntaje, ctx.cfg.bandeja.decimales_puntaje), "Rango": f.rango,
                 **{k: f.componentes[k] for k in ui.COMPONENTES}, "Evidencia": f.estado_evidencia, "Acción": f.accion,
                 **({"Horizonte": ui.etiqueta_de_horizonte(f.horizonte, modalidad)} if f.horizonte else {}),
+                "Empate": ui.texto_empate(f.empate_con, ctx.cfg),       # D-105: el empate en P se muestra
                 "Origen": ctx.cfg.textos.sintetico if f.sintetico else "",
             }
             for f in filas

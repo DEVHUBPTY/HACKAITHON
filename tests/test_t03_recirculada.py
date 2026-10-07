@@ -107,7 +107,9 @@ def test_la_misma_noticia_publicada_hoy_si_es_nueva_y_urgente() -> None:
     fila = normalizacion.leer_csv(FIXTURE)[0] | {"fecha_publicacion": "2025-09-28T08:00:00Z"}
     (resultado,) = _normalizar([fila])
     (p,) = puntaje.calcular_puntajes([_grupo_de(resultado)], REGLAS, PRIORIDAD, CORTE)
-    assert p.componentes["U"].valor == 1.0 and p.recirculada is False and p.es_nueva is True
+    edad = (CORTE - datetime(2025, 9, 28, 8, 0, tzinfo=UTC)).total_seconds() / 3600   # publicada 4 h antes del corte
+    # D-106: U es la fracción de la ventana que queda (sin meseta de 24 h)
+    assert p.componentes["U"].valor == pytest.approx(1 - edad / (REGLAS.urgencia.dias_nulo * 24)) and p.recirculada is False and p.es_nueva is True
 
 
 def test_la_deteccion_reciente_no_rescata_la_urgencia_de_una_recirculada() -> None:

@@ -43,9 +43,11 @@ from src.agrupacion import codificar_titulares
 from src.configuracion import (
     MODALIDADES,
     RAIZ,
+    ConfigInterfaz,
     ConfigModalidad,
     ConfigVerificacion,
     cargar_clasificacion,
+    cargar_interfaz,
     cargar_fuentes,
     cargar_modalidad,
     cargar_normalizacion,
@@ -493,13 +495,21 @@ def _accion(datos: Datos, vacios: list[VacioFicha], modalidad: ConfigModalidad, 
     return AccionRecomendada(accion=celda.accion, motivo=celda.motivo, rango=rango, estado_evidencia=estado, siguientes_pasos=pasos)  # type: ignore[arg-type]
 
 
+def texto_empate(n: int, cfg: ConfigInterfaz | None = None) -> str:
+    """D-105: «Empatado en P con N grupos; orden por urgencia y luego ID (regla del reto)» (``interfaz.yaml``); vacío sin empate."""
+    if n <= 0:
+        return ""
+    textos = (cfg or cargar_interfaz()).textos.empate
+    return textos.uno if n == 1 else textos.varios.format(n=n)
+
+
 def _puntaje(datos: Datos) -> PuntajeFicha:
     p = datos.puntaje
     guardados = _json(p["componentes"], {})
     comps = {k: ComponentePuntaje(valor=guardados[k]["valor"], explicacion=guardados[k]["explicacion"]) for k in COMPONENTES if k in guardados}
     return PuntajeFicha(
         puntaje=float(p["puntaje"]), rango=p["rango"], posicion=int(p["posicion"]), version_reglas=str(p["version_reglas"]),
-        fecha_referencia=str(p["fecha_referencia"]), componentes=comps,
+        fecha_referencia=str(p["fecha_referencia"]), componentes=comps, empate_con=int(p.get("empate_con") or 0),
     )
 
 
@@ -628,6 +638,8 @@ def vista(ficha: Ficha, cfg: ConfigVerificacion | None = None) -> Vista:
         Linea(f"Prioridad: {ar.rango} (P = {_numero(p.puntaje, cfg)}, posición {p.posicion}, reglas {p.version_reglas}) · Estado de evidencia: {ar.estado_evidencia}"),
         Linea(f"Desglose del puntaje (ordena la atención; no es una probabilidad de verdad ni de pérdida): {desglose}"),
     ]
+    if p.empate_con:
+        s5.append(Linea(texto_empate(p.empate_con)))   # D-105
     if ar.siguientes_pasos:
         s5.append(Linea("Siguientes pasos"))
         s5 += [Linea(x, 1) for x in ar.siguientes_pasos]

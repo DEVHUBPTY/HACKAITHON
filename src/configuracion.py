@@ -529,22 +529,16 @@ class Rangos(ModeloConfig):
         return self
 
 
-class Percentil(ModeloConfig):
-    """Las similitudes se convierten a percentil dentro del snapshot antes de usarse (D-35)."""
-
-    ambito: Literal["snapshot"]
-    aplica_a: list[str]
-
-
 class Relevancia(ModeloConfig):
+    """R = ``peso_foco`` × foco. D-103 quitó la parte temática (percentil de la similitud con el tema)."""
+
     peso_foco: float = Unidad
-    peso_tematica: float = Unidad
     foco_panama_sujeto: float = Unidad
     foco_otro_pais_afecta: float = Unidad
 
     @model_validator(mode="after")
     def _partes(self) -> Relevancia:
-        _suma_es([self.peso_foco, self.peso_tematica], 1, "las partes de R")
+        _suma_es([self.peso_foco], 1, "las partes de R")
         return self
 
 
@@ -571,7 +565,7 @@ class Impacto(ModeloConfig):
 
 
 class Urgencia(ModeloConfig):
-    horas_pleno: float = Field(gt=0)
+    horas_pleno: float = Field(ge=0)   # D-106: 0 = sin meseta, U decrece desde la publicación
     dias_nulo: float = Field(gt=0)
     fecha_sin_publicacion: Literal["fecha_deteccion"]
     vacio_sin_publicacion: str
@@ -636,6 +630,7 @@ class Agrupacion(ModeloConfig):
 
 class Geografia(ModeloConfig):
     nacional_terminos: list[str]
+    nacional_implicito_terminos: list[str]   # E1-10c (X42): el país o una institución nacional; solo si no hay un lugar concreto
     provincias: list[str]
     comarcas: list[str]
     distritos: list[str]
@@ -648,7 +643,6 @@ class ReglasV13(ModeloConfig):
     pesos: Pesos
     rangos: Rangos
     desempate: list[Literal["u_desc", "id_asc"]]
-    percentil: Percentil
     relevancia: Relevancia
     impacto: Impacto
     urgencia: Urgencia
@@ -745,10 +739,15 @@ class Vinculo(ModeloConfig):
 
 
 class SubtemaVinculo(ModeloConfig):
-    """D-92: el grupo toma el subtema más cercano solo si supera al segundo por este margen o un titular nombra un término."""
+    """D-92 y E1-10c (X41): el grupo toma el subtema más cercano solo si un criterio de ``criterios`` lo respalda.
 
+    ``margen``: supera al segundo por ``margen_minimo``; ``lexico``: un titular nombra un término del subtema. En ambos
+    casos, si un titular nombra un término de OTRO subtema del mismo tema, el subtema es ambiguo y no se afirma.
+    """
+
+    criterios: list[Literal["margen", "lexico"]] = Field(min_length=1)   # en este orden; E1-10c: solo ``lexico``
     margen_minimo: float = Field(ge=0)
-    terminos_por_subtema: dict[str, list[str]]   # apoyo léxico: un término en el titular acepta el subtema aunque el margen no llegue
+    terminos_por_subtema: dict[str, list[str]]   # apoyo léxico: un término en el titular respalda el subtema
 
 
 class SismosVinculo(ModeloConfig):
@@ -1133,6 +1132,11 @@ def validar_coherencia(carpeta: Path | None = None) -> list[str]:
     for sub, v in (*vinculos.vinculos.items(), *vinculos.vinculos_por_tema.items()):
         if v.fuente == "indicador" and v.id not in indicadores:
             problemas.append(f"vinculos.yaml: {sub} usa el indicador {v.id}, que no está en fuentes.yaml")
+    if (carpeta / "prioridad.yaml").exists() and (carpeta / "interfaz.yaml").exists():
+        mostrados = cargar_interfaz(carpeta).bandeja.decimales_puntaje
+        comparados = cargar_prioridad(carpeta).comparacion.decimales_empate
+        if comparados != mostrados:   # X60 (D-105): P se compara como se muestra
+            problemas.append(f"prioridad.yaml: comparacion.decimales_empate ({comparados}) debe ser igual a interfaz.yaml: bandeja.decimales_puntaje ({mostrados})")
     reales = {e.id_noticia for t in temas.temas.values() for e in t.ejemplos if e.real}
     excluidos = _ids_excluidos(carpeta / "ejemplos_excluidos.txt")
     if reales != excluidos:
@@ -1788,6 +1792,7 @@ def cargar_consulta(carpeta: Path | None = None) -> ConfigConsulta:
 
 class ComparacionPrioridad(ModeloConfig):
     decimales_p: int = Field(ge=0, le=15)
+    decimales_empate: int = Field(ge=0, le=15)   # D-105: P se compara como se muestra (bandeja.decimales_puntaje)
 
 
 class ImpactoPrioridad(ModeloConfig):
@@ -1801,6 +1806,10 @@ class DatoOficialPrioridad(ModeloConfig):
 
 class GeografiaPrioridad(ModeloConfig):
     prefijos_obligatorios: dict[str, list[str]]
+    prefijos_excluidos: dict[str, list[str]]   # E1-10c (X42): el término implícito no cuenta precedido de estos
+    sufijos_excluidos: dict[str, list[str]]    # X51: sin tilde, el término no cuenta seguido de estas palabras («pese a»)
+    requieren_tilde: list[str]                 # X66: el término solo cuenta escrito con su tilde («Colón»; «colon» es el órgano)
+    prefijos_excluidos_lugar: dict[str, list[str]]   # X66: el término de lugar no cuenta precedido de estos («Cristóbal Colón»)
 
 
 class MediosPrioridad(ModeloConfig):
@@ -2262,7 +2271,21 @@ class RevisionInterfaz(ModeloConfig):
     estado_inicial: str
 
 
+class TextosEmpate(ModeloConfig):
+    """D-105: cómo se muestra el empate en P de un grupo (bandeja, ficha y CLI)."""
+
+    uno: str = Field(min_length=1)
+    varios: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _con_n(self) -> TextosEmpate:
+        if "{n}" not in self.varios:
+            raise ValueError("textos.empate.varios debe llevar {n}")
+        return self
+
+
 class TextosInterfaz(ModeloConfig):
+    empate: TextosEmpate
     alerta: str
     sintetico: str
     sintetico_ayuda: str
@@ -2305,7 +2328,8 @@ class ConfigInterfaz(ModeloConfig):
             raise ValueError("pantalla_inicial: debe ser una de las pantallas")
         if self.revision.estado_inicial not in self.revision.estados:
             raise ValueError("revision.estado_inicial: debe estar en revision.estados")
-        textos = [self.titulo_app, *self.consulta.ejemplos, *self.revision.estados, *self.textos.model_dump().values()]
+        propios = [t for v in self.textos.model_dump().values() for t in (v.values() if isinstance(v, dict) else [v])]
+        textos = [self.titulo_app, *self.consulta.ejemplos, *self.revision.estados, *propios]
         if any(FORMAS_DE_PUBLICAR.search(t) for t in textos):
             raise ValueError("ningún texto de la interfaz puede hablar de publicar")
         return self
@@ -2571,6 +2595,7 @@ class TextosPrecision(ModeloConfig):
     motivo_pocos_cortes: str = Field(min_length=1)
     motivo_sin_especialista: str = Field(min_length=1)
     sin_especialista: str = Field(min_length=1)
+    criterio_de_empate: str = Field(min_length=1)   # D-105: cómo se resuelven y se informan los empates en el corte del top k
 
 
 class ConfigPrecision(ModeloConfig):

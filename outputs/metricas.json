@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "fecha_utc": "2026-10-07T12:44:56Z",
+  "fecha_utc": "2026-10-07T17:12:10Z",
   "benchmark": {
     "archivo": "benchmark_dev.jsonl",
     "sha256": "27c791a86055322eece5c45570b35ae4fe0f06bb89a4bed67c8d861c809f11cc",
@@ -147,15 +147,15 @@
     "nota": "Afirmaciones emitidas (respuestas y «último dato disponible» de las abstenciones). Cita válida = ID existente en el corpus + campo citable.",
     "borradores": {
       "factuales_con_cita_valida": {
-        "n": 41,
-        "de": 41,
+        "n": 9,
+        "de": 9,
         "proporcion": 1.0,
         "ic95": [
           1.0,
           1.0
         ],
         "ic95_wilson": [
-          0.9143,
+          0.7009,
           1.0
         ],
         "remuestreos": 2000,
@@ -163,15 +163,15 @@
         "fallos": []
       },
       "factuales_que_pasan_el_validador": {
-        "n": 41,
-        "de": 41,
+        "n": 9,
+        "de": 9,
         "proporcion": 1.0,
         "ic95": [
           1.0,
           1.0
         ],
         "ic95_wilson": [
-          0.9143,
+          0.7009,
           1.0
         ],
         "remuestreos": 2000,
@@ -179,15 +179,15 @@
         "fallos": []
       },
       "derivadas_con_base_valida": {
-        "n": 8,
-        "de": 8,
+        "n": 2,
+        "de": 2,
         "proporcion": 1.0,
         "ic95": [
           1.0,
           1.0
         ],
         "ic95_wilson": [
-          0.6756,
+          0.3424,
           1.0
         ],
         "remuestreos": 2000,
@@ -413,23 +413,23 @@
       "unidad": "s",
       "p50": {
         "n": 40,
-        "valor": 0.0084,
+        "valor": 0.0065,
         "ic95": [
           0.0003,
-          0.0088
+          0.007
         ],
         "remuestreos": 2000
       },
       "p95": {
         "n": 40,
-        "valor": 0.0101,
+        "valor": 0.0084,
         "ic95": [
-          0.0091,
-          0.0105
+          0.0078,
+          0.0178
         ],
         "remuestreos": 2000
       },
-      "arranque_modelo_s": 4.943,
+      "arranque_modelo_s": 4.242,
       "nota": "consulta de punta a punta en frío (el vector de la consulta se codifica de verdad, sin caché) con el modelo de embeddings local ya cargado; sin red. arranque_modelo_s es el arranque en frío del proceso (armar el consultor y cargar el modelo hasta el primer vector) y no entra en la latencia"
     },
     "paquete_completo": {
@@ -624,35 +624,46 @@
     "modo": "cache",
     "grupos": 12,
     "estados": {
-      "con_vacios": 6,
-      "completo": 6
+      "con_vacios": 2,
+      "sin_cache": 10
     },
-    "fallos": []
+    "fallos": [
+      "GRP-79f3183472",
+      "GRP-21ad932d54",
+      "GRP-038c4f0643",
+      "GRP-29baaf270e",
+      "GRP-1c2f1d950d",
+      "GRP-f4a44182b1",
+      "GRP-5e6531917f",
+      "GRP-39dfe8d714",
+      "GRP-87e128925b",
+      "GRP-5ab17b45cd"
+    ]
   },
   "rechazos_previos": {
     "fuente": "re-validación de las respuestas guardadas en data/cache_llm/ con el validador actual",
     "tasas": {
-      "unidades_evaluadas": 151,
+      "unidades_evaluadas": 38,
       "por_modelo": {
         "deepseek/deepseek-flash": {
-          "k": 39,
-          "n": 151,
-          "tasa": 0.2582781456953642,
+          "k": 11,
+          "n": 38,
+          "tasa": 0.2894736842105263,
           "ic95": [
-            0.1951,
-            0.3335
+            0.17,
+            0.4476
           ]
         }
       },
       "por_unidad": {
         "deepseek/deepseek-flash": {
           "afirmacion": {
-            "k": 23,
-            "n": 102,
-            "tasa": 0.22549019607843138,
+            "k": 3,
+            "n": 23,
+            "tasa": 0.13043478260869565,
             "ic95": [
-              0.1552,
-              0.3157
+              0.0454,
+              0.3213
             ]
           },
           "seccion:brief": {
@@ -674,12 +685,12 @@
             ]
           },
           "seccion:enfoque": {
-            "k": 10,
-            "n": 17,
-            "tasa": 0.5882352941176471,
+            "k": 2,
+            "n": 3,
+            "tasa": 0.6666666666666666,
             "ic95": [
-              0.3601,
-              0.7839
+              0.2077,
+              0.9385
             ]
           },
           "seccion:guion": {
@@ -693,11 +704,11 @@
           },
           "seccion:preguntas": {
             "k": 0,
-            "n": 12,
+            "n": 2,
             "tasa": 0.0,
             "ic95": [
               0.0,
-              0.2425
+              0.6576
             ]
           },
           "seccion:resumen_web": {
@@ -729,62 +740,40 @@
           },
           "seccion:titulo_trabajo": {
             "k": 0,
-            "n": 11,
+            "n": 1,
             "tasa": 0.0,
             "ic95": [
               0.0,
-              0.2588
+              0.7935
             ]
           }
         }
       },
       "por_regla": {
-        "base_invalida": {
-          "deepseek/deepseek-flash": {
-            "afirmacion": {
-              "k": 4,
-              "n": 102,
-              "tasa": 0.0392156862745098,
-              "ic95": [
-                0.0154,
-                0.0965
-              ]
-            }
-          }
-        },
         "causalidad": {
           "deepseek/deepseek-flash": {
             "afirmacion": {
-              "k": 13,
-              "n": 102,
-              "tasa": 0.12745098039215685,
+              "k": 2,
+              "n": 23,
+              "tasa": 0.08695652173913043,
               "ic95": [
-                0.076,
-                0.2059
+                0.0242,
+                0.268
               ]
             },
             "seccion:enfoque": {
-              "k": 3,
-              "n": 17,
-              "tasa": 0.17647058823529413,
+              "k": 1,
+              "n": 3,
+              "tasa": 0.3333333333333333,
               "ic95": [
-                0.0619,
-                0.4103
+                0.0615,
+                0.7923
               ]
             }
           }
         },
         "cifra_no_coincide": {
           "deepseek/deepseek-flash": {
-            "seccion:enfoque": {
-              "k": 4,
-              "n": 17,
-              "tasa": 0.23529411764705882,
-              "ic95": [
-                0.0955,
-                0.4726
-              ]
-            },
             "seccion:guion": {
               "k": 1,
               "n": 2,
@@ -799,12 +788,12 @@
         "enfoque_como_hecho": {
           "deepseek/deepseek-flash": {
             "seccion:enfoque": {
-              "k": 10,
-              "n": 17,
-              "tasa": 0.5882352941176471,
+              "k": 2,
+              "n": 3,
+              "tasa": 0.6666666666666666,
               "ic95": [
-                0.3601,
-                0.7839
+                0.2077,
+                0.9385
               ]
             }
           }
@@ -812,12 +801,12 @@
         "hipotesis_sin_condicional": {
           "deepseek/deepseek-flash": {
             "afirmacion": {
-              "k": 6,
-              "n": 102,
-              "tasa": 0.058823529411764705,
+              "k": 1,
+              "n": 23,
+              "tasa": 0.043478260869565216,
               "ic95": [
-                0.0272,
-                0.1224
+                0.0077,
+                0.2099
               ]
             }
           }
@@ -853,19 +842,6 @@
               "ic95": [
                 0.3424,
                 1.0
-              ]
-            }
-          }
-        },
-        "sin_atribucion": {
-          "deepseek/deepseek-flash": {
-            "seccion:enfoque": {
-              "k": 2,
-              "n": 17,
-              "tasa": 0.11764705882352941,
-              "ic95": [
-                0.0329,
-                0.3434
               ]
             }
           }
@@ -956,14 +932,15 @@
     "archivo": "revision_sustento.csv",
     "muestra": {
       "n": 30,
-      "pool": 102,
+      "pool": 64,
       "semilla": 42,
       "estado_del_archivo": "conservada_con_veredictos",
       "origenes": {
-        "borrador": 13,
-        "consulta": 17
+        "borrador": 5,
+        "consulta": 25
       }
-    }
+    },
+    "aviso": "La muestra revisada ya no coincide con la que daría esta corrida (cambió el conjunto de salidas); se conserva la revisada."
   },
   "analisis_umbral": {
     "metodo": "validacion_cruzada_dejando_uno_afuera",
