@@ -655,3 +655,16 @@ Todo lo aleatorio tiene su semilla en `config/` y `scripts.reproducir` las regis
 | `llm.yaml:generacion.semilla` | 0 | Semilla enviada al LLM (con temperatura 0); DeepSeek no la garantiza bit a bit, por eso el texto va a la caché |
 
 Clustering: la agrupación es determinista (similitud y umbral, sin inicialización aleatoria), no tiene semilla.
+
+## Sincronización con Notion (E3-03, `config/notion.yaml`)
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| `api.version` | 2022-06-28 | Práctica (versión estable de la API de Notion) | Encabezado `Notion-Version`; prueba de cabeceras |
+| `api.timeout_segundos` | 20 | Supuesto | Sin red se degrada a la exportación local (prueba) |
+| `api.reintentos` | 3 | Supuesto | Prueba del 429: reintenta y luego falla con error explícito |
+| `api.espera_base_segundos` / `espera_maxima_segundos` | 1.0 / 30.0 | Supuesto | Solo si no hay `Retry-After`; acotado |
+| `api.tamano_pagina_busqueda` | 10 | Supuesto (basta para detectar duplicados: con más de 1 se detiene) | Prueba de duplicados |
+| `api.tamano_pagina_hijos` | 100 | Práctica (máximo de Notion por página de `children`) | `config` lo acota a 100 |
+| `cuerpo.max_caracteres_bloque` | 2000 | Práctica (límite de Notion por texto enriquecido) | Prueba de trozos ≤ 2000 |
+| `cuerpo.max_bloques_por_llamada` | 100 | Práctica (límite de Notion por `children`) | `config` lo acota a 100 |

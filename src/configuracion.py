@@ -1252,6 +1252,10 @@ def validar_coherencia(carpeta: Path | None = None) -> list[str]:
         comparados = cargar_prioridad(carpeta).comparacion.decimales_empate
         if comparados != mostrados:   # X60 (D-105): P se compara como se muestra
             problemas.append(f"prioridad.yaml: comparacion.decimales_empate ({comparados}) debe ser igual a interfaz.yaml: bandeja.decimales_puntaje ({mostrados})")
+    if (carpeta / "notion.yaml").exists() and (carpeta / "revision.yaml").exists():  # E3-03: las propiedades de Notion = las columnas exportadas
+        tipos, columnas = set(cargar_notion(carpeta).propiedades), set(cargar_revision(carpeta).exportacion.columnas)
+        if tipos != columnas:
+            problemas.append(f"notion.yaml: propiedades y revision.yaml exportacion.columnas difieren: {sorted(tipos ^ columnas)}")
     reales = {e.id_noticia for t in temas.temas.values() for e in t.ejemplos if e.real}
     excluidos = _ids_excluidos(carpeta / "ejemplos_excluidos.txt")
     if reales != excluidos:
@@ -2819,6 +2823,68 @@ def cargar_revision(carpeta: Path | None = None) -> ConfigRevision:
     return cargar_config("revision", ConfigRevision, carpeta)
 
 
+# ------------------------------------------------------------------ notion.yaml (E3-03)
+
+
+class ApiNotion(ModeloConfig):
+    base_url: str = Field(min_length=1)
+    version: str = Field(min_length=1)
+    timeout_segundos: float = Field(gt=0)
+    reintentos: int = Field(ge=0, le=10)
+    espera_base_segundos: float = Field(ge=0)
+    espera_maxima_segundos: float = Field(gt=0)
+    tamano_pagina_busqueda: int = Field(ge=1, le=100)   # resultados pedidos al buscar por «ID caso» (más de 1 = duplicado)
+    tamano_pagina_hijos: int = Field(ge=1, le=100)      # bloques por página al listar el cuerpo (límite de Notion: 100)
+
+
+class BaseNotion(ModeloConfig):
+    nombre: str = Field(min_length=1)
+    id: str = Field(pattern=r"^[0-9a-f]{32}$")
+
+
+class CuerpoNotion(ModeloConfig):
+    max_caracteres_bloque: int = Field(ge=100, le=2000)
+    max_bloques_por_llamada: int = Field(ge=1, le=100)
+
+
+class TextosNotion(ModeloConfig):
+    sin_token: str
+    sin_red: str
+    sincronizado_nuevo: str
+    sincronizado_existente: str
+    incompleta: str
+
+
+TIPOS_PROPIEDAD_NOTION = ("titulo", "texto", "seleccion", "numero", "fecha")
+
+
+class ConfigNotion(ModeloConfig):
+    """Modelo de ``config/notion.yaml``: API, base de destino y tipo de cada propiedad (E3-03)."""
+
+    version: str
+    api: ApiNotion
+    base_de_datos: BaseNotion
+    variable_token: str = Field(pattern=r"^[A-Z][A-Z0-9_]*_TOKEN$")  # termina en _TOKEN: así el logging lo redacta (D-69)
+    propiedades: dict[str, str]
+    cuerpo: CuerpoNotion
+    textos: TextosNotion
+
+    @model_validator(mode="after")
+    def _coherente(self) -> "ConfigNotion":
+        if bad := sorted(t for t in set(self.propiedades.values()) if t not in TIPOS_PROPIEDAD_NOTION):
+            raise ValueError(f"propiedades: tipo desconocido {bad}")
+        if sum(1 for t in self.propiedades.values() if t == "titulo") != 1:
+            raise ValueError("propiedades: debe haber exactamente una propiedad de título")
+        if self.propiedades.get("ID caso") != "titulo":
+            raise ValueError("propiedades: «ID caso» es el título (clave de la sincronización idempotente)")
+        return self
+
+
+def cargar_notion(carpeta: Path | None = None) -> ConfigNotion:
+    """Atajo para ``config/notion.yaml``."""
+    return cargar_config("notion", ConfigNotion, carpeta)
+
+
 # ------------------------------------------------------------------ precision.yaml (E1-19)
 
 
@@ -2956,6 +3022,7 @@ CARGADORES = {
     "cache": cargar_cache,
     "revision": cargar_revision,
     "precision": cargar_precision,
+    "notion": cargar_notion,
     "origen_juicio": cargar_origen_juicio,
     "pruebas": cargar_pruebas,
     "reproducibilidad": cargar_reproducibilidad,
