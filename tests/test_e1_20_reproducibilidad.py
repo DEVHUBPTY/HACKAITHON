@@ -237,3 +237,97 @@ def test_cargar_config_rechaza_un_yaml_roto(tmp_path: Path) -> None:
     (tmp_path / "reproducibilidad.yaml").write_text("version: 1\n", encoding="utf-8")
     with pytest.raises(ErrorDeConfiguracion):
         cargar_config("reproducibilidad", ConfigReproducibilidad, tmp_path)
+
+
+# ------------------------------------------------------------------ X46: la muestra de sustento entra en el hash
+
+
+COLUMNAS_MUESTRA = ["id_muestra", "origen", "id_unidad", "id_afirmacion", "tipo", "texto", "citas", "evidencia_citada", "veredicto", "comentario", "revisor"]
+HUMANAS = ["veredicto", "comentario", "revisor"]
+
+
+def _muestra(ruta: Path, filas: list[dict[str, str]]) -> Path:
+    import csv
+
+    with ruta.open("w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=COLUMNAS_MUESTRA)
+        w.writeheader()
+        w.writerows({c: "" for c in COLUMNAS_MUESTRA} | f for f in filas)
+    return ruta
+
+
+def test_una_muestra_distinta_con_los_mismos_conteos_se_detecta(tmp_path: Path) -> None:
+    a = _muestra(tmp_path / "a.csv", [{"id_muestra": "S01", "id_unidad": "GRP-1", "id_afirmacion": "A1", "texto": "uno"}, {"id_muestra": "S02", "id_unidad": "GRP-1", "id_afirmacion": "A2", "texto": "dos"}])
+    b = _muestra(tmp_path / "b.csv", [{"id_muestra": "S01", "id_unidad": "GRP-2", "id_afirmacion": "A1", "texto": "uno"}, {"id_muestra": "S02", "id_unidad": "GRP-1", "id_afirmacion": "A2", "texto": "dos"}])
+    assert rep.huella_muestra(a, HUMANAS) != rep.huella_muestra(b, HUMANAS)
+
+
+def test_los_veredictos_humanos_no_cambian_el_hash_de_la_muestra(tmp_path: Path) -> None:
+    fila = {"id_muestra": "S01", "id_unidad": "GRP-1", "id_afirmacion": "A1", "texto": "uno"}
+    sin = _muestra(tmp_path / "sin.csv", [fila])
+    con = _muestra(tmp_path / "con.csv", [fila | {"veredicto": "sustentada", "comentario": "ok", "revisor": "Ana"}])
+    assert rep.huella_muestra(sin, HUMANAS) == rep.huella_muestra(con, HUMANAS)
+
+
+def test_la_muestra_de_sustento_se_declara_en_la_configuracion_y_ya_no_se_excluye_su_estado() -> None:
+    assert CFG.salidas.muestra_sustento.archivo == "outputs/revision_sustento.csv"
+    assert set(CFG.salidas.muestra_sustento.columnas_humanas) == set(HUMANAS)
+    assert not any("estado_del_archivo" in x for x in CFG.salidas.excluir_de_metricas)
+
+
+def test_el_manifest_registra_el_hash_de_la_muestra() -> None:
+    repro = json.loads((RAIZ / "data" / "manifest.json").read_text(encoding="utf-8"))["reproducibilidad"]
+    assert "muestra_sustento" in repro["salidas_deterministas"]
+
+
+# ------------------------------------------------------------------ minores de la revisión
+
+
+def test_un_crudo_alterado_detiene_la_corrida_antes_de_borrar_la_cache_de_embeddings(monkeypatch: pytest.MonkeyPatch) -> None:
+    borradas: list[Path] = []
+    monkeypatch.setattr(rep, "reiniciar_cache_de_embeddings", lambda raiz: borradas.append(raiz))
+
+    def alterado(raiz: Path) -> set[str]:
+        raise rep.ErrorDeReproduccion("data/raw/ es inmutable")
+
+    monkeypatch.setattr(rep, "comprobar_crudos", alterado)
+    with pytest.raises(rep.ErrorDeReproduccion, match="inmutable"):
+        rep.reconstruir(RAIZ, CFG, ejecutar=True)
+    assert borradas == []
+
+
+def test_comprobar_crudos_detecta_un_crudo_alterado_y_declara_los_ausentes(tmp_path: Path) -> None:
+    (tmp_path / "data" / "raw").mkdir(parents=True)
+    (tmp_path / "data" / "raw" / "a.json").write_text("{}", encoding="utf-8")
+    manifest = {"crudos": {"raw/a.json": {"sha256": "0" * 64}, "raw/b.json": {"sha256": "1" * 64}}}
+    (tmp_path / "data" / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(rep.ErrorDeReproduccion, match="a.json"):
+        rep.comprobar_crudos(tmp_path)
+    manifest["crudos"]["raw/a.json"]["sha256"] = rep.huella_de_archivo(tmp_path / "data" / "raw" / "a.json")
+    (tmp_path / "data" / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    assert rep.comprobar_crudos(tmp_path) == {"raw/b.json"}
+
+
+def test_se_registra_si_el_arbol_tenia_cambios_sin_commitear(tmp_path: Path) -> None:
+    import subprocess
+
+    def git(*a: str) -> None:
+        subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", *a], cwd=tmp_path, check=True, capture_output=True)
+
+    git("init", "-q")
+    (tmp_path / "f.txt").write_text("1", encoding="utf-8")
+    git("add", ".")
+    git("commit", "-qm", "x")
+    assert rep.arbol_con_cambios(tmp_path) is False
+    (tmp_path / "f.txt").write_text("2", encoding="utf-8")
+    assert rep.arbol_con_cambios(tmp_path) is True
+    assert isinstance(rep.registrar_entradas(RAIZ, CFG)["arbol_con_cambios"], bool)
+
+
+def test_el_arranque_del_modelo_se_mide_desde_la_creacion_del_consultor() -> None:
+    import inspect
+
+    from eval import run_benchmark
+
+    assert "_ARRANQUE_S" not in inspect.getsource(run_benchmark._respuestas_a_registros)
+    assert "crear_consultor_real" in inspect.getsource(run_benchmark._ejecutar).split("_ARRANQUE_S")[0]
