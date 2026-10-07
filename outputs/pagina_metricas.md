@@ -2,7 +2,7 @@
 
 > **BORRADOR — métricas provisionales** · JUICIO PROVISIONAL DEL ASISTENTE, NO HUMANO (D-101): se rehace a mano en C-09; no reportar como juicio de una persona.
 
-Generada el 2026-10-07T21:55:31Z desde el commit `47e956c` con `poetry run python -m scripts.pagina_metricas`. Ninguna cifra está escrita a mano: cada una sale del archivo que se indica. Toda proporción lleva numerador, denominador e IC 95 %.
+Generada el 2026-10-07T22:19:07Z desde el commit `b4dc6ca` con `poetry run python -m scripts.pagina_metricas`. Ninguna cifra está escrita a mano: cada una sale del archivo que se indica. Toda proporción lleva numerador, denominador e IC 95 %.
 
 **Origen del juicio:** `humano` = lo decidió una persona (las etiquetas de clasificación y agrupación las propone el asistente y una persona las revisa y aprueba una por una, D-85) · **PROVISIONAL** = lo decidió el asistente (D-101) y se rehace en C-09 · `automático` = automático (sin juicio humano: lo calcula el código contra una referencia).
 
@@ -16,13 +16,13 @@ Generada el 2026-10-07T21:55:31Z desde el commit `47e956c` con `poetry run pytho
 | Recall@5 por evidencias esperadas · semántica (IA) | 64.0 % | 32 de 50 | 42.6 % – 100.0 % | automático | `metricas.json` | — |
 | Recall@5 por evidencias esperadas · BM25 (baseline) | 48.0 % | 24 de 50 | 32.1 % – 80.0 % | automático | `metricas.json` | — |
 | Afirmaciones sustentadas | 96.7 % | 29 de 30 | 90.0 % – 100.0 % (Wilson 83.3 % – 99.4 %) | **PROVISIONAL** · asistente_provisional (D-101) | `metricas.json` | fallos: GRP-39773bed5a/A4 · meta 90 % sobre la estimación puntual |
-| Macro-F1 de clasificación · IA | 0.545 | n = 100 | 0.380 – 0.669 | humano | `ia_vs_baseline.json` | — |
+| Macro-F1 de clasificación · IA (e5/A) | 0.545 | n = 100 | 0.380 – 0.669 | humano | `ia_vs_baseline.json` | — |
 | Macro-F1 de clasificación · baseline | 0.545 | n = 100 | 0.338 – 0.666 | humano | `ia_vs_baseline.json` | — |
 | Precision@5 · sistema | 20.0 % | 1 de 5 | 3.6 % – 62.5 % | **PROVISIONAL** · asistente_provisional (D-101) | `precision_at_5.json` | fallos: GRP-21ad932d54, GRP-038c4f0643, GRP-84a6b3a04b, GRP-39dfe8d714 |
 | Precision@5 · baseline por fecha de publicación | 0.0 % | 0 de 5 | 0.0 % – 43.5 % | **PROVISIONAL** · asistente_provisional (D-101) | `precision_at_5.json` | fallos: GRP-f9e3ba0bd2, GRP-87e128925b, GRP-0c210ad795, GRP-1df3ab1e22, GRP-0f8fb5a5bb |
 | Variantes cuyo top 5 no cambia de temas | 60.5 % | 26 de 43 | 45.6 % – 73.6 % | automático | `sensibilidad.json` | cada peso ±5 puntos y cada supuesto ±20 % |
 | Latencia p50 · Consulta (punta a punta, local, sin LLM) | 0.0068 s | n = 40 | 0.0003 – 0.0071 s | automático | `metricas.json` | — |
-| Latencia p50 · Paquete completo de borrador | 6.3615 s | n = 12 | 5.0380 – 7.6900 s | automático | `metricas.json` | — |
+| Latencia p50 · Paquete completo de borrador | 6.36 s | n = 12 | 5.04 – 7.69 s | automático | `metricas.json` | — |
 | Costo por paquete (mediana, cota superior) | 0.0031 USD | n = 12 | 0.0024 – 0.0038 USD | automático | `metricas.json` | deepseek/deepseek-flash, medido 2026-10-07T04:20:13Z |
 | Unidades rechazadas · deepseek/deepseek-flash | 26.7 % | 12 de 45 | 16.0 % – 41.0 % | automático | `metricas.json` | afirmaciones y secciones, re-validadas con el validador actual |
 
@@ -81,10 +81,10 @@ Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de 
 
 | Métrica | Valor | Numerador / denominador | IC 95 % | Origen del juicio | Fuente | Fallos (IDs) · nota |
 |---|---|---|---|---|---|---|
-| Macro-F1 de clasificación · IA | 0.545 | n = 100 | 0.380 – 0.669 | humano | `ia_vs_baseline.json` | — |
+| Macro-F1 de clasificación · IA (e5/A) | 0.545 | n = 100 | 0.380 – 0.669 | humano | `ia_vs_baseline.json` | — |
 | Macro-F1 de clasificación · baseline | 0.545 | n = 100 | 0.338 – 0.666 | humano | `ia_vs_baseline.json` | — |
 | Macro-F1: diferencia IA − baseline | 0.000 | n = 100 | -0.214 – 0.267 | humano | `ia_vs_baseline.json` | — |
-| Exactitud del clasificador · IA | 54.7 % | 35 de 64 | 42.6 % – 66.3 % | humano | `ia_vs_baseline.json` | — |
+| Exactitud del clasificador · IA (e5/A) | 54.7 % | 35 de 64 | 42.6 % – 66.3 % | humano | `ia_vs_baseline.json` | — |
 | Exactitud del clasificador · baseline | 45.3 % | 29 de 64 | 33.7 % – 57.4 % | humano | `ia_vs_baseline.json` | — |
 | Precisión de pares (validación cruzada) · IA | 88.0 % | 125 de 142 | 68.0 % – 100.0 % | humano | `ia_vs_baseline.json` | IC por remuestreo de titulares |
 | Recall de pares (validación cruzada) · IA | 95.4 % | 125 de 131 | 83.0 % – 100.0 % | humano | `ia_vs_baseline.json` | IC por remuestreo de titulares |
@@ -118,14 +118,14 @@ Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de 
 |---|---|---|---|---|---|---|
 | Latencia p50 · Consulta (punta a punta, local, sin LLM) | 0.0068 s | n = 40 | 0.0003 – 0.0071 s | automático | `metricas.json` | — |
 | Latencia p95 · Consulta (punta a punta, local, sin LLM) | 0.0078 s | n = 40 | 0.0073 – 0.0083 s | automático | `metricas.json` | — |
-| Latencia p50 · Primera respuesta del borrador | 4.0940 s | n = 12 | 3.0615 – 4.5160 s | automático | `metricas.json` | — |
-| Latencia p95 · Primera respuesta del borrador | 5.6663 s | n = 12 | 4.2930 – 6.0480 s | automático | `metricas.json` | — |
-| Latencia p50 · Paquete completo de borrador | 6.3615 s | n = 12 | 5.0380 – 7.6900 s | automático | `metricas.json` | — |
-| Latencia p95 · Paquete completo de borrador | 12.4079 s | n = 12 | 7.2316 – 17.1550 s | automático | `metricas.json` | — |
-| Latencia p50 · Llamada al LLM | 1.9410 s | n = 41 | 1.8600 – 2.0510 s | automático | `metricas.json` | — |
-| Latencia p95 · Llamada al LLM | 2.8490 s | n = 41 | 2.3000 – 2.9410 s | automático | `metricas.json` | — |
-| Latencia p50 del paquete editorial (n pequeño) | 17.1550 s | n = 1 | 17.1550 – 17.1550 s | automático | `metricas.json` | — |
-| Latencia p50 del paquete investigacion (n pequeño) | 5.9920 s | n = 11 | 4.2340 – 7.5820 s | automático | `metricas.json` | — |
+| Latencia p50 · Primera respuesta del borrador | 4.09 s | n = 12 | 3.06 – 4.52 s | automático | `metricas.json` | — |
+| Latencia p95 · Primera respuesta del borrador | 5.67 s | n = 12 | 4.29 – 6.05 s | automático | `metricas.json` | — |
+| Latencia p50 · Paquete completo de borrador | 6.36 s | n = 12 | 5.04 – 7.69 s | automático | `metricas.json` | — |
+| Latencia p95 · Paquete completo de borrador | 12.41 s | n = 12 | 7.23 – 17.16 s | automático | `metricas.json` | — |
+| Latencia p50 · Llamada al LLM | 1.94 s | n = 41 | 1.86 – 2.05 s | automático | `metricas.json` | — |
+| Latencia p95 · Llamada al LLM | 2.85 s | n = 41 | 2.30 – 2.94 s | automático | `metricas.json` | — |
+| Latencia p50 del paquete editorial (n pequeño) | 17.16 s | n = 1 | 17.16 – 17.16 s | automático | `metricas.json` | — |
+| Latencia p50 del paquete investigacion (n pequeño) | 5.99 s | n = 11 | 4.23 – 7.58 s | automático | `metricas.json` | — |
 | Tokens de entrada por paquete (mediana) | 5528.5 | n = 12 | 4559.0 – 7392.5 | automático | `metricas.json` | — |
 | Tokens de salida por paquete (mediana) | 1066.5 | n = 12 | 834.5 – 1365.0 | automático | `metricas.json` | — |
 | Costo por paquete (mediana, cota superior) | 0.0031 USD | n = 12 | 0.0024 – 0.0038 USD | automático | `metricas.json` | deepseek/deepseek-flash, medido 2026-10-07T04:20:13Z |
@@ -170,7 +170,7 @@ Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de 
 ## Reproducibilidad
 
 - Registro del manifest: commit `3df0978`, árbol con cambios al registrar: **sí**; corte del snapshot 2026-10-07T00:41:03Z; hash del snapshot `d0ae54537df7`.
-- Commit actual del repo: `47e956c`. El registro es de otro commit: confirmar con `--verificar` antes de afirmar que se reproduce.
+- Commit desde el que se generó: `b4dc6ca`. El registro es de otro commit: confirmar con `--verificar` antes de afirmar que se reproduce.
 - LLM: deepseek/deepseek-flash, temperatura 0.0, semilla 0; embeddings minilm y e5 con revisión fijada.
 - Salidas deterministas con hash: 33. Borradores en caché: sin_cache 9, completo 1, con_vacios 2.
 - Comprobación: `HF_HUB_OFFLINE=1 poetry run python -m scripts.reproducir --verificar` (sale con 1 si algo difiere).
