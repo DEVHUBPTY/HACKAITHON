@@ -27,6 +27,7 @@ La columna **Rol** indica el área de la tarea (D = datos, IA, P = producto), no
 | E1-09b | Vínculo con eventos sísmicos de USGS | D | E1-08 | [`E1-09b.md`](E1-09b.md) |
 | E1-10 | Puntaje, estado de evidencia, vacíos y contradicciones | D + IA | E1-08, E1-09, E1-09b | [`E1-10.md`](E1-10.md) |
 | E1-10b | Ficha de evidencia (común a ambas modalidades) | D + P | E1-10 | [`E1-10b.md`](E1-10b.md) |
+| E1-10c | Corregir subtema y alcance nacional del puntaje (X41, X42, X44, D-103) | D + IA | E1-10, E1-09, E1-03b | [`E1-10c.md`](E1-10c.md) |
 | E1-11 | Consulta en español con abstención | IA | E1-07 | [`E1-11.md`](E1-11.md) |
 | E1-12 | Proveedor LLM y generación del paquete editorial | IA | E1-10 | [`E1-12.md`](E1-12.md) |
 | E1-13 | Validador de citas | D + IA | E1-12 | [`E1-13.md`](E1-13.md) |
