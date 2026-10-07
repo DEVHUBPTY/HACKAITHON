@@ -117,8 +117,10 @@ def test_evaluar_recalcula_el_top_de_todas_las_variantes(base, emb, reglas_de_pr
     esperadas = len(sensibilidad.variantes_de_pesos(reglas_de_prueba, CFG)) + len(sensibilidad.variantes_de_supuestos(reglas_de_prueba, CFG))
     assert r["variantes"] == esperadas == 10 + 2 * len(NOMBRES_ESPERADOS) == len(r["detalle"])
     assert len(r["top_base"]) == 4                                   # 4 grupos < top 5
-    assert r["top_sin_cambio"]["de"] == esperadas and 0 <= r["top_sin_cambio"]["n"] <= esperadas
-    assert r["top_sin_cambio"]["n"] + r["con_algun_cambio"]["n"] == esperadas
+    efectivas = r["variantes_con_efecto"]
+    assert efectivas == esperadas - len(r["sin_efecto"])
+    assert r["top_sin_cambio"]["de"] == efectivas and 0 <= r["top_sin_cambio"]["n"] <= efectivas
+    assert r["top_sin_cambio"]["n"] + r["con_algun_cambio"]["n"] == efectivas
     assert set(r["top_sin_cambio"]["ic95"]) <= {x / 10_000 for x in range(10_001)}       # IC de Wilson presente
     assert r["por_grupo"]["peso"]["variantes"] == 10
     assert set(r["fuera_del_alcance"]) and "banca" in " ".join(r["fuera_del_alcance"])
@@ -201,3 +203,23 @@ def test_el_cli_de_eval_puntaje(base, emb, tmp_path) -> None:
     assert eval_puntaje.main(["--base", str(base), "--salida", str(salida)]) == 0
     assert json.loads(salida.read_text(encoding="utf-8"))["grupos"] == 4
     assert eval_puntaje.main(["--base", str(tmp_path / "nada.duckdb")]) == 1
+
+
+# ------------------------------------------------------------------ M1: las variantes sin efecto no cuentan como estabilidad
+
+
+def test_m1_una_variante_recortada_que_no_cambia_nada_se_reporta_aparte(base, emb, reglas_de_prueba) -> None:
+    r = sensibilidad.evaluar(base, reglas_de_prueba, CFG, CORTE, Z, emb)
+    assert sorted(r["sin_efecto"]) == ["Alcance geográfico nacional +", "Foco: Panamá sujeto +", "N del primer grupo +"]   # 1.0 × 1.2 se recorta a 1.0: es la misma regla
+    con_efecto = r["variantes"] - len(r["sin_efecto"])
+    assert r["variantes_con_efecto"] == con_efecto
+    assert r["top_sin_cambio"]["de"] == r["con_algun_cambio"]["de"] == r["mismo_orden"]["de"] == con_efecto
+    assert all(f["parametro_con_direccion"] not in r["sin_efecto"] for f in r["detalle"] if f["con_efecto"])
+    assert sorted(f["parametro_con_direccion"] for f in r["detalle"] if not f["con_efecto"]) == sorted(r["sin_efecto"])
+
+
+def test_m1_los_temas_retenidos_se_reportan_con_n_e_intervalo(base, emb, reglas_de_prueba) -> None:
+    r = sensibilidad.evaluar(base, reglas_de_prueba, CFG, CORTE, Z, emb)
+    t = r["temas_retenidos"]
+    assert t["de"] == r["variantes_con_efecto"] * len(r["top_base"])
+    assert 0 <= t["n"] <= t["de"] and len(t["ic95"]) == 2 and t["ic95"][0] <= t["proporcion"] <= t["ic95"][1]

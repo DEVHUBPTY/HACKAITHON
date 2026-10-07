@@ -176,18 +176,26 @@ def similitud_tematica(miembros: Sequence[Mapping[str, Any]]) -> float:
 # ------------------------------------------------------------------ I · impacto
 
 
+NO_ALFANUMERICO = re.compile(r"[\W_]+")
+
+
+def normalizar_geografia(texto: str) -> str:
+    """Sin tildes ni mayúsculas, y con guiones, rayas y espacios repetidos reducidos a un espacio («Ngäbe-Buglé» = «ngabe bugle»)."""
+    return NO_ALFANUMERICO.sub(" ", plano(texto)).strip()
+
+
 @lru_cache(maxsize=None)
 def _patron_termino(termino: str, prefijos: tuple[str, ...]) -> re.Pattern[str]:
     """Palabra completa, sin tildes ni mayúsculas; con ``prefijos`` solo cuenta si la precede alguno."""
-    cuerpo = re.escape(plano(termino))
+    cuerpo = re.escape(normalizar_geografia(termino))
     if prefijos:
-        cuerpo = r"(?:" + "|".join(re.escape(plano(p)) for p in prefijos) + r")\s+" + cuerpo
+        cuerpo = r"(?:" + "|".join(re.escape(normalizar_geografia(p)) for p in prefijos) + r")\s+" + cuerpo
     return re.compile(rf"(?<!\w){cuerpo}(?!\w)")
 
 
 def terminos_presentes(texto: str, terminos: Sequence[str], prefijos: Mapping[str, Sequence[str]]) -> list[str]:
     """Términos de ``terminos`` que aparecen en ``texto`` (en el orden dado)."""
-    plano_texto = plano(texto)
+    plano_texto = normalizar_geografia(texto)
     return [t for t in terminos if _patron_termino(t, tuple(prefijos.get(t, ()))).search(plano_texto)]
 
 

@@ -11,6 +11,8 @@ Recalcula el top 5 (CU-01) variando **un parámetro a la vez**:
   Banco Mundial). Una parte que forma un par se reescala para que el par siga sumando 1; un valor en [0, 1] se recorta a 1.
   Los enteros (tope, ventana en días) se redondean y no bajan de 1.
 
+Una variante que deja la regla idéntica (el valor recortado a 1 no cambia) **no cuenta** en la estabilidad: se lista aparte como `sin_efecto`.
+
 Para cada variante se reporta qué temas entran y salen del top 5 y si cambia el orden. **Un tema «cambia» si estaba en el top
 5 de las reglas v1.3 y ya no está.** La estabilidad se resume con n e IC de Wilson al 95 % (variantes cuyo top 5 no cambia).
 El estado de evidencia no depende de P, así que no entra aquí.
@@ -311,14 +313,16 @@ def evaluar(ruta_base: Path, reglas: ReglasV13, cfg: ConfigPrioridad, ahora: dat
             entradas = insumos.entradas
         filas.append(
             {"grupo": v.ajuste.grupo, "parametro": v.ajuste.nombre, "direccion": v.direccion, "reagrupa": v.ajuste.reagrupa,
+             "con_efecto": not (v.reglas == reglas and v.cfg == cfg),
              **comparar(base, top(entradas, v.reglas, v.cfg, ahora, n))}
         )
     for f in filas:
         f["parametro_con_direccion"] = f"{f['parametro']} {f['direccion']}"
-    total = len(filas)
-    sin_cambio = sum(1 for f in filas if f["mismo_conjunto"])
+    efectivas = [f for f in filas if f["con_efecto"]]
+    total = len(efectivas)
+    sin_cambio = sum(1 for f in efectivas if f["mismo_conjunto"])
     return {
-        "nota": "Un tema cambia si estaba en el top 5 de las reglas v1.3 y ya no está. P es de ordenamiento; no habilita publicación.",
+        "nota": "Un tema cambia si estaba en el top 5 de las reglas v1.3 y ya no está. Las variantes que dejan la regla igual (valor recortado a 1) no cuentan como estabilidad: van en `sin_efecto`. P es de ordenamiento; no habilita publicación.",
         "version_reglas": reglas.version,
         "fecha_referencia": ahora.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "tamano_ranking": n,
@@ -326,17 +330,19 @@ def evaluar(ruta_base: Path, reglas: ReglasV13, cfg: ConfigPrioridad, ahora: dat
         "variacion_supuesto": cfg.sensibilidad.variacion_supuesto,
         "top_base": base,
         "reagrupar_con_las_reglas_actuales_reproduce_la_base": reproduce,
-        "variantes": total,
+        "variantes": len(filas),
+        "variantes_con_efecto": total,
+        "sin_efecto": [f["parametro_con_direccion"] for f in filas if not f["con_efecto"]],
         "top_sin_cambio": proporcion(sin_cambio, total, z),
         "con_algun_cambio": proporcion(total - sin_cambio, total, z),
-        "mismo_orden": proporcion(sum(1 for f in filas if f["mismo_orden"]), total, z),
-        "maximo_de_temas_que_cambian": max((f["cambian"] for f in filas), default=0),
-        "temas_retenidos_por_variante": round(sum(n - f["cambian"] for f in filas) / (n * total), 4) if total else None,
-        "por_grupo": {g: {"variantes": sum(1 for f in filas if f["grupo"] == g), "con_cambio": sum(1 for f in filas if f["grupo"] == g and not f["mismo_conjunto"])} for g in (GRUPO_PESO, GRUPO_SUPUESTO)},
+        "mismo_orden": proporcion(sum(1 for f in efectivas if f["mismo_orden"]), total, z),
+        "maximo_de_temas_que_cambian": max((f["cambian"] for f in efectivas), default=0),
+        "temas_retenidos": {**proporcion(sum(len(base) - f["cambian"] for f in efectivas), len(base) * total, z), "nota": "puestos del top 5 que se conservan en las variantes con efecto; los puestos de una misma variante no son independientes, el IC es orientativo"},
+        "por_grupo": {g: {"variantes": sum(1 for f in filas if f["grupo"] == g), "con_cambio": sum(1 for f in efectivas if f["grupo"] == g and not f["mismo_conjunto"])} for g in (GRUPO_PESO, GRUPO_SUPUESTO)},
         "detalle": filas,
         "mas_sensibles": [
             {"parametro": f["parametro_con_direccion"], "cambian": f["cambian"], "salen": f["salen"], "entran": f["entran"]}
-            for f in sorted(filas, key=lambda f: (-f["cambian"], f["parametro_con_direccion"]))
+            for f in sorted(efectivas, key=lambda f: (-f["cambian"], f["parametro_con_direccion"]))
             if f["cambian"]
         ],
         "fuera_del_alcance": FUERA_DEL_ALCANCE,
@@ -350,10 +356,13 @@ def imprimir(r: Mapping[str, Any]) -> None:
     print(f"== Sensibilidad del top {r['tamano_ranking']} (reglas {r['version_reglas']}, referencia {r['fecha_referencia']}) ==")
     if not r["reagrupar_con_las_reglas_actuales_reproduce_la_base"]:
         print("  AVISO: volver a agrupar con las reglas actuales NO reproduce los grupos de la base; las variantes que reagrupan no son comparables")
-    print(f"  variantes: {r['variantes']} (pesos ±{r['variacion_peso_puntos']:g} puntos; supuestos ±{int(r['variacion_supuesto'] * 100)} %)")
+    print(f"  variantes: {r['variantes']} ({r['variantes_con_efecto']} con efecto; pesos ±{r['variacion_peso_puntos']:g} puntos; supuestos ±{int(r['variacion_supuesto'] * 100)} %)")
     print(f"  top 5 sin ningún cambio de tema: {f(r['top_sin_cambio'])}")
     print(f"  variantes con algún tema distinto: {f(r['con_algun_cambio'])} · máximo de temas que cambian: {r['maximo_de_temas_que_cambian']}/{r['tamano_ranking']}")
-    print(f"  mismo orden además del mismo conjunto: {f(r['mismo_orden'])} · temas retenidos por variante: {r['temas_retenidos_por_variante']}")
+    print(f"  mismo orden además del mismo conjunto: {f(r['mismo_orden'])}")
+    print(f"  puestos del top 5 que se conservan: {f(r['temas_retenidos'])}")
+    if r["sin_efecto"]:
+        print(f"  sin efecto (no cuentan): {r['sin_efecto']}")
     for g, d in r["por_grupo"].items():
         print(f"  {g}: {d['con_cambio']}/{d['variantes']} variantes cambian el top")
     print("\n== Top 5 base ==")

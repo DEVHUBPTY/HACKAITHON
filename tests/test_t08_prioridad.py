@@ -376,3 +376,18 @@ def test_el_tono_y_la_cantidad_de_titulares_no_entran_en_ningun_componente() -> 
 def test_la_fecha_de_referencia_se_registra_en_utc() -> None:
     p = _calcular([entrada("GRP-1")], ahora=datetime(2026, 10, 6, 12, 0, tzinfo=UTC))["GRP-1"]
     assert p.fecha_referencia == "2026-10-06T12:00:00Z"
+
+
+# ------------------------------------------------------------------ M2: la geografía ignora tildes, guiones y espacios de más
+
+
+@pytest.mark.parametrize(
+    "titulo",
+    ["Sin agua en la comarca Ngäbe Buglé", "Sin agua en Ngabe-Bugle", "Sin agua en la comarca NGÄBE–BUGLÉ", "Sin agua en Emberá Wounaan", "Sin agua en Embera-Wounaan", "Alerta en Guna  Yala", "Alerta en Bocas  del   Toro", "Alerta en Bocas-del-Toro"],
+)
+def test_m2_la_geografia_normaliza_guiones_espacios_y_tildes(titulo: str) -> None:
+    assert puntaje.alcance_geografico([miembro(titulo=titulo)], REGLAS, CFG).nivel == "provincial"
+
+
+def test_m2_el_guion_no_une_palabras_distintas() -> None:
+    assert puntaje.alcance_geografico([miembro(titulo="Corte en Chiriquígrande")], REGLAS, CFG).nivel == "desconocido"

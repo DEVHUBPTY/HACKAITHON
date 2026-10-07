@@ -35,37 +35,39 @@
   },
   "por_estado_de_evidencia": {
     "suficiente": {
-      "n": 3,
+      "n": 2,
       "de": 58,
-      "proporcion": 0.0517,
+      "proporcion": 0.0345,
       "ic95": [
-        0.0177,
-        0.1414
+        0.0095,
+        0.1173
       ]
     },
     "parcial": {
-      "n": 7,
+      "n": 5,
       "de": 58,
-      "proporcion": 0.1207,
+      "proporcion": 0.0862,
       "ic95": [
-        0.0597,
-        0.2288
+        0.0374,
+        0.1864
       ]
     },
     "insuficiente": {
-      "n": 48,
+      "n": 51,
       "de": 58,
-      "proporcion": 0.8276,
+      "proporcion": 0.8793,
       "ic95": [
-        0.7109,
-        0.9036
+        0.7712,
+        0.9403
       ]
     }
   },
   "contradicciones": {
     "candidatos": 0,
-    "por_estado": {},
-    "grupos_con_candidatos": 0
+    "abiertas": 0,
+    "por_nota_llm": {},
+    "grupos_con_candidatos": 0,
+    "pares": []
   },
   "llm": {
     "estado": "sin_candidatos",
@@ -224,26 +226,6 @@
     },
     {
       "posicion": 8,
-      "id_grupo": "GRP-f4a44182b1",
-      "titular_central": "Panamá reforzará su presencia marítima en Vietnam con nueva oficina de servicio técnico de la AMP en Ho Chi Minh",
-      "puntaje": 73.86,
-      "rango": "alto",
-      "componentes": {
-        "R": 0.9123,
-        "I": 0.75,
-        "U": 1.0,
-        "N": 0.0714,
-        "E": 0.6667
-      },
-      "estado_de_evidencia": "parcial",
-      "accion": "Completar evidencia y producir",
-      "vacios": [
-        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente"
-      ],
-      "contradicciones": []
-    },
-    {
-      "posicion": 9,
       "id_grupo": "GRP-1e2c34f6bf",
       "titular_central": "Pase-U: Largas filas en Changuinola en el segundo día de entrega de tarjetas Punch del Ifarhu",
       "puntaje": 73.73,
@@ -264,7 +246,7 @@
       "contradicciones": []
     },
     {
-      "posicion": 10,
+      "posicion": 9,
       "id_grupo": "GRP-21ad932d54",
       "titular_central": "Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá",
       "puntaje": 73.67,
@@ -274,6 +256,27 @@
         "I": 0.75,
         "U": 0.9789,
         "N": 0.375,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (tema_sin_indicador)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 10,
+      "id_grupo": "GRP-fcdfc2a3cc",
+      "titular_central": "Aprehenden a Enrique Lau, exdirector de la CSS, por supuesto enriquecimiento injustificado",
+      "puntaje": 71.82,
+      "rango": "alto",
+      "componentes": {
+        "R": 0.6228,
+        "I": 0.75,
+        "U": 1.0,
+        "N": 0.7143,
         "E": 0.3667
       },
       "estado_de_evidencia": "insuficiente",

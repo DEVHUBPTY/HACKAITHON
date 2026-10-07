@@ -1,5 +1,5 @@
 {
-  "nota": "Un tema cambia si estaba en el top 5 de las reglas v1.3 y ya no está. P es de ordenamiento; no habilita publicación.",
+  "nota": "Un tema cambia si estaba en el top 5 de las reglas v1.3 y ya no está. Las variantes que dejan la regla igual (valor recortado a 1) no cuentan como estabilidad: van en `sin_efecto`. P es de ordenamiento; no habilita publicación.",
   "version_reglas": "1.3",
   "fecha_referencia": "2026-10-07T00:41:03Z",
   "tamano_ranking": 5,
@@ -14,39 +14,54 @@
   ],
   "reagrupar_con_las_reglas_actuales_reproduce_la_base": true,
   "variantes": 48,
+  "variantes_con_efecto": 45,
+  "sin_efecto": [
+    "Foco: Panamá sujeto +",
+    "Alcance geográfico nacional +",
+    "N del primer grupo +"
+  ],
   "top_sin_cambio": {
-    "n": 37,
-    "de": 48,
-    "proporcion": 0.7708,
+    "n": 35,
+    "de": 45,
+    "proporcion": 0.7778,
     "ic95": [
-      0.6346,
-      0.8669
+      0.6373,
+      0.8746
     ]
   },
   "con_algun_cambio": {
-    "n": 11,
-    "de": 48,
-    "proporcion": 0.2292,
+    "n": 10,
+    "de": 45,
+    "proporcion": 0.2222,
     "ic95": [
-      0.1331,
-      0.3654
+      0.1254,
+      0.3627
     ]
   },
   "mismo_orden": {
-    "n": 35,
-    "de": 48,
-    "proporcion": 0.7292,
+    "n": 33,
+    "de": 45,
+    "proporcion": 0.7333,
     "ic95": [
-      0.59,
-      0.8343
+      0.5896,
+      0.8404
     ]
   },
   "maximo_de_temas_que_cambian": 1,
-  "temas_retenidos_por_variante": 0.9542,
+  "temas_retenidos": {
+    "n": 215,
+    "de": 225,
+    "proporcion": 0.9556,
+    "ic95": [
+      0.9201,
+      0.9757
+    ],
+    "nota": "puestos del top 5 que se conservan en las variantes con efecto; los puestos de una misma variante no son independientes, el IC es orientativo"
+  },
   "por_grupo": {
     "peso": {
       "variantes": 10,
-      "con_cambio": 5
+      "con_cambio": 4
     },
     "supuesto": {
       "variantes": 38,
@@ -59,6 +74,7 @@
       "parametro": "Peso R",
       "direccion": "+",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -78,6 +94,7 @@
       "parametro": "Peso R",
       "direccion": "-",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -101,6 +118,7 @@
       "parametro": "Peso I",
       "direccion": "+",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -120,6 +138,7 @@
       "parametro": "Peso I",
       "direccion": "-",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -143,6 +162,7 @@
       "parametro": "Peso U",
       "direccion": "+",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -162,6 +182,7 @@
       "parametro": "Peso U",
       "direccion": "-",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -185,6 +206,7 @@
       "parametro": "Peso N",
       "direccion": "+",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -208,22 +230,19 @@
       "parametro": "Peso N",
       "direccion": "-",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
         "GRP-65d565abd0",
         "GRP-39773bed5a",
-        "GRP-f4a44182b1"
-      ],
-      "cambian": 1,
-      "salen": [
         "GRP-87e128925b"
       ],
-      "entran": [
-        "GRP-f4a44182b1"
-      ],
-      "mismo_conjunto": false,
-      "mismo_orden": false,
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
       "parametro_con_direccion": "Peso N -"
     },
     {
@@ -231,6 +250,7 @@
       "parametro": "Peso E",
       "direccion": "+",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -250,6 +270,7 @@
       "parametro": "Peso E",
       "direccion": "-",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -269,6 +290,7 @@
       "parametro": "Partes de R (foco · temática)",
       "direccion": "+",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -292,6 +314,7 @@
       "parametro": "Partes de R (foco · temática)",
       "direccion": "-",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -311,6 +334,7 @@
       "parametro": "Foco: otro país que afecta a Panamá",
       "direccion": "+",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -330,6 +354,7 @@
       "parametro": "Foco: otro país que afecta a Panamá",
       "direccion": "-",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -349,6 +374,7 @@
       "parametro": "Foco: Panamá sujeto",
       "direccion": "+",
       "reagrupa": false,
+      "con_efecto": false,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -368,6 +394,7 @@
       "parametro": "Foco: Panamá sujeto",
       "direccion": "-",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -387,6 +414,7 @@
       "parametro": "Partes de I (subtema · geográfico)",
       "direccion": "+",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -410,6 +438,7 @@
       "parametro": "Partes de I (subtema · geográfico)",
       "direccion": "-",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -429,6 +458,7 @@
       "parametro": "Alcance geográfico nacional",
       "direccion": "+",
       "reagrupa": false,
+      "con_efecto": false,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -448,6 +478,7 @@
       "parametro": "Alcance geográfico nacional",
       "direccion": "-",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -467,6 +498,7 @@
       "parametro": "Alcance geográfico provincial",
       "direccion": "+",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -486,6 +518,7 @@
       "parametro": "Alcance geográfico provincial",
       "direccion": "-",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -509,6 +542,7 @@
       "parametro": "Alcance geográfico local",
       "direccion": "+",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -528,6 +562,7 @@
       "parametro": "Alcance geográfico local",
       "direccion": "-",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -547,6 +582,7 @@
       "parametro": "Alcance geográfico desconocido",
       "direccion": "+",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -570,6 +606,7 @@
       "parametro": "Alcance geográfico desconocido",
       "direccion": "-",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -589,6 +626,7 @@
       "parametro": "Alcance por subtema (la tabla entera)",
       "direccion": "+",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-65d565abd0",
@@ -608,6 +646,7 @@
       "parametro": "Alcance por subtema (la tabla entera)",
       "direccion": "-",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -627,6 +666,7 @@
       "parametro": "Alcance de I sin subtema",
       "direccion": "+",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -646,6 +686,7 @@
       "parametro": "Alcance de I sin subtema",
       "direccion": "-",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -665,6 +706,7 @@
       "parametro": "U: horas con U = 1",
       "direccion": "+",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -688,6 +730,7 @@
       "parametro": "U: horas con U = 1",
       "direccion": "-",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -707,6 +750,7 @@
       "parametro": "U: días con U = 0",
       "direccion": "+",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -730,6 +774,7 @@
       "parametro": "U: días con U = 0",
       "direccion": "-",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -749,6 +794,7 @@
       "parametro": "Partes de E: procedencias",
       "direccion": "+",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -768,6 +814,7 @@
       "parametro": "Partes de E: procedencias",
       "direccion": "-",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -787,6 +834,7 @@
       "parametro": "Partes de E: oficial",
       "direccion": "+",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -806,6 +854,7 @@
       "parametro": "Partes de E: oficial",
       "direccion": "-",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -825,6 +874,7 @@
       "parametro": "Partes de E: identificable",
       "direccion": "+",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -844,6 +894,7 @@
       "parametro": "Partes de E: identificable",
       "direccion": "-",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -863,6 +914,7 @@
       "parametro": "Tope de procedencias en E",
       "direccion": "+",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -882,6 +934,7 @@
       "parametro": "Tope de procedencias en E",
       "direccion": "-",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -901,6 +954,7 @@
       "parametro": "N del primer grupo",
       "direccion": "+",
       "reagrupa": false,
+      "con_efecto": false,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -920,6 +974,7 @@
       "parametro": "N del primer grupo",
       "direccion": "-",
       "reagrupa": false,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -939,6 +994,7 @@
       "parametro": "Ventana de agrupación (días)",
       "direccion": "+",
       "reagrupa": true,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -958,6 +1014,7 @@
       "parametro": "Ventana de agrupación (días)",
       "direccion": "-",
       "reagrupa": true,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -977,6 +1034,7 @@
       "parametro": "Umbral de «mismo texto» (procedencias)",
       "direccion": "+",
       "reagrupa": true,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -996,6 +1054,7 @@
       "parametro": "Umbral de «mismo texto» (procedencias)",
       "direccion": "-",
       "reagrupa": true,
+      "con_efecto": true,
       "top": [
         "GRP-ef3acec21e",
         "GRP-84a6b3a04b",
@@ -1070,16 +1129,6 @@
       ],
       "entran": [
         "GRP-8af4196527"
-      ]
-    },
-    {
-      "parametro": "Peso N -",
-      "cambian": 1,
-      "salen": [
-        "GRP-87e128925b"
-      ],
-      "entran": [
-        "GRP-f4a44182b1"
       ]
     },
     {
