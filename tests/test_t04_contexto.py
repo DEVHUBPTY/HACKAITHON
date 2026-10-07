@@ -259,6 +259,60 @@ def test_x19_una_variacion_de_un_indicador_de_nivel_no_se_compara(titular: str) 
     assert _comparar_x19(titular, "inflacion_precios", IND_INFLACION, 2.0) is None
 
 
+@pytest.mark.parametrize(
+    "titular",
+    [
+        "El PIB caería 2 % en 2024",          # condicional: proyección
+        "El PIB caerá 2 % en 2024",           # futuro: proyección
+        "El PIB se desploma 2 % en 2024",     # verbo fuera de las listas
+        "El PIB podría caer 2 % en 2024",     # «podría» + infinitivo
+        "El PIB se hundiría 2 % en 2024",
+        "El FMI prevé que el PIB caiga 2 % en 2024",   # proyección fuera de la ventana de la cifra
+        "El FMI estima que el PIB cae 2 % en 2024",
+    ],
+)
+def test_seguimiento_x19_verbo_no_listado_o_proyeccion_no_se_compara(titular: str) -> None:
+    """Seguimiento PR #19: sin verbo reconocido o con proyección no se puede afirmar el signo: no se compara."""
+    assert contexto.extraer_cifra_titular(titular, PIB, CFG) is None
+    assert _comparar_x19(titular, "crecimiento_pib", PIB, -2.0) is None
+
+
+@pytest.mark.parametrize(
+    "titular",
+    [
+        "La inflación casi 2 % en 2024",
+        "La inflación de casi 2 % en 2024",
+        "La inflación cerca del 2 % en 2024",
+        "La inflación alrededor del 2 % en 2024",
+        "La inflación al menos 2 % en 2024",
+        "La inflación sube al menos 2 % en 2024",
+        "La inflación de unos 2 % en 2024",
+        "La inflación más del 2 % en 2024",
+        "La inflación menos del 2 % en 2024",
+    ],
+)
+def test_seguimiento_x19_aproximaciones_y_cotas_con_contraccion_no_se_comparan(titular: str) -> None:
+    assert _comparar_x19(titular, "inflacion_precios", IND_INFLACION, 2.0) is None
+
+
+@pytest.mark.parametrize(
+    ("titular", "subtema", "indicador", "oficial"),
+    [
+        ("La inflación cae al 0,7 % en 2024", "inflacion_precios", IND_INFLACION, 0.7),
+        ("El desempleo baja al 9,5 % en 2024", "empleo", DESEMPLEO, 9.5),
+    ],
+)
+def test_seguimiento_x19_cae_al_es_nivel_alcanzado(titular, subtema, indicador, oficial) -> None:
+    assert _comparar_x19(titular, subtema, indicador, oficial) == CFG.cifra_titular.etiquetas.coincide
+
+
+def test_seguimiento_x19_las_listas_nuevas_estan_en_la_configuracion() -> None:
+    c = CFG.cifra_titular
+    assert {"podría", "prevé", "estima"} <= set(c.palabras_de_proyeccion)
+    assert c.patrones_de_verbo_no_listado and "al" in c.palabras_de_nivel
+    assert {"casi", "cerca del", "alrededor del", "al menos", "unos"} <= set(c.palabras_de_cota)
+
+
 def test_x19_la_variacion_del_pib_si_se_compara_con_signo() -> None:
     assert _comparar_x19("El PIB cae 2 % en 2024", "crecimiento_pib", PIB, -2.0) == CFG.cifra_titular.etiquetas.coincide
     assert _comparar_x19("El PIB sube 2 % en 2024", "crecimiento_pib", PIB, 2.0) == CFG.cifra_titular.etiquetas.coincide
