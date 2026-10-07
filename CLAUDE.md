@@ -66,6 +66,7 @@ poetry run python -m scripts.probar_llm --modelo <tag>  # latencia, JSON válido
 poetry run streamlit run eval/etiquetar.py           # etiquetado humano (E1-06; ver docs/etiquetado.md)
 poetry run python -m eval.ruido                      # precisión y recall del filtro de ruido contra eval/etiquetas.csv
 poetry run python -m eval.validar_benchmark          # valida benchmark/benchmark_dev.jsonl (E0-06)
+poetry run python -m scripts.pagina_metricas           # página de métricas desde outputs/ (n, IC 95 %, fuente, commit y origen del juicio por métrica; falla si una proporción no lleva n e IC o si un juicio provisional se rotula humano) → outputs/pagina_metricas.md (C-02)
 poetry run python -m scripts.reproducir --verificar  # reconstruye todo desde data/raw/ y compara los hashes con el manifest; sin --verificar registra los hashes (E1-20; docs/reproducibilidad.md)
 ```
 

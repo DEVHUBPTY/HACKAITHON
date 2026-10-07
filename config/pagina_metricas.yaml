@@ -1,0 +1,44 @@
+# C-02 · Página de métricas. Qué archivos lee el generador y cómo presenta lo que lee.
+# Ninguna cifra de la página vive aquí: salen de las fuentes. Solo hay rutas, rótulos y dos parámetros de presentación/supuesto.
+version: 1
+
+salida: outputs/pagina_metricas.md
+titulo: "Métricas del sistema"
+etiqueta_borrador: "BORRADOR — métricas provisionales"
+
+fuentes:                                   # rutas relativas a la raíz del repo
+  metricas: outputs/metricas.json          # eval.run_benchmark (E1-18)
+  ia_vs_baseline: outputs/ia_vs_baseline.json   # eval.ia_vs_baseline (E1-18)
+  precision: outputs/precision_at_5.json   # eval.precision_at_5 (E1-19)
+  clasificacion: outputs/clasificacion.json     # eval.clasificacion (procedencia de las etiquetas)
+  agrupacion: outputs/agrupacion.json      # eval.agrupacion (titulares etiquetados usados)
+  sensibilidad: outputs/sensibilidad.json  # eval.sensibilidad (E1-10)
+  puntaje: outputs/puntaje.json            # eval.puntaje (E1-10)
+  pruebas: outputs/pruebas.csv             # eval.reporte_pruebas (E1-17)
+  manifest: data/manifest.json             # scripts.reproducir (E1-20)
+  etiquetas: eval/etiquetas.csv            # etiquetas de clasificación y agrupación (D-85)
+  prueba_tiempo: docs/prueba_tiempo.md     # protocolo de la prueba de ahorro de tiempo
+opcionales:                                # si faltan, su sección dice «fuente no disponible» y cómo generarla
+  revision:                                # eval.revision (E1-16): tasas de la revisión humana
+    ruta: outputs/revision.json
+    comando: "poetry run python -m eval.revision"
+  costo_llm:                               # contador acumulado de tokens y USD (ignorado por git)
+    ruta: outputs/costo_llm.json
+    comando: "se actualiza con cada llamada al proveedor de pago (src/llm/costo.py)"
+
+presentacion:
+  decimales_porcentaje: 1                  # solo presentación
+  decimales_valor: 3                       # solo presentación
+  decimales_tokens: 1                      # solo presentación (tokens por paquete)
+  decimales_usd: 4                         # solo presentación (costo por paquete; 0.0031 USD pide 4)
+  decimales_latencia: 4                    # solo presentación: latencias menores que el umbral (la consulta local dura ≈ 0.007 s: con 3 decimales perdía el IC)
+  decimales_latencia_segundos: 2           # solo presentación: latencias desde el umbral (un paquete dura ≈ 12–17 s: 4 decimales serían falsa precisión)
+  umbral_latencia_s: 1.0                   # solo presentación: desde cuántos segundos se usa decimales_latencia_segundos
+
+coherencia:                                # clasificación: ia_vs_baseline.json contra clasificacion.json
+  ante_discrepancia_clasificacion: aviso   # aviso | falla (falla = la página no se genera)
+  tolerancia_macro_f1: 0.0005              # el redondeo a 4 decimales de cada salida
+
+# Supuesto del proyecto (D-97, docs/parametros.md): la consola de DeepSeek marcó ≈ 2.6 veces menos que el contador.
+sobreestimacion_contador_costo: 2.6
+etiqueta_automatico: "automático (sin juicio humano: lo calcula el código contra una referencia)"
