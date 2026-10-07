@@ -54,7 +54,9 @@ def banca_fixture(tmp_path: Path):
              fuentes_sugeridas_extra=["SBP", "MEF", "INEC"], grupos_restricciones=["comunes", "banca"],
              sectores_por_tema={"economia": "economía", "logistica": "logística", "turismo": "turismo", "regulacion": "regulación",
                                 "servicios_publicos": "continuidad operativa", "eventos_naturales": "continuidad operativa"},
-             alcance_por_sector={"economía": 1.0, "logística": 0.8, "turismo": 0.6, "regulación": 0.8, "continuidad operativa": 0.8})
+             alcance_por_sector={"economía": 1.0, "logística": 0.8, "turismo": 0.6, "regulación": 0.8, "continuidad operativa": 0.8},
+             horizonte={"inmediato_hasta_dias": 7, "corto_plazo_hasta_dias": 56, "etiquetas": {"inmediato": "I", "corto plazo": "C", "estructural": "E"}},
+             bandeja={"sin_sector": "Sin sector asignado", "etiquetas_sector": {s: s for s in ("economía", "logística", "turismo", "regulación", "continuidad operativa")}})
     for rango, textos in BANCA.items():
         for estado, texto in zip(ESTADOS, textos, strict=True):
             d["tabla_acciones"][rango][estado]["accion"] = texto

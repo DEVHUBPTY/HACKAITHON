@@ -45,14 +45,35 @@ def base(tmp_path_factory, emb) -> Path:
 
 
 @pytest.fixture(scope="module")
-def con(base):
-    c = db.conectar(base, solo_lectura=True)
-    yield c
-    c.close()
+def base_banca(tmp_path_factory, emb) -> Path:
+    """La misma base con la corrida de E1-10 hecha con la modalidad bancaria: una base solo guarda una modalidad a la vez (X39)."""
+    return h.construir(tmp_path_factory.mktemp("ficha_banca") / "senales.duckdb", emb, modalidad="banca")
+
+
+class PorModalidad:
+    """La conexión editorial (``con.execute`` va a ella) y, con ``.de(modalidad)``, la de la corrida de esa modalidad."""
+
+    def __init__(self, editorial, banca) -> None:
+        self._base = editorial
+        self._por_modalidad = {"editorial": editorial, "banca": banca}
+
+    def de(self, modalidad: str):
+        return self._por_modalidad[modalidad]
+
+    def __getattr__(self, nombre: str):
+        return getattr(self._base, nombre)
+
+
+@pytest.fixture(scope="module")
+def con(base, base_banca):
+    editorial, banca = db.conectar(base, solo_lectura=True), db.conectar(base_banca, solo_lectura=True)
+    yield PorModalidad(editorial, banca)
+    editorial.close()
+    banca.close()
 
 
 def hacer(con, emb, grupo: str, modalidad: str = "editorial") -> Ficha:
-    return construir_ficha(grupo, modalidad, con, emb=emb)
+    return construir_ficha(grupo, modalidad, con.de(modalidad) if isinstance(con, PorModalidad) else con, emb=emb)
 
 
 def codigos(f: Ficha) -> set[str]:
@@ -344,6 +365,7 @@ ESPERADOS: dict[str, set[str]] = {
     "medios_o_fechas_desconocidos": {h.G_SIN_FECHA},
     "urgencia_sin_publicacion": {h.G_SIN_FECHA},
     "subtema_desconocido": {h.G_CIFRAS},
+    "sector_desconocido": set(),       # solo en una corrida bancaria con un tema sin sector (ningún grupo de la base lo tiene)
 }
 
 
@@ -474,19 +496,28 @@ def _sin(d: Any, *claves: str) -> Any:
 @pytest.mark.parametrize("grupo", GRUPOS)
 def test_misma_ficha_distinta_modalidad_solo_cambian_accion_medio_de_referencia_y_fuentes_extra(con, emb, grupo) -> None:
     e, b = hacer(con, emb, grupo, "editorial"), hacer(con, emb, grupo, "banca")
-    saca = ("modalidad", "accion_recomendada.accion", "accion_recomendada.motivo", "quien_lo_reporta.medio_referencia", "falta_comprobar.fuentes_sugeridas")
+    # E2-01: el puntaje se calcula por modalidad (I usa el alcance por sector en banca), así que P, el rango y el desglose de I pueden diferir;
+    # R, U, N y E no dependen de la modalidad.
+    saca = ("modalidad", "accion_recomendada.accion", "accion_recomendada.motivo", "accion_recomendada.rango", "quien_lo_reporta.medio_referencia",
+            "falta_comprobar.fuentes_sugeridas", "puntaje")
     de, db_ = _sin(e.model_dump(), *saca), _sin(b.model_dump(), *saca)
+    for d in (de, db_):          # «subtema no determinado» habla del alcance del subtema, que en banca no entra en I (usa el sector): solo lo emite la editorial
+        for lista in ("principales", "otros"):
+            d["falta_comprobar"][lista] = [v for v in d["falta_comprobar"][lista] if v["codigo"] != "subtema_desconocido"]
     assert de == db_
+    assert "subtema_desconocido" not in codigos(b)
+    assert {k: v.model_dump() for k, v in e.puntaje.componentes.items() if k != "I"} == {k: v.model_dump() for k, v in b.puntaje.componentes.items() if k != "I"}
     assert e.modalidad == "editorial" and b.modalidad == "banca"
     assert b.quien_lo_reporta.medio_referencia is None
     base_e = [s for s in e.falta_comprobar.fuentes_sugeridas]
     assert [s for s in b.falta_comprobar.fuentes_sugeridas if s.origen != "modalidad"] == base_e and all(s.origen != "modalidad" for s in base_e)
 
 
-def test_la_accion_cambia_entre_modalidades_para_el_mismo_rango_y_estado(con, emb) -> None:
+def test_la_accion_de_cada_modalidad_sale_del_rango_de_su_propia_corrida_y_el_estado_es_el_mismo(con, emb) -> None:
     e, b = hacer(con, emb, h.G_CIFRAS, "editorial"), hacer(con, emb, h.G_CIFRAS, "banca")
     assert e.accion_recomendada.accion != b.accion_recomendada.accion
-    assert (e.accion_recomendada.rango, e.accion_recomendada.estado_evidencia) == (b.accion_recomendada.rango, b.accion_recomendada.estado_evidencia)
+    assert e.accion_recomendada.estado_evidencia == b.accion_recomendada.estado_evidencia
+    assert e.accion_recomendada.rango == e.puntaje.rango and b.accion_recomendada.rango == b.puntaje.rango      # cada acción sale del rango de su propia corrida
 
 
 def test_no_hay_if_modalidad_en_el_codigo_de_la_ficha() -> None:
@@ -536,8 +567,9 @@ def test_la_linea_de_fichas_jsonl_trae_los_campos_del_contrato(con, emb, modalid
 
 
 @pytest.mark.parametrize("modalidad", MODALIDADES)
-def test_la_cli_imprime_la_ficha_con_las_cinco_partes(base, emb, capsys, modalidad, monkeypatch) -> None:
+def test_la_cli_imprime_la_ficha_con_las_cinco_partes(base, base_banca, emb, capsys, modalidad, monkeypatch) -> None:
     monkeypatch.setattr(modulo, "_embeddings", lambda: emb)
+    base = {"editorial": base, "banca": base_banca}[modalidad]
     assert modulo.main(["--grupo", h.G_CIFRAS, "--modalidad", modalidad, "--base", str(base)]) == 0
     salida = capsys.readouterr().out
     for titulo in [s.titulo for s in vista(construir_ficha(h.G_CIFRAS, modalidad, db.conectar(base, solo_lectura=True), emb=emb)).secciones]:
@@ -577,9 +609,9 @@ def test_construir_ficha_con_un_grupo_sin_puntaje_pide_correr_src_puntaje(tmp_pa
 # ------------------------------------------------------------------ configuración
 
 
-def test_la_modalidad_banca_es_parcial_y_usa_el_mismo_modelo_que_la_editorial() -> None:
+def test_la_modalidad_banca_esta_completa_y_usa_el_mismo_modelo_que_la_editorial() -> None:
     e, b = cargar_modalidad("editorial"), cargar_modalidad("banca")
-    assert type(e) is type(b) and b.parcial is True and e.parcial is False and b.medio_referencia is None
+    assert type(e) is type(b) and b.parcial is False and e.parcial is False and b.medio_referencia is None
     celdas = [getattr(getattr(b.tabla_acciones, r), s) for r in ("bajo", "medio", "alto") for s in ("insuficiente", "parcial", "suficiente")]
     assert len(celdas) == 9 and not any(FORMAS_DE_PUBLICAR.search(f"{c.accion} {c.motivo}") for c in celdas)
     texto = " ".join(f"{c.accion} {c.motivo}" for c in celdas).lower()

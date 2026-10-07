@@ -20,6 +20,7 @@ vacios:
     - medios_o_fechas_desconocidos
     - urgencia_sin_publicacion
     - subtema_desconocido
+    - sector_desconocido
   verificacion_por_defecto: "Revisar el vacío con la fuente primaria antes de usar el tema."
   # Qué hacer para cerrar cada vacío. Los vacíos y sus textos los calcula E1-10 (`prioridad.yaml`, tabla `evidencia`): la
   # ficha solo los lee, los ordena y les agrega esta verificación.
@@ -48,6 +49,8 @@ vacios:
       verificacion: "Abrir el enlace de cada titular para identificar el medio y la fecha de publicación original."
     subtema_desconocido:
       verificacion: "Confirmar de qué asunto trata el grupo; sin subtema no hay fuentes sugeridas específicas."
+    sector_desconocido:
+      verificacion: "Confirmar a qué sector del entorno pertenece el tema; sin sector el impacto usa un alcance neutro."
 
 fuentes:
   subtema_desconocido: sin_subtema   # valor de subtema que equivale a «no determinado» (D-92); también cuenta el nulo

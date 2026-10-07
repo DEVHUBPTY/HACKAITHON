@@ -929,6 +929,32 @@ class TablaAcciones(ModeloConfig):
     alto: FilaAcciones
 
 
+CODIGOS_DE_HORIZONTE = ("inmediato", "corto plazo", "estructural")   # el contrato con el boletín (E2-02); sus textos viven en el YAML
+
+
+class HorizonteTemporal(ModeloConfig):
+    """Escala de horizonte (D-11): *inmediato* hasta N días, *corto plazo* hasta M días y *estructural* más allá o sin fechas de noticia."""
+
+    inmediato_hasta_dias: float = Field(gt=0)
+    corto_plazo_hasta_dias: float = Field(gt=0)
+    etiquetas: dict[str, str]  # código (inmediato, corto plazo, estructural) -> texto que ve la persona
+
+    @model_validator(mode="after")
+    def _crece(self) -> HorizonteTemporal:
+        if self.inmediato_hasta_dias >= self.corto_plazo_hasta_dias:
+            raise ValueError("horizonte: inmediato_hasta_dias debe ser menor que corto_plazo_hasta_dias")
+        if set(self.etiquetas) != set(CODIGOS_DE_HORIZONTE):
+            raise ValueError(f"horizonte: etiquetas debe tener exactamente {list(CODIGOS_DE_HORIZONTE)}; difieren {sorted(set(self.etiquetas) ^ set(CODIGOS_DE_HORIZONTE))}")
+        return self
+
+
+class BandejaPorSector(ModeloConfig):
+    """Presentación de la bandeja agrupada por sector (E2-01)."""
+
+    sin_sector: str  # etiqueta del bloque de los grupos cuyo tema no tiene sector
+    etiquetas_sector: dict[str, str]  # sector -> título del bloque
+
+
 class ConfigModalidad(ModeloConfig):
     """Modelo común de ``modalidad_editorial.yaml`` y ``modalidad_banca.yaml`` (D-01)."""
 
@@ -944,6 +970,8 @@ class ConfigModalidad(ModeloConfig):
     # Banca (D-11): tema -> sector; el alcance de I se mide por sector en lugar de subtema (diseño, reglas v1.3).
     sectores_por_tema: dict[str, str] = Field(default_factory=dict)
     alcance_por_sector: dict[str, float] = Field(default_factory=dict)
+    horizonte: HorizonteTemporal | None = None
+    bandeja: BandejaPorSector | None = None
 
 
 def cargar_modalidad(modalidad: str, carpeta: Path | None = None) -> ConfigModalidad:
@@ -957,14 +985,25 @@ def cargar_modalidad(modalidad: str, carpeta: Path | None = None) -> ConfigModal
 
 def _validar_sectores(cfg: ConfigModalidad, carpeta: Path | None) -> None:
     """Los temas y sectores de la banca deben existir en temas.yaml (sectores de D-11)."""
-    if not cfg.sectores_por_tema and not cfg.alcance_por_sector:
+    bloques = {
+        "sectores_por_tema": bool(cfg.sectores_por_tema), "alcance_por_sector": bool(cfg.alcance_por_sector),
+        "horizonte": cfg.horizonte is not None, "bandeja": cfg.bandeja is not None,
+    }
+    if not any(bloques.values()):
         return
+    if not all(bloques.values()):
+        faltan = sorted(b for b, hay in bloques.items() if not hay)
+        raise ErrorDeConfiguracion(f"modalidad_{cfg.modalidad}.yaml: los bloques por sector van todos o ninguno; faltan {faltan}")
     ruta = carpeta if carpeta is not None and (carpeta / "temas.yaml").exists() else CARPETA_CONFIG
     temas = cargar_temas(ruta)
     problemas = [f"tema desconocido en sectores_por_tema: {t}" for t in cfg.sectores_por_tema if t not in temas.temas]
+    problemas += [f"tema sin sector en sectores_por_tema: {t}" for t in temas.temas if t not in cfg.sectores_por_tema]
     problemas += [f"sector fuera de D-11 en sectores_por_tema: {s}" for s in cfg.sectores_por_tema.values() if s not in temas.sectores_validos]
     problemas += [f"sector desconocido en alcance_por_sector: {s}" for s in cfg.alcance_por_sector if s not in temas.sectores_validos]
     problemas += [f"alcance_por_sector sin valor en [0, 1] para {s}" for s, v in cfg.alcance_por_sector.items() if not 0 <= v <= 1]
+    if cfg.bandeja is not None:
+        problemas += [f"bandeja.etiquetas_sector sin el sector {s}" for s in temas.sectores_validos if s not in cfg.bandeja.etiquetas_sector]
+        problemas += [f"bandeja.etiquetas_sector con un sector desconocido: {s}" for s in cfg.bandeja.etiquetas_sector if s not in temas.sectores_validos]
     problemas += [f"sector sin alcance_por_sector: {s}" for s in set(cfg.sectores_por_tema.values()) if s not in cfg.alcance_por_sector]
     if problemas:
         raise ErrorDeConfiguracion(f"modalidad_{cfg.modalidad}.yaml: " + "; ".join(problemas))
@@ -1831,6 +1870,7 @@ class VaciosPrioridad(ModeloConfig):
     medios_o_fechas_desconocidos: str
     noticia_recirculada: str
     subtema_desconocido: str
+    sector_desconocido: str
     motivo_sin_dato_oficial_por_defecto: str
     motivos_sin_vinculo: dict[str, str]
 
@@ -2171,6 +2211,8 @@ class BandejaInterfaz(ModeloConfig):
     alto_filas_px: int = Field(ge=1)
     decimales_puntaje: int = Field(ge=0)
     largo_titular_selector: int = Field(ge=10)
+    filas_iniciales_por_sector: int = Field(ge=1)
+    ancho_titular_cli: int = Field(ge=10)
 
 
 class CalidadInterfaz(ModeloConfig):

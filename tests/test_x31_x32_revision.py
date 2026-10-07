@@ -179,9 +179,12 @@ def test_sin_base_ni_registro_los_archivos_exportados_tambien_cuentan(tmp_path, 
     assert nueva.abrir(h.G_CIFRAS, "editorial", EDITORIAL).id_caso == "CASO-002"
 
 
-def test_el_registro_de_casos_es_un_csv_de_solo_agregar(tmp_path, base) -> None:
-    r = Revisiones(tmp_path / "revision.duckdb", base, ahora=_reloj())
+def test_el_registro_de_casos_es_un_csv_de_solo_agregar(tmp_path, base, emb) -> None:
+    base_banca = h.construir(tmp_path / "banca.duckdb", emb, modalidad="banca")      # una base guarda una modalidad a la vez (X39): una por modalidad
+    ruta = tmp_path / "revision.duckdb"
+    r = Revisiones(ruta, base, ahora=_reloj())
     r.abrir(h.G_COMPLETO, "editorial", EDITORIAL)
+    r = Revisiones(ruta, base_banca, ahora=_reloj())
     r.abrir(h.G_CIFRAS, "banca", "Juan Zhou")
     with r.ruta.with_suffix(".casos.csv").open(encoding="utf-8", newline="") as f:
         filas = list(csv.DictReader(f))

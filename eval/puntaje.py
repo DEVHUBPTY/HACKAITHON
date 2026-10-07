@@ -29,6 +29,7 @@ from typing import Any
 from src import db
 from src.clasificacion import proporcion
 from src.configuracion import RAIZ, ConfigPrioridad, ReglasV13, cargar_carga, cargar_normalizacion, cargar_prioridad, cargar_reglas
+from src.prioridad import MODALIDAD_POR_DEFECTO
 from src.evidencia import ESTADO_INSUFICIENTE, ESTADO_PARCIAL, ESTADO_SUFICIENTE
 from src.puntaje import COMPONENTES
 
@@ -95,6 +96,7 @@ def evaluar(ruta_base: Path, reglas: ReglasV13, cfg: ConfigPrioridad, z: float) 
         existentes = {f[0] for f in con.execute("SELECT table_name FROM information_schema.tables").fetchall()}
         if not {"puntajes", "evidencia"} <= existentes or db.contar_filas(con, "puntajes") == 0:
             raise RuntimeError("no hay puntajes: ejecute `poetry run python -m src.puntaje`")
+        db.exigir_modalidad_de_la_base(con, MODALIDAD_POR_DEFECTO)      # X48: la distribución de P que se evalúa es la editorial
         puntajes = db.leer_tabla(con, "puntajes", "posicion")
         evidencia = {e["id_grupo"]: e for e in db.leer_tabla(con, "evidencia")}
         titulares = {g["id_grupo"]: g["titular_central"] for g in db.leer_tabla(con, "grupos")}
