@@ -148,9 +148,10 @@ def test_el_registro_permite_calcular_la_tasa_por_regla_y_por_modelo(tmp_path: P
     assert t["unidades_evaluadas"] == 4
     assert t["por_modelo"]["deepseek/m1"]["tasa"] == pytest.approx(1 / 3) and t["por_modelo"]["deepseek/m1"]["n"] == 3
     assert t["por_modelo"]["ollama/m2"]["tasa"] == 1.0
-    assert t["por_regla"]["causalidad"]["deepseek/m1"]["k"] == 1  # una regla cuenta una vez por unidad aunque dispare dos veces
-    assert t["por_regla"]["causalidad"]["deepseek/m1"]["n"] == 3 and len(t["por_regla"]["causalidad"]["deepseek/m1"]["ic95"]) == 2
-    assert t["por_regla"]["acusacion"]["deepseek/m1"]["k"] == 1
+    c = t["por_regla"]["causalidad"]["deepseek/m1"]["afirmacion"]
+    assert c["k"] == 1 and c["n"] == 2 and len(c["ic95"]) == 2  # una vez por unidad aunque dispare dos veces; n = afirmaciones evaluadas
+    assert t["por_regla"]["acusacion"]["deepseek/m1"]["afirmacion"]["k"] == 1
+    assert t["por_regla"]["causalidad"]["ollama/m2"]["seccion:brief"]["n"] == 1
 
 
 def test_la_cli_resume_el_registro(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
