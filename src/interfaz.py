@@ -496,13 +496,22 @@ def acciones_disponibles(estado: str, cfg: ConfigRevision | None = None) -> dict
     return {nombre: estado in a.desde for nombre, a in cfg.acciones.items()}
 
 
-def tabla_historial(filas: Sequence[Any], cfg_ver: ConfigVerificacion | None = None) -> list[dict[str, Any]]:
-    """El historial de un caso como filas para mostrar, con la fecha en hora de Panamá (los datos siguen en UTC)."""
+def es_provisional(revisor: str, modalidad: str | None = None, cfg: ConfigRevision | None = None) -> bool:
+    """El revisor está declarado ``provisional`` en ``config/revision.yaml`` (D-112)."""
+    return any(r.provisional for r in (cfg or cargar_revision()).revisores if r.nombre == revisor and (modalidad is None or r.modalidad == modalidad))
+
+
+def tabla_historial(filas: Sequence[Any], cfg_ver: ConfigVerificacion | None = None, modalidad: str | None = None, cfg_rev: ConfigRevision | None = None) -> list[dict[str, Any]]:
+    """El historial de un caso como filas para mostrar, con la fecha en hora de Panamá (los datos siguen en UTC).
+
+    Si el revisor es provisional (D-112), su celda lleva la marca de ``textos.marca_provisional``."""
     cfg_ver = cfg_ver or cargar_verificacion()
+    cfg_rev = cfg_rev or cargar_revision()
     return [
         {
             "#": f.id_revision, "Fecha": hora_panama(f.fecha_utc, cfg_ver), "Acción": f.accion, "De": f.estado_anterior, "A": f.estado_nuevo,
-            "Revisor": f"{f.revisor} ({f.rol})", "Versión": f.version, "Motivo": f.motivo or "", "Comentario": f.comentario or "",
+            "Revisor": f"{f.revisor} ({f.rol})" + (f" · {cfg_rev.textos.marca_provisional}" if es_provisional(f.revisor, modalidad, cfg_rev) else ""),
+            "Versión": f.version, "Motivo": f.motivo or "", "Comentario": f.comentario or "",
         }
         for f in filas
     ]

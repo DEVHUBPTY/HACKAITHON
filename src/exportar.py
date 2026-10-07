@@ -91,7 +91,7 @@ def fila_notion(rev: Revisiones, id_caso: str, ficha: Ficha, ahora: datetime | N
         "Qué está respaldado": _texto_plano(secciones["respaldado"].lineas),
         "Qué falta comprobar": _texto_plano(secciones["falta_comprobar"].lineas),
         "IDs de fuente": ", ".join(a_registro(ficha)["ids_fuente"]),
-        "Revisor": ultima.revisor if ultima else "",
+        "Revisor": (ultima.revisor + (f" · {cfg.textos.marca_provisional}" if rev.es_provisional(ultima.revisor, caso.modalidad) else "")) if ultima else "",
         "Comentario del revisor": comentario,
         "Fecha de revisión": ultima.fecha_utc if ultima else "",
         "Última exportación": (ahora or rev.ahora()).astimezone(UTC).strftime(FORMATO_FECHA),
@@ -102,14 +102,14 @@ def fila_notion(rev: Revisiones, id_caso: str, ficha: Ficha, ahora: datetime | N
     return {col: _recortar(valores[col], cfg) for col in cfg.exportacion.columnas}
 
 
-def _fila_historial(f: Fila, cfg_ver: Any) -> dict[str, str]:
+def _fila_historial(f: Fila, cfg_ver: Any, revisor: str | None = None) -> dict[str, str]:
     return {
         "id_revision": str(f.id_revision),
         "fecha": hora_panama(f.fecha_utc, cfg_ver, con_zona=False),
         "accion": escapar_markdown(f.accion),
         "estado_anterior": escapar_markdown(f.estado_anterior),
         "estado_nuevo": escapar_markdown(f.estado_nuevo),
-        "revisor": escapar_markdown(f"{f.revisor} ({f.rol})"),
+        "revisor": escapar_markdown(revisor or f"{f.revisor} ({f.rol})"),
         "version": "" if f.version is None else str(f.version),
         "motivo": escapar_markdown(f.motivo or "").replace("\n", " "),
         "comentario": escapar_markdown(f.comentario or "").replace("\n", " "),
@@ -132,7 +132,7 @@ def a_markdown(rev: Revisiones, id_caso: str, ficha: Ficha, ahora: datetime | No
         "id_caso": escapar_markdown(id_caso),
         "id_grupo": escapar_markdown(caso.id_grupo),
         "marca": ETIQUETA_BORRADOR,
-        "estado": rev.estado(id_caso),
+        "estado": escapar_markdown(rev.estado_rotulado(id_caso)),
         "version_texto": _version_texto(rev, id_caso),
         "modalidad": rev.cfg.exportacion.modalidades[caso.modalidad],
         "alcance": escapar_markdown(ficha.alcance),
@@ -146,7 +146,7 @@ def a_markdown(rev: Revisiones, id_caso: str, ficha: Ficha, ahora: datetime | No
         ],
         "sin_borrador": rev.cfg.exportacion.sin_borrador,
         "nota_historial": rev.cfg.textos.limitacion_historial,
-        "historial": [_fila_historial(f, cfg_ver) for f in historial],
+        "historial": [_fila_historial(f, cfg_ver, rev.revisor_rotulado(f, caso.modalidad)) for f in historial],
         "diferencias": diferencias,
     }
     entorno = Environment(loader=FileSystemLoader(CARPETA_PLANTILLAS), autoescape=False, trim_blocks=True, lstrip_blocks=True, keep_trailing_newline=True)  # noqa: S701 - Markdown; el escape lo hace escapar_markdown
@@ -175,6 +175,7 @@ def registro_jsonl(rev: Revisiones, id_caso: str, ficha: Ficha) -> dict[str, Any
     actual = rev.version_actual(id_caso)
     r = a_registro(ficha, id_caso, rev.estado(id_caso))
     r["version"] = actual.version if actual else None
+    r["revision_provisional"] = rev.vigente_provisional(id_caso)  # D-112: el estado_revision del contrato no cambia; la marca va aparte
     RegistroFichasJsonl.model_validate({**r, "modalidad": caso.modalidad})
     return r
 

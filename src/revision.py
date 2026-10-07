@@ -437,6 +437,25 @@ class Revisiones:
         historial = self.historial(id_caso)
         return historial[-1].estado_nuevo if historial else self.cfg.estado_inicial
 
+    def es_provisional(self, revisor: str, modalidad: str | None = None) -> bool:
+        """``True`` si el revisor está declarado ``provisional`` en ``config/revision.yaml`` (D-112); sin nombres fijos en el código."""
+        return any(r.provisional for r in self.cfg.revisores if r.nombre == revisor and (modalidad is None or r.modalidad == modalidad))
+
+    def revisor_rotulado(self, fila: Fila, modalidad: str | None = None) -> str:
+        """``Nombre (rol)`` y, si el revisor es provisional, la marca de ``textos.marca_provisional``."""
+        base = f"{fila.revisor} ({fila.rol})"
+        return f"{base} · {self.cfg.textos.marca_provisional}" if self.es_provisional(fila.revisor, modalidad) else base
+
+    def vigente_provisional(self, id_caso: str) -> bool:
+        """``True`` si la fila vigente (la última) la hizo un revisor provisional: apenas una persona agrega la suya, deja de serlo."""
+        historial = self.historial(id_caso)
+        return bool(historial) and self.es_provisional(historial[-1].revisor, self.caso(id_caso).modalidad)
+
+    def estado_rotulado(self, id_caso: str) -> str:
+        """El estado vigente y, si lo dejó un revisor provisional, la marca («aprobado como borrador · provisional (D-101)»)."""
+        marca = f" · {self.cfg.textos.marca_provisional}" if self.vigente_provisional(id_caso) else ""
+        return self.estado(id_caso) + marca
+
     def estado_de_grupo(self, id_grupo: str, modalidad: str) -> str:
         """Estado de un grupo: el de su caso, o ``nuevo`` si todavía no se abrió."""
         caso = self.caso_de_grupo(id_grupo, modalidad)
@@ -789,10 +808,12 @@ def principal(argv: list[str] | None = None) -> int:
             caso = rev.abrir(args.abrir, args.modalidad, args.revisor)
             print(f"{caso.id_caso} · {caso.id_grupo} · {rev.estado(caso.id_caso)}")
         elif args.estado:
-            print(rev.estado_de_grupo(args.estado, args.modalidad))
+            caso = rev.caso_de_grupo(args.estado, args.modalidad)
+            print(rev.estado_rotulado(caso.id_caso) if caso else rev.estado_de_grupo(args.estado, args.modalidad))
         else:
+            modalidad = rev.caso(args.historial).modalidad
             for f in rev.historial(args.historial):
-                print(f"{f.id_revision}\t{f.fecha_utc}\t{f.accion}\t{f.estado_anterior} -> {f.estado_nuevo}\t{f.revisor} ({f.rol})\tv{f.version}\t{f.motivo or ''}")
+                print(f"{f.id_revision}\t{f.fecha_utc}\t{f.accion}\t{f.estado_anterior} -> {f.estado_nuevo}\t{rev.revisor_rotulado(f, modalidad)}\tv{f.version}\t{f.motivo or ''}")
     except (ErrorDeRevision, db.ModalidadDistinta) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1

@@ -2559,6 +2559,7 @@ class RevisorConfig(ModeloConfig):
     nombre: str = Field(min_length=1)
     rol: str = Field(min_length=1)
     modalidad: Literal["editorial", "banca"]
+    provisional: bool = False  # D-112: el asistente revisa de forma provisional; toda aprobación suya se rotula y una persona la rehace en C-09
 
 
 class VinculoRechazadoRevision(ModeloConfig):
@@ -2588,6 +2589,7 @@ class ExportacionRevision(ModeloConfig):
 class TextosRevision(ModeloConfig):
     limitacion_historial: str
     sin_datos: str
+    marca_provisional: str = Field(min_length=1)  # D-112: se agrega junto al revisor cuando su entrada es provisional
 
 
 class ConfigRevision(ModeloConfig):
@@ -2637,6 +2639,10 @@ class ConfigRevision(ModeloConfig):
             raise ValueError("revisores: debe haber al menos uno por modalidad")
         if len({(r.nombre, r.modalidad) for r in self.revisores}) != len(self.revisores):
             raise ValueError("revisores: una persona aparece una sola vez por modalidad")
+        if any(r.provisional and r.modalidad == "editorial" for r in self.revisores) != any(r.provisional and r.modalidad == "banca" for r in self.revisores):
+            raise ValueError("revisores: un revisor provisional se declara en las dos modalidades (D-112)")
+        if all(r.provisional for r in self.revisores):
+            raise ValueError("revisores: debe haber al menos una persona no provisional (D-112)")
         if self.exportacion.carpeta_demo == self.exportacion.carpeta or self.exportacion.fichas_jsonl_demo == self.exportacion.fichas_jsonl:
             raise ValueError("exportacion: la demo exporta a rutas distintas de las reales")
         if len(self.exportacion.columnas) != len(set(self.exportacion.columnas)) or "ID caso" not in self.exportacion.columnas:
