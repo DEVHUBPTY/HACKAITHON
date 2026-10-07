@@ -548,9 +548,13 @@ def test_se_puede_restaurar_un_vinculo_rechazado_y_queda_en_el_registro(rev) -> 
 # ------------------------------------------------------------------ banca: la misma lógica, el revisor es el analista
 
 
-def test_banca_usa_la_misma_logica_con_el_analista_como_revisor(rev) -> None:
+def test_banca_usa_la_misma_logica_con_el_analista_como_revisor(tmp_path, emb) -> None:
+    base_banca = h.construir(tmp_path / "banca.duckdb", emb, modalidad="banca")      # una base solo guarda una modalidad a la vez (X39)
+    rev = Revisiones(tmp_path / "revision_banca.duckdb", base_banca, ahora=_reloj())
     caso = rev.abrir(h.G_COMPLETO, "banca", "Juan Zhou")
-    assert rev.historial(caso.id_caso)[0].rol == "Analista" and caso.id_caso != rev.abrir(h.G_COMPLETO, "editorial", "Juan Zhou").id_caso
+    assert rev.historial(caso.id_caso)[0].rol == "Analista"
+    with pytest.raises(db.ModalidadDistinta):
+        rev.abrir(h.G_COMPLETO, "editorial", "Juan Zhou")
     rev.aceptar(caso.id_caso, "Juan Zhou")
     assert rev.estado(caso.id_caso) == "aprobado como borrador"
     with pytest.raises(TransicionNoPermitida):

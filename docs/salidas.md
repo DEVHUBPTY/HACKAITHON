@@ -44,7 +44,7 @@ Cuando la acción es *Investigar ya* o *Vigilar*: **título de trabajo**, **enfo
 | ↳ Observaciones | — | LLM | Solo afirmaciones de tipo hecho o declaración, citadas |
 | ↳ Hipótesis de impacto | — | LLM | Solo inferencia o hipótesis; redacción condicional; sin cifras nuevas |
 | **Sectores potencialmente relacionados** | — | Regla | Sector del tema principal y del secundario (mapeo tema → sector), cada uno con el motivo |
-| **Horizonte temporal** | — | Regla | *Inmediato* (evidencia de días) · *corto plazo* (semanas) · *estructural* (solo datos anuales); según las fechas de la evidencia (D-11) |
+| **Horizonte temporal** | — | Regla | *Inmediato* (evidencia de días) · *corto plazo* (semanas) · *estructural* (más de 56 días desde la publicación más reciente, o sin ninguna fecha de noticia, es decir, solo datos anuales); según las fechas de la evidencia (D-11, D-102) |
 | **Evidencia** | — | Ficha | Lo respaldado de la ficha, con citas y limitaciones |
 | **3 preguntas para el analista** | Exactamente 3 | LLM sobre vacíos | Cada una referencia su vacío |
 | **Aviso fijo** | — | Regla | "No constituye recomendación financiera ni opinión oficial de la SBP." |

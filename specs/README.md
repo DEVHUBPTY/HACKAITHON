@@ -37,6 +37,7 @@ La columna **Rol** indica el área de la tarea (D = datos, IA, P = producto), no
 | E1-18 | Benchmark y métricas | IA | E0-06, E1-14 | [`E1-18.md`](E1-18.md) |
 | E1-19 | Precision@5 y prueba de tiempo | P | E1-16 | [`E1-19.md`](E1-19.md) |
 | E1-20 | Reproducibilidad de punta a punta | IA + D | E1-18 | [`E1-20.md`](E1-20.md) |
+| E2-01 | Modalidad bancaria: sectores, horizonte y bandeja | D | E1-17 | [`E2-01.md`](E2-01.md) |
 | E2-02 | Boletín de entorno bancario | IA | E2-01 | [`E2-02.md`](E2-02.md) |
 | E3-02 | Fuente D · Series agregadas de la SBP | D | E2-03 | [`E3-02.md`](E3-02.md) |
 | C-06 | Casos de demostración por caso de uso | P + D | E1-16 | [`C-06.md`](C-06.md) |
@@ -52,5 +53,5 @@ La columna **Rol** indica el área de la tarea (D = datos, IA, P = producto), no
 
 ## Pendientes de spec
 
-E2-01, E2-03, Etapa 3 y Cierre (salvo C-06 y C-07): se escriben al llegar al punto de corte de la Etapa 1, con lo aprendido.
+E2-03, Etapa 3 y Cierre (salvo C-06 y C-07): se escriben al llegar al punto de corte de la Etapa 1, con lo aprendido.
 Usa `_plantilla.md`.
