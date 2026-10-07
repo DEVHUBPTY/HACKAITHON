@@ -210,7 +210,7 @@ def test_un_grupo_sin_tema_o_sin_sector_usa_el_alcance_neutro_y_lo_dice() -> Non
     for tema in (None, "sin_tema"):
         comp, vacios = impacto(con_tema("GRP-a", tema, None), pa.REGLAS, pa.CFG, BANCA)
         assert comp.explicacion["sector"] is None and comp.explicacion["alcance_sector"] == pa.CFG.impacto.alcance_subtema_desconocido
-        assert [v.codigo for v in vacios] == ["subtema_desconocido"]
+        assert [v.codigo for v in vacios] == ["sector_desconocido"]
 
 
 def test_sin_alcance_por_sector_i_es_el_de_siempre() -> None:
