@@ -328,3 +328,33 @@ def test_la_pantalla_paquete_muestra_el_boletin_con_sus_etiquetas() -> None:
     secciones = dict(ui.secciones_de_paquete(boletin(), etiquetas))
     assert {etiquetas[k] for k in ("observaciones", "hipotesis_impacto", "sectores", "horizonte", "evidencia", "aviso")} <= set(secciones)
     assert secciones[etiquetas["sectores"]][0].startswith("economía: ") and secciones[etiquetas["aviso"]] == [RESTRICCIONES.aviso_banca]
+
+
+# ============================================================================================ revisión del PR #38
+
+
+def test_seguimiento_no_genera_por_decision_d104() -> None:
+    texto = (CARPETA_CONFIG / "generacion.yaml").read_text(encoding="utf-8")
+    assert "D-104" in texto and "D-101" not in texto
+
+
+def test_el_prompt_del_boletin_no_repite_los_limites_de_salidas_yaml() -> None:
+    _, texto = cargar_prompt("boletin_banca")
+    assert not re.search(r"\b(250|150)\b", texto) and "exactamente 3" not in texto
+    assert "{resumen_max_palabras}" in texto and "{preguntas}" in texto
+    prov = proveedor_banca()
+    generar(ficha_banca(), prov)
+    system = prov.llamadas[1][1]
+    s = cargar_salidas().banca
+    assert "{" + "preguntas}" not in system and f"exactamente {s.preguntas}" in system and str(s.resumen_max_palabras) in system
+
+
+def test_una_ficha_sin_tema_secundario_lo_muestra_como_sin_dato(con_banca) -> None:
+    from src.ficha import construir_ficha, vista
+    from tests import ficha_ayuda as h
+
+    con, emb = con_banca
+    f = construir_ficha(h.G_COMPLETO, "banca", con, emb=emb)
+    vieja = f.model_copy(update={"que_se_reporta": f.que_se_reporta.model_copy(update={"tema_secundario": None})})
+    lineas = [l.texto for s in vista(vieja).secciones for l in s.lineas]
+    assert any(l.startswith("Tema secundario: sin dato") for l in lineas), lineas[:8]
