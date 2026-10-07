@@ -12,6 +12,7 @@ poetry run python -m src.carga && poetry run python -m src.normalizacion && poet
 poetry run python -m src.clasificacion          # llena la clasificación en data/senales.duckdb (+ sección en reporte_calidad.json)
 poetry run python -m eval.clasificacion         # casos difíciles; datos reales solo si existe eval/etiquetas.csv
 poetry run python -m eval.calibrar_clasificacion  # imprime los umbrales provisionales (no escribe config/)
+poetry run python -m eval.diagnostico_temas        # E1-07b: errores de tema vs. etiquetas humanas, por evento (outputs/diagnostico_temas.json)
 poetry run pytest tests/test_casos_dificiles.py   # los casos difíciles contra el clasificador real
 ```
 
@@ -266,8 +267,8 @@ similitud máxima y percentil 25 de la brecha entre la mejor y la segunda, sobre
 tras corregir las referencias (e5 · A 0.824 / 0.002, e5 · B 0.797 / 0.004, MiniLM · A 0.213 / 0.030, MiniLM · B 0.283 / 0.019).
 **Es un supuesto** (se abstiene el 5 % menos parecido; el 25 % de brecha más corta recibe secundario), no una medición de qué es
 «sin tema». Diagnóstico descriptivo: separando los titulares que el filtro de palabras clave marcó `fuera_de_temas` (n = 16) de
-los útiles, la similitud máxima de e5·A da AUC 0.79 y la de MiniLM·A 0.73, con marcas que **no son etiquetas humanas**. Se
-recalibran con `eval/etiquetas.csv`.
+los útiles, la similitud máxima de e5·A da AUC 0.79 y la de MiniLM·A 0.73, con marcas que **no son etiquetas humanas**. La recalibración con `eval/etiquetas.csv` se intentó en E1-07b y **no respalda ningún
+valor** (sección siguiente).
 
 ## Filtro de ruido por similitud con un prototipo de Panamá (diferido desde E1-03b en la revisión X14)
 
@@ -283,10 +284,126 @@ true`, reversible al volver a correr); una nota regional no se marca nunca. Medi
 Conclusión: con estos números la señal **no se activa**. La precisión y el recall reales se miden con `python -m eval.ruido`
 sobre `eval/etiquetas.csv`; mientras tanto `ruido.yaml` conserva el hook y se guarda `similitud_panama` por noticia.
 
+## Diagnóstico de los errores de tema con etiquetas humanas (E1-07b, 2026-10-07)
+
+**Resultado: no hay una corrección respaldada por las etiquetas y no se cambió ni el modelo, ni el método, ni un umbral, ni
+una referencia.** Lo que sí queda es el diagnóstico, su causa raíz y la herramienta que lo reproduce:
+`HF_HUB_OFFLINE=1 poetry run python -m eval.diagnostico_temas` (salida: `outputs/diagnostico_temas.json`; sin tocar la base
+ni `config/`). Los pasos 1–5 de abajo usan **solo etiquetas humanas** (D-85); el juicio previo del asistente sobre los grupos
+(~25 de 57 con tema equivocado) no se usa como dato.
+
+**Protocolo.** Evaluación: las 63 filas de `eval/etiquetas.csv` que el filtro de ruido dejó pasar (los 16 titulares de
+`ejemplos_excluidos.txt` no entran: 0 de ellos están en las etiquetas). Unidad de análisis: **el evento** (`grupo` de la
+etiqueta, o la propia noticia si no tiene), porque las filas se repiten: las 63 son **29 eventos** y uno solo (El Niño) pone 20
+filas. IC por fila: Wilson 95 %; IC por evento: bootstrap sobre eventos (1.000 remuestreos, semilla 42). Calibración del umbral:
+validación cruzada de 5 pliegues por evento × 20 particiones (semilla 20261007); el umbral se elige en el entrenamiento
+(candidatos solo de ahí) y se mide en el pliegue que no vio. Los puntos de corte de las opciones se definen por **percentil
+sobre los 94 titulares útiles del snapshot v1.2, sin usar las etiquetas**. Todo esto se declaró antes de medir.
+
+**Limitaciones que condicionan cualquier conclusión.** (1) Una sola persona etiquetó (D-85); no hay kappa. (2) Las etiquetas son
+un **censo del estrato «no ruido»** del snapshot anterior: no existen datos de prueba independientes de los que sirvieron para
+diagnosticar, así que toda mejora medida aquí es **optimista**. (3) `sin_tema` tiene **5 filas en 5 eventos**: cualquier
+proporción o AUC sobre abstención es anecdótico. (4) Los 63 incluyen 15 titulares nuevos de v1.2 sin etiquetar (94 útiles en total).
+
+### 1 · Medición (e5 · A, umbral 0.824)
+
+| Qué | Resultado (n = 63 filas, 29 eventos) |
+|---|---|
+| Exactitud del tema principal | 33/63 = 52.4 % [IC 95 % Wilson 40.3–64.2] por fila; **0.466 [0.310–0.638] por evento** |
+| Macro-F1 (7 clases con soporte) | 0.401 [0.245–0.510] |
+| Recall por tema (filas) | Economía 5/26 · Servicios públicos 6/9 · Eventos naturales 20/20 · Logística 1/1 · Regulación 1/1 · Turismo 0/1 · `sin_tema` 0/5 |
+| Errores (30 filas) | **abstención falsa 12/63 = 19.0 % [11.2–30.4]** · abstención omitida 5/63 = 7.9 % [3.4–17.3] · **confusión entre temas 13/63 = 20.6 % [12.5–32.2]** |
+| Eventos por tema humano | Economía 11 (acierto por evento 0.41) · Servicios públicos 9 (0.67) · Eventos naturales 1 · `sin_tema` 5 (0.0) · otros 3 |
+
+La exactitud por fila **está inflada por un solo evento** (El Niño, 20 filas, todas acertadas): sin él son 13/43 = 30 %.
+Los grupos del snapshot v1.2 confirman el cuadro con etiquetas humanas: de los 58 grupos, 31 tienen algún titular etiquetado y
+en **13/31 = 41.9 % [26.4–59.2]** el tema del grupo coincide con el tema humano mayoritario (el juicio del asistente, ~25 de 57
+equivocados, apuntaba en la misma dirección; no es una medición).
+
+### 2 · Causa raíz
+
+- **La asignación forzada NO es el error dominante** (hipótesis de partida, descartada con datos): solo 5/63 filas (los 5
+  `sin_tema` humanos, 5 eventos distintos) se asignan a un tema cuando no correspondía. El error dominante es **otro**.
+- **El error dominante recae en Economía:** 21 de los 30 errores (70 %) son filas que una persona etiquetó Economía, y los **12
+  de la abstención falsa son todos Economía** (un solo evento, «Trump redirige ayuda a Latinoamérica»: 13 filas en 4 idiomas; se abstienen 10 en alemán, 1 en ucraniano
+  y 1 en checo). Economía es 11 de 29 eventos y su recall es 5/26 = 19.2 % [8.5–37.9]; 17 de sus 26 filas son de **alcance regional**
+  (D-84).
+- **Cobertura de referencias:** `temas.yaml` define Economía solo con titulares **panameños** (2 reales y 5 ilustrativos); la
+  regla D-84 (una nota regional o del exterior que afecta a Panamá se etiqueta con su tema) llegó después y no está en la
+  descripción ni en los ejemplos. Es la explicación más compatible con los datos, **pero no está demostrada**: la corrección
+  que la ataca no se sostiene (punto 4).
+- **Escala de similitud de e5 (abstención):** las similitudes máximas están entre 0.81 y 0.91 y el margen entre el 1.º y el 2.º
+  tema tiene mediana de 0.004; con eso el umbral del 5 % más bajo (0.824) abstiene por **idioma**, no por «no corresponde a ningún
+  tema»: los 12 titulares abstenidos son el mismo evento en alemán, ucraniano y checo, con similitudes de 0.81–0.82 frente al
+  umbral 0.824 (compatible con los datos; no se midió con una traducción).
+- **Filtro de ruido (E1-03b):** 5 de 63 filas «útiles» son `sin_tema` para la persona: el filtro de palabras clave dejó pasar lo
+  que no cubría su lista (política electoral sin norma, notas sobre otro país, vida privada). Es un falso negativo del filtro,
+  no del clasificador.
+
+### 3 · ¿Se puede abstener por similitud? No con estas etiquetas
+
+| Señal | AUC | Lectura |
+|---|---|---|
+| Similitud máxima baja → `sin_tema` (5 positivos) | 0.483 | no separa (0.5 = azar) |
+| Margen bajo → `sin_tema` | 0.566 | casi azar |
+| Parecido a una clase «fuera de temas» (10 referencias de la guía) → `sin_tema` | 0.762 | señal débil, **5 positivos: anecdótica** |
+| Similitud máxima alta → acierto (por evento) | 0.731 | señal moderada de **error**, no de «fuera de temas» |
+
+Umbral por validación cruzada por evento (objetivo macro-F1, el de la sección 9.1): elige umbrales entre 0.824 y 0.860 y se
+abstiene en ~35 filas por corrida (32 falsas); exactitud fuera de muestra **0.324**, peor que el activo (0.524 en la misma
+muestra): con 5 positivos el macro-F1 «premia» abstenerse porque da un F1 no nulo a `sin_tema`. Con objetivo exactitud elige no
+abstenerse en 87 de 100 decisiones (0.507). **Conclusión: el umbral de «sin tema» no es calibrable con 5 positivos; ningún valor
+queda respaldado.** La nota pendiente («recalibrar el umbral») queda cerrada como **no identificable con las etiquetas
+actuales**, no como resuelta.
+
+### 4 · Opciones medidas (ninguna adoptada)
+
+Cada fila reemplaza el comportamiento activo en las 63 etiquetadas (n = 63 filas, 29 eventos) y en los 94 titulares útiles de
+v1.2. Δ = cambio en la exactitud **por evento** frente al activo (IC bootstrap pareado sobre eventos). Todas se midieron sobre el
+mismo conjunto con el que se diagnosticó: son optimistas.
+
+| Opción | Filas acertadas (IC 95 %) | Exactitud por evento [IC] | Δ por evento vs. activo [IC] | Efecto en v1.2 (94 útiles) |
+|---|---|---|---|---|
+| **Activo** (umbral 0.824) | 33/63 = 52.4 % [40.3–64.2] | 0.466 [0.310–0.638] | — | 12 titulares en `sin_tema` |
+| Sin abstención por similitud | 34/63 = 54.0 % [41.8–65.7] | 0.468 [0.310–0.638] | +0.003 [0.000, 0.011] | 12 pasan de `sin_tema` a Regulación/Economía; macro-F1 baja a 0.354 |
+| Abstener en el 10 % de menor margen | 30/63 = 47.6 % [35.8–59.7] | 0.362 [0.190–0.535] | −0.103 [−0.207, 0.000] | 9 titulares útiles más a `sin_tema` |
+| Abstener en el 20 % de menor margen | 31/63 = 49.2 % [37.3–61.2] | 0.397 [0.241–0.569] | −0.069 [−0.241, 0.070] | 17 más a `sin_tema`; 2/5 abstenciones correctas, 13 falsas |
+| Abstener en el 30 % de menor margen | 27/63 = 42.9 % [31.4–55.1] | 0.357 [0.207–0.529] | −0.109 [−0.310, 0.093] | 26 más a `sin_tema`; 3/5 correctas, 20 falsas (Eventos naturales 17/20) |
+| Clase «fuera de temas», 1–10 % | 35/63 = 55.6 % [43.3–67.2] | 0.503 [0.333–0.675] | +0.037 [0.000, 0.112] | 1–10 titulares más a `sin_tema`; **1/5** abstenciones correctas, 0–5 falsas |
+| Economía regional: solo descripción | 35/63 = 55.6 % [43.3–67.2] | 0.494 [0.333–0.656] | +0.029 [0.000, 0.075] | 5 titulares útiles cambian de tema; Economía 7/26 |
+| Economía regional: solo ejemplos | 31/63 = 49.2 % [37.3–61.2] | 0.630 [0.455–0.793] | +0.164 [0.000, 0.311] | **34 de 94 cambian de tema**; Economía 22/26 pero **Eventos naturales 0/20** |
+| Economía regional: descripción y ejemplos | 30/63 = 47.6 % [35.8–59.7] | 0.595 [0.411–0.756] | +0.130 [−0.017, 0.282] | 33 de 94 cambian de tema; Economía 22/26, Eventos naturales 0/20 |
+
+Lectura:
+
+- **Abstener por margen** reduce los aciertos desde el primer porcentaje y solo alcanza 2–3 de las 5 abstenciones correctas a
+  costa de 13–20 falsas: **sacaría de la bandeja entre 9 y 26 de 94 titulares útiles** para acertar, como mucho, 3.
+- **La clase «fuera de temas»** atrapa 1 de 5; su mejora (+1 fila) viene de quitar las 12 abstenciones falsas del umbral
+  actual, no de la clase.
+- **Cobertura de Economía regional:** con ejemplos sube Economía de 5/26 a 22/26 y la exactitud por evento (+0.16), pero el evento
+  de El Niño (20 filas; la persona puso Economía como alternativa razonable) pasa a Economía: Eventos naturales 0/20, Economía
+  se vuelve el sumidero (45 de 63 predicciones) y 34 de 94 titulares del snapshot cambian de tema. **Cambia un evento grande por
+  otro**; con 29 eventos eso no distingue una mejora real de un reacomodo. La variante «solo descripción» no pierde recall en
+  ninguna clase pero gana 2 filas (IC por evento [0.000, 0.075]): indistinguible de cero.
+
+### 5 · Qué hace falta para decidir (y no se pudo hacer aquí)
+
+1. **Más etiquetas humanas, de más de una persona:** los 15 titulares útiles de v1.2 sin etiquetar y, sobre todo, nuevos eventos
+   con tema Economía (regional y panameño) y con `sin_tema`. Con ≥ 30 positivos de `sin_tema` (hoy 5) el umbral sería
+   calibrable. Sin datos independientes, cualquier cambio de referencias queda sin validar.
+2. **Decisión de producto sobre la abstención:** abstenerse saca titulares útiles de la bandeja (entre 9 y 26 de 94 en las
+   opciones medidas) a cambio de pocas abstenciones correctas; el umbral actual abstiene 12 titulares (1 grupo) y en las etiquetas
+   los 12 son Economía. Dejarlo, quitarlo o sustituirlo son decisiones del equipo, no de la calibración.
+3. **Alcance regional en Economía** (D-84): decidir si la descripción de Economía debe mencionarlo (cambio mínimo de redacción,
+   efecto medido +2 filas sin significancia) y si el evento de El Niño es Eventos naturales (criterio actual) o Economía.
+4. **Filtro de ruido:** 5 filas «útiles» que la persona marcó `sin_tema` indican reglas faltantes (política electoral sin norma,
+   notas sobre otro país); es un cambio de `config/ruido.yaml` que necesita más ejemplos para no sobreajustar.
+
 ## Pendiente
 
 1. **Más etiquetas y más personas:** las 100 etiquetas actuales son de una sola persona y repiten titulares. Reetiquetar con
-   un segundo etiquetador (kappa) y ampliar la muestra antes de decidir D-20 y recalibrar umbrales.
+   un segundo etiquetador (kappa) y ampliar la muestra antes de decidir D-20 y recalibrar umbrales. **E1-07b mostró que sin
+   al menos ~30 titulares `sin_tema` el umbral de abstención no es calibrable** (hoy hay 5) y que el n efectivo son 29 eventos.
 2. Con esas métricas: decidir modelo (D-20, de «propuesta» a «aceptada») y método (D-21), recalibrar los umbrales (incluido el
    de fuga semántica) y decidir si se activa el filtro por similitud. **La elección se registra en Notion con los números** (no
    hay números reales todavía, así que no se registró nada).
