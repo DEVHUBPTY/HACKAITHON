@@ -1685,6 +1685,123 @@ def cargar_consulta(carpeta: Path | None = None) -> ConfigConsulta:
     return cargar_config("consulta", ConfigConsulta, carpeta)
 
 
+# ------------------------------------------------------------------ prioridad.yaml (E1-10)
+
+
+class ComparacionPrioridad(ModeloConfig):
+    decimales_p: int = Field(ge=0, le=15)
+
+
+class ImpactoPrioridad(ModeloConfig):
+    alcance_subtema_desconocido: float = Unidad
+
+
+class DatoOficialPrioridad(ModeloConfig):
+    relaciones_aceptadas: list[str] = Field(min_length=1)
+
+
+class GeografiaPrioridad(ModeloConfig):
+    prefijos_obligatorios: dict[str, list[str]]
+
+
+class MediosPrioridad(ModeloConfig):
+    desconocidos: list[str]
+
+
+class CifrasPrioridad(ModeloConfig):
+    patron: str
+    patron_fecha: str
+    anio_desde: int
+    anio_hasta: int
+    digitos_por_grupo_de_miles: int = Field(ge=1)
+    palabras_previas_no_cifra: list[str]
+    unidades_ignoradas: list[str]
+    raiz_unidad_caracteres: int = Field(ge=1)
+
+    @field_validator("patron")
+    @classmethod
+    def _patron_con_grupos(cls, v: str) -> str:
+        grupos = re.compile(v).groupindex
+        if "numero" not in grupos or "unidad" not in grupos:
+            raise ValueError("el patrón de cifras necesita los grupos con nombre `numero` y `unidad`")
+        return v
+
+    @field_validator("patron_fecha")
+    @classmethod
+    def _fecha_valida(cls, v: str) -> str:
+        _compilar_todas([v], "cifras.patron_fecha")
+        return v
+
+    @model_validator(mode="after")
+    def _anios(self) -> CifrasPrioridad:
+        if self.anio_desde >= self.anio_hasta:
+            raise ValueError("anio_desde debe ser menor que anio_hasta")
+        return self
+
+
+class ParOpuesto(ModeloConfig):
+    nombre: str
+    a: list[str] = Field(min_length=1)
+    b: list[str] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _lados_distintos(self) -> ParOpuesto:
+        if set(self.a) & set(self.b):
+            raise ValueError(f"{self.nombre}: una forma no puede estar en los dos lados")
+        return self
+
+
+class ContradiccionesPrioridad(ModeloConfig):
+    etiqueta: str
+    solo_entre_procedencias: bool
+    maximo_candidatos_por_grupo: int = Field(ge=1)
+    prompt: str
+    pares_opuestos: list[ParOpuesto]
+
+
+class VaciosPrioridad(ModeloConfig):
+    procedencias_insuficientes: str
+    cifras_sin_dato_oficial: str
+    sin_dato_oficial: str
+    contradiccion_abierta: str
+    medios_o_fechas_desconocidos: str
+    noticia_recirculada: str
+    subtema_desconocido: str
+    motivo_sin_dato_oficial_por_defecto: str
+
+
+class SensibilidadPrioridad(ModeloConfig):
+    variacion_peso: float = Field(gt=0)
+    variacion_supuesto: float = Field(gt=0, lt=1)
+    tamano_ranking: int = Field(ge=1)
+
+
+class PuntajeEval(ModeloConfig):
+    casi_constante_desviacion: float = Field(gt=0)
+    top_en_reporte: int = Field(ge=1)
+
+
+class ConfigPrioridad(ModeloConfig):
+    """Modelo de ``config/prioridad.yaml``: geografía, cifras, contradicciones y vacíos de E1-10."""
+
+    version: int
+    comparacion: ComparacionPrioridad
+    impacto: ImpactoPrioridad
+    dato_oficial: DatoOficialPrioridad
+    geografia: GeografiaPrioridad
+    medios: MediosPrioridad
+    cifras: CifrasPrioridad
+    contradicciones: ContradiccionesPrioridad
+    vacios: VaciosPrioridad
+    sensibilidad: SensibilidadPrioridad
+    puntaje_eval: PuntajeEval
+
+
+def cargar_prioridad(carpeta: Path | None = None) -> ConfigPrioridad:
+    """Atajo para ``config/prioridad.yaml``."""
+    return cargar_config("prioridad", ConfigPrioridad, carpeta)
+
+
 MODALIDADES = ("editorial", "banca")
 OPCIONALES = {"modalidad_banca"}  # el esquema la admite aunque todavía no exista
 
@@ -1709,6 +1826,7 @@ CARGADORES = {
     "etiquetado": cargar_etiquetado,
     "procedencias": cargar_procedencias,
     "consulta": cargar_consulta,
+    "prioridad": cargar_prioridad,
 }
 
 
