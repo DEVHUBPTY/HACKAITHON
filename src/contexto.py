@@ -107,25 +107,44 @@ def menciona_termino(titular: str, terminos: Sequence[str]) -> bool:
     return any(re.search(r"(?<!\w)" + re.escape(_normalizar(t)) + r"(?!\w)", texto) for t in terminos if t.strip())
 
 
-def subtemas_nombrados(titulares: Sequence[str], subtemas: Sequence[str], terminos: Mapping[str, Sequence[str]]) -> set[str]:
+def subtemas_nombrados(
+    titulares: Sequence[str],
+    subtemas: Sequence[str],
+    terminos: Mapping[str, Sequence[str]],
+    patrones: Mapping[str, Sequence[str]] | None = None,
+    exclusiones: Mapping[str, Sequence[str]] | None = None,
+) -> set[str]:
     """Subtemas de ``subtemas`` que algún titular nombra (palabra completa, sin mayúsculas ni acentos).
 
     X53: una coincidencia contenida dentro de otra más larga del mismo titular no cuenta («inversión» dentro de «grado de
-    inversión» no nombra el subtema de inversión).
+    inversión» no nombra el subtema de inversión). X77: ``patrones`` son expresiones regulares que también nombran el subtema
+    («construcción del acueducto») y, por ser más largas, mandan sobre el término suelto («acueducto»). X78: si el titular
+    contiene un marcador de ``exclusiones`` de un subtema, ese titular no lo nombra («juez imputa a funcionarios del MOP»).
     """
+    patrones = patrones or {}
+    exclusiones = exclusiones or {}
     nombrados: set[str] = set()
     for titular in titulares:
         texto = _normalizar(titular)
+        excluidos = {
+            s for s in subtemas
+            if any(m.strip() and re.search(r"(?<!\w)" + re.escape(_normalizar(m)) + r"(?!\w)", texto) for m in exclusiones.get(s, []))
+        }
         tramos = [
             (m.start(), m.end(), s)
             for s in subtemas
             for t in terminos.get(s, [])
             if t.strip()
             for m in re.finditer(r"(?<!\w)" + re.escape(_normalizar(t)) + r"(?!\w)", texto)
+        ] + [
+            (m.start(), m.end(), s)
+            for s in subtemas
+            for p in patrones.get(s, [])
+            for m in re.finditer(p, texto)
         ]
         for ini, fin, s in tramos:
             contenido = any(i <= ini and fin <= f and (f - i) > (fin - ini) for i, f, _ in tramos)
-            if not contenido:
+            if not contenido and s not in excluidos:
                 nombrados.add(s)
     return nombrados
 
@@ -150,7 +169,7 @@ def decidir_subtema(
     """
     elegido = subtema_del_grupo([(s, sim) for s, sim, _ in candidatos])
     universo = list(subtemas_del_tema) or ([elegido] if elegido else [])
-    nombrados = subtemas_nombrados(titulares, universo, cfg.terminos_por_subtema)
+    nombrados = subtemas_nombrados(titulares, universo, cfg.terminos_por_subtema, cfg.patrones_por_subtema, cfg.exclusiones_por_subtema)
     if len(nombrados) > 1:
         return None, None
     margenes = [m for _, _, m in candidatos]

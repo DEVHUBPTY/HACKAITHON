@@ -552,7 +552,7 @@ def _correccion(ctx: ui.Contexto, caso: Any, version: Any, revisor: str | None, 
     st.subheader("Corregir el borrador")
     st.caption("Se corrige el texto de una afirmación o de una oración. El texto corregido se revalida: las advertencias se muestran y la persona debe confirmarlas.")
     editables = rv.elementos_editables(version.contenido)
-    clave = st.selectbox("Qué texto corregir", list(editables), key="revision_elemento", format_func=lambda k: ui.etiqueta_de_elemento(k, editables[k].texto, 70))
+    clave = st.selectbox("Qué texto corregir", list(editables), key="revision_elemento", format_func=lambda k: ui.etiqueta_de_elemento(k, editables[k].texto, 70, ctx.cfg.paquete.etiquetas))
     if clave is None:
         return
     texto = st.text_area("Texto corregido", value=editables[clave].texto, key=f"revision_texto_{version.version}_{clave}")

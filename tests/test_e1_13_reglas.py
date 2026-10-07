@@ -933,3 +933,20 @@ X69_TERMINOS = ["los prestamistas", "los acreedores", "los deudores agrícolas",
 def test_x69_un_actor_del_credito_fuera_del_titular_invalida_la_excepcion_literal(termino: str) -> None:
     texto = f"Según La Prensa, las lluvias causaron pérdidas en cultivos y en {termino}"
     assert SECTOR_FINANCIERO_AJENO in reglas(validar_seccion("observaciones", [o(texto + ".", "A1")], _ctx_boletin())), termino
+
+
+# ============================================================================================ X81: el espaciado no esconde una frase de las listas
+
+
+@pytest.mark.parametrize("separador", ["  ", "   ", "\n", "\t", "\u00a0"])   # el último es un espacio duro
+def test_una_frase_con_otro_espaciado_se_rechaza_igual(separador: str) -> None:
+    texto = f"Las pérdidas llegaron debido{separador}a la falta de drenajes"
+    base = afirmacion("A1", "declaración", "La Prensa reporta que las inundaciones causaron pérdidas en Chiriquí", (ID_PRENSA, "titulo"))
+    assert CAUSALIDAD in reglas(valida(base, afirmacion("A2", "inferencia", texto, base=("A1",))).rechazos)
+
+
+def test_el_espaciado_distinto_no_vuelve_palabra_completa_lo_que_no_lo_es() -> None:
+    from src.validador import contiene
+
+    assert contiene("se espera   que viaje", "se espera que") and contiene("se espera que", "se espera que")
+    assert not contiene("se esperara que viaje", "se espera que")

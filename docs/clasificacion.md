@@ -150,14 +150,14 @@ Diferencias de macro-F1 (bootstrap pareado, IC 95 %):
 
 Lectura honesta (D-66, «cuándo la IA no ayuda»):
 
-- **En estos 15 casos los dos baselines le ganan o igualan al modelo activo (guía 12/15, ampliado 14/15, e5 · A 10/15)**, con
+- **En estos 15 casos los dos baselines le ganan o igualan al modelo activo (guía 12/15, ampliado 14/15, e5 · A 11/15 desde E1-07c; antes 10/15)**, con
   IC que se solapan casi por completo. Los casos están escritos con el vocabulario de la propia guía («tránsitos», «sismo»,
   «GAFI», «carga aérea»), que es lo que las palabras clave detectan; **no es evidencia de que el baseline sea mejor en titulares
   reales**, donde 44 de los 79 titulares útiles no activan ningún término de la variante `guia`. Con etiquetas humanas (abajo)
   la comparación es otra.
 - **Elección de modelo y método: no decidible con los casos difíciles.** Se mantienen `e5` (propuesta D-20) y `A` (D-57).
-- Tema secundario esperado (7 casos): con el margen provisional se acierta **1/7** (e5 · A: solo CD-05; lo fija
-  `test_el_tema_secundario_guardado_de_cada_caso_esta_fijado`); el 2.º mejor coincide en 4/7: el problema es sobre todo el
+- Tema secundario esperado (7 casos): con el margen provisional se acierta **2/7** (e5 · A: CD-04 y CD-05, desde E1-07c; antes solo CD-05; lo fija
+  `test_el_tema_secundario_guardado_de_cada_caso_esta_fijado`); el 2.º mejor coincide en 5/7: el problema es sobre todo el
   margen, no el orden.
 
 ## Limitaciones conocidas (los fallos no se ocultan)
@@ -168,11 +168,10 @@ obliga a actualizar esta tabla.
 | Caso | Titular | Esperado | Predicho | Observación (solo lo observado, sin causa comprobada) |
 |---|---|---|---|---|
 | CD-02 | Lluvias dejan sin agua a sectores de San Miguelito | Servicios públicos (secundario Eventos naturales) | Eventos naturales | La regla 4 (falla de un servicio) no se cumple. El baseline de la guía también falla; el ampliado acierta |
-| CD-04 | ASEP aprueba aumento de la tarifa eléctrica | Regulación (secundario Servicios públicos) | Servicios públicos | La regla 2 (norma nueva) no se cumple. El baseline de la guía da `sin_tema`; el ampliado acierta (por `asep`, que no está en la guía) |
+| CD-04 | ASEP aprueba aumento de la tarifa eléctrica | Regulación (secundario Servicios públicos) | Economía (E1-07c; antes Servicios públicos) | La regla 2 (norma nueva) no se cumple. El baseline de la guía da `sin_tema`; el ampliado acierta (por `asep`, que no está en la guía) |
 | CD-08 | Aumenta la carga aérea en Tocumen | Logística/Canal | Turismo | La regla 6 (carga ≠ pasajeros) no se cumple; los dos baselines aciertan |
-| CD-12 | Paro docente deja sin clases a escuelas | Servicios públicos | Eventos naturales | Apareció al reescribir las referencias (con el ejemplo anterior de los docentes acertaba); los dos baselines aciertan |
 | CD-15 | Selección de fútbol clasifica al Mundial | `sin_tema` | Eventos naturales | Similitud máxima 0.844, sobre el umbral 0.824 de e5. **En el pipeline no llega al clasificador:** el filtro de ruido (E1-03b) lo marca `fuera_de_temas` (`test_el_futbol_se_descarta_antes_por_el_filtro_de_ruido`) |
-| CD-02, CD-04, CD-14 (secundario, 2.º mejor) | (los anteriores) · Gobierno firma nuevo contrato minero | secundario Eventos naturales · Servicios públicos · Economía | 2.º mejor: Servicios públicos · Economía · Logística/Canal | CD-02 y CD-04 ya tenían mal el principal; en CD-14 el principal es correcto y el secundario no |
+| CD-02, CD-14 (secundario, 2.º mejor) | (los anteriores) · Gobierno firma nuevo contrato minero | secundario Eventos naturales · Economía | 2.º mejor: Servicios públicos · Logística/Canal | CD-02 ya tenía mal el principal; en CD-14 el principal es correcto y el secundario no. CD-04 dejó de ser limitación de secundario en E1-07c (su 2.º mejor ya es Servicios públicos), pero su principal sigue mal |
 
 Limitaciones generales:
 
@@ -442,6 +441,41 @@ objetivo macro-F1 y 0.507 con objetivo exactitud; combinado 0.290 y 0.372; todas
 
 **Qué haría falta para decidirlo:** que una persona confirme las 61 (C-09), la decisión de producto sobre la regla regional del
 filtro (D-84, ver Pendiente) y, solo después, repetir la medición.
+
+## Subtema obras públicas (E1-07c, D-111) · medición antes y después
+
+Cambio: el subtema `obras_publicas` entra en `servicios_publicos` (prototipo, 2 ejemplos ilustrativos `real: false`, términos de
+apoyo, alcance y fuentes; `docs/parametros.md`) y la descripción del tema nombra las obras públicas. El método activo es A: el
+**único** insumo de A que cambió es esa descripción y los 2 ejemplos (el centroide de Servicios públicos). Las mediciones son
+el mismo código sobre el mismo snapshot, `HF_HUB_OFFLINE=1 python -m eval.clasificacion`, con IC 95 %.
+
+| Medida (e5 · A) | Antes | Después |
+|---|---|---|
+| Casos difíciles (n = 15): exactitud del tema principal | 10/15 = 66.7 % [IC 95 %: 41.7–84.8 %] | 11/15 = 73.3 % [IC 95 %: 48.0–89.1 %] |
+| Casos difíciles: macro-F1 | 0.614 [IC 95 % bootstrap: 0.328–0.881] | 0.621 [0.329–0.921] |
+| Casos difíciles: Servicios públicos F1 · Economía F1 | 0.571 · 1.000 | 0.857 · 0.667 (precisión 1/2: CD-04 pasó de Servicios públicos a Economía) |
+| Casos difíciles: secundario guardado acertado · dado donde no se espera | 1/7 · 0/8 | 2/7 · 1/8 (CD-12 recibe Eventos naturales) |
+| Etiquetas humanas (n = 64): exactitud | 34/64 = 53.1 % [IC 95 %: 41.1–64.8 %] | 35/64 = 54.7 % [IC 95 %: 42.6–66.3 %] |
+| Etiquetas humanas: macro-F1 | 0.420 [IC 95 % bootstrap: 0.266–0.537] | 0.430 [0.276–0.542] |
+| Etiquetas humanas: Servicios públicos precisión · recall | 6/12 = 50.0 % · 6/9 = 66.7 % | 8/16 = 50.0 % · 8/9 = 88.9 % |
+| Etiquetas humanas: Economía precisión · recall | 5/7 = 71.4 % · 5/26 = 19.2 % | 4/5 = 80.0 % · 4/26 = 15.4 % |
+| Etiquetas humanas: tema secundario dado donde no se espera | 12/64 = 18.8 % [IC 95 %: 11.1–30.0 %] | 9/64 = 14.1 % [IC 95 %: 7.6–24.6 %] |
+| Pipeline completo (n = 100): exactitud · macro-F1 | 70/100 · 0.535 [0.374–0.662] | 71/100 · 0.545 [0.380–0.669] |
+| A − baseline (macro-F1, etiquetas humanas) | −0.0472 [−0.2424, 0.2132] | −0.0374 [−0.2316, 0.2292] |
+| B − A (macro-F1, etiquetas humanas) | −0.1986 [−0.3634, −0.0419] | −0.2085 [−0.3693, −0.0470] (se sigue eligiendo A) |
+
+Lectura honesta:
+
+- **Los IC se solapan por completo: la diferencia no es evidencia de mejora.** El cambio de 1 titular en 64 (34 → 35) es ruido de
+  la medición con este n; no se presenta como mejora de la clasificación.
+- **No se oculta lo que empeoró:** Economía pierde 1 de sus 5 aciertos con etiquetas humanas (recall 5/26 → 4/26, ya bajo) y en los
+  casos difíciles CD-04 sigue mal (ahora predice Economía); con MiniLM · A el secundario «dado donde no se espera» sube de
+  10/64 a 13/64 (15.6 % → 20.3 %, IC 95 % 12.3–31.7 %, solapado con el de antes).
+- CD-12 («Paro docente…») pasó de fallar a acertar: **efecto lateral** de reescribir la descripción de Servicios públicos, no un
+  objetivo del cambio. Se actualizó la lista de limitaciones de `tests/test_casos_dificiles.py`.
+- **Mide el tema, no el subtema.** `eval/etiquetas.csv` no etiqueta subtemas ni tiene un titular de obras públicas con tema
+  `servicios_publicos` (el único del snapshot, un pedido de fondos del MOP, está etiquetado `economia` por el asistente provisional (D-101), sin confirmar por una persona): la precisión del subtema
+  `obras_publicas` no se puede medir (n = 0 etiquetados). Se medirá con etiquetas humanas de subtema (C-09).
 
 ## Pendiente
 

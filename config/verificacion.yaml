@@ -82,6 +82,7 @@ fuentes:
     salud_publica: ["Ministerio de Salud", "Caja de Seguro Social"]
     educacion_publica: ["Ministerio de Educación"]
     seguridad_ciudadana: ["Ministerio de Seguridad Pública", "Ministerio Público"]
+    obras_publicas: ["Ministerio de Obras Públicas", "Autoridad Nacional de Contrataciones Públicas (PanamaCompra)", "Contraloría General de la República"]
     sismos: ["Instituto de Geociencias de la Universidad de Panamá", "Servicio Geológico de los Estados Unidos (USGS)", "Sistema Nacional de Protección Civil"]
     inundaciones_lluvias: ["Empresa de Transmisión Eléctrica (Hidrometeorología)", "Sistema Nacional de Protección Civil"]
     deslizamientos: ["Sistema Nacional de Protección Civil", "Ministerio de Obras Públicas"]

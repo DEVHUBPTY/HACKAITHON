@@ -73,6 +73,14 @@ subtema:                            # D-92 (enmienda a E1-09) y E1-10c (X41): el
                           delincuentes, homicidio, homicidios, asesinato, asesinatos, asesinan, asesinado, asesinada,
                           robo, robos, asalto, asaltos, asaltan, hurto, aprehension, aprehenden, aprehendido, aprehendida,
                           aprehendidos, detenido, detenida, detenidos, droga, drogas, narcotrafico]
+    # E1-07c (D-111): «obra(s)» suelta no (obra de teatro, obra social) y «sobrecosto» suelto no (puede ser de una compra):
+    # solo las frases que nombran la obra pública. «acueducto» solo, o con Idaan, sigue siendo agua potable (el servicio);
+    # la obra de construcción del acueducto es obras públicas (la coincidencia más larga manda, X53).
+    obras_publicas: [obra publica, obras publicas, ministerio de obras publicas, mop, obra vial, obras viales, infraestructura vial,
+                     carretera, carreteras, autopista, autopistas, puente, puentes, sobrecosto de obra, sobrecostos de obra,
+                     sobrecosto en obra, sobrecostos en obras, sobrecostos en obra, sobrecosto en obras, sobrecosto de obras,
+                     sobrecostos de obras, licitacion de obra, licitacion de obras, contrato de obra, contratos de obra,
+                     obra de acueducto, obras de acueducto, construccion de acueducto, construccion de acueductos]
     inundaciones_lluvias: [inundacion, inundaciones, inundado, inundados, lluvia, lluvias, aguacero, aguaceros, crecida,
                            desbordamiento]
     deslizamientos: [deslizamiento, deslizamientos, derrumbe, derrumbes, alud]
@@ -89,6 +97,22 @@ subtema:                            # D-92 (enmienda a E1-09) y E1-10c (X41): el
     listas_internacionales: [lista gris, listas grises, lista negra, listas negras, gafi, lista fiscal, paraisos fiscales]
     contratos_concesiones: [contrato, contratos, concesion, concesiones, licitacion, licitaciones]
     sanciones: [sancion, sanciones, multa, multas, sancionado, sancionada]
+  # E1-07c (X77): la obra del acueducto (construir, ampliar, rehabilitar, uno nuevo) es obras públicas (docs/guia_temas.md); el
+  # servicio («Idaan repara el acueducto») sigue siendo agua potable porque el término suelto «acueducto» es más corto y pierde.
+  # Expresiones regulares sobre texto sin tildes ni mayúsculas.
+  patrones_por_subtema:
+    obras_publicas:
+      - '(?<!\w)(?:(?:construccion|ampliacion|rehabilitacion|remodelacion|obras?)\s+(?:de|del)\s+(?:(?:un|el|los)\s+)?(?:nuevo\s+)?|nuevos?\s+)acueductos?(?!\w)'
+  # E1-07c (X78, D-111): el proceso judicial por corrupción NO es obras públicas (ni subtema de justicia: la nota es otro asunto).
+  # X83: «audiencia», «juicio» y «tribunal» sueltos quitaban el subtema a «Audiencia pública sobre el nuevo puente» o «Tribunal
+  # Electoral y MOP firman convenio»: solo cuentan las frases del proceso penal.
+  # Un titular con alguno de estos marcadores (palabra o frase completa, sin tildes) no respalda el subtema; no se vuelve ruido.
+  exclusiones_por_subtema:
+    obras_publicas: [imputa, imputan, imputacion, imputaciones, imputado, imputados, imputada, juez, jueza, jueces, fiscalia,
+                     magistrado, audiencia de imputacion, audiencia preliminar, juicio oral, llamamiento a juicio,
+                     tribunal de juicio, tribunal superior,
+                     condena, condenan, condenado, condenados, peculado, corrupcion,
+                     detienen a, detenido por, detenidos por, aprehenden a, aprehendido por, prision preventiva, acusan a]
 
 sismos:                             # E1-09b: presentación y textos fijos del vínculo con eventos USGS
   zona_horaria: America/Panama      # solo para mostrar; los datos siguen en UTC

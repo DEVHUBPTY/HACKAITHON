@@ -53,15 +53,36 @@ class Baseline:
         self.variante = variante
         self.temas = list(temas.temas)  # el orden de temas.yaml desempata
         self.patrones = {}
+        self.terminos = {}
         for t in self.temas:
             grupos = cfg.baseline.palabras_clave[t]
-            terminos = grupos.guia if variante == "guia" else [*grupos.guia, *grupos.extension]
-            self.patrones[t] = [patron_de(x) for x in dict.fromkeys(terminos)]
+            terminos = list(dict.fromkeys(grupos.guia if variante == "guia" else [*grupos.guia, *grupos.extension]))
+            self.terminos[t] = terminos
+            self.patrones[t] = [patron_de(x) for x in terminos]
+        # X79: frases que anulan un término ambiguo y términos que ceden ante un fenómeno natural (config/clasificacion.yaml)
+        self.anulan = {
+            (t, plano(term)): [patron_de(f) for f in frases]
+            for t, por_termino in cfg.baseline.anula_terminos.items()
+            for term, frases in por_termino.items()
+        }
+        self.cede_ante = [
+            (c.tema, [re.compile(x) for x in c.fenomenos], {plano(x) for x in c.terminos}) for c in cfg.baseline.cede_ante
+        ]
 
     def puntuar(self, texto: str) -> dict[str, int]:
         """Cantidad de términos distintos de cada tema que coinciden con ``texto``."""
         limpio = plano(texto)
-        return {t: sum(1 for p in self.patrones[t] if p.search(limpio)) for t in self.temas}
+        coincide = {
+            t: [
+                term for term, p in zip(self.terminos[t], self.patrones[t])
+                if p.search(limpio) and not any(a.search(limpio) for a in self.anulan.get((t, plano(term)), []))
+            ]
+            for t in self.temas
+        }
+        for tema, fenomenos, cedidos in self.cede_ante:
+            if tema in coincide and any(f.search(limpio) for f in fenomenos):
+                coincide[tema] = [x for x in coincide[tema] if plano(x) not in cedidos]
+        return {t: len(coincide[t]) for t in self.temas}
 
     def clasificar(self, texto: str) -> ResultadoBaseline:
         puntajes = self.puntuar(texto)

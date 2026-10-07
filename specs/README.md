@@ -27,6 +27,7 @@ La columna **Rol** indica el área de la tarea (D = datos, IA, P = producto), no
 | E1-09b | Vínculo con eventos sísmicos de USGS | D | E1-08 | [`E1-09b.md`](E1-09b.md) |
 | E1-10 | Puntaje, estado de evidencia, vacíos y contradicciones | D + IA | E1-08, E1-09, E1-09b | [`E1-10.md`](E1-10.md) |
 | E1-10b | Ficha de evidencia (común a ambas modalidades) | D + P | E1-10 | [`E1-10b.md`](E1-10b.md) |
+| E1-07c | Subtema «obras públicas» dentro de Servicios públicos (D-111) | IA + D | E1-07, E1-09, E1-10c | [`E1-07c.md`](E1-07c.md) |
 | E1-10c | Corregir subtema y alcance nacional del puntaje (X41, X42, X44, D-103) | D + IA | E1-10, E1-09, E1-03b | [`E1-10c.md`](E1-10c.md) |
 | E1-11 | Consulta en español con abstención | IA | E1-07 | [`E1-11.md`](E1-11.md) |
 | E1-12 | Proveedor LLM y generación del paquete editorial | IA | E1-10 | [`E1-12.md`](E1-12.md) |
@@ -41,6 +42,7 @@ La columna **Rol** indica el área de la tarea (D = datos, IA, P = producto), no
 | E2-01 | Modalidad bancaria: sectores, horizonte y bandeja | D | E1-17 | [`E2-01.md`](E2-01.md) |
 | E2-02 | Boletín de entorno bancario | IA | E2-01 | [`E2-02.md`](E2-02.md) |
 | E2-03 | CU-05 y fichas bancarias | P + IA | E2-02 | [`E2-03.md`](E2-03.md) |
+| E2-04 | Revisión humana del boletín bancario | P + IA | E2-02, E2-03 | [`E2-04.md`](E2-04.md) |
 | E3-02 | Fuente D · Series agregadas de la SBP | D | E2-03 | [`E3-02.md`](E3-02.md) |
 | C-06 | Casos de demostración por caso de uso | P + D | E1-16 | [`C-06.md`](C-06.md) |
 | C-07 | Paquete de entrega y auditoría final | D + P | C-06 | [`C-07.md`](C-07.md) |

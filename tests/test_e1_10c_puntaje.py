@@ -26,8 +26,8 @@ def decidir(subtema: str, margen: float, titular: str, tema: str = "servicios_pu
 @pytest.mark.parametrize(
     ("subtema", "margen", "titular"),
     [
-        # el margen pasa (D-92), pero el titular no nombra nada del subtema: obras del MOP no son agua potable
-        ("agua_potable", 0.0402, "MOP solicita $43.1 millones para pagar compromisos y continuar obras en ejecución"),
+        # el margen pasa (D-92), pero el titular no nombra nada del subtema. (E1-07c, D-111: el pedido de fondos del MOP ya no
+        # es un caso sin sustento: nombra obras públicas, ver tests/test_e1_07c_obras.py)
         ("agua_potable", 0.0444, "La Chorrera proyecta renovar el parque Tomás Martín Feuillet con una inversión de 620 mil dólares"),
     ],
 )

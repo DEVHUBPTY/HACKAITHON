@@ -147,7 +147,8 @@ def mensajes(rechazos: Iterable[Rechazo]) -> list[str]:
 
 @lru_cache(maxsize=4096)
 def _patron_frase(frase_plana: str) -> re.Pattern[str]:
-    return re.compile(rf"(?<!\w){re.escape(frase_plana)}(?!\w)")
+    palabras = [re.escape(t) for t in frase_plana.split()]                  # X81: cualquier espaciado entre las palabras («debido  a», salto de línea)
+    return re.compile(r"(?<!\w)" + r"\s+".join(palabras) + r"(?!\w)")
 
 
 def contiene(texto_plano: str, frase: str) -> bool:
