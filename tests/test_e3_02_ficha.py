@@ -9,8 +9,9 @@ from typing import Any
 import pytest
 
 from src import contexto, contexto_sbp, db, embeddings, prioridad
-from src.configuracion import ConfigVinculos, cargar_fuentes, cargar_vinculos
-from src.ficha import a_markdown, construir_ficha
+from src.configuracion import ConfigVinculos, cargar_fuentes, cargar_verificacion, cargar_vinculos
+from src.ficha import a_markdown, a_registro, construir_ficha
+from src.interfaz import citas_de_ficha, vinculos_oficiales_de
 from tests import ficha_ayuda as h
 from tests.motor_falso import MotorFalso, config_de_prueba
 from tests.prioridad_ayuda import fila_grupo, filas_procedencias
@@ -162,18 +163,40 @@ def test_la_ficha_bancaria_muestra_un_dato_sbp_con_periodo_unidad_pagina_y_limit
         ficha = construir_ficha(G_BANCA, "banca", con, emb=emb)
     finally:
         con.close()
-    sbp = [x for x in ficha.respaldado.datos_oficiales if x.citas[0].id.startswith("SBP-")]
-    assert len(sbp) == 3
+    assert not [x for x in ficha.respaldado.datos_oficiales if x.citas[0].id.startswith("SBP-")]   # X91: `indirecta` no mide el hecho
+    sbp = ficha.respaldado.contexto_oficial
+    assert len(sbp) == 3 and all(x.citas[0].id.startswith("SBP-") for x in sbp)
     linea = next(x for x in sbp if x.citas[0].id == "SBP-MOROSOS-SISTEMA-2024-12")
     assert linea.tipo == "hecho" and linea.citas[0].campo == "valor"
     for parte in ("Superintendencia de Bancos de Panamá", "Saldo moroso del sistema bancario", "período 2024-12", "1012 millones de balboas", "página: hoja «Morosos», celda L6"):
         assert parte in linea.texto, parte
     assert linea.limitacion and "no del mes de la noticia" in linea.limitacion and "análisis es del equipo y no una opinión oficial de la SBP" in linea.limitacion
     proporcion = next(x for x in sbp if x.citas[0].id == "SBP-MOROSIDAD-SISTEMA-2024-12")
-    assert "0.1246 proporción" in proporcion.texto      # 4 decimales: con 2 se vería 0.02
+    assert "0.1246 proporción" in proporcion.texto      # 4 decimales: con 2 decimales 0.1246 se vería 0.12 y se perdería el detalle
     markdown = a_markdown(ficha)
+    cfg = cargar_verificacion().presentacion
+    antes, _, despues = markdown.partition(cfg.titulo_contexto_oficial)
+    assert despues and "SBP-MOROSOS-SISTEMA-2024-12" in despues and "SBP-" not in antes.split("Datos oficiales")[-1]   # X91: bajo su propio rótulo
+    assert "Sin dato oficial que mida el hecho" in antes            # el rótulo «Datos oficiales» conserva su vacío
     assert "SBP-MOROSOS-SISTEMA-2024-12" in markdown and "Limitación: Series agregadas del sistema bancario" in markdown
     assert "período 2024-12" in markdown and "página: hoja «Morosos», celda L6" in markdown
+
+
+def test_el_contexto_sbp_sigue_citable_rechazable_y_exportable_x91(tmp_path: Path, emb) -> None:
+    """X91: aparte de «Datos oficiales», el contexto conserva sus citas en la app, en el rechazo de vínculos y en `fichas.jsonl`."""
+    base = base_de_banca(tmp_path / "s.duckdb")
+    vincular(base, csv_sbp(tmp_path / "sbp_series.csv"))
+    prioridad.ejecutar(base, base.with_name("prioridad.json"), h.CORTE, None, "banca", emb=emb)
+    con = db.conectar(base, solo_lectura=True)
+    try:
+        ficha = construir_ficha(G_BANCA, "banca", con, emb=emb)
+    finally:
+        con.close()
+    ids = {x.citas[0].id for x in ficha.respaldado.contexto_oficial}
+    assert len(ids) == 3
+    assert ids <= set(vinculos_oficiales_de(ficha)) and ids <= {c.id for c in citas_de_ficha(ficha)}
+    registro = a_registro(ficha)
+    assert ids <= set(registro["ids_fuente"]) and ids <= {a["citas"][0]["id"] for a in registro["afirmaciones"]}
 
 
 def test_el_dato_indirecto_de_la_sbp_no_sube_la_evidencia_ni_el_puntaje(tmp_path: Path, emb) -> None:

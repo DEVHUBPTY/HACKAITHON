@@ -337,7 +337,7 @@ def citas_de_ficha(ficha: Ficha) -> list[Cita]:
     """Citas únicas de «qué está respaldado», en el orden en que aparecen (las que la app vuelve clicables)."""
     r = ficha.respaldado
     vistas: dict[tuple[str, str], Cita] = {}
-    for x in (*r.reportes, *r.datos_oficiales, *r.eventos_oficiales, *r.declaraciones):
+    for x in (*r.reportes, *r.datos_oficiales, *r.contexto_oficial, *r.eventos_oficiales, *r.declaraciones):
         for c in x.citas:
             vistas.setdefault((c.id, c.campo), c)
     return list(vistas.values())
@@ -524,7 +524,7 @@ def tabla_versiones(versiones: Sequence[Any], cfg_ver: ConfigVerificacion | None
 
 def vinculos_oficiales_de(ficha: Ficha) -> list[str]:
     """Los IDs oficiales (``IND-``, ``SIS-``, ``SBP-``) que respaldan la ficha y que una persona puede rechazar."""
-    ids = [c.id for x in (*ficha.respaldado.datos_oficiales, *ficha.respaldado.eventos_oficiales) for c in x.citas]
+    ids = [c.id for x in (*ficha.respaldado.datos_oficiales, *ficha.respaldado.contexto_oficial, *ficha.respaldado.eventos_oficiales) for c in x.citas]
     return list(dict.fromkeys(ids))
 
 

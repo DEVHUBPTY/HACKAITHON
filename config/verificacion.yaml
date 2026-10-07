@@ -129,7 +129,8 @@ presentacion:
   sufijo_zona: "hora de Panamá"
   fecha_desconocida: "desconocida"
   decimales_valor: 2              # decimales al mostrar el valor de un dato oficial
-  decimales_valor_sbp: 4          # E3-02: la morosidad es una proporción de 0 a 1 (0,1234 = 12,34 %): con 2 decimales se vería 0,02
+  decimales_valor_sbp: 4          # E3-02: la morosidad es una proporción de 0 a 1 (0,1234 = 12,34 %): con 2 decimales, 0,1235 y 0,1246 se verían ambos 0,12
+  titulo_contexto_oficial: "Contexto oficial (no mide el hecho)"   # X91: dato oficial de relación `indirecta` (hoy, la SBP); aparte de «Datos oficiales»
   origen_fecha:                   # de dónde sale la fecha de inicio y fin de la cobertura
     publicacion: "publicación"
     deteccion: "detección"
