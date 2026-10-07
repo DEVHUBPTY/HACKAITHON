@@ -226,3 +226,80 @@ def test_run_benchmark_resumen_de_sustento_humano_no_lleva_aviso(tmp_path: Path)
     _revision(ruta, ["humano"] * 3)
     linea = run_benchmark.linea_sustento(sustento.validez(sustento.leer_revision(ruta), CRITERIO))
     assert CFG.aviso_provisional not in linea and "3/3" in linea
+
+
+# ------------------------------------------------------------------ X43: el nombre de la columna se normaliza; uno parecido falla
+
+
+@pytest.mark.parametrize("encabezado", ["Origen_Juicio", "origen_juicio ", " ORIGEN_JUICIO"])
+def test_x43_encabezado_con_mayusculas_o_espacios_se_reconoce(encabezado: str) -> None:
+    assert oj.origen_de_filas([{encabezado: PROVISIONAL}], CFG) == PROVISIONAL
+
+
+@pytest.mark.parametrize("encabezado", ["origen juicio", "origen-juicio", "OrigenJuicio", "origen__juicio"])
+def test_x43_encabezado_parecido_pero_no_exacto_falla_y_lo_nombra(encabezado: str) -> None:
+    with pytest.raises(oj.OrigenInvalido, match=encabezado):
+        oj.origen_de_filas([{encabezado: PROVISIONAL}], CFG)
+
+
+def test_x43_dos_encabezados_que_normalizan_igual_fallan() -> None:
+    with pytest.raises(oj.OrigenInvalido):
+        oj.origen_de_filas([{"origen_juicio": "humano", "Origen_Juicio": PROVISIONAL}], CFG)
+
+
+def test_x43_precision_con_encabezado_en_mayusculas_sigue_provisional(tmp_path: Path) -> None:
+    base = _base(tmp_path / "s.duckdb", POS, FECHAS)
+    sel, salida = tmp_path / "sel.csv", tmp_path / "out.json"
+    _seleccion(sel, PROVISIONAL)
+    sel.write_text(sel.read_text(encoding="utf-8").replace(CFG.columna, "Origen_Juicio ", 1), encoding="utf-8")
+    assert pa5.principal(["--seleccion", str(sel), "--base", str(base), "--salida", str(salida)]) == 0
+    assert json.loads(salida.read_text(encoding="utf-8"))["juicio_humano"] is False
+
+
+def test_x43_sustento_con_encabezado_parecido_falla(tmp_path: Path) -> None:
+    ruta, salida = tmp_path / "r.csv", tmp_path / "s.json"
+    _revision(ruta, [PROVISIONAL] * 3)
+    ruta.write_text(ruta.read_text(encoding="utf-8").replace(CFG.columna, "origen-juicio", 1), encoding="utf-8")
+    assert sustento.principal(["--archivo", str(ruta), "--salida", str(salida)]) == 1
+    assert not salida.exists()
+
+
+# ------------------------------------------------------------------ O2: la meta provisional nunca aparece sola
+
+
+def test_o2_meta_provisional_no_usa_la_clave_humana(tmp_path: Path) -> None:
+    ruta = tmp_path / "r.csv"
+    _revision(ruta, [PROVISIONAL] * 3)
+    r = sustento.validez(sustento.leer_revision(ruta), CRITERIO)
+    assert "cumple_meta" not in r and r["cumple_meta_provisional"] is True
+    m = r["meta_validez"]
+    assert m["origen_juicio"] == CFG.origenes[PROVISIONAL] and m["juicio_humano"] is False
+
+
+def test_o2_meta_humana_conserva_la_clave_y_compara_con_wilson(tmp_path: Path) -> None:
+    ruta = tmp_path / "r.csv"
+    _revision(ruta, ["humano"] * 3)
+    r = sustento.validez(sustento.leer_revision(ruta), CRITERIO)
+    assert r["cumple_meta"] is True and "cumple_meta_provisional" not in r
+    m = r["meta_validez"]
+    lo = r["sustentadas"]["ic95_wilson"][0]
+    assert m["limite_inferior_wilson"] == lo and m["cumple_con_limite_inferior_wilson"] is (lo >= m["meta"])
+    assert m["cumple_estimacion_puntual"] is True and m["juicio_humano"] is True
+
+
+def test_o2_consola_de_sustento_dice_meta_con_origen_y_wilson(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    ruta, salida = tmp_path / "r.csv", tmp_path / "s.json"
+    _revision(ruta, [PROVISIONAL] * 3)
+    assert sustento.principal(["--archivo", str(ruta), "--salida", str(salida)]) == 0
+    linea = next(x for x in capsys.readouterr().out.splitlines() if x.startswith("Meta"))
+    assert "Wilson" in linea and CFG.origenes[PROVISIONAL] in linea and "PROVISIONAL" in linea
+
+
+def test_o2_resumen_de_run_benchmark_lleva_la_meta_calificada(tmp_path: Path) -> None:
+    from eval import run_benchmark
+
+    ruta = tmp_path / "r.csv"
+    _revision(ruta, [PROVISIONAL] * 3)
+    texto = run_benchmark.linea_sustento(sustento.validez(sustento.leer_revision(ruta), CRITERIO))
+    meta = next(x for x in texto.splitlines() if "Meta" in x)
+    assert "Wilson" in meta and CFG.origenes[PROVISIONAL] in meta
