@@ -1,0 +1,11 @@
+{
+ "clave": "3700e2550b4823e63c5d91efb0fd1fbf602106d33b312f7c5904bd5af34118b9",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.3",
+ "version_cache": "1",
+ "tokens_entrada": 1777,
+ "tokens_salida": 405,
+ "creado_utc": "2026-10-07T12:00:22Z",
+ "respuesta": "{\"afirmaciones\": [{\"id\": \"A1\", \"tipo\": \"declaración\", \"texto\": \"TVN Panamá reporta que Panamá reforzará su presencia marítima en Vietnam con una nueva oficina de servicio técnico de la AMP en Ho Chi Minh.\", \"citas\": [{\"id\": \"NOT-f7f8b492d1\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A2\", \"tipo\": \"hecho\", \"texto\": \"El grupo de registros reúne 1 titular de 1 medio que reporta este tema.\", \"citas\": [{\"id\": \"GRP-f4a44182b1\", \"campo\": \"n_titulares\"}, {\"id\": \"GRP-f4a44182b1\", \"campo\": \"n_medios\"}]}, {\"id\": \"A3\", \"tipo\": \"hecho\", \"texto\": \"Se estima 1 procedencia independiente, ya que los titulares que replican a una misma fuente cuentan como una.\", \"citas\": [{\"id\": \"GRP-f4a44182b1\", \"campo\": \"n_procedencias\"}]}, {\"id\": \"A4\", \"tipo\": \"inferencia\", \"texto\": \"La información disponible sobre este tema es limitada, pues solo se apoya en una procedencia independiente estimada.\", \"base\": [\"A2\", \"A3\"], \"citas\": []}, {\"id\": \"A5\", \"tipo\": \"hipótesis\", \"texto\": \"Si la población panameña sigue el tema, podría interesarle el alcance de la presencia marítima del país en el exterior y los servicios técnicos asociados.\", \"base\": [\"A1\"], \"citas\": []}]}"
+}

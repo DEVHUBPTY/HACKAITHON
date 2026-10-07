@@ -1,0 +1,11 @@
+{
+ "clave": "7c2505549f31eb039bf5b55f8520a5b860046888eb452e33567c866f0ef4d561",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1791,
+ "tokens_salida": 214,
+ "creado_utc": "2026-10-07T12:00:04Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta aprehensión de Enrique Lau por supuesto enriquecimiento injustificado\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La población interesada en la gestión de la seguridad social y en la rendición de cuentas de sus autoridades podría seguir con atención este tema.\", \"afirmaciones\": [\"A4\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún dato oficial vinculado al caso que permita contextualizar la gestión señalada?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras procedencias independientes han reportado sobre la aprehensión de Enrique Lau?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Qué documentos o registros oficiales podrían aportar datos verificables sobre el caso?\", \"vacio\": \"sin_dato_oficial\"}]}"
+}

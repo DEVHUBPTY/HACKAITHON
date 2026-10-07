@@ -56,7 +56,7 @@ METRICAS_DEV = RAIZ / "outputs" / "metricas.json"
 REVISION_DEV = RAIZ / "outputs" / "revision_sustento.csv"
 TIPOS = ("respuesta_sustentada", "contradiccion_ambiguedad", "sin_respuesta", "adversarial")
 VERSION_METRICAS = 1
-_ARRANQUE_S = [0.0]   # segundos que tardó el primer uso del modelo de embeddings (carga en memoria) en la última corrida
+_ARRANQUE_S = [0.0]   # segundos desde crear el consultor (índice y carga del modelo de embeddings) hasta el primer vector, en la última corrida
 
 
 # ============================================================================================ lectura
@@ -141,9 +141,6 @@ def _citas_texto(a: Any) -> str:
 def _respuestas_a_registros(consultor: Consultor, consultas: Sequence[dict[str, Any]]) -> list[tuple[dict[str, Any], RespuestaConsulta]]:
     emb = consultor.indice.emb
     emb.usar_cache = False   # nada de lo que se consulta aquí se persiste: la evaluación solo escribe en la carpeta de salida
-    arranque = time.perf_counter()
-    emb.motor.codificar([f"{emb.prefijo('titular')}calentamiento"])   # carga el modelo en memoria; se reporta aparte, no entra en la latencia
-    _ARRANQUE_S[0] = round(time.perf_counter() - arranque, 3)
     salida = []
     for c in consultas:
         # latencia en frío: el vector de la consulta (ya saneada) se descarta de la memoria para que el modelo la codifique de verdad
@@ -227,7 +224,7 @@ def evaluar_consultas(
         "latencia": {"consulta": {"n": len(latencias), "unidad": "s", "p50": metricas.percentil_con_ic(latencias, 50, criterio),
                                   "p95": metricas.percentil_con_ic(latencias, 95, criterio),
                                   "arranque_modelo_s": _ARRANQUE_S[0],
-                                  "nota": "consulta de punta a punta en frío (el vector de la consulta se codifica de verdad, sin caché) con el modelo de embeddings local ya cargado; sin red. La carga del modelo se reporta aparte (arranque_modelo_s)"}},
+                                  "nota": "consulta de punta a punta en frío (el vector de la consulta se codifica de verdad, sin caché) con el modelo de embeddings local ya cargado; sin red. arranque_modelo_s es el arranque en frío del proceso (armar el consultor y cargar el modelo hasta el primer vector) y no entra en la latencia"}},
         "tokens_y_costo": {"consulta": {"tokens_por_consulta": 0, "usd_por_consulta": 0.0,
                                         "nota": "La consulta no usa LLM (sin LLM): el único modelo es el de embeddings, local (USD 0)."}},
     }
@@ -523,7 +520,11 @@ def _ejecutar(args: argparse.Namespace) -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
     try:
+        arranque = time.perf_counter()
         consultor = crear_consultor_real()
+        emb = consultor.indice.emb
+        emb.motor.codificar([f"{emb.prefijo('titular')}calentamiento"])   # fuerza la carga del modelo si el índice vino de la caché
+        _ARRANQUE_S[0] = round(time.perf_counter() - arranque, 3)         # arranque en frío del proceso: armar el consultor y cargar el modelo
     except Exception as exc:  # noqa: BLE001 - falta la base o el modelo local: se dice qué hacer y no se muestra una traza
         print(f"ERROR: no se pudo preparar la consulta ({type(exc).__name__}: {str(exc)[:200]}). Haga falta la base data/senales.duckdb y el modelo de "
               "embeddings local en models/ (se descarga una sola vez con red: HF_HUB_OFFLINE=0 poetry run python -m src.consulta \"prueba\").", file=sys.stderr)

@@ -1,0 +1,11 @@
+{
+ "clave": "5420981db9ab9192c1d2baf73399b96d44b349b47a2e3f05b6e03389c4f0b044",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1760,
+ "tokens_salida": 256,
+ "creado_utc": "2026-10-07T12:00:24Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta refuerzo marítimo panameño en Vietnam con oficina técnica\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"Si la población panameña sigue el tema, podría interesarle el alcance de la presencia marítima del país en el exterior y los servicios técnicos asociados.\", \"afirmaciones\": [\"A3\"]}], \"preguntas\": [{\"texto\": \"¿Qué datos oficiales permiten medir el alcance de la presencia marítima panameña en el exterior y los servicios técnicos asociados?\", \"vacio\": \"solo_vinculo_indirecto\"}, {\"texto\": \"¿Existen otras procedencias independientes que reporten la nueva oficina de servicio técnico de la AMP en Ho Chi Minh?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Qué información oficial anual, con su año, respalda el refuerzo de la presencia marítima panameña en Vietnam?\", \"vacio\": \"solo_vinculo_indirecto\"}]}"
+}

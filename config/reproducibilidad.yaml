@@ -1,0 +1,63 @@
+# E1-20 · Reproducibilidad de punta a punta (D-65). Cada número y cada lista están en docs/parametros.md.
+version: "1.0"
+
+modalidad: editorial        # modalidad de las fichas y de los borradores que se comparan
+decimales: 4                # los flotantes se redondean a N decimales antes de calcular el hash (ruido de ~1e-7 entre lotes del modelo de embeddings, docs/reproducibilidad.md)
+
+# Borra la caché de embeddings (.cache/embeddings, regenerable) antes de ejecutar: es el estado de una máquina nueva. Con la caché a medio llenar,
+# el mismo texto codificado en otro lote da un vector que difiere ~1e-7 (padding), y eso movería hashes que no son un cambio real.
+reiniciar_cache_embeddings: true
+
+# Orden de la spec: validación, normalización, limpieza, clasificación, agrupación, contexto, puntaje, fichas, benchmark y métricas.
+# tipo «interno» lo resuelve scripts/reproducir.py (reconstruye processed/ desde raw/ en una carpeta temporal; arma las fichas).
+pasos:
+  - {nombre: conversion, tipo: interno}
+  - {nombre: validacion_configuracion, tipo: modulo, modulo: src.config, argumentos: ["--validar"]}
+  - {nombre: validacion_snapshot, tipo: modulo, modulo: scripts.validar_snapshot, argumentos: []}
+  - {nombre: validacion_datos, tipo: modulo, modulo: src.carga, argumentos: []}
+  - {nombre: normalizacion, tipo: modulo, modulo: src.normalizacion, argumentos: []}
+  - {nombre: limpieza, tipo: modulo, modulo: src.limpieza, argumentos: []}
+  - {nombre: clasificacion, tipo: modulo, modulo: src.clasificacion, argumentos: []}
+  - {nombre: agrupacion, tipo: modulo, modulo: src.agrupacion, argumentos: []}
+  - {nombre: contexto, tipo: modulo, modulo: src.contexto, argumentos: []}
+  # --sin-llm: la nota del LLM sobre un par de contradicciones es texto del LLM y no es reproducible; el pipeline determinista no la usa.
+  - {nombre: puntaje, tipo: modulo, modulo: src.puntaje, argumentos: ["--sin-llm"]}
+  - {nombre: fichas, tipo: interno}
+  - {nombre: benchmark, tipo: modulo, modulo: eval.run_benchmark, argumentos: ["--split", "dev"]}
+
+salidas:
+  # Archivos que se comparan byte a byte (SHA-256). Admiten comodines.
+  archivos:
+    - data/processed/conversion.json
+    - data/processed/eventos.geojson
+    - data/processed/fuentes.json
+    - data/processed/indicadores.csv
+    - data/processed/noticias.csv
+    - data/processed/validos/*
+  # Informes JSON de los pasos: se comparan por contenido (flotantes redondeados), no por bytes. A cada uno, las claves que NO entran en el
+  # hash y por qué (docs/reproducibilidad.md). Ruta con puntos.
+  informes:
+    outputs/reporte_calidad.json: [generado_utc, ruido.generado_utc]   # reloj: cuándo se generó el informe
+    outputs/reporte_vinculos.json: []
+    outputs/prioridad.json: []
+    outputs/validacion_snapshot.json: []
+  # Tablas de data/senales.duckdb (un archivo DuckDB no es idéntico byte a byte entre corridas: se comparan sus filas ordenadas).
+  tablas: [noticias, grupos, procedencias, vinculos, puntajes, evidencia, contradicciones, sismos, fuentes, indicadores]
+  fichas: outputs/reproduccion/fichas.jsonl
+  # La muestra de afirmaciones de la validez de sustento (X46): se hashean sus columnas de muestra y NO las que completa una persona
+  # (veredicto, comentario y revisor cambian a propósito en C-09).
+  muestra_sustento:
+    archivo: outputs/revision_sustento.csv
+    columnas_humanas: [veredicto, comentario, revisor]
+  metricas: outputs/metricas.json
+  # Claves de metricas.json que NO entran en el hash y por qué (docs/reproducibilidad.md). Ruta con puntos.
+  excluir_de_metricas:
+    - fecha_utc                                  # reloj: cuándo se corrió
+    - entorno                                    # versión de Python y sistema operativo: no son un resultado, se registran aparte
+    - latencia.consulta                          # tiempo de pared de la consulta en esta máquina
+    - latencia.meta_sugerida.consulta_cumple     # se deriva del tiempo de pared anterior
+
+registro:
+  # Entradas que se registran en cada ejecución (versión de modelos, reglas y prompts) y de dónde salen.
+  archivo_reglas: config/reglas_v1.3.yaml
+  carpeta_prompts: prompts
