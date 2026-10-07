@@ -69,3 +69,58 @@ def test_x86_panama_norte_y_pacifico_son_un_lugar_concreto_no_el_pais(titular: s
 def test_x86_panama_oeste_sigue_siendo_provincia_y_panama_sola_el_pais() -> None:
     assert _nivel("Corte de agua en Panamá Oeste") == "provincial"
     assert _nivel("Minsa: casos en Panamá") == "nacional"
+
+
+# ------------------------------------------------------------------ X87 · léxico de seguridad ciudadana
+
+
+def _subtemas(titular: str) -> set[str]:
+    return contexto.subtemas_nombrados([titular], list(TEMAS["servicios_publicos"].subtemas), SUB.terminos_por_subtema)
+
+
+@pytest.mark.parametrize(
+    "titular",
+    [
+        "Más de 30 mujeres han muerto de forma violenta este año",
+        "Tres muertes violentas en un fin de semana",
+        "Muerte violenta de un joven en la barriada",
+        "Dos muertos de forma violenta en el sector",
+        "Investigan femicidio en el interior",
+        "Suman cinco feminicidios en el año",
+        "Disparan contra un vehículo en la vía",
+        "Dispararon contra la fachada de una vivienda",
+        "Disparos en la barriada dejan un herido",
+        "Joven baleada en plena calle",
+        "Hombre baleado en un comercio",
+        "Reportan balacera en el sector",
+        "Apuñalado un taxista tras discusión",
+        "Apuñalan a un joven a la salida de un local",
+        "Homicidios aumentan en el distrito",
+        "Asesinados dos hombres en un local",
+        "Asesinaron a un comerciante",
+        "Asaltaron un supermercado de la zona",
+        "Atracos en la capital dejan un herido",
+        "Secuestro de un empresario conmociona al país",
+        "Denuncian extorsión a comerciantes",
+        "Capturan a presunto sicario",
+    ],
+)
+def test_x87_las_formas_de_homicidio_y_agresion_con_arma_son_seguridad_ciudadana(titular: str) -> None:
+    assert _subtemas(titular) == {"seguridad_ciudadana"}
+
+
+@pytest.mark.parametrize(
+    "titular",
+    [
+        "Disparan cohetes en el desfile",
+        "Se disparan los precios del combustible",
+    ],
+)
+def test_x87_disparar_cohetes_o_precios_no_es_seguridad_ciudadana(titular: str) -> None:
+    assert "seguridad_ciudadana" not in _subtemas(titular)
+
+
+def test_x87_el_subtema_se_asigna_con_el_lexico_nuevo() -> None:
+    assert contexto.decidir_subtema(
+        [("seguridad_ciudadana", 0.8, 0.001)], ["Más de 30 mujeres han muerto de forma violenta este año"], SUB, list(TEMAS["servicios_publicos"].subtemas)
+    ) == ("seguridad_ciudadana", "lexico")
