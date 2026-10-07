@@ -188,7 +188,20 @@ def con_tema(id_grupo: str, tema: str | None, subtema: str | None = "inflacion_p
     return dataclasses.replace(pa.entrada(id_grupo, subtema=subtema), tema=tema)
 
 
-def test_con_alcance_por_sector_i_cambia_solo_por_el_sector() -> None:
+def test_d102_todos_los_sectores_valen_lo_mismo_en_i_y_el_sector_solo_agrupa() -> None:
+    assert set(BANCA.alcance_por_sector.values()) == {1.0}
+    valores = {impacto(con_tema("GRP-a", t), pa.REGLAS, pa.CFG, BANCA)[0].valor for t in MAPEO_D11}
+    assert len(valores) == 1                                            # el sector no cambia I ni, por tanto, el orden
+
+
+@pytest.fixture
+def banca_con_alcances_distintos() -> ConfigModalidad:
+    """El mecanismo sigue siendo configurable: una variante con alcances distintos (no es el valor vigente, D-102)."""
+    return BANCA.model_copy(update={"alcance_por_sector": {"economía": 1.0, "logística": 0.8, "turismo": 0.6, "regulación": 0.8, "continuidad operativa": 0.8}})
+
+
+def test_con_alcance_por_sector_i_cambia_solo_por_el_sector(banca_con_alcances_distintos) -> None:
+    BANCA = banca_con_alcances_distintos
     geo = impacto(con_tema("GRP-a", "economia"), pa.REGLAS, pa.CFG, BANCA)[0].explicacion["alcance_geografico"]
     for tema, sector in (("economia", "economía"), ("turismo", "turismo"), ("eventos_naturales", "continuidad operativa")):
         comp, vacios = impacto(con_tema("GRP-a", tema), pa.REGLAS, pa.CFG, BANCA)
@@ -200,9 +213,9 @@ def test_con_alcance_por_sector_i_cambia_solo_por_el_sector() -> None:
     assert len(distintos) == 2
 
 
-def test_con_alcance_por_sector_el_subtema_ya_no_decide_i() -> None:
-    a = impacto(con_tema("GRP-a", "economia", "inflacion_precios"), pa.REGLAS, pa.CFG, BANCA)[0].valor
-    b = impacto(con_tema("GRP-a", "economia", "inversion"), pa.REGLAS, pa.CFG, BANCA)[0].valor
+def test_con_alcance_por_sector_el_subtema_ya_no_decide_i(banca_con_alcances_distintos) -> None:
+    a = impacto(con_tema("GRP-a", "economia", "inflacion_precios"), pa.REGLAS, pa.CFG, banca_con_alcances_distintos)[0].valor
+    b = impacto(con_tema("GRP-a", "economia", "inversion"), pa.REGLAS, pa.CFG, banca_con_alcances_distintos)[0].valor
     assert a == pytest.approx(b)
 
 
