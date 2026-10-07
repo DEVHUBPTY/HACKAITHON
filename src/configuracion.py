@@ -3265,6 +3265,100 @@ def cargar_pagina_metricas(carpeta: Path | None = None) -> ConfigPaginaMetricas:
     return cargar_config("pagina_metricas", ConfigPaginaMetricas, carpeta)
 
 
+# ------------------------------------------------------------------ entrega.yaml (C-07)
+
+
+class SbpEntrega(ModeloConfig):
+    incluir: bool
+    origen: str = Field(min_length=1)
+    destino: str = Field(min_length=1)
+    nota_destino: str = Field(min_length=1)
+    nota: str = Field(min_length=1)
+
+
+class ProhibidoEntrega(ModeloConfig):
+    nombres: list[str] = Field(min_length=1)
+    prefijos_ruta: list[str] = Field(min_length=1)
+    campos: list[str] = Field(min_length=1)
+    extensiones_estructuradas: list[str] = Field(min_length=1)
+    patrones_secretos: list[str] = Field(min_length=1)
+
+
+class PaqueteEntrega(ModeloConfig):
+    carpeta: str = Field(min_length=1)
+    manifest_salida: str = Field(min_length=1)
+    archivo_checksums: str = Field(min_length=1)
+    archivo_indice: str = Field(min_length=1)
+    archivo_leeme: str = Field(min_length=1)
+    archivos: dict[str, str]
+    carpetas: dict[str, str]
+    extensiones_carpetas: list[str]
+    sbp: SbpEntrega
+    prohibido: ProhibidoEntrega
+
+
+class DemoAuditoria(ModeloConfig):
+    base: str
+    verificar_offline: str
+    guion: str
+
+
+class AuditoriaEntrega(ModeloConfig):
+    salida_md: str
+    salida_json: str
+    resultado_secretos: str
+    minimo_fichas_trazables: int = Field(ge=1)
+    minimo_casos_prueba: int = Field(ge=1)
+    estado_prueba_ok: str
+    minimo_tareas_notion: int = Field(ge=1)
+    minimo_decisiones_notion: int = Field(ge=1)
+    trazabilidad: str
+    fichas_jsonl: str
+    campos_fichas_jsonl: list[str] = Field(min_length=1)
+    pruebas: str
+    catalogo: str
+    columna_fuente_catalogo: str
+    fuentes_usadas_manifest: list[str] = Field(min_length=1)
+    pagina_metricas: str
+    marca_borrador_metricas: str
+    marca_provisional_metricas: str
+    carpetas_codigo_metricas: list[str] = Field(min_length=1)
+    readme: str
+    secciones_readme: dict[str, str] = Field(min_length=1)
+    licencia_codigo: list[str] = Field(min_length=1)
+    env_ejemplo: str
+    lock: str
+    demo: DemoAuditoria
+    revision_config: str
+    app: str
+    patron_publicar: str
+    patron_reservado: str
+    escaneo_secretos_extensiones_omitidas: list[str]
+    archivos_sin_escanear: list[str]
+    comando_reproducir: list[str] = Field(min_length=1)
+    espera_reproducir_segundos: int = Field(gt=0)
+
+
+class ConfigEntrega(ModeloConfig):
+    """Qué entra al paquete de datos, qué nunca entra y qué revisa la auditoría final (C-07)."""
+
+    version: int
+    paquete: PaqueteEntrega
+    auditoria: AuditoriaEntrega
+
+    @model_validator(mode="after")
+    def _sin_prohibidos_en_la_lista(self) -> ConfigEntrega:
+        for origen in self.paquete.archivos.values():
+            if any(origen.startswith(pre) for pre in self.paquete.prohibido.prefijos_ruta):
+                raise ValueError(f"archivos: el origen {origen} está en una ruta prohibida (D-72)")
+        return self
+
+
+def cargar_entrega(carpeta: Path | None = None) -> ConfigEntrega:
+    """Atajo para ``config/entrega.yaml``."""
+    return cargar_config("entrega", ConfigEntrega, carpeta)
+
+
 CODIGO_URGENCIA_SIN_PUBLICACION ="urgencia_sin_publicacion"   # el único vacío de E1-10 cuyo texto vive en reglas_v1.3.yaml
 MODALIDADES = ("editorial", "banca")
 OPCIONALES = {"modalidad_banca"}  # el esquema la admite aunque todavía no exista
@@ -3304,6 +3398,7 @@ CARGADORES = {
     "pruebas": cargar_pruebas,
     "reproducibilidad": cargar_reproducibilidad,
     "pagina_metricas": cargar_pagina_metricas,
+    "entrega": cargar_entrega,
 }
 
 
