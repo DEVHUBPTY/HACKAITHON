@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
+from src import contexto, db
 from src import contexto_sismos as cs
-from src import db
 from src.configuracion import ConfigVinculos, ErrorDeConfiguracion, cargar_config, cargar_fuentes, cargar_reglas, cargar_vinculos
 
 VINCULOS = cargar_vinculos()
@@ -44,11 +44,12 @@ def test_un_evento_coincidente_da_vinculo_sis_con_todos_los_campos():
     assert r.limitacion == " ".join(VINCULOS.sismos.limitaciones)
     for parte in ("fuera de territorio panameño", "no informa daños", "automático puede cambiar"):
         assert parte in r.limitacion
-    (fila,) = cs.a_filas_vinculo(r)
-    assert fila == {
-        "id_grupo": "GRP-test", "tipo": "evento", "id_evidencia": "SIS-us0001", "regla": r.regla,
-        "limitacion": r.limitacion, "motivo_sin_vinculo": None,
-    }
+    (fila,) = cs.a_filas_vinculo(r, VINCULOS)
+    assert fila["id_grupo"] == "GRP-test" and fila["id_evidencia"] == "SIS-us0001" and fila["motivo_sin_vinculo"] is None
+    assert (fila["fuente"], fila["rol"], fila["tipo"], fila["subtema"]) == ("usgs", "evento", "evento", "sismos")
+    assert (fila["valor"], fila["unidad"], fila["profundidad_km"], fila["estado_evento"]) == (4.5, "magnitud", 35.2, "reviewed")
+    assert fila["place"] == "22 km S of Puerto Armuelles, Panama" and fila["hora_utc"] == "2024-05-10T12:00:00Z"
+    assert fila["regla"] == r.regla and fila["limitacion"] == r.limitacion
     assert "± 2 días" in r.regla and "magnitud mínima 3" in r.regla
 
 
@@ -57,9 +58,9 @@ def test_dos_candidatos_se_listan_todos_y_ninguno_se_elige():
     r = vincular([noticia()], eventos)
     assert r.estado == cs.CANDIDATOS_AMBIGUOS == "candidatos_ambiguos"
     assert {c.evento.id for c in r.candidatos} == {"SIS-us0001", "SIS-us0002"}
-    filas = cs.a_filas_vinculo(r)
+    filas = cs.a_filas_vinculo(r, VINCULOS)
     assert {f["id_evidencia"] for f in filas} == {"SIS-us0001", "SIS-us0002"}
-    assert {f["motivo_sin_vinculo"] for f in filas} == {"candidatos_ambiguos"}
+    assert {f["motivo_sin_vinculo"] for f in filas} == {"candidatos_ambiguos"} and {f["tipo"] for f in filas} == {"evento"}
 
 
 @pytest.mark.parametrize("subtema", ["inundaciones_lluvias", "deslizamientos", "alertas_proteccion_civil", "sequia_nino", None])
@@ -72,8 +73,9 @@ def test_noticia_de_2025_es_fuera_de_cobertura():
     r = vincular([noticia("2025-03-02T10:00:00Z")], [evento("SIS-us0001", "2025-03-02T09:00:00Z")])
     assert r.estado == cs.FUERA_DE_COBERTURA == "fuera_de_cobertura"
     assert r.candidatos == ()
-    (fila,) = cs.a_filas_vinculo(r)
+    (fila,) = cs.a_filas_vinculo(r, VINCULOS)
     assert fila["id_evidencia"] is None and fila["motivo_sin_vinculo"] == "fuera_de_cobertura"
+    assert fila["tipo"] is None and fila["fuente"] == "usgs" and fila["rol"] == "evento"   # NULL si no hay vínculo
 
 
 def test_la_cobertura_sale_de_fuentes_y_no_esta_fija_en_2024():
@@ -140,34 +142,91 @@ def test_eventos_reales_del_snapshot_se_cargan_ordenados():
     assert [e.hora_utc for e in eventos] == sorted(e.hora_utc for e in eventos)
 
 
-def test_subtema_dominante_y_vincular_base(tmp_path: Path):
+def base_metodo_a(tmp_path: Path) -> Path:
+    """Base clasificada como el método A activo: ``subtema_clasificado`` nulo; el subtema solo está en ``similitud_tema`` (B)."""
     ruta = tmp_path / "senales.duckdb"
-    con = db.conectar(ruta)
-    db.crear_esquema(con)
-    con.close()
-    base = {"titulo": "t", "url": "u", "url_canonica": "u", "medio": "m", "tipo_firma": "sin firma", "es_ruido": False}
+    base = {"titulo": "t", "url": "u", "url_canonica": "u", "medio": "m", "tipo_firma": "sin firma", "es_ruido": False, "subtema_clasificado": None}
     noticias = [
-        {**base, "id_noticia": "NOT-a", "fecha_publicacion": "2024-05-10T15:00:00Z", "subtema_clasificado": "sismos"},
-        {**base, "id_noticia": "NOT-b", "fecha_publicacion": "2024-05-10T16:00:00Z", "subtema_clasificado": "inundaciones_lluvias"},
-        {**base, "id_noticia": "NOT-c", "fecha_publicacion": "2024-05-10T16:00:00Z", "subtema_clasificado": "inundaciones_lluvias"},
+        {**base, "id_noticia": "NOT-a", "fecha_publicacion": "2024-05-10T15:00:00Z", "id_grupo": "GRP-sismo"},
+        {**base, "id_noticia": "NOT-b", "fecha_publicacion": "2024-05-10T16:00:00Z", "id_grupo": "GRP-lluvia"},
     ]
-    assert cs.subtema_dominante(noticias[:2]) == "inundaciones_lluvias"        # empate: orden alfabético
-    assert cs.subtema_dominante([{"subtema_clasificado": None}]) is None
-    grupo = {"titular_central": "t", "n_titulares": 1, "n_medios": 1, "n_procedencias": 1, "estimado": True}
+    grupo = {"titular_central": "t", "n_titulares": 1, "n_medios": 1, "n_procedencias": 1, "estimado": True, "tema_clasificado": "eventos_naturales"}
     grupos = [
         {**grupo, "id_grupo": "GRP-sismo", "id_noticia_central": "NOT-a", "ids_noticia": "NOT-a"},
-        {**grupo, "id_grupo": "GRP-lluvia", "id_noticia_central": "NOT-b", "ids_noticia": "NOT-b,NOT-c"},
+        {**grupo, "id_grupo": "GRP-lluvia", "id_noticia_central": "NOT-b", "ids_noticia": "NOT-b"},
     ]
-    db.guardar_todo(ruta, {"noticias": noticias, "grupos": grupos})
-    res = cs.vincular_base(ruta, [evento()], VINCULOS, FUENTES, CAMPOS)
-    assert [(r.id_grupo, r.estado) for r in res] == [("GRP-sismo", cs.VINCULADO)]
+    sim = [
+        {"id_noticia": "NOT-a", "metodo": "B", "tema": "eventos_naturales", "similitud": 0.7, "subtema": "sismos"},
+        {"id_noticia": "NOT-b", "metodo": "B", "tema": "eventos_naturales", "similitud": 0.7, "subtema": "inundaciones_lluvias"},
+    ]
+    db.guardar_todo(ruta, {"noticias": noticias, "grupos": grupos, "similitud_tema": sim})
+    return ruta
+
+
+def escribir_eventos(ruta: Path, eventos: list[dict]) -> Path:
+    rasgos = [
+        {"properties": {"id": e["id"], "magnitude": e.get("magnitude"), "time": e["time"], "place": "Panama", "status": "reviewed",
+                        "url": "https://earthquake.usgs.gov/e", "depth": 10.0, "latitude": 8.0, "longitude": -80.0}}
+        for e in eventos
+    ]
+    ruta.write_text(json.dumps({"features": rasgos}), encoding="utf-8")
+    return ruta
+
+
+def test_x18_un_grupo_de_sismos_se_vincula_con_la_base_del_metodo_a(tmp_path: Path):
+    geojson = escribir_eventos(tmp_path / "eventos.geojson", [{"id": "SIS-us0001", "magnitude": 4.5, "time": "2024-05-10T12:00:00Z"}])
+    resultados, filas, _ = contexto.aplicar_sismos(base_metodo_a(tmp_path), geojson, VINCULOS)
+    assert [(r.id_grupo, r.subtema, r.estado) for r in resultados] == [("GRP-sismo", "sismos", cs.VINCULADO)]   # lluvias: ausente
+    assert [f["id_evidencia"] for f in filas] == ["SIS-us0001"]
+
+
+def test_las_filas_de_usgs_entran_en_el_esquema_y_el_reproceso_respeta_las_de_indicador(tmp_path: Path):
+    ruta = base_metodo_a(tmp_path)
+    geojson = escribir_eventos(tmp_path / "eventos.geojson", [{"id": "SIS-us0001", "magnitude": 4.5, "time": "2024-05-10T12:00:00Z"}])
+    con = db.conectar(ruta)
+    db.insertar(con, "vinculos", [{"id_grupo": "GRP-x", "id_evidencia": "IND-PAN-X-2023", "tipo": "directa", "regla": "r", "fuente": "indicador", "rol": "panama"}])
+    con.close()
+    for _ in range(2):   # reproceso: no duplica las de USGS ni toca las del Banco Mundial
+        contexto.aplicar_sismos(ruta, geojson, VINCULOS)
+    con = db.conectar(ruta, solo_lectura=True)
+    try:
+        filas = db.leer_tabla(con, "vinculos", "fuente, id_grupo")
+    finally:
+        con.close()
+    assert [(f["fuente"], f["id_grupo"]) for f in filas] == [("indicador", "GRP-x"), ("usgs", "GRP-sismo")]
+    usgs = filas[1]
+    assert (usgs["id_evidencia"], usgs["rol"], usgs["tipo"], usgs["subtema"], usgs["valor"], usgs["place"]) == ("SIS-us0001", "evento", "evento", "sismos", 4.5, "Panama")
+
+
+def test_el_cli_escribe_los_resultados_de_usgs_en_el_reporte(tmp_path: Path):
+    ruta = base_metodo_a(tmp_path)
+    geojson = escribir_eventos(tmp_path / "eventos.geojson", [{"id": "SIS-us0001", "magnitude": 4.5, "time": "2024-05-10T12:00:00Z"}])
+    reporte = tmp_path / "reporte.json"
+    r = contexto.ejecutar(ruta, reporte, geojson)
+    assert json.loads(reporte.read_text(encoding="utf-8")) == r
+    assert r["usgs"]["grupos_de_sismos"] == 1 and r["usgs"]["por_resultado"] == {"vinculado": 1}
+    assert r["usgs"]["vinculados"]["n"] == 1 and r["usgs"]["vinculados"]["ic95"] is not None
+    assert "usgs" not in contexto.ejecutar(ruta, tmp_path / "otro.json")   # sin eventos no toca USGS
+
+
+def test_magnitud_nula_no_rompe_la_carga_ni_coincide_y_se_cuenta(tmp_path: Path):
+    geojson = escribir_eventos(
+        tmp_path / "eventos.geojson",
+        [{"id": "SIS-us0001", "magnitude": None, "time": "2024-05-10T12:00:00Z"}, {"id": "SIS-us0002", "magnitude": 4.0, "time": "2024-05-10T13:00:00Z"}],
+    )
+    eventos = cs.cargar_eventos(geojson)
+    assert cs.contar_sin_magnitud(eventos) == 1
+    r = vincular([noticia()], eventos)
+    assert [c.evento.id for c in r.candidatos] == ["SIS-us0002"]
+    _, _, sin_magnitud = contexto.aplicar_sismos(base_metodo_a(tmp_path), geojson, VINCULOS)
+    assert sin_magnitud == 1
 
 
 def test_el_bloque_sismos_prohibe_claves_desconocidas_y_zonas_invalidas(tmp_path: Path):
     import yaml
 
     datos = yaml.safe_load((Path(__file__).resolve().parents[1] / "config" / "vinculos.yaml").read_text(encoding="utf-8"))
-    for cambio in ({"sobra": 1}, {"zona_horaria": "Marte/Olimpo"}, {"limitaciones": []}):
+    for cambio in ({"sobra": 1}, {"zona_horaria": "Marte/Olimpo"}, {"limitaciones": []}, {"decimales_horas": -1}):
         malo = {**datos, "sismos": {**datos["sismos"], **cambio}}
         (tmp_path / "vinculos.yaml").write_text(yaml.safe_dump(malo, allow_unicode=True), encoding="utf-8")
         with pytest.raises(ErrorDeConfiguracion):
