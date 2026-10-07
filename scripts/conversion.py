@@ -19,6 +19,7 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 import feedparser
 
+from scripts import sbp
 from src import configuracion
 
 logger = logging.getLogger(__name__)
@@ -814,16 +815,20 @@ def convertir_todo(carpeta_raw: Path, carpeta_processed: Path, config: dict[str,
     filas, fuentes, auditoria = convertir_noticias(carpeta_raw, config)
     indicadores = convertir_indicadores(carpeta_raw, config)
     eventos = convertir_eventos(carpeta_raw, config)
+    series_sbp = sbp.convertir_sbp(carpeta_raw, config)
     escribir_csv(carpeta_processed / "noticias.csv", COLUMNAS_NOTICIAS, filas)
     escribir_json(carpeta_processed / "fuentes.json", fuentes)
     escribir_csv(carpeta_processed / "indicadores.csv", COLUMNAS_INDICADORES, indicadores)
     escribir_json(carpeta_processed / "eventos.geojson", eventos)
+    if series_sbp:  # fuente D opcional (E3-02): sin crudos de la SBP no se toca el sbp_series.csv que ya hay
+        escribir_csv(carpeta_processed / sbp.NOMBRE_CSV, sbp.COLUMNAS_SBP, series_sbp)
     escribir_json(carpeta_processed / "conversion.json", auditoria)
     resumen = {
         "noticias": len(filas),
         "fuentes": len(fuentes),
         "indicadores": len(indicadores),
         "eventos": len(eventos["features"]),
+        "series_sbp": len(series_sbp),
         "ventana_dias": auditoria["ventana"]["dias_aplicados"],
     }
     logger.info("Conversión terminada: %s", resumen)

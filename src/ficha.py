@@ -11,6 +11,8 @@ las fuentes sugeridas extra. No hay ningún ``if modalidad``.
 
 * Toda línea de «respaldado» lleva una cita ``ID + campo``. Un titular es una **declaración** atribuida a su medio, nunca un
   hecho; hecho solo es un conteo o un dato oficial (``directa`` o ``evento``: un vínculo ``indirecta`` no mide el hecho, X22).
+  Un dato oficial ``indirecta`` (hoy, la SBP) no se oculta ni se mezcla con los que miden el hecho: va en «Contexto oficial (no mide el hecho)» (X91).
+  Un indicador ``indirecta`` del Banco Mundial sigue sin mostrarse (decisión de X22: ``_vinculos_oficiales`` filtra por relación aceptada).
 * Las fuentes sugeridas son una **sugerencia** para quien verifica (D-37): nunca evidencia ni con formato de cita.
 * Nunca el nombre de un autor (D-32), nunca la descripción del RSS (D-31). Fechas en ISO 8601 UTC en los datos; la hora de Panamá
   solo al mostrar. Una publicación desconocida se dice «desconocida»: no se sustituye por la detección.
@@ -100,6 +102,8 @@ SEPARADOR_FUENTES = "; "
 ROL_PANAMA, ROL_COMPARABLE, ROL_TENDENCIA = "panama", "comparable", "tendencia"
 ORDEN_DE_ROLES = (ROL_PANAMA, ROL_COMPARABLE, ROL_TENDENCIA)
 FUENTE_INDICADOR = "indicador"
+FUENTE_SBP = "sbp"
+PREFIJO_SBP = "SBP-"
 SIN_DATO = "sin dato"
 TITULOS = {
     "que_se_reporta": "1 · Qué se reporta",
@@ -429,6 +433,28 @@ def _lineas_de_indicadores(indicadores: Sequence[Mapping[str, Any]], cfg: Config
     return lineas
 
 
+def _lineas_de_sbp(filas: Sequence[Mapping[str, Any]], cfg: ConfigVerificacion) -> list[LineaRespaldo]:
+    """Una línea por serie agregada de la SBP (E3-02): serie, período, valor con su unidad, informe y página de origen; la limitación va aparte.
+
+    Todo dato lleva su período y su unidad: es un dato mensual de 2024, no del mes de la noticia.
+    """
+    p = cfg.presentacion
+    series = {f"{PREFIJO_SBP}{k}": x.nombre for k, x in cargar_fuentes().sbp.series.items()}
+    return [
+        LineaRespaldo(
+            tipo="hecho",
+            texto=(
+                f"{p.fuentes_oficiales[FUENTE_SBP]} · {p.roles.get(str(v['rol']), str(v['rol']))} · {series.get(str(v['indicador_id']), v['indicador_id'])}, "
+                f"período {v['periodo']}: {round(float(v['valor']), p.decimales_valor_sbp):g} {v['unidad']}; "
+                f"informe «{v['informe']}»; página: {v['pagina']}"
+            ),
+            citas=[Cita(id=str(v["id_evidencia"]), campo="valor")],
+            limitacion=v.get("limitacion"),
+        )
+        for v in sorted(filas, key=lambda v: str(v["id_evidencia"]))
+    ]
+
+
 def _respaldado(datos: Datos, titulares: list[TitularReportado], cfg: ConfigVerificacion) -> Respaldado:
     g, p = datos.grupo, cfg.presentacion
     id_grupo = str(g["id_grupo"])
@@ -450,7 +476,10 @@ def _respaldado(datos: Datos, titulares: list[TitularReportado], cfg: ConfigVeri
         (v for v in oficiales if v.get("fuente") == FUENTE_INDICADOR and v.get("rol") in ORDEN_DE_ROLES),
         key=lambda v: (ORDEN_DE_ROLES.index(v["rol"]), -int(v["anio"] or 0), str(v["id_evidencia"])),
     )
-    datos_oficiales = _lineas_de_indicadores(indicadores, cfg)
+    sbp = [v for v in datos.vinculos if _tiene_dato(v) and v.get("fuente") == FUENTE_SBP]
+    # X91: la SBP se muestra siempre, pero solo mide el hecho si su relación es aceptada; si es `indirecta` va aparte, como contexto
+    datos_oficiales = _lineas_de_indicadores(indicadores, cfg) + _lineas_de_sbp([v for v in sbp if v.get("tipo") in aceptadas], cfg)
+    contexto_oficial = _lineas_de_sbp([v for v in sbp if v.get("tipo") not in aceptadas], cfg)
     eventos = [
         LineaRespaldo(
             tipo="hecho",
@@ -471,7 +500,7 @@ def _respaldado(datos: Datos, titulares: list[TitularReportado], cfg: ConfigVeri
         LineaRespaldo(tipo="declaración", texto=f"{t.medio} reporta: «{t.titular}»", citas=[Cita(id=t.id_noticia, campo=t.campo_titular)], atribucion=t.medio)
         for t in titulares
     ]
-    return Respaldado(reportes=reportes, datos_oficiales=datos_oficiales, eventos_oficiales=eventos, declaraciones=declaraciones)
+    return Respaldado(reportes=reportes, datos_oficiales=datos_oficiales, eventos_oficiales=eventos, declaraciones=declaraciones, contexto_oficial=contexto_oficial)
 
 
 def _vacios(datos: Datos, cfg: ConfigVerificacion) -> list[VacioFicha]:
@@ -628,6 +657,8 @@ def vista(ficha: Ficha, cfg: ConfigVerificacion | None = None) -> Vista:
 
     s3: list[Linea] = [Linea("Conteos de reportes")] + [respaldo(x) for x in ra.reportes]
     s3 += [Linea("Datos oficiales")] + ([respaldo(x) for x in ra.datos_oficiales] or [Linea("Sin dato oficial que mida el hecho (ver «Qué falta comprobar»)", 1)])
+    if ra.contexto_oficial:
+        s3 += [Linea(cfg.presentacion.titulo_contexto_oficial)] + [respaldo(x) for x in ra.contexto_oficial]
     s3 += [Linea("Eventos oficiales")] + ([respaldo(x) for x in ra.eventos_oficiales] or [Linea("Sin evento oficial vinculado", 1)])
     s3 += [Linea("Lo que dicen los titulares (declaraciones atribuidas a su medio)")] + [respaldo(x) for x in ra.declaraciones]
 
@@ -692,13 +723,13 @@ def a_registro(ficha: Ficha, id_caso: str | None = None, estado_revision: str | 
 
     ``id_caso`` y ``estado_revision`` los asigna la revisión humana (E1-16, ``src/exportar.py``): sin ellos son nulos.
     """
-    citas = list(dict.fromkeys((c.id, c.campo) for x in (*ficha.respaldado.reportes, *ficha.respaldado.datos_oficiales, *ficha.respaldado.eventos_oficiales, *ficha.respaldado.declaraciones) for c in x.citas))
+    citas = list(dict.fromkeys((c.id, c.campo) for x in (*ficha.respaldado.reportes, *ficha.respaldado.datos_oficiales, *ficha.respaldado.contexto_oficial, *ficha.respaldado.eventos_oficiales, *ficha.respaldado.declaraciones) for c in x.citas))
     return {
         "id_caso": id_caso,
         "modalidad": ficha.modalidad,
         "id_grupo": ficha.id_grupo,
         "ids_fuente": sorted({i for i, _ in citas if not i.startswith("GRP-")}),
-        "afirmaciones": [x.model_dump(mode="json") for x in (*ficha.respaldado.reportes, *ficha.respaldado.datos_oficiales, *ficha.respaldado.eventos_oficiales, *ficha.respaldado.declaraciones)],
+        "afirmaciones": [x.model_dump(mode="json") for x in (*ficha.respaldado.reportes, *ficha.respaldado.datos_oficiales, *ficha.respaldado.contexto_oficial, *ficha.respaldado.eventos_oficiales, *ficha.respaldado.declaraciones)],
         "citas": [{"id": i, "campo": c} for i, c in citas],
         "puntaje": ficha.puntaje.puntaje,
         "componentes": {k: c.valor for k, c in ficha.puntaje.componentes.items()},

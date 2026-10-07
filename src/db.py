@@ -166,15 +166,15 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("medios", "VARCHAR NOT NULL"),
         ("ids_noticia", "VARCHAR NOT NULL"),
     ],
-    "vinculos": [  # E1-09 / E1-09b: contexto oficial de cada grupo (Banco Mundial `indicador`, USGS `usgs`)
+    "vinculos": [  # E1-09 / E1-09b / E3-02: contexto oficial de cada grupo (Banco Mundial `indicador`, USGS `usgs`, SBP `sbp`)
         ("id_grupo", "VARCHAR NOT NULL"),
-        ("id_evidencia", "VARCHAR"),           # IND-… o SIS-…; NULL si no hay vínculo
+        ("id_evidencia", "VARCHAR"),           # IND-…, SIS-… o SBP-…; NULL si no hay vínculo
         ("tipo", "VARCHAR"),                   # relación: directa · indirecta · evento; NULL si no hay vínculo
         ("regla", "VARCHAR NOT NULL"),         # la regla que generó la fila (también la del "sin vínculo")
         ("limitacion", "VARCHAR"),
         ("motivo_sin_vinculo", "VARCHAR"),     # solo en filas sin vínculo (config/vinculos.yaml)
-        ("fuente", "VARCHAR NOT NULL"),        # quién la escribe: `indicador` (src.contexto) o `usgs` (src.contexto_sismos)
-        ("rol", "VARCHAR"),                    # panama · comparable · tendencia · evento
+        ("fuente", "VARCHAR NOT NULL"),        # quién la escribe: `indicador` (src.contexto), `usgs` (src.contexto_sismos) o `sbp` (src.contexto_sbp)
+        ("rol", "VARCHAR"),                    # panama · comparable · tendencia · evento · sistema (SBP)
         ("subtema", "VARCHAR"),                # subtema más cercano dentro del tema del grupo (D-92: solo si hay margen o término)
         ("pais_iso3", "VARCHAR"),
         ("indicador_id", "VARCHAR"),
@@ -193,6 +193,11 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("url_evento", "VARCHAR"),
         ("diferencia_horas", "DOUBLE"),        # distancia a la noticia más cercana del grupo
         ("criterio_subtema", "VARCHAR"),       # D-92: por qué se aceptó el subtema: `margen` o `lexico`
+        # E3-02: solo en las filas `sbp` (el id de la serie va en `indicador_id`; el valor y la unidad, en `valor`/`unidad`)
+        ("periodo", "VARCHAR"),                # mes del dato, YYYY-MM
+        ("informe", "VARCHAR"),                # informe de la SBP del que sale el dato
+        ("pagina", "VARCHAR"),                 # página de origen: hoja y celda del informe
+        ("url_fuente", "VARCHAR"),             # URL del archivo descargado
     ],
     "puntajes": [  # E1-10: R, I, U, N, E y P de cada grupo, con la explicación de cada componente (reglas v1.3)
         ("id_grupo", "VARCHAR PRIMARY KEY"),

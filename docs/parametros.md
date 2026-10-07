@@ -169,6 +169,12 @@ La ficha no calcula puntaje ni estado: lee lo de E1-10 y agrega presentación y 
 | Un `{}` de GDELT | Cobertura sin resolver (`vacio_sospechoso`), una sola llamada por rango y corrida | Práctica (el 2026-10-06 GDELT devolvió `{}` para un rango que sí tenía artículos) | `test_un_vacio_real_no_se_repite_ni_cuenta_como_cobertura` |
 | Cobertura de un día de GDELT | Cubierto solo si un crudo `articles` lo contiene completo; una respuesta al tope (250) subdivisible no cubre sola | Supuesto | `test_cobertura_por_tema_lista_cada_rango_sin_resolver_con_su_motivo` |
 | Tabla de idiomas de GDELT · tabla de países (`paises_es`) | Nombre -> ISO 639-1 · nombre en inglés -> español | Práctica (lista de idiomas de la API DOC 2.0; ISO 639-1) | `test_todos_los_idiomas_de_gdelt_tienen_codigo_de_dos_letras`; lo desconocido se marca en el manifest o queda nulo |
+| SBP (fuente D, E3-02): períodos · rango | 12 meses · 2024-01 a 2024-12 (`sbp.periodo_inicio`, `sbp.periodo_fin`, `sbp.periodos_por_serie`) | Spec E3-02 («12 meses de 2024») | `sbp:series_y_periodos` de `validar_snapshot`; `test_el_csv_tiene_las_columnas_de_la_spec_y_12_periodos_por_serie`; la configuración falla si el rango y el conteo no coinciden |
+| SBP: series | 3 agregadas del «Sistema Bancario»: saldo moroso (millones de balboas), saldo moroso / cartera del sistema (proporción 0 a 1) y provisiones para préstamos (millones de balboas) | Spec E3-02 (2–3 series agregadas) · Supuesto de cuáles (morosidad y provisiones son las dos medidas de calidad de cartera que la SBP publica mensualmente por tipo de banca) | `test_ningun_campo_identifica_clientes_ni_entidades_individuales` |
+| SBP: fila de cada serie (`fila`, `etiqueta_fila`) · fila de encabezados | 6, 14 y 6 · 4 | Estructura de los informes de la SBP (verificada el 2026-10-07) | La conversión falla si la fila no se llama como `etiqueta_fila`: `test_si_la_sbp_mueve_la_fila_la_conversion_falla_en_vez_de_leer_otra` |
+| SBP: pausa entre descargas | 5 s | Supuesto (cortesía; el sitio no declara un límite y robots.txt no pide retraso) | `test_extraer_sbp_guarda_crudos_inmutables_y_deja_el_registro` |
+| SBP: unidad | La original del informe (millones de balboas; proporción), sin convertir | CLAUDE.md (conservar unidades originales) | `test_los_valores_son_los_del_informe_en_su_celda_y_conservan_la_unidad` |
+| SBP: nulos | Celda vacía = nulo, nunca 0 | CLAUDE.md (reglas de datos) | `test_un_valor_vacio_queda_nulo_y_nunca_cero` |
 
 ## Prueba del modelo local (E0-07, `config/llm.yaml`)
 
@@ -331,6 +337,18 @@ independiente del mismo despacho cuenta como otra procedencia porque ninguna reg
 | Zona y formato de la hora mostrada (`sismos.zona_horaria`, `sismos.formato_hora`) | `America/Panama`, `%Y-%m-%d %H:%M`; el dato se guarda en UTC | CLAUDE.md (hora de Panamá solo en la interfaz) | `test_un_evento_coincidente_da_vinculo_sis_con_todos_los_campos` |
 | Limitaciones fijas (`sismos.limitaciones`) y plantilla de la regla (`sismos.plantilla_regla`) | Tres frases: lugar posiblemente fuera de Panamá, la fuente no informa daños, un evento automático puede cambiar | Spec E1-09b | mismo test; `test_el_bloque_sismos_prohibe_claves_desconocidas_y_zonas_invalidas` |
 | Borde de la cobertura | Una noticia de los primeros días de 2024 puede tener un evento de finales de 2023 dentro de su ventana, que la extracción no pidió: puede dar `sin_evento_coincidente` en vez de `fuera_de_cobertura` | Límite conocido (no se amplía la cobertura) | — |
+
+## Banca (SBP · E3-02, `config/vinculos.yaml`, `config/verificacion.yaml`)
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| Subtema que se vincula a la SBP (`vinculos.banca_calificaciones`) y su relación | `banca_calificaciones` · `indirecta` (contexto: no suma a E ni al estado de evidencia, pero la ficha lo muestra; X89, pregunta abierta 4 de `specs/E3-02.md`) | Definición de `vinculos.yaml` (`directa` = «mide lo mismo que el subtema») y revisión del PR #43 | `test_el_subtema_de_banca_vincula_el_ultimo_periodo_de_cada_serie`, `test_el_dato_indirecto_de_la_sbp_no_sube_la_evidencia_ni_el_puntaje` |
+| Qué período se muestra | El último período con valor de cada serie dentro de 2024 (hoy 2024-12); una serie sin valores no aporta y un vacío no es 0 | Supuesto | `test_un_valor_nulo_no_se_vincula_ni_se_rellena_con_cero` |
+| Otros subtemas | Nunca se vinculan a la SBP | Spec E3-02 (solo banca) | `test_otros_subtemas_nunca_se_vinculan_a_la_sbp` |
+| Texto de la nota de período (`sbp.nota_periodo`) y de la regla (`sbp.plantilla_regla`) | «Dato mensual de {periodo} (series de 2024), no del mes de la noticia.» | Spec E3-02 (limitación visible) | `test_la_configuracion_de_vinculos_pide_los_textos_del_periodo` |
+| Decimales al mostrar un dato de la SBP (`presentacion.decimales_valor_sbp`) | 4 | Supuesto (la morosidad es una proporción de 0 a 1; con 2 decimales, 0,1235 y 0,1246 se verían ambos 0,12) | `test_la_ficha_bancaria_muestra_un_dato_sbp_con_periodo_unidad_pagina_y_limitacion` |
+| Proporciones del reporte (`reporte_vinculos.json` → `sbp`) | n, de e IC 95 % de Wilson (grupos de banca con y sin dato) | CLAUDE.md (toda proporción con n e IC) | `test_el_subtema_de_banca_vincula_el_ultimo_periodo_de_cada_serie` |
+| Texto obligatorio de toda salida con datos de la SBP | «El análisis es del equipo y no una opinión oficial de la SBP» (`sbp.limitacion` de `fuentes.yaml`) | Spec E3-02 | `test_la_ficha_bancaria_muestra_un_dato_sbp_con_periodo_unidad_pagina_y_limitacion` |
 
 ## Consulta y generación
 

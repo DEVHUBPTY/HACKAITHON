@@ -779,7 +779,7 @@ def desde_ficha(ficha: Ficha) -> EntradaFicha:
     r = ficha.respaldado
     cfg = cargar_generacion()
     valor_por_anio = re.compile(cfg.patron_valor_por_anio)
-    for linea in (*r.reportes, *r.datos_oficiales, *r.eventos_oficiales):
+    for linea in (*r.reportes, *r.datos_oficiales, *r.contexto_oficial, *r.eventos_oficiales):
         valores = [m.group(1).strip() for m in valor_por_anio.finditer(linea.texto)] if linea.indicador else []
         for i, c in enumerate(linea.citas):
             reg = registros.setdefault(c.id, RegistroEvidencia(id=c.id, campos={}))
@@ -806,7 +806,7 @@ def desde_ficha(ficha: Ficha) -> EntradaFicha:
         vacios=[VacioFicha(id=v.codigo, descripcion=v.texto) for v in [*f.principales, *f.otros]],
         fuentes_verificaciones=fuentes_y_verificaciones(ficha),
         contradicciones=abiertas,
-        evidencia=[texto_respaldo(x) for x in (*r.reportes, *r.datos_oficiales, *r.eventos_oficiales, *r.declaraciones)],
+        evidencia=[texto_respaldo(x) for x in (*r.reportes, *r.datos_oficiales, *r.contexto_oficial, *r.eventos_oficiales, *r.declaraciones)],
         tema=ficha.que_se_reporta.tema,
         tema_secundario=ficha.que_se_reporta.tema_secundario,
         edad_evidencia_dias=edad_evidencia_ficha(ficha),

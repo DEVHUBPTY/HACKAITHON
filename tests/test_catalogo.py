@@ -115,12 +115,21 @@ def test_licencias_sin_inventar(filas: list[dict[str, str]], manifest: dict) -> 
     assert "Pendiente de verificar" in filas[3]["Licencia / condiciones"]
 
 
-def test_sbp_fuente_no_usada(filas: list[dict[str, str]]) -> None:
+def test_sbp_fuente_d_con_su_hash(filas: list[dict[str, str]], manifest: dict) -> None:
+    """E3-02: la fuente D ya está en el snapshot, con la huella del CSV y las de los .xlsx que no se versionan."""
     sbp = filas[3]
-    assert sbp["Etapa"] == "Etapa 3" and sbp["Modalidad"] == "Banca"
+    assert sbp["Etapa"] == "Etapa 3" and sbp["Modalidad"] == "Banca" and sbp["Archivo"] == "sbp_series.csv"
+    assert manifest["sha256"]["processed/sbp_series.csv"] in sbp["SHA-256"]
+    assert "Fuente no usada todavía" not in " ".join(sbp.values())
+    assert "2026-" in sbp["Fecha de extracción"]
+
+
+def test_sbp_sin_datos_queda_marcada_como_pendiente(manifest: dict, tmp_path: Path) -> None:
+    sin = copy.deepcopy(manifest)
+    sin["cantidad_por_archivo"].pop("sbp_series.csv")
+    fila = catalogo.construir_filas(sin, DATA / "processed")[3]
     for columna in ("Cobertura", "Registros válidos", "Registros excluidos y motivo", "SHA-256"):
-        assert "Fuente no usada todavía: pendiente de E3-02, solo si se activa banca" in sbp[columna]
-    assert "Pendiente" in sbp["Fecha de extracción"]
+        assert "Fuente no usada todavía: pendiente de E3-02, solo si se activa banca" in fila[columna]
 
 
 def test_valores_siguen_al_manifest(manifest: dict) -> None:

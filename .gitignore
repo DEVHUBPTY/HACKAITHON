@@ -19,6 +19,8 @@ outputs/benchmark/*
 # Se regeneran con `python -m scripts.extraer` (ver data/README.md). Banco Mundial y USGS sí se versionan.
 data/raw/rss_tvn/
 data/raw/gdelt/
+# Fuente D (E3-02): los .xlsx crudos de la SBP no se versionan (como el RSS y GDELT); se regeneran con `scripts.extraer --sbp`. El CSV con los 36 valores agregados SÍ se versiona (D-116, riesgo aceptado).
+data/raw/sbp/
 
 # OS / editor
 .DS_Store

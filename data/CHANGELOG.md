@@ -3,6 +3,14 @@
 Generado por `python -m scripts.manifest` a partir del historial de `manifest.json`.
 No editar a mano.
 
+## v1.3 · 2026-10-07T00:41:03Z
+
+- Hash del snapshot: `d0ae54537df7824aaf0a4295b56a50c9d4dcd00806d3ddb36e931d3007e8057e`
+- Cambio de fuente: Fuente D (SBP, E3-02): sbp_series.csv con 3 series agregadas del sistema bancario, 12 meses de 2024 (36 filas); crudos .xlsx en raw/sbp/ no versionados (aviso legal de la SBP)
+- Cambio de fuente: sbp_series.csv: 0 -> 36
+- Registros excluidos: 97 {'fuera_de_ventana': 97}
+- Cantidad por archivo: conversion.json 97, eventos.geojson 82, fuentes.json 110, indicadores.csv 540, noticias.csv 221, sbp_series.csv 36
+
 ## v1.2 · 2026-10-07T00:41:03Z
 
 - Hash del snapshot: `ecc81c41ed6441436d5496a2efb5467fcb0ccdd8bf92eca81f435ab4610a4ff8`

@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from scripts import conversion
+from scripts.sbp import PREFIJO_ID as PREFIJO_SBP
 from scripts.conversion import RAIZ, a_iso, sha256_archivo, ts_de_archivo
 from src import consultas_gdelt
 from src.registro import configurar_logging
@@ -31,6 +32,7 @@ ARCHIVOS_PROCESSED = [
     "fuentes.json",
     "indicadores.csv",
     "noticias.csv",
+    "sbp_series.csv",        # fuente D (E3-02); opcional: sin crudos de la SBP no existe
 ]
 
 
@@ -65,6 +67,8 @@ TRANSFORMACIONES = [
     "Banco Mundial: una consulta por indicador; cuadrícula completada con todas las combinaciones país × indicador × año (540; el PDF dice 1.350, ver nota_cuadricula_banco_mundial), valor vacío (nulo), nunca 0.",
     "indicadores.csv: id_indicador = IND-<país>-<indicador>-<año>; unidad tomada de config/fuentes.yaml.",
     "USGS: id = SIS-<id USGS>; time y updated de milisegundos epoch a ISO 8601 UTC; longitude, latitude y depth de la geometría.",
+    "SBP (fuente D, E3-02): una fila de cada informe .xlsx (la del Sistema Bancario) y una columna por mes de 2024; id_serie = SBP-<serie>, "
+    "ID de cada dato = SBP-<serie>-<YYYY-MM>; pagina = hoja y celda de origen; unidad original del informe; nulos como celda vacía, nunca 0.",
     "Registros excluidos (sin título, sin URL, sin fecha válida, fuera de ventana) se listan en conversion.json.",
 ]
 
@@ -105,6 +109,8 @@ def _cantidad_por_archivo(processed: Path) -> dict[str, int]:
         "noticias.csv": _contar_filas_csv(processed / "noticias.csv"),
         "indicadores.csv": _contar_filas_csv(processed / "indicadores.csv"),
     }
+    if (processed / "sbp_series.csv").exists():
+        cantidades["sbp_series.csv"] = _contar_filas_csv(processed / "sbp_series.csv")
     cantidades["fuentes.json"] = len(json.loads((processed / "fuentes.json").read_text("utf-8")))
     cantidades["eventos.geojson"] = len(
         json.loads((processed / "eventos.geojson").read_text("utf-8"))["features"]
@@ -191,7 +197,7 @@ def _cobertura(processed: Path, auditoria: dict[str, Any], config: dict[str, Any
 
 
 def _consultas(config: dict[str, Any]) -> dict[str, Any]:
-    g, bm, u = config["gdelt"], config["banco_mundial"], config["usgs"]
+    g, bm, u, sb = config["gdelt"], config["banco_mundial"], config["usgs"], config["sbp"]
     return {
         "rss_tvn": {
             "url": config["rss_tvn"]["url"],
@@ -217,6 +223,16 @@ def _consultas(config: dict[str, Any]) -> dict[str, Any]:
             "indicadores": {k: v["nombre"] for k, v in bm["indicadores"].items()},
             "paises": bm["paises"],
         },
+        "sbp": {
+            "sitio": sb["sitio"],
+            "informes": {k: {"nombre": v["nombre"], "pagina": sb["sitio"] + v["pagina"], "archivo": v["archivo"], "hoja": v["hoja"]} for k, v in sb["informes"].items()},
+            "series": {
+                f"{PREFIJO_SBP}{k}": {"nombre": v["nombre"], "informe": v["informe"], "fila": v["fila"], "etiqueta_fila": v["etiqueta_fila"], "unidad": v["unidad"]}
+                for k, v in sb["series"].items()
+            },
+            "periodos": f"{sb['periodo_inicio']} a {sb['periodo_fin']} ({sb['periodos_por_serie']} meses)",
+            "nota": "Solo series agregadas del sistema bancario; la URL exacta, el SHA-256 y la fecha de cada descarga están en registro_extraccion/sbp_*.json.",
+        },
         "usgs": {
             "endpoint": u["endpoint"],
             "parametros": {
@@ -240,6 +256,7 @@ def _licencias(config: dict[str, Any]) -> dict[str, str]:
         ),
         "tvn_rss": config["medios_conocidos"][config["medio_tvn_dominio"]]["condiciones"].strip(),
         "usgs": config["usgs"]["licencia"],
+        "sbp": config["sbp"]["licencia"],
     }
 
 
@@ -352,7 +369,7 @@ def construir_manifest(data: Path, config: dict[str, Any], motivo: str | None = 
     """Arma el manifest a partir de ``data/raw`` y ``data/processed`` (y del manifest previo)."""
     raw, processed = data / "raw", data / "processed"
     auditoria = json.loads((processed / "conversion.json").read_text("utf-8"))
-    sha = {f"processed/{n}": sha256_archivo(processed / n) for n in ARCHIVOS_PROCESSED}
+    sha = {f"processed/{n}": sha256_archivo(processed / n) for n in ARCHIVOS_PROCESSED if (processed / n).exists()}
     hash_snapshot = hashlib.sha256(json.dumps(sha, sort_keys=True).encode()).hexdigest()
     cantidades = _cantidad_por_archivo(processed)
     fecha = _fecha_corte(raw)

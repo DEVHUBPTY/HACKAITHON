@@ -51,5 +51,23 @@
     "por_resultado": {},
     "filas_en_vinculos": 0,
     "eventos_sin_magnitud": 0
+  },
+  "sbp": {
+    "nota": "Series agregadas mensuales de 2024 del sistema bancario (SBP) como contexto; el análisis es del equipo y no una opinión oficial de la SBP.",
+    "grupos_de_banca": 0,
+    "con_dato": {
+      "n": 0,
+      "de": 0,
+      "proporcion": null,
+      "ic95": null
+    },
+    "sin_dato": {
+      "n": 0,
+      "de": 0,
+      "proporcion": null,
+      "ic95": null
+    },
+    "series_vinculadas": [],
+    "filas_en_vinculos": 0
   }
 }

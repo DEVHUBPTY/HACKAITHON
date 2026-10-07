@@ -197,6 +197,16 @@ def calcular_huellas(ctx: Contexto) -> dict[str, str]:
         if not rutas:
             raise ErrorDeReproduccion(f"no hay archivos para «{patron}»: ¿se ejecutó el pipeline?")
         huellas.update({f"archivo:{p.relative_to(raiz).as_posix()}": huella_de_archivo(p) for p in rutas})
+    for local in salidas.archivos_locales:
+        ruta = raiz / local.archivo
+        if ruta.is_file():
+            huellas[f"archivo:{local.archivo}"] = huella_de_archivo(ruta)
+            continue
+        ctx.omitidas |= {f"archivo:{local.archivo}", *local.afecta}
+        ctx.limitaciones.append(
+            f"falta {local.archivo}: no se versiona (redistribución restringida, D-72) y se regenera con scripts.extraer; "
+            f"no se verificó ni su hash ni lo que depende de él ({', '.join(local.afecta)})"
+        )
     for informe, excluidas in salidas.informes.items():
         huellas[f"informe:{informe}"] = huella_canonica(quitar_rutas(_leer_json(raiz / informe), excluidas), decimales)
     huellas.update(huellas_de_tablas(raiz / "data" / "senales.duckdb", salidas.tablas, decimales))
@@ -311,7 +321,7 @@ def comparar(registrado: Mapping[str, str], actual: Mapping[str, str], omitidas:
     """Cada salida distinta, faltante o nueva. ``omitidas`` son claves que esta máquina no puede calcular (se declaran aparte)."""
     dif = []
     for clave in sorted(set(registrado) | set(actual)):
-        if clave in omitidas and clave not in actual:
+        if clave in omitidas:   # no calculable en esta máquina o dependiente de un archivo local ausente: se declara aparte
             continue
         if clave not in actual:
             dif.append(Diferencia(clave, "faltante", registrado[clave], None))
@@ -385,7 +395,7 @@ def paso_conversion(ctx: Contexto) -> int:
     if ausentes:
         ctx.omitidas |= esperadas
         ctx.limitaciones.append(
-            f"faltan {len(ausentes)} crudos de data/raw/ (RSS y GDELT no se versionan, D-72; se recuperan con scripts.extraer): "
+            f"faltan {len(ausentes)} crudos de data/raw/ (RSS, GDELT y SBP no se versionan, D-72; se recuperan con scripts.extraer): "
             "processed/ no se reconstruyó y se usó el versionado"
         )
         return CODIGO_OK
