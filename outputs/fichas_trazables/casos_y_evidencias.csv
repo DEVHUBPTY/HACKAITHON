@@ -1,0 +1,133 @@
+ID caso,Modalidad,Tema,Caso de uso,Estado de revisión,Estado de evidencia,Acción recomendada,R,I,U,N,E,Versión de reglas,Versión del borrador,Alcance del texto,Qué se reporta,Quién lo reporta,Qué está respaldado,Qué falta comprobar,IDs de fuente,Revisor,Comentario del revisor,Fecha de revisión,Última exportación
+CASO-002,Editorial,Servicios públicos,CU-01,Requiere evidencia,Insuficiente,Investigar ya,1,1,0.839079,1,0.366667,1.3,sin borrador,basado únicamente en titular/metadatos,"Titular central: «Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá» — TVN Panamá
+Cobertura: 1 titular · 1 medio · de 2026-10-05 16:38 a 2026-10-05 16:38 (hora de Panamá); fecha de publicación
+Tema: Servicios públicos · Subtema: Salud pública (hospitales, CSS, MINSA, medicamentos) (criterio: lexico)
+Tema secundario: sin dato
+Alcance: basado únicamente en titular/metadatos","«Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá» — TVN Panamá (Panamá) · agencia: sin agencia · firma: sin firma · publicación: 2026-10-05 16:38 (hora de Panamá) · https://www.tvn-2.com/nacionales/salud/minsa-enciende-alarmas-diagnosticos-cancer_1_2264460.html
+Procedencias: 1 procedencia independiente estimada entre 1 titular: los titulares que replican a un mismo medio, agencia o red cuentan como una sola procedencia.
+Procedencia 1: TVN Panamá · 1 titular
+¿TVN Panamá ya lo cubrió? TVN Panamá aparece en este grupo con 1 titular del snapshot.","Conteos de reportes
+Hecho: 1 titular de 1 medio reporta este tema · Cita: GRP-21ad932d54 · n_titulares; GRP-21ad932d54 · n_medios
+Hecho: 1 procedencia independiente estimada (los titulares que replican a una misma fuente cuentan como una) · Cita: GRP-21ad932d54 · n_procedencias
+Datos oficiales
+Sin dato oficial que mida el hecho (ver «Qué falta comprobar»)
+Eventos oficiales
+Sin evento oficial vinculado
+Lo que dicen los titulares (declaraciones atribuidas a su medio)
+Declaración: TVN Panamá reporta: «Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá» · Cita: NOT-3be05280f2 · titulo_limpio","sin dato oficial vinculado (el tema no tiene un indicador oficial asignado) → Verificar: Consultar a la institución oficial responsable del tema por un dato que mida el hecho.
+1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente → Verificar: Buscar el mismo hecho en un medio con fuente propia; una réplica de la misma agencia no cuenta.
+Fuentes sugeridas para verificar (sugerencias para quien verifica; no son evidencia del sistema ni se citan como tal)
+Ministerio de Salud
+Caja de Seguro Social",NOT-3be05280f2,"Asistente (provisional, D-101) · provisional (D-101)","Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09.",2026-10-07T21:35:22Z,2026-10-07T22:28:14Z
+CASO-003,Editorial,Economía,CU-02,Aprobado como borrador,Parcial,Completar evidencia y producir,1,1,0.329261,1,0.466667,1.3,sin borrador,basado únicamente en titular/metadatos,"Titular central: «¿Cómo se fija el precio del combustible en Panamá? El MEF explica la fórmula quincenal tras aprobarse nuevo subsidio» — panamaamerica.com.pa
+Cobertura: 2 titulares · 1 medio · de 2026-10-01 18:30 a 2026-10-02 03:00 (hora de Panamá); fecha de detección
+Tema: Economía · Subtema: Inflación y precios (canasta básica, combustibles) (criterio: lexico)
+Tema secundario: sin dato
+Alcance: basado únicamente en titular/metadatos","«¿Cómo se fija el precio del combustible en Panamá? El MEF explica la fórmula quincenal tras aprobarse nuevo subsidio» — panamaamerica.com.pa (Panamá) · agencia: sin agencia · firma: sin firma · publicación: desconocida · https://www.panamaamerica.com.pa/sociedad/como-se-fija-el-precio-del-combustible-en-panama-el-mef-explica-la-formula-quincenal-tras
+«¿Cómo se fija el precio del combustible en Panamá? El MEF explica la fórmula quincenal» — panamaamerica.com.pa (Panamá) · agencia: sin agencia · firma: sin firma · publicación: desconocida · https://www.panamaamerica.com.pa/sociedad/como-se-fija-el-precio-del-combustible-en-panama-el-mef-explica-la-formula-quincenal
+Procedencias: 1 procedencia independiente estimada entre 2 titulares: los titulares que replican a un mismo medio, agencia o red cuentan como una sola procedencia.
+Procedencia 1: panamaamerica.com.pa · 2 titulares (mismo medio)
+¿TVN Panamá ya lo cubrió? No hay titulares de TVN Panamá en este grupo del snapshot; no se afirma que no lo haya cubierto fuera de él.","Conteos de reportes
+Hecho: 2 titulares de 1 medio reportan este tema · Cita: GRP-81a11a5998 · n_titulares; GRP-81a11a5998 · n_medios
+Hecho: 1 procedencia independiente estimada (los titulares que replican a una misma fuente cuentan como una) · Cita: GRP-81a11a5998 · n_procedencias
+Datos oficiales
+Hecho: Banco Mundial · dato de Panamá · PAN 2024: 0.69 % anual · Limitación: Dato anual de inflación al consumidor; no es el precio de un producto concreto. Dato anual de 2024; último año disponible con valor de Panamá; puede revisarse. · Cita: IND-PAN-FP.CPI.TOTL.ZG-2024 · valor
+Hecho: Banco Mundial · país comparable · COL 2024: 6.61 % anual; CRI 2024: -0.41 % anual; DOM 2024: 3.3 % anual; GTM 2024: 2.87 % anual; MEX 2024: 4.72 % anual · Limitación: Dato anual de inflación al consumidor; no es el precio de un producto concreto. Dato anual de 2024; último año disponible con valor de Panamá; puede revisarse. · Cita: IND-COL-FP.CPI.TOTL.ZG-2024 · valor; IND-CRI-FP.CPI.TOTL.ZG-2024 · valor; IND-DOM-FP.CPI.TOTL.ZG-2024 · valor; IND-GTM-FP.CPI.TOTL.ZG-2024 · valor; IND-MEX-FP.CPI.TOTL.ZG-2024 · valor
+Hecho: Banco Mundial · serie de Panamá · PAN 2024: 0.69 % anual; PAN 2023: 1.49 % anual; PAN 2022: 2.86 % anual; PAN 2021: 1.63 % anual; PAN 2020: -1.55 % anual · Limitación: Dato anual de inflación al consumidor; no es el precio de un producto concreto. · Cita: IND-PAN-FP.CPI.TOTL.ZG-2024 · valor; IND-PAN-FP.CPI.TOTL.ZG-2023 · valor; IND-PAN-FP.CPI.TOTL.ZG-2022 · valor; IND-PAN-FP.CPI.TOTL.ZG-2021 · valor; IND-PAN-FP.CPI.TOTL.ZG-2020 · valor
+Eventos oficiales
+Sin evento oficial vinculado
+Lo que dicen los titulares (declaraciones atribuidas a su medio)
+Declaración: panamaamerica.com.pa reporta: «¿Cómo se fija el precio del combustible en Panamá? El MEF explica la fórmula quincenal tras aprobarse nuevo subsidio» · Cita: NOT-1710ce462f · titulo_limpio
+Declaración: panamaamerica.com.pa reporta: «¿Cómo se fija el precio del combustible en Panamá? El… (completo en el cuerpo de la página)","1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente → Verificar: Buscar el mismo hecho en un medio con fuente propia; una réplica de la misma agencia no cuenta.
+2 de 2 titulares sin medio o fecha de publicación conocidos → Verificar: Abrir el enlace de cada titular para identificar el medio y la fecha de publicación original.
+urgencia estimada: fecha de publicación desconocida → Verificar: Abrir el enlace de cada titular para identificar el medio y la fecha de publicación original.
+Fuentes sugeridas para verificar (sugerencias para quien verifica; no son evidencia del sistema ni se citan como tal)
+Contraloría General de la República (INEC)
+Autoridad de Protección al Consumidor y Defensa de la Competencia","IND-COL-FP.CPI.TOTL.ZG-2024, IND-CRI-FP.CPI.TOTL.ZG-2024, IND-DOM-FP.CPI.TOTL.ZG-2024, IND-GTM-FP.CPI.TOTL.ZG-2024, IND-MEX-FP.CPI.TOTL.ZG-2024, IND-PAN-FP.CPI.TOTL.ZG-2020, IND-PAN-FP.CPI.TOTL.ZG-2021, IND-PAN-FP.CPI.TOTL.ZG-2022, IND-PAN-FP.CPI.TOTL.ZG-2023, IND-PAN-FP.CPI.TOTL.ZG-2024, NOT-1710ce462f, NOT-96d1ecac7d","Asistente (provisional, D-101) · provisional (D-101)","Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09.",2026-10-07T21:35:23Z,2026-10-07T22:28:14Z
+CASO-008,Editorial,Eventos naturales,CU-03,Requiere evidencia,Insuficiente,Vigilar,0.5,0.65,0.341166,1,0.166667,1.3,sin borrador,basado únicamente en titular/metadatos,"Titular central: «Intensifying El Nino deepens economic risks across LatAm» — massachusettssun.com
+Cobertura: 20 titulares · 18 medios · de 2026-10-02 01:15 a 2026-10-02 05:00 (hora de Panamá); fecha de detección
+Tema: Eventos naturales · Subtema: Sequía y El Niño (criterio: lexico)
+Tema secundario: sin dato
+Alcance: basado únicamente en titular/metadatos","«World Insights: Intensifying El Nino deepens economic risks across LatAm» — english.news.cn · agencia: sin agencia · firma: sin firma · publicación: desconocida · https://english.news.cn/20261002/3ed0d41ec72b4abab6a0f33ec809c6f3/c.html
+«Intensifying El Nino deepens economic risks across LatAm» — massachusettssun.com (Estados Unidos) · agencia: sin agencia · firma: sin firma · publicación: desconocida · http://www.massachusettssun.com/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam
+«Intensifying El Nino deepens economic risks across LatAm» — thailandnews.net (Tailandia) · agencia: sin agencia · firma: sin firma · publicación: desconocida · http://www.thailandnews.net/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam
+«Intensifying El Nino deepens economic risks across LatAm» — russiaherald.com (Rusia) · agencia: sin agencia · firma: sin firma · publicación: desconocida · http://www.russiaherald.com/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam
+«World Insights: Intensifying El Nino deepens economic risks across LatAm» — trinidadtimes.com (Trinidad y Tobago) · agencia: sin agencia · firma: sin firma · publicación: desconocida · http://www.trinidadtimes.com/news/279347044/world-insights-intensifying-el-nino-deepens-economic-risks-across-latam
+«Intensifying El Nino deepens economic risks across LatAm» — jamaicantimes.com (Jamaica) · agencia: sin agencia · firma: sin firma · publicación: desconocida · http://www.jamaicantimes.com/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam
+«Intensifying El Nino deepens economic risks across LatAm» — trinidadtimes.com (Trinidad y Tobago) · agencia: sin agencia · firma: sin firma · publicación: desconocida · http://www.trinidadtimes.com/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam
+«Intensifying El Nino deepens economic risks across LatAm» — newzealandstar.com (Nueva Zelanda) · a… (completo en el cuerpo de la página)","Conteos de reportes
+Hecho: 20 titulares de 18 medios reportan este tema · Cita: GRP-79f3183472 · n_titulares; GRP-79f3183472 · n_medios
+Hecho: 1 procedencia independiente estimada (los titulares que replican a una misma fuente cuentan como una) · Cita: GRP-79f3183472 · n_procedencias
+Datos oficiales
+Sin dato oficial que mida el hecho (ver «Qué falta comprobar»)
+Eventos oficiales
+Sin evento oficial vinculado
+Lo que dicen los titulares (declaraciones atribuidas a su medio)
+Declaración: english.news.cn reporta: «World Insights: Intensifying El Nino deepens economic risks across LatAm» · Cita: NOT-0969f86532 · titulo_limpio
+Declaración: massachusettssun.com reporta: «Intensifying El Nino deepens economic risks across LatAm» · Cita: NOT-2ece201ac9 · titulo_limpio
+Declaración: thailandnews.net reporta: «Intensifying El Nino deepens economic risks across LatAm» · Cita: NOT-364916b1e1 · titulo_limpio
+Declaración: russiaherald.com reporta: «Intensifying El Nino deepens economic risks across LatAm» · Cita: NOT-65049548e8 · titulo_limpio
+Declaración: trinidadtimes.com reporta: «World Insights: Intensifying El Nino deepens economic risks across LatAm» · Cita: NOT-7170117798 · titulo_limpio
+Declaración: jamaicantimes.com reporta: «Intensifying El Nino deepens economic risks across LatAm» · Cita: NOT-7bc0adfe59 · titulo_limpio
+Declaración: trinidadtimes.com reporta: «Intensifying El Nino deepens economic risks across LatAm» · Cita: NOT-89b5cc1eb2 · titulo_limpio
+Declaración: newzealandstar.com reporta: «Intensifying El Nino deepens economic risks across LatAm» · Cita: NOT-9013970ab7 · titulo_limpio
+Declaración: oklahomastar.com reporta: «Intensifying El Nino deepens economic risks across LatAm» · Cita: NOT-9112a370be · titulo_limpio
+Declaración: africaleader.com reporta: «Intensifying El Nino deepens economic risks across LatAm» · Cita: NOT-af2c98a539 · titulo_limpio
+Declaración: irishsun.com reporta: «Intensifying El Nino deepens economic ri… (completo en el cuerpo de la página)","sin dato oficial vinculado (el tema no tiene un indicador oficial asignado) → Verificar: Consultar a la institución oficial responsable del tema por un dato que mida el hecho.
+1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente → Verificar: Buscar el mismo hecho en un medio con fuente propia; una réplica de la misma agencia no cuenta.
+20 de 20 titulares sin medio o fecha de publicación conocidos → Verificar: Abrir el enlace de cada titular para identificar el medio y la fecha de publicación original.
+Otros vacíos (1)
+urgencia estimada: fecha de publicación desconocida → Verificar: Abrir el enlace de cada titular para identificar el medio y la fecha de publicación original.
+Fuentes sugeridas para verificar (sugerencias para quien verifica; no son evidencia del sistema ni se citan como tal)
+Empresa de Transmisión Eléctrica (Hidrometeorología)
+Autoridad del Canal de Panamá","NOT-0969f86532, NOT-2ece201ac9, NOT-364916b1e1, NOT-65049548e8, NOT-7170117798, NOT-7bc0adfe59, NOT-89b5cc1eb2, NOT-9013970ab7, NOT-9112a370be, NOT-af2c98a539, NOT-b0fc5636be, NOT-b449afb957, NOT-b55ac9551b, NOT-b627063783, NOT-b9a18baba2, NOT-bac341eccd, NOT-bd4d4c3bb9, NOT-c8859ae7ee, NOT-dde43008f3, NOT-e795e93c9d","Asistente (provisional, D-101) · provisional (D-101)","Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09.",2026-10-07T22:28:15Z,2026-10-07T22:28:15Z
+CASO-007,Editorial,Servicios públicos,CU-04,Requiere evidencia,Insuficiente,Investigar ya,1,0.9,0.862001,1,0.366667,1.3,sin borrador,basado únicamente en titular/metadatos,"Titular central: «Más de 30 mujeres han muerto de forma violenta en Panamá este año» — TVN Panamá
+Cobertura: 1 titular · 1 medio · de 2026-10-05 20:30 a 2026-10-05 20:30 (hora de Panamá); fecha de publicación
+Tema: Servicios públicos · Subtema: Seguridad ciudadana (policía, operativos, cárceles, delitos) (criterio: lexico)
+Tema secundario: Economía
+Alcance: basado únicamente en titular/metadatos","«Más de 30 mujeres han muerto de forma violenta en Panamá este año» — TVN Panamá (Panamá) · agencia: sin agencia · firma: sin firma · publicación: 2026-10-05 20:30 (hora de Panamá) · https://www.tvn-2.com/nacionales/30-mujeres-han-muerto-forma_1_2264499.html
+Procedencias: 1 procedencia independiente estimada entre 1 titular: los titulares que replican a un mismo medio, agencia o red cuentan como una sola procedencia.
+Procedencia 1: TVN Panamá · 1 titular
+¿TVN Panamá ya lo cubrió? TVN Panamá aparece en este grupo con 1 titular del snapshot.","Conteos de reportes
+Hecho: 1 titular de 1 medio reporta este tema · Cita: GRP-5e6531917f · n_titulares; GRP-5e6531917f · n_medios
+Hecho: 1 procedencia independiente estimada (los titulares que replican a una misma fuente cuentan como una) · Cita: GRP-5e6531917f · n_procedencias
+Datos oficiales
+Sin dato oficial que mida el hecho (ver «Qué falta comprobar»)
+Eventos oficiales
+Sin evento oficial vinculado
+Lo que dicen los titulares (declaraciones atribuidas a su medio)
+Declaración: TVN Panamá reporta: «Más de 30 mujeres han muerto de forma violenta en Panamá este año» · Cita: NOT-0d91fa48b0 · titulo_limpio","los titulares traen cifras y no hay dato oficial vinculado → Verificar: Buscar la cifra en la institución oficial que la publica antes de repetirla.
+sin dato oficial vinculado (el tema no tiene un indicador oficial asignado) → Verificar: Consultar a la institución oficial responsable del tema por un dato que mida el hecho.
+1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente → Verificar: Buscar el mismo hecho en un medio con fuente propia; una réplica de la misma agencia no cuenta.
+Fuentes sugeridas para verificar (sugerencias para quien verifica; no son evidencia del sistema ni se citan como tal)
+Ministerio de Seguridad Pública
+Ministerio Público",NOT-0d91fa48b0,"Asistente (provisional, D-101) · provisional (D-101)","Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09.",2026-10-07T21:54:21Z,2026-10-07T22:28:16Z
+CASO-001,Banca,Logística/Canal,CU-05,Aprobado como borrador,Suficiente,Incluir en el boletín como observación,1,1,0.256344,1,0.5,1.3,versión 3 (corregida),basado únicamente en titular/metadatos,"Titular central: «Mulino viajará a Asia: suscribirá convenios bilaterales con Singapur y Vietnam» — laestrella.com.pa
+Cobertura: 3 titulares · 3 medios · de 2026-10-01 11:30 a 2026-10-01 14:45 (hora de Panamá); fecha de detección
+Tema: Logística/Canal · Subtema: no determinado
+Tema secundario: Economía
+Alcance: basado únicamente en titular/metadatos","«Presidente panameño visitará Singapur y Vietnam» — prensa-latina.cu (Cuba) · agencia: sin agencia · firma: sin firma · publicación: desconocida · https://www.prensa-latina.cu/2026/10/01/presidente-panameno-visitara-singapur-y-vietnam/
+«Mulino viajará a Asia: suscribirá convenios bilaterales con Singapur y Vietnam» — laestrella.com.pa (Panamá) · agencia: sin agencia · firma: sin firma · publicación: desconocida · https://www.laestrella.com.pa/panama/politica/mulino-viajara-a-asia-suscribira-convenios-bilaterales-con-singapur-y-vietnam-HH26129842
+«Presidente de Panamá visita Singapur y Vietnam en busca de inversiones» — revistaeyn.com · agencia: sin agencia · firma: sin firma · publicación: desconocida · https://www.revistaeyn.com/centroamericaymundo/presidente-de-panama-visita-singapur-y-vietnam-en-busca-de-inversiones-ED32208738
+Procedencias: 3 procedencias independientes estimadas entre 3 titulares: los titulares que replican a un mismo medio, agencia o red cuentan como una sola procedencia.
+Procedencia 1: Prensa Latina · 1 titular
+Procedencia 2: laestrella.com.pa · 1 titular
+Procedencia 3: revistaeyn.com · 1 titular","Conteos de reportes
+Hecho: 3 titulares de 3 medios reportan este tema · Cita: GRP-da35c3dead · n_titulares; GRP-da35c3dead · n_medios
+Hecho: 3 procedencias independientes estimadas (los titulares que replican a una misma fuente cuentan como una) · Cita: GRP-da35c3dead · n_procedencias
+Datos oficiales
+Sin dato oficial que mida el hecho (ver «Qué falta comprobar»)
+Eventos oficiales
+Sin evento oficial vinculado
+Lo que dicen los titulares (declaraciones atribuidas a su medio)
+Declaración: prensa-latina.cu reporta: «Presidente panameño visitará Singapur y Vietnam» · Cita: NOT-1819a7014e · titulo_limpio
+Declaración: laestrella.com.pa reporta: «Mulino viajará a Asia: suscribirá convenios bilaterales con Singapur y Vietnam» · Cita: NOT-33032542b7 · titulo_limpio
+Declaración: revistaeyn.com reporta: «Presidente de Panamá visita Singapur y Vietnam en busca de inversiones» · Cita: NOT-fbc3efaa5d · titulo_limpio","sin dato oficial vinculado (solo vínculo indirecto: no mide el hecho) → Verificar: El indicador vinculado es contexto lejano: buscar un dato oficial que mida el hecho directamente.
+3 de 3 titulares sin medio o fecha de publicación conocidos → Verificar: Abrir el enlace de cada titular para identificar el medio y la fecha de publicación original.
+urgencia estimada: fecha de publicación desconocida → Verificar: Abrir el enlace de cada titular para identificar el medio y la fecha de publicación original.
+Fuentes sugeridas para verificar (sugerencias para quien verifica; no son evidencia del sistema ni se citan como tal)
+Autoridad del Canal de Panamá
+Autoridad Marítima de Panamá
+Superintendencia de Bancos de Panamá
+Ministerio de Economía y Finanzas
+Contraloría General de la República (INEC)","NOT-1819a7014e, NOT-33032542b7, NOT-fbc3efaa5d","Asistente (provisional, D-101) · provisional (D-101)","Re-aprobado como borrador tras corregir un bloque de cada tipo (provisional, D-112)",2026-10-07T18:55:31Z,2026-10-07T22:28:16Z

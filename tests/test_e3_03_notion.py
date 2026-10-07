@@ -151,12 +151,33 @@ def test_la_fila_enviada_es_la_del_csv_con_la_marca_provisional(tmp_path, base) 
     assert PROVISIONAL in en_revisor and "provisional (D-101)" in en_revisor       # D-112: la marca viaja en la propiedad...
     assert "provisional (D-101)" in en_cuerpo                                      # ...y en el cuerpo
     props = propiedades_de_fila(exportado.fila, CFG)
-    assert set(props) == set(REV.exportacion.columnas)
+    assert set(props) == set(REV.exportacion.columnas) - {n for n in CFG.sin_valor_no_se_envia if not exportado.fila[n].strip()}
     revisor = props["Revisor"]["rich_text"][0]["text"]["content"]
     assert revisor == exportado.fila["Revisor"]
     assert all(len(t["text"]["content"]) <= 2000 for p in props.values() for t in p.get("rich_text", []))
     with pytest.raises(ErrorNotion):
         propiedades_de_fila({"ID caso": "CASO-001"}, CFG)
+
+
+def test_sin_caso_de_uso_la_exportacion_no_envia_null_y_con_caso_de_uso_lo_envia(exportado) -> None:
+    """X107: `src.exportar --notion` no trae «Caso de uso»; enviar `{"select": null}` borraría el valor puesto por C-01."""
+    assert "Caso de uso" in CFG.sin_valor_no_se_envia
+    assert "Caso de uso" not in propiedades_de_fila({**exportado.fila, "Caso de uso": ""}, CFG)
+    assert propiedades_de_fila({**exportado.fila, "Caso de uso": "CU-03"}, CFG)["Caso de uso"] == {"select": {"name": "CU-03"}}
+    assert propiedades_de_fila({**exportado.fila, "Tema": ""}, CFG)["Tema"] == {"select": None}      # las demás propiedades vacías se siguen enviando vacías
+
+
+def test_limpiar_vacias_envia_null_en_caso_de_uso_solo_cuando_se_pide(exportado) -> None:
+    """X108: el reemplazo de C-01 limpia «Caso de uso» de forma explícita; la sincronización normal no lo hace."""
+    fila = {**exportado.fila, "Caso de uso": ""}
+    assert propiedades_de_fila(fila, CFG, limpiar_vacias=True)["Caso de uso"] == {"select": None}
+    assert "Caso de uso" not in propiedades_de_fila(fila, CFG)
+    falso = NotionFalso([{"id": "previa", "titulo": exportado.id_caso, "props": {"Caso de uso": {"select": {"name": "CU-03"}}}}])
+    cliente(falso).sincronizar(exportado.id_caso, fila, exportado.markdown)
+    enviadas = [j["properties"] for m, r, j in falso.llamadas if m == "PATCH" and r == "pages/previa"]
+    assert enviadas and "Caso de uso" not in enviadas[-1]                                       # sin limpiar_vacias, la sincronización normal no envía «Caso de uso»
+    cliente(falso).sincronizar(exportado.id_caso, fila, exportado.markdown, limpiar_vacias=True)
+    assert falso.paginas["previa"]["props"]["Caso de uso"] == {"select": None}
 
 
 def test_el_markdown_pasa_a_bloques_literales(exportado) -> None:

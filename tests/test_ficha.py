@@ -800,3 +800,25 @@ def test_m4_los_siguientes_pasos_no_se_repiten_ni_son_casi_iguales(con, emb) -> 
         assert len(pasos) == len(set(pasos))
     todos = [hacer(con, emb, h.G_SIN_FECHA).accion_recomendada.siguientes_pasos]
     assert sum("Abrir el enlace" in p for p in todos[0]) == 1
+
+
+@pytest.mark.parametrize(("valor", "decimales", "esperado"), [
+    (3628535.0, 2, "3,628,535"),            # X109: antes «3.62854e+06»
+    (3628535.456, 2, "3,628,535.46"),
+    (0.69322, 2, "0.69"),
+    (0.0000004, 2, "0"),                    # pequeño: sin notación científica
+    (0.01741113516302623, 4, "0.0174"),
+    (-1.55, 2, "-1.55"),
+    (-1234567.891, 2, "-1,234,567.89"),
+    (-0.001, 2, "0"),                       # nunca «-0»
+    (30.0, 2, "30"),
+    (2.5, 2, "2.5"),
+    (999.999, 2, "1,000"),
+])
+def test_x109_formatear_cifra_sin_notacion_cientifica_con_miles_agrupados(valor, decimales, esperado) -> None:
+    assert modulo.formatear_cifra(valor, decimales, ",") == esperado
+    assert "e" not in modulo.formatear_cifra(valor, decimales, ",").lower()
+
+
+def test_x109_el_separador_de_miles_viene_de_la_configuracion() -> None:
+    assert modulo.formatear_cifra(1234567.0, 2, " ") == "1 234 567"

@@ -78,7 +78,7 @@ def construir(ruta: Path, emb: Any, proveedor: ProveedorFalso | None = None, mod
         n("NOT-c000000002", "Panamá reporta inflación estable", "tvn-2.com", G_COMPLETO, fecha_publicacion="2026-10-06T08:00:00Z"),
         n("NOT-c000000003", "Panama inflation remains stable", "english.example", G_COMPLETO, idioma="en", pais_medio="Estados Unidos", agencia="Reuters", tipo_firma="agencia", fecha_publicacion="2026-10-06T09:00:00Z"),
     ])
-    vinculos += [indicador(G_COMPLETO), indicador(G_COMPLETO, rol="comparable", pais="COL", valor=6.6), *(indicador(G_COMPLETO, anio=a, rol="tendencia", valor=a / 1000) for a in (2022, 2023, 2024))]
+    vinculos += [indicador(G_COMPLETO), indicador(G_COMPLETO, rol="comparable", pais="COL", valor=6.6), *(indicador(G_COMPLETO, anio=a, rol="tendencia", valor=0.69322 if a == 2024 else a / 1000) for a in (2022, 2023, 2024))]
     # cifras distintas, sin dato oficial y sin subtema: contradicción abierta + cifras sin dato oficial + sin dato oficial + subtema desconocido
     grupo(G_CIFRAS, [
         # X53: nombran educación («escuelas») y agua potable a la vez -> subtema ambiguo, el grupo sigue sin subtema

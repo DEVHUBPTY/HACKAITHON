@@ -1257,6 +1257,14 @@ def validar_coherencia(carpeta: Path | None = None) -> list[str]:
         tipos, columnas = set(cargar_notion(carpeta).propiedades), set(cargar_revision(carpeta).exportacion.columnas)
         if tipos != columnas:
             problemas.append(f"notion.yaml: propiedades y revision.yaml exportacion.columnas difieren: {sorted(tipos ^ columnas)}")
+    if (carpeta / "fichas_trazables.yaml").exists() and (carpeta / "revision.yaml").exists():  # C-01 (D-118): temas y motivo de descarte existentes
+        trazables = cargar_fichas_trazables(carpeta)
+        if trazables.reemplazo.motivo not in cargar_revision(carpeta).motivos_descarte:
+            problemas.append(f"fichas_trazables.yaml: reemplazo.motivo {trazables.reemplazo.motivo!r} no está en revision.yaml: motivos_descarte")
+        usados = {c.tema for cu in trazables.seleccion.casos_de_uso for c in cu.criterios if c.tema}
+        usados |= {c.tema for c in trazables.seleccion.garantia_insuficiente.criterios if c.tema}
+        if usados - set(temas.temas):
+            problemas.append(f"fichas_trazables.yaml: temas inexistentes: {sorted(usados - set(temas.temas))}")
     reales = {e.id_noticia for t in temas.temas.values() for e in t.ejemplos if e.real}
     excluidos = _ids_excluidos(carpeta / "ejemplos_excluidos.txt")
     if reales != excluidos:
@@ -2367,6 +2375,7 @@ class PresentacionVerificacion(ModeloConfig):
     fecha_desconocida: str
     decimales_valor: int = Field(ge=0)
     decimales_valor_sbp: int = Field(ge=0)
+    separador_miles: str = Field(min_length=1, max_length=1)   # X109: agrupa los miles al mostrar un valor; el decimal sigue siendo el punto
     titulo_contexto_oficial: str = Field(min_length=1)
     origen_fecha: dict[str, str]
     fuentes_oficiales: dict[str, str]
@@ -2787,6 +2796,7 @@ class ConfigRevision(ModeloConfig):
     acciones: dict[str, AccionRevision]
     motivos_descarte: list[str] = Field(min_length=1)
     motivos_con_comentario: list[str]
+    motivos_administrativos: list[str] = Field(default_factory=list)   # X107: descartes que no son un juicio editorial (p. ej. el reemplazo de D-118): no entran a las tasas
     revisores: list[RevisorConfig] = Field(min_length=1)
     limitacion_revisor: str
     vinculo_rechazado: VinculoRechazadoRevision
@@ -2821,6 +2831,8 @@ class ConfigRevision(ModeloConfig):
             raise ValueError("descartar: lleva un motivo obligatorio de la lista y llega a «descartado»")
         if not set(self.motivos_con_comentario) <= set(self.motivos_descarte):
             raise ValueError("motivos_con_comentario: deben estar en motivos_descarte")
+        if not set(self.motivos_administrativos) <= set(self.motivos_descarte):
+            raise ValueError("motivos_administrativos: deben estar en motivos_descarte")
         if len(self.motivos_descarte) != len(set(self.motivos_descarte)):
             raise ValueError("motivos_descarte: sin repetidos")
         if {r.modalidad for r in self.revisores} != {"editorial", "banca"}:
@@ -2897,6 +2909,7 @@ class ConfigNotion(ModeloConfig):
     base_de_datos: BaseNotion
     variable_token: str = Field(pattern=r"^[A-Z][A-Z0-9_]*_TOKEN$")  # termina en _TOKEN: así el logging lo redacta (D-69)
     propiedades: dict[str, str]
+    sin_valor_no_se_envia: list[str] = Field(default_factory=list)   # X107: propiedades que otra corrida rellena; vacías, se dejan como están en Notion
     cuerpo: CuerpoNotion
     textos: TextosNotion
 
@@ -2906,6 +2919,8 @@ class ConfigNotion(ModeloConfig):
             raise ValueError(f"propiedades: tipo desconocido {bad}")
         if sum(1 for t in self.propiedades.values() if t == "titulo") != 1:
             raise ValueError("propiedades: debe haber exactamente una propiedad de título")
+        if desconocidas := sorted(set(self.sin_valor_no_se_envia) - set(self.propiedades)):
+            raise ValueError(f"sin_valor_no_se_envia: no son propiedades {desconocidas}")
         if self.propiedades.get("ID caso") != "titulo":
             raise ValueError("propiedades: «ID caso» es el título (clave de la sincronización idempotente)")
         return self
@@ -2965,6 +2980,178 @@ class ConfigPrecision(ModeloConfig):
 def cargar_precision(carpeta: Path | None = None) -> ConfigPrecision:
     """Atajo para ``config/precision.yaml``."""
     return cargar_config("precision", ConfigPrecision, carpeta)
+
+
+# ------------------------------------------------------------------ fichas_trazables.yaml (C-01)
+
+ESTADOS_DE_EVIDENCIA = ("suficiente", "parcial", "insuficiente")
+
+
+class CriterioFichaTrazable(ModeloConfig):
+    """Una condición sobre un grupo del ranking oficial; todas las que se declaran deben cumplirse. Vacío = el primero del ranking."""
+
+    tema: str | None = None                                  # tema_clasificado del grupo
+    estado: Literal["suficiente", "parcial", "insuficiente"] | None = None
+    con_dato_oficial: bool | None = None                     # el grupo tiene un vínculo directo con un dato oficial (IND-…) en su ficha
+    contradiccion_abierta: bool | None = None                # al menos una contradicción abierta
+    mas_titulares_que_procedencias: bool | None = None       # repetición: más titulares que procedencias independientes
+    procedencias_minimas: int | None = Field(default=None, ge=1)
+    titulares_minimos: int | None = Field(default=None, ge=1)         # X106: replicación real: al menos tantos titulares en el grupo
+    tema_del_reto: bool | None = None                        # X106: el tema_clasificado es uno de los 6 del reto (no sin_tema)
+    sin_ruido: bool | None = None                            # X106: ningún titular del grupo está marcado como ruido
+    vacio: str | None = None                                 # código de un vacío de la ficha (p. ej. cifras_sin_dato_oficial)
+
+
+class CasoDeUsoTrazable(ModeloConfig):
+    """Un caso de uso del reto (PDF sección 4) y cómo se elige su ficha: o un grupo fijo, o criterios ordenados sobre el ranking."""
+
+    id: str = Field(pattern=r"^CU-\d{2}$")
+    pregunta: str = Field(min_length=1)
+    criterios: list[CriterioFichaTrazable] = Field(default_factory=list)   # en orden: el primero que tiene algún grupo manda; los siguientes son respaldo declarado
+    grupo: str | None = None                                  # grupo fijo (caso ya revisado en otra modalidad)
+    modalidad: str | None = None                              # solo con grupo fijo: modalidad del caso revisado que se reutiliza
+
+    @model_validator(mode="after")
+    def _grupo_o_criterios(self) -> CasoDeUsoTrazable:
+        if self.grupo:
+            if self.criterios or not self.modalidad:
+                raise ValueError(f"{self.id}: un grupo fijo lleva modalidad y no lleva criterios")
+        elif not self.criterios or self.modalidad:
+            raise ValueError(f"{self.id}: sin grupo fijo se necesitan criterios y no hay modalidad")
+        return self
+
+
+class GarantiaInsuficienteTrazable(ModeloConfig):
+    """Si ninguna ficha elegida resulta insuficiente (PDF sección 5), este caso de uso se vuelve a elegir con estos criterios."""
+
+    caso_de_uso: str
+    criterios: list[CriterioFichaTrazable] = Field(min_length=1)
+
+
+class SeleccionFichasTrazables(ModeloConfig):
+    casos_de_uso: list[CasoDeUsoTrazable] = Field(min_length=1)
+    minimo_total: int = Field(ge=1)
+    minimo_insuficiente: int = Field(ge=0)
+    garantia_insuficiente: GarantiaInsuficienteTrazable
+
+    @model_validator(mode="after")
+    def _coherente(self) -> SeleccionFichasTrazables:
+        ids = [c.id for c in self.casos_de_uso]
+        if len(set(ids)) != len(ids):
+            raise ValueError("casos_de_uso: id repetido")
+        if len(ids) < self.minimo_total:
+            raise ValueError("casos_de_uso: hay menos casos de uso que minimo_total")
+        if self.minimo_insuficiente < 1:
+            raise ValueError("minimo_insuficiente: el reto pide al menos una ficha con evidencia insuficiente (sección 5)")
+        destino = next((c for c in self.casos_de_uso if c.id == self.garantia_insuficiente.caso_de_uso), None)
+        if destino is None or destino.grupo:
+            raise ValueError("garantia_insuficiente.caso_de_uso: debe ser un caso de uso con criterios")
+        if any(c.estado != "insuficiente" for c in self.garantia_insuficiente.criterios):
+            raise ValueError("garantia_insuficiente.criterios: todos deben exigir estado insuficiente")
+        return self
+
+
+class CifraOficialTrazable(ModeloConfig):
+    """X105: cómo se encuentra en el texto de la ficha la cifra de un dato oficial y a qué redondeo se compara con el dato.
+
+    ``patron`` es una expresión regular con el grupo ``cifra``; sus ``{campos}`` se rellenan con las columnas del registro citado
+    (así encuentra la cifra de ESE dato aunque la línea traiga varias). ``decimales_en`` nombra el decimal de ``verificacion.yaml``
+    (``presentacion``) con que la ficha MUESTRA ese valor: se compara el dato redondeado igual que se mostró.
+    """
+
+    campo: str = Field(min_length=1)
+    patron: str = Field(min_length=1)
+    decimales_en: Literal["decimales_valor", "decimales_valor_sbp"]
+
+    @model_validator(mode="after")
+    def _grupo_cifra(self) -> CifraOficialTrazable:
+        if "(?P<cifra>" not in self.patron:
+            raise ValueError("cifra.patron: debe llevar el grupo (?P<cifra>…)")
+        return self
+
+
+class RegistroTrazable(ModeloConfig):
+    """Cómo se resuelve en los datos un ID citado: tabla de DuckDB o CSV de ``data/processed``."""
+
+    prefijo: str = Field(min_length=1)
+    origen: Literal["tabla", "csv"]
+    fuente: str = Field(min_length=1)
+    columna_id: str | None = None
+    plantilla_id: str | None = None
+    columna_url: str | None = None
+    url_obligatoria: bool
+    cifra: CifraOficialTrazable | None = None                # X105: solo los datos oficiales con una cifra mostrada (IND-, SBP-, SIS-)
+
+    @model_validator(mode="after")
+    def _id_y_url(self) -> RegistroTrazable:
+        if (self.columna_id is None) == (self.plantilla_id is None):
+            raise ValueError(f"{self.prefijo}: exactamente una de columna_id y plantilla_id")
+        if self.url_obligatoria and not self.columna_url:
+            raise ValueError(f"{self.prefijo}: url_obligatoria exige columna_url")
+        return self
+
+
+class ReemplazoFichasTrazables(ModeloConfig):
+    """Qué se hace con los casos que una corrida anterior de C-01 abrió y la selección actual ya no elige (D-118). Nunca se borran."""
+
+    motivo: str = Field(min_length=1)          # debe estar en revision.yaml: motivos_descarte
+    comentario: str = Field(min_length=1)
+
+
+class RevisionFichasTrazables(ModeloConfig):
+    revisor: str = Field(min_length=1)
+    accion_por_estado: dict[str, Literal["aceptar", "pedir_evidencia"]]
+    comentario: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _todos_los_estados(self) -> RevisionFichasTrazables:
+        if set(self.accion_por_estado) != set(ESTADOS_DE_EVIDENCIA):
+            raise ValueError(f"accion_por_estado: una acción por estado {ESTADOS_DE_EVIDENCIA}")
+        return self
+
+
+class ArchivosFichasTrazables(ModeloConfig):
+    carpeta: str = Field(min_length=1)
+    informe: str = Field(min_length=1)
+    indice: str = Field(min_length=1)
+    vista_previa: str = Field(min_length=1)       # X107: dónde escribe la corrida SIN --casos (nunca pisa lo versionado de `carpeta`)
+
+
+class TextosFichasTrazables(ModeloConfig):
+    aviso_provisional: str = Field(min_length=1)
+    aviso_corrida: str = Field(min_length=1)
+    sin_borrador: str = Field(min_length=1)
+    no_aplica_por_defecto: str = Field(min_length=1)
+    no_aplica: dict[str, str] = Field(default_factory=dict)        # X107: por comprobación, por qué no hubo nada que comprobar
+
+
+class ConfigFichasTrazables(ModeloConfig):
+    """C-01: regla de selección de las fichas trazables, resolución de citas contra los datos y revisión provisional."""
+
+    version: str
+    modalidad: str = Field(min_length=1)
+    seleccion: SeleccionFichasTrazables
+    registros: list[RegistroTrazable] = Field(min_length=1)
+    descripcion_minimo_caracteres: int = Field(ge=1)
+    claves_de_autor: list[str] = Field(min_length=1)
+    z_intervalo_confianza: float = Field(gt=0)
+    tolerancia_cifra: float = Field(ge=0)                    # X105: diferencia absoluta máxima entre la cifra mostrada y el dato redondeado (solo ruido de coma flotante)
+    revision: RevisionFichasTrazables
+    reemplazo: ReemplazoFichasTrazables
+    archivos: ArchivosFichasTrazables
+    textos: TextosFichasTrazables
+
+    @model_validator(mode="after")
+    def _prefijos_unicos(self) -> ConfigFichasTrazables:
+        prefijos = [r.prefijo for r in self.registros]
+        if len(set(prefijos)) != len(prefijos):
+            raise ValueError("registros: prefijo repetido")
+        return self
+
+
+def cargar_fichas_trazables(carpeta: Path | None = None) -> ConfigFichasTrazables:
+    """Atajo para ``config/fichas_trazables.yaml``."""
+    return cargar_config("fichas_trazables", ConfigFichasTrazables, carpeta)
 
 
 # ------------------------------------------------------------------ origen_juicio.yaml (D-101)
@@ -3111,6 +3298,7 @@ CARGADORES = {
     "cache": cargar_cache,
     "revision": cargar_revision,
     "precision": cargar_precision,
+    "fichas_trazables": cargar_fichas_trazables,
     "notion": cargar_notion,
     "origen_juicio": cargar_origen_juicio,
     "pruebas": cargar_pruebas,

@@ -1,0 +1,974 @@
+{
+  "aviso": "REVISIÓN PROVISIONAL DEL ASISTENTE, NO HUMANA (D-101): la rehace una persona en C-09. Todo es BORRADOR.",
+  "borrador": true,
+  "con_casos": true,
+  "decision": "D-118",
+  "fecha_referencia": "2026-10-07T00:41:03Z",
+  "fichas": [
+    {
+      "citas": [
+        {
+          "campo": "n_titulares",
+          "existe_en_datos": true,
+          "id": "GRP-21ad932d54",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "1"
+        },
+        {
+          "campo": "n_medios",
+          "existe_en_datos": true,
+          "id": "GRP-21ad932d54",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "1"
+        },
+        {
+          "campo": "n_procedencias",
+          "existe_en_datos": true,
+          "id": "GRP-21ad932d54",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "1"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-3be05280f2",
+          "tipo": "declaración",
+          "url": "https://www.tvn-2.com/nacionales/salud/minsa-enciende-alarmas-diagnosticos-cancer_1_2264460.html",
+          "valor": "Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá"
+        }
+      ],
+      "comprobaciones": {
+        "afirmacion_con_cita": {
+          "n": 3,
+          "ok": 3
+        },
+        "cifra_de_conteo_coincide": {
+          "n": 3,
+          "ok": 3
+        },
+        "cinco_partes": {
+          "n": 1,
+          "ok": 1
+        },
+        "cita_con_campo_y_valor": {
+          "n": 4,
+          "ok": 4
+        },
+        "cita_con_id_en_datos": {
+          "n": 4,
+          "ok": 4
+        },
+        "contrato_fichas_jsonl": {
+          "n": 1,
+          "ok": 1
+        },
+        "declaracion_literal": {
+          "n": 1,
+          "ok": 1
+        },
+        "leyenda_de_alcance": {
+          "n": 1,
+          "ok": 1
+        },
+        "marca_borrador": {
+          "n": 1,
+          "ok": 1
+        },
+        "procedencias_y_estado": {
+          "n": 1,
+          "ok": 1
+        },
+        "revision_provisional_visible": {
+          "n": 1,
+          "ok": 1
+        },
+        "sin_nombres_de_autor": {
+          "n": 1,
+          "ok": 1
+        },
+        "url_presente": {
+          "n": 2,
+          "ok": 2
+        }
+      },
+      "fallos": [],
+      "id_caso": "CASO-002",
+      "id_grupo": "GRP-21ad932d54"
+    },
+    {
+      "citas": [
+        {
+          "campo": "n_titulares",
+          "existe_en_datos": true,
+          "id": "GRP-81a11a5998",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "2"
+        },
+        {
+          "campo": "n_medios",
+          "existe_en_datos": true,
+          "id": "GRP-81a11a5998",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "1"
+        },
+        {
+          "campo": "n_procedencias",
+          "existe_en_datos": true,
+          "id": "GRP-81a11a5998",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "1"
+        },
+        {
+          "campo": "valor",
+          "existe_en_datos": true,
+          "id": "IND-PAN-FP.CPI.TOTL.ZG-2024",
+          "tipo": "hecho",
+          "url": "https://api.worldbank.org/v2/country/PAN/indicator/FP.CPI.TOTL.ZG?format=json&date=2010:2024",
+          "valor": "0.69322555100446"
+        },
+        {
+          "campo": "valor",
+          "existe_en_datos": true,
+          "id": "IND-COL-FP.CPI.TOTL.ZG-2024",
+          "tipo": "hecho",
+          "url": "https://api.worldbank.org/v2/country/COL/indicator/FP.CPI.TOTL.ZG?format=json&date=2010:2024",
+          "valor": "6.60908593728228"
+        },
+        {
+          "campo": "valor",
+          "existe_en_datos": true,
+          "id": "IND-CRI-FP.CPI.TOTL.ZG-2024",
+          "tipo": "hecho",
+          "url": "https://api.worldbank.org/v2/country/CRI/indicator/FP.CPI.TOTL.ZG?format=json&date=2010:2024",
+          "valor": "-0.412853001047069"
+        },
+        {
+          "campo": "valor",
+          "existe_en_datos": true,
+          "id": "IND-DOM-FP.CPI.TOTL.ZG-2024",
+          "tipo": "hecho",
+          "url": "https://api.worldbank.org/v2/country/DOM/indicator/FP.CPI.TOTL.ZG?format=json&date=2010:2024",
+          "valor": "3.30223338951227"
+        },
+        {
+          "campo": "valor",
+          "existe_en_datos": true,
+          "id": "IND-GTM-FP.CPI.TOTL.ZG-2024",
+          "tipo": "hecho",
+          "url": "https://api.worldbank.org/v2/country/GTM/indicator/FP.CPI.TOTL.ZG?format=json&date=2010:2024",
+          "valor": "2.86992752918294"
+        },
+        {
+          "campo": "valor",
+          "existe_en_datos": true,
+          "id": "IND-MEX-FP.CPI.TOTL.ZG-2024",
+          "tipo": "hecho",
+          "url": "https://api.worldbank.org/v2/country/MEX/indicator/FP.CPI.TOTL.ZG?format=json&date=2010:2024",
+          "valor": "4.72225588452932"
+        },
+        {
+          "campo": "valor",
+          "existe_en_datos": true,
+          "id": "IND-PAN-FP.CPI.TOTL.ZG-2023",
+          "tipo": "hecho",
+          "url": "https://api.worldbank.org/v2/country/PAN/indicator/FP.CPI.TOTL.ZG?format=json&date=2010:2024",
+          "valor": "1.48641355277038"
+        },
+        {
+          "campo": "valor",
+          "existe_en_datos": true,
+          "id": "IND-PAN-FP.CPI.TOTL.ZG-2022",
+          "tipo": "hecho",
+          "url": "https://api.worldbank.org/v2/country/PAN/indicator/FP.CPI.TOTL.ZG?format=json&date=2010:2024",
+          "valor": "2.85965128834711"
+        },
+        {
+          "campo": "valor",
+          "existe_en_datos": true,
+          "id": "IND-PAN-FP.CPI.TOTL.ZG-2021",
+          "tipo": "hecho",
+          "url": "https://api.worldbank.org/v2/country/PAN/indicator/FP.CPI.TOTL.ZG?format=json&date=2010:2024",
+          "valor": "1.63070337301898"
+        },
+        {
+          "campo": "valor",
+          "existe_en_datos": true,
+          "id": "IND-PAN-FP.CPI.TOTL.ZG-2020",
+          "tipo": "hecho",
+          "url": "https://api.worldbank.org/v2/country/PAN/indicator/FP.CPI.TOTL.ZG?format=json&date=2010:2024",
+          "valor": "-1.55027540803761"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-1710ce462f",
+          "tipo": "declaración",
+          "url": "https://www.panamaamerica.com.pa/sociedad/como-se-fija-el-precio-del-combustible-en-panama-el-mef-explica-la-formula-quincenal-tras",
+          "valor": "¿Cómo se fija el precio del combustible en Panamá? El MEF explica la fórmula quincenal tras aprobarse nuevo subsidio"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-96d1ecac7d",
+          "tipo": "declaración",
+          "url": "https://www.panamaamerica.com.pa/sociedad/como-se-fija-el-precio-del-combustible-en-panama-el-mef-explica-la-formula-quincenal",
+          "valor": "¿Cómo se fija el precio del combustible en Panamá? El MEF explica la fórmula quincenal"
+        }
+      ],
+      "comprobaciones": {
+        "afirmacion_con_cita": {
+          "n": 7,
+          "ok": 7
+        },
+        "cifra_de_conteo_coincide": {
+          "n": 3,
+          "ok": 3
+        },
+        "cifra_oficial_coincide": {
+          "n": 11,
+          "ok": 11
+        },
+        "cinco_partes": {
+          "n": 1,
+          "ok": 1
+        },
+        "cita_con_campo_y_valor": {
+          "n": 15,
+          "ok": 15
+        },
+        "cita_con_id_en_datos": {
+          "n": 15,
+          "ok": 15
+        },
+        "contrato_fichas_jsonl": {
+          "n": 1,
+          "ok": 1
+        },
+        "declaracion_literal": {
+          "n": 2,
+          "ok": 2
+        },
+        "leyenda_de_alcance": {
+          "n": 1,
+          "ok": 1
+        },
+        "marca_borrador": {
+          "n": 1,
+          "ok": 1
+        },
+        "procedencias_y_estado": {
+          "n": 1,
+          "ok": 1
+        },
+        "revision_provisional_visible": {
+          "n": 1,
+          "ok": 1
+        },
+        "sin_nombres_de_autor": {
+          "n": 1,
+          "ok": 1
+        },
+        "url_presente": {
+          "n": 14,
+          "ok": 14
+        }
+      },
+      "fallos": [],
+      "id_caso": "CASO-003",
+      "id_grupo": "GRP-81a11a5998"
+    },
+    {
+      "citas": [
+        {
+          "campo": "n_titulares",
+          "existe_en_datos": true,
+          "id": "GRP-79f3183472",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "20"
+        },
+        {
+          "campo": "n_medios",
+          "existe_en_datos": true,
+          "id": "GRP-79f3183472",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "18"
+        },
+        {
+          "campo": "n_procedencias",
+          "existe_en_datos": true,
+          "id": "GRP-79f3183472",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "1"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-0969f86532",
+          "tipo": "declaración",
+          "url": "https://english.news.cn/20261002/3ed0d41ec72b4abab6a0f33ec809c6f3/c.html",
+          "valor": "World Insights: Intensifying El Nino deepens economic risks across LatAm"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-2ece201ac9",
+          "tipo": "declaración",
+          "url": "http://www.massachusettssun.com/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam",
+          "valor": "Intensifying El Nino deepens economic risks across LatAm"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-364916b1e1",
+          "tipo": "declaración",
+          "url": "http://www.thailandnews.net/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam",
+          "valor": "Intensifying El Nino deepens economic risks across LatAm"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-65049548e8",
+          "tipo": "declaración",
+          "url": "http://www.russiaherald.com/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam",
+          "valor": "Intensifying El Nino deepens economic risks across LatAm"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-7170117798",
+          "tipo": "declaración",
+          "url": "http://www.trinidadtimes.com/news/279347044/world-insights-intensifying-el-nino-deepens-economic-risks-across-latam",
+          "valor": "World Insights: Intensifying El Nino deepens economic risks across LatAm"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-7bc0adfe59",
+          "tipo": "declaración",
+          "url": "http://www.jamaicantimes.com/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam",
+          "valor": "Intensifying El Nino deepens economic risks across LatAm"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-89b5cc1eb2",
+          "tipo": "declaración",
+          "url": "http://www.trinidadtimes.com/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam",
+          "valor": "Intensifying El Nino deepens economic risks across LatAm"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-9013970ab7",
+          "tipo": "declaración",
+          "url": "http://www.newzealandstar.com/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam",
+          "valor": "Intensifying El Nino deepens economic risks across LatAm"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-9112a370be",
+          "tipo": "declaración",
+          "url": "http://www.oklahomastar.com/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam",
+          "valor": "Intensifying El Nino deepens economic risks across LatAm"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-af2c98a539",
+          "tipo": "declaración",
+          "url": "http://www.africaleader.com/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam",
+          "valor": "Intensifying El Nino deepens economic risks across LatAm"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-b0fc5636be",
+          "tipo": "declaración",
+          "url": "http://www.irishsun.com/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam",
+          "valor": "Intensifying El Nino deepens economic risks across LatAm"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-b449afb957",
+          "tipo": "declaración",
+          "url": "http://www.argentinastar.com/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam",
+          "valor": "Intensifying El Nino deepens economic risks across LatAm"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-b55ac9551b",
+          "tipo": "declaración",
+          "url": "http://www.texasguardian.com/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam",
+          "valor": "Intensifying El Nino deepens economic risks across LatAm"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-b627063783",
+          "tipo": "declaración",
+          "url": "http://www.britainnews.net/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam",
+          "valor": "Intensifying El Nino deepens economic risks across LatAm"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-b9a18baba2",
+          "tipo": "declaración",
+          "url": "http://www.afghanistannews.net/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam",
+          "valor": "Intensifying El Nino deepens economic risks across LatAm"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-bac341eccd",
+          "tipo": "declaración",
+          "url": "http://www.bignewsnetwork.com/news/279347044/world-insights-intensifying-el-nino-deepens-economic-risks-across-latam",
+          "valor": "World Insights: Intensifying El Nino deepens economic risks across LatAm"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-bd4d4c3bb9",
+          "tipo": "declaración",
+          "url": "http://www.bignewsnetwork.com/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam",
+          "valor": "Intensifying El Nino deepens economic risks across LatAm"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-c8859ae7ee",
+          "tipo": "declaración",
+          "url": "http://www.oklahomacitysun.com/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam",
+          "valor": "Intensifying El Nino deepens economic risks across LatAm"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-dde43008f3",
+          "tipo": "declaración",
+          "url": "http://www.mainemirror.com/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam",
+          "valor": "Intensifying El Nino deepens economic risks across LatAm"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-e795e93c9d",
+          "tipo": "declaración",
+          "url": "http://www.zimbabwestar.com/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam",
+          "valor": "Intensifying El Nino deepens economic risks across LatAm"
+        }
+      ],
+      "comprobaciones": {
+        "afirmacion_con_cita": {
+          "n": 22,
+          "ok": 22
+        },
+        "cifra_de_conteo_coincide": {
+          "n": 3,
+          "ok": 3
+        },
+        "cinco_partes": {
+          "n": 1,
+          "ok": 1
+        },
+        "cita_con_campo_y_valor": {
+          "n": 23,
+          "ok": 23
+        },
+        "cita_con_id_en_datos": {
+          "n": 23,
+          "ok": 23
+        },
+        "contrato_fichas_jsonl": {
+          "n": 1,
+          "ok": 1
+        },
+        "declaracion_literal": {
+          "n": 20,
+          "ok": 20
+        },
+        "leyenda_de_alcance": {
+          "n": 1,
+          "ok": 1
+        },
+        "marca_borrador": {
+          "n": 1,
+          "ok": 1
+        },
+        "procedencias_y_estado": {
+          "n": 1,
+          "ok": 1
+        },
+        "revision_provisional_visible": {
+          "n": 1,
+          "ok": 1
+        },
+        "sin_nombres_de_autor": {
+          "n": 1,
+          "ok": 1
+        },
+        "url_presente": {
+          "n": 40,
+          "ok": 40
+        }
+      },
+      "fallos": [],
+      "id_caso": "CASO-008",
+      "id_grupo": "GRP-79f3183472"
+    },
+    {
+      "citas": [
+        {
+          "campo": "n_titulares",
+          "existe_en_datos": true,
+          "id": "GRP-5e6531917f",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "1"
+        },
+        {
+          "campo": "n_medios",
+          "existe_en_datos": true,
+          "id": "GRP-5e6531917f",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "1"
+        },
+        {
+          "campo": "n_procedencias",
+          "existe_en_datos": true,
+          "id": "GRP-5e6531917f",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "1"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-0d91fa48b0",
+          "tipo": "declaración",
+          "url": "https://www.tvn-2.com/nacionales/30-mujeres-han-muerto-forma_1_2264499.html",
+          "valor": "Más de 30 mujeres han muerto de forma violenta en Panamá este año"
+        }
+      ],
+      "comprobaciones": {
+        "afirmacion_con_cita": {
+          "n": 3,
+          "ok": 3
+        },
+        "cifra_de_conteo_coincide": {
+          "n": 3,
+          "ok": 3
+        },
+        "cinco_partes": {
+          "n": 1,
+          "ok": 1
+        },
+        "cita_con_campo_y_valor": {
+          "n": 4,
+          "ok": 4
+        },
+        "cita_con_id_en_datos": {
+          "n": 4,
+          "ok": 4
+        },
+        "contrato_fichas_jsonl": {
+          "n": 1,
+          "ok": 1
+        },
+        "declaracion_literal": {
+          "n": 1,
+          "ok": 1
+        },
+        "leyenda_de_alcance": {
+          "n": 1,
+          "ok": 1
+        },
+        "marca_borrador": {
+          "n": 1,
+          "ok": 1
+        },
+        "procedencias_y_estado": {
+          "n": 1,
+          "ok": 1
+        },
+        "revision_provisional_visible": {
+          "n": 1,
+          "ok": 1
+        },
+        "sin_nombres_de_autor": {
+          "n": 1,
+          "ok": 1
+        },
+        "url_presente": {
+          "n": 2,
+          "ok": 2
+        }
+      },
+      "fallos": [],
+      "id_caso": "CASO-007",
+      "id_grupo": "GRP-5e6531917f"
+    },
+    {
+      "citas": [
+        {
+          "campo": "n_titulares",
+          "existe_en_datos": true,
+          "id": "GRP-da35c3dead",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "3"
+        },
+        {
+          "campo": "n_medios",
+          "existe_en_datos": true,
+          "id": "GRP-da35c3dead",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "3"
+        },
+        {
+          "campo": "n_procedencias",
+          "existe_en_datos": true,
+          "id": "GRP-da35c3dead",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "3"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-1819a7014e",
+          "tipo": "declaración",
+          "url": "https://www.prensa-latina.cu/2026/10/01/presidente-panameno-visitara-singapur-y-vietnam/",
+          "valor": "Presidente panameño visitará Singapur y Vietnam"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-33032542b7",
+          "tipo": "declaración",
+          "url": "https://www.laestrella.com.pa/panama/politica/mulino-viajara-a-asia-suscribira-convenios-bilaterales-con-singapur-y-vietnam-HH26129842",
+          "valor": "Mulino viajará a Asia: suscribirá convenios bilaterales con Singapur y Vietnam"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-fbc3efaa5d",
+          "tipo": "declaración",
+          "url": "https://www.revistaeyn.com/centroamericaymundo/presidente-de-panama-visita-singapur-y-vietnam-en-busca-de-inversiones-ED32208738",
+          "valor": "Presidente de Panamá visita Singapur y Vietnam en busca de inversiones"
+        }
+      ],
+      "comprobaciones": {
+        "afirmacion_con_cita": {
+          "n": 5,
+          "ok": 5
+        },
+        "cifra_de_conteo_coincide": {
+          "n": 3,
+          "ok": 3
+        },
+        "cinco_partes": {
+          "n": 1,
+          "ok": 1
+        },
+        "cita_con_campo_y_valor": {
+          "n": 6,
+          "ok": 6
+        },
+        "cita_con_id_en_datos": {
+          "n": 6,
+          "ok": 6
+        },
+        "contrato_fichas_jsonl": {
+          "n": 1,
+          "ok": 1
+        },
+        "declaracion_literal": {
+          "n": 3,
+          "ok": 3
+        },
+        "leyenda_de_alcance": {
+          "n": 1,
+          "ok": 1
+        },
+        "marca_borrador": {
+          "n": 1,
+          "ok": 1
+        },
+        "procedencias_y_estado": {
+          "n": 1,
+          "ok": 1
+        },
+        "revision_provisional_visible": {
+          "n": 1,
+          "ok": 1
+        },
+        "sin_nombres_de_autor": {
+          "n": 1,
+          "ok": 1
+        },
+        "url_presente": {
+          "n": 6,
+          "ok": 6
+        }
+      },
+      "fallos": [],
+      "id_caso": "CASO-001",
+      "id_grupo": "GRP-da35c3dead"
+    }
+  ],
+  "generado_utc": "2026-10-07T22:28:16Z",
+  "juicio_humano": false,
+  "modalidad": "editorial",
+  "n_fichas": 5,
+  "por_regla": {
+    "afirmacion_con_cita": {
+      "ic95": [
+        0.9124,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 40,
+      "ok": 40,
+      "proporcion": 1.0
+    },
+    "cifra_de_conteo_coincide": {
+      "ic95": [
+        0.7961,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 15,
+      "ok": 15,
+      "proporcion": 1.0
+    },
+    "cifra_oficial_coincide": {
+      "ic95": [
+        0.7412,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 11,
+      "ok": 11,
+      "proporcion": 1.0
+    },
+    "cinco_partes": {
+      "ic95": [
+        0.5655,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 5,
+      "ok": 5,
+      "proporcion": 1.0
+    },
+    "cita_con_campo_y_valor": {
+      "ic95": [
+        0.9312,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 52,
+      "ok": 52,
+      "proporcion": 1.0
+    },
+    "cita_con_id_en_datos": {
+      "ic95": [
+        0.9312,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 52,
+      "ok": 52,
+      "proporcion": 1.0
+    },
+    "contrato_fichas_jsonl": {
+      "ic95": [
+        0.5655,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 5,
+      "ok": 5,
+      "proporcion": 1.0
+    },
+    "declaracion_literal": {
+      "ic95": [
+        0.8754,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 27,
+      "ok": 27,
+      "proporcion": 1.0
+    },
+    "leyenda_de_alcance": {
+      "ic95": [
+        0.5655,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 5,
+      "ok": 5,
+      "proporcion": 1.0
+    },
+    "marca_borrador": {
+      "ic95": [
+        0.5655,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 5,
+      "ok": 5,
+      "proporcion": 1.0
+    },
+    "procedencias_y_estado": {
+      "ic95": [
+        0.5655,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 5,
+      "ok": 5,
+      "proporcion": 1.0
+    },
+    "revision_provisional_visible": {
+      "ic95": [
+        0.5655,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 5,
+      "ok": 5,
+      "proporcion": 1.0
+    },
+    "sin_descripcion_rss": {
+      "ic95": null,
+      "n": 0,
+      "nota": "no aplica (0 descripciones en los datos)",
+      "ok": 0,
+      "proporcion": null
+    },
+    "sin_nombres_de_autor": {
+      "ic95": [
+        0.5655,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 5,
+      "ok": 5,
+      "proporcion": 1.0
+    },
+    "url_presente": {
+      "ic95": [
+        0.9434,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 64,
+      "ok": 64,
+      "proporcion": 1.0
+    }
+  },
+  "reemplazados": [
+    "CASO-006"
+  ],
+  "seleccion": {
+    "elegidas": [
+      {
+        "caso_de_uso": "CU-01",
+        "criterio": 0,
+        "elegida_por": "primero del ranking",
+        "estado": "insuficiente",
+        "garantia": false,
+        "id_caso": "CASO-002",
+        "id_grupo": "GRP-21ad932d54",
+        "modalidad": "editorial",
+        "posicion": 1,
+        "puntaje": 90.45,
+        "respaldo": false,
+        "reutilizado": false
+      },
+      {
+        "caso_de_uso": "CU-02",
+        "criterio": 0,
+        "elegida_por": "tema=economia, con_dato_oficial=True",
+        "estado": "parcial",
+        "garantia": false,
+        "id_caso": "CASO-003",
+        "id_grupo": "GRP-81a11a5998",
+        "modalidad": "editorial",
+        "posicion": 13,
+        "puntaje": 81.25,
+        "respaldo": false,
+        "reutilizado": false
+      },
+      {
+        "caso_de_uso": "CU-03",
+        "criterio": 0,
+        "elegida_por": "mas_titulares_que_procedencias=True, titulares_minimos=3, tema_del_reto=True, sin_ruido=True",
+        "estado": "insuficiente",
+        "garantia": false,
+        "id_caso": "CASO-008",
+        "id_grupo": "GRP-79f3183472",
+        "modalidad": "editorial",
+        "posicion": 53,
+        "puntaje": 54.74,
+        "respaldo": false,
+        "reutilizado": false
+      },
+      {
+        "caso_de_uso": "CU-04",
+        "criterio": 1,
+        "elegida_por": "estado=insuficiente, vacio=cifras_sin_dato_oficial (respaldo declarado)",
+        "estado": "insuficiente",
+        "garantia": false,
+        "id_caso": "CASO-007",
+        "id_grupo": "GRP-5e6531917f",
+        "modalidad": "editorial",
+        "posicion": 3,
+        "puntaje": 88.41,
+        "respaldo": true,
+        "reutilizado": false
+      },
+      {
+        "caso_de_uso": "CU-05",
+        "criterio": 0,
+        "elegida_por": "grupo fijo GRP-da35c3dead (banca)",
+        "estado": "suficiente",
+        "garantia": false,
+        "id_caso": "CASO-001",
+        "id_grupo": "GRP-da35c3dead",
+        "modalidad": "banca",
+        "posicion": 36,
+        "puntaje": 80.13,
+        "respaldo": false,
+        "reutilizado": true
+      }
+    ],
+    "minimo_insuficiente": 1,
+    "minimo_total": 5,
+    "regla": "una ficha por caso de uso sobre el ranking oficial (config/fichas_trazables.yaml: seleccion)",
+    "respaldos_usados": [
+      "CU-04"
+    ]
+  },
+  "tarea": "C-01",
+  "todo_ok": true,
+  "version_reglas": "1.3",
+  "z": 1.96
+}

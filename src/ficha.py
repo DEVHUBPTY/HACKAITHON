@@ -167,8 +167,16 @@ def _hora_panama(iso: str | None, cfg: ConfigVerificacion, con_zona: bool = True
     return f"{fecha.strftime(p.formato_fecha)} ({p.sufijo_zona})" if con_zona else fecha.strftime(p.formato_fecha)
 
 
+def formatear_cifra(valor: float, decimales: int, separador_miles: str) -> str:
+    """X109: sin notación científica, con miles agrupados y a lo más ``decimales`` decimales (sin ceros sobrantes): 3628535.0 -> «3,628,535»."""
+    texto = f"{round(valor, decimales) + 0.0:,.{decimales}f}"       # + 0.0: un -0.0 redondeado no se muestra «-0»
+    if "." in texto:
+        texto = texto.rstrip("0").rstrip(".")
+    return texto.replace(",", separador_miles)
+
+
 def _numero(valor: float, cfg: ConfigVerificacion) -> str:
-    return f"{round(valor, cfg.presentacion.decimales_valor):g}"
+    return formatear_cifra(valor, cfg.presentacion.decimales_valor, cfg.presentacion.separador_miles)
 
 
 def _embeddings() -> Embeddings:
@@ -445,7 +453,7 @@ def _lineas_de_sbp(filas: Sequence[Mapping[str, Any]], cfg: ConfigVerificacion) 
             tipo="hecho",
             texto=(
                 f"{p.fuentes_oficiales[FUENTE_SBP]} · {p.roles.get(str(v['rol']), str(v['rol']))} · {series.get(str(v['indicador_id']), v['indicador_id'])}, "
-                f"período {v['periodo']}: {round(float(v['valor']), p.decimales_valor_sbp):g} {v['unidad']}; "
+                f"período {v['periodo']}: {formatear_cifra(float(v['valor']), p.decimales_valor_sbp, p.separador_miles)} {v['unidad']}; "
                 f"informe «{v['informe']}»; página: {v['pagina']}"
             ),
             citas=[Cita(id=str(v["id_evidencia"]), campo="valor")],

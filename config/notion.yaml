@@ -40,6 +40,9 @@ propiedades:
   "Comentario del revisor": texto
   "Fecha de revisión": fecha
   "Última exportación": fecha
+# X107: «Caso de uso» lo rellena `scripts.fichas_trazables --casos --notion` (C-01), no `src.exportar`. Si la exportación no trae valor,
+# NO se envía la propiedad (un select vacío se enviaría como null y borraría en Notion el valor que ya puso esa corrida).
+sin_valor_no_se_envia: ["Caso de uso"]
 cuerpo:
   max_caracteres_bloque: 2000          # límite de un texto enriquecido de Notion
   max_bloques_por_llamada: 100         # límite de children por llamada

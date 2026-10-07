@@ -168,7 +168,7 @@ def test_la_ficha_bancaria_muestra_un_dato_sbp_con_periodo_unidad_pagina_y_limit
     assert len(sbp) == 3 and all(x.citas[0].id.startswith("SBP-") for x in sbp)
     linea = next(x for x in sbp if x.citas[0].id == "SBP-MOROSOS-SISTEMA-2024-12")
     assert linea.tipo == "hecho" and linea.citas[0].campo == "valor"
-    for parte in ("Superintendencia de Bancos de Panamá", "Saldo moroso del sistema bancario", "período 2024-12", "1012 millones de balboas", "página: hoja «Morosos», celda L6"):
+    for parte in ("Superintendencia de Bancos de Panamá", "Saldo moroso del sistema bancario", "período 2024-12", "1,012 millones de balboas", "página: hoja «Morosos», celda L6"):
         assert parte in linea.texto, parte
     assert linea.limitacion and "no del mes de la noticia" in linea.limitacion and "análisis es del equipo y no una opinión oficial de la SBP" in linea.limitacion
     proporcion = next(x for x in sbp if x.citas[0].id == "SBP-MOROSIDAD-SISTEMA-2024-12")

@@ -252,8 +252,8 @@ def principal(argv: list[str] | None = None) -> int:
     return sincronizar_con_notion(e) if args.notion else 0
 
 
-def sincronizar_con_notion(e: Exportacion, env: Mapping[str, str] | None = None, cliente: ClienteNotion | None = None) -> int:
-    """Envía la exportación a Notion (E3-03). Sin token o sin red la exportación local ya está escrita: avisa y devuelve 0.
+def sincronizar_con_notion(e: Exportacion, env: Mapping[str, str] | None = None, cliente: ClienteNotion | None = None, limpiar_vacias: bool = False) -> int:
+    """Envía la exportación a Notion (E3-03). ``limpiar_vacias`` (X108): también limpia en Notion las propiedades de ``sin_valor_no_se_envia``. Sin token o sin red la exportación local ya está escrita: avisa y devuelve 0.
     Un error de la API es real y devuelve 1. El token nunca se imprime."""
     cfg = cargar_notion()
     if cliente is None:
@@ -264,7 +264,7 @@ def sincronizar_con_notion(e: Exportacion, env: Mapping[str, str] | None = None,
             return 0
         cliente = ClienteNotion(token, cfg)
     try:
-        s = cliente.sincronizar(e.id_caso, e.fila, e.markdown)
+        s = cliente.sincronizar(e.id_caso, e.fila, e.markdown, limpiar_vacias)
     except SincronizacionIncompleta:
         print(cfg.textos.incompleta.format(id_caso=e.id_caso), file=sys.stderr)
         return 1

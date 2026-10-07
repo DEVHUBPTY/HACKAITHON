@@ -1,0 +1,108 @@
+# C-01 · Cinco fichas trazables. Regla de selección determinista, resolución de citas contra los datos y textos del informe.
+# Cada número y cada lista están en docs/parametros.md. La regla es de configuración (D-101): nadie elige a mano las fichas.
+version: "1.0"
+
+modalidad: editorial              # modalidad principal (CLAUDE.md); las fichas salen de la corrida de E1-10 que guarda senales.duckdb
+
+seleccion:
+  # D-118 (2026-10-07): UNA ficha por caso de uso del reto (PDF sección 4), en lugar de los cupos 2/2/1 por estado de evidencia.
+  # Los casos de uso se resuelven EN ESTE ORDEN sobre el ranking oficial (posición 1 = mayor P, desempate de E1-10). Por cada uno se
+  # prueban sus `criterios` en orden y gana el primer grupo (por posición) que cumple el primer criterio que tiene alguno; los
+  # siguientes criterios son respaldos que el informe declara. Un grupo ya elegido por un caso de uso anterior no se vuelve a elegir
+  # (sin duplicados): el siguiente candidato ocupa el lugar. Nadie elige a mano (D-101).
+  casos_de_uso:
+    - id: CU-01
+      pregunta: "¿Qué cinco temas merecen revisión para la agenda de Panamá y por qué?"      # TVN
+      criterios:
+        - {}                                  # el primero del ranking oficial
+
+    - id: CU-02
+      pregunta: "Tema económico con serie oficial y brief, sin confundir dato anual con medición de hoy"   # TVN
+      criterios:
+        - {tema: economia, con_dato_oficial: true}    # el primer grupo económico con un vínculo directo a una serie oficial (IND-…) en su ficha
+
+    - id: CU-03
+      pregunta: "Repetición frente a corroboración independiente; una agencia replicada cuenta como una procedencia"   # Común
+      # PDF sección 4: «una agencia replicada cuenta como una sola procedencia». El ejemplo es la REPLICACIÓN (muchos titulares, una
+      # procedencia), no la corroboración: por eso ya no se exige tener 2 o más procedencias (X106). El grupo debe ser un tema del reto,
+      # sin ruido, y tener al menos `titulares_minimos` titulares (un par puede ser una actualización del mismo medio, no una réplica).
+      criterios:
+        - {tema_del_reto: true, sin_ruido: true, mas_titulares_que_procedencias: true, titulares_minimos: 3}
+        - {tema_del_reto: true, sin_ruido: true, mas_titulares_que_procedencias: true}    # respaldo: repetición de apenas un par (el informe lo declara)
+
+    - id: CU-04
+      pregunta: "Cifra inexistente o contradicción: abstenerse o mostrar versiones, con la verificación pendiente"   # Común
+      criterios:
+        - {contradiccion_abierta: true}                                       # el primer grupo con una contradicción abierta
+        - {estado: insuficiente, vacio: cifras_sin_dato_oficial}              # respaldo: titulares con cifras sin dato oficial y evidencia insuficiente (el informe lo declara)
+
+    - id: CU-05
+      pregunta: "¿Qué señales públicas del entorno logístico debo revisar?"   # Banca (E2-03)
+      grupo: GRP-da35c3dead                   # el caso de E2-03: la base guarda una modalidad y la ficha bancaria ya está revisada en CASO-001
+      modalidad: banca                        # se REUTILIZA su CASO- (nunca se reabre ni se renumera): la ficha sale de `fichas_revisadas`
+
+  minimo_total: 5                             # PDF sección 5: al menos 5 fichas trazables (uno por caso de uso)
+  minimo_insuficiente: 1                      # PDF sección 5: al menos una con evidencia insuficiente
+
+  # Garantía: si ninguna de las cinco queda con evidencia insuficiente, `caso_de_uso` se vuelve a elegir SOLO con estos criterios (en
+  # orden). Hoy no hace falta (CU-01 es el primero del ranking y es insuficiente); está para que un nuevo ranking (C-10) no la rompa.
+  garantia_insuficiente:
+    caso_de_uso: CU-04
+    criterios:
+      - {estado: insuficiente, vacio: cifras_sin_dato_oficial}
+      - {estado: insuficiente}
+
+# D-118: los casos que una corrida anterior de C-01 abrió (CASO-002…006) y la selección actual ya no elige NO se borran (registro de solo
+# agregar): se reabren y se descartan con este motivo, de forma provisional y rotulada (D-112). Solo se tocan los que abrió C-01 y
+# sigue vigente la fila provisional del asistente; el trabajo de una persona nunca se descarta.
+reemplazo:
+  motivo: "Reemplazado por la selección por caso de uso (D-118)"      # debe estar en revision.yaml: motivos_descarte
+  comentario: "Reemplazado por la selección por caso de uso (D-118): este grupo ya no es la ficha trazable de ningún caso de uso. Se conserva en el registro (solo agregar)."
+
+# Cómo se resuelve cada ID citado contra los datos (no contra la ficha). `origen: tabla` = tabla de data/senales.duckdb;
+# `origen: csv` = archivo de data/processed/ (ruta relativa a la raíz del repositorio).
+registros:
+  - {prefijo: "NOT-", origen: tabla, fuente: noticias,    columna_id: id_noticia,   columna_url: url,        url_obligatoria: true}
+  - {prefijo: "IND-", origen: tabla, fuente: indicadores, columna_id: id_indicador, columna_url: fuente_url, url_obligatoria: true,
+     cifra: {campo: valor, patron: "{pais_iso3} {anio}: (?P<cifra>-?[0-9]+(?:{miles}[0-9]{{3}})*(?:[.][0-9]+)?)", decimales_en: decimales_valor}}
+  - {prefijo: "SIS-", origen: tabla, fuente: sismos,      columna_id: id,           columna_url: url,        url_obligatoria: true,
+     cifra: {campo: magnitude, patron: "magnitud (?P<cifra>-?[0-9]+(?:{miles}[0-9]{{3}})*(?:[.][0-9]+)?)", decimales_en: decimales_valor}}
+  - {prefijo: "GRP-", origen: tabla, fuente: grupos,      columna_id: id_grupo,     columna_url: null,       url_obligatoria: false}   # un conteo no tiene URL: sus titulares sí (comprobación aparte)
+  - {prefijo: "SBP-", origen: csv,   fuente: data/processed/sbp_series.csv, columna_id: null, plantilla_id: "SBP-{id_serie}-{periodo}", columna_url: url, url_obligatoria: true,
+     cifra: {campo: valor, patron: "período {periodo}: (?P<cifra>-?[0-9]+(?:{miles}[0-9]{{3}})*(?:[.][0-9]+)?)", decimales_en: decimales_valor_sbp}}
+
+# X109: `{miles}` es `presentacion.separador_miles` (escapado): la cifra puede venir con miles agrupados.
+# X105: la cifra que muestra la ficha debe coincidir con el dato al redondeo con que se mostró (`cifra.decimales_en`). Esta es la tolerancia
+# absoluta que se admite además: solo ruido de coma flotante, no una diferencia de redondeo.
+tolerancia_cifra: 0.000000001
+
+# D-31: la descripción del RSS es de uso interno. Una descripción más corta que esto no se busca (sería una coincidencia casual).
+descripcion_minimo_caracteres: 20
+# D-32: nunca el nombre de un autor. Ninguna clave de la ficha, del registro ni del Markdown puede llamarse así.
+claves_de_autor: [autor, autores, author, authors, byline, creator, dc_creator, periodista, redactor, firma_nombre]
+
+z_intervalo_confianza: 1.96       # IC de Wilson al 95 % para toda proporción reportada (igual que carga.yaml)
+
+# Qué hace la revisión provisional del asistente (D-101, D-112) según el estado de evidencia de la ficha. Visible y rotulada;
+# una persona la rehace en C-09. `pedir_evidencia` enlaza los vacíos de la ficha; ninguna acción aprueba nada que no sea borrador.
+revision:
+  revisor: "Asistente (provisional, D-101)"
+  accion_por_estado:
+    suficiente: aceptar
+    parcial: aceptar
+    insuficiente: pedir_evidencia
+  comentario: "Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09."
+
+archivos:
+  carpeta: outputs/fichas_trazables
+  informe: outputs/fichas_trazables/trazabilidad.json
+  indice: outputs/fichas_trazables/indice.md
+  vista_previa: outputs/fichas_trazables/vista_previa     # sin --casos (X107): fuera de git; no borra ni pisa los CASO-*.md, el CSV, el informe ni el índice versionados
+
+textos:
+  aviso_provisional: "REVISIÓN PROVISIONAL DEL ASISTENTE, NO HUMANA (D-101): la rehace una persona en C-09. Todo es BORRADOR."
+  aviso_corrida: "Las fichas salen de la corrida guardada en senales.duckdb (reglas {version_reglas}, corte {fecha_referencia}). Si el ranking cambia (C-10), se vuelve a correr este comando: es otra corrida, no se rehace el trabajo; los CASO- anteriores se conservan (registro de solo agregar)."
+  sin_borrador: "sin borrador en la caché de generación (no se llamó a ningún proveedor)"
+  no_aplica_por_defecto: "no aplica en esta corrida"
+  no_aplica:
+    sin_descripcion_rss: "no aplica (0 descripciones en los datos)"      # X107: no se informa 100 % de una comprobación que no tuvo nada que comparar
