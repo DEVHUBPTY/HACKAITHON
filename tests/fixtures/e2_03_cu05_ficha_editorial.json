@@ -1,0 +1,91 @@
+{
+  "id_caso": "GRP-da35c3dead",
+  "version": 1,
+  "modalidad": "editorial",
+  "accion": "Producir borrador",
+  "uso_descripcion": false,
+  "registros": [
+    {
+      "id": "NOT-1819a7014e",
+      "campos": {
+        "titulo_limpio": "Presidente panameño visitará Singapur y Vietnam"
+      },
+      "contexto": {
+        "medio": "prensa-latina.cu"
+      },
+      "idioma": "es",
+      "campo_texto": "titulo_limpio"
+    },
+    {
+      "id": "NOT-33032542b7",
+      "campos": {
+        "titulo_limpio": "Mulino viajará a Asia: suscribirá convenios bilaterales con Singapur y Vietnam"
+      },
+      "contexto": {
+        "medio": "laestrella.com.pa"
+      },
+      "idioma": "es",
+      "campo_texto": "titulo_limpio"
+    },
+    {
+      "id": "NOT-fbc3efaa5d",
+      "campos": {
+        "titulo_limpio": "Presidente de Panamá visita Singapur y Vietnam en busca de inversiones"
+      },
+      "contexto": {
+        "medio": "revistaeyn.com"
+      },
+      "idioma": "es",
+      "campo_texto": "titulo_limpio"
+    },
+    {
+      "id": "GRP-da35c3dead",
+      "campos": {
+        "n_titulares": "3 titulares de 3 medios reportan este tema",
+        "n_medios": "3 titulares de 3 medios reportan este tema",
+        "n_procedencias": "3 procedencias independientes estimadas (los titulares que replican a una misma fuente cuentan como una)"
+      },
+      "contexto": {},
+      "idioma": null,
+      "campo_texto": "titulo"
+    }
+  ],
+  "vacios": [
+    {
+      "id": "solo_vinculo_indirecto",
+      "descripcion": "sin dato oficial vinculado (solo vínculo indirecto: no mide el hecho)"
+    },
+    {
+      "id": "medios_o_fechas_desconocidos",
+      "descripcion": "3 de 3 titulares sin medio o fecha de publicación conocidos"
+    },
+    {
+      "id": "urgencia_sin_publicacion",
+      "descripcion": "urgencia estimada: fecha de publicación desconocida"
+    },
+    {
+      "id": "subtema_desconocido",
+      "descripcion": "subtema no determinado: se usó el alcance neutro de impacto"
+    }
+  ],
+  "fuentes_verificaciones": [
+    "sin dato oficial vinculado (solo vínculo indirecto: no mide el hecho) → El indicador vinculado es contexto lejano: buscar un dato oficial que mida el hecho directamente.",
+    "3 de 3 titulares sin medio o fecha de publicación conocidos → Abrir el enlace de cada titular para identificar el medio y la fecha de publicación original.",
+    "urgencia estimada: fecha de publicación desconocida → Abrir el enlace de cada titular para identificar el medio y la fecha de publicación original.",
+    "subtema no determinado: se usó el alcance neutro de impacto → Confirmar de qué asunto trata el grupo; sin subtema no hay fuentes sugeridas específicas.",
+    "Fuente sugerida: Autoridad del Canal de Panamá",
+    "Fuente sugerida: Autoridad Marítima de Panamá",
+    "sugerencias para quien verifica; no son evidencia del sistema ni se citan como tal"
+  ],
+  "contradicciones": [],
+  "evidencia": [
+    "Hecho: 3 titulares de 3 medios reportan este tema · Cita: GRP-da35c3dead · n_titulares; GRP-da35c3dead · n_medios",
+    "Hecho: 3 procedencias independientes estimadas (los titulares que replican a una misma fuente cuentan como una) · Cita: GRP-da35c3dead · n_procedencias",
+    "Declaración: prensa-latina.cu reporta: «Presidente panameño visitará Singapur y Vietnam» · Cita: NOT-1819a7014e · titulo_limpio",
+    "Declaración: laestrella.com.pa reporta: «Mulino viajará a Asia: suscribirá convenios bilaterales con Singapur y Vietnam» · Cita: NOT-33032542b7 · titulo_limpio",
+    "Declaración: revistaeyn.com reporta: «Presidente de Panamá visita Singapur y Vietnam en busca de inversiones» · Cita: NOT-fbc3efaa5d · titulo_limpio"
+  ],
+  "tema": "logistica",
+  "tema_secundario": "economia",
+  "edad_evidencia_dias": 5.205590277777778
+}

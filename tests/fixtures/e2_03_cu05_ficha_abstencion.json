@@ -1,0 +1,61 @@
+{
+  "id_caso": "GRP-f4a44182b1",
+  "version": 1,
+  "modalidad": "banca",
+  "accion": "Seguimiento prioritario",
+  "uso_descripcion": false,
+  "registros": [
+    {
+      "id": "NOT-f7f8b492d1",
+      "campos": {
+        "titulo_limpio": "Panamá reforzará su presencia marítima en Vietnam con nueva oficina de servicio técnico de la AMP en Ho Chi Minh"
+      },
+      "contexto": {
+        "medio": "TVN Panamá",
+        "fecha_publicacion": "2026-10-06T11:57:42Z"
+      },
+      "idioma": "es",
+      "campo_texto": "titulo_limpio"
+    },
+    {
+      "id": "GRP-f4a44182b1",
+      "campos": {
+        "n_titulares": "1 titular de 1 medio reporta este tema",
+        "n_medios": "1 titular de 1 medio reporta este tema",
+        "n_procedencias": "1 procedencia independiente estimada (los titulares que replican a una misma fuente cuentan como una)"
+      },
+      "contexto": {},
+      "idioma": null,
+      "campo_texto": "titulo"
+    }
+  ],
+  "vacios": [
+    {
+      "id": "solo_vinculo_indirecto",
+      "descripcion": "sin dato oficial vinculado (solo vínculo indirecto: no mide el hecho)"
+    },
+    {
+      "id": "procedencias_insuficientes",
+      "descripcion": "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente"
+    }
+  ],
+  "fuentes_verificaciones": [
+    "sin dato oficial vinculado (solo vínculo indirecto: no mide el hecho) → El indicador vinculado es contexto lejano: buscar un dato oficial que mida el hecho directamente.",
+    "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente → Buscar el mismo hecho en un medio con fuente propia; una réplica de la misma agencia no cuenta.",
+    "Fuente sugerida: Autoridad del Canal de Panamá",
+    "Fuente sugerida: Autoridad Marítima de Panamá",
+    "Fuente sugerida: Superintendencia de Bancos de Panamá",
+    "Fuente sugerida: Ministerio de Economía y Finanzas",
+    "Fuente sugerida: Contraloría General de la República (INEC)",
+    "sugerencias para quien verifica; no son evidencia del sistema ni se citan como tal"
+  ],
+  "contradicciones": [],
+  "evidencia": [
+    "Hecho: 1 titular de 1 medio reporta este tema · Cita: GRP-f4a44182b1 · n_titulares; GRP-f4a44182b1 · n_medios",
+    "Hecho: 1 procedencia independiente estimada (los titulares que replican a una misma fuente cuentan como una) · Cita: GRP-f4a44182b1 · n_procedencias",
+    "Declaración: TVN Panamá reporta: «Panamá reforzará su presencia marítima en Vietnam con nueva oficina de servicio técnico de la AMP en Ho Chi Minh» · Cita: NOT-f7f8b492d1 · titulo_limpio"
+  ],
+  "tema": "logistica",
+  "tema_secundario": null,
+  "edad_evidencia_dias": 0.5301041666666667
+}

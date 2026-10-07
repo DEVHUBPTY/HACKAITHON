@@ -14,6 +14,18 @@ La app (DuckDB) es la **fuente de verdad**. Notion recibe exportaciones **manual
 - `--caso CASO-001` escribe solo ese caso; `fichas.jsonl` se regenera con las fichas guardadas de todos.
 - **La demo exporta aparte:** `outputs/demo/notion/` y `outputs/demo/fichas.jsonl`, con su propia base (`data/revision_demo.duckdb`) y su propia numeración. Nunca toca las salidas reales (`config/revision.yaml`: `carpeta_demo`, `fichas_jsonl_demo`).
 
+## Aprobación provisional del asistente (D-112, extiende D-101)
+
+Durante el desarrollo el asistente hace los pasos de juicio humano, de forma **provisional y visible**. Está en la lista de revisores de `config/revision.yaml` con `provisional: true`; el código lee esa bandera, no un nombre.
+
+- **Dónde se ve:** historial y estado en la pantalla *Revisión*, `src.revision --estado/--historial`, el estado y el historial del `CASO-00N.md`, la columna *Revisor* del CSV («Asistente (provisional, D-101) · provisional (D-101)») y `revision_provisional: true` en `fichas.jsonl`.
+- **El contrato no cambia:** `estado_revision` sigue siendo uno de los cinco estados; la marca va en un campo aparte. La propiedad *Estado de revisión* de Notion tampoco se toca (es un select).
+- **C-09 (rehacerlo una persona):** la persona abre el mismo `CASO-` en la app, **reabre** (con motivo) y **aprueba como borrador**. Esas filas se agregan a `revisiones` (solo agregar: no hay `UPDATE` ni `DELETE`), la suya pasa a ser la vigente y la exportación deja de decir «provisional». Las filas del asistente quedan en el historial, rotuladas. Se vuelve a exportar el caso y se reimporta la fila en Notion (ver el procedimiento de abajo).
+
+- **Advertencia para Notion:** la columna *Estado de revisión* (select) dice «Aprobado como borrador» **sin** la marca; la marca provisional vive solo en la columna *Revisor*. Una vista o un filtro por estado cuenta `CASO-001` como aprobado: **combínelo siempre con *Revisor*** (excluya «provisional (D-101)») hasta que una persona lo rehaga en C-09.
+- **El registro no pierde la marca:** la marca se deriva de `config/revision.yaml`, así que `Revisiones` falla con un error explícito si el registro tiene un revisor que ya no está en la configuración (X72). No se borra ni se renombra la entrada del asistente. Quitar solo la bandera `provisional` de una entrada que sigue existiendo no se detecta (la fila no guarda la bandera): es un cambio de configuración que pasa por revisión de PR.
+- **Métricas:** `eval.revision` cuenta como humanos solo los casos cuya decisión vigente tomó una persona; los del asistente van aparte en `provisionales` (con `juicio_humano: false` y el aviso de D-101) y nunca en las tasas principales (X71).
+
 ## Cómo llevarlo a Notion (procedimiento manual)
 
 1. Abra *Casos y evidencias* en Notion → `…` → **Merge with CSV** (o *Import*) y elija `outputs/notion/casos_y_evidencias.csv`.

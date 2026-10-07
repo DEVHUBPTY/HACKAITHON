@@ -360,6 +360,7 @@ class Revisiones:
         self.cfg = cfg or cargar_revision()
         self.ahora = ahora or ahora_utc
         self._transiciones = self.cfg.transiciones()
+        self._revisores_verificados = False
 
     # ---- conexión
 
@@ -373,9 +374,27 @@ class Revisiones:
         try:
             for ddl in TABLAS.values():
                 con.execute(ddl)
+            self._verificar_revisores(con)
             yield con
         finally:
             con.close()
+
+    def _verificar_revisores(self, con: Any) -> None:
+        """X72: todo revisor del registro sigue declarado en ``config/revision.yaml``.
+
+        La marca provisional se deriva de la configuración vigente; si alguien sacara al asistente de la lista, su historia quedaría sin
+        marca y parecería de una persona. Se falla con un error que lo nombra en lugar de reinterpretar el registro (de solo agregar).
+        """
+        if self._revisores_verificados:
+            return
+        presentes = {f[0] for f in con.execute("SELECT DISTINCT revisor FROM revisiones").fetchall()}
+        faltan = sorted(presentes - {r.nombre for r in self.cfg.revisores})
+        if faltan:
+            raise ErrorDeRevision(
+                f"{self.ruta.name}: el registro de revisiones tiene revisores que ya no están en config/revision.yaml: {faltan}. "
+                "Una entrada de revisor (en especial una provisional, D-112) no se borra ni se renombra: su historia perdería la marca."
+            )
+        self._revisores_verificados = True
 
     @contextmanager
     def _transaccion(self) -> Iterator[Any]:
@@ -436,6 +455,25 @@ class Revisiones:
         """El estado actual de un caso: ``estado_nuevo`` de su última fila de ``revisiones``."""
         historial = self.historial(id_caso)
         return historial[-1].estado_nuevo if historial else self.cfg.estado_inicial
+
+    def es_provisional(self, revisor: str, modalidad: str | None = None) -> bool:
+        """``True`` si el revisor está declarado ``provisional`` en ``config/revision.yaml`` (D-112); sin nombres fijos en el código."""
+        return self.cfg.es_provisional(revisor, modalidad)
+
+    def revisor_rotulado(self, fila: Fila, modalidad: str | None = None) -> str:
+        """``Nombre (rol)`` y, si el revisor es provisional, la marca de ``textos.marca_provisional``."""
+        base = f"{fila.revisor} ({fila.rol})"
+        return f"{base} · {self.cfg.textos.marca_provisional}" if self.es_provisional(fila.revisor, modalidad) else base
+
+    def vigente_provisional(self, id_caso: str) -> bool:
+        """``True`` si la fila vigente (la última) la hizo un revisor provisional: apenas una persona agrega la suya, deja de serlo."""
+        historial = self.historial(id_caso)
+        return bool(historial) and self.es_provisional(historial[-1].revisor, self.caso(id_caso).modalidad)
+
+    def estado_rotulado(self, id_caso: str) -> str:
+        """El estado vigente y, si lo dejó un revisor provisional, la marca («aprobado como borrador · provisional (D-101)»)."""
+        marca = f" · {self.cfg.textos.marca_provisional}" if self.vigente_provisional(id_caso) else ""
+        return self.estado(id_caso) + marca
 
     def estado_de_grupo(self, id_grupo: str, modalidad: str) -> str:
         """Estado de un grupo: el de su caso, o ``nuevo`` si todavía no se abrió."""
@@ -789,10 +827,12 @@ def principal(argv: list[str] | None = None) -> int:
             caso = rev.abrir(args.abrir, args.modalidad, args.revisor)
             print(f"{caso.id_caso} · {caso.id_grupo} · {rev.estado(caso.id_caso)}")
         elif args.estado:
-            print(rev.estado_de_grupo(args.estado, args.modalidad))
+            caso = rev.caso_de_grupo(args.estado, args.modalidad)
+            print(rev.estado_rotulado(caso.id_caso) if caso else rev.estado_de_grupo(args.estado, args.modalidad))
         else:
+            modalidad = rev.caso(args.historial).modalidad
             for f in rev.historial(args.historial):
-                print(f"{f.id_revision}\t{f.fecha_utc}\t{f.accion}\t{f.estado_anterior} -> {f.estado_nuevo}\t{f.revisor} ({f.rol})\tv{f.version}\t{f.motivo or ''}")
+                print(f"{f.id_revision}\t{f.fecha_utc}\t{f.accion}\t{f.estado_anterior} -> {f.estado_nuevo}\t{rev.revisor_rotulado(f, modalidad)}\tv{f.version}\t{f.motivo or ''}")
     except (ErrorDeRevision, db.ModalidadDistinta) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1

@@ -406,14 +406,16 @@ def pantalla_revision(ctx: ui.Contexto) -> None:
     caso = rev.caso_de_grupo(id_grupo, ctx.modalidad)
     actual = ui.estado_de_revision(ctx.con, id_grupo, ctx.cfg, rev, ctx.modalidad)
     avisar()
-    st.markdown(f"**Estado actual:** {actual}" + (f" · **Caso:** {caso.id_caso}" if caso else ""))
+    marca = f" · **{cfg_rev.textos.marca_provisional}**" if caso and rev.vigente_provisional(caso.id_caso) else ""  # D-112
+    st.markdown(f"**Estado actual:** {actual}{marca}" + (f" · **Caso:** {caso.id_caso}" if caso else ""))
     st.dataframe(
         pd.DataFrame({"Estados del reto": ctx.cfg.revision.estados, "Actual": ["●" if e == actual else "" for e in ctx.cfg.revision.estados]}),
         hide_index=True,
     )
     revisores = ui.revisores_de(ctx.modalidad, cfg_rev)
     revisor = st.selectbox("Quién revisa", revisores, index=None, placeholder="Elija a la persona que revisa", key="revision_revisor")
-    st.caption(cfg_rev.limitacion_revisor + (f" Rol: {ui.rol_de(revisor, ctx.modalidad, cfg_rev)}." if revisor else ""))
+    st.caption(cfg_rev.limitacion_revisor + (f" Rol: {ui.rol_de(revisor, ctx.modalidad, cfg_rev)}." if revisor else "")
+               + (f" Revisor {cfg_rev.textos.marca_provisional}: una persona rehace la aprobación en C-09." if revisor and ui.es_provisional(revisor, ctx.modalidad, cfg_rev) else ""))
     if caso is None:
         ficha = ficha_de(str(ctx.ruta_base), id_grupo, ctx.modalidad)
         _que_comprobar(ctx, ficha)
@@ -464,7 +466,7 @@ def pantalla_revision(ctx: ui.Contexto) -> None:
         actuar("Borrador regenerado como una versión nueva.", rev.regenerar, caso.id_caso, revisor, comentario=comentario)
     st.subheader("Historial de revisión")
     st.caption(cfg_rev.textos.limitacion_historial)
-    st.dataframe(pd.DataFrame(ui.tabla_historial(rev.historial(caso.id_caso), ctx.cfg_ver)), hide_index=True)
+    st.dataframe(pd.DataFrame(ui.tabla_historial(rev.historial(caso.id_caso), ctx.cfg_ver, caso.modalidad, cfg_rev)), hide_index=True)
     st.subheader("Exportar")
     if st.button("Exportar a Notion", key="revision_exportar", help="Genera el Markdown y la fila CSV de «Casos y evidencias» desde la ficha revisada; si el caso ya se exportó, actualiza esa fila del CSV local (en Notion hay que reemplazarla: docs/notion.md)."):
         _exportar(rev, caso.id_caso)

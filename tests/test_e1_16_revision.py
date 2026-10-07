@@ -745,3 +745,42 @@ def test_la_base_de_senales_no_cambia_al_revisar(rev, base) -> None:
     abrir(rev)
     assert db.contar_filas(db.conectar(base, solo_lectura=True), "grupos") == antes
     assert rev.ruta.name == "revision.duckdb" and rev.ruta != base
+
+
+def test_x71_eval_no_cuenta_la_aprobacion_del_asistente_como_juicio_humano(rev, tmp_path, capsys) -> None:
+    """D-101/D-112: los casos que decidió un revisor provisional van aparte, con juicio_humano false y el aviso; nunca en la tasa humana."""
+    asistente = "Asistente (provisional, D-101)"
+    solo = eval_revision.calcular(_con_un_caso(rev, h.G_COMPLETO, asistente))
+    assert solo["juicio_humano"] is True and solo["casos_decididos"] == 0 and solo["tasas"]["aceptacion"]["proporcion"] is None
+    assert solo["casos_abiertos"] == 1 and solo["casos_decididos_provisionales"] == 1
+    p = solo["provisionales"]
+    assert p["juicio_humano"] is False and p["origen_juicio"].startswith("asistente_provisional") and "NO HUMANO" in p["aviso_origen"]
+    assert (p["tasas"]["aceptacion"]["k"], p["tasas"]["aceptacion"]["n"]) == (1, 1) and p["tasas"]["aceptacion"]["ic95"] is not None
+    texto = eval_revision.formatear(solo)
+    assert texto.count("n = 0") >= 4 and "PROVISIONAL" in texto and "NO HUMANO" in texto
+    assert "decididos por una persona: 0" in texto
+
+    mixto = eval_revision.calcular(_con_un_caso(rev, h.G_CIFRAS, EDITORIAL))
+    assert (mixto["casos_decididos"], mixto["casos_decididos_provisionales"]) == (1, 1)
+    assert mixto["tasas"]["aceptacion"]["n"] == 1 and mixto["provisionales"]["tasas"]["aceptacion"]["n"] == 1 and mixto["juicio_humano"] is True
+
+    salida = tmp_path / "revision.json"
+    eval_revision.principal(["--revision", str(rev.ruta), "--salida", str(salida)])
+    assert json.loads(salida.read_text(encoding="utf-8"))["provisionales"]["juicio_humano"] is False
+    capsys.readouterr()
+
+
+def test_x71_una_persona_que_reabre_y_decide_pasa_a_contar_como_humana(rev) -> None:
+    asistente = "Asistente (provisional, D-101)"
+    c = _con_un_caso(rev, h.G_COMPLETO, asistente)
+    id_caso = rev.casos()[0].id_caso
+    rev.reabrir(id_caso, EDITORIAL, "Rehecha por una persona")
+    rev.aceptar(id_caso, EDITORIAL)
+    r = eval_revision.calcular(c)
+    assert r["casos_decididos"] == 1 and r["casos_decididos_provisionales"] == 0 and "provisionales" not in r
+
+
+def _con_un_caso(rev: Revisiones, grupo: str, revisor: str) -> Revisiones:
+    caso = abrir(rev, grupo, revisor=revisor)
+    rev.aceptar(caso.id_caso, revisor)
+    return rev

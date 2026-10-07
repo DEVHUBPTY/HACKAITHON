@@ -28,7 +28,8 @@ from pathlib import Path
 from typing import Any
 
 from src.carga import intervalo_wilson
-from src.configuracion import RAIZ, cargar_carga, cargar_revision
+from eval import origen_juicio
+from src.configuracion import RAIZ, cargar_carga, cargar_origen_juicio, cargar_revision
 from src.revision import FORMATO_FECHA, Revisiones
 
 SALIDA = RAIZ / "outputs" / "revision.json"
@@ -47,35 +48,30 @@ def _minutos(desde: str, hasta: str) -> float:
     return (b - a).total_seconds() / SEGUNDOS_POR_MINUTO
 
 
-def calcular(rev: Revisiones) -> dict[str, Any]:
-    """Las métricas de la revisión de todos los casos de ``rev``."""
-    z = cargar_carga().salida.z_intervalo_confianza
+def _metricas(rev: Revisiones, ids: list[str], z: float) -> dict[str, Any]:
+    """Las tasas, motivos, tiempos y afirmaciones editadas de los casos decididos ``ids`` (todos con la misma procedencia)."""
     prefijo = f"{rev.cfg.correccion.prefijo_afirmaciones}."
-    casos = rev.casos()
-    decididos: list[str] = []
     descartados: Counter[str] = Counter()
     corregidos = 0
     editadas = total_afirmaciones = 0
     tiempos: list[float] = []
-    for caso in casos:
-        historial = rev.historial(caso.id_caso)
-        if not historial or historial[-1].estado_nuevo not in ESTADOS_FINALES:
-            continue
-        decididos.append(caso.id_caso)
+    aprobados = 0
+    for id_caso in ids:
+        historial = rev.historial(id_caso)
         if historial[-1].estado_nuevo == "descartado":
             descartados[historial[-1].motivo or "sin motivo"] += 1
+        else:
+            aprobados += 1
         correcciones = [f for f in historial if f.accion == "corregir"]
         corregidos += bool(correcciones)
-        versiones = rev.versiones(caso.id_caso)
+        versiones = rev.versiones(id_caso)
         if versiones:
             total_afirmaciones += len(versiones[0].contenido.get("afirmaciones") or [])
             editadas += len({x["clave"] for f in correcciones for x in f.diferencias if x["clave"].startswith(prefijo)})
         apertura = next(f for f in historial if f.accion == "abrir")
         tiempos.append(_minutos(apertura.fecha_utc, historial[-1].fecha_utc))
-    n = len(decididos)
-    aprobados = sum(1 for c in decididos if rev.estado(c) == "aprobado como borrador")
+    n = len(ids)
     return {
-        "casos_abiertos": len(casos),
         "casos_decididos": n,
         "tasas": {
             "aceptacion": _proporcion(aprobados, n, z),
@@ -89,8 +85,41 @@ def calcular(rev: Revisiones) -> dict[str, Any]:
             "media": statistics.fmean(tiempos) if tiempos else None,
         },
         "afirmaciones_editadas": _proporcion(editadas, total_afirmaciones, z),
+    }
+
+
+def calcular(rev: Revisiones) -> dict[str, Any]:
+    """Las métricas de la revisión, separadas por quién decidió (X71, D-101/D-112).
+
+    El resultado principal cuenta **solo** los casos cuya decisión vigente la tomó una persona (``juicio_humano: true``). Los casos que
+    decidió un revisor provisional (el asistente) nunca se mezclan: van aparte en ``provisionales``, con su propio n e intervalo, con
+    ``juicio_humano: false`` y el aviso de ``config/origen_juicio.yaml``. «Decidió» es el revisor de la última fila del caso.
+    """
+    z = cargar_carga().salida.z_intervalo_confianza
+    cfg_origen = cargar_origen_juicio()
+    casos = rev.casos()
+    humanos: list[str] = []
+    provisionales: list[str] = []
+    for caso in casos:
+        historial = rev.historial(caso.id_caso)
+        if not historial or historial[-1].estado_nuevo not in ESTADOS_FINALES:
+            continue
+        (provisionales if rev.es_provisional(historial[-1].revisor, caso.modalidad) else humanos).append(caso.id_caso)
+    resultado: dict[str, Any] = {
+        "casos_abiertos": len(casos),
+        **origen_juicio.describir(cfg_origen.humano, cfg_origen),
+        **_metricas(rev, humanos, z),
+        "casos_decididos_provisionales": len(provisionales),
         "nota": "Las afirmaciones de un caso no son independientes: el intervalo de afirmaciones editadas es orientativo.",
     }
+    if provisionales:
+        no_humano = next(k for k in cfg_origen.origenes if k != cfg_origen.humano)
+        resultado["provisionales"] = {
+            **origen_juicio.describir(no_humano, cfg_origen),
+            "aviso_origen": cfg_origen.aviso_provisional,
+            **_metricas(rev, provisionales, z),
+        }
+    return resultado
 
 
 def _texto(p: dict[str, Any], sin_datos: str) -> str:
@@ -100,20 +129,27 @@ def _texto(p: dict[str, Any], sin_datos: str) -> str:
     return f"{p['proporcion']:.1%} ({p['k']}/{p['n']}, n = {p['n']}, IC 95 % {lo:.1%}–{hi:.1%})"
 
 
-def formatear(r: dict[str, Any], sin_datos: str | None = None) -> str:
-    """El reporte como texto: cada proporción con su n e intervalo; sin casos, «sin datos»."""
-    sd = sin_datos or cargar_revision().textos.sin_datos
+def _bloque(r: dict[str, Any], sd: str, titulo: str) -> list[str]:
     t = r["tiempo_por_caso_min"]
-    lineas = [
-        f"Revisión humana · casos abiertos: {r['casos_abiertos']} · decididos: {r['casos_decididos']}",
+    return [
+        titulo,
         f"  Tasa de aceptación (aprobados como borrador): {_texto(r['tasas']['aceptacion'], sd)}",
         f"  Tasa de corrección (con al menos una corrección): {_texto(r['tasas']['correccion'], sd)}",
         f"  Tasa de descarte: {_texto(r['tasas']['descarte'], sd)}",
         f"  Afirmaciones editadas: {_texto(r['afirmaciones_editadas'], sd)}",
         "  Tiempo de revisión por caso: " + (f"mediana {t['mediana']:.1f} min · media {t['media']:.1f} min (n = {t['n']})" if t["n"] else f"{sd} (n = 0)"),
         "  Motivos de descarte: " + (" · ".join(f"{m} ({n})" for m, n in r["motivos_descarte"].items()) or sd),
-        f"  {r['nota']}",
     ]
+
+
+def formatear(r: dict[str, Any], sin_datos: str | None = None) -> str:
+    """El reporte como texto: cada proporción con su n e intervalo; sin casos, «sin datos». Lo provisional va aparte y rotulado (X71)."""
+    sd = sin_datos or cargar_revision().textos.sin_datos
+    lineas = _bloque(r, sd, f"Revisión humana · casos abiertos: {r['casos_abiertos']} · decididos por una persona: {r['casos_decididos']}")
+    lineas.append(f"  {r['nota']}")
+    if r.get("provisionales"):
+        p = r["provisionales"]
+        lineas += ["", *_bloque(p, sd, f"Revisión PROVISIONAL del asistente (no es juicio humano) · decididos: {p['casos_decididos']}"), f"  {p['aviso_origen']}"]
     return "\n".join(lineas)
 
 

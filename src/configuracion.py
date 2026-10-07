@@ -2559,6 +2559,7 @@ class RevisorConfig(ModeloConfig):
     nombre: str = Field(min_length=1)
     rol: str = Field(min_length=1)
     modalidad: Literal["editorial", "banca"]
+    provisional: bool = False  # D-112: el asistente revisa de forma provisional; toda aprobación suya se rotula y una persona la rehace en C-09
 
 
 class VinculoRechazadoRevision(ModeloConfig):
@@ -2588,6 +2589,7 @@ class ExportacionRevision(ModeloConfig):
 class TextosRevision(ModeloConfig):
     limitacion_historial: str
     sin_datos: str
+    marca_provisional: str = Field(min_length=1)  # D-112: se agrega junto al revisor cuando su entrada es provisional
 
 
 class ConfigRevision(ModeloConfig):
@@ -2607,6 +2609,10 @@ class ConfigRevision(ModeloConfig):
     correccion: CorreccionRevision
     exportacion: ExportacionRevision
     textos: TextosRevision
+
+    def es_provisional(self, revisor: str, modalidad: str | None = None) -> bool:
+        """``True`` si el revisor está declarado ``provisional`` (D-112). Única implementación: la pantalla, la CLI y la exportación la usan."""
+        return any(r.provisional for r in self.revisores if r.nombre == revisor and (modalidad is None or r.modalidad == modalidad))
 
     @model_validator(mode="after")
     def _coherente(self) -> ConfigRevision:
@@ -2637,6 +2643,11 @@ class ConfigRevision(ModeloConfig):
             raise ValueError("revisores: debe haber al menos uno por modalidad")
         if len({(r.nombre, r.modalidad) for r in self.revisores}) != len(self.revisores):
             raise ValueError("revisores: una persona aparece una sola vez por modalidad")
+        todas = {r.modalidad for r in self.revisores}
+        if any({x.modalidad for x in self.revisores if x.nombre == r.nombre} != todas for r in self.revisores if r.provisional):
+            raise ValueError("revisores: un revisor provisional se declara en las dos modalidades (D-112)")
+        if all(r.provisional for r in self.revisores):
+            raise ValueError("revisores: debe haber al menos una persona no provisional (D-112)")
         if self.exportacion.carpeta_demo == self.exportacion.carpeta or self.exportacion.fichas_jsonl_demo == self.exportacion.fichas_jsonl:
             raise ValueError("exportacion: la demo exporta a rutas distintas de las reales")
         if len(self.exportacion.columnas) != len(set(self.exportacion.columnas)) or "ID caso" not in self.exportacion.columnas:

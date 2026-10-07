@@ -59,6 +59,7 @@ def app(monkeypatch, base, emb, tmp_path):
 
     monkeypatch.setattr(ui, "obtener_paquete", disponible)
     monkeypatch.setattr(exportar, "RAIZ", tmp_path)                                  # nada se exporta dentro del repositorio
+    monkeypatch.setattr("src.revision.huellas_de_exportacion", lambda demo, cfg=None, raiz=tmp_path: [tmp_path / "notion", tmp_path / "fichas.jsonl"])  # la numeración no lee las exportaciones reales del repo
     original = exportar.exportar_caso
     monkeypatch.setattr(exportar, "exportar_caso", lambda rev, id_caso, **k: original(rev, id_caso, carpeta=tmp_path / "notion", ruta_jsonl=tmp_path / "fichas.jsonl", **k))
     st.cache_resource.clear()
@@ -90,7 +91,7 @@ def test_el_revisor_sale_de_la_lista_del_yaml_y_no_hay_ninguno_elegido(app) -> N
     at = app.run()
     assert not at.exception
     caja = at.selectbox(key="revision_revisor")
-    assert list(caja.options) == ui.revisores_de("editorial", CFG_REV) == ["David Fen", "Javier Acosta", "Juan Zhou"] and caja.value is None
+    assert list(caja.options) == ui.revisores_de("editorial", CFG_REV) == ["David Fen", "Javier Acosta", "Juan Zhou", "Asistente (provisional, D-101)"] and caja.value is None   # D-112: el asistente va en la lista, rotulado
     assert "Sin autenticación" in textos(at)                                       # la limitación declarada (D-49)
     assert at.button(key="revision_abrir").disabled
 
@@ -209,3 +210,18 @@ def test_el_atajo_caso_acepta_un_id_caso(app) -> None:
 def test_la_pantalla_de_revision_tiene_marca_y_leyenda_en_todos_los_estados(app) -> None:
     at = app.run()
     assert MARCA in textos(at) and "basado" in textos(at)
+
+
+def test_la_pantalla_rotula_la_aprobacion_del_asistente_como_provisional_y_la_de_una_persona_no(app) -> None:
+    """D-112: el estado y el historial de la pantalla dicen «provisional (D-101)» mientras la fila vigente sea del asistente."""
+    marca = CFG_REV.textos.marca_provisional
+    asistente = "Asistente (provisional, D-101)"
+    at = app.run()
+    at.selectbox(key="revision_revisor").select(asistente).run()
+    assert marca in textos(at) and "una persona rehace la aprobación en C-09" in textos(at)
+    at = at.button(key="revision_abrir").click().run()
+    at = at.button(key="revision_aceptar").click().run()
+    assert not at.exception
+    assert f"**Estado actual:** aprobado como borrador · **{marca}**" in textos(at)
+    historial = [r for df in at.dataframe for r in df.value.to_dict("records") if "Revisor" in r]
+    assert historial and all(marca in r["Revisor"] for r in historial)
