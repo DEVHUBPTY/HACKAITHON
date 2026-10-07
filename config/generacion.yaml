@@ -21,6 +21,16 @@ acciones:
   investigacion: ["Investigar ya", "Vigilar"]
   nada: ["Archivar", "Archivar como contexto"]
 
+# Qué prefijo de ID es un dato oficial y cuál es lo que reporta un medio (CLAUDE.md, D-63). `SYN-` son casos sintéticos.
+prefijos:
+  oficiales: ["IND-", "SIS-", "SBP-"]
+  reportes: ["NOT-", "SYN-"]
+
+# Un título o titular basado en una declaración lleva atribución: el nombre del medio o alguno de estos verbos (palabra completa).
+atribucion:
+  marcadores: [reporta, reportan, reportó, reportaron, reportado, informa, informan, informó, informaron, según, señala, señalan,
+               señaló, indica, indican, publica, publican, publicó, afirma, afirman]
+
 traducido:                 # D-45: la cita de un titular que no está en este idioma lleva la marca
   idioma_base: es
   marca: "(traducido)"
@@ -46,3 +56,8 @@ tope_costo:                # D-67: al alcanzarlo, la siguiente llamada usa el mo
   tokens: 300000
   usd: 0.50
   registro: outputs/costo_llm.json   # acumulado entre ejecuciones (fuera de git)
+
+medicion:                  # scripts/medir_generacion.py: latencia de la primera respuesta y del paquete completo
+  repeticiones: 5
+  calentamiento: 1         # llamadas previas que NO entran en las estadísticas (carga del modelo en frío)
+  percentil: 95

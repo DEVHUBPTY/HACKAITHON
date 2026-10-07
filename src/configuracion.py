@@ -1821,6 +1821,15 @@ class AccionesGeneracion(ModeloConfig):
         return self
 
 
+class PrefijosGeneracion(ModeloConfig):
+    oficiales: list[str] = Field(min_length=1)
+    reportes: list[str] = Field(min_length=1)
+
+
+class AtribucionGeneracion(ModeloConfig):
+    marcadores: list[str] = Field(min_length=1)
+
+
 class TraducidoGeneracion(ModeloConfig):
     idioma_base: str
     marca: str
@@ -1854,6 +1863,12 @@ class TopeCostoConfig(ModeloConfig):
     registro: str
 
 
+class MedicionGeneracion(ModeloConfig):
+    repeticiones: int = Field(ge=1)
+    calentamiento: int = Field(ge=0)
+    percentil: int = Field(ge=1, le=100)
+
+
 class ConfigGeneracionBorrador(ModeloConfig):
     """Modelo de ``config/generacion.yaml``."""
 
@@ -1862,11 +1877,14 @@ class ConfigGeneracionBorrador(ModeloConfig):
     reintentos: int = Field(ge=0)
     afirmaciones: AfirmacionesGeneracion
     acciones: AccionesGeneracion
+    prefijos: PrefijosGeneracion
+    atribucion: AtribucionGeneracion
     traducido: TraducidoGeneracion
     fuga_prompt: FugaPromptGeneracion
     grupos: GruposGeneracion
     deepseek: DeepSeekConfig
     tope_costo: TopeCostoConfig
+    medicion: MedicionGeneracion
 
 
 def cargar_generacion(carpeta: Path | None = None) -> ConfigGeneracionBorrador:

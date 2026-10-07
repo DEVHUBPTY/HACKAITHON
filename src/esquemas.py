@@ -104,3 +104,191 @@ class ComparacionContradicciones(BaseModel):
 def esquema_json_comparacion() -> dict[str, Any]:
     """JSON Schema de ``ComparacionContradicciones``, para el parámetro ``format`` de Ollama."""
     return ComparacionContradicciones.model_json_schema()
+
+
+# =====================================================================================================================
+# E1-12 · SALIDAS DE LA GENERACIÓN (docs/salidas.md). Sección independiente para facilitar la integración con la Ficha (E1-10b).
+# Campos exactos de cada paquete; el origen de cada uno (LLM · Ficha · Regla) está en el comentario de su campo.
+# =====================================================================================================================
+
+TipoParteGuion = Literal["entrada", "desarrollo", "cierre"]
+
+
+class OracionLlm(BaseModel):
+    """Lo que devuelve el LLM por oración: texto y los ``id`` de las afirmaciones validadas en que se apoya (D-22)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    texto: str = Field(min_length=1)
+    afirmaciones: list[str] = Field(default_factory=list, description="id de afirmaciones validadas, p. ej. A1")
+
+
+class OracionGuionLlm(OracionLlm):
+    """Oración del guion: entrada, desarrollo o cierre."""
+
+    parte: TipoParteGuion
+
+
+class PreguntaLlm(BaseModel):
+    """Pregunta de investigación y el vacío de la ficha que la origina (D-43)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    texto: str = Field(min_length=1)
+    vacio: str = Field(min_length=1, description="id del vacío de la ficha, exacto")
+
+
+class SalidaTitulos(BaseModel):
+    """Grupo 1 (D-44): título + titulares + copy digital."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    titulo: OracionLlm
+    titulares: list[OracionLlm]
+    copy_digital: list[OracionLlm]
+
+
+class SalidaBrief(BaseModel):
+    """Grupo 2 (D-44): brief + enfoque + preguntas."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    brief: list[OracionLlm]
+    enfoque: list[OracionLlm]
+    preguntas: list[PreguntaLlm]
+
+
+class SalidaGuion(BaseModel):
+    """Grupo 3 (D-44): guion."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    guion: list[OracionGuionLlm]
+
+
+class SalidaResumen(BaseModel):
+    """Grupo 4 (D-44): resumen web."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    resumen_web: list[OracionLlm]
+
+
+class SalidaInvestigacion(BaseModel):
+    """Paquete de investigación (D-42): título de trabajo + enfoque + preguntas, en una sola llamada."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    titulo_trabajo: OracionLlm
+    enfoque: list[OracionLlm]
+    preguntas: list[PreguntaLlm]
+
+
+class Oracion(BaseModel):
+    """Oración de un paquete, ya validada: cita al menos una afirmación (salvo un marcador ``[VISUAL: …]``)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    texto: str
+    afirmaciones: list[str]
+    parte: TipoParteGuion | None = None
+
+
+class PreguntaInvestigacion(BaseModel):
+    """Pregunta de investigación con el vacío de la ficha que la origina."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    texto: str
+    vacio: str
+
+
+class CitaSalida(BaseModel):
+    """Cita de una afirmación (ID + campo). ``traducido`` marca titulares que no están en el idioma base (D-45)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    campo: str
+    traducido: bool = False
+
+
+class AfirmacionSalida(BaseModel):
+    """Afirmación validada que respalda las oraciones del paquete."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    tipo: TipoAfirmacion
+    texto: str
+    citas: list[CitaSalida] = Field(default_factory=list)
+    base: list[str] = Field(default_factory=list)
+
+
+class Vacio(BaseModel):
+    """Lo que falta: un vacío de la ficha (origen ``ficha``) o una sección que no se pudo redactar (origen ``seccion``)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    origen: Literal["ficha", "seccion"]
+    referencia: str
+    motivo: str
+
+
+class PaqueteBase(BaseModel):
+    """Campos comunes a toda salida (docs/salidas.md): marca de borrador, caso, versión y leyenda de alcance (D-51)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    marca: str  # Regla: ``marca_borrador`` de config/restricciones.yaml
+    id_caso: str  # Ficha
+    version: int  # Ficha
+    leyenda_alcance: str  # Regla: ``leyendas_alcance`` de config/restricciones.yaml
+    accion: str  # Ficha: la acción recomendada (D-42)
+    forzado: bool = False  # Regla: la persona forzó el paquete completo (queda registrado)
+    vacios: list[Vacio] = Field(default_factory=list)  # Regla
+    afirmaciones: list[AfirmacionSalida] = Field(default_factory=list)  # Paso 1, validadas
+
+
+class PaqueteEditorial(PaqueteBase):
+    """Paquete editorial (TVN), docs/salidas.md §1."""
+
+    titulo: Oracion | None = None  # LLM
+    titulares: list[Oracion] = Field(default_factory=list)  # LLM
+    enfoque: list[Oracion] = Field(default_factory=list)  # LLM
+    brief: list[Oracion] = Field(default_factory=list)  # LLM
+    preguntas: list[PreguntaInvestigacion] = Field(default_factory=list)  # LLM sobre vacíos
+    fuentes_verificaciones: list[str] = Field(default_factory=list)  # Ficha, sin LLM (D-43)
+    guion: list[Oracion] = Field(default_factory=list)  # LLM
+    resumen_web: list[Oracion] = Field(default_factory=list)  # LLM
+    copy_digital: list[Oracion] = Field(default_factory=list)  # LLM
+
+
+class PaqueteInvestigacion(PaqueteBase):
+    """Paquete de investigación (D-42): sin brief, guion, copy, titulares ni resumen web."""
+
+    titulo_trabajo: Oracion | None = None  # LLM
+    enfoque: list[Oracion] = Field(default_factory=list)  # LLM
+    preguntas: list[PreguntaInvestigacion] = Field(default_factory=list)  # LLM sobre vacíos
+    fuentes_verificaciones: list[str] = Field(default_factory=list)  # Ficha, sin LLM (D-43)
+
+
+class SectorRelacionado(BaseModel):
+    """Sector potencialmente relacionado y el motivo (mapeo tema → sector)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    sector: str
+    motivo: str
+
+
+class BoletinBanca(PaqueteBase):
+    """Boletín de entorno (banca), docs/salidas.md §2. Solo el esquema: la generación es de E2-02."""
+
+    observaciones: list[Oracion] = Field(default_factory=list)  # LLM: hecho o declaración
+    hipotesis_impacto: list[Oracion] = Field(default_factory=list)  # LLM: inferencia o hipótesis
+    sectores: list[SectorRelacionado] = Field(default_factory=list)  # Regla
+    horizonte: Literal["inmediato", "corto plazo", "estructural"] | None = None  # Regla
+    evidencia: list[str] = Field(default_factory=list)  # Ficha
+    preguntas: list[PreguntaInvestigacion] = Field(default_factory=list)  # LLM sobre vacíos
+    aviso: str = ""  # Regla: ``aviso_banca`` de config/restricciones.yaml
