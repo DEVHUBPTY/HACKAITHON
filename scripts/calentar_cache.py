@@ -4,6 +4,7 @@
     poetry run python -m scripts.calentar_cache --grupos GRP-… GRP-…  # solo esos
     poetry run python -m scripts.calentar_cache --verificar           # sin red: qué grupos tienen su borrador completo en la caché
     poetry run python -m scripts.calentar_cache --modalidad banca     # la base debe tener los puntajes de banca (src.puntaje --modalidad banca)
+    poetry run python -m scripts.calentar_cache --etiquetar-prompt    # X64: etiqueta con su prompt las entradas anteriores a X56 (sin LLM ni red)
 
 La base guarda una sola modalidad a la vez (la última corrida de ``src.puntaje``). Una modalidad pedida que la base no tiene se informa
 con ``ERROR:`` y el comando que la prepara, sin traceback ni proveedor; con varias (``--modalidad editorial banca``) se procesa cada una
@@ -100,11 +101,22 @@ def principal(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--base", type=Path, default=RAIZ / "data" / cargar_normalizacion().salida.base_de_datos)
     parser.add_argument("--verificar", action="store_true", help="solo lee la caché (sin red, sin proveedor); sale con 1 si algo falta")
     parser.add_argument("--podar", action="store_true", help="con --verificar: borra las respuestas que ningún grupo verificado usa (prompts o validadores anteriores)")
+    parser.add_argument("--etiquetar-prompt", action="store_true",
+                        help="X64: pone el campo `prompt` a las entradas anteriores a X56, deducido sin ambigüedad (sin LLM, sin red, sin base); no hace nada más")
     parser.add_argument("--refrescar", action="store_true", help="vuelve a llamar al proveedor aunque haya respuesta guardada")
     args = parser.parse_args(argv)
     from src.registro import configurar_logging
 
     configurar_logging()
+    if args.etiquetar_prompt:  # X64: solo lee y reescribe archivos de la caché; no usa la base, el proveedor ni la red
+        cache = CacheLlm()
+        r = cache.etiquetar_prompts()
+        for prompt, n in sorted(r.etiquetadas.items()):
+            print(f"etiquetadas {n:>3}  prompt={prompt}")
+        print(f"{sum(r.etiquetadas.values())} etiquetadas · {r.ya_tenian} ya tenían prompt · {len(r.sin_etiquetar)} sin etiquetar (ambiguas o ilegibles; se conservan tal cual)")
+        for clave in r.sin_etiquetar:
+            print(f"sin etiquetar  {clave}")
+        return 0
     if not args.base.exists():
         print(f"ERROR: no existe {args.base}", file=sys.stderr)
         return 1

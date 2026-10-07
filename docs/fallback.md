@@ -48,6 +48,10 @@ saldo de DeepSeek (D-98, HTTP 402)**; lo ya guardado sigue disponible. Después,
 **Volver a calentar** después de cambiar un prompt, el modelo, la lógica de la ficha o el validador (E1-13): la clave cambia y las respuestas
 viejas dejan de servir (aparecerían como «sin caché»).
 
+`--verificar --podar` solo borra respuestas de los prompts que verificó y que ningún grupo usa; una entrada sin el campo `prompt` nunca se poda.
+Las entradas anteriores a X56 se etiquetaron una vez con `poetry run python -m scripts.calentar_cache --etiquetar-prompt` (sin LLM ni red): ya no
+hace falta volver a calentar para poder podarlas. Úselo también si aparece una entrada sin `prompt` (imprime cuáles no pudo deducir).
+
 ## Verificar sin red (30 minutos antes)
 
 ```bash

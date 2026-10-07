@@ -24,14 +24,14 @@ import logging
 import os
 import socket
 import tempfile
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-from src.configuracion import RAIZ, ConfigCache, cargar_cache, cargar_generacion, cargar_llm, leer_local_env
+from src.configuracion import RAIZ, ConfigCache, ReglaEtiquetadoPrompt, cargar_cache, cargar_generacion, cargar_llm, leer_local_env
 from src.llm.proveedor import ErrorProveedor, Proveedor, UsoLlm
 
 log = logging.getLogger(__name__)
@@ -62,6 +62,34 @@ def clave_de(
     }
     texto = json.dumps(carga, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(texto.encode("utf-8")).hexdigest()
+
+
+@dataclass(frozen=True)
+class ResultadoEtiquetado:
+    """X64: qué hizo ``etiquetar_prompts``: cuántas entradas etiquetó por prompt, cuáles dejó sin etiquetar (por ambiguas o ilegibles) y cuántas ya traían su prompt."""
+
+    etiquetadas: dict[str, int]
+    sin_etiquetar: list[str]
+    ya_tenian: int
+
+
+def _prompts_posibles(datos: Mapping[str, Any], reglas: Sequence[ReglaEtiquetadoPrompt]) -> set[str]:
+    """Los prompts cuyas reglas coinciden con la entrada (versión, claves de la respuesta y fecha de creación)."""
+    try:
+        respuesta = json.loads(datos["respuesta"])
+    except (KeyError, TypeError, ValueError):
+        return set()
+    if not isinstance(respuesta, dict):
+        return set()
+    claves = set(respuesta)
+    creado = datos.get("creado_utc")
+    return {
+        r.prompt
+        for r in reglas
+        if r.version_prompt == datos.get("version_prompt")
+        and claves in [set(c) for c in r.respuestas]
+        and (r.hasta_utc is None or not isinstance(creado, str) or creado < r.hasta_utc)  # sin fecha no se descarta la regla: ambiguo
+    }
 
 
 class CacheLlm:
@@ -114,6 +142,56 @@ class CacheLlm:
             archivo.unlink()
             borradas += 1
         return borradas
+
+    def etiquetar_prompts(self, reglas: Sequence[ReglaEtiquetadoPrompt] | None = None) -> ResultadoEtiquetado:
+        """X64: pone el campo ``prompt`` a las entradas anteriores a X56 SIN llamar al LLM, deduciéndolo de lo que la entrada ya guarda:
+        su ``version_prompt``, las claves de primer nivel de su respuesta y su ``creado_utc`` (reglas de ``config/cache.yaml:etiquetado_prompt``).
+        Solo etiqueta si las reglas que coinciden son de un único prompt; con ninguna coincidencia, con varias o con una respuesta que no es un
+        objeto JSON, la entrada no se toca. Las que ya traen ``prompt`` no se tocan. El resto del archivo queda igual (misma clave, mismo
+        orden, misma respuesta); idempotente."""
+        reglas = list(self.cfg.etiquetado_prompt if reglas is None else reglas)
+        etiquetadas: dict[str, int] = {}
+        sin_etiquetar: list[str] = []
+        ya_tenian = 0
+        for archivo in sorted(self.carpeta.glob("*.json")) if self.carpeta.exists() else []:
+            try:
+                datos = json.loads(archivo.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                sin_etiquetar.append(archivo.stem)
+                continue
+            if not isinstance(datos, dict) or datos.get("clave") != archivo.stem:
+                sin_etiquetar.append(archivo.stem)
+                continue
+            if datos.get("prompt"):
+                ya_tenian += 1
+                continue
+            prompts = _prompts_posibles(datos, reglas)
+            if len(prompts) != 1:
+                sin_etiquetar.append(archivo.stem)
+                continue
+            (prompt,) = prompts
+            nuevo: dict[str, Any] = {}
+            for campo, valor in datos.items():
+                nuevo[campo] = valor
+                if campo == "version_prompt":
+                    nuevo["prompt"] = prompt
+            if "prompt" not in nuevo:  # sin version_prompt no coincide ninguna regla; no se llega aquí, pero nunca se pierde un campo
+                sin_etiquetar.append(archivo.stem)
+                continue
+            self._escribir(archivo.stem, nuevo)
+            etiquetadas[prompt] = etiquetadas.get(prompt, 0) + 1
+        return ResultadoEtiquetado(etiquetadas, sin_etiquetar, ya_tenian)
+
+    def _escribir(self, clave: str, entrada: Mapping[str, Any]) -> None:
+        """Escritura atómica de una entrada completa, con el mismo formato que ``guardar``."""
+        descriptor, nombre = tempfile.mkstemp(dir=self.carpeta, prefix=f"{clave}.", suffix=".tmp")
+        try:
+            with os.fdopen(descriptor, "w", encoding="utf-8") as f:
+                f.write(json.dumps(entrada, ensure_ascii=False, indent=1) + "\n")
+            os.replace(nombre, self._ruta(clave))
+        except BaseException:
+            Path(nombre).unlink(missing_ok=True)
+            raise
 
     def guardar(self, clave: str, respuesta: str, meta: Mapping[str, Any]) -> bool:
         """Guarda la respuesta (escritura atómica), sea o no JSON válido: el reintento de la generación depende de que la primera

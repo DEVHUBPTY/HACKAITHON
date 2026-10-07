@@ -2397,6 +2397,29 @@ class CalentamientoCache(ModeloConfig):
         return v
 
 
+class ReglaEtiquetadoPrompt(ModeloConfig):
+    """X64: cuándo una entrada de la caché sin ``prompt`` se reconoce como de este prompt (ver ``config/cache.yaml``)."""
+
+    prompt: str = Field(min_length=1)
+    version_prompt: str = Field(min_length=1)
+    respuestas: list[list[str]] = Field(min_length=1)
+    hasta_utc: str | None = None
+
+    @field_validator("respuestas")
+    @classmethod
+    def _conjuntos_no_vacios(cls, v: list[list[str]]) -> list[list[str]]:
+        if any(not claves for claves in v):
+            raise ValueError("cada conjunto de claves de `respuestas` necesita al menos una clave")
+        return v
+
+    @field_validator("hasta_utc")
+    @classmethod
+    def _fecha_utc(cls, v: str | None) -> str | None:
+        if v is not None and not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", v):
+            raise ValueError("hasta_utc va como 2026-10-07T03:22:07Z (ISO 8601 UTC, igual que `creado_utc` de la caché)")
+        return v
+
+
 class TextosCache(ModeloConfig):
     sin_cache: str = Field(min_length=1)
     sin_cache_grupo: str = Field(min_length=1)
@@ -2415,6 +2438,7 @@ class ConfigCache(ModeloConfig):
     sondeo_red: SondeoRed
     variable_offline: str = Field(min_length=1)
     calentamiento: CalentamientoCache
+    etiquetado_prompt: list[ReglaEtiquetadoPrompt]
     textos: TextosCache
 
 

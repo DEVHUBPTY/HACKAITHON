@@ -3,6 +3,7 @@
  "proveedor": "deepseek",
  "modelo": "deepseek-flash",
  "version_prompt": "1.2",
+ "prompt": "boletin_banca",
  "version_cache": "1",
  "tokens_entrada": 2649,
  "tokens_salida": 939,

@@ -30,3 +30,23 @@ textos:
   borrador_invalido: "el borrador guardado ya no pasa la validación vigente: hay que volver a calentar la caché (scripts/calentar_cache.py --refrescar)"
   desajuste_proveedor: "la caché se calentó con {calentado} y local.env pide {actual}: la clave incluye proveedor y modelo, así que esos borradores no se usan. Use LLM_PROVIDER=deepseek (y el mismo DEEPSEEK_MODEL) o vuelva a calentar con el proveedor actual."
   sin_red: "no hay red o el proveedor no responde: se muestran solo los borradores guardados en la caché."
+
+# X64 · Entradas anteriores a X56 (sin el campo `prompt`): `calentar_cache --etiquetar-prompt` les pone el prompt SIN llamar al LLM, solo si
+# se deduce sin ambigüedad. Una entrada coincide con una regla si trae su `version_prompt`, su respuesta es un objeto JSON cuyas claves de primer
+# nivel son EXACTAMENTE un conjunto de `respuestas` y (si la regla lo dice) `creado_utc` es anterior a `hasta_utc`. Si coinciden reglas de más de un
+# prompt, la entrada queda sin etiquetar. Los conjuntos de claves son los campos de cada grupo de redacción (src/esquemas.py); las versiones, las del
+# encabezado de cada prompt cuando se calentó la caché.
+etiquetado_prompt:
+  - prompt: afirmaciones_ficha         # paso 1 del paquete editorial y del de investigación
+    version_prompt: "1.3"
+    respuestas: [[afirmaciones]]
+  - prompt: afirmaciones_ficha         # versión anterior: solo para que una entrada «1.2» con `afirmaciones` anterior a la 1.3 sea ambigua (el commit que subió a 1.3 es de 2026-10-06 22:22 hora de Panamá)
+    version_prompt: "1.2"
+    respuestas: [[afirmaciones]]
+    hasta_utc: "2026-10-07T03:22:07Z"
+  - prompt: paquete_editorial          # paso 2: titulos, brief, guion, resumen e investigacion
+    version_prompt: "1.2"
+    respuestas: [[titulo, titulares, copy_digital], [brief, enfoque, preguntas], [guion], [resumen_web], [titulo_trabajo, enfoque, preguntas]]
+  - prompt: boletin_banca              # E2-02: paso 1 (afirmaciones) y paso 2 (el boletín)
+    version_prompt: "1.2"
+    respuestas: [[afirmaciones], [observaciones, hipotesis_impacto, preguntas]]
