@@ -123,12 +123,12 @@ def _gdelt(titulo: str) -> limpieza.Resultado:
 @pytest.mark.parametrize(
     "titulo",
     [
-        # comercio marítimo y de combustibles que pasa por el Canal o abastece a Panamá (D-84: «rutas marítimas»)
-        "Trump threat to ban diesel exports sets off global alarms",
+        # comercio marítimo y de combustibles en una ruta que pasa por el Canal (D-84: «rutas marítimas»); X54: con ancla
         "Exportaciones chinas sostienen la demanda de carga contenerizada pese a la debilidad de EE. UU.",
         "US LNG Exports Increase in September, Europe Outbids Asia for Cargoes",   # etiqueta humana: logística, regional
         "Suben los fletes marítimos entre Asia y la costa este de EE. UU.",
-        "Navieras desvían portacontenedores por la crisis del mar Rojo",
+        "Navieras desvían portacontenedores al Canal de Suez",
+        "US crude exports to Asia rise",                                          # «crude» como «crudo» (X54)
     ],
 )
 def test_x44_el_comercio_maritimo_y_de_combustibles_es_regional_no_ruido(titulo: str) -> None:
@@ -274,3 +274,21 @@ def test_x53_palabras_sueltas_ambiguas_no_respaldan_el_subtema(subtema: str, tit
 )
 def test_x53_con_contexto_las_mismas_palabras_si_respaldan(subtema: str, titular: str, tema: str) -> None:
     assert decidir(subtema, 0.001, titular, tema) == (subtema, "lexico")
+
+
+# ------------------------------------------------------------------ X54 · las reglas regionales se quedan dentro de D-84
+
+
+@pytest.mark.parametrize(
+    "titulo",
+    [
+        "Police seize cocaine in containers at Rotterdam",
+        "India fuel imports hit record",
+        "Germany imports more LNG from Qatar",
+        "Brazil soybean cargoes delayed at Santos",
+        "Nigeria boosts crude exports",
+    ],
+)
+def test_x54_comercio_maritimo_o_de_combustibles_sin_ancla_de_d84_sigue_siendo_ruido(titulo: str) -> None:
+    r = _gdelt(titulo)
+    assert (r.motivo_ruido, r.alcance_regional) == ("no_es_panama", False)
