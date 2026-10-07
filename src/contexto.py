@@ -5,10 +5,9 @@ Cada grupo (``GRP-``) se vincula con el indicador que le corresponde **por subte
 
 * **Subtema:** el subtema más cercano dentro del tema asignado al grupo (método B de ``src/clasificacion.py``, tabla
   ``similitud_tema``), aunque el método activo sea el A. Voto de los titulares del grupo; desempata la suma de similitudes.
-  **Solo si** lo respalda un criterio de ``vinculos.subtema.criterios``: un titular nombra un término del subtema
-  (``terminos_por_subtema``, criterio ``lexico``) o, si se activa, el margen promedio de los titulares alcanza
-  ``margen_minimo`` (criterio ``margen``, D-92; desde E1-10c no basta solo). Si un titular nombra otro subtema del mismo
-  tema, el subtema es ambiguo. Sin respaldo, el grupo queda sin subtema y recibe el vínculo por tema o ``tema_sin_indicador``.
+  **Solo si** lo respalda un criterio de ``vinculos.subtema.criterios``: el único subtema del tema que nombran los titulares
+  (``terminos_por_subtema``, criterio ``lexico``, X53: aunque no sea el más cercano) o, si se activa, el más cercano con margen
+  ``margen_minimo`` (criterio ``margen``, D-92; inactivo desde E1-10c). Si los titulares nombran dos subtemas del tema, es ambiguo. Sin respaldo, el grupo queda sin subtema y recibe el vínculo por tema o ``tema_sin_indicador``.
 * **Vínculo:** primero ``vinculos`` (por subtema), después ``vinculos_por_tema``; si no hay, ``tema_sin_indicador``.
   Un indicador sin ningún valor no nulo de Panamá es ``sin_dato_en_periodo``.
 * **Panamá:** el último año con valor no nulo, declarado en la limitación junto con los años posteriores sin valor.
@@ -103,6 +102,29 @@ def menciona_termino(titular: str, terminos: Sequence[str]) -> bool:
     return any(re.search(r"(?<!\w)" + re.escape(_normalizar(t)) + r"(?!\w)", texto) for t in terminos if t.strip())
 
 
+def subtemas_nombrados(titulares: Sequence[str], subtemas: Sequence[str], terminos: Mapping[str, Sequence[str]]) -> set[str]:
+    """Subtemas de ``subtemas`` que algún titular nombra (palabra completa, sin mayúsculas ni acentos).
+
+    X53: una coincidencia contenida dentro de otra más larga del mismo titular no cuenta («inversión» dentro de «grado de
+    inversión» no nombra el subtema de inversión).
+    """
+    nombrados: set[str] = set()
+    for titular in titulares:
+        texto = _normalizar(titular)
+        tramos = [
+            (m.start(), m.end(), s)
+            for s in subtemas
+            for t in terminos.get(s, [])
+            if t.strip()
+            for m in re.finditer(r"(?<!\w)" + re.escape(_normalizar(t)) + r"(?!\w)", texto)
+        ]
+        for ini, fin, s in tramos:
+            contenido = any(i <= ini and fin <= f and (f - i) > (fin - ini) for i, f, _ in tramos)
+            if not contenido:
+                nombrados.add(s)
+    return nombrados
+
+
 def decidir_subtema(
     candidatos: Sequence[tuple[str, float, float | None]],
     titulares: Sequence[str],
@@ -111,29 +133,30 @@ def decidir_subtema(
 ) -> tuple[str | None, str | None]:
     """``(subtema, criterio)`` del grupo, o ``(None, None)`` si el subtema es dudoso (D-92, E1-10c).
 
-    El subtema es el de ``subtema_del_grupo``. Si algún titular nombra un término de **otro** subtema de
-    ``subtemas_del_tema`` (el mismo tema), el subtema es ambiguo y no se afirma (X41: «exdirector de la CSS» aprehendido
-    nombra salud y seguridad). Si no, se acepta por el primero de ``cfg.criterios`` que lo respalde:
+    Se buscan en los titulares los términos (``terminos_por_subtema``) de los subtemas de ``subtemas_del_tema`` (el tema del
+    grupo); sin tema conocido, solo los del subtema más cercano (``subtema_del_grupo``). Si los titulares nombran **dos o más**
+    subtemas, el subtema es ambiguo y no se afirma (X41: «exdirector de la CSS» aprehendido nombra salud y seguridad). Si no,
+    se acepta por el primero de ``cfg.criterios`` que lo respalde:
 
-    * ``margen``: el margen promedio de los titulares (1.º − 2.º subtema del tema asignado) alcanza ``margen_minimo``.
-      Un titular sin margen guardado (base anterior a D-92) no lo respalda.
-    * ``lexico``: algún titular del grupo contiene un término de ``terminos_por_subtema`` de ese subtema.
-
-    E1-10c (X41) deja solo ``lexico`` en la configuración: el margen medía el parecido con palabras sueltas del
-    prototipo («obras», «La Chorrera», «CSS»), no el subtema.
+    * ``lexico`` (X53): el **único** subtema nombrado, sea o no el más cercano por embeddings («Minsa: vacunación…» → salud
+      pública aunque el más cercano sea agua potable).
+    * ``margen`` (D-92, inactivo desde E1-10c): el más cercano, si el margen promedio de los titulares (1.º − 2.º subtema del
+      tema) alcanza ``margen_minimo`` y ningún titular nombra otro subtema. Un titular sin margen guardado no lo respalda.
     """
     elegido = subtema_del_grupo([(s, sim) for s, sim, _ in candidatos])
-    if elegido is None:
-        return None, None
-    rivales = [s for s in subtemas_del_tema if s != elegido]
-    if any(menciona_termino(t, cfg.terminos_por_subtema.get(s, [])) for s in rivales for t in titulares):
+    universo = list(subtemas_del_tema) or ([elegido] if elegido else [])
+    nombrados = subtemas_nombrados(titulares, universo, cfg.terminos_por_subtema)
+    if len(nombrados) > 1:
         return None, None
     margenes = [m for _, _, m in candidatos]
     for criterio in cfg.criterios:
-        if criterio == CRITERIO_MARGEN and all(m is not None for m in margenes) and sum(margenes) / len(margenes) >= cfg.margen_minimo:   # type: ignore[arg-type]
+        if criterio == CRITERIO_LEXICO and nombrados:
+            return next(iter(nombrados)), CRITERIO_LEXICO
+        if (
+            criterio == CRITERIO_MARGEN and elegido is not None and nombrados <= {elegido}
+            and all(m is not None for m in margenes) and sum(margenes) / len(margenes) >= cfg.margen_minimo   # type: ignore[arg-type]
+        ):
             return elegido, CRITERIO_MARGEN
-        if criterio == CRITERIO_LEXICO and any(menciona_termino(t, cfg.terminos_por_subtema.get(elegido, [])) for t in titulares):
-            return elegido, CRITERIO_LEXICO
     return None, None
 
 

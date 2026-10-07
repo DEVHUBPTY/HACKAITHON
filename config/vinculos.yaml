@@ -55,7 +55,9 @@ subtema:                            # D-92 (enmienda a E1-09) y E1-10c (X41): el
     hoteleria: [hotel, hoteles, hotelero, hotelera, hoteleria, ocupacion hotelera]
     aviacion_pasajeros: [vuelo, vuelos, aerolinea, aerolineas, pasajeros, conectividad aerea, ruta aerea, rutas aereas]
     destinos_promocion: [destino turistico, destinos turisticos, promocion turistica]
-    agua_potable: [agua potable, agua, suministro de agua, idaan, acueducto, potabilizadora]
+    # X53: «agua» suelta no (el agua de una crecida no es el servicio): solo frases que nombran el suministro.
+    agua_potable: [agua potable, sin agua, suministro de agua, servicio de agua, corte de agua, cortes de agua, idaan, acueducto,
+                   potabilizadora]
     # «luz» suelta no («dar a luz», «salir a la luz»): solo frases que nombran el servicio.
     electricidad: [electricidad, energia electrica, apagon, apagones, sin luz, corte de luz, cortes de luz, tarifa electrica]
     transporte_publico: [transporte publico, metro, mibus, metrobus, autobus, autobuses, buses]
@@ -74,10 +76,14 @@ subtema:                            # D-92 (enmienda a E1-09) y E1-10c (X41): el
     inundaciones_lluvias: [inundacion, inundaciones, inundado, inundados, lluvia, lluvias, aguacero, aguaceros, crecida,
                            desbordamiento]
     deslizamientos: [deslizamiento, deslizamientos, derrumbe, derrumbes, alud]
-    sequia_nino: [sequia, sequias, seca, el nino, la nina, fenomeno de el nino]
+    sequia_nino: [sequia, sequias, el nino, la nina, fenomeno de el nino]   # X53: «seca» no está en la guía
     incendios_forestales: [incendio forestal, incendios forestales]
-    alertas_proteccion_civil: [sinaproc, proteccion civil, alerta, alertas, aviso de prevencion]
-    leyes_decretos: [ley, leyes, decreto, decretos, decreto ejecutivo, proyecto de ley, gaceta oficial]
+    # X53: «alerta» suelta no («Minsa enciende alertas»): solo Protección Civil o una alerta con su color.
+    alertas_proteccion_civil: [sinaproc, proteccion civil, alerta verde, alerta amarilla, alerta naranja, alerta roja,
+                               aviso de prevencion]
+    # X53: «ley» suelta no («cumplir la ley de tránsito»): solo una norma en trámite o promulgada.
+    leyes_decretos: [leyes, decreto, decretos, decreto ejecutivo, proyecto de ley, anteproyecto de ley, nueva ley,
+                     sanciona la ley, aprueba la ley, gaceta oficial]
     resoluciones_entes: [resolucion, resoluciones, ente regulador, regulador, asep, superintendencia]
     reformas: [reforma, reformas]
     listas_internacionales: [lista gris, listas grises, lista negra, listas negras, gafi, lista fiscal, paraisos fiscales]
