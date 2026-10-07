@@ -1,0 +1,32 @@
+# E1-14 · Caché de respuestas del LLM y modo offline (T10). Cada número está en docs/parametros.md.
+version: "1.0"
+
+# Cambiar este valor invalida toda la caché (p. ej. tras integrar un validador o un prompt nuevo): entra en la clave de cada respuesta.
+version_cache: "1"
+
+# Proveedor con que se lee la caché cuando LLM_PROVIDER está vacío o falta en local.env (D-94, D-95): leerla no debe depender de que
+# local.env esté completo. Si LLM_PROVIDER pide otro, se respeta y la pantalla explica el desajuste con la caché calentada.
+proveedor_por_defecto: deepseek
+
+ruta: data/cache_llm           # una respuesta por archivo <clave>.json; contiene borradores generados, nunca claves ni prompts
+
+# Antes de llamar al proveedor (solo con solo_cache=False) se comprueba que haya red: una conexión corta a su host.
+sondeo_red:
+  timeout_segundos: 2
+  puerto: 443
+
+# Con esta variable de local.env en «true» no se llama nunca al proveedor, aunque haya red (ensayo del modo offline).
+variable_offline: HACKIATHON_OFFLINE
+
+# scripts/calentar_cache.py: qué grupos se generan por defecto para que la demo funcione sin red.
+calentamiento:
+  top_bandeja: 10                  # los N primeros de la bandeja de la modalidad
+  guion_demo: docs/demo.md         # además, todo GRP-… que nombre el guion de la demo
+  patron_id_grupo: 'GRP-[0-9a-f]{10}'
+
+textos:
+  sin_cache: "no hay borrador en caché para este grupo: la interfaz no espera al modelo ni usa la red."
+  sin_cache_grupo: "no hay borrador en caché para este grupo de secciones (se genera bajo demanda con red: scripts/calentar_cache.py)"
+  borrador_invalido: "el borrador guardado ya no pasa la validación vigente: hay que volver a calentar la caché (scripts/calentar_cache.py --refrescar)"
+  desajuste_proveedor: "la caché se calentó con {calentado} y local.env pide {actual}: la clave incluye proveedor y modelo, así que esos borradores no se usan. Use LLM_PROVIDER=deepseek (y el mismo DEEPSEEK_MODEL) o vuelva a calentar con el proveedor actual."
+  sin_red: "no hay red o el proveedor no responde: se muestran solo los borradores guardados en la caché."

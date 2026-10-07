@@ -1,0 +1,11 @@
+{
+ "clave": "b878d72836b4f549adde5b4e23e5d58ccc1869777ed4dda7906b193917ba7973",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1668,
+ "tokens_salida": 407,
+ "creado_utc": "2026-10-07T03:10:44Z",
+ "respuesta": "{\"afirmaciones\": [{\"id\": \"A1\", \"tipo\": \"declaración\", \"texto\": \"TVN Panamá reporta que en Coclé se seca el campo, bajo el rótulo \\\"Contenido Exclusivo\\\".\", \"citas\": [{\"id\": \"NOT-f2f4a261fd\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A2\", \"tipo\": \"hecho\", \"texto\": \"El grupo de registros sobre este tema reúne 1 titular de 1 medio.\", \"citas\": [{\"id\": \"GRP-45aebb27b2\", \"campo\": \"n_titulares\"}, {\"id\": \"GRP-45aebb27b2\", \"campo\": \"n_medios\"}]}, {\"id\": \"A3\", \"tipo\": \"hecho\", \"texto\": \"La evidencia disponible corresponde a 1 procedencia independiente estimada, ya que los titulares que replican a una misma fuente cuentan como una.\", \"citas\": [{\"id\": \"GRP-45aebb27b2\", \"campo\": \"n_procedencias\"}]}, {\"id\": \"A4\", \"tipo\": \"inferencia\", \"texto\": \"Con una sola procedencia independiente y sin dato oficial vinculado, la información disponible es limitada para dimensionar el alcance del problema reportado.\", \"base\": [\"A2\", \"A3\"], \"citas\": []}, {\"id\": \"A5\", \"tipo\": \"hipótesis\", \"texto\": \"Si la sequía del campo en Coclé afecta la producción agrícola local, podría impactar los ingresos y el abastecimiento de las comunidades de la zona.\", \"base\": [\"A1\"], \"citas\": []}]}"
+}

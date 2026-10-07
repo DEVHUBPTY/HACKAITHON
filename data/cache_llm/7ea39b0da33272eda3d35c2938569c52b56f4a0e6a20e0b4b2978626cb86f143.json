@@ -1,0 +1,11 @@
+{
+ "clave": "7ea39b0da33272eda3d35c2938569c52b56f4a0e6a20e0b4b2978626cb86f143",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1684,
+ "tokens_salida": 430,
+ "creado_utc": "2026-10-07T03:10:49Z",
+ "respuesta": "{\"afirmaciones\": [{\"id\": \"A1\", \"tipo\": \"declaración\", \"texto\": \"TVN Panamá reporta que Panamá reforzará su presencia marítima en Vietnam con una nueva oficina de servicio técnico de la AMP en Ho Chi Minh.\", \"citas\": [{\"id\": \"NOT-f7f8b492d1\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A2\", \"tipo\": \"hecho\", \"texto\": \"El grupo de registros sobre este tema reúne 1 titular de 1 medio.\", \"citas\": [{\"id\": \"GRP-f4a44182b1\", \"campo\": \"n_titulares\"}, {\"id\": \"GRP-f4a44182b1\", \"campo\": \"n_medios\"}]}, {\"id\": \"A3\", \"tipo\": \"hecho\", \"texto\": \"La evidencia estima 1 procedencia independiente para este tema.\", \"citas\": [{\"id\": \"GRP-f4a44182b1\", \"campo\": \"n_procedencias\"}]}, {\"id\": \"A4\", \"tipo\": \"inferencia\", \"texto\": \"La cobertura disponible sobre este tema es limitada, porque proviene de un único medio y de una sola procedencia estimada, lo que restringe la verificación independiente de lo reportado.\", \"base\": [\"A2\", \"A3\"], \"citas\": []}, {\"id\": \"A5\", \"tipo\": \"hipótesis\", \"texto\": \"Si la apertura de una oficina de servicio técnico de la AMP en Vietnam se concreta, podría interesar a la población panameña vinculada a actividades marítimas y de servicios técnicos, aunque la evidencia disponible no permite confirmarlo.\", \"base\": [\"A1\", \"A4\"], \"citas\": []}]}"
+}

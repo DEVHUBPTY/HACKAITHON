@@ -53,6 +53,27 @@ generacion:                         # punto de enganche con E1-12 (src/generacio
   funcion: generar_paquete          # contrato: funcion(id_grupo, modalidad, *, solo_cache=True) -> mapa | modelo pydantic | None
   solo_cache: true                  # la interfaz nunca espera al LLM: usa borradores de caché (sin red)
 
+paquete:                            # etiquetas de los campos del paquete (docs/salidas.md) en la pantalla Paquete
+  etiquetas:
+    marca: "Marca"
+    id_caso: "Caso"
+    version: "Versión de la ficha"
+    leyenda_alcance: "Alcance"
+    accion: "Acción recomendada"
+    forzado: "Paquete completo forzado por una persona"
+    vacios: "Vacíos y secciones sin redactar"
+    afirmaciones: "Afirmaciones validadas"
+    titulo: "Título"
+    titulares: "Titulares"
+    enfoque: "Enfoque"
+    brief: "Brief"
+    preguntas: "Preguntas de investigación"
+    fuentes_verificaciones: "Fuentes y verificaciones pendientes"
+    guion: "Guion"
+    resumen_web: "Resumen web"
+    copy_digital: "Copy digital"
+    titulo_trabajo: "Título de trabajo"
+
 revision:                           # los cinco estados del reto (sección 8); E1-16 define las transiciones y el registro
   estados: ["nuevo", "en revisión", "requiere evidencia", "aprobado como borrador", "descartado"]
   estado_inicial: "nuevo"

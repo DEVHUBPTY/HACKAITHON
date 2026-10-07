@@ -1,0 +1,11 @@
+{
+ "clave": "d589e9ee5cee24de4fb30d9c4175ecdedd06c21ae9a50087acdb2b87748efee1",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.1",
+ "version_cache": "1",
+ "tokens_entrada": 1993,
+ "tokens_salida": 304,
+ "creado_utc": "2026-10-07T03:13:15Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"Medios reportan que El Niño profundiza riesgos económicos en América Latina\", \"afirmaciones\": [\"A1\", \"A2\", \"A3\", \"A4\", \"A5\", \"A6\"]}, \"enfoque\": [{\"texto\": \"Si los 20 titulares de 18 medios se reducen a una sola procedencia independiente, es probable que la cobertura replique un mismo origen y no aporte verificación adicional.\", \"afirmaciones\": [\"A7\", \"A8\"]}, {\"texto\": \"Podría tratarse de un tema sin indicador oficial asociado y con subtema aún no determinado.\", \"afirmaciones\": [\"A7\"]}], \"preguntas\": [{\"texto\": \"¿Qué fuente original replican los 20 titulares y cómo se relaciona con la única procedencia independiente estimada?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Existe algún dato oficial anual que permita vincular la intensificación de El Niño con los riesgos económicos reportados en América Latina?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Cuáles son los medios y las fechas de publicación de los 20 titulares del grupo?\", \"vacio\": \"medios_o_fechas_desconocidos\"}]}"
+}

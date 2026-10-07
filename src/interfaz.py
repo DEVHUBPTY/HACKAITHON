@@ -29,6 +29,7 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 from src import db
+from src.cache import SinBorrador
 from src.carga import intervalo_wilson
 from src.configuracion import (
     RAIZ,
@@ -429,7 +430,7 @@ def cargar_generador(cfg: ConfigInterfaz | None = None) -> Callable[..., Any] | 
 
     «Ausente» = el módulo no existe o no define la función. Cualquier otro fallo al importar (una dependencia interna que no está,
     un error de sintaxis) lanza ``ErrorDeIntegracion``: se registra y se dice, no se confunde con que falte.
-    TODO(E1-12): al integrar esa tarea, si la función se llama distinto, se agrega el nombre al ``Literal`` de ``GeneracionInterfaz``.
+    Integrada en E1-14: ``src.generacion.generar_paquete`` (el nombre está fijado en el ``Literal`` de ``GeneracionInterfaz``).
     Contrato esperado: ``funcion(id_grupo, modalidad, *, solo_cache=True) -> mapa | modelo pydantic | None``.
     """
     g = (cfg or cargar_interfaz()).generacion
@@ -447,7 +448,9 @@ def cargar_generador(cfg: ConfigInterfaz | None = None) -> Callable[..., Any] | 
     return funcion if callable(funcion) else None
 
 
-def obtener_paquete(id_grupo: str, modalidad: str, cfg: ConfigInterfaz | None = None, generador: Callable[..., Any] | None = None) -> EstadoPaquete:
+def obtener_paquete(
+    id_grupo: str, modalidad: str, cfg: ConfigInterfaz | None = None, generador: Callable[..., Any] | None = None, ruta_base: Path | None = None
+) -> EstadoPaquete:
     """Pide el borrador al generador **solo desde caché** (``solo_cache``): la interfaz nunca espera al modelo ni usa la red.
 
     Estados: ``disponible``; ``sin_integrar`` (el módulo o la función no existen); ``error_integracion`` (falla al importar o el
@@ -461,10 +464,13 @@ def obtener_paquete(id_grupo: str, modalidad: str, cfg: ConfigInterfaz | None = 
     if generador is None:
         return EstadoPaquete("sin_integrar", motivo=cfg.textos.sin_borrador)
     try:
-        paquete = generador(id_grupo, modalidad, solo_cache=cfg.generacion.solo_cache)
+        extra = {} if ruta_base is None else {"base": ruta_base}  # la base que muestra la interfaz (snapshot o demo) es la de la ficha
+        paquete = generador(id_grupo, modalidad, solo_cache=cfg.generacion.solo_cache, **extra)
     except TypeError as exc:
         logger.exception("El contrato de la generación no coincide")
         return EstadoPaquete("error_integracion", motivo=f"Error de integración con la generación: el contrato no coincide ({exc}); se esperaba solo_cache=")
+    except SinBorrador as exc:  # sin caché o acción que no genera borrador (E1-14): mensaje honesto, sin LLM ni red
+        return EstadoPaquete("sin_cache", motivo=str(exc))
     except Exception as exc:  # noqa: BLE001 - un fallo del LLM o de la red nunca debe romper la pantalla
         logger.warning("La generación falló: %s", type(exc).__name__)
         return EstadoPaquete("sin_cache", motivo=f"{cfg.textos.borrador_no_listo} ({type(exc).__name__})")
@@ -473,21 +479,46 @@ def obtener_paquete(id_grupo: str, modalidad: str, cfg: ConfigInterfaz | None = 
     return EstadoPaquete("disponible", paquete)
 
 
-def secciones_de_paquete(paquete: Any) -> list[tuple[str, list[str]]]:
-    """Aplana un paquete (mapa o modelo pydantic) en ``(título, párrafos)``: genérico hasta que E1-12 fije su esquema."""
+def _texto_de_elemento(x: Any) -> str:
+    """Un elemento de lista del paquete como texto: oración con sus afirmaciones, vacío con su motivo, afirmación con su tipo."""
+    if isinstance(x, str):
+        return x
+    if isinstance(x, Mapping):
+        if "tipo" in x and "texto" in x and "id" in x:  # afirmación validada
+            citas = ", ".join(f"{c.get('id')} · {c.get('campo')}" for c in x.get("citas", []))
+            return f"{x['id']} [{x['tipo']}] {x['texto']}" + (f" ({citas})" if citas else "")
+        if "texto" in x and "vacio" in x:  # pregunta de investigación
+            return f"{x['texto']} (vacío: {x['vacio']})"
+        if "texto" in x:  # oración: se muestran las afirmaciones en que se apoya
+            apoyo = ", ".join(x.get("afirmaciones") or [])
+            parte = f"{x['parte']}: " if x.get("parte") else ""
+            return f"{parte}{x['texto']}" + (f" [{apoyo}]" if apoyo else "")
+        if "motivo" in x and "referencia" in x:  # vacío
+            return f"{x['referencia']}: {x['motivo']}"
+    return json.dumps(x, ensure_ascii=False)
+
+
+def secciones_de_paquete(paquete: Any, etiquetas: Mapping[str, str] | None = None) -> list[tuple[str, list[str]]]:
+    """Aplana un paquete (mapa o modelo pydantic) en ``(título, párrafos)``: oraciones con sus afirmaciones, vacíos con su motivo."""
     datos = paquete.model_dump(mode="json") if hasattr(paquete, "model_dump") else dict(paquete)
     salida: list[tuple[str, list[str]]] = []
     for clave, valor in datos.items():
-        if isinstance(valor, str):
+        if isinstance(valor, bool):
+            parrafos = ["Sí" if valor else "No"]
+        elif isinstance(valor, str):
             parrafos = [valor]
         elif isinstance(valor, (list, tuple)):
-            parrafos = [x if isinstance(x, str) else json.dumps(x, ensure_ascii=False) for x in valor]
+            parrafos = [_texto_de_elemento(x) for x in valor]
+        elif isinstance(valor, Mapping) and "texto" in valor:
+            parrafos = [_texto_de_elemento(valor)]
         elif isinstance(valor, Mapping):
             parrafos = [f"{k}: {v}" for k, v in valor.items()]
+        elif valor is None:
+            parrafos = []
         else:
             parrafos = [str(valor)]
         if parrafos:
-            salida.append((clave.replace("_", " ").capitalize(), parrafos))
+            salida.append(((etiquetas or {}).get(clave) or clave.replace("_", " ").capitalize(), parrafos))
     return salida
 
 

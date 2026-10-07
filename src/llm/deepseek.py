@@ -7,15 +7,24 @@ encabezado ``Authorization`` y nunca se registra ni aparece en los errores (D-69
 
 from __future__ import annotations
 
+import logging
 import time
 from typing import Any
 
 import requests
 
 from src.configuracion import ConfigGeneracionBorrador, ConfigLlm
+from src.llm.costo import SaldoAgotado
 from src.llm.ollama import SesionHttp
 from src.llm.proveedor import ErrorProveedor, UsoLlm, registrar_uso
 from src.registro import redactar
+
+log = logging.getLogger(__name__)
+HTTP_SALDO_INSUFICIENTE = 402  # «Insufficient Balance» en la API de DeepSeek
+MENSAJE_SALDO = (
+    "Se agotó el saldo de la cuenta de DeepSeek (HTTP 402, «Insufficient Balance»): no se generan más borradores hasta que una persona "
+    "recargue la cuenta. Los borradores ya guardados en la caché siguen disponibles."
+)
 
 
 class ProveedorDeepSeek:
@@ -50,9 +59,15 @@ class ProveedorDeepSeek:
                 headers={"Authorization": f"Bearer {self._clave}", "Content-Type": "application/json"},
                 timeout=d.timeout_segundos,
             )
+            if getattr(resp, "status_code", None) == HTTP_SALDO_INSUFICIENTE:
+                log.error("DeepSeek: saldo agotado (HTTP 402); la generación se detiene")
+                raise SaldoAgotado(MENSAJE_SALDO)
             resp.raise_for_status()
             datos = resp.json()
         except (requests.RequestException, ValueError) as exc:
+            if getattr(getattr(exc, "response", None), "status_code", None) == HTTP_SALDO_INSUFICIENTE:
+                log.error("DeepSeek: saldo agotado (HTTP 402); la generación se detiene")
+                raise SaldoAgotado(MENSAJE_SALDO) from None
             raise ErrorProveedor(redactar(f"DeepSeek: {exc}").replace(self._clave, "[REDACTADO]")) from exc
         try:
             contenido = datos["choices"][0]["message"]["content"]
