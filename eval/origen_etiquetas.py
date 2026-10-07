@@ -30,6 +30,7 @@ ASISTENTE_PROVISIONAL = "asistente_provisional"
 ORIGENES = (HUMANO, ASISTENTE_PROVISIONAL)
 SOLO_HUMANOS = (HUMANO,)
 ETIQUETAS_CONSOLIDADO = RAIZ / "eval" / "etiquetas.csv"      # el consolidado versionado: aquí la columna es obligatoria
+FIRMAS_PROVISIONALES = ("asistente provisional", "provisionalmente por el asistente")     # cómo se firma una fila provisional
 AVISO_PROVISIONAL = (
     "PROVISIONAL (D-101). Usa etiquetas que propuso un agente y aprobó provisionalmente el asistente: riesgo de circularidad, "
     "pendientes de la revisión humana C-09; no son una verdad de referencia."
@@ -73,7 +74,7 @@ def marcar(informe: dict[str, Any], origenes: Iterable[str] | str) -> dict[str, 
 def columna_de_origen(encabezados: Iterable[str]) -> str | None:
     """El encabezado real de la columna de origen, o ``None`` si no hay. Uno parecido pero distinto, o repetido, es error."""
     exactos, parecidos = [], []
-    for nombre in dict.fromkeys(e for e in encabezados if e is not None):
+    for nombre in (e for e in encabezados if e is not None):      # sin quitar repetidos: dos columnas iguales son un error
         if nombre.strip().casefold() == COLUMNA_ORIGEN:
             exactos.append(nombre)
         elif _esqueleto(nombre) == COLUMNA_ORIGEN:
@@ -81,7 +82,7 @@ def columna_de_origen(encabezados: Iterable[str]) -> str | None:
     if parecidos:
         raise ValueError(f"encabezado {parecidos[0]!r} se parece a {COLUMNA_ORIGEN!r} pero no es igual: corregir el nombre de la columna")
     if len(exactos) > 1:
-        raise ValueError(f"la columna {COLUMNA_ORIGEN!r} aparece más de una vez: {exactos}")
+        raise ValueError(f"la columna {COLUMNA_ORIGEN!r} aparece más de una vez: {exactos} (el lector se quedaría con la última)")
     return exactos[0] if exactos else None
 
 
@@ -106,8 +107,13 @@ def leer_filas(ruta: Path, origenes: Iterable[str] | str = SOLO_HUMANOS) -> list
                 raise ValueError(f"{ruta.name} no tiene la columna {COLUMNA_ORIGEN!r}: no se pueden pedir etiquetas provisionales")
             if ruta.resolve() == ETIQUETAS_CONSOLIDADO.resolve():
                 raise ValueError(f"{ruta.name} no tiene la columna {COLUMNA_ORIGEN!r}: sin ella no se sabe cuáles filas son provisionales")
+        todas = list(lector)
+        if columna is None:
+            firmadas = [(f.get("id_noticia") or "?").strip() for f in todas if any(m in " ".join((f.get("etiquetado_por") or "").casefold().split()) for m in FIRMAS_PROVISIONALES)]
+            if firmadas:
+                raise ValueError(f"{ruta.name} no tiene la columna {COLUMNA_ORIGEN!r} pero {len(firmadas)} filas se firman como aprobación provisional del asistente (D-101), p. ej. {firmadas[0]}")
         filas: list[dict[str, str]] = []
-        for fila in lector:
+        for fila in todas:
             origen = normalizar_origen(fila.get(columna)) if columna is not None else HUMANO
             if origen not in ORIGENES:
                 raise ValueError(f"{(fila.get('id_noticia') or '?').strip()}: {COLUMNA_ORIGEN} {origen!r} desconocido (use {' o '.join(ORIGENES)})")

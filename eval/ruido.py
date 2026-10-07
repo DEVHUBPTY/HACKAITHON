@@ -28,6 +28,18 @@ SIN_RUIDO = {"", "ninguno", "ninguna", "no", "false", "0", "none"}
 CODIGO_SIN_ETIQUETAS = 2
 
 
+class ConProcedencia(dict):  # type: ignore[type-arg]
+    """Un ``dict`` de etiquetas que lleva consigo de qué procedencia son (``origenes``), para que el informe se marque solo."""
+
+    origenes: tuple[str, ...] = oe.SOLO_HUMANOS
+
+
+def _con_procedencia(datos: dict[Any, Any], filas: list[dict[str, str]]) -> ConProcedencia:
+    d = ConProcedencia(datos)
+    d.origenes = tuple(o for o in oe.ORIGENES if any(f[oe.COLUMNA_ORIGEN] == o for f in filas))
+    return d
+
+
 def _texto_proporcion(k: int, n: int, z: float) -> str:
     ic = intervalo_wilson(k, n, z)
     if n == 0 or ic is None:
@@ -45,15 +57,20 @@ def leer_etiquetas(ruta: Path, columna: str, origenes: Iterable[str] = oe.SOLO_H
     if "id_noticia" not in campos or columna not in campos:
         raise KeyError(f"{ruta.name} no tiene las columnas id_noticia y {columna!r} (tiene: {campos})")
     etiquetas: dict[str, str | None] = {}
-    for fila in oe.leer_filas(ruta, origenes):
+    filas = oe.leer_filas(ruta, origenes)
+    for fila in filas:
         valor = (fila[columna] or "").strip()
         etiquetas[fila["id_noticia"].strip()] = None if valor.casefold() in SIN_RUIDO else valor
-    return etiquetas
+    return _con_procedencia(etiquetas, filas)
 
 
-def _marca(origenes: Iterable[str] | str) -> list[str]:
-    """La línea PROVISIONAL (D-101) que abre un informe hecho con etiquetas provisionales; vacía si son solo humanas."""
-    return [oe.AVISO_PROVISIONAL] if oe.usa_provisionales(origenes) else []
+def _marca(datos: Any, origenes: Iterable[str] | str = oe.SOLO_HUMANOS) -> list[str]:
+    """La línea PROVISIONAL (D-101) que abre un informe con etiquetas provisionales; vacía si son solo humanas.
+
+    Se decide por la procedencia que **traen los datos** (``ConProcedencia``) o por ``origenes`` si el llamador los declara.
+    """
+    declarados = (origenes,) if isinstance(origenes, str) else tuple(origenes)
+    return [oe.AVISO_PROVISIONAL] if oe.usa_provisionales((*declarados, *getattr(datos, "origenes", ()))) else []
 
 
 def medir(
@@ -64,7 +81,7 @@ def medir(
     ``origenes`` declara de dónde salen las etiquetas: con provisionales (D-101) el informe abre con la marca PROVISIONAL.
     """
     comunes = sorted(set(etiquetas) & set(predichas))
-    lineas = [*_marca(origenes), f"Titulares etiquetados presentes en la base: {len(comunes)} de {len(etiquetas)} etiquetados"]
+    lineas = [*_marca(etiquetas, origenes), f"Titulares etiquetados presentes en la base: {len(comunes)} de {len(etiquetas)} etiquetados"]
     humanos = {i: etiquetas[i] is not None for i in comunes}
     modelo = {i: predichas[i] is not None for i in comunes}
     tp = sum(1 for i in comunes if humanos[i] and modelo[i])
@@ -86,7 +103,8 @@ def leer_regional(
     with ruta.open(encoding="utf-8", newline="") as f:
         if columna not in (csv.DictReader(f).fieldnames or []):
             return None
-    return {fila["id_noticia"].strip(): (fila[columna] or "").strip().casefold() in SI_REGIONAL for fila in oe.leer_filas(ruta, origenes)}
+    filas = oe.leer_filas(ruta, origenes)
+    return _con_procedencia({fila["id_noticia"].strip(): (fila[columna] or "").strip().casefold() in SI_REGIONAL for fila in filas}, filas)
 
 
 def medir_regional(
@@ -96,7 +114,7 @@ def medir_regional(
     comunes = sorted(set(humanos) & set(predichas))
     tp = sum(1 for i in comunes if humanos[i] and predichas[i])
     return [
-        *_marca(origenes),
+        *_marca(humanos, origenes),
         f"Alcance regional (D-84), aparte del ruido; titulares comparados: {len(comunes)}",
         "  Precisión (marcados regionales que la persona confirma): " + _texto_proporcion(tp, sum(predichas[i] for i in comunes), z),
         "  Recall (regionales según la persona que el filtro marcó): " + _texto_proporcion(tp, sum(humanos[i] for i in comunes), z),

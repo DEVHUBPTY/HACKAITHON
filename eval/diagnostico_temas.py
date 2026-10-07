@@ -459,7 +459,7 @@ def diagnosticar(
             "titulares_utiles_del_snapshot": len(ids),
             "origenes": list(origenes),
             "usa_etiquetas_provisionales": oe.ASISTENTE_PROVISIONAL in origenes,
-            "advertencia": _advertencia(origenes),
+            "advertencia": _advertencia(origenes, ruta_etiquetas),
         },
         "errores_del_clasificador_activo": {
             "por_fila": descomponer_errores(list(y), list(pred_actual_etq)),
@@ -478,19 +478,29 @@ def diagnosticar(
     }
 
 
-def _advertencia(origenes: Iterable[str]) -> str:
+def _conteo_por_origen(ruta: Path) -> dict[str, int]:
+    """Cuántas etiquetas de cada procedencia tiene el CSV (sale de los datos, no se escribe a mano)."""
+    filas = oe.leer_filas(ruta, oe.ORIGENES)
+    return {o: sum(1 for f in filas if f[oe.COLUMNA_ORIGEN] == o) for o in oe.ORIGENES}
+
+
+def _advertencia(origenes: Iterable[str], ruta: Path = oe.ETIQUETAS_CONSOLIDADO) -> str:
     """El aviso propio de cada combinación de procedencias (no se dice «una persona etiquetó» donde no etiquetó ninguna)."""
     origenes = oe.validar_origenes(origenes)
     if oe.ASISTENTE_PROVISIONAL not in origenes:
         return ADVERTENCIA_BASE
     if oe.HUMANO not in origenes:
         return f"{ADVERTENCIA_PROVISIONAL} {ADVERTENCIA_SOLO_PROVISIONAL}"
-    return f"{ADVERTENCIA_PROVISIONAL} Mezcla las 100 etiquetas de una persona (D-85) con las 61 provisionales. {ADVERTENCIA_BASE}"
+    n = _conteo_por_origen(ruta)
+    return (
+        f"{ADVERTENCIA_PROVISIONAL} Mezcla las {n[oe.HUMANO]} etiquetas de una persona (D-85) con las {n[oe.ASISTENTE_PROVISIONAL]} "
+        f"provisionales. {ADVERTENCIA_BASE}"
+    )
 
 
-def avisos_por_via() -> dict[str, str]:
-    """El aviso de cada vía del informe en tres vías."""
-    return {nombre: _advertencia(origenes) for nombre, origenes in VIAS.items()}
+def avisos_por_via(ruta: Path = oe.ETIQUETAS_CONSOLIDADO) -> dict[str, str]:
+    """El aviso de cada vía del informe en tres vías (los conteos salen de ``ruta``)."""
+    return {nombre: _advertencia(origenes, ruta) for nombre, origenes in VIAS.items()}
 
 
 def diagnosticar_en_tres_vias(
@@ -507,7 +517,7 @@ def diagnosticar_en_tres_vias(
         via: dict[str, Any] = {
             "origenes": list(origenes),
             "usa_etiquetas_provisionales": provisional,
-            "aviso": _advertencia(origenes),
+            "aviso": _advertencia(origenes, ruta_etiquetas),
         }
         try:
             via["diagnostico"] = diagnosticar(ruta_etiquetas, ruta_base, cfg, temas, motores, origenes)

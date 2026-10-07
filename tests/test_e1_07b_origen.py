@@ -122,10 +122,10 @@ def _falso_diagnosticar(monkeypatch: pytest.MonkeyPatch, evaluados: dict[tuple[s
     return llamadas
 
 
-def test_el_informe_en_tres_vias_reporta_humano_provisional_y_combinado(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_el_informe_en_tres_vias_reporta_humano_provisional_y_combinado(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     h, p = (oe.HUMANO,), (oe.ASISTENTE_PROVISIONAL,)
     llamadas = _falso_diagnosticar(monkeypatch, {h: 63, p: 15, h + p: 78})
-    informe = dg.diagnosticar_en_tres_vias(Path("e.csv"), Path("b.duckdb"), None, None)
+    informe = dg.diagnosticar_en_tres_vias(_csv(tmp_path / "e.csv", MIXTO), Path("b.duckdb"), None, None)
     assert set(informe["vias"]) == {"humano", "asistente_provisional", "combinado"}
     assert llamadas == [h, p, (oe.HUMANO, oe.ASISTENTE_PROVISIONAL)]
     assert informe["vias"]["humano"]["usa_etiquetas_provisionales"] is False
@@ -135,7 +135,7 @@ def test_el_informe_en_tres_vias_reporta_humano_provisional_y_combinado(monkeypa
     assert "D-101" not in informe["vias"]["humano"]["aviso"]
 
 
-def test_una_via_con_pocas_filas_o_eventos_no_se_calcula_y_lo_dice(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_una_via_con_pocas_filas_o_eventos_no_se_calcula_y_lo_dice(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     h, p = (oe.HUMANO,), (oe.ASISTENTE_PROVISIONAL,)
     _falso_diagnosticar(monkeypatch, {h: 63, p: 2, h + p: 65})
 
@@ -145,7 +145,7 @@ def test_una_via_con_pocas_filas_o_eventos_no_se_calcula_y_lo_dice(monkeypatch: 
         return {"conjunto": {"evaluados": 63}}
 
     monkeypatch.setattr(dg, "diagnosticar", pocas)
-    informe = dg.diagnosticar_en_tres_vias(Path("e.csv"), Path("b.duckdb"), None, None)
+    informe = dg.diagnosticar_en_tres_vias(_csv(tmp_path / "e.csv", MIXTO), Path("b.duckdb"), None, None)
     via = informe["vias"]["asistente_provisional"]
     assert via["estado"] == "INSUFICIENTE" and via["evaluados"] == 2 and "diagnostico" not in via
     assert informe["vias"]["humano"]["estado"] == "CALCULADO"
@@ -346,3 +346,57 @@ def test_la_nota_de_la_audiencia_suntracs_declara_el_cambio_provisional_y_su_mot
 def test_las_provisionales_con_alcance_regional_llevan_su_ic_en_los_docs() -> None:
     texto = (Path(__file__).resolve().parent.parent / "docs" / "clasificacion.md").read_text(encoding="utf-8")
     assert "Esa fila hay que corregirla" not in texto
+
+
+# ================================================================== segunda pasada de la revisión independiente (PR #37)
+
+
+@pytest.mark.parametrize("encabezado", ["id_noticia,origen,origen", "id_noticia,origen,Origen", "id_noticia,origen, ORIGEN "])
+def test_x47_dos_columnas_de_origen_son_un_error_tambien_si_se_llaman_igual(tmp_path: Path, encabezado: str) -> None:
+    """El lector del CSV se queda con la última columna repetida: antes, la segunda (toda «humano») ocultaba las provisionales."""
+    ruta = tmp_path / "e.csv"
+    ruta.write_text(f"{encabezado}\nNOT-1,asistente_provisional,humano\nNOT-2,humano,humano\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="más de una vez"):
+        oe.leer_filas(ruta)
+    with pytest.raises(ValueError, match="más de una vez"):
+        oe.leer_filas(ruta, oe.ORIGENES)
+    with pytest.raises(ValueError, match="más de una vez"):
+        oe.tiene_columna_origen(ruta)
+
+
+@pytest.mark.parametrize("firma", ["Asistente provisional", "asistente  PROVISIONAL", "aprobada provisionalmente por el asistente (D-101)"])
+def test_sin_columna_pero_con_una_firma_provisional_falla_en_cualquier_ruta(tmp_path: Path, firma: str) -> None:
+    ruta = _csv(tmp_path / "otro.csv", [{**MIXTO[0], "etiquetado_por": "Javier Acosta"}, {**MIXTO[2], "etiquetado_por": firma}],
+                ("id_noticia", "tema_principal", "ruido", "etiquetado_por"))
+    with pytest.raises(ValueError, match="provisional"):
+        oe.leer_filas(ruta)
+
+
+def test_sin_columna_y_firmas_humanas_sigue_siendo_humano(tmp_path: Path) -> None:
+    ruta = _csv(tmp_path / "otro.csv", [{**MIXTO[0], "etiquetado_por": "Javier Acosta"}], ("id_noticia", "tema_principal", "ruido", "etiquetado_por"))
+    assert len(oe.leer_filas(ruta)) == 1
+
+
+def test_el_informe_de_ruido_se_marca_por_los_datos_sin_repetir_origenes(tmp_path: Path) -> None:
+    ruta = _etiquetas_con_origen(tmp_path)
+    prov = evruido.leer_etiquetas(ruta, "ruido", oe.ORIGENES)
+    assert "PROVISIONAL (D-101)" in evruido.medir(prov, {i: None for i in prov}, 1.96)[0]
+    regional = evruido.leer_regional(ruta, origenes=oe.ORIGENES) or {}
+    assert regional == {} or "PROVISIONAL (D-101)" in evruido.medir_regional(regional, dict(regional), 1.96)[0]
+    humanas = evruido.leer_etiquetas(ruta, "ruido")
+    assert "PROVISIONAL" not in "\n".join(evruido.medir(humanas, {i: None for i in humanas}, 1.96))
+
+
+def test_el_regional_leido_con_provisionales_marca_el_informe(tmp_path: Path) -> None:
+    filas = [{**MIXTO[0]}, {**MIXTO[2], "alcance_regional": "si"}]
+    ruta = _csv(tmp_path / "e.csv", filas)
+    regional = evruido.leer_regional(ruta, origenes=oe.ORIGENES)
+    assert regional is not None and "PROVISIONAL (D-101)" in evruido.medir_regional(regional, dict(regional), 1.96)[0]
+
+
+def test_los_conteos_del_aviso_combinado_salen_de_los_datos(tmp_path: Path) -> None:
+    ruta = _csv(tmp_path / "e.csv", MIXTO)                   # 2 humanas y 2 provisionales
+    aviso = dg.avisos_por_via(ruta)["combinado"]
+    assert "2 etiquetas de una persona" in aviso and "2 provisionales" in aviso and "100" not in aviso and "61" not in aviso
+    real = dg.avisos_por_via()["combinado"]
+    assert "100 etiquetas de una persona" in real and "61 provisionales" in real
