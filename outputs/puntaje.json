@@ -5,10 +5,10 @@
   "puntaje": {
     "n": 60,
     "min": 46.6447,
-    "mediana": 77.2068,
+    "mediana": 77.311,
     "max": 90.4482,
-    "media": 72.6236,
-    "desviacion": 11.5555
+    "media": 72.7903,
+    "desviacion": 11.6473
   },
   "componentes": {
     "R": {
@@ -25,8 +25,8 @@
       "min": 0.4,
       "mediana": 0.55,
       "max": 1.0,
-      "media": 0.5542,
-      "desviacion": 0.1761,
+      "media": 0.5608,
+      "desviacion": 0.1742,
       "casi_constante": false
     },
     "U": {
@@ -157,7 +157,7 @@
         "casos": [
           {
             "id_grupo": "GRP-81a11a5998",
-            "posicion": 13,
+            "posicion": 15,
             "puntaje": 81.25,
             "accion": "Completar evidencia y producir",
             "titular_central": "¿Cómo se fija el precio del combustible en Panamá? El MEF explica la fórmula quincenal tras aprobarse nuevo subsidio"
@@ -244,165 +244,165 @@
             "titular_central": "Veraguas: Preocupación por aumento de muertes por enfermedades transmisibles y respiratorias"
           },
           {
-            "id_grupo": "GRP-5ab17b45cd",
+            "id_grupo": "GRP-39773bed5a",
             "posicion": 10,
+            "puntaje": 81.76,
+            "accion": "Investigar ya",
+            "titular_central": "Árbol cae sobre dos vehículos en estacionamientos del hospital San Miguel Arcángel"
+          },
+          {
+            "id_grupo": "GRP-6e737ecad5",
+            "posicion": 11,
+            "puntaje": 81.74,
+            "accion": "Investigar ya",
+            "titular_central": "MOP solicita $43.1 millones para pagar compromisos y continuar obras en ejecución"
+          },
+          {
+            "id_grupo": "GRP-5ab17b45cd",
+            "posicion": 12,
             "puntaje": 81.65,
             "accion": "Investigar ya",
             "titular_central": "Asesinan a taxista en Remedios; fue hallado dentro de su vehículo con varias heridas"
           },
           {
             "id_grupo": "GRP-ef3acec21e",
-            "posicion": 11,
+            "posicion": 13,
             "puntaje": 81.48,
             "accion": "Investigar ya",
             "titular_central": "Minsa: Adelantan vacunación contra VSR en embarazadas"
           },
           {
             "id_grupo": "GRP-dc0c06491a",
-            "posicion": 12,
+            "posicion": 14,
             "puntaje": 81.43,
             "accion": "Investigar ya",
             "titular_central": "Mujer es aprehendida en Santiago tras hallazgo de 162 paquetes de presunta droga en el vehículo que conducía"
           },
           {
             "id_grupo": "GRP-1b52bb958d",
-            "posicion": 14,
+            "posicion": 16,
             "puntaje": 79.65,
             "accion": "Investigar ya",
             "titular_central": "Disparan contra el vehículo del exdiputado Pedro Torres en Colón"
           },
           {
             "id_grupo": "GRP-9442098153",
-            "posicion": 15,
+            "posicion": 17,
             "puntaje": 79.57,
             "accion": "Investigar ya",
             "titular_central": "Contenido Exclusivo: El metro por la Tumba Muerto"
           },
           {
             "id_grupo": "GRP-65d565abd0",
-            "posicion": 16,
+            "posicion": 18,
             "puntaje": 79.44,
             "accion": "Investigar ya",
             "titular_central": "MiBus responde por filtraciones: lamenta incomodidad de usuarios; afirma que realiza correctivos"
           },
           {
             "id_grupo": "GRP-e2e32056c3",
-            "posicion": 17,
+            "posicion": 19,
             "puntaje": 79.26,
             "accion": "Investigar ya",
             "titular_central": "Tres hombres asaltan casino y despojan a clientes de sus pertenencias en San Miguelito"
           },
           {
             "id_grupo": "GRP-821afe7eec",
-            "posicion": 18,
+            "posicion": 20,
             "puntaje": 79.04,
             "accion": "Investigar ya",
             "titular_central": "Chiriquí: Emiten Alerta Amber por desaparición de adolescente de 16 años y su bebé"
           },
           {
             "id_grupo": "GRP-f9e3ba0bd2",
-            "posicion": 19,
+            "posicion": 21,
             "puntaje": 78.63,
             "accion": "Investigar ya",
             "titular_central": "Comisión de Presupuesto tramita traslados y créditos por casi $100 millones entre seis instituciones"
           },
           {
             "id_grupo": "GRP-0c210ad795",
-            "posicion": 20,
+            "posicion": 22,
             "puntaje": 78.62,
             "accion": "Investigar ya",
             "titular_central": "Adultos mayores lo pierden todo tras incendio de su vivienda en Portachuelo"
           },
           {
             "id_grupo": "GRP-1df3ab1e22",
-            "posicion": 21,
+            "posicion": 23,
             "puntaje": 78.61,
             "accion": "Investigar ya",
             "titular_central": "Mides solicita $47 millones para completar último pago de transferencias monetarias de 2026"
           },
           {
             "id_grupo": "GRP-0f8fb5a5bb",
-            "posicion": 22,
+            "posicion": 24,
             "puntaje": 78.58,
             "accion": "Investigar ya",
             "titular_central": "Caso Pandora: Legalizan aprehensión de exejecutivo bancario señalado por autorizar pagos de créditos fiscales de la DGI"
           },
           {
             "id_grupo": "GRP-276c88e7f3",
-            "posicion": 23,
+            "posicion": 25,
             "puntaje": 78.38,
             "accion": "Investigar ya",
             "titular_central": "Tribunal Electoral avanza en la coordinación del Plan General del Elecciones de 2029"
           },
           {
-            "id_grupo": "GRP-6e737ecad5",
-            "posicion": 24,
-            "puntaje": 77.99,
-            "accion": "Investigar ya",
-            "titular_central": "MOP solicita $43.1 millones para pagar compromisos y continuar obras en ejecución"
-          },
-          {
             "id_grupo": "GRP-d03e52e97f",
-            "posicion": 25,
+            "posicion": 26,
             "puntaje": 77.92,
             "accion": "Investigar ya",
             "titular_central": "Alcaldesa Stefany Peñalba: residentes protestan frente al Municipio de Arraiján y exigen auditorías contra su gestión"
           },
           {
             "id_grupo": "GRP-1e2c34f6bf",
-            "posicion": 26,
+            "posicion": 27,
             "puntaje": 77.9,
             "accion": "Investigar ya",
             "titular_central": "Pase-U: Largas filas en Changuinola en el segundo día de entrega de tarjetas Punch del Ifarhu"
           },
           {
             "id_grupo": "GRP-1a231154dc",
-            "posicion": 27,
+            "posicion": 28,
             "puntaje": 77.86,
             "accion": "Investigar ya",
             "titular_central": "Suspenden audiencia contra Genaro López y otros miembros del Suntracs"
           },
           {
             "id_grupo": "GRP-5c66ab40e9",
-            "posicion": 28,
+            "posicion": 29,
             "puntaje": 77.5,
             "accion": "Investigar ya",
             "titular_central": "Descentralización explica qué incluye el proyecto de $293,715 para 15 juntas comunales"
           },
           {
             "id_grupo": "GRP-4d3630957d",
-            "posicion": 29,
+            "posicion": 30,
             "puntaje": 77.35,
             "accion": "Investigar ya",
             "titular_central": "Semana de la RSE busca impulsar la sostenibilidad en las empresas"
           },
           {
             "id_grupo": "GRP-be613f0763",
-            "posicion": 30,
+            "posicion": 31,
             "puntaje": 77.28,
             "accion": "Investigar ya",
             "titular_central": "Reformas electorales: Blandón defiende el 3% para nuevos partidos y rechaza aumento del financiamiento privado"
           },
           {
             "id_grupo": "GRP-fcdfc2a3cc",
-            "posicion": 31,
+            "posicion": 32,
             "puntaje": 77.14,
             "accion": "Investigar ya",
             "titular_central": "Aprehenden a Enrique Lau, exdirector de la CSS, por supuesto enriquecimiento injustificado"
           },
           {
             "id_grupo": "GRP-cf758ba062",
-            "posicion": 32,
+            "posicion": 33,
             "puntaje": 75.7,
             "accion": "Investigar ya",
             "titular_central": "Piscina del Parque Omar cierra por reparaciones; trabajos podrían durar hasta un mes"
-          },
-          {
-            "id_grupo": "GRP-39773bed5a",
-            "posicion": 33,
-            "puntaje": 75.51,
-            "accion": "Investigar ya",
-            "titular_central": "Árbol cae sobre dos vehículos en estacionamientos del hospital San Miguel Arcángel"
           },
           {
             "id_grupo": "GRP-8af4196527",
@@ -710,165 +710,165 @@
         "titular_central": "Veraguas: Preocupación por aumento de muertes por enfermedades transmisibles y respiratorias"
       },
       {
-        "id_grupo": "GRP-5ab17b45cd",
+        "id_grupo": "GRP-39773bed5a",
         "posicion": 10,
+        "puntaje": 81.76,
+        "accion": "Investigar ya",
+        "titular_central": "Árbol cae sobre dos vehículos en estacionamientos del hospital San Miguel Arcángel"
+      },
+      {
+        "id_grupo": "GRP-6e737ecad5",
+        "posicion": 11,
+        "puntaje": 81.74,
+        "accion": "Investigar ya",
+        "titular_central": "MOP solicita $43.1 millones para pagar compromisos y continuar obras en ejecución"
+      },
+      {
+        "id_grupo": "GRP-5ab17b45cd",
+        "posicion": 12,
         "puntaje": 81.65,
         "accion": "Investigar ya",
         "titular_central": "Asesinan a taxista en Remedios; fue hallado dentro de su vehículo con varias heridas"
       },
       {
         "id_grupo": "GRP-ef3acec21e",
-        "posicion": 11,
+        "posicion": 13,
         "puntaje": 81.48,
         "accion": "Investigar ya",
         "titular_central": "Minsa: Adelantan vacunación contra VSR en embarazadas"
       },
       {
         "id_grupo": "GRP-dc0c06491a",
-        "posicion": 12,
+        "posicion": 14,
         "puntaje": 81.43,
         "accion": "Investigar ya",
         "titular_central": "Mujer es aprehendida en Santiago tras hallazgo de 162 paquetes de presunta droga en el vehículo que conducía"
       },
       {
         "id_grupo": "GRP-1b52bb958d",
-        "posicion": 14,
+        "posicion": 16,
         "puntaje": 79.65,
         "accion": "Investigar ya",
         "titular_central": "Disparan contra el vehículo del exdiputado Pedro Torres en Colón"
       },
       {
         "id_grupo": "GRP-9442098153",
-        "posicion": 15,
+        "posicion": 17,
         "puntaje": 79.57,
         "accion": "Investigar ya",
         "titular_central": "Contenido Exclusivo: El metro por la Tumba Muerto"
       },
       {
         "id_grupo": "GRP-65d565abd0",
-        "posicion": 16,
+        "posicion": 18,
         "puntaje": 79.44,
         "accion": "Investigar ya",
         "titular_central": "MiBus responde por filtraciones: lamenta incomodidad de usuarios; afirma que realiza correctivos"
       },
       {
         "id_grupo": "GRP-e2e32056c3",
-        "posicion": 17,
+        "posicion": 19,
         "puntaje": 79.26,
         "accion": "Investigar ya",
         "titular_central": "Tres hombres asaltan casino y despojan a clientes de sus pertenencias en San Miguelito"
       },
       {
         "id_grupo": "GRP-821afe7eec",
-        "posicion": 18,
+        "posicion": 20,
         "puntaje": 79.04,
         "accion": "Investigar ya",
         "titular_central": "Chiriquí: Emiten Alerta Amber por desaparición de adolescente de 16 años y su bebé"
       },
       {
         "id_grupo": "GRP-f9e3ba0bd2",
-        "posicion": 19,
+        "posicion": 21,
         "puntaje": 78.63,
         "accion": "Investigar ya",
         "titular_central": "Comisión de Presupuesto tramita traslados y créditos por casi $100 millones entre seis instituciones"
       },
       {
         "id_grupo": "GRP-0c210ad795",
-        "posicion": 20,
+        "posicion": 22,
         "puntaje": 78.62,
         "accion": "Investigar ya",
         "titular_central": "Adultos mayores lo pierden todo tras incendio de su vivienda en Portachuelo"
       },
       {
         "id_grupo": "GRP-1df3ab1e22",
-        "posicion": 21,
+        "posicion": 23,
         "puntaje": 78.61,
         "accion": "Investigar ya",
         "titular_central": "Mides solicita $47 millones para completar último pago de transferencias monetarias de 2026"
       },
       {
         "id_grupo": "GRP-0f8fb5a5bb",
-        "posicion": 22,
+        "posicion": 24,
         "puntaje": 78.58,
         "accion": "Investigar ya",
         "titular_central": "Caso Pandora: Legalizan aprehensión de exejecutivo bancario señalado por autorizar pagos de créditos fiscales de la DGI"
       },
       {
         "id_grupo": "GRP-276c88e7f3",
-        "posicion": 23,
+        "posicion": 25,
         "puntaje": 78.38,
         "accion": "Investigar ya",
         "titular_central": "Tribunal Electoral avanza en la coordinación del Plan General del Elecciones de 2029"
       },
       {
-        "id_grupo": "GRP-6e737ecad5",
-        "posicion": 24,
-        "puntaje": 77.99,
-        "accion": "Investigar ya",
-        "titular_central": "MOP solicita $43.1 millones para pagar compromisos y continuar obras en ejecución"
-      },
-      {
         "id_grupo": "GRP-d03e52e97f",
-        "posicion": 25,
+        "posicion": 26,
         "puntaje": 77.92,
         "accion": "Investigar ya",
         "titular_central": "Alcaldesa Stefany Peñalba: residentes protestan frente al Municipio de Arraiján y exigen auditorías contra su gestión"
       },
       {
         "id_grupo": "GRP-1e2c34f6bf",
-        "posicion": 26,
+        "posicion": 27,
         "puntaje": 77.9,
         "accion": "Investigar ya",
         "titular_central": "Pase-U: Largas filas en Changuinola en el segundo día de entrega de tarjetas Punch del Ifarhu"
       },
       {
         "id_grupo": "GRP-1a231154dc",
-        "posicion": 27,
+        "posicion": 28,
         "puntaje": 77.86,
         "accion": "Investigar ya",
         "titular_central": "Suspenden audiencia contra Genaro López y otros miembros del Suntracs"
       },
       {
         "id_grupo": "GRP-5c66ab40e9",
-        "posicion": 28,
+        "posicion": 29,
         "puntaje": 77.5,
         "accion": "Investigar ya",
         "titular_central": "Descentralización explica qué incluye el proyecto de $293,715 para 15 juntas comunales"
       },
       {
         "id_grupo": "GRP-4d3630957d",
-        "posicion": 29,
+        "posicion": 30,
         "puntaje": 77.35,
         "accion": "Investigar ya",
         "titular_central": "Semana de la RSE busca impulsar la sostenibilidad en las empresas"
       },
       {
         "id_grupo": "GRP-be613f0763",
-        "posicion": 30,
+        "posicion": 31,
         "puntaje": 77.28,
         "accion": "Investigar ya",
         "titular_central": "Reformas electorales: Blandón defiende el 3% para nuevos partidos y rechaza aumento del financiamiento privado"
       },
       {
         "id_grupo": "GRP-fcdfc2a3cc",
-        "posicion": 31,
+        "posicion": 32,
         "puntaje": 77.14,
         "accion": "Investigar ya",
         "titular_central": "Aprehenden a Enrique Lau, exdirector de la CSS, por supuesto enriquecimiento injustificado"
       },
       {
         "id_grupo": "GRP-cf758ba062",
-        "posicion": 32,
+        "posicion": 33,
         "puntaje": 75.7,
         "accion": "Investigar ya",
         "titular_central": "Piscina del Parque Omar cierra por reparaciones; trabajos podrían durar hasta un mes"
-      },
-      {
-        "id_grupo": "GRP-39773bed5a",
-        "posicion": 33,
-        "puntaje": 75.51,
-        "accion": "Investigar ya",
-        "titular_central": "Árbol cae sobre dos vehículos en estacionamientos del hospital San Miguel Arcángel"
       },
       {
         "id_grupo": "GRP-8af4196527",
