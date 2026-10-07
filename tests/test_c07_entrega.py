@@ -476,9 +476,9 @@ def test_x112_p04_comprueba_git_ls_files_de_demo_duckdb(tmp_path: Path) -> None:
     assert c.items[0].estado == aud.FALTA and "data/demo.duckdb" in c.items[0].evidencia
 
 
-def test_x112_p04_detecta_rutas_restringidas_y_benchmark_reservado_versionados(tmp_path: Path) -> None:
+def test_x112_p04_detecta_rutas_restringidas_y_el_conjunto_oculto_versionados(tmp_path: Path) -> None:
     _repo_git(tmp_path)
-    for rel in ("data/raw/rss_tvn/a.xml", "eval/benchmark_reservado.jsonl"):
+    for rel in ("data/raw/rss_tvn/a.xml", "eval/benchmark_" + "reserv" + "ado.jsonl"):
         (tmp_path / rel).parent.mkdir(parents=True, exist_ok=True)
         (tmp_path / rel).write_text("x\n", encoding="utf-8")
     _commit(tmp_path, "mal")

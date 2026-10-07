@@ -1,6 +1,6 @@
 {
-  "commit": "c1a89ab",
-  "generado_utc": "2026-10-07T23:18:28Z",
+  "commit": "f85e425",
+  "generado_utc": "2026-10-07T23:30:12Z",
   "resumen": {
     "PASS": 9,
     "FALTA": 6,
@@ -37,9 +37,9 @@
     {
       "id": "S5-04",
       "grupo": "Admisión (sec. 5)",
-      "requisito": "Catálogo completo de las fuentes utilizadas (cada fuente usada, con licencia/condiciones)",
+      "requisito": "Catálogo completo de las fuentes utilizadas (cada fuente del manifest, con licencia/condiciones)",
       "estado": "PASS",
-      "evidencia": "outputs/catalogo.csv: 4 fuentes; sin catalogar: ninguna; sin licencia: ninguna; licencias en el manifest: ['banco_mundial', 'gdelt', 'sbp', 'tvn_rss', 'usgs'].",
+      "evidencia": "outputs/catalogo.csv: 4 fuentes; fuentes del manifest (data/manifest.json): ['banco_mundial', 'gdelt', 'sbp', 'tvn_rss', 'usgs']; sin nombre de catálogo en la configuración: ninguna; sin catalogar: ninguna; sin licencia: ninguna.",
       "como_verificar": "poetry run python -m scripts.catalogo",
       "depende_de": ""
     },
@@ -100,10 +100,10 @@
     {
       "id": "S10-03",
       "grupo": "Entregables (sec. 10)",
-      "requisito": ".env.example sin secretos (nombres de variables; los valores de claves vacíos)",
+      "requisito": ".env.example solo con nombres de variables, sin valores en las claves y sin nada que parezca un secreto",
       "estado": "PASS",
-      "evidencia": ".env.example: variables con valor por defecto (no son claves, revisar): ninguna.",
-      "como_verificar": "Revisar a mano que ningún valor sea una clave real.",
+      "evidencia": ".env.example: 5 variables; claves con valor: ninguna; coincidencias con patrones de secreto: ninguna.",
+      "como_verificar": "Dejar vacíos los valores de *_KEY, *_TOKEN, *_SECRET y *_PASSWORD; el valor real va en local.env.",
       "depende_de": ""
     },
     {
@@ -190,10 +190,10 @@
     {
       "id": "P-02",
       "grupo": "Condiciones previas",
-      "requisito": "Toda afirmación de las fichas pasa el validador; ninguna cita falsa",
+      "requisito": "Toda afirmación de fichas.jsonl y de las exportaciones pasa el validador; ninguna cita falsa",
       "estado": "PASS",
-      "evidencia": "outputs/fichas_trazables/trazabilidad.json: 52 citas, no resueltas: ninguna; fichas con fallos del validador: ninguna; outputs/fichas.jsonl: 8 fichas, sin campos del contrato: ninguna.",
-      "como_verificar": "poetry run python -m scripts.fichas_trazables; poetry run python -m src.ficha --formato jsonl",
+      "evidencia": "outputs/fichas.jsonl: 8 fichas (CASO-001, CASO-002, CASO-003, CASO-004, CASO-005, CASO-006, CASO-007, CASO-008); re-verificadas con el validador contra data/senales.duckdb: 8 de 8; exportaciones revisadas: 6 archivos; problemas: ninguno.",
+      "como_verificar": "poetry run python -m scripts.fichas_trazables --casos; poetry run python -m src.ficha --formato jsonl",
       "depende_de": "C-01"
     },
     {
@@ -208,9 +208,9 @@
     {
       "id": "P-04",
       "grupo": "Condiciones previas",
-      "requisito": "Nada con redistribución restringida ni el benchmark reservado en el repositorio (D-72)",
+      "requisito": "Nada con redistribución restringida, ni bases de datos de la sesión, ni el benchmark reservado en el repositorio (D-72)",
       "estado": "PASS",
-      "evidencia": "Rutas restringidas (['data/raw/rss_tvn/', 'data/raw/gdelt/', 'data/raw/sbp/']) versionadas: ninguna; benchmark reservado versionado: ninguno. data/demo.duckdb se ignora por git.",
+      "evidencia": "`git ls-files` (443 archivos): rutas restringidas (['data/raw/rss_tvn/', 'data/raw/gdelt/', 'data/raw/sbp/']) versionadas: ninguna; bases ['data/demo.duckdb', '*.duckdb', '*.duckdb.wal'] versionadas: ninguna; benchmark reservado versionado: ninguno.",
       "como_verificar": "git rm --cached <ruta>",
       "depende_de": ""
     },

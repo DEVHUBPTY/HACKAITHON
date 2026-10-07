@@ -1,20 +1,20 @@
 # Auditoría final · condiciones previas (C-07)
 
-Generada el 2026-10-07T23:18:28Z desde el commit `c1a89ab` con `poetry run python -m scripts.auditoria_final`. PASS: 9 · FALTA: 6 · NO VERIFICABLE AUTOMÁTICAMENTE: 10.
+Generada el 2026-10-07T23:30:12Z desde el commit `f85e425` con `poetry run python -m scripts.auditoria_final`. PASS: 9 · FALTA: 6 · NO VERIFICABLE AUTOMÁTICAMENTE: 10.
 
 | ID | Requisito | Estado | Depende de |
 |---|---|---|---|
 | S5-01 | URL de Notion accesible al jurado al cierre | **NO VERIFICABLE AUTOMÁTICAMENTE** | C-05 |
 | S5-02 | Plan con al menos 8 tareas y 3 decisiones justificadas | **NO VERIFICABLE AUTOMÁTICAMENTE** | C-05 |
 | S5-03 | Registro durante la ejecución, no solo un resumen final | **NO VERIFICABLE AUTOMÁTICAMENTE** | C-05 |
-| S5-04 | Catálogo completo de las fuentes utilizadas (cada fuente usada, con licencia/condiciones) | **PASS** | — |
+| S5-04 | Catálogo completo de las fuentes utilizadas (cada fuente del manifest, con licencia/condiciones) | **PASS** | — |
 | S5-05 | Al menos 5 fichas trazables, incluyendo un caso sin evidencia suficiente | **PASS** | C-01 |
 | S5-06 | Matriz de los 10 casos de prueba, todos en «Pasa» | **FALTA** | C-04, E2-02 |
 | S5-07 | Métricas de la ejecución final: página generada del commit vigente, sin borrador ni juicios provisionales | **FALTA** | C-09, C-10 |
 | S5-08 | Pitch de 10 minutos presentado desde Notion | **NO VERIFICABLE AUTOMÁTICAMENTE** | C-03, C-04 |
 | S10-01 | Prototipo ejecutable y demo reproducible sin fuente en vivo | **FALTA** | C-06, C-04 |
 | S10-02 | README con instalación, comando de ejecución, pruebas y evaluación reservada | **PASS** | — |
-| S10-03 | .env.example sin secretos (nombres de variables; los valores de claves vacíos) | **PASS** | — |
+| S10-03 | .env.example solo con nombres de variables, sin valores en las claves y sin nada que parezca un secreto | **PASS** | — |
 | S10-04 | Dependencias fijadas | **PASS** | — |
 | S10-05 | Archivo LICENSE para el código (spec C-07) | **FALTA** | decisión del equipo |
 | S10-06 | Repositorio con acceso del jurado (privado con colaboradores, o público) | **NO VERIFICABLE AUTOMÁTICAMENTE** | C-05 |
@@ -24,9 +24,9 @@ Generada el 2026-10-07T23:18:28Z desde el commit `c1a89ab` con `poetry run pytho
 | S10-10 | Paquete de datos redistribuible: snapshot, diccionario, manifest, licencias, benchmark dev, sin campos restringidos | **PASS** | — |
 | S10-11 | SBP (D-116): autorización escrita o CSV retirado si la entrega es pública | **NO VERIFICABLE AUTOMÁTICAMENTE** | decisión del dueño |
 | P-01 | Sin secretos en historial, archivos, capturas ni exportaciones | **FALTA** | C-11 |
-| P-02 | Toda afirmación de las fichas pasa el validador; ninguna cita falsa | **PASS** | C-01 |
+| P-02 | Toda afirmación de fichas.jsonl y de las exportaciones pasa el validador; ninguna cita falsa | **PASS** | C-01 |
 | P-03 | Ninguna acción, botón o estado «publicar» | **PASS** | — |
-| P-04 | Nada con redistribución restringida ni el benchmark reservado en el repositorio (D-72) | **PASS** | — |
+| P-04 | Nada con redistribución restringida, ni bases de datos de la sesión, ni el benchmark reservado en el repositorio (D-72) | **PASS** | — |
 | P-05 | Los juicios que exige una persona (sustento, Precision@5, revisión editorial) los hizo una persona (D-85, D-101) | **FALTA** | C-09 |
 | P-06 | Reproducibilidad de punta a punta (hashes del manifest) | **NO VERIFICABLE AUTOMÁTICAMENTE** | — |
 
@@ -52,8 +52,8 @@ Generada el 2026-10-07T23:18:28Z desde el commit `c1a89ab` con `poetry run pytho
 
 ### S5-04 · PASS
 
-- **Requisito:** Catálogo completo de las fuentes utilizadas (cada fuente usada, con licencia/condiciones)
-- **Evidencia:** outputs/catalogo.csv: 4 fuentes; sin catalogar: ninguna; sin licencia: ninguna; licencias en el manifest: ['banco_mundial', 'gdelt', 'sbp', 'tvn_rss', 'usgs'].
+- **Requisito:** Catálogo completo de las fuentes utilizadas (cada fuente del manifest, con licencia/condiciones)
+- **Evidencia:** outputs/catalogo.csv: 4 fuentes; fuentes del manifest (data/manifest.json): ['banco_mundial', 'gdelt', 'sbp', 'tvn_rss', 'usgs']; sin nombre de catálogo en la configuración: ninguna; sin catalogar: ninguna; sin licencia: ninguna.
 - **Cómo verificar o corregir:** poetry run python -m scripts.catalogo
 
 ### S5-05 · PASS
@@ -94,9 +94,9 @@ Generada el 2026-10-07T23:18:28Z desde el commit `c1a89ab` con `poetry run pytho
 
 ### S10-03 · PASS
 
-- **Requisito:** .env.example sin secretos (nombres de variables; los valores de claves vacíos)
-- **Evidencia:** .env.example: variables con valor por defecto (no son claves, revisar): ninguna.
-- **Cómo verificar o corregir:** Revisar a mano que ningún valor sea una clave real.
+- **Requisito:** .env.example solo con nombres de variables, sin valores en las claves y sin nada que parezca un secreto
+- **Evidencia:** .env.example: 5 variables; claves con valor: ninguna; coincidencias con patrones de secreto: ninguna.
+- **Cómo verificar o corregir:** Dejar vacíos los valores de *_KEY, *_TOKEN, *_SECRET y *_PASSWORD; el valor real va en local.env.
 
 ### S10-04 · PASS
 
@@ -154,9 +154,9 @@ Generada el 2026-10-07T23:18:28Z desde el commit `c1a89ab` con `poetry run pytho
 
 ### P-02 · PASS
 
-- **Requisito:** Toda afirmación de las fichas pasa el validador; ninguna cita falsa
-- **Evidencia:** outputs/fichas_trazables/trazabilidad.json: 52 citas, no resueltas: ninguna; fichas con fallos del validador: ninguna; outputs/fichas.jsonl: 8 fichas, sin campos del contrato: ninguna.
-- **Cómo verificar o corregir:** poetry run python -m scripts.fichas_trazables; poetry run python -m src.ficha --formato jsonl
+- **Requisito:** Toda afirmación de fichas.jsonl y de las exportaciones pasa el validador; ninguna cita falsa
+- **Evidencia:** outputs/fichas.jsonl: 8 fichas (CASO-001, CASO-002, CASO-003, CASO-004, CASO-005, CASO-006, CASO-007, CASO-008); re-verificadas con el validador contra data/senales.duckdb: 8 de 8; exportaciones revisadas: 6 archivos; problemas: ninguno.
+- **Cómo verificar o corregir:** poetry run python -m scripts.fichas_trazables --casos; poetry run python -m src.ficha --formato jsonl
 
 ### P-03 · PASS
 
@@ -166,8 +166,8 @@ Generada el 2026-10-07T23:18:28Z desde el commit `c1a89ab` con `poetry run pytho
 
 ### P-04 · PASS
 
-- **Requisito:** Nada con redistribución restringida ni el benchmark reservado en el repositorio (D-72)
-- **Evidencia:** Rutas restringidas (['data/raw/rss_tvn/', 'data/raw/gdelt/', 'data/raw/sbp/']) versionadas: ninguna; benchmark reservado versionado: ninguno. data/demo.duckdb se ignora por git.
+- **Requisito:** Nada con redistribución restringida, ni bases de datos de la sesión, ni el benchmark reservado en el repositorio (D-72)
+- **Evidencia:** `git ls-files` (443 archivos): rutas restringidas (['data/raw/rss_tvn/', 'data/raw/gdelt/', 'data/raw/sbp/']) versionadas: ninguna; bases ['data/demo.duckdb', '*.duckdb', '*.duckdb.wal'] versionadas: ninguna; benchmark reservado versionado: ninguno.
 - **Cómo verificar o corregir:** git rm --cached <ruta>
 
 ### P-05 · FALTA
