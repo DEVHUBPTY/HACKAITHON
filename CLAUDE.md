@@ -65,6 +65,7 @@ poetry run python -m scripts.probar_llm --modelo <tag>  # latencia, JSON válido
 poetry run streamlit run eval/etiquetar.py           # etiquetado humano (E1-06; ver docs/etiquetado.md)
 poetry run python -m eval.ruido                      # precisión y recall del filtro de ruido contra eval/etiquetas.csv
 poetry run python -m eval.validar_benchmark          # valida benchmark/benchmark_dev.jsonl (E0-06)
+poetry run python -m scripts.reproducir --verificar  # reconstruye todo desde data/raw/ y compara los hashes con el manifest; sin --verificar registra los hashes (E1-20; docs/reproducibilidad.md)
 ```
 
 Previstos (existirán cuando se implemente su spec):
@@ -72,7 +73,6 @@ Previstos (existirán cuando se implemente su spec):
 ```bash
 poetry run python -m scripts.verificar_offline       # chequeo antes del pitch (C-06)
 poetry run python -m eval.run_benchmark --split dev  # benchmark → outputs/metricas.json (E1-18)
-poetry run python -m scripts.reproducir --verificar  # reproduce todo y compara con el manifest (E1-20)
 poetry run python -m scripts.auditoria_final         # condiciones previas de la sección 10 antes del cierre (C-07)
 ```
 
@@ -84,7 +84,7 @@ Lo que existe hoy:
 CLAUDE.md  README.md  pyproject.toml  poetry.lock  .env.example  .github/pull_request_template.md  app.py (E1-15)  .streamlit/config.toml
 config/      reglas_v1.3.yaml · temas.yaml · ejemplos_excluidos.txt · vinculos.yaml · modalidad_editorial.yaml · salidas.yaml · restricciones.yaml · validador.yaml (E1-13)
              cache.yaml (E1-14) · ruido.yaml · fuentes.yaml · contrato.yaml · carga.yaml · normalizacion.yaml · clasificacion.yaml · etiquetado.yaml · exploracion.yaml · llm.yaml · benchmark.yaml · consulta.yaml · prioridad.yaml (E1-10) · generacion.yaml (E1-12)
-             verificacion.yaml (E1-10b) · interfaz.yaml (E1-15) · revision.yaml (E1-16: estados, transiciones, motivos de descarte, revisores y roles, columnas de Notion) · modalidad_banca.yaml (E1-10b, PARCIAL: solo tabla de acciones y fuentes extra; E2-01 la completa, D-90)
+             verificacion.yaml (E1-10b) · interfaz.yaml (E1-15) · revision.yaml (E1-16: estados, transiciones, motivos de descarte, revisores y roles, columnas de Notion) · reproducibilidad.yaml (E1-20: pasos, salidas que se hashean y qué se excluye) · modalidad_banca.yaml (E1-10b, PARCIAL: solo tabla de acciones y fuentes extra; E2-01 la completa, D-90)
 templates/   ficha.md.j2 (E1-10b) · caso.md.j2 (E1-16: ficha + versión + historial + leyenda, para Notion)
 prompts/     afirmaciones_citadas.txt (E0-07) · comparar_contradicciones.txt (E1-10) · afirmaciones_ficha.txt · paquete_editorial.txt (E1-12) · boletin_banca.txt (E2-02: los dos pasos del boletín), versionados
 data/        raw/ (inmutable) · processed/ (validos/ fuera de git) · registro_extraccion/ · manifest.json · CHANGELOG.md · diccionario.md · README.md
@@ -95,7 +95,7 @@ src/         carga · contexto (E1-09) · normalizacion · limpieza · embedding
              revision (E1-16: casos CASO-, acciones y transiciones, versiones, registro de solo agregar en `data/revision.duckdb`) · exportar (E1-16: Markdown, CSV de Notion, fichas.jsonl)
              cache (E1-14: caché de respuestas del LLM, `data/cache_llm/` versionada, solo cache para la interfaz) · llm/costo (tope D-98: USD 100 / 200 M tokens; `SaldoAgotado` ante HTTP 402)
 src/llm/     proveedor.py (interfaz, `UsoLlm` y `crear_proveedor`, por LLM_PROVIDER) · ollama.py · deepseek.py · costo.py (tope de costo D-67; al alcanzarlo lanza `TopeDeCostoAlcanzado`, D-95)
-scripts/     extraer.py · conversion.py · manifest.py · validar_snapshot.py · catalogo.py · explorar.py · estimar_consultas_gdelt.py · probar_llm.py · medir_generacion.py (E1-12) · calentar_cache.py (E1-14: calienta y `--verificar` la caché de borradores)
+scripts/     extraer.py · conversion.py · manifest.py · validar_snapshot.py · catalogo.py · explorar.py · estimar_consultas_gdelt.py · probar_llm.py · medir_generacion.py (E1-12) · calentar_cache.py (E1-14: calienta y `--verificar` la caché de borradores) · reproducir.py (E1-20: pipeline de punta a punta y hashes contra el manifest)
 eval/        revision.py (E1-16) · etiquetar.py · etiquetas/ (una hoja por persona) · etiquetas.csv · ruido.py · validar_benchmark.py · clasificacion.py · calibrar_clasificacion.py · metricas.py · recuperacion.py · puntaje.py · sensibilidad.py
 benchmark/   benchmark_dev.jsonl (solo desarrollo) · sinteticos.csv · README.md
 tests/       fixtures/ · test_t01_carga.py · test_t03_recirculada.py · test_casos_dificiles.py · test_*.py
@@ -110,7 +110,7 @@ Previsto (lo crea la spec indicada):
 data/demo.duckdb (C-06)
 config/      modalidad_banca.yaml completa (E2-01: sectores, horizonte, bandeja)
 prompts/     comparar_contradicciones.txt (E1-10) · respuesta_consulta.txt (E1-11)
-scripts/     buscar_casos.py · preparar_demo.py · capturas_demo.py · verificar_offline.py (C-06) · reproducir.py (E1-20)
+scripts/     buscar_casos.py · preparar_demo.py · capturas_demo.py · verificar_offline.py (C-06)
              empaquetar_datos.py · auditoria_final.py (C-07)
 eval/        run_benchmark.py (E1-18) · precision_at_5.py (E1-19) · y los módulos de métricas que pide cada spec
 tests/       test_t02_*.py, test_t04_*.py … test_t10_*.py (ver docs/protocolo_evaluacion.md)

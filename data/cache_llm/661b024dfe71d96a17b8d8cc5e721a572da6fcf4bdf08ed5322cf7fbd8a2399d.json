@@ -1,0 +1,11 @@
+{
+ "clave": "661b024dfe71d96a17b8d8cc5e721a572da6fcf4bdf08ed5322cf7fbd8a2399d",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.3",
+ "version_cache": "1",
+ "tokens_entrada": 1772,
+ "tokens_salida": 468,
+ "creado_utc": "2026-10-07T11:59:13Z",
+ "respuesta": "{\"afirmaciones\": [{\"id\": \"A1\", \"tipo\": \"declaración\", \"texto\": \"TVN Panamá reporta que colegios particulares atribuyen el aumento de matrícula a la migración al sector oficial y a los altos costos de operación.\", \"citas\": [{\"id\": \"NOT-8921b118ee\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A2\", \"tipo\": \"hecho\", \"texto\": \"El grupo de registros reúne 1 titular de 1 medio que reporta este tema.\", \"citas\": [{\"id\": \"GRP-84a6b3a04b\", \"campo\": \"n_titulares\"}]}, {\"id\": \"A3\", \"tipo\": \"hecho\", \"texto\": \"El grupo de registros reúne 1 medio que reporta este tema.\", \"citas\": [{\"id\": \"GRP-84a6b3a04b\", \"campo\": \"n_medios\"}]}, {\"id\": \"A4\", \"tipo\": \"hecho\", \"texto\": \"El grupo de registros cuenta con 1 procedencia independiente estimada.\", \"citas\": [{\"id\": \"GRP-84a6b3a04b\", \"campo\": \"n_procedencias\"}]}, {\"id\": \"A5\", \"tipo\": \"inferencia\", \"texto\": \"El tema importa a la población porque las condiciones de matrícula y los costos de operación de los colegios particulares pueden incidir en las opciones educativas disponibles para las familias.\", \"base\": [\"A1\"], \"citas\": []}, {\"id\": \"A6\", \"tipo\": \"hipótesis\", \"texto\": \"Si la cobertura del tema se ampliara con más procedencias independientes, la población contaría con más elementos para valorar la situación de la matrícula en los colegios particulares.\", \"base\": [\"A2\", \"A3\", \"A4\"], \"citas\": []}]}"
+}

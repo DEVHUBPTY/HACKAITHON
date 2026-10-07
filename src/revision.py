@@ -793,7 +793,7 @@ def principal(argv: list[str] | None = None) -> int:
         else:
             for f in rev.historial(args.historial):
                 print(f"{f.id_revision}\t{f.fecha_utc}\t{f.accion}\t{f.estado_anterior} -> {f.estado_nuevo}\t{f.revisor} ({f.rol})\tv{f.version}\t{f.motivo or ''}")
-    except ErrorDeRevision as exc:
+    except (ErrorDeRevision, db.ModalidadDistinta) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
     return 0

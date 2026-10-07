@@ -341,6 +341,13 @@ def _historial(
     return [*previo, entrada]
 
 
+def conservar_reproducibilidad(manifest: dict[str, Any], previo: dict[str, Any]) -> dict[str, Any]:
+    """Regenerar el manifest no borra el registro de ``scripts.reproducir`` (E1-20): lo escribe otro script y se conserva tal cual."""
+    if "reproducibilidad" in previo:
+        return {**manifest, "reproducibilidad": previo["reproducibilidad"]}
+    return manifest
+
+
 def construir_manifest(data: Path, config: dict[str, Any], motivo: str | None = None) -> dict[str, Any]:
     """Arma el manifest a partir de ``data/raw`` y ``data/processed`` (y del manifest previo)."""
     raw, processed = data / "raw", data / "processed"
@@ -361,7 +368,7 @@ def construir_manifest(data: Path, config: dict[str, Any], motivo: str | None = 
         previo, fecha, hash_snapshot, cantidades, auditoria, _revisiones_banco_mundial(raw, config), config,
         sha, motivo,
     )
-    return {
+    manifest = {
         "version": historial[-1]["version"],
         "fecha_corte_UTC": fecha,
         "hash_snapshot": hash_snapshot,
@@ -379,6 +386,8 @@ def construir_manifest(data: Path, config: dict[str, Any], motivo: str | None = 
         "registro_extraccion": _registro_extraccion(data, config),
         "historial": historial,
     }
+    previo_completo = json.loads(ruta_previa.read_text("utf-8")) if ruta_previa.exists() else {}
+    return conservar_reproducibilidad(manifest, previo_completo)
 
 
 def escribir_changelog(ruta: Path, manifest: dict[str, Any]) -> None:

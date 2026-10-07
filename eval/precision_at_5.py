@@ -39,6 +39,7 @@ from typing import Any
 from src import db
 from src.carga import intervalo_wilson
 from src.configuracion import RAIZ, ConfigPrecision, cargar_carga, cargar_precision, cargar_temas
+from src.prioridad import MODALIDAD_POR_DEFECTO
 
 ORIGEN_SINTETICO = "sintetico"
 DECIMALES = 4          # solo presentación
@@ -73,6 +74,7 @@ class Candidato:
 
 def corte_de_base(con: Any) -> str:
     """``fecha_referencia`` de los puntajes: el corte del snapshot con el que se calculó el ranking."""
+    db.exigir_modalidad_de_la_base(con, MODALIDAD_POR_DEFECTO)      # X48: la selección del editor se compara con el ranking editorial
     fila = con.execute("SELECT MIN(fecha_referencia) FROM puntajes").fetchone()
     if not fila or fila[0] is None:
         raise SeleccionInvalida("la base no tiene puntajes: correr python -m src.puntaje")
@@ -85,6 +87,7 @@ def candidatos(con: Any) -> list[Candidato]:
     ``fecha_reciente`` es **solo** el máximo de ``fecha_publicacion`` de las noticias del grupo (X34). La fecha de detección de GDELT no
     sustituye a la de publicación (reglas de datos): un grupo sin ninguna fecha de publicación queda con ``""``.
     """
+    db.exigir_modalidad_de_la_base(con, MODALIDAD_POR_DEFECTO)
     nombres = {k: t.nombre for k, t in cargar_temas().temas.items()}
     filas = con.execute(
         "SELECT g.id_grupo, g.tema_clasificado, g.titular_central, "

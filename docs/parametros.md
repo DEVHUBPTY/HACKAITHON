@@ -102,7 +102,8 @@ La ficha no calcula puntaje ni estado: lee lo de E1-10 y agrega presentación y 
 | Horizonte *inmediato* (`horizonte.inmediato_hasta_dias`, banca) | 7 días (evidencia de días; coincide con `dias_nulo` de U, donde la urgencia llega a 0) | Decisión D-102 (D-11) | `test_el_horizonte_coincide_con_los_limites_del_yaml` |
 | Horizonte *corto plazo* (`horizonte.corto_plazo_hasta_dias`, banca) | 56 días (8 semanas); más allá, o sin fechas de noticia, es *estructural* | Decisión D-102 (D-11) | Ídem |
 | Filas por sector al abrir la bandeja (`bandeja.filas_iniciales_por_sector` en `interfaz.yaml`) | 3: primero se agrupa y después se limita por sector, así que ningún sector se oculta (X40) | Supuesto (presentación) | `test_limitar_por_sector_conserva_todos_los_sectores_y_recorta_cada_uno` |
-| Una base guarda una modalidad a la vez | Leer puntajes de otra modalidad lanza `ModalidadDistinta` con la instrucción `src.puntaje --modalidad <m>`; no se mezcla (X39) | Decisión técnica (la clave `(modalidad, grupo)` toca `puntajes`, `eval/` y varias specs) | `test_la_ficha_editorial_sobre_una_corrida_bancaria_falla_con_un_error_claro` y afines |
+| Ancho del titular en la bandeja por sector de la CLI (`bandeja.ancho_titular_cli` en `interfaz.yaml`) | 70 caracteres | Presentación | `test_el_ancho_del_titular_impreso_vive_en_la_configuracion` |
+| Una base guarda una modalidad a la vez | Leer puntajes de otra modalidad (ficha, generación, revisión y las evaluaciones de `eval/`, que son del ranking editorial) lanza `ModalidadDistinta` con la instrucción `src.puntaje --modalidad <m>`; no se mezcla (X39) | Decisión técnica (la clave `(modalidad, grupo)` toca `puntajes`, `eval/` y varias specs) | `test_la_ficha_editorial_sobre_una_corrida_bancaria_falla_con_un_error_claro` y afines |
 | Etiquetas de sector y de horizonte (`bandeja.etiquetas_sector`, `horizonte.etiquetas`) | Textos de presentación en `modalidad_banca.yaml`; los códigos de horizonte son el contrato con E2-02 | Presentación | `test_las_etiquetas_de_sector_y_horizonte_vienen_del_yaml` |
 | Orden de la bandeja bancaria | Bloques por sector, ordenados por el mayor P de sus grupos (a `decimales_p`; empate: orden de `sectores_validos`); dentro de cada bloque, el orden de E1-10; sin sector al final (`bandeja.sin_sector`) | Decisión D-102 | `test_la_bandeja_se_agrupa_por_sector_y_los_sectores_se_ordenan_por_su_mayor_p` |
 
@@ -260,6 +261,9 @@ Todo lo marcado como ruido es una **propuesta por titular**, no una etiqueta hum
 | Diagnóstico: porcentajes de abstención por margen · por parecido a «fuera de temas» | 10, 20, 30 % · 1, 5, 10 % de los 94 titulares útiles del snapshot | Supuesto (rejilla de exploración; el corte sale de un percentil del snapshot, **no de las etiquetas**) | Cada opción se mide con n e IC (`outputs/diagnostico_temas.json`) |
 | Diagnóstico: mínimo de positivos para fiarse de una proporción o un AUC de abstención | 30 | Supuesto (regla práctica; con 5 `sin_tema` hoy el reporte marca `positivos_suficientes: false`) | `outputs/diagnostico_temas.json` |
 | Diagnóstico: referencias exploratorias («fuera de temas» y Economía regional) | 10 textos y 1 frase + 6 ejemplos, en el módulo | Supuesto: escritos a partir de `docs/guia_temas.md` (Fuera de los temas) y de la regla D-84; **no se escribieron para parecerse a un titular etiquetado**, pero el diagnóstico ya había visto las etiquetas. No son parte del sistema | `docs/clasificacion.md`, opciones medidas |
+| Etiquetas: columna `origen` (`eval/origen_etiquetas.py`, E1-07b) | `humano` (100 filas de la persona) · `asistente_provisional` (61 filas) · los lectores usan solo `humano` salvo que se pida lo otro | **Decisión D-101** (las 61 las propuso un agente y las aprobó provisionalmente el asistente, pendientes de la revisión humana C-09; riesgo de circularidad). Valor desconocido o vacío = error con el ID | `tests/test_e1_07b_origen.py` · `outputs/diagnostico_temas.json` marca `usa_etiquetas_provisionales` |
+| Diagnóstico: mínimo de eventos por vía (`MIN_EVENTOS_POR_VIA`) | 5 (= pliegues) | Supuesto (con menos eventos que pliegues no hay validación cruzada por evento; la vía queda `INSUFICIENTE` y no se inventa ninguna métrica) | `test_una_via_con_pocas_filas_o_eventos_no_se_calcula_y_lo_dice` |
+| Etiquetas provisionales: `peso_muestreo` · `estrato` | 1 · el que tenga la noticia en la base (`ruido` si el filtro la marcó) | Supuesto: no vienen de un muestreo probabilístico (46 de 61 salen del estrato de ruido), así que no hay población/muestra que calcular; no usar con métricas ponderadas | `docs/clasificacion.md` §6 |
 | Unidad de análisis de la clasificación con etiquetas | El **evento** (`grupo` de la etiqueta; la noticia si no tiene): 63 filas = 29 eventos | Práctica estadística (los duplicados no son observaciones independientes) | `test_el_ic_por_evento_no_deja_que_un_evento_repetido_domine` |
 | Clases de la evaluación | 6 temas + `sin_tema` (agrupa `fuera_de_temas` y `no_es_panama`) | `guia_temas.md` | `test_tema_a_id_*` |
 | Macro-F1 | Media de los F1 definidos de las clases con soporte en las etiquetas; un F1 indefinido no cuenta como 0 | Práctica (se declara para no inflar ni hundir la media) | `test_una_clase_sin_soporte_*` |
@@ -570,3 +574,35 @@ Ninguno de estos valores decide un puntaje, una acción ni qué se responde: sol
 
 | Metas reportadas (`metas`) | abstención correcta ≥ 0.8 · latencia mediana ≤ 15 s | PDF 9.1 (antes escritas en `eval/run_benchmark.py`, ahora en `config/benchmark.yaml`) | `test_las_metas_de_abstencion_y_latencia_viven_en_la_configuracion` |
 | Medición del LLM versionada | `outputs/benchmark/medicion_llm.json` (excepción en `.gitignore`); si falta, el runner avisa en consola y en `avisos` y deja `no_corrido` | X38 (revisión del PR #33) | `test_sin_medicion_del_llm_se_advierte_en_consola_y_en_las_metricas` · `test_la_medicion_del_llm_del_benchmark_de_desarrollo_se_versiona` |
+
+## Reproducibilidad (E1-20, `config/reproducibilidad.yaml`)
+
+Ninguno de estos valores decide un puntaje ni una respuesta: solo gobiernan cómo se comprueba que dos ejecuciones dan lo mismo. Detalle y motivos en `docs/reproducibilidad.md`.
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| Decimales del hash (`decimales`) | 4 | Medido: el ruido entre lotes del modelo de embeddings es ~1e-7; con 6 decimales cruzaría el redondeo en ~20 % de los valores, con 4 en ~0,2 % | `test_la_huella_redondea_el_ruido_de_flotantes_pero_no_un_cambio_real` |
+| Reiniciar la caché de embeddings (`reiniciar_cache_embeddings`) | `true` | Medido (E1-20): el mismo texto codificado en otro lote difiere ~1e-7; vacía, dos corridas dan lo mismo | `scripts.reproducir --dos-veces` |
+| Orden del pipeline (`pasos`) | validación, normalización, limpieza, clasificación, agrupación, contexto, puntaje, fichas, benchmark | Spec E1-20 | `test_los_pasos_siguen_el_orden_de_la_spec` |
+| Puntaje sin LLM (`--sin-llm`) | siempre | Práctica (reproducibilidad): la nota del LLM es texto del LLM | Hoy no hay pares candidatos; `docs/reproducibilidad.md` |
+| Salidas comparadas (`salidas`) | 30 hashes: `processed/`, tablas, informes, fichas y `metricas.json` | Spec E1-20 | `scripts.reproducir --verificar` |
+| Muestra de sustento (`muestra_sustento`) | Se hashean las columnas de muestra de `revision_sustento.csv`, no `veredicto`, `comentario` ni `revisor` | X46: un conteo igual no prueba la misma muestra; las columnas humanas cambian en C-09 | `test_una_muestra_distinta_con_los_mismos_conteos_se_detecta` · `test_los_veredictos_humanos_no_cambian_el_hash_de_la_muestra` |
+| Claves excluidas del hash | marcas de reloj, entorno y latencia de la consulta (`excluir_de_metricas`, `informes`) | Solo lo que cambia por el reloj o la máquina | `docs/reproducibilidad.md`, sección «Lo que se excluye del hash» |
+| Borradores del LLM | solo desde `data/cache_llm/` (`solo_cache=True`); nunca se llama al proveedor | Spec E1-20; D-94, D-95 | `test_el_borrador_registrado_completo_que_ya_no_sale_de_la_cache_es_una_diferencia` |
+| Modalidad de las fichas y los borradores (`modalidad`) | editorial | Modalidad principal del reto | `config/benchmark.yaml:llm.modalidad` (misma) |
+
+### Semillas registradas (E1-20)
+
+Todo lo aleatorio tiene su semilla en `config/` y `scripts.reproducir` las registra en cada ejecución (`reproducibilidad.ejecucion.semillas`).
+
+| Semilla (`archivo:clave`) | Valor | Para qué |
+|---|---|---|
+| `clasificacion.yaml:semilla` | 42 | Global: torch, numpy y bootstrap de la clasificación |
+| `clasificacion.yaml:criterio_ab.semilla` | 42 | Bootstrap del criterio A vs B |
+| `etiquetado.yaml:muestra.semilla` | 20261006 | Muestra del etiquetado humano |
+| `benchmark.yaml:intervalos.semilla` | 42 | Bootstrap de los intervalos del benchmark |
+| `benchmark.yaml:sustento.semilla` | 42 | Muestra de validez de sustento |
+| `precision.yaml:hoja_ciega.semilla` | `e1-19-hoja-ciega` | Orden de la hoja ciega de Precision@5 (SHA-256 de «semilla\|id_grupo»; E1-19) |
+| `llm.yaml:generacion.semilla` | 0 | Semilla enviada al LLM (con temperatura 0); DeepSeek no la garantiza bit a bit, por eso el texto va a la caché |
+
+Clustering: la agrupación es determinista (similitud y umbral, sin inicialización aleatoria), no tiene semilla.

@@ -1,0 +1,11 @@
+{
+ "clave": "daf09065fdccc798f14a90c014471294f942e04cec6511db8d50b9c84ee5bb35",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.3",
+ "version_cache": "1",
+ "tokens_entrada": 1831,
+ "tokens_salida": 310,
+ "creado_utc": "2026-10-07T12:00:09Z",
+ "respuesta": "{\"afirmaciones\": [{\"id\": \"A1\", \"tipo\": \"declaración\", \"texto\": \"TVN Panamá reporta un contenido exclusivo sobre el metro por la Tumba Muerto.\", \"citas\": [{\"id\": \"NOT-f248fefaf9\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A2\", \"tipo\": \"hecho\", \"texto\": \"El grupo de registros reúne 1 titular de 1 medio que reporta este tema.\", \"citas\": [{\"id\": \"GRP-9442098153\", \"campo\": \"n_titulares\"}, {\"id\": \"GRP-9442098153\", \"campo\": \"n_medios\"}]}, {\"id\": \"A3\", \"tipo\": \"hecho\", \"texto\": \"El grupo de registros estima 1 procedencia independiente.\", \"citas\": [{\"id\": \"GRP-9442098153\", \"campo\": \"n_procedencias\"}]}, {\"id\": \"A4\", \"tipo\": \"hipótesis\", \"texto\": \"Si la información sobre el metro por la Tumba Muerto circulara entre la población, el tema podría ser relevante para quienes se desplazan por esa zona.\", \"base\": [\"A1\", \"A2\", \"A3\"], \"citas\": []}]}"
+}

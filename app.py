@@ -111,7 +111,7 @@ def citas_clicables(ctx: ui.Contexto, citas: list[tuple[str, str]], titulo: str 
 def selector_de_grupo(ctx: ui.Contexto, clave: str) -> str | None:
     """Selector de grupo compartido por Ficha, Paquete y Revisión (el grupo elegido sobrevive al cambio de pantalla)."""
     if not ctx.filas:
-        st.info(ctx.cfg.textos.banca_parcial if cargar_modalidad(ctx.modalidad).parcial else ctx.cfg.textos.sin_puntajes)
+        st.info(ctx.cfg.textos.banca_parcial if cargar_modalidad(ctx.modalidad).parcial else ctx.cfg.textos.sin_puntajes.format(modalidad=ctx.modalidad))
         return None
     ids = [f.id_grupo for f in ctx.filas]
     if st.session_state.get("id_grupo") not in ids:
@@ -214,7 +214,7 @@ def pantalla_bandeja(ctx: ui.Contexto) -> None:
     st.markdown(f"**Reglas v{enc['version_reglas']}** · **Corte del snapshot:** {enc['fecha_corte']} · Modalidad: {cargar_modalidad(ctx.modalidad).nombre}")
     st.caption("P ordena la atención; no es una probabilidad de verdad ni de pérdida. " + ctx.cfg.textos.alerta)
     if not ctx.filas:
-        st.info(ctx.cfg.textos.banca_parcial if cargar_modalidad(ctx.modalidad).parcial else ctx.cfg.textos.sin_puntajes)
+        st.info(ctx.cfg.textos.banca_parcial if cargar_modalidad(ctx.modalidad).parcial else ctx.cfg.textos.sin_puntajes.format(modalidad=ctx.modalidad))
         pie(ctx)
         return
     if not ui.comprobar_orden(ctx.filas):

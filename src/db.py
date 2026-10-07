@@ -36,6 +36,19 @@ def exigir_modalidad(guardada: str | None, pedida: str, id_grupo: str = "") -> N
             f"ejecute `poetry run python -m src.puntaje --modalidad {pedida}` antes de leerlos"
         )
 
+def exigir_modalidad_de_la_base(con: Any, pedida: str) -> None:
+    """Falla con ``ModalidadDistinta`` si la corrida guardada en ``evidencia`` es de otra modalidad que ``pedida``.
+
+    Sin filas en ``evidencia`` (o sin la tabla) no hay modalidad que contradecir y no se falla.
+    """
+    try:
+        guardadas = sorted(r[0] for r in con.execute("SELECT DISTINCT modalidad FROM evidencia").fetchall() if r[0])
+    except duckdb.CatalogException:
+        return
+    if guardadas and guardadas != [pedida]:
+        exigir_modalidad(", ".join(guardadas), pedida)
+
+
 RUTA_BASE = RAIZ / "data" / "senales.duckdb"
 
 # Tabla -> [(columna, tipo)]. El orden es el de la tabla.

@@ -1,0 +1,11 @@
+{
+ "clave": "5857ce1cb93bfc9b10f75dfb252d6ad922884c86037d0b5b10fb4182b0d30cbb",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1772,
+ "tokens_salida": 230,
+ "creado_utc": "2026-10-07T12:00:11Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta contenido exclusivo sobre el metro por la Tumba Muerto\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"Si la información sobre el metro por la Tumba Muerto circulara entre la población, el tema podría ser relevante para quienes se desplazan por esa zona.\", \"afirmaciones\": [\"A4\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún dato oficial vinculado al metro por la Tumba Muerto y qué indicador lo recogería?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras procedencias independientes han reportado sobre el metro por la Tumba Muerto?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Qué información adicional sobre el metro por la Tumba Muerto aporta el contenido que reporta TVN Panamá?\", \"vacio\": \"procedencias_insuficientes\"}]}"
+}
