@@ -26,8 +26,9 @@ from typing import Any  # noqa: E402
 import pandas as pd  # noqa: E402
 import streamlit as st  # noqa: E402
 
-from src import db, interfaz as ui  # noqa: E402
+from src import db, exportar, interfaz as ui, revision as rv  # noqa: E402
 from src.configuracion import MODALIDADES, RAIZ, cargar_modalidad, cargar_temas  # noqa: E402
+from src.cache import SinBorrador  # noqa: E402
 from src.consulta import RespuestaConsulta, crear_consultor  # noqa: E402
 from src.esquemas import ETIQUETA_BORRADOR, Ficha  # noqa: E402
 from src.ficha import Linea, construir_ficha, escapar_markdown, vista  # noqa: E402
@@ -340,7 +341,38 @@ def pantalla_paquete(ctx: ui.Contexto) -> None:
     pie(ctx, ficha.alcance)
 
 
-# ------------------------------------------------------------------ 6 · Revisión
+# ------------------------------------------------------------------ 6 · Revisión (E1-16)
+
+
+def avisar(clave: str = "revision_aviso") -> None:
+    """Un aviso de la acción anterior (la pantalla se vuelve a ejecutar tras cada acción)."""
+    if (a := st.session_state.pop(clave, None)) is not None:
+        (st.success if a[0] == "ok" else st.warning)(a[1])
+
+
+def actuar(texto_ok: str, accion: Any, *args: Any, **kwargs: Any) -> None:
+    """Ejecuta una acción de revisión: éxito -> aviso y se vuelve a pintar; una regla que la rechaza se muestra tal cual, sin escribir nada."""
+    try:
+        accion(*args, **kwargs)
+    except rv.AdvertenciasSinConfirmar as exc:
+        st.session_state["revision_aviso"] = ("aviso", f"Falta confirmar: {'; '.join(a.id for a in exc.advertencias)}")
+    except (rv.ErrorDeRevision, SinBorrador) as exc:
+        st.session_state["revision_aviso"] = ("aviso", str(exc))
+    else:
+        st.session_state["revision_aviso"] = ("ok", texto_ok)
+        st.session_state.pop("revision_advertencias", None)
+    st.rerun()
+
+
+@st.cache_data(show_spinner=False)
+def ficha_del_caso(ruta_base: str, ruta_rev: str, id_caso: str, rechazados: tuple[str, ...]) -> Ficha:
+    """La ficha del caso sin los vínculos rechazados (la clave incluye los rechazados: un rechazo nuevo invalida la ficha)."""
+    rev = rv.Revisiones(ruta_rev, ruta_base)
+    return rev.ficha_del_caso(rev.caso(id_caso))
+
+
+def etiqueta(accion: str) -> str:
+    return ui.cargar_revision().acciones[accion].etiqueta
 
 
 def pantalla_revision(ctx: ui.Contexto) -> None:
@@ -349,22 +381,143 @@ def pantalla_revision(ctx: ui.Contexto) -> None:
     if id_grupo is None:
         pie(ctx)
         return
-    actual = ui.estado_de_revision(ctx.con, id_grupo, ctx.cfg)
-    st.markdown(f"**Estado actual:** {actual}")
+    rev, cfg_rev = ctx.revisiones, ui.cargar_revision()
+    caso = rev.caso_de_grupo(id_grupo, ctx.modalidad)
+    actual = ui.estado_de_revision(ctx.con, id_grupo, ctx.cfg, rev, ctx.modalidad)
+    avisar()
+    st.markdown(f"**Estado actual:** {actual}" + (f" · **Caso:** {caso.id_caso}" if caso else ""))
     st.dataframe(
         pd.DataFrame({"Estados del reto": ctx.cfg.revision.estados, "Actual": ["●" if e == actual else "" for e in ctx.cfg.revision.estados]}),
         hide_index=True,
     )
-    ficha = ficha_de(str(ctx.ruta_base), id_grupo, ctx.modalidad)
+    revisores = ui.revisores_de(ctx.modalidad, cfg_rev)
+    revisor = st.selectbox("Quién revisa", revisores, index=None, placeholder="Elija a la persona que revisa", key="revision_revisor")
+    st.caption(cfg_rev.limitacion_revisor + (f" Rol: {ui.rol_de(revisor, ctx.modalidad, cfg_rev)}." if revisor else ""))
+    if caso is None:
+        ficha = ficha_de(str(ctx.ruta_base), id_grupo, ctx.modalidad)
+        _que_comprobar(ctx, ficha)
+        st.info(ctx.cfg.textos.sin_revision)
+        if st.button(etiqueta("abrir"), key="revision_abrir", disabled=revisor is None, type="primary"):
+            paquete = ui.obtener_paquete(id_grupo, ctx.modalidad, ctx.cfg, ruta_base=ctx.ruta_base)  # el borrador de la caché, si hay (sin LLM ni red)
+            actuar("Caso abierto: la revisión queda registrada.", rev.abrir, id_grupo, ctx.modalidad, revisor, paquete=paquete.paquete if paquete.estado == "disponible" else None)
+        st.caption(ctx.cfg.textos.aprobar_aviso)
+        pie(ctx, ficha.alcance)
+        return
+    rechazados = tuple(sorted(rev.vinculos_rechazados(caso.id_caso)))
+    ficha = ficha_del_caso(str(ctx.ruta_base), str(rev.ruta), caso.id_caso, rechazados)
+    _que_comprobar(ctx, ficha)
+    disponibles = ui.acciones_disponibles(actual, cfg_rev)
+    version = rev.version_actual(caso.id_caso)
+    _borrador(ctx, caso, version)
+    st.subheader("Acciones")
+    comentario = st.text_area("Comentario (opcional)", key="revision_comentario")
+    sin_revisor = revisor is None
+    a1, a2 = st.columns(2)
+    with a1:
+        if st.button(etiqueta("aceptar"), key="revision_aceptar", disabled=sin_revisor or not disponibles["aceptar"], type="primary"):
+            actuar("Aprobado como borrador (sigue marcado BORRADOR).", rev.aceptar, caso.id_caso, revisor, comentario)
+        st.caption(ctx.cfg.textos.aprobar_aviso)
+        vacios = [v.codigo for v in (*ficha.falta_comprobar.principales, *ficha.falta_comprobar.otros)]
+        elegidos = st.multiselect("Vacíos que motivan pedir evidencia", vacios, key="revision_vacios")
+        if st.button(etiqueta("pedir_evidencia"), key="revision_pedir", disabled=sin_revisor or not disponibles["pedir_evidencia"]):
+            actuar("Pasa a «requiere evidencia».", rev.pedir_evidencia, caso.id_caso, revisor, elegidos, comentario)
+    with a2:
+        motivo = st.selectbox("Motivo del descarte (obligatorio)", cfg_rev.motivos_descarte, index=None, placeholder="Elija un motivo", key="revision_motivo_descarte")
+        if st.button(etiqueta("descartar"), key="revision_descartar", disabled=sin_revisor or not disponibles["descartar"]):
+            actuar("Caso descartado.", rev.descartar, caso.id_caso, revisor, motivo, comentario)
+        motivo_reabrir = st.text_input("Motivo para reabrir (obligatorio)", key="revision_motivo_reabrir")
+        if st.button(etiqueta("reabrir"), key="revision_reabrir", disabled=sin_revisor or not disponibles["reabrir"]):
+            actuar("Caso reabierto: vuelve a «en revisión».", rev.reabrir, caso.id_caso, revisor, motivo_reabrir, comentario)
+    _vinculos(ctx, caso, ficha, rechazados, revisor, disponibles)
+    _correccion(ctx, caso, version, revisor, comentario, disponibles)
+    if st.button(etiqueta("regenerar"), key="revision_regenerar", disabled=sin_revisor or not disponibles["regenerar"],
+                 help="Nunca sobrescribe una versión: crea otra. Usa solo la caché del borrador (sin LLM ni red)."):
+        actuar("Borrador regenerado como una versión nueva.", rev.regenerar, caso.id_caso, revisor, comentario=comentario)
+    st.subheader("Historial de revisión")
+    st.caption(cfg_rev.textos.limitacion_historial)
+    st.dataframe(pd.DataFrame(ui.tabla_historial(rev.historial(caso.id_caso), ctx.cfg_ver)), hide_index=True)
+    st.subheader("Exportar")
+    if st.button("Exportar a Notion", key="revision_exportar", help="Genera el Markdown y la fila CSV de «Casos y evidencias»; si el caso ya se exportó, actualiza esa fila."):
+        e = exportar.exportar_caso(rev, caso.id_caso, ficha=ficha)
+        st.session_state["revision_exportacion"] = (e.id_caso, e.markdown, str(e.ruta_markdown), str(e.ruta_csv), e.actualizada)
+    if (x := st.session_state.get("revision_exportacion")) and x[0] == caso.id_caso:
+        st.success(f"{x[0]}: {'actualizado' if x[4] else 'exportado'} en {x[2]} y {x[3]}.")
+        st.download_button("Descargar el Markdown", x[1], file_name=f"{x[0]}.md", key="revision_descarga")
+    pie(ctx, ficha.alcance)
+
+
+def _que_comprobar(ctx: ui.Contexto, ficha: Ficha) -> None:
     st.subheader("Qué debe comprobar la persona")
     st.markdown(f"**Acción recomendada:** {escapar_markdown(ficha.accion_recomendada.accion)}")
     for x in ficha.falta_comprobar.principales:
         linea(f"{x.texto} → Verificar: {x.verificacion}")
     if not ficha.falta_comprobar.principales:
         st.write("Las reglas no detectan vacíos; la revisión humana sigue siendo obligatoria.")
-    st.info(ctx.cfg.textos.sin_revision)
-    st.caption(ctx.cfg.textos.aprobar_aviso)
-    pie(ctx, ficha.alcance)
+
+
+def _borrador(ctx: ui.Contexto, caso: Any, version: Any) -> None:
+    st.subheader("Borrador")
+    versiones = ctx.revisiones.versiones(caso.id_caso)
+    if version is None:
+        st.info("Este caso no tiene borrador: regenere el borrador (usa solo la caché) para poder corregirlo.")
+        return
+    st.markdown(f"**{ETIQUETA_BORRADOR}** · versión {version.version} ({version.origen})")
+    with st.expander(f"Borrador vigente · versión {version.version}", expanded=False):
+        for titulo, parrafos in ui.secciones_de_paquete(version.contenido, ctx.cfg.paquete.etiquetas):
+            st.markdown(f"**{titulo}**")
+            for p in parrafos:
+                linea(p)
+    if len(versiones) > 1:
+        st.dataframe(pd.DataFrame(ui.tabla_versiones(versiones, ctx.cfg_ver)), hide_index=True)
+
+
+def _vinculos(ctx: ui.Contexto, caso: Any, ficha: Ficha, rechazados: tuple[str, ...], revisor: str | None, disponibles: dict[str, bool]) -> None:
+    activos = ui.vinculos_oficiales_de(ficha)
+    if not activos and not rechazados:
+        return
+    st.subheader("Vínculos oficiales")
+    st.caption("Si un dato oficial está mal aplicado, se rechaza: queda registrado y no entra en el borrador que se regenere.")
+    motivo = st.text_input("Motivo (obligatorio) para rechazar o restaurar", key="revision_motivo_vinculo")
+    for i, id_evidencia in enumerate(activos):
+        c1, c2 = st.columns([4, 1])
+        c1.markdown(f"`{id_evidencia}`")
+        if c2.button(etiqueta("rechazar_vinculo"), key=f"revision_rechazar_{i}", disabled=revisor is None or not disponibles["rechazar_vinculo"]):
+            actuar(f"Vínculo {id_evidencia} rechazado.", ctx.revisiones.rechazar_vinculo, caso.id_caso, revisor, id_evidencia, motivo)
+    for i, id_evidencia in enumerate(rechazados):
+        c1, c2 = st.columns([4, 1])
+        c1.markdown(f"~~`{id_evidencia}`~~ rechazado")
+        if c2.button(etiqueta("restaurar_vinculo"), key=f"revision_restaurar_{i}", disabled=revisor is None or not disponibles["restaurar_vinculo"]):
+            actuar(f"Vínculo {id_evidencia} restaurado.", ctx.revisiones.restaurar_vinculo, caso.id_caso, revisor, id_evidencia, motivo)
+
+
+def _correccion(ctx: ui.Contexto, caso: Any, version: Any, revisor: str | None, comentario: str, disponibles: dict[str, bool]) -> None:
+    if version is None:
+        return
+    st.subheader("Corregir el borrador")
+    st.caption("Se corrige el texto de una afirmación o de una oración. El texto corregido se revalida: las advertencias se muestran y la persona debe confirmarlas.")
+    editables = rv.elementos_editables(version.contenido)
+    clave = st.selectbox("Qué texto corregir", list(editables), key="revision_elemento", format_func=lambda k: ui.etiqueta_de_elemento(k, editables[k].texto, 70))
+    if clave is None:
+        return
+    texto = st.text_area("Texto corregido", value=editables[clave].texto, key=f"revision_texto_{version.version}_{clave}")
+    if st.button("Revisar corrección", key="revision_revisar_correccion", disabled=not disponibles["corregir"]):
+        try:
+            st.session_state["revision_advertencias"] = (clave, texto, [a.id for a in ctx.revisiones.revisar_correccion(caso.id_caso, {clave: texto})])
+        except rv.ErrorDeRevision as exc:
+            st.session_state.pop("revision_advertencias", None)
+            st.warning(str(exc))
+    estado = st.session_state.get("revision_advertencias")
+    confirmadas: list[str] = []
+    if estado and estado[0] == clave and estado[1] == texto:
+        if estado[2]:
+            st.warning("El validador encontró advertencias. Para guardar la corrección, confirme cada una.")
+        else:
+            st.success("Sin advertencias del validador.")
+        for i, aviso in enumerate(estado[2]):
+            if st.checkbox(f"Confirmo: {aviso}", key=f"revision_confirmar_{i}"):
+                confirmadas.append(aviso)
+    if st.button(etiqueta("corregir"), key="revision_guardar_correccion", disabled=revisor is None or not disponibles["corregir"]):
+        actuar("Corrección guardada como una versión nueva (la anterior se conserva).", ctx.revisiones.corregir, caso.id_caso, revisor, {clave: texto}, confirmadas=confirmadas, comentario=comentario)
 
 
 # ------------------------------------------------------------------ armado
@@ -396,12 +549,12 @@ def barra_lateral(cfg: Any, demo: bool) -> str:
     return modalidad
 
 
-def aplicar_atajo(cfg: Any, filas: list[ui.FilaBandeja]) -> None:
-    """``?caso=`` abre la ficha una sola vez por valor: después manda la persona."""
+def aplicar_atajo(cfg: Any, filas: list[ui.FilaBandeja], revisiones: Any) -> None:
+    """``?caso=`` (un ``GRP-…``, una posición o un ``CASO-…``) abre la ficha una sola vez por valor: después manda la persona."""
     valor = st.query_params.get(cfg.demo.parametro_caso)
     if valor and st.session_state.get("caso_aplicado") != valor:
         st.session_state["caso_aplicado"] = valor
-        grupo = ui.resolver_caso(valor, filas)
+        grupo = ui.resolver_caso(valor, filas, {c.id_caso: c.id_grupo for c in revisiones.casos()})
         if grupo:
             st.session_state["id_grupo"] = grupo
             st.session_state["pantalla"] = "ficha"
@@ -420,9 +573,10 @@ def main() -> None:
     con = abrir_base(str(ruta)).cursor()
     nombres = {k: t.nombre for k, t in cargar_temas().temas.items()}
     previa = st.session_state.get("modalidad", cfg.modalidad_inicial)
-    aplicar_atajo(cfg, ui.leer_bandeja(con, previa, nombres))      # antes de crear los widgets: así puede fijar la pantalla
+    revisiones = rv.Revisiones(ui.ruta_de_revision(demo), ruta)    # se abre aparte: la base de las pantallas es de solo lectura
+    aplicar_atajo(cfg, ui.leer_bandeja(con, previa, nombres), revisiones)      # antes de crear los widgets: así puede fijar la pantalla
     modalidad = barra_lateral(cfg, demo)
-    ctx = ui.Contexto(cfg, ui.cargar_verificacion(), con, modalidad, demo, aviso, ui.leer_bandeja(con, modalidad, nombres), ruta)
+    ctx = ui.Contexto(cfg, ui.cargar_verificacion(), con, modalidad, demo, aviso, ui.leer_bandeja(con, modalidad, nombres), ruta, revisiones)
     PANTALLAS[st.session_state["pantalla"]](ctx)
 
 
