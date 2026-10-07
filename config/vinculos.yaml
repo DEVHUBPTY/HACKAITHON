@@ -16,6 +16,17 @@ pais_por_defecto: PAN
 
 subtema:                            # D-92 (enmienda a E1-09): el subtema del grupo exige un margen mínimo
   margen_minimo: 0.015              # supuesto: promedio de (1.º − 2.º subtema) del tema asignado; docs/parametros.md
+  # Apoyo léxico (D-92): si algún titular del grupo contiene uno de estos términos, el subtema más cercano se acepta aunque
+  # el margen no llegue. Palabra completa, sin distinguir mayúsculas ni acentos (los términos de varias palabras admiten
+  # cualquier espacio entre ellas). Salen de las definiciones de docs/guia_temas.md (columna "Incluye") y de las formas
+  # léxicas directas de esas mismas palabras; no de los titulares del snapshot. Los subtemas sin lista usan solo el margen.
+  terminos_por_subtema:
+    crecimiento_pib: [pib, producto interno bruto, crecimiento economico]
+    inflacion_precios: [inflacion, precio, precios, canasta basica, combustible, combustibles]
+    empleo: [empleo, empleos, desempleo]
+    comercio_exterior: [comercio exterior, exportacion, exportaciones, importacion, importaciones]
+    telecomunicaciones: [telecomunicacion, telecomunicaciones, internet]
+    sismos: [sismo, sismos, sismico, sismica, temblor, temblores, terremoto]
 
 sismos:                             # E1-09b: presentación y textos fijos del vínculo con eventos USGS
   zona_horaria: America/Panama      # solo para mostrar; los datos siguen en UTC

@@ -745,9 +745,10 @@ class Vinculo(ModeloConfig):
 
 
 class SubtemaVinculo(ModeloConfig):
-    """D-92: el grupo toma el subtema más cercano solo si supera al segundo por este margen; si no, queda sin subtema."""
+    """D-92: el grupo toma el subtema más cercano solo si supera al segundo por este margen o un titular nombra un término."""
 
     margen_minimo: float = Field(ge=0)
+    terminos_por_subtema: dict[str, list[str]]   # apoyo léxico: un término en el titular acepta el subtema aunque el margen no llegue
 
 
 class SismosVinculo(ModeloConfig):

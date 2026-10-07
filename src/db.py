@@ -142,7 +142,7 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("motivo_sin_vinculo", "VARCHAR"),     # solo en filas sin vínculo (config/vinculos.yaml)
         ("fuente", "VARCHAR NOT NULL"),        # quién la escribe: `indicador` (src.contexto) o `usgs` (src.contexto_sismos)
         ("rol", "VARCHAR"),                    # panama · comparable · tendencia · evento
-        ("subtema", "VARCHAR"),                # subtema más cercano dentro del tema del grupo
+        ("subtema", "VARCHAR"),                # subtema más cercano dentro del tema del grupo (D-92: solo si hay margen o término)
         ("pais_iso3", "VARCHAR"),
         ("indicador_id", "VARCHAR"),
         ("anio", "INTEGER"),
@@ -159,6 +159,7 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("estado_evento", "VARCHAR"),          # `automatic` o `reviewed`
         ("url_evento", "VARCHAR"),
         ("diferencia_horas", "DOUBLE"),        # distancia a la noticia más cercana del grupo
+        ("criterio_subtema", "VARCHAR"),       # D-92: por qué se aceptó el subtema: `margen` o `lexico`
     ],
     "registro_normalizacion": [
         ("tabla", "VARCHAR NOT NULL"),

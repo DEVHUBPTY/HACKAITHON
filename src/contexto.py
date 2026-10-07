@@ -6,7 +6,8 @@ Cada grupo (``GRP-``) se vincula con el indicador que le corresponde **por subte
 * **Subtema:** el subtema más cercano dentro del tema asignado al grupo (método B de ``src/clasificacion.py``, tabla
   ``similitud_tema``), aunque el método activo sea el A. Voto de los titulares del grupo; desempata la suma de similitudes.
   **Solo si** el margen promedio de los titulares (1.º − 2.º subtema del tema, ``similitud_tema.margen_subtema``) alcanza
-  ``vinculos.subtema.margen_minimo``; si no, el grupo queda sin subtema (D-92) y recibe el vínculo por tema o ``tema_sin_indicador``.
+  ``vinculos.subtema.margen_minimo`` (criterio ``margen``) o un titular nombra un término del subtema
+  (``terminos_por_subtema``, criterio ``lexico``); si no, el grupo queda sin subtema (D-92) y recibe el vínculo por tema o ``tema_sin_indicador``.
 * **Vínculo:** primero ``vinculos`` (por subtema), después ``vinculos_por_tema``; si no hay, ``tema_sin_indicador``.
   Un indicador sin ningún valor no nulo de Panamá es ``sin_dato_en_periodo``.
 * **Panamá:** el último año con valor no nulo, declarado en la limitación junto con los años posteriores sin valor.
@@ -33,6 +34,7 @@ import json
 import logging
 import re
 import sys
+import unicodedata
 from collections import Counter, defaultdict
 from collections.abc import Mapping, Sequence
 from pathlib import Path
@@ -43,6 +45,7 @@ from src.clasificacion import proporcion
 from src.configuracion import (
     RAIZ,
     ConfigVinculos,
+    SubtemaVinculo,
     Vinculo,
     cargar_carga,
     cargar_fuentes,
@@ -57,6 +60,7 @@ logger = logging.getLogger(__name__)
 FUENTE_INDICADOR = "indicador"   # valor de ``vinculos.fuente`` de las filas que escribe este módulo
 METODO_SUBTEMA = "B"             # el subtema solo existe en el método B (prototipos por subtema)
 ROL_PANAMA, ROL_COMPARABLE, ROL_TENDENCIA = "panama", "comparable", "tendencia"
+CRITERIO_MARGEN, CRITERIO_LEXICO = "margen", "lexico"   # D-92: por qué se aceptó el subtema
 REGLA_SUBTEMA = "vinculo_por_subtema"
 REGLA_TEMA = "vinculo_por_tema"
 REGLA_SIN_ENTRADA = "sin_vinculo_en_tabla"
@@ -85,17 +89,38 @@ def subtema_del_grupo(candidatos: Sequence[tuple[str, float]]) -> str | None:
     return min(votos, key=lambda s: (-votos[s], -suma[s], s))
 
 
-def subtema_con_margen(candidatos: Sequence[tuple[str, float, float | None]], margen_minimo: float) -> str | None:
-    """Subtema del grupo (``subtema_del_grupo``) solo si el margen promedio de sus titulares alcanza ``margen_minimo`` (D-92).
+def _normalizar(texto: str) -> str:
+    """Minúsculas, sin acentos y con los espacios colapsados."""
+    sin_acentos = "".join(c for c in unicodedata.normalize("NFKD", texto) if not unicodedata.combining(c))
+    return " ".join(sin_acentos.casefold().split())
 
-    ``candidatos`` son ``(subtema, similitud, margen)`` por titular; el margen es 1.º − 2.º subtema dentro del tema asignado.
-    Un titular sin margen guardado (base anterior a D-92) no lo respalda: sin margen conocido no se afirma subtema.
+
+def menciona_termino(titular: str, terminos: Sequence[str]) -> bool:
+    """``True`` si ``titular`` contiene alguno de ``terminos`` como palabra completa, sin importar mayúsculas ni acentos."""
+    texto = _normalizar(titular)
+    return any(re.search(r"(?<!\w)" + re.escape(_normalizar(t)) + r"(?!\w)", texto) for t in terminos if t.strip())
+
+
+def decidir_subtema(
+    candidatos: Sequence[tuple[str, float, float | None]], titulares: Sequence[str], cfg: SubtemaVinculo
+) -> tuple[str | None, str | None]:
+    """``(subtema, criterio)`` del grupo, o ``(None, None)`` si el subtema es dudoso (D-92).
+
+    El subtema es el de ``subtema_del_grupo`` y se acepta por uno de dos criterios, en este orden:
+
+    * ``margen``: el margen promedio de los titulares (1.º − 2.º subtema del tema asignado) alcanza ``margen_minimo``.
+      Un titular sin margen guardado (base anterior a D-92) no lo respalda.
+    * ``lexico``: algún titular del grupo contiene un término de ``terminos_por_subtema`` de ese subtema.
     """
     elegido = subtema_del_grupo([(s, sim) for s, sim, _ in candidatos])
+    if elegido is None:
+        return None, None
     margenes = [m for _, _, m in candidatos]
-    if elegido is None or any(m is None for m in margenes):
-        return None
-    return elegido if sum(margenes) / len(margenes) >= margen_minimo else None   # type: ignore[arg-type]
+    if all(m is not None for m in margenes) and sum(margenes) / len(margenes) >= cfg.margen_minimo:   # type: ignore[arg-type]
+        return elegido, CRITERIO_MARGEN
+    if any(menciona_termino(t, cfg.terminos_por_subtema.get(elegido, [])) for t in titulares):
+        return elegido, CRITERIO_LEXICO
+    return None, None
 
 
 # ------------------------------------------------------------------ cifra del titular
@@ -217,7 +242,9 @@ def _fila(id_grupo: str, **campos: Any) -> dict[str, Any]:
     return fila
 
 
-def _fila_dato(id_grupo: str, dato: Mapping[str, Any], vinculo: Vinculo, regla: str, rol: str, subtema: str | None, nota: str) -> dict[str, Any]:
+def _fila_dato(
+    id_grupo: str, dato: Mapping[str, Any], vinculo: Vinculo, regla: str, rol: str, subtema: str | None, nota: str, criterio: str | None = None
+) -> dict[str, Any]:
     return _fila(
         id_grupo,
         id_evidencia=dato["id_indicador"],
@@ -226,6 +253,7 @@ def _fila_dato(id_grupo: str, dato: Mapping[str, Any], vinculo: Vinculo, regla: 
         limitacion=f"{vinculo.limitacion} {nota}",
         rol=rol,
         subtema=subtema,
+        criterio_subtema=criterio,
         pais_iso3=dato["pais_iso3"],
         indicador_id=dato["indicador_id"],
         anio=dato["anio"],
@@ -243,6 +271,7 @@ def vincular_grupo(
     anio_publicacion: int | None,
     indicadores: Sequence[Mapping[str, Any]],
     cfg: ConfigVinculos,
+    criterio_subtema: str | None = None,
 ) -> list[dict[str, Any]] | None:
     """Filas de ``vinculos`` de un grupo; ``None`` si el vínculo no es del Banco Mundial (lo resuelve otro módulo).
 
@@ -252,19 +281,19 @@ def vincular_grupo(
     if vinculo is not None and vinculo.fuente != FUENTE_INDICADOR:
         return None  # gancho E1-09b: sismos y demás fuentes no son del Banco Mundial
     if vinculo is None:
-        return [_fila(id_grupo, regla=regla, motivo_sin_vinculo=cfg.motivo_por_defecto, subtema=subtema)]
+        return [_fila(id_grupo, regla=regla, motivo_sin_vinculo=cfg.motivo_por_defecto, subtema=subtema, criterio_subtema=criterio_subtema)]
     serie = {
         d["anio"]: d for d in indicadores if d["indicador_id"] == vinculo.id and d["pais_iso3"] == cfg.pais_por_defecto
     }
     con_valor = sorted(a for a, d in serie.items() if d["valor"] is not None)
     if not con_valor:
-        return [_fila(id_grupo, regla=f"{REGLA_SIN_DATO}:{vinculo.id}", motivo_sin_vinculo=MOTIVO_SIN_DATO, subtema=subtema)]
+        return [_fila(id_grupo, regla=f"{REGLA_SIN_DATO}:{vinculo.id}", motivo_sin_vinculo=MOTIVO_SIN_DATO, subtema=subtema, criterio_subtema=criterio_subtema)]
     ultimo = con_valor[-1]
     sin_valor = sorted(a for a in serie if a > ultimo)
     nota = cfg.notas.ultimo_anio.format(anio=ultimo)
     if sin_valor:
         nota += " " + cfg.notas.anios_sin_valor.format(anios=SEPARADOR_ANIOS.join(map(str, sin_valor)))
-    principal = _fila_dato(id_grupo, serie[ultimo], vinculo, regla, ROL_PANAMA, subtema, nota)
+    principal = _fila_dato(id_grupo, serie[ultimo], vinculo, regla, ROL_PANAMA, subtema, nota, criterio_subtema)
     if titular:
         cifra = extraer_cifra_titular(titular, vinculo.id or "", cfg)
         if cifra is not None:
@@ -274,10 +303,10 @@ def vincular_grupo(
     filas = [principal]
     for d in sorted((d for d in indicadores if d["indicador_id"] == vinculo.id and d["anio"] == ultimo), key=lambda d: d["pais_iso3"]):
         if d["pais_iso3"] != cfg.pais_por_defecto and d["valor"] is not None:  # solo los que tienen dato, el mismo año
-            filas.append(_fila_dato(id_grupo, d, vinculo, regla, ROL_COMPARABLE, subtema, nota))
+            filas.append(_fila_dato(id_grupo, d, vinculo, regla, ROL_COMPARABLE, subtema, nota, criterio_subtema))
     for anio in sorted(a for a in serie if ultimo - cfg.tendencia_anios < a <= ultimo):
         filas.append(
-            _fila_dato(id_grupo, serie[anio], vinculo, regla, ROL_TENDENCIA, subtema, cfg.notas.serie.format(anio=anio, n=cfg.tendencia_anios))
+            _fila_dato(id_grupo, serie[anio], vinculo, regla, ROL_TENDENCIA, subtema, cfg.notas.serie.format(anio=anio, n=cfg.tendencia_anios), criterio_subtema)
         )
     return filas
 
@@ -299,8 +328,13 @@ def _anio_de(fecha: str | None) -> int | None:
     return int(fecha[POSICION_ANIO]) if fecha and fecha[POSICION_ANIO].isdigit() else None
 
 
-def leer_grupos(con: Any, margen_minimo: float) -> list[dict[str, Any]]:
-    """Cada grupo con su tema, el subtema más cercano (método B) si pasa el margen mínimo (D-92), el titular central y el año."""
+def leer_grupos(con: Any, cfg: SubtemaVinculo) -> list[dict[str, Any]]:
+    """Cada grupo con su tema, el subtema más cercano (método B) si lo respalda el margen o un término (D-92), su criterio,
+    el titular central y el año."""
+    titulares: defaultdict[str, list[str]] = defaultdict(list)
+    for id_grupo, titulo in con.execute("SELECT id_grupo, COALESCE(titulo_limpio, titulo) FROM noticias WHERE id_grupo IS NOT NULL").fetchall():
+        if titulo:
+            titulares[id_grupo].append(titulo)
     votos: defaultdict[str, list[tuple[str, float, float | None]]] = defaultdict(list)
     for id_grupo, subtema, similitud, margen in con.execute(
         """SELECT n.id_grupo, s.subtema, s.similitud, s.margen_subtema FROM noticias n
@@ -315,11 +349,13 @@ def leer_grupos(con: Any, margen_minimo: float) -> list[dict[str, Any]]:
         """SELECT g.id_grupo, g.tema_clasificado, g.titular_central, n.fecha_publicacion, n.fecha_deteccion
            FROM grupos g LEFT JOIN noticias n ON n.id_noticia = g.id_noticia_central ORDER BY g.id_grupo"""
     ).fetchall():
+        subtema, criterio = decidir_subtema(votos.get(id_grupo, []), titulares.get(id_grupo, []), cfg)
         grupos.append(
             {
                 "id_grupo": id_grupo,
                 "tema": tema,
-                "subtema": subtema_con_margen(votos.get(id_grupo, []), margen_minimo),
+                "subtema": subtema,
+                "criterio_subtema": criterio,
                 "titular": titular,
                 "anio_publicacion": _anio_de(publicacion or deteccion),
             }
@@ -334,7 +370,7 @@ def construir_vinculos(
     filas: list[dict[str, Any]] = []
     delegados: list[str] = []
     for g in grupos:
-        resultado = vincular_grupo(g["id_grupo"], g["tema"], g["subtema"], g["titular"], g["anio_publicacion"], indicadores, cfg)
+        resultado = vincular_grupo(g["id_grupo"], g["tema"], g["subtema"], g["titular"], g["anio_publicacion"], indicadores, cfg, g["criterio_subtema"])
         if resultado is None:
             delegados.append(g["id_grupo"])
             continue
@@ -355,7 +391,7 @@ def aplicar_a_base(ruta_base: Path, cfg: ConfigVinculos, con: Any | None = None)
     try:
         if propia:
             db.asegurar_esquema(con)
-        grupos = leer_grupos(con, cfg.subtema.margen_minimo)
+        grupos = leer_grupos(con, cfg.subtema)
         indicadores = db.leer_tabla(con, "indicadores")
         filas, delegados = construir_vinculos(grupos, indicadores, cfg)
         _reemplazar(con, FUENTE_INDICADOR, filas, propia)
@@ -399,14 +435,16 @@ def aplicar_sismos(
             db.asegurar_esquema(con)
         fechas = contexto_sismos.leer_noticias_por_grupo(con)
         resultados = []
-        for g in leer_grupos(con, cfg.subtema.margen_minimo):
+        criterios: dict[str, str | None] = {}
+        for g in leer_grupos(con, cfg.subtema):
             vinculo, _ = elegir_vinculo(g["tema"], g["subtema"], cfg)
             if vinculo is None or vinculo.fuente != contexto_sismos.FUENTE_USGS:
                 continue
             r = contexto_sismos.vincular_grupo(g["id_grupo"], g["subtema"], fechas.get(g["id_grupo"], []), eventos, cfg, fuentes, campos_fecha)
             if r is not None:
                 resultados.append(r)
-        filas = [f for r in resultados for f in contexto_sismos.a_filas_vinculo(r, cfg)]
+                criterios[g["id_grupo"]] = g["criterio_subtema"]
+        filas = [{**f, "criterio_subtema": criterios[r.id_grupo]} for r in resultados for f in contexto_sismos.a_filas_vinculo(r, cfg)]
         verificar_texto(filas, cfg)
         _reemplazar(con, contexto_sismos.FUENTE_VINCULO, filas, propia)
         return resultados, filas, sin_magnitud
