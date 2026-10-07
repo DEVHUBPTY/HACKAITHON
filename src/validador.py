@@ -110,6 +110,7 @@ OBSERVACION_CON_HIPOTESIS = "observacion_con_hipotesis"   # E2-02: una observaci
 IMPACTO_COMO_HECHO = "impacto_como_hecho"                 # E2-02: una hipótesis de impacto se apoya en un hecho o una declaración
 IMPACTO_SIN_CONDICIONAL = "impacto_sin_condicional"       # E2-02: una hipótesis de impacto no está en condicional
 AVISO = "aviso_banca"                                     # E2-02: el boletín lleva el aviso fijo de restricciones.yaml
+SECTOR_FINANCIERO_AJENO = "sector_financiero_ajeno"       # X57 (D-107): la excepción literal no cubre un término financiero que el titular no trae
 OBSERVACION_CONDICIONAL = "observacion_condicional"       # X49: una observación no se redacta en condicional
 
 # E2-02 · Los dos bloques del resumen del boletín (docs/salidas.md §2): su límite de palabras es conjunto.
@@ -523,6 +524,12 @@ def _excepcion_literal(ctx: Contexto, texto_plano: str, frase: str, citas: Itera
     return fragmento_literal(texto_plano, frase, plano(ctx.texto_citado(citas)), ventana)
 
 
+def terminos_financieros_ajenos(texto_plano: str, citado_plano: str, terminos: Iterable[str]) -> list[str]:
+    """X57 (D-107): los términos del sector financiero que el texto trae y el campo citado no. Palabras completas, sin distinguir mayúsculas
+    ni tildes. Son los que una oración apoyada en la excepción del titular literal no puede agregar fuera de la ventana."""
+    return [t for t in dict.fromkeys(terminos) if contiene(texto_plano, t) and not contiene(citado_plano, t)]
+
+
 def _acento(texto: str) -> str:
     return unicodedata.normalize("NFC", texto).casefold()
 
@@ -557,6 +564,12 @@ def _reglas_de_texto(
         for f in dict.fromkeys(encontradas):
             tipos_ok = not conf or not conf.excepcion_tipos or (bool(tipos) and tipos <= set(conf.excepcion_tipos))
             if conf and conf.excepcion_literal and tipos_ok and seccion not in conf.sin_excepcion_en and _excepcion_literal(ctx, p, f, s.citas, conf.ventana_literal):
+                if conf.rechaza_sector_financiero_ajeno:  # X57 (D-107): la excepción no cubre un término financiero que el titular no trae
+                    citado = plano(ctx.texto_citado(s.citas))
+                    for t in terminos_financieros_ajenos(p, citado, ctx.val.sector_financiero):
+                        rechazo = Rechazo(SECTOR_FINANCIERO_AJENO, f"la excepción del titular literal no cubre un término financiero que el titular no trae: «{t}»", t)
+                        if rechazo not in out:
+                            out.append(rechazo)
                 continue
             out.append(Rechazo(nombre, f"frase prohibida ({nombre}): «{f}»", f))
     for f in ctx.val.detalle_sin_cita:

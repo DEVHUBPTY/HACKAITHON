@@ -708,3 +708,69 @@ def test_una_oracion_que_resume_varios_anios_lleva_al_menos_uno() -> None:
     )
     assert not validar_seccion("brief", [o("La inflación fue de 2.9 % anual en 2023.", "A1")], ctx)
     assert IND_SIN_ANIO in reglas(validar_seccion("brief", [o("La inflación fue de 2.9 % anual.", "A1")], ctx))
+
+
+# ---- X57 (D-107): la excepción del titular literal no cubre términos del sector financiero que el titular no trae
+
+
+def _ctx_boletin_con_titular(titular: str):  # type: ignore[no-untyped-def]
+    from src.generacion import RegistroEvidencia
+    from tests.generacion_ayuda import ficha_banca
+
+    base = ficha_banca()
+    registros = [RegistroEvidencia(id=r.id, idioma=r.idioma, campos={"titulo": titular} if r.id == ID_LLUVIAS_B else r.campos, contexto=r.contexto) for r in base.registros]
+    return contexto(ficha_banca(registros=registros), grupos=("comunes", "banca"))
+
+
+SECTOR_FINANCIERO_AJENO = "sector_financiero_ajeno"
+CASOS_X57 = [  # los tres que la segunda revisión del PR #38 mostró que pasaban
+    "Según La Prensa, las lluvias causaron pérdidas en cultivos y en la banca",
+    "Según La Prensa, para la banca las lluvias causaron pérdidas en cultivos de Chiriquí",
+    "La Prensa reporta que bancos temen que lluvias causaron pérdidas en cultivos",
+]
+
+
+@pytest.mark.parametrize("texto", CASOS_X57)
+def test_x57_un_termino_financiero_fuera_del_titular_invalida_la_excepcion_literal(texto: str) -> None:
+    rechazada(afirmacion("A1", "declaración", texto, (ID_LLUVIAS_B, "titulo")), SECTOR_FINANCIERO_AJENO, ctx=_ctx_boletin())
+
+
+@pytest.mark.parametrize("texto", CASOS_X57)
+def test_x57_las_observaciones_del_boletin_tambien_lo_rechazan(texto: str) -> None:
+    assert SECTOR_FINANCIERO_AJENO in reglas(validar_seccion("observaciones", [o(texto + ".", "A1")], _ctx_boletin()))
+
+
+def test_x57_el_rechazo_es_tipado_con_regla_motivo_y_fragmento() -> None:
+    r = valida(afirmacion("A1", "declaración", CASOS_X57[0], (ID_LLUVIAS_B, "titulo")), ctx=_ctx_boletin())
+    (x,) = [x for x in r.rechazos if x.regla == SECTOR_FINANCIERO_AJENO]
+    assert x.fragmento == "banca" and "banca" in x.motivo
+
+
+def test_x57_si_el_termino_financiero_esta_en_el_titular_la_excepcion_sigue_valiendo() -> None:
+    titular = "Bancos de Chiriquí reportan pérdidas en créditos agrícolas por lluvias"
+    ctx = _ctx_boletin_con_titular(titular)
+    aceptada(afirmacion("A1", "declaración", "Según La Prensa, bancos de Chiriquí reportan pérdidas en créditos agrícolas por lluvias", (ID_LLUVIAS_B, "titulo")), ctx=ctx)
+    # y solo los términos que el titular trae: «cartera» no está
+    rechazada(
+        afirmacion("A1", "declaración", "Según La Prensa, bancos de Chiriquí reportan pérdidas en créditos agrícolas por lluvias y en la cartera", (ID_LLUVIAS_B, "titulo")),
+        SECTOR_FINANCIERO_AJENO, ctx=ctx,
+    )
+
+
+def test_x57_la_comparacion_no_distingue_mayusculas_ni_tildes() -> None:
+    from src.validador import plano, terminos_financieros_ajenos
+
+    lista = ["crédito", "créditos", "banca", "entidades financieras"]
+    citado = plano("Lluvias dejan pérdidas en CRÉDITOS agrícolas de Chiriquí")
+    assert terminos_financieros_ajenos(plano("Según La Prensa, los creditos agrícolas sufrieron pérdidas"), citado, lista) == []
+    assert terminos_financieros_ajenos(plano("Según La Prensa, los CRÉDITOS y la BANCA sufrieron pérdidas"), citado, lista) == ["banca"]
+    assert terminos_financieros_ajenos(plano("las Entidades Financieras sufrieron pérdidas"), citado, lista) == ["entidades financieras"]
+    assert terminos_financieros_ajenos(plano("el bancal sufrió pérdidas"), citado, lista) == []  # palabra completa
+
+
+def test_x57_la_lista_y_la_marca_viven_en_el_yaml() -> None:
+    from src.configuracion import cargar_validador
+
+    v = cargar_validador()
+    assert {"banca", "banco", "bancos", "bancario", "crédito", "cartera", "entidades financieras", "sistema financiero"} <= set(v.sector_financiero)
+    assert v.listas["perdidas_en_inferencias"].rechaza_sector_financiero_ajeno

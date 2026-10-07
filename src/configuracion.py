@@ -2082,6 +2082,7 @@ class ListaValidador(ModeloConfig):
     sin_excepcion_en: list[str] = Field(default_factory=list)
     excepcion_tipos: list[str] = Field(default_factory=list)  # E2-02: la excepción solo vale si todo lo citado es de estos tipos
     ventana_literal: int = Field(default=0, ge=0)  # X49: palabras a cada lado de la frase que también deben ser literales del titular (0 = solo la frase)
+    rechaza_sector_financiero_ajeno: bool = False  # X57 (D-107): una oración que usa la excepción literal no puede traer un término de ``sector_financiero`` que el titular no tenga
     con_tildes: bool = False  # X50: se compara conservando las tildes («bajará», futuro, no es «bajara», subjuntivo)
 
 
@@ -2121,6 +2122,7 @@ class ConfigValidador(ModeloConfig):
     acusaciones: list[str] = Field(min_length=1)
     detalle_sin_cita: list[str]
     listas: dict[str, ListaValidador]
+    sector_financiero: list[str] = Field(min_length=1)  # X57 (D-107)
     transiciones: TransicionesValidador
     patrones: dict[str, list[str]]
     palabras_numero: dict[str, int]

@@ -91,6 +91,7 @@ frases_sin_cifra: [las dos versiones, ambas versiones, las dos partes, las dos p
 #  sin_excepcion_en: secciones donde la excepción no vale
 #  excepcion_tipos: la excepción solo vale si lo que se cita es de estos tipos (vacío = cualquiera)
 #  ventana_literal: además de la frase, estas palabras a cada lado (las que haya en el texto) deben ser literales del titular citado (X49)
+#  rechaza_sector_financiero_ajeno: una oración que usa la excepción literal se rechaza si trae un término de `sector_financiero` que el campo citado no trae (X57, D-107)
 #  con_tildes: se compara conservando tildes («bajará» no es «bajara»)
 listas:
   lectura_simulada: {excepcion_literal: false}
@@ -103,7 +104,35 @@ listas:
   certeza: {excepcion_literal: false, tipos: [inferencia, hipótesis]}
   futuro_asertivo: {excepcion_literal: false, tipos: [inferencia, hipótesis], con_tildes: true}   # X50: un futuro indicativo afirma, no condiciona
   # X49: la palabra sola no basta; el fragmento que la rodea (2 palabras a cada lado) debe estar literal en el titular citado.
-  perdidas_en_inferencias: {excepcion_literal: true, excepcion_tipos: [declaración], ventana_literal: 2}
+  perdidas_en_inferencias: {excepcion_literal: true, excepcion_tipos: [declaración], ventana_literal: 2, rechaza_sector_financiero_ajeno: true}
+
+# X57 (D-107): términos del sector financiero (palabras completas, sin distinguir mayúsculas ni tildes). Una oración que se apoya en la excepción
+# del titular literal (`perdidas_en_inferencias`) no puede traer ninguno que el campo citado no tenga: la ventana de 2 palabras no alcanza para
+# impedir «…causaron pérdidas en cultivos y en la banca».
+sector_financiero:
+  - banca
+  - banco
+  - bancos
+  - bancario
+  - bancaria
+  - bancarios
+  - bancarias
+  - crédito
+  - créditos
+  - cartera
+  - carteras
+  - préstamo
+  - préstamos
+  - entidad financiera
+  - entidades financieras
+  - institución financiera
+  - instituciones financieras
+  - sistema financiero
+  - sector financiero
+  - financiera
+  - financieras
+  - financiero
+  - financieros
 
 # D-41: oraciones sin cita (transiciones). Sin cifras, fechas, nombres ni entidades; el máximo por sección está en salidas.yaml.
 transiciones:
