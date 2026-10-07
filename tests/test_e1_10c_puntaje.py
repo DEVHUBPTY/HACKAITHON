@@ -207,3 +207,16 @@ def test_d103_r_no_usa_la_confianza_del_clasificador() -> None:
 
 def test_d103_los_pesos_de_p_no_cambian() -> None:
     assert (REGLAS.pesos.R, REGLAS.pesos.I, REGLAS.pesos.U, REGLAS.pesos.N, REGLAS.pesos.E) == (30, 25, 20, 15, 10)
+
+
+# ------------------------------------------------------------------ X51 · «pese a» no es el distrito de Pesé
+
+
+def test_x51_la_preposicion_pese_a_no_es_el_distrito() -> None:
+    assert _nivel("Exportaciones chinas sostienen la demanda de carga contenerizada pese a la debilidad de EE. UU.") != "local"
+    assert _nivel("Pese a la lluvia, sigue el festival") != "local"
+
+
+@pytest.mark.parametrize("titular", ["Inundaciones en Pesé dejan familias evacuadas", "Productores de Pese reclaman pagos", "PESÉ: corte de agua"])
+def test_x51_el_distrito_de_pese_sigue_siendo_local(titular: str) -> None:
+    assert _nivel(titular) == "local"
