@@ -1946,6 +1946,53 @@ def cargar_generacion(carpeta: Path | None = None) -> ConfigGeneracionBorrador:
     return cargar_config("generacion", ConfigGeneracionBorrador, carpeta)
 
 
+
+# ------------------------------------------------------------------ validador.yaml (E1-13)
+
+
+class NumerosValidador(ModeloConfig):
+    tolerancia_absoluta: float = Field(ge=0)
+    redondeo_permitido: bool
+    decimales_maximos: int = Field(ge=0)
+
+
+class ListaValidador(ModeloConfig):
+    """Cómo se aplica una lista de ``restricciones.yaml``: a qué tipos y si admite la excepción del titular literal."""
+
+    excepcion_literal: bool
+    tipos: list[str] = Field(default_factory=list)
+    sin_excepcion_en: list[str] = Field(default_factory=list)
+
+
+class TransicionesValidador(ModeloConfig):
+    max_palabras: int = Field(ge=1)
+    secciones: list[str]
+    inicio_no_entidad: list[str]
+
+
+class ConfigValidador(ModeloConfig):
+    """Modelo de ``config/validador.yaml`` (E1-13): listas y umbrales de las reglas del validador (D-79)."""
+
+    version: str
+    registro: str
+    numeros: NumerosValidador
+    condicionales: list[str] = Field(min_length=1)
+    causales: list[str] = Field(min_length=1)
+    acusaciones: list[str] = Field(min_length=1)
+    detalle_sin_cita: list[str]
+    listas: dict[str, ListaValidador]
+    transiciones: TransicionesValidador
+    nombres_permitidos: list[str]
+    meses: list[str] = Field(min_length=12, max_length=13)
+    nombre_min_caracteres: int = Field(ge=1)
+    campos_fecha: list[str] = Field(min_length=1)
+
+
+def cargar_validador(carpeta: Path | None = None) -> ConfigValidador:
+    """Atajo para ``config/validador.yaml``."""
+    return cargar_config("validador", ConfigValidador, carpeta)
+
+
 # ------------------------------------------------------------------ verificacion.yaml (E1-10b)
 
 
@@ -2188,6 +2235,7 @@ CARGADORES = {
     "consulta": cargar_consulta,
     "prioridad": cargar_prioridad,
     "generacion": cargar_generacion,
+    "validador": cargar_validador,
     "verificacion": cargar_verificacion,
     "interfaz": cargar_interfaz,
 }

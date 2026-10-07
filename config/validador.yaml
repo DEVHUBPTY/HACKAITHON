@@ -1,0 +1,61 @@
+# E1-13 · Validador de citas (D-41, D-45, D-51, D-53, D-68). Todo umbral y toda lista de reglas viven aquí (D-79).
+# Las listas de frases prohibidas (entrevistas, imágenes, lectura simulada, sensacionalismo) están en restricciones.yaml; los
+# límites de palabras y cantidades, en salidas.yaml. Origen y validación de cada valor: docs/parametros.md, sección E1-13.
+# Las comparaciones no distinguen mayúsculas ni tildes y se hacen por palabra completa.
+version: "1.0"
+
+registro: outputs/rechazos.jsonl     # una línea por rechazo y una por unidad evaluada (permite calcular tasas)
+
+numeros:
+  tolerancia_absoluta: 0.0           # diferencia máxima entre la cifra del texto y la del campo citado
+  redondeo_permitido: true           # «2.9 %» respalda el valor 2.934: la cifra del texto es el valor redondeado a sus decimales
+  decimales_maximos: 6               # más decimales que esto en el texto no se comparan por redondeo
+
+# D-41: una hipótesis y una redacción condicional llevan alguno de estos marcadores.
+condicionales: [podría, podrían, pudiera, pudieran, es posible, sería, serían, habría, quizá, quizás, tal vez, posiblemente,
+                a verificar, por verificar, por confirmar, a confirmar, no se descarta, de confirmarse, de ser cierto, eventualmente,
+                si se confirma, en caso de]
+
+# D-68: conectores causales. Solo se aceptan si están literalmente en el titular citado (declaración atribuida) o en una hipótesis condicional.
+causales: [causó, causaron, provocó, provocaron, ocasionó, ocasionaron, originó, originaron, desencadenó, generó, debido a, por culpa de,
+           a raíz de, a causa de, por causa de, como consecuencia de, como resultado de, porque, ya que, gracias a, producto de, motivó]
+
+# D-68: verbos y adjetivos de acusación o culpa. Solo como declaración atribuida a un medio y presentes en el titular citado.
+acusaciones: [robó, robaron, roba, roban, asesinó, asesinaron, mató, estafó, estafaron, defraudó, malversó, sobornó, secuestró, violó,
+              es culpable, son culpables, culpable, culpables, corrupto, corrupta, corruptos, corruptas, ladrón, ladrones, criminal,
+              delincuente, mintió, miente, traidor, mafioso]
+
+# D-51: detalles sin cita (confirmaciones y fuentes que la evidencia no trae). Solo si están literalmente en un titular citado.
+detalle_sin_cita: [fuentes confirmaron, fuentes oficiales confirmaron, fuentes oficiales, fuentes cercanas, fuentes aseguran, confirmaron,
+                   se confirmó, testigos, según expertos, los expertos, según analistas, los analistas]
+
+# Cómo se aplica cada lista de config/restricciones.yaml (la clave es el nombre de la lista; también es el nombre de la regla).
+#  tipos: solo se aplica a oraciones o afirmaciones de estos tipos (vacío = a todo)
+#  excepcion_literal: se permite si la frase está literalmente en un titular citado
+#  sin_excepcion_en: secciones donde la excepción no vale
+listas:
+  lectura_simulada: {excepcion_literal: false}
+  sensacionalistas: {excepcion_literal: true, sin_excepcion_en: [titulo, titulo_trabajo, titulares, copy_digital]}
+  entrevistas: {excepcion_literal: true}
+  imagenes: {excepcion_literal: false}
+  recomendacion: {excepcion_literal: false}
+  certeza: {excepcion_literal: false, tipos: [hipótesis]}
+  perdidas_en_inferencias: {excepcion_literal: true, tipos: [inferencia, hipótesis]}
+
+# D-41: oraciones sin cita (transiciones). Sin cifras, fechas, nombres ni entidades; el máximo por sección está en salidas.yaml.
+transiciones:
+  max_palabras: 15
+  secciones: [brief, resumen_web, guion]
+  # Una palabra con mayúscula inicial que abre una oración no es un nombre por sí sola; estas nunca lo son.
+  inicio_no_entidad: [el, la, los, las, un, una, unos, unas, esto, eso, esta, este, estos, estas, además, también, por, con, sin, pero, así,
+                      ahora, entonces, mientras, sobre, para, en, de, y, o, a, cuando, como, donde, aunque, sin embargo, lo, se, es, hay]
+
+# Nombres de lugar que no cuentan como «nombre nuevo» aunque la evidencia citada no los traiga (el caso es sobre Panamá).
+nombres_permitidos: [Panamá]
+
+# Meses (para detectar fechas del texto) y tamaño mínimo de un nombre propio.
+meses: [enero, febrero, marzo, abril, mayo, junio, julio, agosto, septiembre, setiembre, octubre, noviembre, diciembre]
+nombre_min_caracteres: 2
+
+# D-45: campos de la evidencia que son fechas (clave que contiene alguna de estas cadenas, comparada sin tildes) y el campo del año.
+campos_fecha: [fecha, anio, año]
