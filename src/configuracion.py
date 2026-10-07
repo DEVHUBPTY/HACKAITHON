@@ -2375,6 +2375,7 @@ class PresentacionVerificacion(ModeloConfig):
     fecha_desconocida: str
     decimales_valor: int = Field(ge=0)
     decimales_valor_sbp: int = Field(ge=0)
+    separador_miles: str = Field(min_length=1, max_length=1)   # X109: agrupa los miles al mostrar un valor; el decimal sigue siendo el punto
     titulo_contexto_oficial: str = Field(min_length=1)
     origen_fecha: dict[str, str]
     fuentes_oficiales: dict[str, str]

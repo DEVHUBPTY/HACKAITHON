@@ -64,13 +64,14 @@ reemplazo:
 registros:
   - {prefijo: "NOT-", origen: tabla, fuente: noticias,    columna_id: id_noticia,   columna_url: url,        url_obligatoria: true}
   - {prefijo: "IND-", origen: tabla, fuente: indicadores, columna_id: id_indicador, columna_url: fuente_url, url_obligatoria: true,
-     cifra: {campo: valor, patron: "{pais_iso3} {anio}: (?P<cifra>-?[0-9]+(?:[.][0-9]+)?)", decimales_en: decimales_valor}}
+     cifra: {campo: valor, patron: "{pais_iso3} {anio}: (?P<cifra>-?[0-9]+(?:{miles}[0-9]{{3}})*(?:[.][0-9]+)?)", decimales_en: decimales_valor}}
   - {prefijo: "SIS-", origen: tabla, fuente: sismos,      columna_id: id,           columna_url: url,        url_obligatoria: true,
-     cifra: {campo: magnitude, patron: "magnitud (?P<cifra>-?[0-9]+(?:[.][0-9]+)?)", decimales_en: decimales_valor}}
+     cifra: {campo: magnitude, patron: "magnitud (?P<cifra>-?[0-9]+(?:{miles}[0-9]{{3}})*(?:[.][0-9]+)?)", decimales_en: decimales_valor}}
   - {prefijo: "GRP-", origen: tabla, fuente: grupos,      columna_id: id_grupo,     columna_url: null,       url_obligatoria: false}   # un conteo no tiene URL: sus titulares sí (comprobación aparte)
   - {prefijo: "SBP-", origen: csv,   fuente: data/processed/sbp_series.csv, columna_id: null, plantilla_id: "SBP-{id_serie}-{periodo}", columna_url: url, url_obligatoria: true,
-     cifra: {campo: valor, patron: "período {periodo}: (?P<cifra>-?[0-9]+(?:[.][0-9]+)?)", decimales_en: decimales_valor_sbp}}
+     cifra: {campo: valor, patron: "período {periodo}: (?P<cifra>-?[0-9]+(?:{miles}[0-9]{{3}})*(?:[.][0-9]+)?)", decimales_en: decimales_valor_sbp}}
 
+# X109: `{miles}` es `presentacion.separador_miles` (escapado): la cifra puede venir con miles agrupados.
 # X105: la cifra que muestra la ficha debe coincidir con el dato al redondeo con que se mostró (`cifra.decimales_en`). Esta es la tolerancia
 # absoluta que se admite además: solo ruido de coma flotante, no una diferencia de redondeo.
 tolerancia_cifra: 0.000000001

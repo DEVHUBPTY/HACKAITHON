@@ -312,16 +312,17 @@ def _cifra_oficial(id_: str, valor: Any, texto: str, reg: Registro, cifra: Cifra
     """
     detalle = f"{id_} · {cifra.campo} = {valor}"
     try:
-        patron = cifra.patron.format_map({k: re.escape(str(v)) for k, v in reg.valores.items()})
+        miles = str(presentacion.separador_miles)
+        patron = cifra.patron.format_map({**{k: re.escape(str(v)) for k, v in reg.valores.items()}, "miles": re.escape(miles)})
         hallada = re.search(patron, texto)
         dato = round(float(valor), int(getattr(presentacion, cifra.decimales_en)))
-        mostrada = float(hallada.group("cifra")) if hallada else None
+        mostrada = float(hallada.group("cifra").replace(miles, "")) if hallada else None
     except (KeyError, ValueError, IndexError):
         return Unidad("cifra_oficial_coincide", False, f"{detalle}: no se pudo leer la cifra del texto ni del dato")
     if mostrada is None:
         return Unidad("cifra_oficial_coincide", False, f"{detalle}: la ficha no muestra la cifra de este dato")
     ok = math.isclose(mostrada, dato, rel_tol=0.0, abs_tol=cfg.tolerancia_cifra)
-    return Unidad("cifra_oficial_coincide", ok, detalle + ("" if ok else f": la ficha muestra {mostrada:g} y el dato (a {cifra.decimales_en}) es {dato:g}"))
+    return Unidad("cifra_oficial_coincide", ok, detalle + ("" if ok else f": la ficha muestra {mostrada} y el dato (a {cifra.decimales_en}) es {dato}"))
 
 
 def verificar_ficha(

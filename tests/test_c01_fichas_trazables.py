@@ -320,6 +320,20 @@ def test_una_cifra_oficial_de_un_indicador_que_difiere_del_dato_falla_y_la_que_c
     assert _falla(lejos, "cifra_oficial_coincide")                                                          # otro valor al redondeo mostrado
 
 
+@pytest.mark.parametrize(("valor", "decimales"), [(3628535.0, 2), (3628535.456, 2), (-1234567.891, 2), (0.0000004, 2), (-1.55, 2), (7.0, 2), (12.5, 2)])
+def test_x109_la_cifra_oficial_que_muestra_la_ficha_se_lee_de_vuelta_con_miles_agrupados(valor, decimales) -> None:
+    """La cifra que escribe la ficha (``formatear_cifra``) la lee ``cifra_oficial_coincide`` sin importar la magnitud; un dato distinto falla."""
+    from src.configuracion import cargar_verificacion
+    from src.ficha import formatear_cifra
+    from src.trazabilidad import Registro, _cifra_oficial
+    regla = next(r for r in CFG.registros if r.prefijo == "IND-")
+    pres = cargar_verificacion().presentacion
+    reg = Registro("IND-PAN-SP.POP.TOTL-2024", {"pais_iso3": "PAN", "anio": "2024", "valor": str(valor)}, "https://x.example")
+    texto = f"Banco Mundial · PAN 2024: {formatear_cifra(valor, decimales, pres.separador_miles)} personas; fuente"
+    assert _cifra_oficial(reg.id, valor, texto, reg, regla.cifra, CFG, pres).ok
+    assert not _cifra_oficial(reg.id, valor + 1000, texto, reg, regla.cifra, CFG, pres).ok
+
+
 def test_la_magnitud_de_un_sismo_que_difiere_del_dato_falla(base) -> None:
     assert _ejecutar(base, h.G_SISMO).conteo("cifra_oficial_coincide")[1] == 1
     r = _ejecutar(base, h.G_SISMO, "UPDATE sismos SET magnitude = 7.9")
