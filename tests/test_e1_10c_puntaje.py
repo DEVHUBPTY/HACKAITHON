@@ -292,3 +292,35 @@ def test_x53_con_contexto_las_mismas_palabras_si_respaldan(subtema: str, titular
 def test_x54_comercio_maritimo_o_de_combustibles_sin_ancla_de_d84_sigue_siendo_ruido(titulo: str) -> None:
     r = _gdelt(titulo)
     assert (r.motivo_ruido, r.alcance_regional) == ("no_es_panama", False)
+
+
+# ------------------------------------------------------------------ D-106 · U no se satura dentro de la ventana
+
+
+def _u(horas: float | None, detectado: float | None = None) -> puntaje.Componente:
+    return puntaje.urgencia([miembro("NOT-u", publicado_hace=horas, detectado_hace=detectado)], AHORA, REGLAS)[0]
+
+
+def test_d106_u_decrece_de_forma_estricta_dentro_de_la_ventana() -> None:
+    limite = REGLAS.urgencia.dias_nulo * 24
+    edades = [0, 1, 2, 12, 23, 25, 30, 48, 100, limite - 1]
+    valores = [_u(h).valor for h in edades]
+    assert all(a > b for a, b in zip(valores, valores[1:], strict=False))
+
+
+def test_d106_una_noticia_de_2_horas_es_mas_urgente_que_una_de_30() -> None:
+    assert _u(2).valor > _u(30).valor
+
+
+def test_d106_u_va_de_1_al_publicar_a_0_al_cerrar_la_ventana() -> None:
+    limite = REGLAS.urgencia.dias_nulo * 24
+    assert _u(0).valor == 1.0 and _u(-5).valor == 1.0          # una publicación posterior a la referencia no pasa de 1
+    assert _u(limite).valor == 0.0 and _u(limite + 50).valor == 0.0
+    assert _u(limite / 2).valor == pytest.approx(0.5)            # lineal: la fracción de la ventana que queda
+    assert all(0.0 <= _u(h).valor <= 1.0 for h in range(0, int(limite) + 24, 7))
+
+
+def test_d106_sin_publicacion_sigue_usando_la_deteccion_y_el_vacio() -> None:
+    c, vacios = puntaje.urgencia([miembro("NOT-g", publicado_hace=None, detectado_hace=30)], AHORA, REGLAS)
+    assert c.explicacion["fecha_origen"] == "deteccion" and c.valor == _u(30).valor
+    assert any(v.codigo == "urgencia_sin_publicacion" for v in vacios)
