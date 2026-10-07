@@ -441,6 +441,22 @@ def _imprimir_bandeja_por_sector(ruta_base: Path, modalidad: str) -> None:
         logger.info("%s", linea)
 
 
+def lineas_de_ranking(ranking: Sequence[Mapping[str, Any]], cfg: Any | None = None) -> list[str]:
+    """Líneas de la CLI para el ranking; P con los decimales de la bandeja (``interfaz.bandeja.decimales_puntaje``, X60)."""
+    from src.configuracion import cargar_interfaz
+    from src.interfaz import texto_empate  # aquí y no arriba: interfaz importa puntaje y este módulo es su orquestador
+
+    decimales = (cfg or cargar_interfaz()).bandeja.decimales_puntaje
+    lineas = []
+    for fila in ranking:
+        empate = f" · {texto_empate(fila['empate_con'])}" if fila["empate_con"] else ""
+        lineas.append(
+            f"  {fila['posicion']}. {fila['id_grupo']} · P={fila['puntaje']:.{decimales}f} ({fila['rango']}) · evidencia {fila['estado_de_evidencia']}"
+            f" · {fila['accion']} · {(fila['titular_central'] or '')[:ANCHO_TITULAR_EN_LOG]}{empate}"
+        )
+    return lineas
+
+
 def main(argv: list[str] | None = None) -> int:
     """CLI: puntaje, evidencia y contradicciones de ``data/senales.duckdb`` y ``outputs/prioridad.json``."""
     configurar_logging()
@@ -467,9 +483,8 @@ def main(argv: list[str] | None = None) -> int:
     logger.info("contradicciones: %s · LLM: %s", reporte["contradicciones"]["por_nota_llm"] or "ninguna", reporte["llm"]["estado"])
     from src.interfaz import texto_empate  # aquí y no arriba: interfaz importa puntaje y este módulo es su orquestador
 
-    for fila in reporte["ranking"][:5]:
-        empate = f" · {texto_empate(fila['empate_con'])}" if fila["empate_con"] else ""
-        logger.info("  %d. %s · P=%.1f (%s) · evidencia %s · %s · %s%s", fila["posicion"], fila["id_grupo"], fila["puntaje"], fila["rango"], fila["estado_de_evidencia"], fila["accion"], (fila["titular_central"] or "")[:ANCHO_TITULAR_EN_LOG], empate)
+    for linea in lineas_de_ranking(reporte["ranking"][:5]):
+        logger.info("%s", linea)
     _imprimir_bandeja_por_sector(args.base, args.modalidad)
     return 0
 

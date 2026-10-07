@@ -238,12 +238,13 @@ def lineas_de_bandeja(filas: Sequence[FilaBandeja], modalidad: ConfigModalidad, 
     bloques = agrupar_por_sector(filas, modalidad)
     if bloques is None:
         return None
-    ancho = (cfg or cargar_interfaz()).bandeja.ancho_titular_cli
+    cfg = cfg or cargar_interfaz()
+    ancho, decimales = cfg.bandeja.ancho_titular_cli, cfg.bandeja.decimales_puntaje
     lineas = []
     for b in bloques:
         lineas.append(f"{b.etiqueta} ({len(b.filas)})")
         lineas += [
-            f"  {f.posicion}. {f.id_grupo} · P={f.puntaje:.1f} ({f.rango}) · {etiqueta_de_horizonte(f.horizonte, modalidad) or '-'} · {f.accion} · {f.titular[:ancho]}"
+            f"  {f.posicion}. {f.id_grupo} · P={f.puntaje:.{decimales}f} ({f.rango}) · {etiqueta_de_horizonte(f.horizonte, modalidad) or '-'} · {f.accion} · {f.titular[:ancho]}"
             + (f" · {texto_empate(f.empate_con)}" if f.empate_con else "")
             for f in b.filas
         ]

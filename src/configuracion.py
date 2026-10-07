@@ -1132,6 +1132,11 @@ def validar_coherencia(carpeta: Path | None = None) -> list[str]:
     for sub, v in (*vinculos.vinculos.items(), *vinculos.vinculos_por_tema.items()):
         if v.fuente == "indicador" and v.id not in indicadores:
             problemas.append(f"vinculos.yaml: {sub} usa el indicador {v.id}, que no está en fuentes.yaml")
+    if (carpeta / "prioridad.yaml").exists() and (carpeta / "interfaz.yaml").exists():
+        mostrados = cargar_interfaz(carpeta).bandeja.decimales_puntaje
+        comparados = cargar_prioridad(carpeta).comparacion.decimales_empate
+        if comparados != mostrados:   # X60 (D-105): P se compara como se muestra
+            problemas.append(f"prioridad.yaml: comparacion.decimales_empate ({comparados}) debe ser igual a interfaz.yaml: bandeja.decimales_puntaje ({mostrados})")
     reales = {e.id_noticia for t in temas.temas.values() for e in t.ejemplos if e.real}
     excluidos = _ids_excluidos(carpeta / "ejemplos_excluidos.txt")
     if reales != excluidos:

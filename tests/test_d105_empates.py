@@ -135,3 +135,27 @@ def test_d105_precision_at_5_declara_el_empate_en_el_corte_del_sistema_y_del_bas
     assert r["sistema"]["empate_en_el_corte"] == {"valor": 87.4, "empatados": 6, "dentro_del_top": 4, "fuera_del_top": 2}
     assert r["baseline"]["empate_en_el_corte"]["empatados"] == 5 and r["baseline"]["empate_en_el_corte"]["fuera_del_top"] == 3
     assert "ID" in r["criterio_de_empate"]
+
+
+# ------------------------------------------------------------------ X60 · una sola precisión para mostrar y comparar
+
+
+def test_x60_la_cli_muestra_p_con_los_decimales_de_la_bandeja() -> None:
+    fila = {"posicion": 1, "id_grupo": "GRP-a", "puntaje": 87.4567, "rango": "alto", "estado_de_evidencia": "parcial", "accion": "Vigilar", "titular_central": "t", "empate_con": 0}
+    for d in (1, 2):
+        cfg = INTERFAZ.model_copy(update={"bandeja": INTERFAZ.bandeja.model_copy(update={"decimales_puntaje": d})})
+        assert f"P={87.4567:.{d}f} " in prioridad.lineas_de_ranking([fila], cfg)[0]
+
+
+def test_x60_la_coherencia_falla_si_comparar_y_mostrar_difieren(tmp_path: Path) -> None:
+    import shutil
+
+    from src.configuracion import CARPETA_CONFIG, validar_coherencia
+
+    for ruta in CARPETA_CONFIG.iterdir():
+        if ruta.is_file():
+            shutil.copy(ruta, tmp_path / ruta.name)
+    assert validar_coherencia(tmp_path) == []
+    destino = tmp_path / "prioridad.yaml"
+    destino.write_text(destino.read_text("utf-8").replace("decimales_empate: 1", "decimales_empate: 2"), encoding="utf-8")
+    assert any("decimales_empate" in p for p in validar_coherencia(tmp_path))
