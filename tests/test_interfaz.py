@@ -647,3 +647,56 @@ def test_la_demo_no_depende_de_ollama_y_documenta_el_riesgo_del_umbral() -> None
     demo = (RAIZ / "docs" / "demo.md").read_text(encoding="utf-8")
     assert "Ollama" not in demo.split("## Checklist")[1] and "DeepSeek" in demo
     assert "## Riesgos" in demo and "0.874" in demo and "E1-18" in demo
+
+
+# ------------------------------------------------------------------ E3-04 · pesos editables en la bandeja
+
+
+def test_e3_04_con_los_pesos_oficiales_la_bandeja_no_cambia_y_no_hay_aviso_de_escenario(app) -> None:
+    at = ir(app.run(), "bandeja")
+    assert not at.exception
+    assert [e.label for e in at.expander if "Pesos editables" in e.label]
+    assert not any("ESCENARIO" in str(w.value) for w in at.warning)
+    assert [at.number_input(key=f"peso_{k}").value for k in "RIUNE"] == list(ui.pesos_oficiales().values())
+
+
+def test_e3_04_cambiar_los_pesos_muestra_el_escenario_el_aviso_y_la_comparacion(app, con) -> None:
+    at = ir(app.run(), "bandeja")
+    oficial = ui.leer_bandeja(con, "editorial")
+    at.number_input(key="peso_U").set_value(45.0)
+    at.number_input(key="peso_R").set_value(5.0)
+    at = at.run()
+    assert not at.exception
+    assert any("ESCENARIO" in str(w.value) and "no es la configuración oficial" in str(w.value) for w in at.warning)
+    texto = "\n".join(textos(at))
+    assert "cambian de puesto" in texto
+    # la bandeja es la del escenario; la oficial sigue intacta en el contexto
+    esperado = ui.escenario_de_pesos(oficial, {**ui.pesos_oficiales(), "U": 45.0, "R": 5.0}, cargar_modalidad("editorial"))
+    tabla = at.dataframe[-1].value
+    assert list(tabla["P"]) == [round(f.puntaje, CFG.bandeja.decimales_puntaje) for f in esperado[: len(tabla)]]
+    # sin justificación no hay descarga; no se ofrece ningún botón de publicar
+    assert not at.get("download_button")
+    assert CFG.pesos_editables.textos.justificacion.format(minimo=CFG.pesos_editables.justificacion_minima_caracteres) in "\n".join(textos(at))
+
+
+def test_e3_04_pesos_que_no_suman_100_se_rechazan_y_la_bandeja_sigue_siendo_la_oficial(app, con) -> None:
+    at = ir(app.run(), "bandeja")
+    at.number_input(key="peso_R").set_value(40.0)
+    at = at.run()
+    assert any("deben sumar 100" in str(e.value) for e in at.error)
+    assert not any("ESCENARIO" in str(w.value) for w in at.warning)
+    assert list(at.dataframe[0].value["#"]) == list(range(1, len(at.dataframe[0].value) + 1))
+    assert [str(x) for x in at.dataframe[0].value["Tema"]] == [f.tema for f in ui.leer_bandeja(con, "editorial")[: len(at.dataframe[0].value)]]
+
+
+def test_e3_04_el_escenario_no_cambia_la_ficha_ni_el_registro_de_revision(app, con) -> None:
+    at = ir(app.run(), "bandeja")
+    at.number_input(key="peso_U").set_value(45.0)
+    at.number_input(key="peso_R").set_value(5.0)
+    at = at.run()
+    at.text_area(key="pesos_justificacion").set_value("La mesa de noticias prioriza lo urgente en el cierre del día.")
+    at = at.run()
+    assert at.get("download_button")
+    assert not [b for b in at.button if "publicar" in b.label.lower()]
+    # el contexto (ficha, exportación, revisión) sigue leyendo la bandeja oficial
+    assert [f.id_grupo for f in ui.leer_bandeja(con, "editorial")] == [f.id_grupo for f in ui.ordenar_bandeja(ui.leer_bandeja(con, "editorial"))]

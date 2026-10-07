@@ -544,6 +544,7 @@ def _sin_tildes(texto: str) -> str:
     return " ".join("".join(c for c in unicodedata.normalize("NFKD", texto) if not unicodedata.combining(c)).casefold().split())
 
 
+COMPONENTES_PESO = ("R", "I", "U", "N", "E")   # los cinco componentes de P (el mismo orden que ``src.puntaje.COMPONENTES``)
 TOLERANCIA = 1e-9  # épsilon numérico de la comparación de sumas en coma flotante; no es un parámetro del negocio
 
 
@@ -2426,6 +2427,34 @@ class BandejaInterfaz(ModeloConfig):
     ancho_titular_cli: int = Field(ge=10)
 
 
+class TextosPesosEditables(ModeloConfig):
+    aviso: str
+    sin_cambios: str
+    suma: str
+    rango: str
+    justificacion: str
+    propuesta_estado: str
+
+
+class PesosEditablesInterfaz(ModeloConfig):
+    """E3-04: límites de la vista de pesos editables (escenario de sesión; los pesos oficiales viven en ``reglas_v1.3.yaml``)."""
+
+    minimo: float = Field(ge=0)
+    maximo: float = Field(gt=0, le=100)
+    paso: float = Field(gt=0)
+    justificacion_minima_caracteres: int = Field(ge=1)
+    movimientos_mostrados: int = Field(ge=1)
+    textos: TextosPesosEditables
+
+    @model_validator(mode="after")
+    def _rango_coherente(self) -> PesosEditablesInterfaz:
+        if self.minimo > self.maximo:
+            raise ValueError("pesos_editables: `minimo` no puede superar a `maximo`")
+        if self.minimo * len(COMPONENTES_PESO) > 100 or self.maximo * len(COMPONENTES_PESO) < 100:
+            raise ValueError("pesos_editables: con ese rango los cinco pesos no pueden sumar 100")
+        return self
+
+
 class CalidadInterfaz(ModeloConfig):
     top_medios: int = Field(ge=1)
 
@@ -2511,6 +2540,7 @@ class ConfigInterfaz(ModeloConfig):
     pantallas: list[PantallaInterfaz] = Field(min_length=6, max_length=6)
     pantalla_inicial: str
     bandeja: BandejaInterfaz
+    pesos_editables: PesosEditablesInterfaz
     calidad: CalidadInterfaz
     consulta: ConsultaInterfaz
     ficha: FichaInterfaz
