@@ -1928,6 +1928,108 @@ def cargar_verificacion(carpeta: Path | None = None) -> ConfigVerificacion:
     return cargar_config("verificacion", ConfigVerificacion, carpeta)
 
 
+# ------------------------------------------------------------------ interfaz.yaml (E1-15)
+
+
+class PantallaInterfaz(ModeloConfig):
+    clave: Literal["calidad", "bandeja", "ficha", "consulta", "paquete", "revision"]
+    titulo: str = Field(min_length=1)
+
+
+class BandejaInterfaz(ModeloConfig):
+    filas_iniciales: int = Field(ge=1)
+    alto_filas_px: int = Field(ge=1)
+    decimales_puntaje: int = Field(ge=0)
+    largo_titular_selector: int = Field(ge=10)
+
+
+class CalidadInterfaz(ModeloConfig):
+    top_medios: int = Field(ge=1)
+
+
+class ConsultaInterfaz(ModeloConfig):
+    metodo_inicial: Literal["semantica", "bm25"]
+    largo_maximo_caracteres: int = Field(ge=1)
+    ejemplos: list[str] = Field(min_length=1)
+
+
+class FichaInterfaz(ModeloConfig):
+    prefijo_desglose: str = Field(min_length=1)
+    secciones_resumen: list[str] = Field(min_length=1)
+    secciones_desplegables: list[str] = Field(min_length=1)
+    citas_por_fila: int = Field(ge=1)
+    campos_ocultos: list[str]
+
+
+class DemoInterfaz(ModeloConfig):
+    ruta_base: str = Field(min_length=1)
+    parametro_caso: str = Field(min_length=1)
+    guion: str = Field(min_length=1)
+
+
+class GeneracionInterfaz(ModeloConfig):
+    modulo: str = Field(min_length=1)
+    funcion: str = Field(min_length=1)
+    solo_cache: bool
+
+
+class RevisionInterfaz(ModeloConfig):
+    estados: list[str] = Field(min_length=1)
+    estado_inicial: str
+
+
+class TextosInterfaz(ModeloConfig):
+    alerta: str
+    sintetico: str
+    sintetico_ayuda: str
+    sin_base: str
+    sin_demo: str
+    banca_parcial: str
+    sin_puntajes: str
+    sin_borrador: str
+    sin_borrador_ayuda: str
+    borrador_no_listo: str
+    sin_revision: str
+    aprobar_aviso: str
+
+
+class ConfigInterfaz(ModeloConfig):
+    """Modelo de ``config/interfaz.yaml``: constantes de presentación de la app (E1-15). Sin reglas de negocio."""
+
+    version: str
+    titulo_app: str
+    modalidad_inicial: Literal["editorial", "banca"]
+    pantallas: list[PantallaInterfaz] = Field(min_length=6, max_length=6)
+    pantalla_inicial: str
+    bandeja: BandejaInterfaz
+    calidad: CalidadInterfaz
+    consulta: ConsultaInterfaz
+    ficha: FichaInterfaz
+    demo: DemoInterfaz
+    generacion: GeneracionInterfaz
+    revision: RevisionInterfaz
+    textos: TextosInterfaz
+
+    @model_validator(mode="after")
+    def _coherente(self) -> ConfigInterfaz:
+        claves = [p.clave for p in self.pantallas]
+        if len(set(claves)) != 6:
+            raise ValueError("pantallas: las seis claves (calidad, bandeja, ficha, consulta, paquete, revision) deben aparecer una vez")
+        if self.pantalla_inicial not in claves:
+            raise ValueError("pantalla_inicial: debe ser una de las pantallas")
+        if self.revision.estado_inicial not in self.revision.estados:
+            raise ValueError("revision.estado_inicial: debe estar en revision.estados")
+        textos = [self.titulo_app, *self.consulta.ejemplos, *self.revision.estados, *self.textos.model_dump().values()]
+        if any(FORMAS_DE_PUBLICAR.search(t) for t in textos):
+            raise ValueError("ningún texto de la interfaz puede hablar de publicar")
+        return self
+
+
+def cargar_interfaz(carpeta: Path | None = None) -> ConfigInterfaz:
+    """Atajo para ``config/interfaz.yaml``."""
+    return cargar_config("interfaz", ConfigInterfaz, carpeta)
+
+
 CODIGO_URGENCIA_SIN_PUBLICACION = "urgencia_sin_publicacion"   # el único vacío de E1-10 cuyo texto vive en reglas_v1.3.yaml
 MODALIDADES = ("editorial", "banca")
 OPCIONALES = {"modalidad_banca"}  # el esquema la admite aunque todavía no exista
@@ -1955,6 +2057,7 @@ CARGADORES = {
     "consulta": cargar_consulta,
     "prioridad": cargar_prioridad,
     "verificacion": cargar_verificacion,
+    "interfaz": cargar_interfaz,
 }
 
 

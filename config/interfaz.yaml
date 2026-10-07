@@ -1,0 +1,68 @@
+# E1-15 · Interfaz Streamlit: constantes de presentación (orden de pantallas, tamaños, textos fijos y el punto de enganche
+# con la generación de E1-12). Ninguna regla de negocio vive aquí: puntajes, acciones y vacíos los leen otras etapas.
+# Cada número está en docs/parametros.md. Ningún texto de la interfaz habla de publicar (lo valida el modelo).
+version: "1.0"
+
+titulo_app: "HackIAthon · De la señal a la decisión"
+modalidad_inicial: editorial
+
+pantallas:                          # orden de la barra lateral
+  - {clave: calidad, titulo: "1 · Calidad"}
+  - {clave: bandeja, titulo: "2 · Bandeja"}
+  - {clave: ficha, titulo: "3 · Ficha"}
+  - {clave: consulta, titulo: "4 · Consulta"}
+  - {clave: paquete, titulo: "5 · Paquete"}
+  - {clave: revision, titulo: "6 · Revisión"}
+pantalla_inicial: calidad
+
+bandeja:
+  filas_iniciales: 10               # cuántas filas del ranking se muestran al abrir (el resto, con «Mostrar todas»)
+  alto_filas_px: 36                 # alto de cada fila de la tabla
+  decimales_puntaje: 1              # decimales de P y de las barras R·I·U·N·E al mostrarlas (el dato no se redondea)
+  largo_titular_selector: 80        # caracteres del titular en los selectores de grupo
+
+calidad:
+  top_medios: 5                     # medios con más titulares válidos en el reporte
+
+consulta:
+  metodo_inicial: semantica
+  largo_maximo_caracteres: 500      # la caja de la consulta no acepta más
+  ejemplos:                         # consultas de muestra: una útil, una de abstención (docs/demo.md)
+    - "¿Cuál fue la inflación de Panamá en 2023?"
+    - "¿Qué se reporta sobre la visita del presidente de Panamá a Singapur y Vietnam?"
+    - "¿Cuál fue el desempleo de Panamá en 2025?"
+
+ficha:
+  prefijo_desglose: "Desglose del puntaje"   # la línea de la vista que va en el desplegable del desglose
+  secciones_resumen: [que_se_reporta, accion_recomendada]
+  secciones_desplegables: [quien_lo_reporta, respaldado, falta_comprobar]
+  citas_por_fila: 3                 # recuadros de cita por fila
+  campos_ocultos: [descripcion]     # nunca se muestran, aunque una cita los pida (D-31)
+
+demo:
+  ruta_base: data/demo.duckdb       # la crea C-06; sin ella el modo demo avisa y no inventa datos
+  parametro_caso: caso              # ?caso=<GRP-…|posición> abre la ficha
+  guion: docs/demo.md               # los pasos de la barra lateral salen de la tabla de este archivo
+
+generacion:                         # punto de enganche con E1-12 (src/generacion.py); se conecta tras integrar esa tarea
+  modulo: src.generacion
+  funcion: generar_paquete          # contrato: funcion(id_grupo, modalidad, *, solo_cache=True) -> mapa | modelo pydantic | None
+  solo_cache: true                  # la interfaz nunca espera al LLM: usa borradores de caché (sin red)
+
+revision:                           # los cinco estados del reto (sección 8); E1-16 define las transiciones y el registro
+  estados: ["nuevo", "en revisión", "requiere evidencia", "aprobado como borrador", "descartado"]
+  estado_inicial: "nuevo"
+
+textos:
+  alerta: "Una alerta es una invitación a investigar: ni el tono, ni el volumen, ni la repetición equivalen a una verdad comprobada."
+  sintetico: "SINTÉTICO"
+  sintetico_ayuda: "Registro de prueba creado por el equipo; no es una noticia real."
+  sin_base: "No hay base de datos: ejecute primero la carga, la normalización, la clasificación y el puntaje."
+  sin_demo: "No existe la base de demo (data/demo.duckdb). La crea C-06; mientras tanto se usa el snapshot."
+  banca_parcial: "La modalidad Banca está incompleta (D-90): la ficha y la tabla de acciones existen, pero la bandeja bancaria llega con E2-01."
+  sin_puntajes: "Esta modalidad todavía no tiene puntajes en la base."
+  sin_borrador: "Generación disponible cuando se integre E1-12."
+  sin_borrador_ayuda: "Aquí aparecerá el borrador de la modalidad (paquete editorial o de investigación) con su leyenda de alcance."
+  borrador_no_listo: "No hay borrador en caché para este grupo: la interfaz no espera al modelo ni usa la red."
+  sin_revision: "El registro de revisiones llega con E1-16: por ahora todo grupo está en el estado inicial y la revisión solo se consulta."
+  aprobar_aviso: "El estado máximo es «aprobado como borrador»: aprobar no convierte nada en contenido definitivo, y toda salida sigue siendo borrador para una decisión humana."
