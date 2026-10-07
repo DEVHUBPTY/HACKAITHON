@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import fnmatch
 import json
 import re
 import subprocess
@@ -105,13 +106,15 @@ def catalogo(c: Contexto) -> None:
     with ruta.open(encoding="utf-8", newline="") as f:
         filas = list(csv.DictReader(f))
     nombres = " | ".join(r.get(a.columna_fuente_catalogo, "") for r in filas).lower()
-    faltan = [n for n in a.fuentes_usadas_manifest if n.lower() not in nombres]
-    manifest = c.json("data/manifest.json") or {}
+    manifest = c.json(a.manifest) or {}
+    claves = sorted(manifest.get("licencias", {}))           # las fuentes que el manifest declara: una nueva no puede pasar sin catalogar
+    sin_nombre = [k for k in claves if k not in a.nombres_fuentes_catalogo]
+    faltan = [a.nombres_fuentes_catalogo[k] for k in claves if k in a.nombres_fuentes_catalogo and a.nombres_fuentes_catalogo[k].lower() not in nombres]
     sin_licencia = [r.get(a.columna_fuente_catalogo, "?") for r in filas if not (r.get("Licencia / condiciones") or "").strip()]
-    estado = PASS if not faltan and not sin_licencia and filas else FALTA
-    c.agregar("S5-04", "Admisión (sec. 5)", "Catálogo completo de las fuentes utilizadas (cada fuente usada, con licencia/condiciones)", estado,
-              f"{a.catalogo}: {len(filas)} fuentes; sin catalogar: {faltan or 'ninguna'}; sin licencia: {sin_licencia or 'ninguna'}; "
-              f"licencias en el manifest: {sorted(manifest.get('licencias', {}))}.", "poetry run python -m scripts.catalogo")
+    estado = PASS if claves and not sin_nombre and not faltan and not sin_licencia and filas else FALTA
+    c.agregar("S5-04", "Admisión (sec. 5)", "Catálogo completo de las fuentes utilizadas (cada fuente del manifest, con licencia/condiciones)", estado,
+              f"{a.catalogo}: {len(filas)} fuentes; fuentes del manifest ({a.manifest}): {claves or 'ninguna'}; sin nombre de catálogo en la configuración: {sin_nombre or 'ninguna'}; "
+              f"sin catalogar: {faltan or 'ninguna'}; sin licencia: {sin_licencia or 'ninguna'}.", "poetry run python -m scripts.catalogo")
 
 
 def fichas(c: Contexto) -> None:
@@ -184,6 +187,26 @@ def pitch(c: Contexto) -> None:
 # ------------------------------------------------------------------------------------------------ entregables (sección 10)
 
 
+def _revisar_env_ejemplo(c: Contexto, env: Path) -> tuple[list[str], list[str], list[str]]:
+    """(nombres de variables, variables secretas con valor, patrones de secreto que coinciden). Nunca devuelve un valor."""
+    if not env.is_file():
+        return [], [], []
+    texto = env.read_text(encoding="utf-8")
+    secretas = [re.compile(x) for x in c.a.nombres_secretos_env]
+    nombres: list[str] = []
+    con_valor: list[str] = []
+    for linea in texto.splitlines():
+        if "=" not in linea or linea.lstrip().startswith("#"):
+            continue
+        nombre, _, valor = linea.partition("=")
+        nombre, valor = nombre.strip().removeprefix("export ").strip(), valor.strip().strip("'\"")
+        nombres.append(nombre)
+        if any(rx.search(nombre) for rx in secretas) and valor and valor not in c.a.placeholders_env:
+            con_valor.append(nombre)
+    patrones = [re.compile(x) for x in c.cfg.paquete.prohibido.patrones_secretos]
+    return nombres, con_valor, [p.pattern[:30] for p in patrones if p.search(texto)]
+
+
 def entregables(c: Contexto) -> None:
     a = c.a
     d = a.demo
@@ -196,14 +219,12 @@ def entregables(c: Contexto) -> None:
     c.agregar("S10-02", "Entregables (sec. 10)", "README con instalación, comando de ejecución, pruebas y evaluación reservada", FALTA if sin or not titulos else PASS,
               f"{a.readme}: encabezados {len(titulos)}; secciones que faltan: {sin or 'ninguna'}.", "Editar README.md")
     env = c.ruta(a.env_ejemplo)
-    con_valor: list[str] = []
-    if env.is_file():
-        for linea in env.read_text(encoding="utf-8").splitlines():
-            if "=" in linea and not linea.lstrip().startswith("#") and linea.split("=", 1)[1].strip():
-                con_valor.append(linea.split("=", 1)[0].strip())
-    c.agregar("S10-03", "Entregables (sec. 10)", ".env.example sin secretos (nombres de variables; los valores de claves vacíos)", FALTA if not env.is_file() else PASS,
-              f"{a.env_ejemplo}: variables con valor por defecto (no son claves, revisar): {con_valor or 'ninguna'}." if env.is_file() else f"No existe {a.env_ejemplo}.",
-              "Revisar a mano que ningún valor sea una clave real.")
+    nombres_env, con_valor, sospechosas = _revisar_env_ejemplo(c, env)
+    ok_env = env.is_file() and bool(nombres_env) and not con_valor and not sospechosas
+    c.agregar("S10-03", "Entregables (sec. 10)", ".env.example solo con nombres de variables, sin valores en las claves y sin nada que parezca un secreto", PASS if ok_env else FALTA,
+              (f"{a.env_ejemplo}: {len(nombres_env)} variables; claves con valor: {con_valor or 'ninguna'}; coincidencias con patrones de secreto: {sospechosas or 'ninguna'}." if env.is_file()
+               else f"No existe {a.env_ejemplo}."),
+              "Dejar vacíos los valores de *_KEY, *_TOKEN, *_SECRET y *_PASSWORD; el valor real va en local.env.")
     c.agregar("S10-04", "Entregables (sec. 10)", "Dependencias fijadas", PASS if c.ruta(a.lock).is_file() else FALTA, f"{a.lock} {'presente' if c.ruta(a.lock).is_file() else 'ausente'}.",
               "poetry lock")
     lic = [n for n in a.licencia_codigo if c.ruta(n).is_file()]
@@ -242,7 +263,7 @@ def secretos(c: Contexto) -> None:
     hallazgos: list[str] = []
     for rel in _archivos_versionados(c):
         ruta = c.ruta(rel)
-        if rel in a.archivos_sin_escanear or ruta.suffix in omitidas or not ruta.is_file() or ruta.name == c.cfg.auditoria.env_ejemplo:
+        if rel in a.archivos_sin_escanear or ruta.suffix in omitidas or not ruta.is_file():
             continue
         for patron in paquete.buscar_secretos(ruta, patrones):
             hallazgos.append(f"{rel} ({patron[:30]})")
@@ -261,26 +282,136 @@ def secretos(c: Contexto) -> None:
                   f"{a.resultado_secretos}: limpio={res.get('limpio')}. {arbol}", "Resultado de C-11.", "C-11")
 
 
+def _registros_fichas(c: Contexto) -> tuple[list[dict], list[str]]:
+    """Las líneas de fichas.jsonl como registros, y los problemas de lectura o de contrato (campos que faltan)."""
+    ruta = c.ruta(c.a.fichas_jsonl)
+    if not ruta.is_file():
+        return [], [f"no existe {c.a.fichas_jsonl}"]
+    registros: list[dict] = []
+    problemas: list[str] = []
+    for i, linea in enumerate(ruta.read_text(encoding="utf-8").splitlines(), 1):
+        if not linea.strip():
+            continue
+        try:
+            r = json.loads(linea)
+        except ValueError:
+            problemas.append(f"línea {i} no es JSON")
+            continue
+        faltan = [k for k in c.a.campos_fichas_jsonl if k not in r]
+        if faltan:
+            problemas.append(f"{r.get('id_caso')}: sin campos del contrato {faltan}")
+        registros.append(r)
+    return registros, problemas
+
+
+def _textos_exportados(c: Contexto) -> tuple[dict[str, list[str]], list[str]]:
+    """Lo que se entrega de cada caso: sus CASO-*.md y las filas de los CSV de las carpetas de exportación. (id_caso -> textos, rutas leídas)."""
+    por_caso: dict[str, list[str]] = {}
+    leidas: list[str] = []
+    for carpeta in c.a.exportaciones:
+        base = c.ruta(carpeta)
+        for f in sorted(base.glob("CASO-*.md")) if base.is_dir() else []:
+            por_caso.setdefault(f.stem, []).append(f.read_text(encoding="utf-8"))
+            leidas.append(f"{carpeta}/{f.name}")
+        for f in sorted(base.glob("*.csv")) if base.is_dir() else []:
+            with f.open(encoding="utf-8", newline="") as fh:
+                for fila in csv.DictReader(fh):
+                    id_caso = fila.get("ID caso") or fila.get("id_caso") or ""
+                    por_caso.setdefault(id_caso, []).append(" ".join(str(v) for v in fila.values()))
+            leidas.append(f"{carpeta}/{f.name}")
+    return por_caso, leidas
+
+
+def reverificar_fichas(c: Contexto, registros: list[dict], exportados: dict[str, list[str]]) -> dict[str, dict] | None:
+    """Corre de nuevo la comprobación de trazabilidad de ``src/trazabilidad.py`` (el validador de citas, cifras, D-31 y D-32) sobre CADA registro de
+    fichas.jsonl contra los datos de esta máquina, con los textos exportados del caso como salidas extra. ``None`` si no hay base de señales.
+    Devuelve id_caso -> {"fallos": [...], "citas": [(id, campo, existe)]}."""
+    base = c.ruta(c.a.base_senales)
+    if not base.is_file():
+        return None
+    from src import db
+    from src.configuracion import cargar_fichas_trazables
+    from src.esquemas import Ficha
+    from src.trazabilidad import Resolutor, verificar_ficha
+
+    cfg_t = cargar_fichas_trazables()
+    con = db.conectar(base, solo_lectura=True)
+    try:
+        resolutor = Resolutor(con, cfg_t, c.raiz)
+        salida: dict[str, dict] = {}
+        for r in registros:
+            id_caso = str(r.get("id_caso"))
+            try:
+                res = verificar_ficha(Ficha.model_validate(r["ficha"]), resolutor, cfg_t, id_caso=id_caso, estado_revision=r.get("estado_revision"),
+                                      textos_extra=exportados.get(id_caso, ()))
+            except ValueError as exc:                        # la ficha ya no cumple su propio esquema: es un fallo, no una caída de la auditoría
+                salida[id_caso] = {"fallos": [f"esquema_de_ficha: {str(exc).splitlines()[0][:120]}"], "citas": []}
+                continue
+            salida[id_caso] = {"fallos": [f"{u.regla}: {u.detalle}" for u in res.fallos()], "citas": sorted((t.id, t.campo, bool(t.existe)) for t in res.trazas)}
+        return salida
+    finally:
+        con.close()
+
+
 def validador(c: Contexto) -> None:
     a = c.a
-    t = c.json(a.trazabilidad) or {}
-    citas = [ci for f in t.get("fichas", []) for ci in f.get("citas", [])]
-    falsas = [(ci.get("id"), ci.get("campo")) for ci in citas if not ci.get("existe_en_datos")]
-    fallos = [f["id_caso"] for f in t.get("fichas", []) if f.get("fallos")]
-    ruta = c.ruta(a.fichas_jsonl)
-    sin_campos: list[str] = []
-    n = 0
-    if ruta.is_file():
-        for linea in ruta.read_text(encoding="utf-8").splitlines():
-            if linea.strip():
-                n += 1
-                faltan = [k for k in a.campos_fichas_jsonl if k not in json.loads(linea)]
-                if faltan:
-                    sin_campos.append(f"{json.loads(linea).get('id_caso')}: {faltan}")
-    ok = bool(t) and bool(citas) and not falsas and not fallos and ruta.is_file() and not sin_campos and bool(t.get("todo_ok"))
-    c.agregar("P-02", "Condiciones previas", "Toda afirmación de las fichas pasa el validador; ninguna cita falsa", PASS if ok else FALTA,
-              f"{a.trazabilidad}: {len(citas)} citas, no resueltas: {falsas or 'ninguna'}; fichas con fallos del validador: {fallos or 'ninguna'}; "
-              f"{a.fichas_jsonl}: {n} fichas, sin campos del contrato: {sin_campos or 'ninguna'}.", "poetry run python -m scripts.fichas_trazables; poetry run python -m src.ficha --formato jsonl", "C-01")
+    titulo = "Toda afirmación de fichas.jsonl y de las exportaciones pasa el validador; ninguna cita falsa"
+    comando = "poetry run python -m scripts.fichas_trazables --casos; poetry run python -m src.ficha --formato jsonl"
+    t = c.json(a.trazabilidad)
+    registros, problemas = _registros_fichas(c)
+    if t is None:
+        problemas.append(f"no existe o no se puede leer {a.trazabilidad}")
+        t = {}
+    por_caso = {f.get("id_caso"): f for f in t.get("fichas", [])}
+    ids = [str(r.get("id_caso")) for r in registros]
+    if not registros:
+        problemas.append("fichas.jsonl no tiene fichas")
+    # trazabilidad.json vs fichas.jsonl: lo que el informe cubre es exactamente lo que fichas.jsonl dice que sigue vigente
+    vigentes = {str(r.get("id_caso")): r.get("id_grupo") for r in registros if r.get("estado_revision") not in a.estados_sin_trazabilidad}
+    if set(vigentes) != set(por_caso):
+        problemas.append(f"trazabilidad.json desactualizado: cubre {sorted(por_caso)} y fichas.jsonl pide {sorted(vigentes)}")
+    else:
+        distintos = sorted(k for k, g in vigentes.items() if por_caso[k].get("id_grupo") != g)
+        if distintos:
+            problemas.append(f"trazabilidad.json desactualizado: otro grupo en {distintos}")
+    falsas = [(ci.get("id"), ci.get("campo")) for f in por_caso.values() for ci in f.get("citas", []) if not ci.get("existe_en_datos")]
+    if falsas:
+        problemas.append(f"citas no resueltas en trazabilidad.json: {falsas}")
+    if not t.get("todo_ok"):
+        problemas.append("trazabilidad.json: todo_ok no es verdadero")
+    exportados, leidas = _textos_exportados(c)
+    huerfanos = sorted(k for k in exportados if k not in ids)
+    if huerfanos:
+        problemas.append(f"exportaciones de casos que no están en fichas.jsonl: {huerfanos}")
+    vivo = reverificar_fichas(c, registros, exportados) if registros else None
+    sin_verificar: list[str] = []
+    if vivo is not None:
+        for r in registros:
+            id_caso = str(r.get("id_caso"))
+            v = vivo.get(id_caso)
+            if v is None:
+                sin_verificar.append(id_caso)
+                continue
+            if v["fallos"]:
+                problemas.append(f"{id_caso}: {len(v['fallos'])} fallos del validador ({v['fallos'][0][:80]})")
+            guardadas = sorted((ci.get("id"), ci.get("campo"), bool(ci.get("existe_en_datos"))) for ci in por_caso.get(id_caso, {}).get("citas", []))
+            if id_caso in por_caso and guardadas != [tuple(x) for x in v["citas"]]:
+                problemas.append(f"trazabilidad.json desactualizado: las citas de {id_caso} ya no coinciden con los datos actuales")
+        if sin_verificar:
+            problemas.append(f"fichas sin verificar: {sin_verificar}")
+    sin_cubrir = [i for i in ids if i not in por_caso] if vivo is None else []
+    cobertura = (f"re-verificadas con el validador contra {a.base_senales}: {len(vivo)} de {len(registros)}" if vivo is not None
+                 else f"sin {a.base_senales} en esta máquina: solo cubiertas por trazabilidad.json {len(registros) - len(sin_cubrir)} de {len(registros)}")
+    detalle = (f"{a.fichas_jsonl}: {len(registros)} fichas ({', '.join(ids)}); {cobertura}; exportaciones revisadas: {len(leidas)} archivos; "
+               f"problemas: {problemas or 'ninguno'}.")
+    if problemas:
+        estado = FALTA
+    elif vivo is None:
+        estado = NO_VERIFICABLE
+        detalle += f" No se pudo correr el validador sobre {sin_cubrir or 'las fichas'}."
+    else:
+        estado = PASS
+    c.agregar("P-02", "Condiciones previas", titulo, estado, detalle, comando, "C-01")
 
 
 def sin_publicar(c: Contexto) -> None:
@@ -303,8 +434,11 @@ def restringido(c: Contexto) -> None:
     rutas = [r for lst in cargar_fuentes().redistribucion_restringida.values() for r in lst]
     metidos = sorted(f for f in versionados for r in rutas if f.startswith(r))
     reservado = sorted(f for f in versionados if re.search(a.patron_reservado, f))
-    c.agregar("P-04", "Condiciones previas", "Nada con redistribución restringida ni el benchmark reservado en el repositorio (D-72)", PASS if not (metidos or reservado) else FALTA,
-              f"Rutas restringidas ({rutas}) versionadas: {metidos[:5] or 'ninguna'}; benchmark reservado versionado: {reservado or 'ninguno'}. data/demo.duckdb se ignora por git.", "git rm --cached <ruta>")
+    bases = sorted(f for f in versionados if any(fnmatch.fnmatch(f, pat) or fnmatch.fnmatch(Path(f).name, pat) for pat in a.nunca_versionados))
+    c.agregar("P-04", "Condiciones previas", "Nada con redistribución restringida, ni bases de datos de la sesión, ni el benchmark reservado en el repositorio (D-72)",
+              PASS if not (metidos or reservado or bases) else FALTA,
+              f"`git ls-files` ({len(versionados)} archivos): rutas restringidas ({rutas}) versionadas: {metidos[:5] or 'ninguna'}; "
+              f"bases {a.nunca_versionados} versionadas: {bases[:5] or 'ninguna'}; benchmark reservado versionado: {reservado or 'ninguno'}.", "git rm --cached <ruta>")
 
 
 def provisionales(c: Contexto) -> None:

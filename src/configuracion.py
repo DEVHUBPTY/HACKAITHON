@@ -3276,10 +3276,25 @@ class SbpEntrega(ModeloConfig):
     nota: str = Field(min_length=1)
 
 
+class OrigenValoresRestringidos(ModeloConfig):
+    glob: str = Field(min_length=1)
+    nombres: list[str] = Field(min_length=1)       # etiquetas XML o claves JSON cuyo valor es texto con redistribución restringida
+
+
+class ValoresRestringidos(ModeloConfig):
+    """Valores crudos que no pueden aparecer en ningún texto del paquete (D-31, D-72). Se leen de data/raw/ solo si existe en local."""
+
+    minimo_caracteres: int = Field(ge=1)           # los valores más cortos (p. ej. «Portada») no se buscan: serían falsos positivos
+    rss: OrigenValoresRestringidos
+    gdelt: OrigenValoresRestringidos
+
+
 class ProhibidoEntrega(ModeloConfig):
     nombres: list[str] = Field(min_length=1)
     prefijos_ruta: list[str] = Field(min_length=1)
-    campos: list[str] = Field(min_length=1)
+    campos: list[str] = Field(min_length=1)            # patrones fnmatch sobre el nombre normalizado (minúsculas, sin tildes) de columna o clave
+    campos_permitidos: list[str]                       # banderas booleanas legítimas que el patrón de campos alcanzaría
+    valores_restringidos: ValoresRestringidos
     extensiones_estructuradas: list[str] = Field(min_length=1)
     patrones_secretos: list[str] = Field(min_length=1)
 
@@ -3293,6 +3308,7 @@ class PaqueteEntrega(ModeloConfig):
     archivos: dict[str, str]
     carpetas: dict[str, str]
     extensiones_carpetas: list[str]
+    carpetas_excluidas: list[str]                       # subcarpetas que nunca se copian de una carpeta completa (p. ej. la vista previa fuera de git)
     sbp: SbpEntrega
     prohibido: ProhibidoEntrega
 
@@ -3314,11 +3330,15 @@ class AuditoriaEntrega(ModeloConfig):
     minimo_decisiones_notion: int = Field(ge=1)
     trazabilidad: str
     fichas_jsonl: str
+    base_senales: str = Field(min_length=1)
+    exportaciones: list[str]                            # carpetas con CASO-*.md y CSV que se entregan o se suben a Notion
+    estados_sin_trazabilidad: list[str]                 # casos que fichas.jsonl conserva pero trazabilidad.json ya no incluye (se re-verifican igual)
     campos_fichas_jsonl: list[str] = Field(min_length=1)
     pruebas: str
     catalogo: str
     columna_fuente_catalogo: str
-    fuentes_usadas_manifest: list[str] = Field(min_length=1)
+    manifest: str = Field(min_length=1)
+    nombres_fuentes_catalogo: dict[str, str] = Field(min_length=1)   # clave de data/manifest.json -> nombre que debe aparecer en el catálogo
     pagina_metricas: str
     sin_efecto_en_metricas: list[str]
     marca_borrador_metricas: str
@@ -3328,6 +3348,9 @@ class AuditoriaEntrega(ModeloConfig):
     secciones_readme: dict[str, str] = Field(min_length=1)
     licencia_codigo: list[str] = Field(min_length=1)
     env_ejemplo: str
+    nombres_secretos_env: list[str] = Field(min_length=1)   # regex de nombres de variable que nunca llevan valor en .env.example
+    placeholders_env: list[str]                              # únicos valores aceptados para esas variables (además del vacío)
+    nunca_versionados: list[str] = Field(min_length=1)       # fnmatch sobre la ruta de `git ls-files` o su nombre
     lock: str
     demo: DemoAuditoria
     revision_config: str

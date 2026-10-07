@@ -23,6 +23,8 @@ import re
 import shutil
 import subprocess
 import sys
+import unicodedata
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -81,6 +83,53 @@ def campos_de(ruta: Path) -> set[str]:
         return set()
 
 
+def normalizar_campo(nombre: str) -> str:
+    """Nombre de columna o clave en minúsculas y sin tildes: «Descripción_RSS» y «descripcion_rss» son el mismo campo."""
+    return "".join(c for c in unicodedata.normalize("NFKD", nombre.strip().lower()) if not unicodedata.combining(c))
+
+
+def campos_restringidos_de(ruta: Path, cfg: ConfigEntrega) -> list[str]:
+    """Columnas o claves del archivo cuyo nombre normalizado coincide con algún patrón de ``prohibido.campos`` (y no está permitido)."""
+    p = cfg.paquete.prohibido
+    permitidos = {normalizar_campo(x) for x in p.campos_permitidos}
+    nombres = {normalizar_campo(c) for c in campos_de(ruta)}
+    return sorted(n for n in nombres if n not in permitidos and any(fnmatch.fnmatchcase(n, normalizar_campo(pat)) for pat in p.campos))
+
+
+def _normalizar_texto(texto: str) -> str:
+    return " ".join(normalizar_campo(texto).split())
+
+
+def _valores_json(valor: Any, claves: set[str]) -> list[str]:
+    if isinstance(valor, dict):
+        propios = [v for k, v in valor.items() if k.lower() in claves and isinstance(v, str)]
+        return propios + [x for v in valor.values() for x in _valores_json(v, claves)]
+    if isinstance(valor, list):
+        return [x for v in valor for x in _valores_json(v, claves)]
+    return []
+
+
+def valores_restringidos(cfg: ConfigEntrega, raiz: Path) -> set[str]:
+    """Descripciones del RSS y URLs ``socialimage`` crudas (normalizadas) que hay en ``data/raw/`` de ESTA máquina; vacío si no están (se omite el control)."""
+    v = cfg.paquete.prohibido.valores_restringidos
+    textos: list[str] = []
+    for ruta in sorted(raiz.glob(v.rss.glob)):
+        try:
+            for el in ET.parse(ruta).getroot().iter():     # noqa: S314  (archivo propio de data/raw/)
+                if el.tag.rsplit("}", 1)[-1] in v.rss.nombres and el.text:
+                    textos.append(el.text)
+        except (ET.ParseError, OSError):
+            continue
+    claves = {n.lower() for n in v.gdelt.nombres}
+    for ruta in sorted(raiz.glob(v.gdelt.glob)):
+        try:
+            textos += _valores_json(json.loads(ruta.read_text(encoding="utf-8")), claves)
+        except (OSError, ValueError):
+            continue
+    normalizados = (_normalizar_texto(t) for t in textos)
+    return {t for t in normalizados if len(t) >= v.minimo_caracteres}
+
+
 def buscar_secretos(ruta: Path, patrones: list[re.Pattern[str]]) -> list[str]:
     """Patrones de secreto que aparecen en un archivo de texto (se devuelve el patrón, nunca el valor)."""
     try:
@@ -90,11 +139,11 @@ def buscar_secretos(ruta: Path, patrones: list[re.Pattern[str]]) -> list[str]:
     return [p.pattern for p in patrones if p.search(texto)]
 
 
-def revisar_carpeta(carpeta: Path, cfg: ConfigEntrega, *, omitir: set[str] | None = None) -> list[Hallazgo]:
-    """Revisa un paquete ya construido: nombres, rutas, campos restringidos y secretos. ``omitir``: rutas relativas que no se escanean."""
+def revisar_carpeta(carpeta: Path, cfg: ConfigEntrega, *, omitir: set[str] | None = None, restringidos: set[str] | None = None) -> list[Hallazgo]:
+    """Revisa un paquete ya construido: nombres, rutas, campos restringidos (por nombre y, con ``restringidos``, por valor) y secretos.
+    ``omitir``: rutas relativas que no se escanean. El hallazgo nombra el archivo y la regla, nunca el valor encontrado."""
     p = cfg.paquete.prohibido
     patrones = [re.compile(x) for x in p.patrones_secretos]
-    campos_prohibidos = {c.lower() for c in p.campos}
     hallazgos: list[Hallazgo] = []
     for ruta in sorted(carpeta.rglob("*")):
         if not ruta.is_file():
@@ -107,8 +156,16 @@ def revisar_carpeta(carpeta: Path, cfg: ConfigEntrega, *, omitir: set[str] | Non
         if any(rel.startswith(pre.removeprefix("data/")) or ("/" + pre) in "/" + rel for pre in p.prefijos_ruta):
             hallazgos.append(Hallazgo("ruta_prohibida", rel, "la ruta pertenece a una fuente restringida o a datos de la sesión"))
         if ruta.suffix in p.extensiones_estructuradas:
-            for campo in sorted(campos_de(ruta) & campos_prohibidos):
+            for campo in campos_restringidos_de(ruta, cfg):
                 hallazgos.append(Hallazgo("campo_restringido", rel, f"trae el campo «{campo}» (D-31, D-72)"))
+        if restringidos:
+            try:
+                texto = _normalizar_texto(ruta.read_text(encoding="utf-8"))
+            except (OSError, UnicodeDecodeError):
+                texto = ""
+            n = sum(1 for valor in restringidos if valor in texto)
+            if n:
+                hallazgos.append(Hallazgo("valor_restringido", rel, f"contiene {n} valores crudos de descripción del RSS o socialimage (D-31, D-72)"))
         for patron in buscar_secretos(ruta, patrones):
             hallazgos.append(Hallazgo("secreto", rel, f"coincide con el patrón de secreto {patron!r}"))
     return hallazgos
@@ -123,7 +180,7 @@ def _plan(cfg: ConfigEntrega, raiz: Path) -> dict[str, Path]:
         if not base.is_dir():
             raise ErrorPaquete(f"falta la carpeta {origen}")
         for f in sorted(base.rglob("*")):
-            if f.is_file() and f.suffix in p.extensiones_carpetas and "vista_previa" not in f.parts:
+            if f.is_file() and f.suffix in p.extensiones_carpetas and not set(p.carpetas_excluidas) & set(f.relative_to(base).parts):
                 plan.setdefault(f"{destino}/{f.relative_to(base).as_posix()}", f)
     if p.sbp.incluir:
         plan[p.sbp.destino] = raiz / p.sbp.origen
@@ -180,7 +237,7 @@ def construir(cfg: ConfigEntrega | None = None, raiz: Path = RAIZ, destino: Path
     version = str(manifest.get("version", "?"))
     n_archivos = sum(1 for f in carpeta.rglob("*") if f.is_file()) + 1   # + LEEME
     (carpeta / p.archivo_leeme).write_text(_leeme(cfg, version, n_archivos), encoding="utf-8")
-    hallazgos = revisar_carpeta(carpeta, cfg)
+    hallazgos = revisar_carpeta(carpeta, cfg, restringidos=valores_restringidos(cfg, raiz))
     if hallazgos:
         shutil.rmtree(carpeta)
         raise ErrorPaquete("el paquete contiene material prohibido y se descartó:\n" + "\n".join(f"  {h}" for h in hallazgos))
@@ -200,17 +257,24 @@ def verificar(cfg: ConfigEntrega | None = None, raiz: Path = RAIZ, carpeta: Path
     carpeta = carpeta or raiz / cfg.paquete.carpeta
     if not carpeta.is_dir():
         return [Hallazgo("paquete_ausente", str(carpeta), "no existe: correr `poetry run python -m scripts.empaquetar_datos`")]
-    hallazgos = revisar_carpeta(carpeta, cfg, omitir={cfg.paquete.archivo_checksums})
+    hallazgos = revisar_carpeta(carpeta, cfg, omitir={cfg.paquete.archivo_checksums}, restringidos=valores_restringidos(cfg, raiz))
     sumas = carpeta / cfg.paquete.archivo_checksums
     if not sumas.is_file():
         return [*hallazgos, Hallazgo("checksums_ausentes", cfg.paquete.archivo_checksums, "falta el archivo de checksums")]
+    listados: set[str] = set()
     for linea in sumas.read_text(encoding="utf-8").splitlines():
         suma, _, rel = linea.partition("  ")
+        listados.add(rel)
         f = carpeta / rel
         if not f.is_file():
             hallazgos.append(Hallazgo("archivo_faltante", rel, "está en los checksums pero no en el paquete"))
         elif sha256(f) != suma:
             hallazgos.append(Hallazgo("checksum", rel, "el SHA-256 no coincide"))
+    propios = {cfg.paquete.archivo_checksums, cfg.paquete.archivo_indice}     # se escriben después de calcular las sumas
+    for f in sorted(carpeta.rglob("*")):
+        rel = f.relative_to(carpeta).as_posix()
+        if f.is_file() and rel not in listados and rel not in propios:
+            hallazgos.append(Hallazgo("archivo_no_listado", rel, "está en el paquete pero no en los checksums (agregado después de construir)"))
     return hallazgos
 
 

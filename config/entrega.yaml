@@ -43,6 +43,7 @@ paquete:
   carpetas:                              # carpetas completas (destino -> origen); solo archivos de estas extensiones
     evidencias/fichas_trazables: outputs/fichas_trazables
   extensiones_carpetas: [".md", ".csv", ".json"]
+  carpetas_excluidas: ["vista_previa"]   # la vista previa de fichas_trazables (sin --casos) no se entrega
   # D-116: el CSV agregado de la SBP se entrega con su nota de riesgo. Con incluir: false se retira (visibilidad pública sin autorización).
   sbp:
     incluir: true
@@ -59,8 +60,16 @@ paquete:
   prohibido:
     nombres: ["local.env", ".env", "*.duckdb", "*.duckdb.wal", "*.xlsx", "*.xml", "rss_tvn*", "gdelt_*", "revision*.csv", "*reservad*.jsonl", "*reservad*benchmark*"]
     prefijos_ruta: ["data/raw/rss_tvn", "data/raw/gdelt", "data/raw/sbp", "data/revision", "data/cache_llm"]
-    # Campos con redistribución restringida (D-31, D-72): descripción del RSS, socialimage, extractos. Se buscan como columna o clave.
-    campos: ["descripcion", "description", "socialimage", "extracto", "excerpt", "cuerpo", "autor", "author"]
+    # Campos con redistribución restringida (D-31, D-72): descripción del RSS, socialimage, extractos, cuerpos, autores. Patrones fnmatch sobre el
+    # nombre de la columna o clave anidada, en minúsculas y sin tildes (así «Descripción_RSS» y «descripcion_rss» también caen).
+    campos: ["descripcion*", "*description*", "socialimage*", "extracto*", "excerpt*", "cuerpo*", "autor*", "author*"]
+    campos_permitidos: ["sin_descripcion_rss", "sin_nombres_de_autor"]   # banderas booleanas de la ficha (D-31, D-32), no texto
+    # Además de los nombres, los VALORES: las descripciones del RSS y las URLs socialimage crudas no pueden aparecer en ningún texto del paquete.
+    # Se leen de data/raw/ solo si está en esta máquina; si no, ese control se omite (los nombres y los secretos se revisan siempre).
+    valores_restringidos:
+      minimo_caracteres: 30
+      rss: {glob: "data/raw/rss_tvn/*.xml", nombres: ["description"]}
+      gdelt: {glob: "data/raw/gdelt/*.json", nombres: ["socialimage"]}
     extensiones_estructuradas: [".csv", ".json", ".jsonl", ".geojson"]
     patrones_secretos:
       - "sk-[A-Za-z0-9]{20,}"
@@ -81,11 +90,16 @@ auditoria:
   minimo_decisiones_notion: 3            # PDF sección 5 (solo se verifica a mano en Notion)
   trazabilidad: outputs/fichas_trazables/trazabilidad.json
   fichas_jsonl: outputs/fichas.jsonl
+  base_senales: data/senales.duckdb      # P-02 re-verifica contra ella cada ficha de fichas.jsonl; si no está en esta máquina, lo que no se pudo verificar queda NO VERIFICABLE
+  exportaciones: ["outputs/fichas_trazables", "outputs/notion"]
+  estados_sin_trazabilidad: ["descartado"]   # CASO-004…006 (D-118): siguen en fichas.jsonl, ya no están en trazabilidad.json, y se re-verifican igual
   campos_fichas_jsonl: ["id_caso", "modalidad", "ids_fuente", "afirmaciones", "citas", "puntaje", "componentes", "estado_evidencia", "borrador", "estado_revision"]
   pruebas: outputs/pruebas.csv
   catalogo: outputs/catalogo.csv
   columna_fuente_catalogo: "Fuente"
-  fuentes_usadas_manifest: ["TVN", "GDELT", "Banco Mundial", "USGS", "SBP"]   # nombres que deben aparecer en el catálogo
+  manifest: data/manifest.json
+  # Las fuentes salen de las claves `licencias` de data/manifest.json; cada una debe tener su nombre en el catálogo. Una clave nueva sin entrada aquí es FALTA.
+  nombres_fuentes_catalogo: {tvn_rss: "TVN", gdelt: "GDELT", banco_mundial: "Banco Mundial", usgs: "USGS", sbp: "SBP"}
   pagina_metricas: outputs/pagina_metricas.md
   sin_efecto_en_metricas: ["config/entrega.yaml"]   # configuración de esta tarea: no cambia ninguna cifra
   marca_borrador_metricas: "BORRADOR"
@@ -99,6 +113,9 @@ auditoria:
     evaluacion_reservada: "evaluaci[oó]n reservada"
   licencia_codigo: ["LICENSE", "LICENSE.md", "LICENSE.txt"]
   env_ejemplo: .env.example
+  nombres_secretos_env: ["(?i)(_key|_token|_secret|_password)$"]   # estas variables van sin valor en .env.example
+  placeholders_env: []                                              # valores de relleno aceptados además del vacío (ninguno hoy)
+  nunca_versionados: ["data/demo.duckdb", "*.duckdb", "*.duckdb.wal"]   # P-04: se comprueba contra `git ls-files`
   lock: poetry.lock
   demo: {base: data/demo.duckdb, verificar_offline: scripts/verificar_offline.py, guion: docs/demo.md}
   revision_config: config/revision.yaml
