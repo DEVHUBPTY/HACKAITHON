@@ -2320,6 +2320,63 @@ def cargar_cache(carpeta: Path | None = None) -> ConfigCache:
     return cargar_config("cache", ConfigCache, carpeta)
 
 
+# ------------------------------------------------------------------ reproducibilidad.yaml (E1-20)
+
+
+class PasoReproduccion(ModeloConfig):
+    """Un paso del pipeline: un módulo que se ejecuta con ``python -m`` o un paso interno de ``scripts/reproducir.py``."""
+
+    nombre: str = Field(min_length=1)
+    tipo: Literal["modulo", "interno"]
+    modulo: str | None = None
+    argumentos: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _modulo_solo_si_corresponde(self) -> "PasoReproduccion":
+        if (self.tipo == "modulo") != (self.modulo is not None):
+            raise ValueError(f"paso {self.nombre!r}: «modulo» es obligatorio con tipo «modulo» y no se admite con tipo «interno»")
+        return self
+
+
+class SalidasReproduccion(ModeloConfig):
+    archivos: list[str] = Field(min_length=1)
+    informes: dict[str, list[str]]
+    tablas: list[str] = Field(min_length=1)
+    fichas: str = Field(min_length=1)
+    metricas: str = Field(min_length=1)
+    excluir_de_metricas: list[str]
+
+
+class RegistroReproduccion(ModeloConfig):
+    archivo_reglas: str = Field(min_length=1)
+    carpeta_prompts: str = Field(min_length=1)
+
+
+class ConfigReproducibilidad(ModeloConfig):
+    """Pipeline de punta a punta y qué salidas se comparan (E1-20, D-65)."""
+
+    version: str
+    modalidad: Literal["editorial", "banca"]
+    decimales: int = Field(ge=0, le=12)
+    reiniciar_cache_embeddings: bool
+    pasos: list[PasoReproduccion] = Field(min_length=1)
+    salidas: SalidasReproduccion
+    registro: RegistroReproduccion
+
+    @model_validator(mode="after")
+    def _pasos_sin_repetir(self) -> "ConfigReproducibilidad":
+        nombres = [p.nombre for p in self.pasos]
+        repetidos = sorted({n for n in nombres if nombres.count(n) > 1})
+        if repetidos:
+            raise ValueError(f"pasos repetidos: {repetidos}")
+        return self
+
+
+def cargar_reproducibilidad(carpeta: Path | None = None) -> ConfigReproducibilidad:
+    """Atajo para ``config/reproducibilidad.yaml``."""
+    return cargar_config("reproducibilidad", ConfigReproducibilidad, carpeta)
+
+
 # ------------------------------------------------------------------ revision.yaml (E1-16)
 
 
@@ -2505,6 +2562,7 @@ CARGADORES = {
     "cache": cargar_cache,
     "revision": cargar_revision,
     "pruebas": cargar_pruebas,
+    "reproducibilidad": cargar_reproducibilidad,
 }
 
 

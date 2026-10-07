@@ -222,7 +222,7 @@ def test_las_versiones_registradas_salen_de_la_configuracion_y_de_los_archivos()
 
 def test_todas_las_semillas_de_config_estan_registradas_y_documentadas() -> None:
     semillas = rep.semillas_de_config(CARPETA_CONFIG)
-    assert {"clasificacion.yaml:semilla", "etiquetado.yaml:semilla", "benchmark.yaml:intervalos.semilla", "benchmark.yaml:sustento.semilla"} <= set(semillas)
+    assert {"clasificacion.yaml:semilla", "etiquetado.yaml:muestra.semilla", "benchmark.yaml:intervalos.semilla", "benchmark.yaml:sustento.semilla"} <= set(semillas)
     docs = (RAIZ / "docs" / "parametros.md").read_text(encoding="utf-8")
     faltan = [k for k in semillas if k not in docs]
     assert not faltan, f"semillas sin documentar en docs/parametros.md: {faltan}"
