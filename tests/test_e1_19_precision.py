@@ -33,12 +33,16 @@ def _puntaje(i: int, posicion: int, p: float) -> dict[str, Any]:
     }
 
 
-def _base(ruta: Path, posiciones: dict[int, int], fechas: dict[int, str], sinteticos: tuple[int, ...] = ()) -> Path:
+DETECCION_RECIENTE = "2026-10-30T00:00:00Z"
+
+
+def _base(ruta: Path, posiciones: dict[int, int], fechas: dict[int, str], sinteticos: tuple[int, ...] = (), sin_publicacion: tuple[int, ...] = ()) -> Path:
     """Diez grupos: ``posiciones[i]`` es la posición del sistema y ``fechas[i]`` su fecha reciente."""
-    grupos = [_grupo(i, fechas[i]) for i in range(1, 11)]
+    grupos = [_grupo(i, DETECCION_RECIENTE if i in sin_publicacion else fechas[i]) | ({"fecha_fin_origen": "deteccion"} if i in sin_publicacion else {}) for i in range(1, 11)]
     puntajes = [_puntaje(i, posiciones[i], 100.0 - posiciones[i]) for i in range(1, 11)]
     noticias = [
-        {"id_noticia": f"NOT-{i:02d}", "titulo": f"Titular {i}", "url": f"https://x.example/{i}", "url_canonica": f"https://x.example/{i}", "medio": "m", "tipo_firma": "sin_firma", "id_grupo": f"GRP-{i:02d}", "origen": "sintetico" if i in sinteticos else "rss"}
+        {"id_noticia": f"NOT-{i:02d}", "titulo": f"Titular {i}", "url": f"https://x.example/{i}", "url_canonica": f"https://x.example/{i}", "medio": "m", "tipo_firma": "sin_firma", "id_grupo": f"GRP-{i:02d}", "origen": "sintetico" if i in sinteticos else "rss",
+         "fecha_publicacion": None if i in sin_publicacion else fechas[i], "fecha_deteccion": DETECCION_RECIENTE}
         for i in range(1, 11)
     ]
     db.guardar_todo(ruta, {"grupos": grupos, "puntajes": puntajes, "noticias": noticias})
@@ -188,8 +192,9 @@ def _seleccion(ruta: Path, elegidos: list[str], todos: int = 10, corte: str = CO
             w.writerow({"corte": corte, "id_grupo": gid, "tema": "", "titular": "", "fecha_reciente": "", "seleccion": CFG.hoja_ciega.marca if gid in elegidos else ""})
 
 
-def test_sin_archivo_la_seleccion_esta_pendiente(tmp_path: Path) -> None:
-    assert pa5.leer_seleccion(tmp_path / "no_existe.csv", CFG) is None
+def test_archivo_inexistente_es_error_explicito(tmp_path: Path) -> None:
+    with pytest.raises(pa5.SeleccionInvalida, match="no_existe.csv"):
+        pa5.leer_seleccion(tmp_path / "no_existe.csv", CFG)
 
 
 def test_hoja_sin_marcas_esta_pendiente(tmp_path: Path) -> None:
@@ -218,16 +223,54 @@ def test_seleccion_con_id_desconocido_se_rechaza(tmp_path: Path, con) -> None:
         pa5.validar_seleccion(pa5.leer_seleccion(ruta, CFG), pa5.candidatos(con), CFG.k)
 
 
-def test_cli_pendiente_sale_limpio_y_no_inventa_resultados(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_cli_hoja_sin_marcas_es_pendiente_y_sale_limpio(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     base = _base(tmp_path / "s.duckdb", POS, FECHAS)
+    vacia = tmp_path / "vacia.csv"
+    _seleccion(vacia, [])
     salida = tmp_path / "out.json"
-    codigo = pa5.principal(["--seleccion", str(tmp_path / "no_existe.csv"), "--base", str(base), "--salida", str(salida)])
+    codigo = pa5.principal(["--seleccion", str(vacia), "--base", str(base), "--salida", str(salida)])
     texto = capsys.readouterr().out
     assert codigo == 0
     assert CFG.textos.pendiente in texto
     assert "P@5" not in texto and "%" not in texto
     datos = json.loads(salida.read_text(encoding="utf-8"))
     assert datos["estado"] == "pendiente" and "sistema" not in datos
+
+
+def test_cli_sin_el_flag_y_sin_archivo_por_defecto_es_pendiente(tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch) -> None:
+    base = _base(tmp_path / "s.duckdb", POS, FECHAS)
+    monkeypatch.setattr(pa5, "RAIZ", tmp_path)
+    codigo = pa5.principal(["--base", str(base), "--salida", str(tmp_path / "out.json")])
+    assert codigo == 0 and CFG.textos.pendiente in capsys.readouterr().out
+
+
+def test_cli_seleccion_inexistente_falla_y_no_pisa_una_salida_medida(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    base = _base(tmp_path / "s.duckdb", POS, FECHAS)
+    salida = tmp_path / "out.json"
+    salida.write_text('{"estado": "medido", "marca": 1}', encoding="utf-8")
+    codigo = pa5.principal(["--seleccion", str(tmp_path / "no_existe.csv"), "--base", str(base), "--salida", str(salida)])
+    assert codigo != 0
+    assert "no_existe.csv" in capsys.readouterr().err
+    assert json.loads(salida.read_text(encoding="utf-8")) == {"estado": "medido", "marca": 1}
+
+
+def test_cli_una_seleccion_faltante_entre_varias_es_error(tmp_path: Path) -> None:
+    base = _base(tmp_path / "s.duckdb", POS, FECHAS)
+    buena = tmp_path / "sel.csv"
+    _seleccion(buena, [f"GRP-{i:02d}" for i in range(1, 6)])
+    salida = tmp_path / "out.json"
+    codigo = pa5.principal(["--seleccion", str(buena), "--seleccion", str(tmp_path / "falta.csv"), "--base", str(base), "--salida", str(salida)])
+    assert codigo != 0 and not salida.exists()
+
+
+def test_pendiente_no_pisa_una_salida_medida(tmp_path: Path) -> None:
+    base = _base(tmp_path / "s.duckdb", POS, FECHAS)
+    vacia = tmp_path / "vacia.csv"
+    _seleccion(vacia, [])
+    salida = tmp_path / "out.json"
+    salida.write_text('{"estado": "medido"}', encoding="utf-8")
+    assert pa5.principal(["--seleccion", str(vacia), "--base", str(base), "--salida", str(salida)]) == 0
+    assert json.loads(salida.read_text(encoding="utf-8")) == {"estado": "medido"}
 
 
 def test_cli_con_seleccion_imprime_sistema_y_baseline(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
@@ -256,3 +299,121 @@ def test_yaml_registrado_en_validar_todo() -> None:
     from src.configuracion import CARGADORES
 
     assert "precision" in CARGADORES
+
+
+# ------------------------------------------------------------------ X34: el baseline usa solo la fecha de publicación
+
+
+def test_x34_grupo_solo_gdelt_no_entra_al_top_del_baseline(tmp_path: Path) -> None:
+    """GRP-01 no tiene fecha de publicación y su detección es la más reciente: debe ir al final, no al tope."""
+    ruta = _base(tmp_path / "g.duckdb", POS, FECHAS, sin_publicacion=(1,))
+    c = db.conectar(ruta, solo_lectura=True)
+    try:
+        cands = pa5.candidatos(c)
+        top = [x.id_grupo for x in pa5.top_baseline(cands, 5)]
+        assert "GRP-01" not in top
+        assert top == [f"GRP-{i:02d}" for i in (10, 9, 8, 7, 6)]
+        assert pa5.top_baseline(cands, 10)[-1].id_grupo == "GRP-01"
+        assert next(x for x in cands if x.id_grupo == "GRP-01").fecha_reciente == ""
+    finally:
+        c.close()
+
+
+def test_x34_sin_fecha_de_publicacion_desempata_por_id_al_final(tmp_path: Path) -> None:
+    ruta = _base(tmp_path / "g.duckdb", POS, FECHAS, sin_publicacion=(3, 2))
+    c = db.conectar(ruta, solo_lectura=True)
+    try:
+        ids = [x.id_grupo for x in pa5.top_baseline(pa5.candidatos(c), 10)]
+        assert ids[-2:] == ["GRP-02", "GRP-03"]
+    finally:
+        c.close()
+
+
+def test_x34_la_fecha_es_el_maximo_de_las_publicaciones_del_grupo(tmp_path: Path) -> None:
+    ruta = _base(tmp_path / "g.duckdb", POS, FECHAS)
+    con_w = db.conectar(ruta)
+    con_w.execute("INSERT INTO noticias (id_noticia, titulo, url, url_canonica, medio, tipo_firma, id_grupo, origen, fecha_publicacion) "
+                  "VALUES ('NOT-x', 't', 'u', 'u', 'm', 's', 'GRP-01', 'rss', '2026-10-25T00:00:00Z')")
+    con_w.close()
+    c = db.conectar(ruta, solo_lectura=True)
+    try:
+        assert next(x for x in pa5.candidatos(c) if x.id_grupo == "GRP-01").fecha_reciente == "2026-10-25T00:00:00Z"
+    finally:
+        c.close()
+
+
+def test_x34_el_reporte_cuenta_los_grupos_sin_fecha_de_publicacion(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    base = _base(tmp_path / "s.duckdb", POS, FECHAS, sin_publicacion=(1, 2))
+    seleccion = tmp_path / "sel.csv"
+    _seleccion(seleccion, [f"GRP-{i:02d}" for i in (1, 2, 3, 9, 10)])
+    salida = tmp_path / "out.json"
+    assert pa5.principal(["--seleccion", str(seleccion), "--base", str(base), "--salida", str(salida)]) == 0
+    assert "2 grupos sin fecha de publicación" in capsys.readouterr().out
+    datos = json.loads(salida.read_text(encoding="utf-8"))
+    assert datos["cortes"][0]["baseline_sin_fecha_publicacion"] == 2
+
+
+def test_x34_la_hoja_muestra_solo_la_fecha_de_publicacion(tmp_path: Path) -> None:
+    ruta = _base(tmp_path / "g.duckdb", POS, FECHAS, sin_publicacion=(1,))
+    c = db.conectar(ruta, solo_lectura=True)
+    try:
+        filas = {f["id_grupo"]: f for f in pa5.hoja_ciega(pa5.candidatos(c), CORTE, CFG)}
+    finally:
+        c.close()
+    assert filas["GRP-01"]["fecha_reciente"] == ""
+    assert DETECCION_RECIENTE not in {f["fecha_reciente"] for f in filas.values()}
+    assert filas["GRP-02"]["fecha_reciente"] == FECHAS[2]
+
+
+# ------------------------------------------------------------------ X36: especialista declarado
+
+
+def test_x36_sin_especialista_declarado_siempre_es_exploratoria() -> None:
+    cortes = [{"corte": f"c{i}", "sistema": {"k": 3, "n": 5}, "baseline": {"k": 1, "n": 5}} for i in range(3)]
+    r = pa5.resumir(cortes, CFG, Z)
+    assert r["exploratoria"] is True and r["especialista"] is False
+
+
+def test_x36_con_especialista_y_cortes_suficientes_no_es_exploratoria() -> None:
+    cortes = [{"corte": f"c{i}", "sistema": {"k": 3, "n": 5}, "baseline": {"k": 1, "n": 5}} for i in range(3)]
+    r = pa5.resumir(cortes, CFG, Z, especialista=True)
+    assert r["exploratoria"] is False and r["especialista"] is True
+
+
+def test_x36_con_especialista_pero_un_corte_sigue_exploratoria() -> None:
+    cortes = [{"corte": "c", "sistema": {"k": 3, "n": 5}, "baseline": {"k": 1, "n": 5}}]
+    assert pa5.resumir(cortes, CFG, Z, especialista=True)["exploratoria"] is True
+
+
+def test_x36_el_cli_declara_al_especialista_y_lo_reporta(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    base = _base(tmp_path / "s.duckdb", POS, FECHAS)
+    seleccion = tmp_path / "sel.csv"
+    _seleccion(seleccion, [f"GRP-{i:02d}" for i in (1, 2, 3, 9, 10)])
+    salida = tmp_path / "out.json"
+    pa5.principal(["--seleccion", str(seleccion), "--base", str(base), "--salida", str(salida)])
+    assert json.loads(salida.read_text(encoding="utf-8"))["especialista"] is False
+    assert CFG.textos.sin_especialista in capsys.readouterr().out
+    pa5.principal(["--seleccion", str(seleccion), "--base", str(base), "--salida", str(salida), "--especialista"])
+    assert json.loads(salida.read_text(encoding="utf-8"))["especialista"] is True
+
+
+# ------------------------------------------------------------------ menores
+
+
+def test_id_duplicado_en_un_corte_se_nombra(tmp_path: Path) -> None:
+    ruta = tmp_path / "dup.csv"
+    _seleccion(ruta, [f"GRP-{i:02d}" for i in range(1, 6)])
+    with ruta.open("a", encoding="utf-8", newline="") as f:
+        f.write(f"{CORTE},GRP-01,,,,x\n")
+    with pytest.raises(pa5.SeleccionInvalida, match="GRP-01"):
+        pa5.leer_seleccion(ruta, CFG)
+
+
+def test_dos_hojas_para_el_mismo_corte_se_rechazan(tmp_path: Path) -> None:
+    base = _base(tmp_path / "s.duckdb", POS, FECHAS)
+    a, b = tmp_path / "a.csv", tmp_path / "b.csv"
+    _seleccion(a, [f"GRP-{i:02d}" for i in range(1, 6)])
+    _seleccion(b, [f"GRP-{i:02d}" for i in range(6, 11)])
+    salida = tmp_path / "out.json"
+    codigo = pa5.principal(["--seleccion", str(a), "--seleccion", str(b), "--base", str(base), "--salida", str(salida)])
+    assert codigo != 0 and not salida.exists()
