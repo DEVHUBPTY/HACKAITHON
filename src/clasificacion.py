@@ -73,6 +73,8 @@ COLUMNAS_CLASIFICACION = (
     "tema_secundario_similitud",
     "tema_baseline",
 )
+# Lo que deriva del tema (no de la señal de ruido): una nota marcada por la sección D4 no conserva nada de esto.
+CAMPOS_DE_TEMA = tuple(c for c in COLUMNAS_CLASIFICACION if c not in ("similitud_panama", "ruido_similitud"))
 
 
 # ------------------------------------------------------------------ texto de entrada
@@ -390,7 +392,7 @@ def aplicar_a_base(
         por_seccion = {f["id_noticia"] for f, d in zip(utiles, decisiones, strict=True) if marcar_por_seccion(f, d, reglas)}
         for f, d in zip(utiles, decisiones, strict=True):
             if f["id_noticia"] in por_seccion:   # D4: sección sospechosa y sin tema -> ruido fuera_de_temas, sin tema
-                f.update(es_ruido=True, motivo_ruido=MOTIVO_FUERA_DE_TEMAS)
+                f.update(es_ruido=True, motivo_ruido=MOTIVO_FUERA_DE_TEMAS, **dict.fromkeys(CAMPOS_DE_TEMA))  # sin restos de una corrida anterior
                 continue
             f.update(
                 tema_clasificado=d.principal,

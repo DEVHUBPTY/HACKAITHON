@@ -59,5 +59,14 @@ exactitud de tema en 35/64 (54,7 %). Fuera de alcance por ahora: generación (ca
   naturales 20/20 → 0/20; exactitud 35/64 → 29/64 (54,7 % → 45,3 %), macro-F1 0.430 → 0.362; IC solapados. Revertido. Detalle en
   `docs/clasificacion.md`.
 
+- Revisión nativa del rango completo (13 archivos, 686 líneas): aprobada y reconocida. Dos advertencias y una sugerencia sobre D4;
+  el dueño pidió corregir las advertencias (ruta delegada, un writer): al marcar por sección se reinician los campos de tema
+  (`CAMPOS_DE_TEMA`) y se agregó la guarda de regresión del ruido por palabras clave. RED: la primera prueba falló por el tema
+  viejo; la segunda ya pasaba (solo guarda). GREEN 117 passed, 6 xfailed; suite completa 2703 passed, 3 skipped, 6 xfailed;
+  `--validar` OK. Verificación del padre: 117 passed y `--validar` OK. La sugerencia del test de duplicados no se tocó.
+- Economía regional: el dueño eligió B' (solo ejemplos regionales de Economía en el método A, sin tocar la descripción, una sola
+  medición; se revierte si Eventos naturales baja de 20/20 o la exactitud empeora). El método B original no mejora el producto
+  porque el activo es A (B: 15/64).
+
 ## Próximo paso
-Decidir con el dueño cómo atacar Economía sin romper Eventos naturales; después T4.
+B' (en espera hasta cerrar este commit); después T4. Antes: decidir con el dueño cómo atacar Economía sin romper Eventos naturales; después T4.

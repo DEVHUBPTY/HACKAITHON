@@ -162,6 +162,46 @@ def test_d4_la_marca_por_la_seccion_es_estable_en_una_segunda_corrida(tmp_path: 
     assert _leer(ruta)["NOT-1"] == (True, "fuera_de_temas", None)
 
 
+COLUMNAS_TEMA = (
+    "tema_clasificado", "tema_similitud", "subtema_clasificado", "tema_secundario", "tema_secundario_similitud",
+    "tema_baseline",
+)
+
+
+def test_d4_al_marcar_por_la_seccion_en_una_segunda_corrida_no_queda_ningun_campo_de_tema_anterior(tmp_path: Path) -> None:
+    """R3-d4-stale-tema-fields: la nota tenía tema en la corrida 1 y cae a sin_tema en la 2; no conserva el tema viejo."""
+    ruta = _correr(tmp_path, [_fila("NOT-1", CON_TEMA_TEXTO, _tvn("deportes"))])
+    assert _leer(ruta)["NOT-1"] == (False, None, "eventos_naturales")
+    cfg = _cfg()
+    modelo = cfg.modelos[cfg.modelo_activo]
+    umbrales = {m: u.model_copy(update={"umbral_sin_tema": 0.99}) for m, u in modelo.umbrales.items()}
+    cfg = cfg.model_copy(update={"modelos": {**cfg.modelos, cfg.modelo_activo: modelo.model_copy(update={"umbrales": umbrales})}})
+    emb = embeddings.crear(cfg, motor=MotorFalso(), raiz=tmp_path)
+    clasificacion.aplicar_a_base(ruta, cfg, cargar_ruido(), temas_de_prueba(), emb, "A", REGLAS)
+    con = db.conectar(ruta, solo_lectura=True)
+    try:
+        fila = con.execute(
+            f"SELECT es_ruido, motivo_ruido, {', '.join(COLUMNAS_TEMA)} FROM noticias WHERE id_noticia = 'NOT-1'"
+        ).fetchone()
+    finally:
+        con.close()
+    assert fila == (True, "fuera_de_temas", *([None] * len(COLUMNAS_TEMA)))
+
+
+def test_d4_el_ruido_por_palabras_clave_en_seccion_sospechosa_no_se_deshace_al_volver_a_correr(tmp_path: Path) -> None:
+    """R3-d4-keyword-guard-untested: la limpieza ya la marcó por palabras clave; la marca previa NO es de la sección."""
+    fila = _fila("NOT-1", "Fútbol: selección nacional gana el torneo", _tvn("deportes"))
+    assert limpieza.motivo_ruido(fila, fila["titulo_limpio"], REGLAS) == "fuera_de_temas"
+    fila.update(es_ruido=True, motivo_ruido="fuera_de_temas")
+    assert clasificacion.marca_previa_por_seccion(fila, REGLAS) is False
+    ruta = _correr(tmp_path, [fila])
+    assert _leer(ruta)["NOT-1"] == (True, "fuera_de_temas", None)
+    cfg = _cfg()
+    emb = embeddings.crear(cfg, motor=MotorFalso(), raiz=tmp_path)
+    clasificacion.aplicar_a_base(ruta, cfg, cargar_ruido(), temas_de_prueba(), emb, "A", REGLAS)
+    assert _leer(ruta)["NOT-1"] == (True, "fuera_de_temas", None)
+
+
 def _resto_de_reglas() -> tuple:
     from src.configuracion import cargar_fuentes, cargar_normalizacion, cargar_restricciones
 
