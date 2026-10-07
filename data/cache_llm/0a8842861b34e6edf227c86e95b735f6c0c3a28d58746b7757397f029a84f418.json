@@ -1,0 +1,11 @@
+{
+ "clave": "0a8842861b34e6edf227c86e95b735f6c0c3a28d58746b7757397f029a84f418",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.1",
+ "version_cache": "1",
+ "tokens_entrada": 1698,
+ "tokens_salida": 315,
+ "creado_utc": "2026-10-07T03:10:00Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta que colegios particulares atribuyen el aumento de matrícula a la migración\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La evidencia disponible es limitada: al provenir de una sola procedencia independiente, no permite contrastar la versión con otras coberturas.\", \"afirmaciones\": [\"A2\", \"A3\", \"A4\"]}, {\"texto\": \"Si el aumento de matrícula en colegios particulares se relacionara con la migración hacia el sector oficial y con los costos de operación, el tema afectaría a las familias que deben elegir centro educativo y a la oferta educativa disponible.\", \"afirmaciones\": [\"A1\", \"A5\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún dato oficial que permita dimensionar el aumento de matrícula en colegios particulares?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras coberturas independientes reportan el mismo tema y qué versiones aportan?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Qué fuentes adicionales permitirían contrastar la atribución de los colegios particulares sobre la migración al sector oficial?\", \"vacio\": \"procedencias_insuficientes\"}]}"
+}

@@ -1,0 +1,11 @@
+{
+ "clave": "9194ead73b72217e273249f83d19e0abe03a7b880557a72e260f16ff95831b7f",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.1",
+ "version_cache": "1",
+ "tokens_entrada": 1699,
+ "tokens_salida": 302,
+ "creado_utc": "2026-10-07T03:10:34Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta caída de árbol sobre vehículos en hospital San Miguel Arcángel\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La caída de un árbol sobre vehículos en un hospital podría interesar a la población por tratarse de un espacio de atención de salud y de daños materiales en un lugar concurrido.\", \"afirmaciones\": [\"A1\", \"A4\"]}, {\"texto\": \"Si la cobertura se ampliara con más procedencias independientes, el tema podría pasar de un reporte único a un asunto de interés público más sostenido.\", \"afirmaciones\": [\"A2\", \"A3\", \"A5\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún dato oficial vinculado a la caída del árbol sobre vehículos en el hospital San Miguel Arcángel?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras procedencias independientes podrían reportar sobre este tema para superar la procedencia única estimada?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿A qué subtema específico corresponde este caso, más allá del alcance neutro de impacto?\", \"vacio\": \"subtema_desconocido\"}]}"
+}

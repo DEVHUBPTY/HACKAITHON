@@ -1,0 +1,11 @@
+{
+ "clave": "6ae0c4e63a54432e61d6fc289875b6e4101e9189e64445fcdd710f2ee148d20b",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1673,
+ "tokens_salida": 406,
+ "creado_utc": "2026-10-07T03:10:19Z",
+ "respuesta": "{\"afirmaciones\": [{\"id\": \"A1\", \"tipo\": \"declaración\", \"texto\": \"TVN Panamá reporta que MiBus responde por filtraciones, lamenta la incomodidad de los usuarios y afirma que realiza correctivos.\", \"citas\": [{\"id\": \"NOT-ff1b1ed15c\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A2\", \"tipo\": \"hecho\", \"texto\": \"El grupo de registros sobre este tema reúne 1 titular de 1 medio.\", \"citas\": [{\"id\": \"GRP-65d565abd0\", \"campo\": \"n_titulares\"}, {\"id\": \"GRP-65d565abd0\", \"campo\": \"n_medios\"}]}, {\"id\": \"A3\", \"tipo\": \"hecho\", \"texto\": \"Se estima 1 procedencia independiente, ya que los titulares que replican a una misma fuente cuentan como una.\", \"citas\": [{\"id\": \"GRP-65d565abd0\", \"campo\": \"n_procedencias\"}]}, {\"id\": \"A4\", \"tipo\": \"inferencia\", \"texto\": \"La cobertura disponible sobre este tema es limitada, pues se apoya en una sola procedencia independiente y no cuenta con un dato oficial vinculado.\", \"base\": [\"A2\", \"A3\"], \"citas\": []}, {\"id\": \"A5\", \"tipo\": \"hipótesis\", \"texto\": \"Si las filtraciones en el servicio de transporte afectan la experiencia diaria de los usuarios, el tema podría tener relevancia directa para la población que depende de ese servicio.\", \"base\": [\"A1\", \"A4\"], \"citas\": []}]}"
+}

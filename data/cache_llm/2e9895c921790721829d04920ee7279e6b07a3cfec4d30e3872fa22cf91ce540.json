@@ -1,0 +1,11 @@
+{
+ "clave": "2e9895c921790721829d04920ee7279e6b07a3cfec4d30e3872fa22cf91ce540",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.1",
+ "version_cache": "1",
+ "tokens_entrada": 1921,
+ "tokens_salida": 275,
+ "creado_utc": "2026-10-07T03:10:11Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"Medios reportan que El Niño profundiza riesgos económicos en América Latina\", \"afirmaciones\": [\"A1\", \"A2\", \"A3\", \"A4\", \"A5\", \"A6\", \"A7\"]}, \"enfoque\": [{\"texto\": \"Si 18 medios reportan el mismo tema, es probable que la cobertura provenga de una fuente común y no de verificación independiente.\", \"afirmaciones\": [\"A8\"]}, {\"texto\": \"La ausencia de dato oficial y de fechas conocidas limitaría la verificación del alcance económico reportado.\", \"afirmaciones\": [\"A8\"]}], \"preguntas\": [{\"texto\": \"¿Qué indicador oficial permitiría medir el impacto económico de El Niño en América Latina?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Cuántas de las 18 procedencias son independientes entre sí?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Cuáles son los medios y las fechas de publicación de los 20 titulares?\", \"vacio\": \"medios_o_fechas_desconocidos\"}]}"
+}

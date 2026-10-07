@@ -1,0 +1,11 @@
+{
+ "clave": "dda6c2d8483b4d0c848cf6bb311433eda62867be4a66d5204091b0caf8c8f210",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.1",
+ "version_cache": "1",
+ "tokens_entrada": 1668,
+ "tokens_salida": 276,
+ "creado_utc": "2026-10-07T03:10:21Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta respuesta de MiBus por filtraciones en el servicio\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La cobertura disponible sobre este tema es limitada, pues se apoya en una sola procedencia independiente y no cuenta con un dato oficial vinculado.\", \"afirmaciones\": [\"A4\"]}, {\"texto\": \"Si las filtraciones en el servicio de transporte afectan la experiencia diaria de los usuarios, el tema podría tener relevancia directa para la población que depende de ese servicio.\", \"afirmaciones\": [\"A5\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún dato oficial anual sobre filtraciones o incidencias en el servicio de transporte que permita dimensionar el problema?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué entidad o fuente oficial podría aportar indicadores verificables sobre las filtraciones reportadas en el servicio?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras procedencias independientes han reportado sobre las filtraciones y la respuesta de MiBus?\", \"vacio\": \"procedencias_insuficientes\"}]}"
+}

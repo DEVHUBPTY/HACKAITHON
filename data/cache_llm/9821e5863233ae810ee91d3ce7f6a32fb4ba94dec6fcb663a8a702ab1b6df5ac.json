@@ -1,0 +1,11 @@
+{
+ "clave": "9821e5863233ae810ee91d3ce7f6a32fb4ba94dec6fcb663a8a702ab1b6df5ac",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.1",
+ "version_cache": "1",
+ "tokens_entrada": 1702,
+ "tokens_salida": 330,
+ "creado_utc": "2026-10-07T03:10:42Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta contenido exclusivo sobre el metro por la Tumba Muerto\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La cobertura disponible sobre este tema es limitada, pues se apoya en un único titular de un solo medio y en una sola procedencia independiente estimada.\", \"afirmaciones\": [\"A1\", \"A2\", \"A3\", \"A4\"]}, {\"texto\": \"Si el tema del metro por la Tumba Muerto afecta la movilidad cotidiana de la población, una cobertura basada en una sola procedencia podría dejar sin contraste público los detalles y las implicaciones del proyecto.\", \"afirmaciones\": [\"A1\", \"A2\", \"A3\", \"A4\", \"A5\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún dato oficial anual sobre el metro por la Tumba Muerto que permita vincular el tema con un indicador?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué fuentes independientes distintas de TVN Panamá reportan sobre el metro por la Tumba Muerto?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Qué detalles del proyecto y sus implicaciones quedan sin contraste público al depender de una sola procedencia estimada?\", \"vacio\": \"procedencias_insuficientes\"}]}"
+}
