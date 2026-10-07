@@ -118,10 +118,14 @@ def selector_de_grupo(ctx: ui.Contexto, clave: str) -> str | None:
         f = por_id[i]
         return f"#{f.posicion} · {f.titular[:ctx.cfg.bandeja.largo_titular_selector]}"
 
+    # El valor del widget parte del grupo compartido; al elegir otro, on_change (que corre ANTES de volver a ejecutar el script)
+    # actualiza el grupo compartido, así que lo de arriba ya no pisa la elección.
     st.session_state[clave] = st.session_state["id_grupo"]
-    elegido = st.selectbox("Grupo", ids, key=clave, format_func=etiqueta)
-    st.session_state["id_grupo"] = elegido
-    return elegido
+    return st.selectbox("Grupo", ids, key=clave, format_func=etiqueta, on_change=sincronizar_grupo, args=(clave,))
+
+
+def sincronizar_grupo(clave: str) -> None:
+    st.session_state["id_grupo"] = st.session_state[clave]
 
 
 def ir_a(pantalla: str, id_grupo: str | None = None) -> None:
