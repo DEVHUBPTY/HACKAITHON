@@ -162,4 +162,22 @@ def test_abstencion_un_caso_banca_con_evidencia_insuficiente_no_inventa_observac
     r = generar(e, prov)
     assert r.tipo == "nada" and r.paquete is None and prov.llamadas == []
     assert "Seguimiento prioritario" in (r.motivo or "")                      # el motivo nombra la acción
-    assert len(e.vacios) == 2 and any("procedencia" in v.descripcion for v in e.vacios)              # y la ficha dice qué falta
+    assert len(e.vacios) == 2 and any("procedencia" in v.descripcion for v in e.vacios)              # el fixture de entrada trae los dos vacíos
+    # X70: y lo que entrega el sistema, la ficha renderizada (plantilla de la sección 4), los muestra: no es una comprobación del fixture
+    seccion = _seccion_falta_comprobar(_ficha_renderizada_abstencion())
+    assert all(v.descripcion in seccion for v in e.vacios), seccion
+    assert "Seguimiento prioritario" in _ficha_renderizada_abstencion()
+
+
+def _ficha_renderizada_abstencion() -> str:
+    """La ficha banca real de ``GRP-f4a44182b1`` (congelada de ``src.ficha``) pasada por el Markdown del sistema, no por el fixture de entrada."""
+    from src.ficha import a_markdown
+    from src.esquemas import Ficha
+
+    return a_markdown(Ficha.model_validate(leer("e2_03_cu05_ficha_abstencion_renderizable.json")))
+
+
+def _seccion_falta_comprobar(md: str) -> str:
+    """El texto de «4 · Qué falta comprobar» (hasta la sección 5)."""
+    inicio = md.index("## 4 · Qué falta comprobar")
+    return md[inicio : md.index("## 5 ·", inicio)]

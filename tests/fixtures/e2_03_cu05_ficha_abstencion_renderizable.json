@@ -1,0 +1,243 @@
+{
+  "accion_recomendada": {
+    "accion": "Seguimiento prioritario",
+    "estado_evidencia": "insuficiente",
+    "habilita_publicar": false,
+    "motivo": "Atención alta pero evidencia insuficiente: seguir el tema y verificar antes de incluirlo.",
+    "rango": "alto",
+    "siguientes_pasos": [
+      "El indicador vinculado es contexto lejano: buscar un dato oficial que mida el hecho directamente.",
+      "Buscar el mismo hecho en un medio con fuente propia; una réplica de la misma agencia no cuenta."
+    ]
+  },
+  "alcance": "basado únicamente en titular/metadatos",
+  "borrador": true,
+  "falta_comprobar": {
+    "aviso_fuentes": "sugerencias para quien verifica; no son evidencia del sistema ni se citan como tal",
+    "fuentes_sugeridas": [
+      {
+        "nombre": "Autoridad del Canal de Panamá",
+        "origen": "tema"
+      },
+      {
+        "nombre": "Autoridad Marítima de Panamá",
+        "origen": "tema"
+      },
+      {
+        "nombre": "Superintendencia de Bancos de Panamá",
+        "origen": "modalidad"
+      },
+      {
+        "nombre": "Ministerio de Economía y Finanzas",
+        "origen": "modalidad"
+      },
+      {
+        "nombre": "Contraloría General de la República (INEC)",
+        "origen": "modalidad"
+      }
+    ],
+    "otros": [],
+    "principales": [
+      {
+        "codigo": "solo_vinculo_indirecto",
+        "texto": "sin dato oficial vinculado (solo vínculo indirecto: no mide el hecho)",
+        "verificacion": "El indicador vinculado es contexto lejano: buscar un dato oficial que mida el hecho directamente."
+      },
+      {
+        "codigo": "procedencias_insuficientes",
+        "texto": "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "verificacion": "Buscar el mismo hecho en un medio con fuente propia; una réplica de la misma agencia no cuenta."
+      }
+    ]
+  },
+  "id_grupo": "GRP-f4a44182b1",
+  "marca_borrador": "BORRADOR · requiere revisión",
+  "modalidad": "banca",
+  "puntaje": {
+    "componentes": {
+      "E": {
+        "explicacion": {
+          "fraccion_procedencias": 0.3333333333333333,
+          "n_identificables": 1,
+          "n_procedencias": 1,
+          "n_titulares": 1,
+          "peso_identificables": 0.2,
+          "peso_oficial": 0.3,
+          "peso_procedencias": 0.5,
+          "proporcion_identificables": 1.0,
+          "tiene_oficial": false,
+          "tope_procedencias": 3
+        },
+        "valor": 0.3666666666666667
+      },
+      "I": {
+        "explicacion": {
+          "alcance_geografico": 1.0,
+          "alcance_sector": 1.0,
+          "nivel_geografico": "nacional",
+          "peso_geografico": 0.5,
+          "peso_subtema": 0.5,
+          "sector": "logística",
+          "subtema": null,
+          "terminos_geograficos": [
+            "Panamá"
+          ]
+        },
+        "valor": 1.0
+      },
+      "N": {
+        "explicacion": {
+          "descuenta": false,
+          "grupo_mas_parecido": "GRP-da35c3dead",
+          "grupos_previos": 43,
+          "similitud_maxima": 0.6311900615692139,
+          "umbral_similitud": 0.69
+        },
+        "valor": 1.0
+      },
+      "R": {
+        "explicacion": {
+          "foco": 1.0,
+          "foco_motivo": "panama_sujeto",
+          "peso_foco": 1.0,
+          "titulares": 1,
+          "titulares_regionales": 0
+        },
+        "valor": 1.0
+      },
+      "U": {
+        "explicacion": {
+          "dias_nulo": 7.0,
+          "edad_horas": 12.7225,
+          "fecha": "2026-10-06T11:57:42Z",
+          "fecha_origen": "publicacion",
+          "horas_pleno": 0.0
+        },
+        "valor": 0.9242708333333334
+      }
+    },
+    "empate_con": 0,
+    "fecha_referencia": "2026-10-07T00:41:03Z",
+    "habilita_publicacion": false,
+    "posicion": 3,
+    "puntaje": 92.15208333333334,
+    "rango": "alto",
+    "version_reglas": "1.3"
+  },
+  "que_se_reporta": {
+    "advertencias": [],
+    "cobertura": {
+      "fecha_fin": "2026-10-06T11:57:42Z",
+      "fecha_inicio": "2026-10-06T11:57:42Z",
+      "n_medios": 1,
+      "n_titulares": 1,
+      "origen_fecha_fin": "publicacion",
+      "origen_fecha_inicio": "publicacion"
+    },
+    "contradicciones": [],
+    "criterio_subtema": null,
+    "recirculada": false,
+    "subtema": null,
+    "tema": "logistica",
+    "tema_secundario": null,
+    "titular_central": {
+      "id_noticia": "NOT-f7f8b492d1",
+      "medio": "TVN Panamá",
+      "titular": "Panamá reforzará su presencia marítima en Vietnam con nueva oficina de servicio técnico de la AMP en Ho Chi Minh",
+      "url": "https://www.tvn-2.com/nacionales/panama-reforzara-presencia-maritima-vietnam-autoridad-maritima-de-panama-registro-de-buques_1_2264552.html"
+    }
+  },
+  "quien_lo_reporta": {
+    "medio_referencia": null,
+    "procedencias": {
+      "detalle": [
+        {
+          "etiqueta": "TVN Panamá",
+          "ids_noticia": [
+            "NOT-f7f8b492d1"
+          ],
+          "medios": [
+            "TVN Panamá"
+          ],
+          "n_titulares": 1,
+          "orden": 1,
+          "reglas": []
+        }
+      ],
+      "estimado": true,
+      "explicacion": "1 procedencia independiente estimada entre 1 titular: los titulares que replican a un mismo medio, agencia o red cuentan como una sola procedencia.",
+      "n": 1
+    },
+    "titulares": [
+      {
+        "agencia": null,
+        "campo_titular": "titulo_limpio",
+        "dominio": "tvn-2.com",
+        "fecha_publicacion": "2026-10-06T11:57:42Z",
+        "id_noticia": "NOT-f7f8b492d1",
+        "idioma": "es",
+        "medio": "TVN Panamá",
+        "pais_medio": "Panamá",
+        "procedencia": 1,
+        "sospechoso_inyeccion": false,
+        "tipo_firma": "sin firma",
+        "titular": "Panamá reforzará su presencia marítima en Vietnam con nueva oficina de servicio técnico de la AMP en Ho Chi Minh",
+        "url": "https://www.tvn-2.com/nacionales/panama-reforzara-presencia-maritima-vietnam-autoridad-maritima-de-panama-registro-de-buques_1_2264552.html"
+      }
+    ]
+  },
+  "respaldado": {
+    "datos_oficiales": [],
+    "declaraciones": [
+      {
+        "atribucion": "TVN Panamá",
+        "citas": [
+          {
+            "campo": "titulo_limpio",
+            "id": "NOT-f7f8b492d1"
+          }
+        ],
+        "fecha": null,
+        "indicador": null,
+        "limitacion": null,
+        "texto": "TVN Panamá reporta: «Panamá reforzará su presencia marítima en Vietnam con nueva oficina de servicio técnico de la AMP en Ho Chi Minh»",
+        "tipo": "declaración"
+      }
+    ],
+    "eventos_oficiales": [],
+    "reportes": [
+      {
+        "atribucion": null,
+        "citas": [
+          {
+            "campo": "n_titulares",
+            "id": "GRP-f4a44182b1"
+          },
+          {
+            "campo": "n_medios",
+            "id": "GRP-f4a44182b1"
+          }
+        ],
+        "fecha": null,
+        "indicador": null,
+        "limitacion": null,
+        "texto": "1 titular de 1 medio reporta este tema",
+        "tipo": "hecho"
+      },
+      {
+        "atribucion": null,
+        "citas": [
+          {
+            "campo": "n_procedencias",
+            "id": "GRP-f4a44182b1"
+          }
+        ],
+        "fecha": null,
+        "indicador": null,
+        "limitacion": null,
+        "texto": "1 procedencia independiente estimada (los titulares que replican a una misma fuente cuentan como una)",
+        "tipo": "hecho"
+      }
+    ]
+  }
+}
