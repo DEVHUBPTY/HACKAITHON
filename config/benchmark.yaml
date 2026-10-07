@@ -23,3 +23,6 @@ analisis_umbral:            # curva DESCRIPTIVA de la abstención por umbral (no
   paso: 0.01
 llm:                        # medición con el proveedor real (solo con --medir-llm)
   modalidad: editorial
+metas:                      # PDF 9.1 y docs/protocolo_evaluacion.md, sección 3: se reportan junto a lo medido
+  abstencion_correcta: 0.8  # abstención correcta ≥ 80 %
+  latencia_mediana_s: 15    # mediana ≤ 15 s

@@ -270,9 +270,11 @@ def percentil_con_ic(valores: Sequence[float], q: float, criterio: CriterioAB) -
         return {"n": 0, "valor": None, "ic95": None, "remuestreos": criterio.remuestreos}
     rng = np.random.default_rng(criterio.semilla)
     remuestras = np.percentile(v[rng.integers(0, len(v), size=(criterio.remuestreos, len(v)))], q, axis=1)
+    ic = _percentiles_exactos(remuestras, criterio)
     return {
         "n": len(v), "valor": round(float(np.percentile(v, q)), DECIMALES_PRESENTACION),
-        "ic95": _redondear(_percentiles_exactos(remuestras, criterio)), "remuestreos": criterio.remuestreos,
+        "ic95": _redondear(ic), "remuestreos": criterio.remuestreos,
+        **({"bootstrap_degenerado": True} if ic is not None and ic[0] == ic[1] else {}),   # n = 1 (o valores iguales): el IC no informa
     }
 
 

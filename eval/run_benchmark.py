@@ -208,7 +208,7 @@ def evaluar_consultas(
         "por_tipo": dict(Counter(c["tipo"] for c in consultas)),
         "abstencion_correcta": {
             "sin_respuesta": abstencion(sin), "todas_las_que_debian": abstencion(deben),
-            "meta": 0.8, "nota": "Numerador: consultas rechazadas; denominador: las que debían rechazarse. «todas_las_que_debian» suma las adversariales con debe_abstenerse.",
+            "meta": cargar_benchmark().metas.abstencion_correcta, "nota": "Numerador: consultas rechazadas; denominador: las que debían rechazarse. «todas_las_que_debian» suma las adversariales con debe_abstenerse.",
         },
         "abstenciones_incorrectas": {"sustentadas": incorrecta(sustentadas), "respondibles": incorrecta(respondibles),
                                      "nota": "Numerador: respondibles rechazadas; denominador: respondibles. Se reporta; no tiene meta."},
@@ -499,6 +499,13 @@ def _pool_sustento(registros_pares: Sequence[tuple[dict[str, Any], RespuestaCons
     return pool
 
 
+def ids_esperados_inexistentes(consultor: Consultor, consultas: Sequence[dict[str, Any]]) -> dict[str, list[str]]:
+    """Por consulta, los IDs de ``ids_evidencia`` que no están en el corpus: un typo o un corpus distinto bajaría el recall sin explicación."""
+    corpus = consultor.indice.corpus.por_id
+    faltan = {c["id"]: [i for i in c["ids_evidencia"] if i not in corpus] for c in consultas}
+    return {c: ids for c, ids in faltan.items() if ids}
+
+
 def _ejecutar(args: argparse.Namespace) -> int:
     cfg = cargar_benchmark()
     criterio = cfg.intervalos
@@ -530,6 +537,7 @@ def _ejecutar(args: argparse.Namespace) -> int:
     modo_borradores = args.borradores or ("cache" if dev else "no")
     borradores: list[dict[str, Any]] = []
     medicion: dict[str, Any] | None = None
+    avisos_corrida: list[str] = []
     base = RAIZ / "data" / "senales.duckdb"
     if modo_borradores != "no" or args.medir_llm:
         from scripts.calentar_cache import grupos_por_defecto
@@ -556,14 +564,15 @@ def _ejecutar(args: argparse.Namespace) -> int:
 
         m["rechazos_previos"] = {"fuente": "re-validación de las respuestas guardadas en data/cache_llm/ con el validador actual",
                                  "tasas": calcular_tasas(salida / "rechazos.jsonl")}
+    meta_s = cfg.metas.latencia_mediana_s
     if medicion:
         m["latencia"]["paquete_completo"] = medicion["latencia"]["paquete_completo"]
         m["latencia"]["primera_respuesta_borrador"] = medicion["latencia"]["primera_respuesta"]
         m["latencia"]["llamada_llm"] = medicion["latencia"]["por_llamada"]
         m["latencia"]["paquete_por_tipo"] = medicion["latencia"]["por_tipo_de_paquete"]
         m["latencia"]["meta_sugerida"] = {
-            "mediana_s": 15, "consulta_cumple": m["latencia"]["consulta"]["p50"]["valor"] <= 15,
-            "paquete_cumple_por_tipo": {t: v["p50"]["valor"] is not None and v["p50"]["valor"] <= 15 for t, v in medicion["latencia"]["por_tipo_de_paquete"].items()},
+            "mediana_s": meta_s, "consulta_cumple": m["latencia"]["consulta"]["p50"]["valor"] <= meta_s,
+            "paquete_cumple_por_tipo": {t: v["p50"]["valor"] is not None and v["p50"]["valor"] <= meta_s for t, v in medicion["latencia"]["por_tipo_de_paquete"].items()},
             "nota": "El paquete editorial es más largo (más secciones, más llamadas) que el de investigación: se reporta por tipo y con su n.",
         }
         m["tokens_y_costo"]["borradores"] = {
@@ -574,6 +583,16 @@ def _ejecutar(args: argparse.Namespace) -> int:
     else:
         m["latencia"]["paquete_completo"] = {"estado": "no_corrido", "nota": "Ejecute con --medir-llm (requiere red y DeepSeek) para medir el borrador completo."}
         m["tokens_y_costo"]["borradores"] = {"estado": "no_corrido"}
+        avisos_corrida.append(f"No existe {salida.name}/medicion_llm.json: la latencia, los tokens y el costo del borrador quedan «no_corrido». "
+                              "Ejecute con --medir-llm (requiere red y DeepSeek) para medirlos.")
+
+    inexistentes = ids_esperados_inexistentes(consultor, consultas)
+    if inexistentes:
+        m["ids_esperados_inexistentes"] = inexistentes
+        avisos_corrida.append("Hay IDs esperados que no existen en el corpus (se cuentan como no hallados): "
+                              + "; ".join(f"{c}: {', '.join(i)}" for c, i in inexistentes.items()))
+    for aviso in avisos_corrida:
+        print(f"ADVERTENCIA: {aviso}", file=sys.stderr)
 
     pool = _pool_sustento(pares, consultor, borradores)
     muestra = sustento.muestrear(pool, cfg.sustento.muestra, cfg.sustento.semilla)
@@ -601,7 +620,7 @@ def _ejecutar(args: argparse.Namespace) -> int:
         "El benchmark de desarrollo se construyó con el equipo y las reglas por patrón de la consulta se redactaron viendo esas mismas consultas: las cifras de abstención son optimistas, no independientes.",
         "n es pequeño (decenas de consultas): los intervalos son anchos y las metas son orientativas.",
     ] if dev else ["Evaluación sobre un archivo externo: las cifras no incluyen ajuste previo con estas consultas."]
-    resultado = {**cabecera, **m, "avisos": avisos}
+    resultado = {**cabecera, **m, "avisos": [*avisos, *avisos_corrida]}
     ruta_metricas.parent.mkdir(parents=True, exist_ok=True)
     ruta_metricas.write_text(json.dumps(resultado, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     if salida != ruta_metricas.parent:
@@ -637,6 +656,10 @@ def imprimir(r: Mapping[str, Any]) -> None:
     pc = r["latencia"]["paquete_completo"]
     if "p50" in pc:
         print(f"Latencia borrador completo         : p50 {pc['p50']['valor']} s IC {pc['p50']['ic95']} · p95 {pc['p95']['valor']} s (n = {pc['n']})")
+    for tipo, fila in r["latencia"].get("paquete_por_tipo", {}).items():
+        p50, p95 = fila["p50"], fila["p95"]
+        marca = " · IC degenerado con n = 1" if fila["n"] == 1 else ""
+        print(f"  paquete {tipo:13}: p50 {p50['valor']} s IC {p50['ic95']} · p95 {p95['valor']} s (n = {fila['n']}){marca}")
     v = r["validez_sustento"]
     print(f"Validez de sustento                : {v['estado']} ({v['revisadas']}/{v['de']} revisadas)")
 

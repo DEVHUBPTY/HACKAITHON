@@ -596,7 +596,7 @@ def construir_informe(ruta_base: Path) -> dict[str, Any]:
 
 def resumen(informe: Mapping[str, Any]) -> list[str]:
     c = informe["clasificacion"]["vista_clasificador"]
-    k = c["con_criterio_de_clasificacion"]
+    k = c["con_criterio_de_benchmark"]   # el mismo criterio (remuestreos) que cita docs/ia_vs_baseline.md
     g = informe["agrupacion"]["validacion_cruzada_agrupada"]
     b = informe["busqueda"]
     r = informe["ranking"]

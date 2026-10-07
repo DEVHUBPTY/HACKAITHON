@@ -1472,6 +1472,13 @@ class ConfigLlmBenchmark(ModeloConfig):
     modalidad: Literal["editorial", "banca"]
 
 
+class ConfigMetasBenchmark(ModeloConfig):
+    """Metas de la sección 9.1 que el runner compara con lo medido (E1-18)."""
+
+    abstencion_correcta: float = Field(gt=0, le=1)
+    latencia_mediana_s: float = Field(gt=0)
+
+
 class ConfigBenchmark(ModeloConfig):
     """``config/benchmark.yaml``: total y proporción de tipos del benchmark de desarrollo (E0-06) y parámetros de E1-18."""
 
@@ -1481,6 +1488,7 @@ class ConfigBenchmark(ModeloConfig):
     sustento: ConfigSustento
     analisis_umbral: ConfigAnalisisUmbral
     llm: ConfigLlmBenchmark
+    metas: ConfigMetasBenchmark
 
     @model_validator(mode="after")
     def _suma_coherente(self) -> "ConfigBenchmark":
