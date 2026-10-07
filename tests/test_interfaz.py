@@ -689,14 +689,42 @@ def test_e3_04_pesos_que_no_suman_100_se_rechazan_y_la_bandeja_sigue_siendo_la_o
     assert [str(x) for x in at.dataframe[0].value["Tema"]] == [f.tema for f in ui.leer_bandeja(con, "editorial")[: len(at.dataframe[0].value)]]
 
 
-def test_e3_04_el_escenario_no_cambia_la_ficha_ni_el_registro_de_revision(app, con) -> None:
+def filas_del_registro(ruta) -> dict[str, int]:
+    """Filas por tabla del registro de revisión de la prueba (vacío si el archivo ni siquiera existe)."""
+    if not ruta.exists():
+        return {}
+    import duckdb
+
+    con = duckdb.connect(str(ruta), read_only=True)
+    try:
+        return {t: con.execute(f"SELECT count(*) FROM {t}").fetchone()[0] for (t,) in con.execute("SHOW TABLES").fetchall()}
+    finally:
+        con.close()
+
+
+def test_e3_04_el_escenario_no_cambia_la_ficha_ni_el_registro_de_revision(app, con, tmp_path) -> None:
+    registro = tmp_path / "revision.duckdb"
+    antes = filas_del_registro(registro)
+    oficial = {f.id_grupo: f for f in ui.leer_bandeja(con, "editorial")}
     at = ir(app.run(), "bandeja")
-    at.number_input(key="peso_U").set_value(45.0)
+    # I 50 y R 5: el escenario sube a GRP-sinfecha del puesto 6 oficial al 4
+    at.number_input(key="peso_I").set_value(50.0)
     at.number_input(key="peso_R").set_value(5.0)
     at = at.run()
     at.text_area(key="pesos_justificacion").set_value("La mesa de noticias prioriza lo urgente en el cierre del día.")
     at = at.run()
     assert at.get("download_button")
     assert not [b for b in at.button if "publicar" in b.label.lower()]
-    # el contexto (ficha, exportación, revisión) sigue leyendo la bandeja oficial
-    assert [f.id_grupo for f in ui.leer_bandeja(con, "editorial")] == [f.id_grupo for f in ui.ordenar_bandeja(ui.leer_bandeja(con, "editorial"))]
+    destino = "GRP-sinfecha"
+    escenario = ui.escenario_de_pesos(list(oficial.values()), {**ui.pesos_oficiales(), "I": 50.0, "R": 5.0}, cargar_modalidad("editorial"))
+    nuevo = next(f for f in escenario if f.id_grupo == destino)
+    assert oficial[destino].posicion > 5 >= nuevo.posicion      # entra al top 5 solo en el escenario
+    # se abre la ficha desde la bandeja en escenario: la ficha lleva el P y la posición OFICIALES
+    at.selectbox(key="bandeja_grupo").select(destino).run()
+    at = at.button(key="bandeja_abrir").click().run()
+    assert at.session_state["pantalla"] == "ficha" and at.session_state["ficha_grupo"] == destino
+    linea = next(t for t in textos(at) if "Prioridad:" in t)
+    o = oficial[destino]
+    assert f"(P = {round(o.puntaje, CFG_VER.presentacion.decimales_valor):g}, posición {o.posicion}," in linea and f"posición {o.posicion}," in linea
+    assert f"posición {nuevo.posicion}," not in linea
+    assert filas_del_registro(registro) == antes                 # abrir la ficha en escenario no escribe en el registro de revisión
