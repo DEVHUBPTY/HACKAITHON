@@ -17,6 +17,7 @@ identifica por su nombre y su SHA-256, nunca por su ruta. Nada de este módulo l
 * *Latencia* p50 y p95 con n e IC; *tokens y costo*. La consulta no usa LLM (tokens 0, USD 0); el costo y la latencia del LLM son los del
   **borrador completo** y salen de una corrida real (``--medir-llm``), guardada en ``medicion_llm.json``.
 * *Validez de sustento*: solo se **genera la muestra** (``outputs/revision_sustento.csv``); la juzga una persona (``eval.sustento``).
+  Si el juicio es provisional del asistente (D-101), el resumen y ``metricas.json`` lo dicen.
 * *Análisis del umbral* (solo desarrollo): validación cruzada dejando uno afuera y curva descriptiva; nunca cambia la configuración.
 
 Toda proporción lleva numerador, denominador, IC95 de bootstrap y de Wilson y los IDs de los fallos.
@@ -660,8 +661,17 @@ def imprimir(r: Mapping[str, Any]) -> None:
         p50, p95 = fila["p50"], fila["p95"]
         marca = " · IC degenerado con n = 1" if fila["n"] == 1 else ""
         print(f"  paquete {tipo:13}: p50 {p50['valor']} s IC {p50['ic95']} · p95 {p95['valor']} s (n = {fila['n']}){marca}")
-    v = r["validez_sustento"]
-    print(f"Validez de sustento                : {v['estado']} ({v['revisadas']}/{v['de']} revisadas)")
+    print(linea_sustento(r["validez_sustento"]))
+
+
+def linea_sustento(v: Mapping[str, Any]) -> str:
+    """Resumen de la validez de sustento; si el juicio no es humano lo dice con su origen y el aviso (D-101)."""
+    linea = f"Validez de sustento                : {v['estado']} ({v['revisadas']}/{v['de']} revisadas)"
+    if "origen_juicio" in v:
+        linea += f" · origen del juicio: {v['origen_juicio']}"
+    if "aviso_origen" in v:
+        linea += f"\n  {v['aviso_origen']}"
+    return linea
 
 
 def main(argv: Sequence[str] | None = None) -> int:
