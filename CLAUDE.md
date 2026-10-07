@@ -41,6 +41,9 @@ poetry run python -m eval.clasificacion              # métricas de clasificaci�
 poetry run python -m src.agrupacion                  # grupos GRP- y procedencias independientes (estimadas)
 poetry run python -m eval.agrupacion                 # calibra el umbral y mide precisión/recall de pares con etiquetas
 poetry run python -m src.contexto                    # vínculos con el Banco Mundial por subtema → tabla vinculos y outputs/reporte_vinculos.json (E1-09)
+poetry run python -m src.puntaje                     # R I U N E y P, estado de evidencia, vacíos, contradicciones y acción → tablas puntajes, evidencia, contradicciones y outputs/prioridad.json (E1-10; --sin-llm no compara con el LLM)
+poetry run python -m eval.puntaje                    # distribución de P y de cada componente; tabla rango × estado de evidencia → outputs/puntaje.json (E1-10)
+poetry run python -m eval.sensibilidad               # top 5 ante cada peso ±5 y cada supuesto ±20 % → outputs/sensibilidad.json (E1-10, X02)
 poetry run python -m src.consulta "pregunta"         # consulta en español con abstención (--metodo semantica|bm25)
 poetry run python -m eval.recuperacion               # Recall@5 y abstención, semántica vs. BM25, con n e IC
 poetry run streamlit run app.py                      # interfaz
@@ -72,20 +75,20 @@ Lo que existe hoy:
 ```
 CLAUDE.md  README.md  pyproject.toml  poetry.lock  .env.example  .github/pull_request_template.md
 config/      reglas_v1.3.yaml · temas.yaml · ejemplos_excluidos.txt · vinculos.yaml · modalidad_editorial.yaml · salidas.yaml · restricciones.yaml
-             ruido.yaml · fuentes.yaml · contrato.yaml · carga.yaml · normalizacion.yaml · clasificacion.yaml · etiquetado.yaml · exploracion.yaml · llm.yaml · benchmark.yaml · consulta.yaml
+             ruido.yaml · fuentes.yaml · contrato.yaml · carga.yaml · normalizacion.yaml · clasificacion.yaml · etiquetado.yaml · exploracion.yaml · llm.yaml · benchmark.yaml · consulta.yaml · prioridad.yaml (E1-10)
 templates/   (vacía)
-prompts/     afirmaciones_citadas.txt
+prompts/     afirmaciones_citadas.txt · comparar_contradicciones.txt (E1-10)
 data/        raw/ (inmutable) · processed/ (validos/ fuera de git) · registro_extraccion/ · manifest.json · CHANGELOG.md · diccionario.md · README.md
              senales.duckdb (generado, fuera de git)
 src/         carga · contexto (E1-09) · normalizacion · limpieza · embeddings · clasificacion · baseline · consulta · db · registro (D-75) · configuracion (D-79; config = alias de su CLI) · consultas_gdelt · esquemas (borrador)
-             solo docstring o esqueleto: agrupacion · procedencias · puntaje · evidencia
-             ficha · generacion · validador · cache · revision · exportar
-src/llm/     proveedor.py (interfaz) · ollama.py · deepseek.py (solo docstring)
+             agrupacion · procedencias · puntaje · evidencia · contradicciones · prioridad (E1-10: `python -m src.puntaje`)
+             solo docstring o esqueleto: ficha · generacion · validador · cache · revision · exportar
+src/llm/     proveedor.py (interfaz y `crear_proveedor`, por LLM_PROVIDER) · ollama.py (cliente y ProveedorOllama) · deepseek.py (solo docstring)
 scripts/     extraer.py · conversion.py · manifest.py · validar_snapshot.py · catalogo.py · explorar.py · estimar_consultas_gdelt.py · probar_llm.py
-eval/        etiquetar.py · etiquetas/ (una hoja por persona) · etiquetas.csv · ruido.py · validar_benchmark.py · clasificacion.py · calibrar_clasificacion.py · metricas.py · recuperacion.py
+eval/        etiquetar.py · etiquetas/ (una hoja por persona) · etiquetas.csv · ruido.py · validar_benchmark.py · clasificacion.py · calibrar_clasificacion.py · metricas.py · recuperacion.py · puntaje.py · sensibilidad.py
 benchmark/   benchmark_dev.jsonl (solo desarrollo) · sinteticos.csv · README.md
 tests/       fixtures/ · test_t01_carga.py · test_t03_recirculada.py · test_casos_dificiles.py · test_*.py
-outputs/     catalogo.csv · reporte_vinculos.json · clasificacion.json · recuperacion.json · validacion_snapshot.json · probar_llm_<modelo>.json
+outputs/     catalogo.csv · reporte_vinculos.json · clasificacion.json · recuperacion.json · prioridad.json · puntaje.json · sensibilidad.json · validacion_snapshot.json · probar_llm_<modelo>.json
 notion/      exportación inicial para importar en Notion (la versión vigente está en Notion)
 specs/  docs/
 ```

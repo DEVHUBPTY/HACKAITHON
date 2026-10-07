@@ -312,7 +312,7 @@ independiente del mismo despacho cuenta como otra procedencia porque ninguna reg
 | Intervalos de confianza | 95 %, bootstrap de 1.000 remuestreos | Práctica estadística | — |
 | Semillas aleatorias | Fijas en `config/` (etiquetado, bootstrap, clustering si aplica) | Práctica (reproducibilidad) | `scripts.reproducir` (D-65) |
 | Benchmark del equipo (si la organización no lo entrega) | 40 de desarrollo: 20 · 7 · 7 · 6 | PDF (proporciones de la sección 7) | `eval.validar_benchmark` |
-| Sensibilidad X02 | Pesos ± 5; parámetros supuestos ± 20 % | Supuesto | — |
+| Sensibilidad X02 | Pesos ± 5; parámetros supuestos ± 20 % | Supuesto (spec E1-10) | `python -m eval.sensibilidad` (E1-10): top 5 de cada variante, con n e IC de Wilson de las variantes que no lo cambian |
 | Precision@5 | 3 fechas de corte si hay editor; si no, n = 1 y exploratoria | PDF (exploratoria sin especialista) | — |
 | Duración de la demo | 4 min | PDF | Ensayo cronometrado |
 

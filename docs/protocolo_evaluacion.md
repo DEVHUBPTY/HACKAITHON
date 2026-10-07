@@ -42,6 +42,8 @@ El comando para la evaluación reservada acepta **cualquier archivo con el mismo
 | **Clasificación** | Macro-F1 y F1 por tema, IA vs. baseline | `eval/etiquetas.csv` (~100) | `eval.clasificacion` | Se reporta |
 | **Agrupación** | Precisión y recall de pares | `eval/etiquetas.csv` | `eval.agrupacion` | Se reporta |
 | **Búsqueda** | Recall@5 de las evidencias esperadas, semántica vs. BM25 | Benchmark | `eval.recuperacion` | Se reporta |
+| **Estabilidad del ranking** | Variantes (cada peso ±5; cada supuesto ±20 %) cuyo top 5 no cambia de temas / variantes | Snapshot (`data/senales.duckdb`) | `eval.sensibilidad` | Se reporta |
+| **Distribución del puntaje** | Mín., máx. y desviación de P y de R, I, U, N, E; componentes casi constantes; rango × estado de evidencia | Snapshot | `eval.puntaje` | Se reporta |
 | **Utilidad del ranking** | Temas del top 5 elegidos por el editor / 5 (sistema y baseline por fecha) | `eval/seleccion_editor.csv` | `eval.precision_at_5` | Exploratoria si no hay especialista |
 | **Eficiencia** | Mediana y p95 de latencia; tokens y costo por consulta | Benchmark | `eval.run_benchmark` | Mediana ≤ 15 s |
 | **Ahorro de tiempo** | Tiempo asistido vs. manual en la misma tarea, con n | `docs/prueba_tiempo.md` | Manual | Se reporta |
