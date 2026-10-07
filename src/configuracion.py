@@ -3194,6 +3194,64 @@ def cargar_pruebas(carpeta: Path | None = None) -> ConfigPruebas:
     return cargar_config("pruebas", ConfigPruebas, carpeta)
 
 
+# ------------------------------------------------------------------ pagina_metricas.yaml (C-02)
+
+
+class OpcionalMetricas(ModeloConfig):
+    """Una fuente que puede faltar: su ruta y el comando que la genera."""
+
+    ruta: str = Field(min_length=1)
+    comando: str = Field(min_length=1)
+
+
+class PresentacionMetricas(ModeloConfig):
+    decimales_porcentaje: int = Field(ge=0, le=4)
+    decimales_valor: int = Field(ge=0, le=6)
+    decimales_tokens: int = Field(ge=0, le=6)      # tokens por paquete (mediana)
+    decimales_usd: int = Field(ge=0, le=8)         # costo por paquete en USD
+    decimales_latencia: int = Field(ge=0, le=8)    # latencias menores que el umbral (la consulta local dura milésimas)
+    decimales_latencia_segundos: int = Field(ge=0, le=8)   # latencias desde el umbral (un paquete dura segundos: más decimales serían falsa precisión)
+    umbral_latencia_s: float = Field(gt=0)         # desde cuántos segundos una latencia usa decimales_latencia_segundos
+
+
+class CoherenciaMetricas(ModeloConfig):
+    """Qué hace la página cuando dos salidas medidas sobre lo mismo difieren en la clasificación."""
+
+    ante_discrepancia_clasificacion: Literal["aviso", "falla"]   # «falla»: la página no se genera
+    tolerancia_macro_f1: float = Field(ge=0, le=0.1)             # diferencia admitida por el redondeo de cada salida
+
+
+class ConfigPaginaMetricas(ModeloConfig):
+    """Qué archivos lee la página de métricas (C-02) y cómo presenta lo que lee. Las cifras salen de las fuentes, no de aquí."""
+
+    version: int
+    salida: str = Field(min_length=1)
+    titulo: str = Field(min_length=1)
+    etiqueta_borrador: str = Field(min_length=1)
+    fuentes: dict[str, str] = Field(min_length=1)
+    opcionales: dict[str, OpcionalMetricas]
+    presentacion: PresentacionMetricas
+    coherencia: CoherenciaMetricas
+    sobreestimacion_contador_costo: float = Field(gt=1)
+    etiqueta_automatico: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _fuentes_obligatorias(self) -> ConfigPaginaMetricas:
+        faltan = sorted({"metricas", "ia_vs_baseline", "precision", "clasificacion", "agrupacion", "sensibilidad", "puntaje", "pruebas",
+                         "manifest", "etiquetas", "prueba_tiempo"} - set(self.fuentes))
+        if faltan:
+            raise ValueError(f"fuentes: faltan {faltan}")
+        repetidas = sorted(set(self.fuentes) & set(self.opcionales))
+        if repetidas:
+            raise ValueError(f"fuentes y opcionales repiten {repetidas}")
+        return self
+
+
+def cargar_pagina_metricas(carpeta: Path | None = None) -> ConfigPaginaMetricas:
+    """Atajo para ``config/pagina_metricas.yaml``."""
+    return cargar_config("pagina_metricas", ConfigPaginaMetricas, carpeta)
+
+
 CODIGO_URGENCIA_SIN_PUBLICACION ="urgencia_sin_publicacion"   # el único vacío de E1-10 cuyo texto vive en reglas_v1.3.yaml
 MODALIDADES = ("editorial", "banca")
 OPCIONALES = {"modalidad_banca"}  # el esquema la admite aunque todavía no exista
@@ -3232,6 +3290,7 @@ CARGADORES = {
     "origen_juicio": cargar_origen_juicio,
     "pruebas": cargar_pruebas,
     "reproducibilidad": cargar_reproducibilidad,
+    "pagina_metricas": cargar_pagina_metricas,
 }
 
 

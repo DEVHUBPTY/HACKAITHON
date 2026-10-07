@@ -1,0 +1,90 @@
+{
+  "casos_abiertos": 1,
+  "origen_juicio": "humano",
+  "juicio_humano": true,
+  "casos_decididos": 0,
+  "tasas": {
+    "aceptacion": {
+      "k": 0,
+      "n": 0,
+      "proporcion": null,
+      "ic95": null
+    },
+    "correccion": {
+      "k": 0,
+      "n": 0,
+      "proporcion": null,
+      "ic95": null
+    },
+    "descarte": {
+      "k": 0,
+      "n": 0,
+      "proporcion": null,
+      "ic95": null
+    }
+  },
+  "motivos_descarte": {},
+  "tiempo_por_caso_min": {
+    "n": 0,
+    "mediana": null,
+    "media": null
+  },
+  "afirmaciones_editadas": {
+    "k": 0,
+    "n": 0,
+    "proporcion": null,
+    "ic95": null
+  },
+  "casos_decididos_provisionales": 1,
+  "nota": "Las afirmaciones de un caso no son independientes: el intervalo de afirmaciones editadas es orientativo.",
+  "provisionales": {
+    "origen_juicio": "asistente_provisional (D-101)",
+    "juicio_humano": false,
+    "aviso_origen": "JUICIO PROVISIONAL DEL ASISTENTE, NO HUMANO (D-101): se rehace a mano en C-09; no reportar como juicio de una persona.",
+    "casos_decididos": 1,
+    "tasas": {
+      "aceptacion": {
+        "k": 1,
+        "n": 1,
+        "proporcion": 1.0,
+        "ic95": [
+          0.20654329147389294,
+          1.0
+        ]
+      },
+      "correccion": {
+        "k": 1,
+        "n": 1,
+        "proporcion": 1.0,
+        "ic95": [
+          0.20654329147389294,
+          1.0
+        ]
+      },
+      "descarte": {
+        "k": 0,
+        "n": 1,
+        "proporcion": 0.0,
+        "ic95": [
+          0.0,
+          0.7934567085261071
+        ]
+      }
+    },
+    "motivos_descarte": {},
+    "tiempo_por_caso_min": {
+      "n": 1,
+      "mediana": 42.65,
+      "media": 42.65
+    },
+    "afirmaciones_editadas": {
+      "k": 0,
+      "n": 6,
+      "proporcion": 0.0,
+      "ic95": [
+        0.0,
+        0.3903430336530645
+      ]
+    }
+  }
+}

@@ -8,6 +8,10 @@
     "fuente": "config/benchmark.yaml: intervalos"
   },
   "clasificacion": {
+    "origenes": [
+      "humano"
+    ],
+    "usa_etiquetas_provisionales": false,
     "modelo": "e5",
     "metodo": "A",
     "baseline": "src/baseline.py, variante guia",
@@ -21,23 +25,23 @@
       "sin_tema"
     ],
     "vista_clasificador": {
-      "n": 63,
+      "n": 64,
       "exactitud_ia": {
-        "n": 33,
-        "de": 63,
-        "proporcion": 0.5238,
+        "n": 35,
+        "de": 64,
+        "proporcion": 0.5469,
         "ic95": [
-          0.4027,
-          0.6422
+          0.4257,
+          0.6627
         ]
       },
       "exactitud_baseline": {
         "n": 29,
-        "de": 63,
-        "proporcion": 0.4603,
+        "de": 64,
+        "proporcion": 0.4531,
         "ic95": [
-          0.3431,
-          0.5821
+          0.3373,
+          0.5743
         ]
       },
       "con_criterio_de_clasificacion": {
@@ -47,73 +51,73 @@
           "semilla": 42
         },
         "macro_f1_ia": {
-          "n": 63,
-          "macro_f1": 0.4007,
+          "n": 64,
+          "macro_f1": 0.4296,
           "ic95": [
-            0.2446,
-            0.5102
+            0.2762,
+            0.5418
           ],
           "ic95_exacto": [
-            0.24460528673835127,
-            0.510195229234703
+            0.27624643299763596,
+            0.5418440835077923
           ],
           "remuestreos": 1000,
           "ponderado": false
         },
         "macro_f1_baseline": {
-          "n": 63,
-          "macro_f1": 0.5151,
+          "n": 64,
+          "macro_f1": 0.4669,
           "ic95": [
-            0.2767,
-            0.6074
+            0.2348,
+            0.5749
           ],
           "ic95_exacto": [
-            0.276742958683492,
-            0.6074116316603019
+            0.23476668647600005,
+            0.5749063039850085
           ],
           "remuestreos": 1000,
           "ponderado": false
         },
         "diferencia_macro_f1": {
-          "n": 63,
-          "diferencia_macro_f1": -0.1144,
+          "n": 64,
+          "diferencia_macro_f1": -0.0374,
           "ic95": [
-            -0.2929,
-            0.1062
+            -0.2316,
+            0.2292
           ],
           "ic95_exacto": [
-            -0.2928810204505932,
-            0.10624530203528512
+            -0.23159014679409415,
+            0.2292236337532031
           ]
         },
         "veredicto": "sin_diferencia_demostrable",
         "por_tema": {
           "economia": {
             "soporte": true,
-            "diferencia_f1": 0.1602,
+            "diferencia_f1": 0.1152,
             "ic95": [
-              -0.1508,
-              0.4242
+              -0.1655,
+              0.3918
             ],
             "ic95_exacto": [
-              -0.15082497911445275,
-              0.42424242424242425
+              -0.1654718137254902,
+              0.39181818181818157
             ],
             "titulares_humanos": 26,
             "veredicto": "sin_diferencia_demostrable"
           },
           "logistica": {
             "soporte": true,
-            "diferencia_f1": -0.3333,
+            "diferencia_f1": 0.1333,
             "ic95": [
-              -0.6,
-              0.0
+              -0.5,
+              1.0
             ],
             "ic95_exacto": [
-              -0.6,
-              0.0
+              -0.5,
+              1.0
             ],
-            "titulares_humanos": 1,
+            "titulares_humanos": 2,
             "veredicto": "soporte_insuficiente"
           },
           "turismo": {
@@ -132,28 +136,28 @@
           },
           "servicios_publicos": {
             "soporte": true,
-            "diferencia_f1": 0.2381,
+            "diferencia_f1": 0.3067,
             "ic95": [
-              -0.1368,
-              0.6
+              -0.0952,
+              0.6897
             ],
             "ic95_exacto": [
-              -0.13684210526315777,
-              0.6000197628458498
+              -0.09523809523809523,
+              0.6896551724137931
             ],
             "titulares_humanos": 9,
             "veredicto": "sin_diferencia_demostrable"
           },
           "eventos_naturales": {
             "soporte": true,
-            "diferencia_f1": -0.0454,
+            "diferencia_f1": 0.0,
             "ic95": [
-              -0.1515,
-              0.0452
+              -0.0767,
+              0.0698
             ],
             "ic95_exacto": [
-              -0.1515151515151515,
-              0.04524157280609346
+              -0.07669751301330247,
+              0.06984758013827776
             ],
             "titulares_humanos": 20,
             "veredicto": "sin_diferencia_demostrable"
@@ -174,13 +178,13 @@
           },
           "sin_tema": {
             "soporte": true,
-            "diferencia_f1": -0.1538,
+            "diferencia_f1": -0.15,
             "ic95": [
-              -0.3078,
+              -0.3,
               0.0
             ],
             "ic95_exacto": [
-              -0.3077777777777777,
+              -0.3,
               0.0
             ],
             "titulares_humanos": 5,
@@ -195,73 +199,73 @@
           "semilla": 42
         },
         "macro_f1_ia": {
-          "n": 63,
-          "macro_f1": 0.4007,
+          "n": 64,
+          "macro_f1": 0.4296,
           "ic95": [
-            0.2434,
-            0.5158
+            0.2811,
+            0.5409
           ],
           "ic95_exacto": [
-            0.24342410877394438,
-            0.5157571174998157
+            0.28105113012947125,
+            0.5409332675722619
           ],
           "remuestreos": 2000,
           "ponderado": false
         },
         "macro_f1_baseline": {
-          "n": 63,
-          "macro_f1": 0.5151,
+          "n": 64,
+          "macro_f1": 0.4669,
           "ic95": [
-            0.2812,
-            0.6081
+            0.2361,
+            0.5796
           ],
           "ic95_exacto": [
-            0.28116744748825784,
-            0.6080926837447372
+            0.23606111942015648,
+            0.5796055640595916
           ],
           "remuestreos": 2000,
           "ponderado": false
         },
         "diferencia_macro_f1": {
-          "n": 63,
-          "diferencia_macro_f1": -0.1144,
+          "n": 64,
+          "diferencia_macro_f1": -0.0374,
           "ic95": [
-            -0.2856,
-            0.1125
+            -0.2406,
+            0.2185
           ],
           "ic95_exacto": [
-            -0.28561861722576004,
-            0.11254717943485275
+            -0.24063519862171256,
+            0.21848004807929478
           ]
         },
         "veredicto": "sin_diferencia_demostrable",
         "por_tema": {
           "economia": {
             "soporte": true,
-            "diferencia_f1": 0.1602,
+            "diferencia_f1": 0.1152,
             "ic95": [
-              -0.1334,
-              0.4334
+              -0.1815,
+              0.4
             ],
             "ic95_exacto": [
-              -0.13338669950738907,
-              0.4333695652173911
+              -0.1814607771260997,
+              0.4
             ],
             "titulares_humanos": 26,
             "veredicto": "sin_diferencia_demostrable"
           },
           "logistica": {
             "soporte": true,
-            "diferencia_f1": -0.3333,
+            "diferencia_f1": 0.1333,
             "ic95": [
-              -0.6,
-              0.0
+              -0.5,
+              1.0
             ],
             "ic95_exacto": [
-              -0.6,
-              0.0
+              -0.5,
+              1.0
             ],
-            "titulares_humanos": 1,
+            "titulares_humanos": 2,
             "veredicto": "soporte_insuficiente"
           },
           "turismo": {
@@ -280,28 +284,28 @@
           },
           "servicios_publicos": {
             "soporte": true,
-            "diferencia_f1": 0.2381,
+            "diferencia_f1": 0.3067,
             "ic95": [
-              -0.1213,
-              0.6087
+              -0.1212,
+              0.6667
             ],
             "ic95_exacto": [
-              -0.12127705627705616,
-              0.6086956521739131
+              -0.12121212121212122,
+              0.6666666666666666
             ],
             "titulares_humanos": 9,
             "veredicto": "sin_diferencia_demostrable"
           },
           "eventos_naturales": {
             "soporte": true,
-            "diferencia_f1": -0.0454,
+            "diferencia_f1": 0.0,
             "ic95": [
-              -0.15,
-              0.0455
+              -0.0741,
+              0.0714
             ],
             "ic95_exacto": [
-              -0.15001157407407406,
-              0.045454545454545414
+              -0.07413951545530481,
+              0.0714285714285714
             ],
             "titulares_humanos": 20,
             "veredicto": "sin_diferencia_demostrable"
@@ -322,13 +326,13 @@
           },
           "sin_tema": {
             "soporte": true,
-            "diferencia_f1": -0.1538,
+            "diferencia_f1": -0.15,
             "ic95": [
-              -0.3077,
+              -0.3,
               0.0
             ],
             "ic95_exacto": [
-              -0.3076923076923077,
+              -0.3,
               0.0
             ],
             "titulares_humanos": 5,
@@ -338,16 +342,18 @@
       },
       "discordantes": {
         "solo_ia": [
+          "NOT-0d91fa48b0",
           "NOT-4e1754a3f9",
           "NOT-549c8211e8",
           "NOT-613e8bdf24",
+          "NOT-66fdc7fa16",
           "NOT-96d1ecac7d",
           "NOT-a71293e7e8",
-          "NOT-cf027fac38",
           "NOT-d1a04c684b",
           "NOT-dfa8707d5a",
           "NOT-f01abb1ca2",
-          "NOT-f1f1f6e600"
+          "NOT-f1f1f6e600",
+          "NOT-fc94561c6d"
         ],
         "solo_baseline": [
           "NOT-14dcb8e259",
@@ -384,7 +390,6 @@
         ],
         "ambos_fallan": [
           "NOT-05ae3da7e3",
-          "NOT-0d91fa48b0",
           "NOT-1819a7014e",
           "NOT-1ba5a41e46",
           "NOT-203cd5b44e",
@@ -393,7 +398,6 @@
           "NOT-33032542b7",
           "NOT-5d839301a6",
           "NOT-660d940f9d",
-          "NOT-66fdc7fa16",
           "NOT-6717a15ab7",
           "NOT-8206bf1857",
           "NOT-8897c80d23",
@@ -402,6 +406,7 @@
           "NOT-ba54c3921d",
           "NOT-c712a8d7e4",
           "NOT-ca6fae4efb",
+          "NOT-cf027fac38",
           "NOT-d1dad65858",
           "NOT-e1ef662816",
           "NOT-e80ba5ef9d",
@@ -410,14 +415,21 @@
         ],
         "conteo": {
           "ambos_aciertan": 23,
-          "solo_ia": 10,
+          "solo_ia": 12,
           "solo_baseline": 6,
-          "ambos_fallan": 24,
-          "n": 63
+          "ambos_fallan": 23,
+          "n": 64
         },
-        "p_mcnemar_exacto": 0.4545
+        "p_mcnemar_exacto": 0.2379
       },
       "ejemplos_ia_acierta_y_baseline_falla": [
+        {
+          "id": "NOT-0d91fa48b0",
+          "titular": "Más de 30 mujeres han muerto de forma violenta en Panamá este año",
+          "humano": "servicios_publicos",
+          "baseline": "sin_tema",
+          "ia": "servicios_publicos"
+        },
         {
           "id": "NOT-4e1754a3f9",
           "titular": "Tres hombres asaltan casino y despojan a clientes de sus pertenencias en San Miguelito",
@@ -440,18 +452,11 @@
           "ia": "regulacion"
         },
         {
-          "id": "NOT-96d1ecac7d",
-          "titular": "¿Cómo se fija el precio del combustible en Panamá? El MEF explica la fórmula quincenal",
-          "humano": "economia",
+          "id": "NOT-66fdc7fa16",
+          "titular": "Disparan contra el vehículo del exdiputado Pedro Torres en Colón",
+          "humano": "servicios_publicos",
           "baseline": "sin_tema",
-          "ia": "economia"
-        },
-        {
-          "id": "NOT-a71293e7e8",
-          "titular": "The Duality of Latin America FDI",
-          "humano": "economia",
-          "baseline": "sin_tema",
-          "ia": "economia"
+          "ia": "servicios_publicos"
         }
       ],
       "ejemplos_baseline_acierta_y_ia_falla": [
@@ -494,49 +499,49 @@
       "por_tema_ia": {
         "economia": {
           "soporte": 26,
-          "predichos": 7,
+          "predichos": 5,
           "precision": {
-            "n": 5,
-            "de": 7,
-            "proporcion": 0.7143,
+            "n": 4,
+            "de": 5,
+            "proporcion": 0.8,
             "ic95": [
-              0.3589,
-              0.9178
+              0.3755,
+              0.9638
             ]
           },
           "recall": {
-            "n": 5,
+            "n": 4,
             "de": 26,
-            "proporcion": 0.1923,
+            "proporcion": 0.1538,
             "ic95": [
-              0.0851,
-              0.3788
+              0.0615,
+              0.3353
             ]
           },
-          "f1": 0.303
+          "f1": 0.2581
         },
         "logistica": {
-          "soporte": 1,
-          "predichos": 2,
+          "soporte": 2,
+          "predichos": 3,
           "precision": {
-            "n": 1,
-            "de": 2,
-            "proporcion": 0.5,
+            "n": 2,
+            "de": 3,
+            "proporcion": 0.6667,
             "ic95": [
-              0.0945,
-              0.9055
+              0.2077,
+              0.9385
             ]
           },
           "recall": {
-            "n": 1,
-            "de": 1,
+            "n": 2,
+            "de": 2,
             "proporcion": 1.0,
             "ic95": [
-              0.2065,
+              0.3424,
               1.0
             ]
           },
-          "f1": 0.6667
+          "f1": 0.8
         },
         "turismo": {
           "soporte": 1,
@@ -563,37 +568,37 @@
         },
         "servicios_publicos": {
           "soporte": 9,
-          "predichos": 12,
+          "predichos": 16,
           "precision": {
-            "n": 6,
-            "de": 12,
+            "n": 8,
+            "de": 16,
             "proporcion": 0.5,
             "ic95": [
-              0.2538,
-              0.7462
+              0.28,
+              0.72
             ]
           },
           "recall": {
-            "n": 6,
+            "n": 8,
             "de": 9,
-            "proporcion": 0.6667,
+            "proporcion": 0.8889,
             "ic95": [
-              0.3542,
-              0.8794
+              0.565,
+              0.9801
             ]
           },
-          "f1": 0.5714
+          "f1": 0.64
         },
         "eventos_naturales": {
           "soporte": 20,
-          "predichos": 23,
+          "predichos": 21,
           "precision": {
             "n": 20,
-            "de": 23,
-            "proporcion": 0.8696,
+            "de": 21,
+            "proporcion": 0.9524,
             "ic95": [
-              0.6787,
-              0.9546
+              0.7733,
+              0.9915
             ]
           },
           "recall": {
@@ -605,7 +610,7 @@
               1.0
             ]
           },
-          "f1": 0.9302
+          "f1": 0.9756
         },
         "regulacion": {
           "soporte": 1,
@@ -679,7 +684,7 @@
           "f1": 0.1429
         },
         "logistica": {
-          "soporte": 1,
+          "soporte": 2,
           "predichos": 1,
           "precision": {
             "n": 1,
@@ -692,14 +697,14 @@
           },
           "recall": {
             "n": 1,
-            "de": 1,
-            "proporcion": 1.0,
+            "de": 2,
+            "proporcion": 0.5,
             "ic95": [
-              0.2065,
-              1.0
+              0.0945,
+              0.9055
             ]
           },
-          "f1": 1.0
+          "f1": 0.6667
         },
         "turismo": {
           "soporte": 1,
@@ -795,14 +800,14 @@
         },
         "sin_tema": {
           "soporte": 5,
-          "predichos": 34,
+          "predichos": 35,
           "precision": {
             "n": 3,
-            "de": 34,
-            "proporcion": 0.0882,
+            "de": 35,
+            "proporcion": 0.0857,
             "ic95": [
-              0.0305,
-              0.2296
+              0.0296,
+              0.2238
             ]
           },
           "recall": {
@@ -814,7 +819,7 @@
               0.8824
             ]
           },
-          "f1": 0.1538
+          "f1": 0.15
         }
       }
     },
@@ -822,14 +827,14 @@
       "n": 100,
       "macro_f1_ia": {
         "n": 100,
-        "macro_f1": 0.4911,
+        "macro_f1": 0.5451,
         "ic95": [
-          0.3362,
-          0.6214
+          0.38,
+          0.6692
         ],
         "ic95_exacto": [
-          0.3362263926549641,
-          0.6214289137149295
+          0.3800118971041328,
+          0.6692180333005975
         ],
         "remuestreos": 1000,
         "ponderado": false
@@ -850,27 +855,31 @@
       },
       "diferencia_macro_f1": {
         "n": 100,
-        "diferencia_macro_f1": -0.0538,
+        "diferencia_macro_f1": 0.0002,
         "ic95": [
-          -0.2344,
-          0.1634
+          -0.2137,
+          0.2666
         ],
         "ic95_exacto": [
-          -0.23437335975823537,
-          0.16344272805777116
+          -0.21365099211706054,
+          0.2666444753413147
         ]
       },
       "veredicto": "sin_diferencia_demostrable",
       "discordantes_conteo": {
         "ambos_aciertan": 59,
-        "solo_ia": 10,
+        "solo_ia": 12,
         "solo_baseline": 6,
-        "ambos_fallan": 25,
+        "ambos_fallan": 23,
         "n": 100
       }
     }
   },
   "agrupacion": {
+    "origenes": [
+      "humano"
+    ],
+    "usa_etiquetas_provisionales": false,
     "modelo": "minilm",
     "umbral_elegido_con_todas_las_etiquetas": 0.69,
     "umbral_por_pliegue_validacion_cruzada": {
@@ -2386,14 +2395,14 @@
     "utilidad_medible": false,
     "motivo": "eval/seleccion_editor.csv existe pero es una selección provisional del asistente (D-101), no de un editor; su Precision@5 está en outputs/precision_at_5.json y se rehace a mano en C-09.",
     "baseline": "grupos ordenados solo por publicación más reciente (PDF sección 8); empate por ID ascendente",
-    "grupos": 58,
+    "grupos": 60,
     "top": 5,
     "top_sistema": [
+      "GRP-21ad932d54",
+      "GRP-038c4f0643",
+      "GRP-5e6531917f",
       "GRP-84a6b3a04b",
-      "GRP-ef3acec21e",
-      "GRP-65d565abd0",
-      "GRP-8af4196527",
-      "GRP-6e737ecad5"
+      "GRP-39dfe8d714"
     ],
     "top_por_fecha": [
       "GRP-f9e3ba0bd2",
@@ -2406,11 +2415,11 @@
       "k": 5,
       "coinciden": [],
       "solo_sistema": [
+        "GRP-21ad932d54",
+        "GRP-038c4f0643",
+        "GRP-5e6531917f",
         "GRP-84a6b3a04b",
-        "GRP-ef3acec21e",
-        "GRP-65d565abd0",
-        "GRP-8af4196527",
-        "GRP-6e737ecad5"
+        "GRP-39dfe8d714"
       ],
       "solo_baseline": [
         "GRP-f9e3ba0bd2",
@@ -2424,101 +2433,101 @@
     "empates_de_fecha_en_el_corte": [],
     "ejemplos_solo_sistema": [
       {
+        "id_grupo": "GRP-21ad932d54",
+        "titular_central": "Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá",
+        "n_titulares": 1,
+        "n_medios": 1,
+        "posicion_sistema": 1,
+        "posicion_por_fecha": 32,
+        "fecha_mas_reciente": "2026-10-05T21:38:58Z",
+        "puntaje": 90.45,
+        "rango": "alto",
+        "componentes": {
+          "R": 1.0,
+          "I": 1.0,
+          "U": 0.8391,
+          "N": 1.0,
+          "E": 0.3667
+        },
+        "estado_de_evidencia": "insuficiente",
+        "accion": "Investigar ya"
+      },
+      {
+        "id_grupo": "GRP-038c4f0643",
+        "titular_central": "Clima en Panamá: Martes con lluvias y tormentas eléctricas en varias regiones durante la tarde",
+        "n_titulares": 1,
+        "n_medios": 1,
+        "posicion_sistema": 2,
+        "posicion_por_fecha": 21,
+        "fecha_mas_reciente": "2026-10-06T11:27:43Z",
+        "puntaje": 89.59,
+        "rango": "alto",
+        "componentes": {
+          "R": 1.0,
+          "I": 0.9,
+          "U": 0.9213,
+          "N": 1.0,
+          "E": 0.3667
+        },
+        "estado_de_evidencia": "insuficiente",
+        "accion": "Investigar ya"
+      },
+      {
+        "id_grupo": "GRP-5e6531917f",
+        "titular_central": "Más de 30 mujeres han muerto de forma violenta en Panamá este año",
+        "n_titulares": 1,
+        "n_medios": 1,
+        "posicion_sistema": 3,
+        "posicion_por_fecha": 25,
+        "fecha_mas_reciente": "2026-10-06T01:30:01Z",
+        "puntaje": 88.41,
+        "rango": "alto",
+        "componentes": {
+          "R": 1.0,
+          "I": 0.9,
+          "U": 0.862,
+          "N": 1.0,
+          "E": 0.3667
+        },
+        "estado_de_evidencia": "insuficiente",
+        "accion": "Investigar ya"
+      },
+      {
         "id_grupo": "GRP-84a6b3a04b",
         "titular_central": "Colegios particulares atribuyen aumento de matrícula a migración al sector oficial y altos costos de operación",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 1,
+        "posicion_sistema": 4,
         "posicion_por_fecha": 18,
         "fecha_mas_reciente": "2026-10-06T12:41:06Z",
-        "puntaje": 81.31,
+        "puntaje": 83.49,
         "rango": "alto",
         "componentes": {
-          "R": 0.9035,
-          "I": 0.75,
-          "U": 1.0,
-          "N": 0.7857,
-          "E": 0.3667
-        },
-        "estado_de_evidencia": "insuficiente",
-        "accion": "Investigar ya"
-      },
-      {
-        "id_grupo": "GRP-ef3acec21e",
-        "titular_central": "Minsa: Adelantan vacunación contra VSR en embarazadas",
-        "n_titulares": 1,
-        "n_medios": 1,
-        "posicion_sistema": 2,
-        "posicion_por_fecha": 34,
-        "fecha_mas_reciente": "2026-10-05T19:47:41Z",
-        "puntaje": 79.96,
-        "rango": "alto",
-        "componentes": {
-          "R": 0.9912,
-          "I": 0.5,
-          "U": 0.966,
-          "N": 0.9821,
-          "E": 0.3667
-        },
-        "estado_de_evidencia": "insuficiente",
-        "accion": "Investigar ya"
-      },
-      {
-        "id_grupo": "GRP-65d565abd0",
-        "titular_central": "MiBus responde por filtraciones: lamenta incomodidad de usuarios; afirma que realiza correctivos",
-        "n_titulares": 1,
-        "n_medios": 1,
-        "posicion_sistema": 3,
-        "posicion_por_fecha": 29,
-        "fecha_mas_reciente": "2026-10-05T23:39:22Z",
-        "puntaje": 79.71,
-        "rango": "alto",
-        "componentes": {
-          "R": 0.9561,
+          "R": 1.0,
           "I": 0.65,
-          "U": 0.9929,
-          "N": 0.75,
+          "U": 0.9286,
+          "N": 1.0,
           "E": 0.3667
         },
         "estado_de_evidencia": "insuficiente",
         "accion": "Investigar ya"
       },
       {
-        "id_grupo": "GRP-8af4196527",
-        "titular_central": "César Caicedo ahora está recluido en el Hospital Santo Tomás; había sido trasladado a Coiba",
-        "n_titulares": 1,
-        "n_medios": 1,
-        "posicion_sistema": 4,
-        "posicion_por_fecha": 35,
-        "fecha_mas_reciente": "2026-10-05T19:03:37Z",
-        "puntaje": 76.09,
-        "rango": "alto",
-        "componentes": {
-          "R": 0.693,
-          "I": 0.75,
-          "U": 0.9609,
-          "N": 0.9107,
-          "E": 0.3667
-        },
-        "estado_de_evidencia": "insuficiente",
-        "accion": "Investigar ya"
-      },
-      {
-        "id_grupo": "GRP-6e737ecad5",
-        "titular_central": "MOP solicita $43.1 millones para pagar compromisos y continuar obras en ejecución",
+        "id_grupo": "GRP-39dfe8d714",
+        "titular_central": "Aeropuerto panameño suscribe convenio con empresa asiática",
         "n_titulares": 1,
         "n_medios": 1,
         "posicion_sistema": 5,
-        "posicion_por_fecha": 8,
-        "fecha_mas_reciente": "2026-10-06T18:57:35Z",
-        "puntaje": 75.25,
+        "posicion_por_fecha": 22,
+        "fecha_mas_reciente": "2026-10-06T08:30:00Z",
+        "puntaje": 83.49,
         "rango": "alto",
         "componentes": {
-          "R": 0.7105,
+          "R": 1.0,
           "I": 0.75,
-          "U": 1.0,
-          "N": 0.7679,
-          "E": 0.3667
+          "U": 0.9037,
+          "N": 1.0,
+          "E": 0.1667
         },
         "estado_de_evidencia": "insuficiente",
         "accion": "Investigar ya"
@@ -2530,16 +2539,16 @@
         "titular_central": "Comisión de Presupuesto tramita traslados y créditos por casi $100 millones entre seis instituciones",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 21,
+        "posicion_sistema": 18,
         "posicion_por_fecha": 1,
         "fecha_mas_reciente": "2026-10-07T00:21:09Z",
-        "puntaje": 65.56,
-        "rango": "medio",
+        "puntaje": 78.63,
+        "rango": "alto",
         "componentes": {
-          "R": 0.6404,
-          "I": 0.65,
-          "U": 1.0,
-          "N": 0.4286,
+          "R": 1.0,
+          "I": 0.4,
+          "U": 0.998,
+          "N": 1.0,
           "E": 0.3667
         },
         "estado_de_evidencia": null,
@@ -2550,36 +2559,36 @@
         "titular_central": "Veraguas: Preocupación por aumento de muertes por enfermedades transmisibles y respiratorias",
         "n_titulares": 2,
         "n_medios": 1,
-        "posicion_sistema": 11,
+        "posicion_sistema": 7,
         "posicion_por_fecha": 2,
         "fecha_mas_reciente": "2026-10-07T00:17:42Z",
-        "puntaje": 69.93,
-        "rango": "medio",
+        "puntaje": 82.37,
+        "rango": "alto",
         "componentes": {
-          "R": 0.8158,
+          "R": 1.0,
           "I": 0.55,
-          "U": 1.0,
-          "N": 0.5357,
+          "U": 0.9977,
+          "N": 1.0,
           "E": 0.3667
         },
-        "estado_de_evidencia": null,
-        "accion": null
+        "estado_de_evidencia": "insuficiente",
+        "accion": "Investigar ya"
       },
       {
         "id_grupo": "GRP-0c210ad795",
         "titular_central": "Adultos mayores lo pierden todo tras incendio de su vivienda en Portachuelo",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 23,
+        "posicion_sistema": 19,
         "posicion_por_fecha": 3,
         "fecha_mas_reciente": "2026-10-07T00:16:11Z",
-        "puntaje": 65.0,
-        "rango": "medio",
+        "puntaje": 78.62,
+        "rango": "alto",
         "componentes": {
-          "R": 0.6754,
-          "I": 0.5,
-          "U": 1.0,
-          "N": 0.5714,
+          "R": 1.0,
+          "I": 0.4,
+          "U": 0.9975,
+          "N": 1.0,
           "E": 0.3667
         },
         "estado_de_evidencia": null,
@@ -2590,16 +2599,16 @@
         "titular_central": "Mides solicita $47 millones para completar último pago de transferencias monetarias de 2026",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 17,
+        "posicion_sistema": 20,
         "posicion_por_fecha": 4,
         "fecha_mas_reciente": "2026-10-07T00:14:52Z",
-        "puntaje": 65.96,
-        "rango": "medio",
+        "puntaje": 78.61,
+        "rango": "alto",
         "componentes": {
-          "R": 0.8772,
-          "I": 0.5,
-          "U": 1.0,
-          "N": 0.2321,
+          "R": 1.0,
+          "I": 0.4,
+          "U": 0.9974,
+          "N": 1.0,
           "E": 0.3667
         },
         "estado_de_evidencia": null,
@@ -2610,16 +2619,16 @@
         "titular_central": "Caso Pandora: Legalizan aprehensión de exejecutivo bancario señalado por autorizar pagos de créditos fiscales de la DGI",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 22,
+        "posicion_sistema": 21,
         "posicion_por_fecha": 5,
         "fecha_mas_reciente": "2026-10-06T23:57:05Z",
-        "puntaje": 65.44,
-        "rango": "medio",
+        "puntaje": 78.58,
+        "rango": "alto",
         "componentes": {
-          "R": 0.8509,
-          "I": 0.5,
-          "U": 1.0,
-          "N": 0.25,
+          "R": 1.0,
+          "I": 0.4,
+          "U": 0.9956,
+          "N": 1.0,
           "E": 0.3667
         },
         "estado_de_evidencia": null,
@@ -2628,133 +2637,133 @@
     ],
     "top_sistema_detalle": [
       {
+        "id_grupo": "GRP-21ad932d54",
+        "titular_central": "Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá",
+        "n_titulares": 1,
+        "n_medios": 1,
+        "posicion_sistema": 1,
+        "posicion_por_fecha": 32,
+        "fecha_mas_reciente": "2026-10-05T21:38:58Z",
+        "puntaje": 90.45,
+        "rango": "alto",
+        "componentes": {
+          "R": 1.0,
+          "I": 1.0,
+          "U": 0.8391,
+          "N": 1.0,
+          "E": 0.3667
+        },
+        "estado_de_evidencia": "insuficiente",
+        "accion": "Investigar ya"
+      },
+      {
+        "id_grupo": "GRP-038c4f0643",
+        "titular_central": "Clima en Panamá: Martes con lluvias y tormentas eléctricas en varias regiones durante la tarde",
+        "n_titulares": 1,
+        "n_medios": 1,
+        "posicion_sistema": 2,
+        "posicion_por_fecha": 21,
+        "fecha_mas_reciente": "2026-10-06T11:27:43Z",
+        "puntaje": 89.59,
+        "rango": "alto",
+        "componentes": {
+          "R": 1.0,
+          "I": 0.9,
+          "U": 0.9213,
+          "N": 1.0,
+          "E": 0.3667
+        },
+        "estado_de_evidencia": "insuficiente",
+        "accion": "Investigar ya"
+      },
+      {
+        "id_grupo": "GRP-5e6531917f",
+        "titular_central": "Más de 30 mujeres han muerto de forma violenta en Panamá este año",
+        "n_titulares": 1,
+        "n_medios": 1,
+        "posicion_sistema": 3,
+        "posicion_por_fecha": 25,
+        "fecha_mas_reciente": "2026-10-06T01:30:01Z",
+        "puntaje": 88.41,
+        "rango": "alto",
+        "componentes": {
+          "R": 1.0,
+          "I": 0.9,
+          "U": 0.862,
+          "N": 1.0,
+          "E": 0.3667
+        },
+        "estado_de_evidencia": "insuficiente",
+        "accion": "Investigar ya"
+      },
+      {
         "id_grupo": "GRP-84a6b3a04b",
         "titular_central": "Colegios particulares atribuyen aumento de matrícula a migración al sector oficial y altos costos de operación",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 1,
+        "posicion_sistema": 4,
         "posicion_por_fecha": 18,
         "fecha_mas_reciente": "2026-10-06T12:41:06Z",
-        "puntaje": 81.31,
+        "puntaje": 83.49,
         "rango": "alto",
         "componentes": {
-          "R": 0.9035,
-          "I": 0.75,
-          "U": 1.0,
-          "N": 0.7857,
-          "E": 0.3667
-        },
-        "estado_de_evidencia": "insuficiente",
-        "accion": "Investigar ya"
-      },
-      {
-        "id_grupo": "GRP-ef3acec21e",
-        "titular_central": "Minsa: Adelantan vacunación contra VSR en embarazadas",
-        "n_titulares": 1,
-        "n_medios": 1,
-        "posicion_sistema": 2,
-        "posicion_por_fecha": 34,
-        "fecha_mas_reciente": "2026-10-05T19:47:41Z",
-        "puntaje": 79.96,
-        "rango": "alto",
-        "componentes": {
-          "R": 0.9912,
-          "I": 0.5,
-          "U": 0.966,
-          "N": 0.9821,
-          "E": 0.3667
-        },
-        "estado_de_evidencia": "insuficiente",
-        "accion": "Investigar ya"
-      },
-      {
-        "id_grupo": "GRP-65d565abd0",
-        "titular_central": "MiBus responde por filtraciones: lamenta incomodidad de usuarios; afirma que realiza correctivos",
-        "n_titulares": 1,
-        "n_medios": 1,
-        "posicion_sistema": 3,
-        "posicion_por_fecha": 29,
-        "fecha_mas_reciente": "2026-10-05T23:39:22Z",
-        "puntaje": 79.71,
-        "rango": "alto",
-        "componentes": {
-          "R": 0.9561,
+          "R": 1.0,
           "I": 0.65,
-          "U": 0.9929,
-          "N": 0.75,
+          "U": 0.9286,
+          "N": 1.0,
           "E": 0.3667
         },
         "estado_de_evidencia": "insuficiente",
         "accion": "Investigar ya"
       },
       {
-        "id_grupo": "GRP-8af4196527",
-        "titular_central": "César Caicedo ahora está recluido en el Hospital Santo Tomás; había sido trasladado a Coiba",
-        "n_titulares": 1,
-        "n_medios": 1,
-        "posicion_sistema": 4,
-        "posicion_por_fecha": 35,
-        "fecha_mas_reciente": "2026-10-05T19:03:37Z",
-        "puntaje": 76.09,
-        "rango": "alto",
-        "componentes": {
-          "R": 0.693,
-          "I": 0.75,
-          "U": 0.9609,
-          "N": 0.9107,
-          "E": 0.3667
-        },
-        "estado_de_evidencia": "insuficiente",
-        "accion": "Investigar ya"
-      },
-      {
-        "id_grupo": "GRP-6e737ecad5",
-        "titular_central": "MOP solicita $43.1 millones para pagar compromisos y continuar obras en ejecución",
+        "id_grupo": "GRP-39dfe8d714",
+        "titular_central": "Aeropuerto panameño suscribe convenio con empresa asiática",
         "n_titulares": 1,
         "n_medios": 1,
         "posicion_sistema": 5,
-        "posicion_por_fecha": 8,
-        "fecha_mas_reciente": "2026-10-06T18:57:35Z",
-        "puntaje": 75.25,
+        "posicion_por_fecha": 22,
+        "fecha_mas_reciente": "2026-10-06T08:30:00Z",
+        "puntaje": 83.49,
         "rango": "alto",
         "componentes": {
-          "R": 0.7105,
+          "R": 1.0,
           "I": 0.75,
-          "U": 1.0,
-          "N": 0.7679,
-          "E": 0.3667
+          "U": 0.9037,
+          "N": 1.0,
+          "E": 0.1667
         },
         "estado_de_evidencia": "insuficiente",
         "accion": "Investigar ya"
       }
     ],
     "estabilidad": {
-      "variantes_con_efecto": 45,
+      "variantes_con_efecto": 43,
       "top_sin_cambio": {
-        "n": 43,
-        "de": 45,
-        "proporcion": 0.9556,
+        "n": 26,
+        "de": 43,
+        "proporcion": 0.6047,
         "ic95": [
-          0.8517,
-          0.9877
+          0.4558,
+          0.7363
         ]
       },
       "con_algun_cambio": {
-        "n": 2,
-        "de": 45,
-        "proporcion": 0.0444,
+        "n": 17,
+        "de": 43,
+        "proporcion": 0.3953,
         "ic95": [
-          0.0123,
-          0.1483
+          0.2637,
+          0.5442
         ]
       },
       "mismo_orden": {
-        "n": 37,
-        "de": 45,
-        "proporcion": 0.8222,
+        "n": 18,
+        "de": 43,
+        "proporcion": 0.4186,
         "ic95": [
-          0.6867,
-          0.9071
+          0.2838,
+          0.5667
         ]
       },
       "fuente": "outputs/sensibilidad.json"

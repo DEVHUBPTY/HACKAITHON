@@ -49,6 +49,7 @@ La columna **Rol** indica el área de la tarea (D = datos, IA, P = producto), no
 | C-01 | Cinco fichas trazables | P | E1-16 | [`C-01.md`](C-01.md) |
 | C-06 | Casos de demostración por caso de uso | P + D | E1-16 | [`C-06.md`](C-06.md) |
 | C-07 | Paquete de entrega y auditoría final | D + P | C-06 | [`C-07.md`](C-07.md) |
+| C-02 | Página de métricas | IA | E1-18 | [`C-02.md`](C-02.md) |
 
 ## Tareas humanas (sin spec)
 
