@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+import unicodedata
 from pathlib import Path
 from typing import Literal, TypeVar, get_args
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -489,6 +490,13 @@ def cargar_exploracion(carpeta: Path | None = None) -> ConfigExploracion:
 # ------------------------------------------------------------------ reglas_v1.3.yaml (E1-05)
 
 Unidad = Field(ge=0, le=1)
+
+
+def _sin_tildes(texto: str) -> str:
+    """Minúsculas, sin tildes y sin espacios sobrantes (solo para comparar términos de configuración)."""
+    return " ".join("".join(c for c in unicodedata.normalize("NFKD", texto) if not unicodedata.combining(c)).casefold().split())
+
+
 TOLERANCIA = 1e-9  # épsilon numérico de la comparación de sumas en coma flotante; no es un parámetro del negocio
 
 
@@ -547,6 +555,7 @@ class AlcanceGeografico(ModeloConfig):
     provincial: float = Unidad
     local: float = Unidad
     desconocido: float = Unidad
+    exterior: float = Unidad   # D-115: el grupo nombra un país o ciudad extranjera y ningún lugar de Panamá
 
 
 class Impacto(ModeloConfig):
@@ -634,6 +643,26 @@ class Geografia(ModeloConfig):
     provincias: list[str]
     comarcas: list[str]
     distritos: list[str]
+    exterior_terminos: list[str] = Field(min_length=1)   # D-115 (E1-10d): países y ciudades grandes, en español e inglés, sin tildes obligatorias
+
+    @field_validator("exterior_terminos")
+    @classmethod
+    def _exterior_sin_vacios_ni_repetidos(cls, terminos: list[str]) -> list[str]:
+        normalizados = [_sin_tildes(t) for t in terminos]
+        if any(not n for n in normalizados):
+            raise ValueError("exterior_terminos: un término no puede estar vacío")
+        repetidos = sorted({n for n in normalizados if normalizados.count(n) > 1})
+        if repetidos:
+            raise ValueError(f"exterior_terminos: términos repetidos (sin tildes ni mayúsculas): {repetidos}")
+        return terminos
+
+    @model_validator(mode="after")
+    def _exterior_no_es_un_lugar_de_panama(self) -> Geografia:
+        panama = {_sin_tildes(t) for t in [*self.provincias, *self.comarcas, *self.distritos, *self.nacional_terminos]}
+        cruzados = sorted(t for t in self.exterior_terminos if _sin_tildes(t) in panama)
+        if cruzados:
+            raise ValueError(f"exterior_terminos: ya son un lugar o una frase nacional de Panamá: {cruzados}")
+        return self
 
 
 class ReglasV13(ModeloConfig):

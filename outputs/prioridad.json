@@ -6,21 +6,21 @@
   "grupos": 60,
   "por_rango": {
     "alto": {
-      "n": 44,
+      "n": 42,
       "de": 60,
-      "proporcion": 0.7333,
+      "proporcion": 0.7,
       "ic95": [
-        0.6099,
-        0.8287
+        0.5749,
+        0.801
       ]
     },
     "medio": {
-      "n": 16,
+      "n": 18,
       "de": 60,
-      "proporcion": 0.2667,
+      "proporcion": 0.3,
       "ic95": [
-        0.1713,
-        0.3901
+        0.199,
+        0.4251
       ]
     },
     "bajo": {
@@ -122,83 +122,14 @@
     },
     {
       "posicion": 3,
-      "id_grupo": "GRP-29baaf270e",
-      "titular_central": "Panamá mantiene vigilancia epidemiológica ante caso sospechoso de peste neumónica en Rusia",
-      "puntaje": 86.97,
-      "empate_con": 0,
-      "rango": "alto",
-      "componentes": {
-        "R": 1.0,
-        "I": 0.75,
-        "U": 0.9775,
-        "N": 1.0,
-        "E": 0.3667
-      },
-      "estado_de_evidencia": "insuficiente",
-      "accion": "Investigar ya",
-      "vacios": [
-        "subtema no determinado: se usó el alcance neutro de impacto",
-        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
-      ],
-      "contradicciones": []
-    },
-    {
-      "posicion": 4,
-      "id_grupo": "GRP-1c2f1d950d",
-      "titular_central": "Obispos panameños presentarán en Roma la realidad de sus diócesis durante la visita ad limina",
-      "puntaje": 86.48,
-      "empate_con": 0,
-      "rango": "alto",
-      "componentes": {
-        "R": 1.0,
-        "I": 0.75,
-        "U": 0.9531,
-        "N": 1.0,
-        "E": 0.3667
-      },
-      "estado_de_evidencia": "insuficiente",
-      "accion": "Investigar ya",
-      "vacios": [
-        "subtema no determinado: se usó el alcance neutro de impacto",
-        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
-      ],
-      "contradicciones": []
-    },
-    {
-      "posicion": 5,
-      "id_grupo": "GRP-f4a44182b1",
-      "titular_central": "Panamá reforzará su presencia marítima en Vietnam con nueva oficina de servicio técnico de la AMP en Ho Chi Minh",
-      "puntaje": 85.9,
-      "empate_con": 0,
-      "rango": "alto",
-      "componentes": {
-        "R": 1.0,
-        "I": 0.75,
-        "U": 0.9243,
-        "N": 1.0,
-        "E": 0.3667
-      },
-      "estado_de_evidencia": "insuficiente",
-      "accion": "Investigar ya",
-      "vacios": [
-        "subtema no determinado: se usó el alcance neutro de impacto",
-        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (solo vínculo indirecto: no mide el hecho)"
-      ],
-      "contradicciones": []
-    },
-    {
-      "posicion": 6,
       "id_grupo": "GRP-5e6531917f",
       "titular_central": "Más de 30 mujeres han muerto de forma violenta en Panamá este año",
-      "puntaje": 84.66,
+      "puntaje": 88.41,
       "empate_con": 0,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
-        "I": 0.75,
+        "I": 0.9,
         "U": 0.862,
         "N": 1.0,
         "E": 0.3667
@@ -206,7 +137,6 @@
       "estado_de_evidencia": "insuficiente",
       "accion": "Investigar ya",
       "vacios": [
-        "subtema no determinado: se usó el alcance neutro de impacto",
         "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
         "los titulares traen cifras y no hay dato oficial vinculado",
         "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
@@ -214,7 +144,7 @@
       "contradicciones": []
     },
     {
-      "posicion": 7,
+      "posicion": 4,
       "id_grupo": "GRP-84a6b3a04b",
       "titular_central": "Colegios particulares atribuyen aumento de matrícula a migración al sector oficial y altos costos de operación",
       "puntaje": 83.49,
@@ -236,7 +166,7 @@
       "contradicciones": []
     },
     {
-      "posicion": 8,
+      "posicion": 5,
       "id_grupo": "GRP-39dfe8d714",
       "titular_central": "Aeropuerto panameño suscribe convenio con empresa asiática",
       "puntaje": 83.49,
@@ -261,7 +191,29 @@
       "contradicciones": []
     },
     {
-      "posicion": 9,
+      "posicion": 6,
+      "id_grupo": "GRP-1b52bb958d",
+      "titular_central": "Disparan contra el vehículo del exdiputado Pedro Torres en Colón",
+      "puntaje": 83.4,
+      "empate_con": 0,
+      "rango": "alto",
+      "componentes": {
+        "R": 1.0,
+        "I": 0.7,
+        "U": 0.8615,
+        "N": 1.0,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 7,
       "id_grupo": "GRP-87e128925b",
       "titular_central": "Veraguas: Preocupación por aumento de muertes por enfermedades transmisibles y respiratorias",
       "puntaje": 82.37,
@@ -284,7 +236,7 @@
       "contradicciones": []
     },
     {
-      "posicion": 10,
+      "posicion": 8,
       "id_grupo": "GRP-39773bed5a",
       "titular_central": "Árbol cae sobre dos vehículos en estacionamientos del hospital San Miguel Arcángel",
       "puntaje": 81.76,
@@ -294,6 +246,51 @@
         "R": 1.0,
         "I": 0.65,
         "U": 0.8422,
+        "N": 1.0,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 9,
+      "id_grupo": "GRP-6e737ecad5",
+      "titular_central": "MOP solicita $43.1 millones para pagar compromisos y continuar obras en ejecución",
+      "puntaje": 81.74,
+      "empate_con": 0,
+      "rango": "alto",
+      "componentes": {
+        "R": 1.0,
+        "I": 0.55,
+        "U": 0.9659,
+        "N": 1.0,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "los titulares traen cifras y no hay dato oficial vinculado",
+        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 10,
+      "id_grupo": "GRP-5ab17b45cd",
+      "titular_central": "Asesinan a taxista en Remedios; fue hallado dentro de su vehículo con varias heridas",
+      "puntaje": 81.65,
+      "empate_con": 0,
+      "rango": "alto",
+      "componentes": {
+        "R": 1.0,
+        "I": 0.55,
+        "U": 0.9616,
         "N": 1.0,
         "E": 0.3667
       },

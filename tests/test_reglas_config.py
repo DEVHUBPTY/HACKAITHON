@@ -258,3 +258,22 @@ def test_cli_validar_falla_con_config_rota(tmp_path: Path, capsys: pytest.Captur
     escribir(tmp_path, "reglas_v1.3", datos)
     assert principal(["--validar", "--config", str(tmp_path)]) == 1
     assert "pesos" in capsys.readouterr().err
+
+
+def test_d115_el_exterior_valida_sus_claves_y_sus_terminos(tmp_path: Path) -> None:
+    datos = leer("reglas_v1.3")
+    datos["geografia"]["exterior_terminos"] = ["Rusia", "rusia"]
+    with pytest.raises(ErrorDeConfiguracion, match="repetidos"):
+        cargar_reglas(escribir(tmp_path, "reglas_v1.3", datos))
+    datos = leer("reglas_v1.3")
+    datos["geografia"]["exterior_terminos"] = ["Rusia", "Chiriquí"]
+    with pytest.raises(ErrorDeConfiguracion, match="lugar o una frase nacional"):
+        cargar_reglas(escribir(tmp_path, "reglas_v1.3", datos))
+    datos = leer("reglas_v1.3")
+    datos["geografia"]["paises_extra"] = ["Rusia"]
+    with pytest.raises(ErrorDeConfiguracion):
+        cargar_reglas(escribir(tmp_path, "reglas_v1.3", datos))
+    datos = leer("reglas_v1.3")
+    del datos["impacto"]["alcance_geografico"]["exterior"]
+    with pytest.raises(ErrorDeConfiguracion):
+        cargar_reglas(escribir(tmp_path, "reglas_v1.3", datos))
