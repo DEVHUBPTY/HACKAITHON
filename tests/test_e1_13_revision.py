@@ -228,8 +228,8 @@ ID_SBP = "SBP-activos-2026Q1"
 def ficha_paises():
     f = ficha_ext()
     f.registros += [
-        RegistroEvidencia(id=ID_COL, campos={"valor": "16.08"}, contexto={"anio": "2024"}),
-        RegistroEvidencia(id=ID_CRI, campos={"valor": "33.5"}, contexto={"anio": "2024"}),
+        RegistroEvidencia(id=ID_COL, campos={"valor": "16.08"}, contexto={"anio": "2024", "indicador": "Exportaciones de bienes y servicios (% del PIB)"}),
+        RegistroEvidencia(id=ID_CRI, campos={"valor": "33.5"}, contexto={"anio": "2024", "indicador": "Exportaciones de bienes y servicios (% del PIB)"}),
         RegistroEvidencia(id=ID_SIS, campos={"magnitude": "5.2"}, contexto={}),
         RegistroEvidencia(id=ID_SBP, campos={"valor": "12.1"}, contexto={"anio": "2026"}),
     ]

@@ -47,6 +47,7 @@ from src.configuracion import (
     ConfigRestricciones,
     ConfigSalidas,
     ConfigValidador,
+    cargar_consulta,
     cargar_generacion,
     cargar_restricciones,
     cargar_salidas,
@@ -272,6 +273,8 @@ def _numeros_en_palabras(texto_plano: str, cfg: ConfigValidador) -> list[tuple[s
 def numeros_de(texto: str, cfg: ConfigValidador) -> list[tuple[str, set[Decimal]]]:
     """Cifras del texto (sin las fechas), en dígitos o en palabras, cada una con sus valores posibles. «1,5 %» y «1.5» dan el mismo valor."""
     _, resto = extraer_fechas(texto, cfg.meses)
+    for f in cfg.frases_sin_cifra:
+        resto = re.sub(rf"(?<!\w){re.escape(plano(f))}(?!\w)", " ", resto)
     return [(m.group(0), _candidatos(m.group(0))) for m in _NUM.finditer(resto)] + _numeros_en_palabras(resto, cfg)
 
 
@@ -625,11 +628,24 @@ def _traducciones(texto_fuente: str, ctx: Contexto) -> tuple[set[str], set[str]]
     return extra, set(re.findall(r"\w+", p))
 
 
+def _pais_y_fuente(ids: Iterable[str], ctx: Contexto) -> list[str]:
+    """X33: de un ID oficial salen el país (``IND-COL-…`` → Colombia, nombres de ``consulta.yaml``) y la fuente por prefijo (IND- → Banco Mundial)."""
+    nombres = cargar_consulta().datos_oficiales.nombres_pais
+    salida: list[str] = []
+    for i in ids:
+        prefijo = i.split("-", 1)[0]
+        if prefijo in ctx.val.fuentes_por_prefijo:
+            salida.append(ctx.val.fuentes_por_prefijo[prefijo])
+        if m := re.match(r"IND-([A-Z]{3})-", i):
+            salida.append(nombres.get(m.group(1), ""))
+    return salida
+
+
 def _nombres_nuevos(texto: str, s: Soporte, ctx: Contexto) -> list[Rechazo]:
     """Nombres propios que ni los campos citados, su contexto (medio, indicador), ni las afirmaciones de apoyo traen (D-41, D-51)."""
     ids = s.ids
     contexto = [v for i in ids for v in (ctx.registros[i].contexto.values() if i in ctx.registros else [])]
-    permitido = " ".join([*s.textos, ctx.texto_citado(s.citas), *contexto, *ids, *ctx.val.nombres_permitidos])  # el ID citado es el ancla de la cita
+    permitido = " ".join([*s.textos, ctx.texto_citado(s.citas), *contexto, *ids, *_pais_y_fuente(ids, ctx), *ctx.val.nombres_permitidos])  # el ID citado es el ancla de la cita
     tokens = set(re.findall(r"\w+", plano(permitido)))
     traducidos = [i for i in ids if ctx.traducido(i)]
     palabras_fuente: set[str] = set()

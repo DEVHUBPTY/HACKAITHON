@@ -1993,6 +1993,8 @@ class ConfigValidador(ModeloConfig):
     juicios_transicion: list[str]
     equivalencias_traduccion: dict[str, list[str]]
     cognados_prefijo_min: int = Field(ge=2)
+    fuentes_por_prefijo: dict[str, str]
+    frases_sin_cifra: list[str]
     nombres_permitidos: list[str]
     meses: list[str] = Field(min_length=12, max_length=13)
     nombre_min_caracteres: int = Field(ge=1)

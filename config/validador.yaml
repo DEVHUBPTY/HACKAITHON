@@ -62,6 +62,8 @@ juicios_transicion: [mala noticia, buena noticia, preocupante, preocupa, preocup
 # Traducción (D-45): equivalencias que una cita de un titular en otro idioma legitima. Una entidad ausente del titular y de esta tabla se rechaza.
 equivalencias_traduccion:
   América Latina: [Latin America, LatAm]
+  Autoridad del Canal de Panamá: [Panama Canal Authority]
+  Autoridad: [Authority]
   Ciudad de Panamá: [Panama City]
   Canal de Panamá: [Panama Canal]
   Estados Unidos: [United States, US, USA, U.S.]
@@ -74,6 +76,11 @@ equivalencias_traduccion:
   Casa Blanca: [White House]
   Asamblea Nacional: [National Assembly]
 cognados_prefijo_min: 5     # en un titular traducido, un nombre que comparte este prefijo con una palabra del titular es la misma entidad (Singapur / Singapore)
+
+# X33: el país y la fuente de un dato oficial salen de su ID (IND-<ISO3>-…); los nombres de país son los de consulta.yaml (datos_oficiales.nombres_pais).
+fuentes_por_prefijo: {IND: Banco Mundial, SIS: USGS, SBP: SBP}
+# Frases con un numeral que no es una cifra (las dos versiones de una contradicción).
+frases_sin_cifra: [las dos versiones, ambas versiones, las dos partes, las dos posturas]
 
 # Cómo se aplica cada lista de config/restricciones.yaml (la clave es el nombre de la lista; también es el nombre de la regla).
 #  tipos: solo se aplica a oraciones o afirmaciones de estos tipos (vacío = a todo)
