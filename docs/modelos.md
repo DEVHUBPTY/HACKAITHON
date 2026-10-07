@@ -19,7 +19,7 @@ Qué NO usa un LLM: el puntaje, el estado de evidencia, la ficha, el validador y
 - **Memoria:** RSS máximo del proceso 1.15 GB (1 146 830 848 bytes); 493 MB en disco.
 - **Limitaciones observadas:**
   - La similitud entre un titular y su propio tema está comprimida: casi todo cae entre 0.80 y 0.91, por lo que no separa bien paráfrasis de no paráfrasis (`config/clasificacion.yaml`).
-  - Clasificación de tema con las etiquetas humanas: macro-F1 0.401 (IC 0.244–0.516, n = 63), sin diferencia demostrable frente a las palabras clave (`docs/ia_vs_baseline.md`).
+  - Clasificación de tema con las etiquetas humanas: macro-F1 0.401 (IC 0.243–0.516, n = 63), sin diferencia demostrable frente a las palabras clave (`docs/ia_vs_baseline.md`).
   - Consultas cortas y genéricas puntúan 0.85 contra su documento correcto y se abstienen con el umbral 0.874 (`docs/ia_vs_baseline.md`, sección 5).
 
 ## 2 · `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`
@@ -55,4 +55,5 @@ Nota de medición: el RSS es el del proceso completo (PyTorch incluido), un proc
 
 ## 4 · Modelos soportados pero apagados
 
-- **Ollama** (`qwen3.5:9b` y `gemma4:12b`, E0-07) sigue soportado por configuración (`LLM_PROVIDER=ollama`) pero **está apagado y no se usa**: era demasiado lento (≈ 2 min por paquete; 14.3 s de mediana solo en el paso 1) y ocupaba 7.2 GB de RSS. No se midió de nuevo en E1-18. Detalle y cifras de entonces: `docs/eleccion_modelo.md`.
+- **Ollama** (`qwen3.5:9b` y `gemma4:12b`, E0-07) sigue soportado por configuración (`LLM_PROVIDER=ollama`) pero **está apagado y no se usa**: era demasiado lento (≈ 110–150 s por paquete en la única corrida completa, n = 1; 14.3 s de mediana solo en el paso 1) y ocupaba 7.2 GB de RSS. No se midió de nuevo en E1-18. Detalle y cifras de entonces: `docs/eleccion_modelo.md`.
+- **D-100 (decisión del dueño, 2026-10-07):** la tarea E3-05 «modelo local frente a DeepSeek» se descarta porque el PDF no la exige. La justificación de D-94 queda en la medición que ya existe: Ollama `qwen3.5:9b`, una corrida completa (n = 1), ≈ 110–150 s por paquete (fuente: fila «Proveedor durante el evento» de `docs/parametros.md`, que resume E0-07 y E1-12; no hay archivo crudo de esa corrida) frente a una mediana de 16.64 s con DeepSeek (n = 5, `outputs/latencia_generacion_deepseek.json`). Es una comparación de n pequeño, no un benchmark.

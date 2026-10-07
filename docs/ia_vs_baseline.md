@@ -10,7 +10,7 @@ Cada número de este documento sale de `outputs/ia_vs_baseline.json`, que escrib
 
 | Tarea | IA | Línea base | Diferencia (IA − base), IC 95 % | Veredicto |
 |---|---|---|---|---|
-| Clasificación de tema (macro-F1, n = 63 titulares) | 0.401 (IC 0.244–0.516) | 0.515 (IC 0.281–0.608) | −0.114 (−0.286 a 0.113) | **Sin diferencia demostrable** (la base tiene el punto estimado más alto) |
+| Clasificación de tema (macro-F1, n = 63 titulares) | 0.401 (IC 0.243–0.516) | 0.515 (IC 0.281–0.608) | −0.114 (−0.286 a 0.113) | **Sin diferencia demostrable** (la base tiene el punto estimado más alto) |
 | Agrupación (F1 de pares, validación cruzada, 100 titulares) | 0.916 (IC 0.779–0.995) | 0.793 (IC 0.614–0.930) | +0.123 (−0.039 a 0.308) | **Sin diferencia demostrable** en F1; la IA **gana en recall** |
 | Búsqueda (Recall@5 por IDs, 20 consultas, 50 IDs esperados) | 0.640 (32/50; IC 0.426–1.000) | 0.480 (24/50; IC 0.321–0.800) | +0.160 (0.038 a 0.429) | **Gana la IA** |
 | Ranking (Precision@5) | — | — | — | **No medible todavía** (falta la selección de un editor, E1-19) |
@@ -83,7 +83,7 @@ Entre idiomas, la base no puede hacerlo.
 
 - **IA:** búsqueda semántica (`e5`). **Base:** BM25 sobre el mismo corpus e índice. Recall@5 por IDs esperados, 20 consultas con evidencia en el corpus. Bootstrap pareado sobre **consultas**.
 - Sistema (semántica): 32/50 IDs (0.640); consultas completas 17/20 = 0.850 (IC 0.65–1.00). BM25: 24/50 IDs (0.480); consultas completas 12/20 = 0.600 (IC 0.399–0.800).
-- Diferencia +0.160, IC 95 % 0.038 a 0.429: **la IA gana, y es la única diferencia de este documento que el criterio da por demostrada**.
+- Diferencia +0.160, IC 95 % 0.038 a 0.429: **la IA gana**. Es una de las tres diferencias que el criterio da por demostradas en este documento: las otras dos son el recall de pares en agrupación (+0.298, IC 0.091–0.504) y la búsqueda restringida a datos oficiales (+0.667, IC 0.273–1.000, abajo).
 - **Aviso:** las reglas por patrón de la consulta se escribieron viendo estas 20 consultas. El Recall@5 es optimista; el IC es el de un conjunto pequeño.
 
 **Dónde gana la IA:** consultas sobre datos oficiales. BM25 no encuentra el indicador porque el texto del registro («Inflación (precios al consumidor)») no comparte palabras con la pregunta («inflación anual»):
