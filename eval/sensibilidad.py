@@ -137,7 +137,7 @@ def ajustes(reglas: ReglasV13) -> list[Ajuste]:
         return r.model_copy(update={"impacto": r.impacto.model_copy(update={"peso_subtema": subtema, "peso_geografico": geo})}), c
 
     agregar("Partes de I (subtema · geográfico)", peso_subtema)
-    for nivel in ("nacional", "provincial", "local", "desconocido"):
+    for nivel in ("nacional", "provincial", "local", "desconocido", "exterior"):
         def alcance(r: ReglasV13, c: ConfigPrioridad, f: float, nivel: str = nivel):
             nuevo = r.impacto.alcance_geografico.model_copy(update={nivel: _recortar(getattr(imp.alcance_geografico, nivel) * f)})
             return r.model_copy(update={"impacto": r.impacto.model_copy(update={"alcance_geografico": nuevo})}), c

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from src import contexto, puntaje
+from src import contexto, limpieza, puntaje
 from src.configuracion import cargar_temas, cargar_vinculos
 from tests.prioridad_ayuda import CFG, REGLAS, miembro
 
@@ -124,3 +124,70 @@ def test_x87_el_subtema_se_asigna_con_el_lexico_nuevo() -> None:
     assert contexto.decidir_subtema(
         [("seguridad_ciudadana", 0.8, 0.001)], ["Más de 30 mujeres han muerto de forma violenta este año"], SUB, list(TEMAS["servicios_publicos"].subtemas)
     ) == ("seguridad_ciudadana", "lexico")
+
+
+# ------------------------------------------------------------------ D-115 · alcance exterior
+
+
+def test_d115_el_exterior_vale_lo_mismo_que_local_y_desconocido() -> None:
+    a = REGLAS.impacto.alcance_geografico
+    assert (a.exterior, a.local, a.desconocido) == (0.3, 0.3, 0.3)
+
+
+@pytest.mark.parametrize(
+    "titular",
+    [
+        "Vigilancia por peste neumónica en Rusia",
+        "Obispos panameños presentan en Roma la realidad de sus diócesis",
+        "AMP abre oficina en Ho Chi Minh",
+        "Panamá y Colombia firman acuerdo en Bogotá",
+        "Presidente de Panamá visita Singapur",
+        "Plague surveillance in Russia",
+        "Brote de dengue en MEXICO",                              # sin tildes ni mayúsculas
+        "Accidente aéreo en Santiago de Chile deja heridos",       # el nombre extranjero más largo manda sobre el distrito de Santiago
+        "Ciudad de México inaugura línea de metro",
+        "Exportaciones a EE. UU. caen en septiembre",
+        "Precios del petróleo suben en Nueva York",
+    ],
+)
+def test_d115_un_pais_o_ciudad_extranjeros_sin_lugar_panameno_dan_alcance_exterior(titular: str) -> None:
+    alcance = puntaje.alcance_geografico([miembro("NOT-1", titular)], REGLAS, CFG)
+    assert (alcance.nivel, alcance.valor, bool(alcance.terminos)) == ("exterior", 0.3, True)
+
+
+@pytest.mark.parametrize(
+    ("titulares", "nivel"),
+    [
+        (("Minsa: casos en Panamá",), "nacional"),
+        (("Lluvias en Chiriquí",), "provincial"),
+        (("Inundaciones en Colón y en Miami",), "provincial"),        # el lugar panameño manda sobre el exterior
+        (("Cierran escuelas en David por brote en Chile",), "local"),
+        (("Alerta en la ciudad de Panamá por lluvias en Costa Rica",), "local"),
+        (("Cierran escuelas a nivel nacional por brote en Chile",), "nacional"),   # la frase nacional explícita manda
+        (("Brote en Chile", "Minsa: casos en todo el país"), "nacional"),         # también si está en otro titular del grupo
+        (("Brote en Rusia", "Lluvias en Chiriquí"), "provincial"),                 # y un lugar panameño de otro titular
+        (("Santiago Peña llega a Panamá",), "nacional"),                          # D-110: Santiago sin prefijo no es el distrito, ni el exterior
+        (("Accidente en Santiago deja tres heridos",), "local"),                  # con prefijo sigue siendo el distrito
+        (("Colón Colombia no existe",), "provincial"),
+        (("Cristóbal Colón llegó a América",), "desconocido"),
+        (("Compran chilenos y alemanes",), "desconocido"),                        # un gentilicio no es un país
+        (("Precios en el supermercado",), "desconocido"),
+    ],
+)
+def test_d115_precedencia_de_lugares_de_panama_frases_nacionales_y_exterior(titulares: tuple[str, ...], nivel: str) -> None:
+    assert _nivel(*titulares) == nivel
+
+
+def test_d115_un_titular_con_alcance_exterior_no_es_ruido() -> None:
+    fila = {
+        "titulo": "Panamá y Colombia firman acuerdo en Bogotá", "url": "https://ejemplo.example/n/1", "url_canonica": "https://ejemplo.example/n/1",
+        "medio": "Ejemplo", "dominio": "ejemplo.example", "origen": "GDELT", "pais_medio": None,
+        "fecha_deteccion": "2026-10-01T10:00:00Z", "fecha_publicacion": None, "fecha_extraccion": "2026-10-06T10:00:00Z",
+        "descripcion": None, "categoria_fuente": None,
+    }  # fmt: skip
+    assert limpieza.evaluar(fila, limpieza.Reglas.desde_config()).motivo_ruido is None
+
+
+def test_d115_el_titular_se_enmascara_sin_perder_tildes_del_resto() -> None:
+    nombres, resto = puntaje.exterior_en("Lluvias en Colón y Ámsterdam", REGLAS.geografia.exterior_terminos)
+    assert nombres == ["amsterdam"] and resto == "Lluvias en Colón y " + " " * len("Ámsterdam")

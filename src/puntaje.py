@@ -9,7 +9,8 @@ y **no habilita publicación** (``Puntaje.habilita_publicacion`` es siempre fals
   (``alcance_regional``, D-84).
 * **I** = ``peso_subtema × alcance(subtema) + peso_geografico × alcance geográfico``. Ni el dato oficial ni las
   procedencias suman aquí (D-15, D-35). El alcance geográfico es el más amplio que nombren los titulares; sin término
-  explícito ni lugar concreto, el país nombrado o una institución nacional lo hacen nacional (E1-10c, X42).
+  explícito ni lugar concreto de Panamá, un país o ciudad del exterior lo hace ``exterior`` (D-115) y, si no hay, el país
+  nombrado o su gentilicio lo hacen nacional (E1-10c, X42).
 * **U**: lineal entre ``horas_pleno`` (U = 1; D-106: 0 h, sin meseta) y ``dias_nulo`` (U = 0) desde la publicación ORIGINAL más reciente del grupo,
   medida contra la fecha de referencia (el corte del snapshot). Si ningún titular trae ``fecha_publicacion`` se usa la
   detección como cota y se agrega el vacío «urgencia estimada: fecha de publicación desconocida»; nunca se sustituye en silencio.
@@ -50,6 +51,7 @@ COMPONENTES = ("R", "I", "U", "N", "E")
 NIVELES_GEOGRAFICOS = ("nacional", "provincial", "local")   # de más a menos amplio; sin términos = desconocido
 NIVEL_NACIONAL = NIVELES_GEOGRAFICOS[0]
 NIVEL_DESCONOCIDO = "desconocido"
+NIVEL_EXTERIOR = "exterior"   # D-115: países o ciudades extranjeras nombrados y ningún lugar de Panamá
 SEGUNDOS_POR_HORA = 3600
 HORAS_POR_DIA = 24
 FORMATO_FECHA = "%Y-%m-%dT%H:%M:%SZ"
@@ -243,19 +245,50 @@ def terminos_sin_prefijo_excluido(texto: str, terminos: Sequence[str], excluidos
     return presentes
 
 
+@lru_cache(maxsize=None)
+def _patron_exterior(terminos: tuple[str, ...]) -> re.Pattern[str]:
+    """Alternancia de los términos del exterior (palabra completa, separadores flexibles); el más largo primero para que mande sobre el que contiene."""
+    cuerpos = [
+        r"[\W_]+".join(re.escape(palabra) for palabra in normalizar_geografia(t).split())
+        for t in sorted(terminos, key=lambda t: -len(normalizar_geografia(t)))
+    ]
+    return re.compile(r"(?<!\w)(?:" + "|".join(cuerpos) + r")(?!\w)")
+
+
+def exterior_en(titular: str, terminos: Sequence[str]) -> tuple[list[str], str]:
+    """D-115: términos del exterior que nombra ``titular`` y el titular con esos tramos en blanco.
+
+    El tramo en blanco evita que un nombre extranjero más largo cuente también como el lugar panameño que contiene
+    («Santiago de Chile» no es el distrito de Santiago). El resto del texto no cambia, tildes incluidas.
+    """
+    piezas = [plano(c) for c in titular]
+    llano = "".join(piezas)
+    origen = [i for i, p in enumerate(piezas) for _ in p]   # posición del carácter original de cada carácter de ``llano``
+    halladas: list[str] = []
+    borrar: set[int] = set()
+    for m in _patron_exterior(tuple(terminos)).finditer(llano):
+        halladas.append(normalizar_geografia(m.group()))
+        borrar.update(origen[k] for k in range(m.start(), m.end()))
+    return halladas, "".join(" " if i in borrar else c for i, c in enumerate(titular))
+
+
 def alcance_geografico(miembros: Sequence[Mapping[str, Any]], reglas: ReglasV13, cfg: ConfigPrioridad) -> Alcance:
     """Alcance más amplio que nombran los titulares: nacional, provincial (provincias y comarcas) o local (distritos).
 
-    Si ningún titular nombra un término explícito ni un lugar concreto, el país nombrado o una institución nacional
-    (``nacional_implicito_terminos``) dan alcance nacional (E1-10c, X42); si tampoco, el alcance es desconocido.
+    Si ningún titular nombra un término explícito ni un lugar concreto de Panamá, un país o ciudad del exterior da alcance
+    ``exterior`` (D-115); si tampoco, el país nombrado o su gentilicio dan alcance nacional (E1-10c, X42); si tampoco, el alcance
+    es desconocido. Precedencia: frase nacional > provincia o comarca > distrito > exterior > país nombrado > desconocido.
     """
     g = reglas.geografia
     listas = {"nacional": g.nacional_terminos, "provincial": [*g.provincias, *g.comarcas], "local": g.distritos}
     prefijos = cfg.geografia.prefijos_obligatorios
     hallados: dict[str, list[str]] = {nivel: [] for nivel in NIVELES_GEOGRAFICOS}
     implicitos: list[str] = []
+    exteriores: list[str] = []
     for m in miembros:
-        titular = str(m.get("titulo_limpio") or "")
+        crudo = str(m.get("titulo_limpio") or "")
+        del_exterior, titular = exterior_en(crudo, g.exterior_terminos)
+        exteriores.extend(del_exterior)
         for nivel in NIVELES_GEOGRAFICOS:
             hallados[nivel].extend(terminos_presentes(
                     titular,
@@ -270,6 +303,8 @@ def alcance_geografico(miembros: Sequence[Mapping[str, Any]], reglas: ReglasV13,
     for nivel in NIVELES_GEOGRAFICOS:
         if hallados[nivel]:
             return Alcance(nivel, getattr(reglas.impacto.alcance_geografico, nivel), tuple(sorted(set(hallados[nivel]))))
+    if exteriores:
+        return Alcance(NIVEL_EXTERIOR, reglas.impacto.alcance_geografico.exterior, tuple(sorted(set(exteriores))))
     if implicitos:
         return Alcance(NIVEL_NACIONAL, reglas.impacto.alcance_geografico.nacional, tuple(sorted(set(implicitos))))
     return Alcance(NIVEL_DESCONOCIDO, reglas.impacto.alcance_geografico.desconocido)

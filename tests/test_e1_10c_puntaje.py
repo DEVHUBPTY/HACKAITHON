@@ -83,7 +83,7 @@ def _nivel(*titulares: str) -> str:
         "Más de 30 mujeres han muerto de forma violenta en Panamá este año",            # el país nombrado
         "Ejecutivo sanciona la Ley 552 del Presupuesto del Canal de Panamá por $5,555 millones",   # el país nombrado (Canal de Panamá)
         "Déficit de personal limita la capacidad operativa de los bomberos en el país",
-        "Obispos panameños presentarán en Roma la realidad de sus diócesis",
+        "Obispos panameños presentarán la realidad de sus diócesis",   # con «en Roma» sería `exterior` (D-115, tests/test_e1_10d_ranking.py)
     ],
 )
 def test_x42_el_pais_o_su_gentilicio_dan_alcance_nacional(titular: str) -> None:

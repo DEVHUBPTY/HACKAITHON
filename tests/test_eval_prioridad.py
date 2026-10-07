@@ -66,7 +66,7 @@ def test_el_reparto_de_un_par_mantiene_la_suma() -> None:
 
 NOMBRES_ESPERADOS = {
     "Foco: otro país que afecta a Panamá", "Foco: Panamá sujeto", "Partes de I (subtema · geográfico)",
-    "Alcance geográfico nacional", "Alcance geográfico provincial", "Alcance geográfico local", "Alcance geográfico desconocido",
+    "Alcance geográfico nacional", "Alcance geográfico provincial", "Alcance geográfico local", "Alcance geográfico desconocido", "Alcance geográfico exterior",
     "Alcance por subtema (la tabla entera)", "Alcance de I sin subtema", "U: días con U = 0",
     "Partes de E: procedencias", "Partes de E: oficial", "Partes de E: identificable", "Tope de procedencias en E", "N del primer grupo",
     "Ventana de agrupación (días)", "Umbral de «mismo texto» (procedencias)",
