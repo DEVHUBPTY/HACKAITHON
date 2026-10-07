@@ -1,0 +1,889 @@
+{
+  "aviso": "REVISIÓN PROVISIONAL DEL ASISTENTE, NO HUMANA (D-101): la rehace una persona en C-09. Todo es BORRADOR.",
+  "borrador": true,
+  "con_casos": true,
+  "fecha_referencia": "2026-10-07T00:41:03Z",
+  "fichas": [
+    {
+      "citas": [
+        {
+          "campo": "n_titulares",
+          "existe_en_datos": true,
+          "id": "GRP-21ad932d54",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "1"
+        },
+        {
+          "campo": "n_medios",
+          "existe_en_datos": true,
+          "id": "GRP-21ad932d54",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "1"
+        },
+        {
+          "campo": "n_procedencias",
+          "existe_en_datos": true,
+          "id": "GRP-21ad932d54",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "1"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-3be05280f2",
+          "tipo": "declaración",
+          "url": "https://www.tvn-2.com/nacionales/salud/minsa-enciende-alarmas-diagnosticos-cancer_1_2264460.html",
+          "valor": "Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá"
+        }
+      ],
+      "comprobaciones": {
+        "afirmacion_con_cita": {
+          "n": 3,
+          "ok": 3
+        },
+        "cifra_de_conteo_coincide": {
+          "n": 3,
+          "ok": 3
+        },
+        "cinco_partes": {
+          "n": 1,
+          "ok": 1
+        },
+        "cita_con_campo_y_valor": {
+          "n": 4,
+          "ok": 4
+        },
+        "cita_con_id_en_datos": {
+          "n": 4,
+          "ok": 4
+        },
+        "contrato_fichas_jsonl": {
+          "n": 1,
+          "ok": 1
+        },
+        "declaracion_literal": {
+          "n": 1,
+          "ok": 1
+        },
+        "leyenda_de_alcance": {
+          "n": 1,
+          "ok": 1
+        },
+        "marca_borrador": {
+          "n": 1,
+          "ok": 1
+        },
+        "procedencias_y_estado": {
+          "n": 1,
+          "ok": 1
+        },
+        "revision_provisional_visible": {
+          "n": 1,
+          "ok": 1
+        },
+        "sin_descripcion_rss": {
+          "n": 1,
+          "ok": 1
+        },
+        "sin_nombres_de_autor": {
+          "n": 1,
+          "ok": 1
+        },
+        "url_presente": {
+          "n": 2,
+          "ok": 2
+        }
+      },
+      "fallos": [],
+      "id_caso": "CASO-002",
+      "id_grupo": "GRP-21ad932d54"
+    },
+    {
+      "citas": [
+        {
+          "campo": "n_titulares",
+          "existe_en_datos": true,
+          "id": "GRP-81a11a5998",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "2"
+        },
+        {
+          "campo": "n_medios",
+          "existe_en_datos": true,
+          "id": "GRP-81a11a5998",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "1"
+        },
+        {
+          "campo": "n_procedencias",
+          "existe_en_datos": true,
+          "id": "GRP-81a11a5998",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "1"
+        },
+        {
+          "campo": "valor",
+          "existe_en_datos": true,
+          "id": "IND-PAN-FP.CPI.TOTL.ZG-2024",
+          "tipo": "hecho",
+          "url": "https://api.worldbank.org/v2/country/PAN/indicator/FP.CPI.TOTL.ZG?format=json&date=2010:2024",
+          "valor": "0.69322555100446"
+        },
+        {
+          "campo": "valor",
+          "existe_en_datos": true,
+          "id": "IND-COL-FP.CPI.TOTL.ZG-2024",
+          "tipo": "hecho",
+          "url": "https://api.worldbank.org/v2/country/COL/indicator/FP.CPI.TOTL.ZG?format=json&date=2010:2024",
+          "valor": "6.60908593728228"
+        },
+        {
+          "campo": "valor",
+          "existe_en_datos": true,
+          "id": "IND-CRI-FP.CPI.TOTL.ZG-2024",
+          "tipo": "hecho",
+          "url": "https://api.worldbank.org/v2/country/CRI/indicator/FP.CPI.TOTL.ZG?format=json&date=2010:2024",
+          "valor": "-0.412853001047069"
+        },
+        {
+          "campo": "valor",
+          "existe_en_datos": true,
+          "id": "IND-DOM-FP.CPI.TOTL.ZG-2024",
+          "tipo": "hecho",
+          "url": "https://api.worldbank.org/v2/country/DOM/indicator/FP.CPI.TOTL.ZG?format=json&date=2010:2024",
+          "valor": "3.30223338951227"
+        },
+        {
+          "campo": "valor",
+          "existe_en_datos": true,
+          "id": "IND-GTM-FP.CPI.TOTL.ZG-2024",
+          "tipo": "hecho",
+          "url": "https://api.worldbank.org/v2/country/GTM/indicator/FP.CPI.TOTL.ZG?format=json&date=2010:2024",
+          "valor": "2.86992752918294"
+        },
+        {
+          "campo": "valor",
+          "existe_en_datos": true,
+          "id": "IND-MEX-FP.CPI.TOTL.ZG-2024",
+          "tipo": "hecho",
+          "url": "https://api.worldbank.org/v2/country/MEX/indicator/FP.CPI.TOTL.ZG?format=json&date=2010:2024",
+          "valor": "4.72225588452932"
+        },
+        {
+          "campo": "valor",
+          "existe_en_datos": true,
+          "id": "IND-PAN-FP.CPI.TOTL.ZG-2023",
+          "tipo": "hecho",
+          "url": "https://api.worldbank.org/v2/country/PAN/indicator/FP.CPI.TOTL.ZG?format=json&date=2010:2024",
+          "valor": "1.48641355277038"
+        },
+        {
+          "campo": "valor",
+          "existe_en_datos": true,
+          "id": "IND-PAN-FP.CPI.TOTL.ZG-2022",
+          "tipo": "hecho",
+          "url": "https://api.worldbank.org/v2/country/PAN/indicator/FP.CPI.TOTL.ZG?format=json&date=2010:2024",
+          "valor": "2.85965128834711"
+        },
+        {
+          "campo": "valor",
+          "existe_en_datos": true,
+          "id": "IND-PAN-FP.CPI.TOTL.ZG-2021",
+          "tipo": "hecho",
+          "url": "https://api.worldbank.org/v2/country/PAN/indicator/FP.CPI.TOTL.ZG?format=json&date=2010:2024",
+          "valor": "1.63070337301898"
+        },
+        {
+          "campo": "valor",
+          "existe_en_datos": true,
+          "id": "IND-PAN-FP.CPI.TOTL.ZG-2020",
+          "tipo": "hecho",
+          "url": "https://api.worldbank.org/v2/country/PAN/indicator/FP.CPI.TOTL.ZG?format=json&date=2010:2024",
+          "valor": "-1.55027540803761"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-1710ce462f",
+          "tipo": "declaración",
+          "url": "https://www.panamaamerica.com.pa/sociedad/como-se-fija-el-precio-del-combustible-en-panama-el-mef-explica-la-formula-quincenal-tras",
+          "valor": "¿Cómo se fija el precio del combustible en Panamá? El MEF explica la fórmula quincenal tras aprobarse nuevo subsidio"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-96d1ecac7d",
+          "tipo": "declaración",
+          "url": "https://www.panamaamerica.com.pa/sociedad/como-se-fija-el-precio-del-combustible-en-panama-el-mef-explica-la-formula-quincenal",
+          "valor": "¿Cómo se fija el precio del combustible en Panamá? El MEF explica la fórmula quincenal"
+        }
+      ],
+      "comprobaciones": {
+        "afirmacion_con_cita": {
+          "n": 7,
+          "ok": 7
+        },
+        "cifra_de_conteo_coincide": {
+          "n": 3,
+          "ok": 3
+        },
+        "cinco_partes": {
+          "n": 1,
+          "ok": 1
+        },
+        "cita_con_campo_y_valor": {
+          "n": 15,
+          "ok": 15
+        },
+        "cita_con_id_en_datos": {
+          "n": 15,
+          "ok": 15
+        },
+        "contrato_fichas_jsonl": {
+          "n": 1,
+          "ok": 1
+        },
+        "declaracion_literal": {
+          "n": 2,
+          "ok": 2
+        },
+        "leyenda_de_alcance": {
+          "n": 1,
+          "ok": 1
+        },
+        "marca_borrador": {
+          "n": 1,
+          "ok": 1
+        },
+        "procedencias_y_estado": {
+          "n": 1,
+          "ok": 1
+        },
+        "revision_provisional_visible": {
+          "n": 1,
+          "ok": 1
+        },
+        "sin_descripcion_rss": {
+          "n": 2,
+          "ok": 2
+        },
+        "sin_nombres_de_autor": {
+          "n": 1,
+          "ok": 1
+        },
+        "url_presente": {
+          "n": 14,
+          "ok": 14
+        }
+      },
+      "fallos": [],
+      "id_caso": "CASO-003",
+      "id_grupo": "GRP-81a11a5998"
+    },
+    {
+      "citas": [
+        {
+          "campo": "n_titulares",
+          "existe_en_datos": true,
+          "id": "GRP-e78a143f9a",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "2"
+        },
+        {
+          "campo": "n_medios",
+          "existe_en_datos": true,
+          "id": "GRP-e78a143f9a",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "2"
+        },
+        {
+          "campo": "n_procedencias",
+          "existe_en_datos": true,
+          "id": "GRP-e78a143f9a",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "2"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-1fce9a0925",
+          "tipo": "declaración",
+          "url": "https://www.panamaamerica.com.pa/economia/ejecutivo-sanciona-la-ley-552-del-presupuesto-del-canal-de-panama-por-5555-millones-1266965",
+          "valor": "Ejecutivo sanciona la Ley 552 del Presupuesto del Canal de Panamá por $5,555 millones"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-5a4863366a",
+          "tipo": "declaración",
+          "url": "https://www.critica.com.pa/nacional/canal-de-panama-manejara-presupuesto-de-b5555-millones-para-2027-517398",
+          "valor": "Canal de Panamá manejará presupuesto de B /. 5,555 millones para 2027"
+        }
+      ],
+      "comprobaciones": {
+        "afirmacion_con_cita": {
+          "n": 4,
+          "ok": 4
+        },
+        "cifra_de_conteo_coincide": {
+          "n": 3,
+          "ok": 3
+        },
+        "cinco_partes": {
+          "n": 1,
+          "ok": 1
+        },
+        "cita_con_campo_y_valor": {
+          "n": 5,
+          "ok": 5
+        },
+        "cita_con_id_en_datos": {
+          "n": 5,
+          "ok": 5
+        },
+        "contrato_fichas_jsonl": {
+          "n": 1,
+          "ok": 1
+        },
+        "declaracion_literal": {
+          "n": 2,
+          "ok": 2
+        },
+        "leyenda_de_alcance": {
+          "n": 1,
+          "ok": 1
+        },
+        "marca_borrador": {
+          "n": 1,
+          "ok": 1
+        },
+        "procedencias_y_estado": {
+          "n": 1,
+          "ok": 1
+        },
+        "revision_provisional_visible": {
+          "n": 1,
+          "ok": 1
+        },
+        "sin_descripcion_rss": {
+          "n": 2,
+          "ok": 2
+        },
+        "sin_nombres_de_autor": {
+          "n": 1,
+          "ok": 1
+        },
+        "url_presente": {
+          "n": 4,
+          "ok": 4
+        }
+      },
+      "fallos": [],
+      "id_caso": "CASO-004",
+      "id_grupo": "GRP-e78a143f9a"
+    },
+    {
+      "citas": [
+        {
+          "campo": "n_titulares",
+          "existe_en_datos": true,
+          "id": "GRP-da35c3dead",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "3"
+        },
+        {
+          "campo": "n_medios",
+          "existe_en_datos": true,
+          "id": "GRP-da35c3dead",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "3"
+        },
+        {
+          "campo": "n_procedencias",
+          "existe_en_datos": true,
+          "id": "GRP-da35c3dead",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "3"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-1819a7014e",
+          "tipo": "declaración",
+          "url": "https://www.prensa-latina.cu/2026/10/01/presidente-panameno-visitara-singapur-y-vietnam/",
+          "valor": "Presidente panameño visitará Singapur y Vietnam"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-33032542b7",
+          "tipo": "declaración",
+          "url": "https://www.laestrella.com.pa/panama/politica/mulino-viajara-a-asia-suscribira-convenios-bilaterales-con-singapur-y-vietnam-HH26129842",
+          "valor": "Mulino viajará a Asia: suscribirá convenios bilaterales con Singapur y Vietnam"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-fbc3efaa5d",
+          "tipo": "declaración",
+          "url": "https://www.revistaeyn.com/centroamericaymundo/presidente-de-panama-visita-singapur-y-vietnam-en-busca-de-inversiones-ED32208738",
+          "valor": "Presidente de Panamá visita Singapur y Vietnam en busca de inversiones"
+        }
+      ],
+      "comprobaciones": {
+        "afirmacion_con_cita": {
+          "n": 5,
+          "ok": 5
+        },
+        "cifra_de_conteo_coincide": {
+          "n": 3,
+          "ok": 3
+        },
+        "cinco_partes": {
+          "n": 1,
+          "ok": 1
+        },
+        "cita_con_campo_y_valor": {
+          "n": 6,
+          "ok": 6
+        },
+        "cita_con_id_en_datos": {
+          "n": 6,
+          "ok": 6
+        },
+        "contrato_fichas_jsonl": {
+          "n": 1,
+          "ok": 1
+        },
+        "declaracion_literal": {
+          "n": 3,
+          "ok": 3
+        },
+        "leyenda_de_alcance": {
+          "n": 1,
+          "ok": 1
+        },
+        "marca_borrador": {
+          "n": 1,
+          "ok": 1
+        },
+        "procedencias_y_estado": {
+          "n": 1,
+          "ok": 1
+        },
+        "revision_provisional_visible": {
+          "n": 1,
+          "ok": 1
+        },
+        "sin_descripcion_rss": {
+          "n": 3,
+          "ok": 3
+        },
+        "sin_nombres_de_autor": {
+          "n": 1,
+          "ok": 1
+        },
+        "url_presente": {
+          "n": 6,
+          "ok": 6
+        }
+      },
+      "fallos": [],
+      "id_caso": "CASO-005",
+      "id_grupo": "GRP-da35c3dead"
+    },
+    {
+      "citas": [
+        {
+          "campo": "n_titulares",
+          "existe_en_datos": true,
+          "id": "GRP-0dfdd5a021",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "12"
+        },
+        {
+          "campo": "n_medios",
+          "existe_en_datos": true,
+          "id": "GRP-0dfdd5a021",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "12"
+        },
+        {
+          "campo": "n_procedencias",
+          "existe_en_datos": true,
+          "id": "GRP-0dfdd5a021",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "3"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-1ba5a41e46",
+          "tipo": "declaración",
+          "url": "http://www.tz.de/politik/trump-streicht-europa-hilfe-lenkt-millionen-nach-lateinamerika-zr-94521334.html",
+          "valor": "Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-203cd5b44e",
+          "tipo": "declaración",
+          "url": "https://www.az-online.de/politik/trump-streicht-europa-hilfe-lenkt-millionen-nach-lateinamerika-zr-94521334.html",
+          "valor": "Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-213eb698b8",
+          "tipo": "declaración",
+          "url": "https://zn.ua/ukr/usa/tramp-perenapravljaje-desjatki-miljoniv-dolariv-dopomohi-ssha-priznachenoji-dlja-jevropi-krajinam-latinskoji-ameriki-wp.html",
+          "valor": "Допомога США Європі - Трамп перенаправляє гроші, схвалені для європейських країн, Латинській Америці"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-26fd75f865",
+          "tipo": "declaración",
+          "url": "http://www.wa.de/politik/trump-streicht-europa-hilfe-lenkt-millionen-nach-lateinamerika-zr-94521334.html",
+          "valor": "Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-5d839301a6",
+          "tipo": "declaración",
+          "url": "http://www.hna.de/politik/trump-streicht-europa-hilfe-lenkt-millionen-nach-lateinamerika-zr-94521334.html",
+          "valor": "Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-6717a15ab7",
+          "tipo": "declaración",
+          "url": "http://www.wlz-online.de/politik/trump-streicht-europa-hilfe-lenkt-millionen-nach-lateinamerika-zr-94521334.html",
+          "valor": "Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-99ea1a995f",
+          "tipo": "declaración",
+          "url": "http://www.merkur.de/politik/trump-streicht-europa-hilfe-lenkt-millionen-nach-lateinamerika-zr-94521334.html",
+          "valor": "Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-adb01e330f",
+          "tipo": "declaración",
+          "url": "http://www.ovb-online.de/weltspiegel/politik/trump-streicht-europa-hilfe-lenkt-millionen-nach-lateinamerika-zr-94521334.html",
+          "valor": "Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-d1dad65858",
+          "tipo": "declaración",
+          "url": "https://www.kreiszeitung.de/politik/trump-streicht-europa-hilfe-lenkt-millionen-nach-lateinamerika-zr-94521334.html",
+          "valor": "Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-e80ba5ef9d",
+          "tipo": "declaración",
+          "url": "http://www.op-online.de/politik/trump-streicht-europa-hilfe-lenkt-millionen-nach-lateinamerika-zr-94521334.html",
+          "valor": "Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-eb363c1b4e",
+          "tipo": "declaración",
+          "url": "http://www.fnp.de/politik/trump-streicht-europa-hilfe-lenkt-millionen-nach-lateinamerika-zr-94521334.html",
+          "valor": "Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-fb0597e7e5",
+          "tipo": "declaración",
+          "url": "https://www.novinky.cz/clanek/valka-na-ukrajine-trump-presmeroval-pomoc-ukrajine-do-zemi-latinske-ameriky-40600467",
+          "valor": "Trump přesměroval pomoc Ukrajině do zemí Latinské Ameriky"
+        }
+      ],
+      "comprobaciones": {
+        "afirmacion_con_cita": {
+          "n": 14,
+          "ok": 14
+        },
+        "cifra_de_conteo_coincide": {
+          "n": 3,
+          "ok": 3
+        },
+        "cinco_partes": {
+          "n": 1,
+          "ok": 1
+        },
+        "cita_con_campo_y_valor": {
+          "n": 15,
+          "ok": 15
+        },
+        "cita_con_id_en_datos": {
+          "n": 15,
+          "ok": 15
+        },
+        "contrato_fichas_jsonl": {
+          "n": 1,
+          "ok": 1
+        },
+        "declaracion_literal": {
+          "n": 12,
+          "ok": 12
+        },
+        "leyenda_de_alcance": {
+          "n": 1,
+          "ok": 1
+        },
+        "marca_borrador": {
+          "n": 1,
+          "ok": 1
+        },
+        "procedencias_y_estado": {
+          "n": 1,
+          "ok": 1
+        },
+        "revision_provisional_visible": {
+          "n": 1,
+          "ok": 1
+        },
+        "sin_descripcion_rss": {
+          "n": 12,
+          "ok": 12
+        },
+        "sin_nombres_de_autor": {
+          "n": 1,
+          "ok": 1
+        },
+        "url_presente": {
+          "n": 24,
+          "ok": 24
+        }
+      },
+      "fallos": [],
+      "id_caso": "CASO-006",
+      "id_grupo": "GRP-0dfdd5a021"
+    }
+  ],
+  "generado_utc": "2026-10-07T21:47:18Z",
+  "juicio_humano": false,
+  "modalidad": "editorial",
+  "n_fichas": 5,
+  "por_regla": {
+    "afirmacion_con_cita": {
+      "ic95": [
+        0.8957,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 33,
+      "ok": 33,
+      "proporcion": 1.0
+    },
+    "cifra_de_conteo_coincide": {
+      "ic95": [
+        0.7961,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 15,
+      "ok": 15,
+      "proporcion": 1.0
+    },
+    "cinco_partes": {
+      "ic95": [
+        0.5655,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 5,
+      "ok": 5,
+      "proporcion": 1.0
+    },
+    "cita_con_campo_y_valor": {
+      "ic95": [
+        0.9213,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 45,
+      "ok": 45,
+      "proporcion": 1.0
+    },
+    "cita_con_id_en_datos": {
+      "ic95": [
+        0.9213,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 45,
+      "ok": 45,
+      "proporcion": 1.0
+    },
+    "contrato_fichas_jsonl": {
+      "ic95": [
+        0.5655,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 5,
+      "ok": 5,
+      "proporcion": 1.0
+    },
+    "declaracion_literal": {
+      "ic95": [
+        0.8389,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 20,
+      "ok": 20,
+      "proporcion": 1.0
+    },
+    "leyenda_de_alcance": {
+      "ic95": [
+        0.5655,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 5,
+      "ok": 5,
+      "proporcion": 1.0
+    },
+    "marca_borrador": {
+      "ic95": [
+        0.5655,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 5,
+      "ok": 5,
+      "proporcion": 1.0
+    },
+    "procedencias_y_estado": {
+      "ic95": [
+        0.5655,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 5,
+      "ok": 5,
+      "proporcion": 1.0
+    },
+    "revision_provisional_visible": {
+      "ic95": [
+        0.5655,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 5,
+      "ok": 5,
+      "proporcion": 1.0
+    },
+    "sin_descripcion_rss": {
+      "ic95": [
+        0.8389,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 20,
+      "ok": 20,
+      "proporcion": 1.0
+    },
+    "sin_nombres_de_autor": {
+      "ic95": [
+        0.5655,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 5,
+      "ok": 5,
+      "proporcion": 1.0
+    },
+    "url_presente": {
+      "ic95": [
+        0.9286,
+        1.0
+      ],
+      "metodo_ic": "Wilson (z=1.96)",
+      "n": 50,
+      "ok": 50,
+      "proporcion": 1.0
+    }
+  },
+  "seleccion": {
+    "cupos": {
+      "insuficiente": 1,
+      "parcial": 2,
+      "suficiente": 2
+    },
+    "elegidas": [
+      {
+        "estado": "insuficiente",
+        "id_caso": "CASO-002",
+        "id_grupo": "GRP-21ad932d54",
+        "posicion": 1,
+        "puntaje": 90.45
+      },
+      {
+        "estado": "parcial",
+        "id_caso": "CASO-003",
+        "id_grupo": "GRP-81a11a5998",
+        "posicion": 13,
+        "puntaje": 81.25
+      },
+      {
+        "estado": "parcial",
+        "id_caso": "CASO-004",
+        "id_grupo": "GRP-e78a143f9a",
+        "posicion": 36,
+        "puntaje": 73.16
+      },
+      {
+        "estado": "suficiente",
+        "id_caso": "CASO-005",
+        "id_grupo": "GRP-da35c3dead",
+        "posicion": 47,
+        "puntaje": 65.13
+      },
+      {
+        "estado": "suficiente",
+        "id_caso": "CASO-006",
+        "id_grupo": "GRP-0dfdd5a021",
+        "posicion": 54,
+        "puntaje": 50.39
+      }
+    ],
+    "minimo_insuficiente": 1,
+    "minimo_total": 5
+  },
+  "tarea": "C-01",
+  "todo_ok": true,
+  "version_reglas": "1.3",
+  "z": 1.96
+}
