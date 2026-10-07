@@ -763,7 +763,12 @@ class CifraTitular(ModeloConfig):
     patron_numero: str
     patron_anio: str
     ventana_caracteres: int = Field(ge=0)
-    palabras_de_baja: list[str]  # entre la palabra clave y la cifra: la cifra es negativa
+    palabras_de_baja: list[str]  # verbos de baja inequívocos
+    palabras_de_baja_ambiguas: list[str]  # «baja»: solo cuenta como cambio si le sigue una palabra de nivel
+    palabras_de_alza: list[str]
+    palabras_de_nivel: list[str]  # «a», «hasta»: tras un verbo de cambio, la cifra es el nivel alcanzado
+    palabras_de_cota: list[str]  # «bajo», «menos de»…: la cifra es una cota o aproximación
+    indicadores_de_variacion: list[str]  # indicadores oficiales que ya son una tasa de cambio
     palabras_clave: dict[str, list[str]]  # indicador -> palabras que ligan la cifra del titular a ese indicador
     etiquetas: EtiquetasCifra
 
@@ -775,6 +780,18 @@ class CifraTitular(ModeloConfig):
         except re.error as exc:
             raise ValueError(f"expresión regular inválida: {exc}") from exc
         return v
+
+    @model_validator(mode="after")
+    def _listas_coherentes(self) -> CifraTitular:
+        for nombre in ("palabras_de_baja", "palabras_de_baja_ambiguas", "palabras_de_alza", "palabras_de_nivel", "palabras_de_cota"):
+            if any(not p.strip() for p in getattr(self, nombre)):
+                raise ValueError(f"{nombre}: palabras no vacías")
+        if "bajo" in self.palabras_de_baja:
+            raise ValueError("«bajo» es una cota, no un verbo de baja")
+        malos = set(self.indicadores_de_variacion) - set(self.palabras_clave)
+        if malos:
+            raise ValueError(f"indicadores_de_variacion sin palabras_clave: {sorted(malos)}")
+        return self
 
     @field_validator("palabras_clave")
     @classmethod

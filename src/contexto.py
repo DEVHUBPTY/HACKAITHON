@@ -84,11 +84,42 @@ def _numero(texto: str) -> float:
     return float(texto.replace(",", ".").replace("−", "-"))
 
 
+def _alternativa(palabras: Sequence[str]) -> re.Pattern[str]:
+    """Patrón que reconoce cualquiera de ``palabras`` como palabra completa (mayor longitud primero)."""
+    return re.compile(r"(?<!\w)(?:" + "|".join(re.escape(p) for p in sorted(palabras, key=len, reverse=True)) + r")(?!\w)", re.IGNORECASE)
+
+
+def _cifra_con_contexto(cifra: float, entre: str, indicador_id: str, cfg: ConfigVinculos) -> float | None:
+    """Interpreta ``cifra`` según lo que la precede (``entre`` = texto entre la palabra clave y la cifra).
+
+    * Verbo de cambio + «a»/«hasta» («cae a 0,7 %»): es el **nivel alcanzado**; conserva su signo (X19).
+    * Verbo de cambio sin «a» («cae 2 %»): es una **variación**. Solo se compara si el indicador oficial es una tasa de
+      cambio (``indicadores_de_variacion``, p. ej. el PIB), y entonces la baja invierte el signo (X17). Contra el nivel
+      oficial de inflación o desempleo no es comparable: ``None``. «baja» es ambigua y nunca se asume como verbo.
+    * Palabra de cota o aproximación («bajo», «menos de», «hasta» suelto): ``None``.
+    * Sin ninguna de ellas («fue de 3,2 %»): es un nivel y se compara tal cual.
+    """
+    c = cfg.cifra_titular
+    cambios = [*c.palabras_de_baja, *c.palabras_de_baja_ambiguas, *c.palabras_de_alza]
+    ultimo = None
+    for ultimo in _alternativa(cambios).finditer(entre):
+        pass
+    if ultimo is not None:
+        if _alternativa(c.palabras_de_nivel).fullmatch(entre[ultimo.end() :].strip()):
+            return cifra
+        if _alternativa(c.palabras_de_cota).search(entre):
+            return None
+        if indicador_id not in c.indicadores_de_variacion or _alternativa(c.palabras_de_baja_ambiguas).fullmatch(ultimo.group(0)):
+            return None
+        return -cifra if cifra > 0 and _alternativa(c.palabras_de_baja).fullmatch(ultimo.group(0)) else cifra
+    return None if _alternativa(c.palabras_de_cota).search(entre) else cifra
+
+
 def extraer_cifra_titular(titulo: str, indicador_id: str, cfg: ConfigVinculos) -> tuple[float, int | None] | None:
     """Cifra (%) que el titular da sobre ``indicador_id`` y el año que declara, o ``None`` si no hay una clara.
 
     Conservador: la palabra clave del indicador debe preceder a la cifra a no más de ``ventana_caracteres`` caracteres
-    sin otras cifras ni ``%`` en medio; el titular no puede traer otra cifra en %; una palabra de baja (``palabras_de_baja``) entre la clave y la cifra la vuelve negativa; y a lo sumo un año en el titular (si hay varios, el
+    sin otras cifras ni ``%`` en medio; el titular no puede traer otra cifra en %; lo que precede a la cifra decide si es nivel, variación o cota (``_cifra_con_contexto``, X17/X19); y a lo sumo un año en el titular (si hay varios, el
     período es ambiguo y el año queda en ``None``).
     """
     c = cfg.cifra_titular
@@ -102,10 +133,11 @@ def extraer_cifra_titular(titulo: str, indicador_id: str, cfg: ConfigVinculos) -
     cifras = {_numero(m.group(patron.groups)) for m in ligadas}
     if len(todas) != 1 or cifras != todas:  # una sola cifra en el titular y ligada a la palabra clave
         return None
-    baja = re.compile(rf"(?<!\w)(?:{'|'.join(re.escape(p) for p in c.palabras_de_baja)})(?!\w)", re.IGNORECASE)
     cifra = next(iter(cifras))
-    if cifra > 0 and any(baja.search(m.group("entre")) for m in ligadas):  # sin signo explícito: «cae 2 %» es -2
-        cifra = -cifra
+    for m in ligadas:
+        cifra = _cifra_con_contexto(cifra, m.group("entre"), indicador_id, cfg)
+        if cifra is None:
+            return None  # variación de un indicador de nivel, cota o palabra ambigua: no se compara
     anios = {int(a) for a in re.findall(c.patron_anio, titulo)}
     return cifra, (next(iter(anios)) if len(anios) == 1 else None)
 

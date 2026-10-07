@@ -216,6 +216,61 @@ def test_x17_un_signo_explicito_no_se_invierte_dos_veces() -> None:
     assert contexto.extraer_cifra_titular("El PIB cae -2 % en 2024", "NY.GDP.MKTP.KD.ZG", CFG) == (-2.0, 2024)
 
 
+PIB, DESEMPLEO = "NY.GDP.MKTP.KD.ZG", "SL.UEM.TOTL.ZS"
+
+
+def _comparar_x19(titular: str, subtema: str, indicador: str, oficial: float) -> str | None:
+    ind = grilla(indicador, {"PAN": {2024: oficial}})
+    (p,) = por_rol(vincular(subtema, "economia", titular, ind=ind), contexto.ROL_PANAMA)
+    return p["comparacion_titular"]
+
+
+@pytest.mark.parametrize(
+    ("titular", "subtema", "indicador", "oficial"),
+    [
+        ("La inflación cae a 0,7 % en 2024", "inflacion_precios", IND_INFLACION, 0.7),
+        ("El desempleo baja a 9,5 % en 2024", "empleo", DESEMPLEO, 9.5),
+        ("Crecimiento económico se reduce a 2,5 % en 2024", "crecimiento_pib", PIB, 2.5),
+        ("La inflación sube a 3 % en 2024", "inflacion_precios", IND_INFLACION, 3.0),
+    ],
+)
+def test_x19_el_nivel_alcanzado_tras_un_verbo_de_cambio_conserva_su_signo(titular, subtema, indicador, oficial) -> None:
+    """X19: «cae a 0,7 %» es el nivel alcanzado (0,7), no una variación de -0,7."""
+    assert _comparar_x19(titular, subtema, indicador, oficial) == CFG.cifra_titular.etiquetas.coincide
+
+
+@pytest.mark.parametrize(
+    "titular",
+    [
+        "Inflación se mantiene bajo 1,5 % en 2024",
+        "La inflación se ubica por encima de 2 % y sobre 1,5 % en 2024",
+        "La inflación llegó a menos de 1 % en 2024",
+        "La inflación cae a menos de 1 % en 2024",
+        "La inflación alcanzó cerca de 1 % en 2024",
+        "La inflación llegó hasta 1 % en 2024",
+    ],
+)
+def test_x19_una_cifra_con_palabra_de_cota_no_se_compara(titular: str) -> None:
+    assert _comparar_x19(titular, "inflacion_precios", IND_INFLACION, 0.7) is None
+
+
+@pytest.mark.parametrize("titular", ["La inflación cae 2 % en 2024", "La inflación sube 2 % en 2024", "La inflación baja 2 % en 2024"])
+def test_x19_una_variacion_de_un_indicador_de_nivel_no_se_compara(titular: str) -> None:
+    assert _comparar_x19(titular, "inflacion_precios", IND_INFLACION, 2.0) is None
+
+
+def test_x19_la_variacion_del_pib_si_se_compara_con_signo() -> None:
+    assert _comparar_x19("El PIB cae 2 % en 2024", "crecimiento_pib", PIB, -2.0) == CFG.cifra_titular.etiquetas.coincide
+    assert _comparar_x19("El PIB sube 2 % en 2024", "crecimiento_pib", PIB, 2.0) == CFG.cifra_titular.etiquetas.coincide
+    assert _comparar_x19("El PIB baja 2 % en 2024", "crecimiento_pib", PIB, -2.0) is None  # «baja» es ambigua (verbo o adjetivo)
+
+
+def test_x19_las_listas_de_palabras_estan_en_la_configuracion() -> None:
+    c = CFG.cifra_titular
+    assert "bajo" not in c.palabras_de_baja and "bajo" in c.palabras_de_cota
+    assert set(c.indicadores_de_variacion) == {PIB}
+
+
 @pytest.mark.parametrize("palabra", ["actual", "actualmente", "actualidad", "actuales"])
 def test_la_palabra_prohibida_incluye_sus_formas_derivadas(palabra: str) -> None:
     fila = {"id_grupo": "GRP-1", "limitacion": f"Dato {palabra} del indicador.", "comparacion_titular": None, "regla": "r", "motivo_sin_vinculo": None}

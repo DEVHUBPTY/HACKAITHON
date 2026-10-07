@@ -28,7 +28,13 @@ notas:                              # se agregan a la limitación de cada dato
 cifra_titular:
   patron_numero: '([-−]?\d+(?:[.,]\d+)?)\s?%'
   patron_anio: '(?<!\d)(20\d{2})(?!\d)'
-  palabras_de_baja: [cae, cayó, cayo, caída, caida, baja, bajó, bajo, retrocede, retrocedió, contrae, contrajo, contracción, contraccion, disminuye, disminuyó, desciende, descendió, decrece, decreció, reduce, redujo, se hunde]   # con una de estas antes de la cifra, la cifra es negativa
+  # Palabras que rodean la cifra (todas en minúsculas; se buscan entre la palabra clave y la cifra, sin distinguir mayúsculas).
+  palabras_de_baja: [cae, cayó, cayo, caída, caida, retrocede, retrocedió, contrae, contrajo, contracción, contraccion, disminuye, disminuyó, desciende, descendió, decrece, decreció, reduce, redujo, se hunde, bajó]   # verbos de baja inequívocos: sin «a», la cifra es una variación negativa
+  palabras_de_baja_ambiguas: [baja]   # «baja» es verbo o adjetivo: solo vale como cambio si le sigue «a»/«hasta»; si no, no se compara
+  palabras_de_alza: [sube, subió, aumenta, aumentó, crece, creció, avanza, avanzó, repunta, repuntó, se eleva, se elevó]
+  palabras_de_nivel: [a, hasta]       # verbo de cambio + una de estas = nivel alcanzado: la cifra conserva su signo
+  palabras_de_cota: [bajo, sobre, menos de, más de, mas de, cerca de, alrededor de, hasta]   # aproximación o cota: no se compara
+  indicadores_de_variacion: [NY.GDP.MKTP.KD.ZG]   # el indicador oficial ya es una tasa de cambio: «cae 2 %» = -2; en los demás, una variación no se compara con el nivel oficial
   ventana_caracteres: 40            # máximo de caracteres (sin cifras ni %) entre la palabra clave y la cifra (supuesto)
   palabras_clave:
     NY.GDP.MKTP.KD.ZG: [pib, producto interno bruto, crecimiento económico]
