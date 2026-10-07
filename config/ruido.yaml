@@ -75,6 +75,13 @@ panama:
     # "Caribe" a secas no basta ("Caribbean cricket"): solo junto a un término económico, logístico o marítimo.
     - '\b(caribe|caribbean)\b.{0,60}\b(econom\w*|comerci\w*|trade|puertos?|ports?|maritim\w*|shipping|carga|cargo|logistic\w*|cruceros?|cruise\w*|buques?|navier\w*)\b'
     - '\b(econom\w*|comerci\w*|trade|puertos?|ports?|maritim\w*|shipping|carga|cargo|logistic\w*|cruceros?|cruise\w*|buques?|navier\w*)\b.{0,60}\b(caribe|caribbean)\b'
+    # E1-10c (X44): comercio marítimo global, que pasa por el Canal y por los puertos de Panamá (D-84: «rutas marítimas»).
+    # Solo términos del transporte de mercancías por mar; «maritime» o «buque» sueltos no (seguridad naval, cruceros).
+    - '\b(carga contenerizada|contenedores|portacontenedores|containers?|container shipping|navieras?|shipping lines?|fletes? maritim\w*|freight rates?|rutas? maritim\w*|transporte maritimo|comercio maritimo|maritime trade|cargoes)\b'
+    # E1-10c (X44): exportación o importación de combustibles (Panamá importa todo su combustible y lo despacha a buques).
+    # Exige el flujo comercial: una escasez local en otro país («sin combustible») no lo es.
+    - '\b(diesel|gasolinas?|combustibles?|fuel|gnl|lng|gas natural licuado|crudo)\b.{0,40}\b(export\w*|import\w*)\b'
+    - '\b(export\w*|import\w*)\b.{0,40}\b(diesel|gasolinas?|combustibles?|fuel|gnl|lng|gas natural licuado|crudo)\b'
   secciones_dudosas: [mundo, tvmax, entretenimiento]   # gente-tvn y videos son contenido propio de TVN: no se filtran por sección
 
 # Es de Panamá, pero de un área que el reto no cubre (docs/guia_temas.md): deportes, farándula, cultura, política partidista.
