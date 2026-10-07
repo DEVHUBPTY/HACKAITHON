@@ -743,6 +743,46 @@ class Vinculo(ModeloConfig):
         return self
 
 
+class NotasDato(ModeloConfig):
+    """Plantillas de la nota de limitación que acompaña a cada dato anual (E1-09)."""
+
+    ultimo_anio: str
+    serie: str
+    anios_sin_valor: str
+
+
+class EtiquetasCifra(ModeloConfig):
+    discrepancia: str
+    periodo_distinto: str
+    coincide: str
+
+
+class CifraTitular(ModeloConfig):
+    """Cómo se detecta la cifra propia de un titular (conservador, todo en configuración)."""
+
+    patron_numero: str
+    patron_anio: str
+    ventana_caracteres: int = Field(ge=0)
+    palabras_clave: dict[str, list[str]]  # indicador -> palabras que ligan la cifra del titular a ese indicador
+    etiquetas: EtiquetasCifra
+
+    @field_validator("patron_numero", "patron_anio")
+    @classmethod
+    def _patron_valido(cls, v: str) -> str:
+        try:
+            re.compile(v)
+        except re.error as exc:
+            raise ValueError(f"expresión regular inválida: {exc}") from exc
+        return v
+
+    @field_validator("palabras_clave")
+    @classmethod
+    def _sin_palabras_vacias(cls, v: dict[str, list[str]]) -> dict[str, list[str]]:
+        if any(not palabras or any(not p.strip() for p in palabras) for palabras in v.values()):
+            raise ValueError("cada indicador necesita palabras clave no vacías")
+        return v
+
+
 class ConfigVinculos(ModeloConfig):
     """Modelo de ``config/vinculos.yaml``."""
 
@@ -754,6 +794,11 @@ class ConfigVinculos(ModeloConfig):
     pais_por_defecto: str
     vinculos: dict[str, Vinculo]  # por subtema
     vinculos_por_tema: dict[str, Vinculo]  # cualquier subtema del tema
+    tendencia_anios: int = Field(ge=1)
+    indicadores_solo_contexto: list[str]
+    palabras_prohibidas: list[str]
+    notas: NotasDato
+    cifra_titular: CifraTitular
 
     @model_validator(mode="after")
     def _relaciones_declaradas(self) -> ConfigVinculos:
@@ -762,6 +807,25 @@ class ConfigVinculos(ModeloConfig):
         malas = {v.relacion for v in (*self.vinculos.values(), *self.vinculos_por_tema.values())} - set(self.tipos_relacion)
         if malas:
             raise ValueError(f"relaciones no declaradas en tipos_relacion: {sorted(malas)}")
+        return self
+
+    @model_validator(mode="after")
+    def _poblacion_no_va_sola(self) -> ConfigVinculos:
+        todos = (*self.vinculos.values(), *self.vinculos_por_tema.values())
+        solos = {v.id for v in todos} & set(self.indicadores_solo_contexto)
+        if solos:
+            raise ValueError(f"indicadores solo de contexto no pueden vincularse solos: {sorted(solos)}")
+        return self
+
+    @model_validator(mode="after")
+    def _textos_sin_palabras_prohibidas(self) -> ConfigVinculos:
+        textos = [v.limitacion for v in (*self.vinculos.values(), *self.vinculos_por_tema.values())]
+        textos += [*self.notas.model_dump().values(), *self.cifra_titular.etiquetas.model_dump().values()]
+        for palabra in self.palabras_prohibidas:
+            patron = re.compile(rf"\b{re.escape(palabra)}\b", re.IGNORECASE)
+            malos = [t for t in textos if patron.search(t)]
+            if malos:
+                raise ValueError(f"texto con la palabra prohibida {palabra!r}: {malos[0]!r}")
         return self
 
 

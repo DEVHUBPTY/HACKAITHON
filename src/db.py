@@ -132,6 +132,26 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("medios", "VARCHAR NOT NULL"),
         ("ids_noticia", "VARCHAR NOT NULL"),
     ],
+    "vinculos": [  # E1-09 / E1-09b: contexto oficial de cada grupo (Banco Mundial `indicador`, USGS `usgs`)
+        ("id_grupo", "VARCHAR NOT NULL"),
+        ("id_evidencia", "VARCHAR"),           # IND-… o SIS-…; NULL si no hay vínculo
+        ("tipo", "VARCHAR"),                   # relación: directa · indirecta · evento; NULL si no hay vínculo
+        ("regla", "VARCHAR NOT NULL"),         # la regla que generó la fila (también la del "sin vínculo")
+        ("limitacion", "VARCHAR"),
+        ("motivo_sin_vinculo", "VARCHAR"),     # solo en filas sin vínculo (config/vinculos.yaml)
+        ("fuente", "VARCHAR NOT NULL"),        # quién la escribe: `indicador` (src.contexto) o `usgs` (src.contexto_sismos)
+        ("rol", "VARCHAR"),                    # panama · comparable · tendencia · evento
+        ("subtema", "VARCHAR"),                # subtema más cercano dentro del tema del grupo
+        ("pais_iso3", "VARCHAR"),
+        ("indicador_id", "VARCHAR"),
+        ("anio", "INTEGER"),
+        ("unidad", "VARCHAR"),
+        ("valor", "DOUBLE"),                   # NULL = sin dato; nunca 0
+        ("fecha_extraccion", "VARCHAR"),
+        ("cifra_titular", "DOUBLE"),           # solo en la fila `panama`, si el titular trae su propia cifra
+        ("anio_titular", "INTEGER"),
+        ("comparacion_titular", "VARCHAR"),
+    ],
     "registro_normalizacion": [
         ("tabla", "VARCHAR NOT NULL"),
         ("clave", "VARCHAR NOT NULL"),
