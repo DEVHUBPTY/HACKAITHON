@@ -17,7 +17,7 @@ pais_por_defecto: PAN
 # E1-09 · contextualización con el Banco Mundial (src/contexto.py). Todo dato del Banco Mundial es ANUAL.
 tendencia_anios: 5                  # PDF/spec E1-09: tendencia = últimos 5 años de Panamá (nulos siguen nulos)
 indicadores_solo_contexto: [SP.POP.TOTL]   # la población nunca se vincula sola (spec E1-09)
-palabras_prohibidas: [actual]       # ningún texto de salida puede decir "actual" (T04): el dato es anual
+palabras_prohibidas: [actual, actuales, actualmente, actualidad]       # ningún texto de salida puede decir "actual" (T04): el dato es anual
 notas:                              # se agregan a la limitación de cada dato
   ultimo_anio: "Dato anual de {anio}; último año disponible con valor de Panamá; puede revisarse."
   serie: "Dato anual de {anio}, parte de la tendencia de {n} años de Panamá; puede revisarse."
@@ -28,6 +28,7 @@ notas:                              # se agregan a la limitación de cada dato
 cifra_titular:
   patron_numero: '([-−]?\d+(?:[.,]\d+)?)\s?%'
   patron_anio: '(?<!\d)(20\d{2})(?!\d)'
+  palabras_de_baja: [cae, cayó, cayo, caída, caida, baja, bajó, bajo, retrocede, retrocedió, contrae, contrajo, contracción, contraccion, disminuye, disminuyó, desciende, descendió, decrece, decreció, reduce, redujo, se hunde]   # con una de estas antes de la cifra, la cifra es negativa
   ventana_caracteres: 40            # máximo de caracteres (sin cifras ni %) entre la palabra clave y la cifra (supuesto)
   palabras_clave:
     NY.GDP.MKTP.KD.ZG: [pib, producto interno bruto, crecimiento económico]

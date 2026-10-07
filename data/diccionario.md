@@ -250,7 +250,7 @@ Una fila por dato (o una por grupo sin vínculo). Es **contexto, nunca prueba de
 | `tipo` | VARCHAR | sí | `vinculos.yaml` | derivado | Tipo de relación: `directa`, `indirecta` o `evento`. Nulo si no hay vínculo. |
 | `regla` | VARCHAR | no | contexto | derivado | Regla que generó la fila (`vinculo_por_subtema:<subtema>`, `vinculo_por_tema:<tema>`, `sin_vinculo_en_tabla:<tema>/<subtema>`, `sin_dato_en_periodo:<indicador>`). |
 | `limitacion` | VARCHAR | sí | `vinculos.yaml` | derivado | Limitación del vínculo más la nota del dato anual (año, último año disponible, años sin valor). Nunca dice «actual». |
-| `motivo_sin_vinculo` | VARCHAR | sí | `vinculos.yaml` | derivado | `tema_sin_indicador`, `sin_dato_en_periodo` (y los de sismos de E1-09b). Solo en filas sin vínculo. |
+| `motivo_sin_vinculo` | VARCHAR | sí | `vinculos.yaml` | derivado | `tema_sin_indicador`, `sin_dato_en_periodo` (y los de sismos de E1-09b). Sin vínculo lleva `id_evidencia` nulo; la excepción es `candidatos_ambiguos` (USGS, E1-09b), que puede traer a la vez el `SIS-` del candidato y el motivo. |
 | `fuente` | VARCHAR | no | contexto | derivado | Quién escribe la fila: `indicador` (`src.contexto`) o `usgs` (`src.contexto_sismos`). |
 | `rol` | VARCHAR | sí | contexto | derivado | `panama` (último año con valor), `comparable` (otros países, mismo año, con dato), `tendencia` (últimos años de Panamá) o `evento` (USGS). |
 | `subtema` | VARCHAR | sí | `similitud_tema` | derivado | Subtema más cercano del grupo dentro de su tema (método B). |

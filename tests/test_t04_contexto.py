@@ -199,6 +199,34 @@ def test_cifra_coincidente_con_la_oficial_se_etiqueta_como_tal() -> None:
     assert comparacion(titular_con("1.5%", "2023"))["comparacion_titular"] == CFG.cifra_titular.etiquetas.coincide
 
 
+def test_x17_un_verbo_de_baja_conserva_el_signo_negativo_de_la_cifra() -> None:
+    """X17: «El PIB cae 2 % en 2024» es -2, no +2; contra la oficial -2.0 coincide."""
+    assert contexto.extraer_cifra_titular("El PIB cae 2 % en 2024", "NY.GDP.MKTP.KD.ZG", CFG) == (-2.0, 2024)
+    ind = grilla("NY.GDP.MKTP.KD.ZG", {"PAN": {2024: -2.0}})
+    (p,) = por_rol(vincular("crecimiento_pib", "economia", "El PIB cae 2 % en 2024", ind=ind), contexto.ROL_PANAMA)
+    assert p["cifra_titular"] == -2.0
+    assert p["comparacion_titular"] == CFG.cifra_titular.etiquetas.coincide
+
+
+def test_x17_un_verbo_de_alza_no_cambia_el_signo() -> None:
+    assert contexto.extraer_cifra_titular("El PIB sube 2 % en 2024", "NY.GDP.MKTP.KD.ZG", CFG) == (2.0, 2024)
+
+
+def test_x17_un_signo_explicito_no_se_invierte_dos_veces() -> None:
+    assert contexto.extraer_cifra_titular("El PIB cae -2 % en 2024", "NY.GDP.MKTP.KD.ZG", CFG) == (-2.0, 2024)
+
+
+@pytest.mark.parametrize("palabra", ["actual", "actualmente", "actualidad", "actuales"])
+def test_la_palabra_prohibida_incluye_sus_formas_derivadas(palabra: str) -> None:
+    fila = {"id_grupo": "GRP-1", "limitacion": f"Dato {palabra} del indicador.", "comparacion_titular": None, "regla": "r", "motivo_sin_vinculo": None}
+    with pytest.raises(ValueError, match="prohibida"):
+        contexto.verificar_texto([fila], CFG)
+    datos = CFG.model_dump()
+    datos["vinculos"]["empleo"]["limitacion"] = f"Refleja la situación {palabra}."
+    with pytest.raises(ValidationError, match="prohibida"):
+        ConfigVinculos.model_validate(datos)
+
+
 @pytest.mark.parametrize(
     "titular",
     [

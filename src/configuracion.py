@@ -763,6 +763,7 @@ class CifraTitular(ModeloConfig):
     patron_numero: str
     patron_anio: str
     ventana_caracteres: int = Field(ge=0)
+    palabras_de_baja: list[str]  # entre la palabra clave y la cifra: la cifra es negativa
     palabras_clave: dict[str, list[str]]  # indicador -> palabras que ligan la cifra del titular a ese indicador
     etiquetas: EtiquetasCifra
 

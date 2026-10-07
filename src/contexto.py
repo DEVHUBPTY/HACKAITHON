@@ -88,7 +88,7 @@ def extraer_cifra_titular(titulo: str, indicador_id: str, cfg: ConfigVinculos) -
     """Cifra (%) que el titular da sobre ``indicador_id`` y el año que declara, o ``None`` si no hay una clara.
 
     Conservador: la palabra clave del indicador debe preceder a la cifra a no más de ``ventana_caracteres`` caracteres
-    sin otras cifras ni ``%`` en medio; el titular no puede traer otra cifra en %; y a lo sumo un año en el titular (si hay varios, el
+    sin otras cifras ni ``%`` en medio; el titular no puede traer otra cifra en %; una palabra de baja (``palabras_de_baja``) entre la clave y la cifra la vuelve negativa; y a lo sumo un año en el titular (si hay varios, el
     período es ambiguo y el año queda en ``None``).
     """
     c = cfg.cifra_titular
@@ -96,13 +96,18 @@ def extraer_cifra_titular(titulo: str, indicador_id: str, cfg: ConfigVinculos) -
     if not palabras:
         return None
     clave = "|".join(re.escape(p) for p in palabras)
-    patron = re.compile(rf"(?<!\w)(?:{clave})(?!\w)[^\d%]{{0,{c.ventana_caracteres}}}?{c.patron_numero}", re.IGNORECASE)
+    patron = re.compile(rf"(?<!\w)(?:{clave})(?!\w)(?P<entre>[^\d%]{{0,{c.ventana_caracteres}}}?){c.patron_numero}", re.IGNORECASE)
     todas = {_numero(m.group(1)) for m in re.finditer(c.patron_numero, titulo)}
-    cifras = {_numero(m.group(1)) for m in patron.finditer(titulo)}
+    ligadas = list(patron.finditer(titulo))
+    cifras = {_numero(m.group(patron.groups)) for m in ligadas}
     if len(todas) != 1 or cifras != todas:  # una sola cifra en el titular y ligada a la palabra clave
         return None
+    baja = re.compile(rf"(?<!\w)(?:{'|'.join(re.escape(p) for p in c.palabras_de_baja)})(?!\w)", re.IGNORECASE)
+    cifra = next(iter(cifras))
+    if cifra > 0 and any(baja.search(m.group("entre")) for m in ligadas):  # sin signo explícito: «cae 2 %» es -2
+        cifra = -cifra
     anios = {int(a) for a in re.findall(c.patron_anio, titulo)}
-    return next(iter(cifras)), (next(iter(anios)) if len(anios) == 1 else None)
+    return cifra, (next(iter(anios)) if len(anios) == 1 else None)
 
 
 def decimales(cifra_texto: float) -> int:
