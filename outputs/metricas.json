@@ -1,0 +1,1058 @@
+{
+  "version": 1,
+  "fecha_utc": "2026-10-07T04:20:13Z",
+  "benchmark": {
+    "archivo": "benchmark_dev.jsonl",
+    "sha256": "27c791a86055322eece5c45570b35ae4fe0f06bb89a4bed67c8d861c809f11cc",
+    "n": 40,
+    "por_tipo": {
+      "respuesta_sustentada": 20,
+      "contradiccion_ambiguedad": 7,
+      "sin_respuesta": 7,
+      "adversarial": 6
+    },
+    "split": "dev"
+  },
+  "entorno": {
+    "python": "3.11.14",
+    "sistema": "Darwin",
+    "embeddings": "Embeddings",
+    "metodo": "semantica",
+    "umbral_similitud": 0.874,
+    "consulta_sin_llm": true,
+    "internet_necesario": true
+  },
+  "intervalos": {
+    "remuestreos": 2000,
+    "confianza": 0.95,
+    "semilla": 42,
+    "metodo": "bootstrap percentil (y Wilson aparte)"
+  },
+  "abstencion_correcta": {
+    "sin_respuesta": {
+      "n": 7,
+      "de": 7,
+      "proporcion": 1.0,
+      "ic95": [
+        1.0,
+        1.0
+      ],
+      "ic95_wilson": [
+        0.6457,
+        1.0
+      ],
+      "remuestreos": 2000,
+      "bootstrap_degenerado": true,
+      "fallos": []
+    },
+    "todas_las_que_debian": {
+      "n": 10,
+      "de": 10,
+      "proporcion": 1.0,
+      "ic95": [
+        1.0,
+        1.0
+      ],
+      "ic95_wilson": [
+        0.7225,
+        1.0
+      ],
+      "remuestreos": 2000,
+      "bootstrap_degenerado": true,
+      "fallos": []
+    },
+    "meta": 0.8,
+    "nota": "Numerador: consultas rechazadas; denominador: las que debían rechazarse. «todas_las_que_debian» suma las adversariales con debe_abstenerse."
+  },
+  "abstenciones_incorrectas": {
+    "sustentadas": {
+      "n": 2,
+      "de": 20,
+      "proporcion": 0.1,
+      "ic95": [
+        0.0,
+        0.25
+      ],
+      "ic95_wilson": [
+        0.0279,
+        0.301
+      ],
+      "remuestreos": 2000,
+      "ids": [
+        "BDEV-004",
+        "BDEV-017"
+      ],
+      "motivos": {
+        "BDEV-004": "similitud_baja",
+        "BDEV-017": "similitud_baja"
+      }
+    },
+    "respondibles": {
+      "n": 2,
+      "de": 30,
+      "proporcion": 0.0667,
+      "ic95": [
+        0.0,
+        0.1667
+      ],
+      "ic95_wilson": [
+        0.0185,
+        0.2132
+      ],
+      "remuestreos": 2000,
+      "ids": [
+        "BDEV-004",
+        "BDEV-017"
+      ],
+      "motivos": {
+        "BDEV-004": "similitud_baja",
+        "BDEV-017": "similitud_baja"
+      }
+    },
+    "nota": "Numerador: respondibles rechazadas; denominador: respondibles. Se reporta; no tiene meta."
+  },
+  "cobertura_de_citas": {
+    "consultas": {
+      "n": 56,
+      "de": 56,
+      "proporcion": 1.0,
+      "ic95": [
+        1.0,
+        1.0
+      ],
+      "ic95_wilson": [
+        0.9358,
+        1.0
+      ],
+      "remuestreos": 2000,
+      "bootstrap_degenerado": true,
+      "fallos": []
+    },
+    "consultas_con_validador_de_citas": {
+      "n": 56,
+      "de": 56,
+      "proporcion": 1.0,
+      "ic95": [
+        1.0,
+        1.0
+      ],
+      "ic95_wilson": [
+        0.9358,
+        1.0
+      ],
+      "remuestreos": 2000,
+      "bootstrap_degenerado": true,
+      "fallos": []
+    },
+    "nota": "Afirmaciones emitidas (respuestas y «último dato disponible» de las abstenciones). Cita válida = ID existente en el corpus + campo citable.",
+    "borradores": {
+      "factuales_con_cita_valida": {
+        "n": 41,
+        "de": 41,
+        "proporcion": 1.0,
+        "ic95": [
+          1.0,
+          1.0
+        ],
+        "ic95_wilson": [
+          0.9143,
+          1.0
+        ],
+        "remuestreos": 2000,
+        "bootstrap_degenerado": true,
+        "fallos": []
+      },
+      "factuales_que_pasan_el_validador": {
+        "n": 41,
+        "de": 41,
+        "proporcion": 1.0,
+        "ic95": [
+          1.0,
+          1.0
+        ],
+        "ic95_wilson": [
+          0.9143,
+          1.0
+        ],
+        "remuestreos": 2000,
+        "bootstrap_degenerado": true,
+        "fallos": []
+      },
+      "derivadas_con_base_valida": {
+        "n": 14,
+        "de": 14,
+        "proporcion": 1.0,
+        "ic95": [
+          1.0,
+          1.0
+        ],
+        "ic95_wilson": [
+          0.7847,
+          1.0
+        ],
+        "remuestreos": 2000,
+        "bootstrap_degenerado": true,
+        "fallos": []
+      },
+      "nota": "Factuales = hecho y declaración (citan registros). Derivadas = inferencia e hipótesis (citan afirmaciones base)."
+    }
+  },
+  "busqueda": {
+    "k": 5,
+    "n_consultas": 20,
+    "metodos": {
+      "semantica": {
+        "por_ids": {
+          "n": 32,
+          "de": 50,
+          "proporcion": 0.64,
+          "ic95": [
+            0.4259,
+            1.0
+          ],
+          "remuestreos": 2000,
+          "unidad_de_remuestreo": "consulta"
+        },
+        "consultas_completas": {
+          "n": 17,
+          "de": 20,
+          "proporcion": 0.85,
+          "ic95": [
+            0.65,
+            1.0
+          ],
+          "ic95_wilson": [
+            0.6396,
+            0.9476
+          ],
+          "remuestreos": 2000
+        },
+        "fallos": {
+          "BDEV-004": [
+            "NOT-ba54c3921d"
+          ],
+          "BDEV-009": [
+            "NOT-2ece201ac9",
+            "NOT-364916b1e1",
+            "NOT-65049548e8",
+            "NOT-7bc0adfe59",
+            "NOT-9013970ab7",
+            "NOT-9112a370be",
+            "NOT-af2c98a539",
+            "NOT-b0fc5636be",
+            "NOT-b55ac9551b",
+            "NOT-b627063783",
+            "NOT-b9a18baba2",
+            "NOT-bd4d4c3bb9",
+            "NOT-c8859ae7ee",
+            "NOT-dde43008f3",
+            "NOT-e795e93c9d"
+          ],
+          "BDEV-015": [
+            "SIS-us7000n9fn",
+            "SIS-us7000nqwx"
+          ]
+        }
+      },
+      "bm25": {
+        "por_ids": {
+          "n": 24,
+          "de": 50,
+          "proporcion": 0.48,
+          "ic95": [
+            0.3214,
+            0.8
+          ],
+          "remuestreos": 2000,
+          "unidad_de_remuestreo": "consulta"
+        },
+        "consultas_completas": {
+          "n": 12,
+          "de": 20,
+          "proporcion": 0.6,
+          "ic95": [
+            0.3988,
+            0.8
+          ],
+          "ic95_wilson": [
+            0.3866,
+            0.7812
+          ],
+          "remuestreos": 2000
+        },
+        "fallos": {
+          "BDEV-004": [
+            "NOT-ba54c3921d"
+          ],
+          "BDEV-009": [
+            "NOT-0969f86532",
+            "NOT-7170117798",
+            "NOT-9013970ab7",
+            "NOT-9112a370be",
+            "NOT-af2c98a539",
+            "NOT-b0fc5636be",
+            "NOT-b449afb957",
+            "NOT-b55ac9551b",
+            "NOT-b627063783",
+            "NOT-b9a18baba2",
+            "NOT-bac341eccd",
+            "NOT-bd4d4c3bb9",
+            "NOT-c8859ae7ee",
+            "NOT-dde43008f3",
+            "NOT-e795e93c9d"
+          ],
+          "BDEV-010": [
+            "IND-PAN-FP.CPI.TOTL.ZG-2024"
+          ],
+          "BDEV-011": [
+            "IND-PAN-SL.UEM.TOTL.ZS-2023",
+            "IND-PAN-SL.UEM.TOTL.ZS-2024"
+          ],
+          "BDEV-012": [
+            "IND-PAN-NY.GDP.MKTP.KD.ZG-2023",
+            "IND-PAN-NY.GDP.MKTP.KD.ZG-2024"
+          ],
+          "BDEV-013": [
+            "IND-PAN-SP.POP.TOTL-2024"
+          ],
+          "BDEV-014": [
+            "IND-PAN-IT.NET.USER.ZS-2023",
+            "IND-PAN-IT.NET.USER.ZS-2024"
+          ],
+          "BDEV-015": [
+            "SIS-us7000n9fn",
+            "SIS-us7000nqwx"
+          ]
+        }
+      },
+      "sistema": {
+        "por_ids": {
+          "n": 32,
+          "de": 50,
+          "proporcion": 0.64,
+          "ic95": [
+            0.4259,
+            1.0
+          ],
+          "remuestreos": 2000,
+          "unidad_de_remuestreo": "consulta"
+        },
+        "consultas_completas": {
+          "n": 17,
+          "de": 20,
+          "proporcion": 0.85,
+          "ic95": [
+            0.65,
+            1.0
+          ],
+          "ic95_wilson": [
+            0.6396,
+            0.9476
+          ],
+          "remuestreos": 2000
+        },
+        "fallos": {
+          "BDEV-004": [
+            "NOT-ba54c3921d"
+          ],
+          "BDEV-009": [
+            "NOT-2ece201ac9",
+            "NOT-364916b1e1",
+            "NOT-65049548e8",
+            "NOT-7bc0adfe59",
+            "NOT-9013970ab7",
+            "NOT-9112a370be",
+            "NOT-af2c98a539",
+            "NOT-b0fc5636be",
+            "NOT-b55ac9551b",
+            "NOT-b627063783",
+            "NOT-b9a18baba2",
+            "NOT-bd4d4c3bb9",
+            "NOT-c8859ae7ee",
+            "NOT-dde43008f3",
+            "NOT-e795e93c9d"
+          ],
+          "BDEV-015": [
+            "SIS-us7000n9fn",
+            "SIS-us7000nqwx"
+          ]
+        }
+      }
+    },
+    "semantica_menos_bm25": {
+      "n_consultas": 20,
+      "diferencia": 0.16,
+      "ic95": [
+        0.0381,
+        0.4286
+      ],
+      "ic95_exacto": [
+        0.03808625336927226,
+        0.42857142857142855
+      ],
+      "remuestreos": 2000
+    },
+    "sistema_menos_bm25": {
+      "n_consultas": 20,
+      "diferencia": 0.16,
+      "ic95": [
+        0.0381,
+        0.4286
+      ],
+      "ic95_exacto": [
+        0.03808625336927226,
+        0.42857142857142855
+      ],
+      "remuestreos": 2000
+    },
+    "nota": "Recall@5 por IDs sobre las consultas respuesta_sustentada con evidencia esperada; IC de bootstrap sobre consultas. «sistema» = búsqueda semántica más la cifra oficial exacta."
+  },
+  "latencia": {
+    "consulta": {
+      "n": 40,
+      "unidad": "s",
+      "p50": {
+        "n": 40,
+        "valor": 0.0071,
+        "ic95": [
+          0.0003,
+          0.0073
+        ],
+        "remuestreos": 2000
+      },
+      "p95": {
+        "n": 40,
+        "valor": 0.0085,
+        "ic95": [
+          0.0077,
+          0.0093
+        ],
+        "remuestreos": 2000
+      },
+      "arranque_modelo_s": 3.254,
+      "nota": "consulta de punta a punta en frío (el vector de la consulta se codifica de verdad, sin caché) con el modelo de embeddings local ya cargado; sin red. La carga del modelo se reporta aparte (arranque_modelo_s)"
+    },
+    "paquete_completo": {
+      "n": 12,
+      "unidad": "s",
+      "p50": {
+        "n": 12,
+        "valor": 6.3615,
+        "ic95": [
+          5.038,
+          7.69
+        ],
+        "remuestreos": 2000
+      },
+      "p95": {
+        "n": 12,
+        "valor": 12.4079,
+        "ic95": [
+          7.2316,
+          17.155
+        ],
+        "remuestreos": 2000
+      }
+    },
+    "primera_respuesta_borrador": {
+      "n": 12,
+      "unidad": "s",
+      "p50": {
+        "n": 12,
+        "valor": 4.094,
+        "ic95": [
+          3.0615,
+          4.516
+        ],
+        "remuestreos": 2000
+      },
+      "p95": {
+        "n": 12,
+        "valor": 5.6663,
+        "ic95": [
+          4.293,
+          6.048
+        ],
+        "remuestreos": 2000
+      }
+    },
+    "llamada_llm": {
+      "n": 41,
+      "unidad": "s",
+      "p50": {
+        "n": 41,
+        "valor": 1.941,
+        "ic95": [
+          1.86,
+          2.051
+        ],
+        "remuestreos": 2000
+      },
+      "p95": {
+        "n": 41,
+        "valor": 2.849,
+        "ic95": [
+          2.3,
+          2.941
+        ],
+        "remuestreos": 2000
+      }
+    },
+    "paquete_por_tipo": {
+      "editorial": {
+        "n": 1,
+        "unidad": "s",
+        "p50": {
+          "n": 1,
+          "valor": 17.155,
+          "ic95": [
+            17.155,
+            17.155
+          ],
+          "remuestreos": 2000
+        },
+        "p95": {
+          "n": 1,
+          "valor": 17.155,
+          "ic95": [
+            17.155,
+            17.155
+          ],
+          "remuestreos": 2000
+        }
+      },
+      "investigacion": {
+        "n": 11,
+        "unidad": "s",
+        "p50": {
+          "n": 11,
+          "valor": 5.992,
+          "ic95": [
+            4.234,
+            7.582
+          ],
+          "remuestreos": 2000
+        },
+        "p95": {
+          "n": 11,
+          "valor": 8.161,
+          "ic95": [
+            6.945,
+            8.524
+          ],
+          "remuestreos": 2000
+        }
+      }
+    },
+    "meta_sugerida": {
+      "mediana_s": 15,
+      "consulta_cumple": true,
+      "paquete_cumple_por_tipo": {
+        "editorial": false,
+        "investigacion": true
+      },
+      "nota": "El paquete editorial es más largo (más secciones, más llamadas) que el de investigación: se reporta por tipo y con su n."
+    }
+  },
+  "tokens_y_costo": {
+    "consulta": {
+      "tokens_por_consulta": 0,
+      "usd_por_consulta": 0.0,
+      "nota": "La consulta no usa LLM (sin LLM): el único modelo es el de embeddings, local (USD 0)."
+    },
+    "borradores": {
+      "estado": "medido",
+      "fecha_utc": "2026-10-07T04:20:13Z",
+      "proveedor": "deepseek",
+      "modelo": "deepseek-flash",
+      "n_paquetes": 12,
+      "tokens_por_paquete": {
+        "entrada": {
+          "n": 12,
+          "valor": 5528.5,
+          "ic95": [
+            4559.0,
+            7392.5
+          ],
+          "remuestreos": 2000
+        },
+        "salida": {
+          "n": 12,
+          "valor": 1066.5,
+          "ic95": [
+            834.5,
+            1365.0
+          ],
+          "remuestreos": 2000
+        },
+        "llamadas_por_paquete": {
+          "n": 12,
+          "valor": 3.0,
+          "ic95": [
+            2.5,
+            4.0
+          ],
+          "remuestreos": 2000
+        },
+        "estadistico": "mediana"
+      },
+      "costo_usd": {
+        "por_paquete_mediana": {
+          "n": 12,
+          "valor": 0.0031,
+          "ic95": [
+            0.0024,
+            0.0038
+          ],
+          "remuestreos": 2000
+        },
+        "total_estimado": 0.040758,
+        "precios_usd_por_millon_tokens": {
+          "entrada": 0.3,
+          "salida": 1.2
+        },
+        "nota": "Cota superior (D-97): tokens de la API × el precio pico, sin descuento por caché. La consola de DeepSeek marcó ≈ 2,6 veces menos en una comparación (docs/parametros.md)."
+      },
+      "tokens_totales": {
+        "entrada": 76825,
+        "salida": 14759
+      },
+      "fuente": "medicion_llm.json (corrida real con --medir-llm)"
+    }
+  },
+  "borradores": {
+    "modo": "cache",
+    "grupos": 12,
+    "estados": {
+      "completo": 11,
+      "con_vacios": 1
+    },
+    "fallos": []
+  },
+  "rechazos_previos": {
+    "fuente": "re-validación de las respuestas guardadas en data/cache_llm/ con el validador actual",
+    "tasas": {
+      "unidades_evaluadas": 119,
+      "por_modelo": {
+        "deepseek/deepseek-flash": {
+          "k": 13,
+          "n": 119,
+          "tasa": 0.1092436974789916,
+          "ic95": [
+            0.065,
+            0.178
+          ]
+        }
+      },
+      "por_unidad": {
+        "deepseek/deepseek-flash": {
+          "afirmacion": {
+            "k": 10,
+            "n": 76,
+            "tasa": 0.13157894736842105,
+            "ic95": [
+              0.0731,
+              0.2255
+            ]
+          },
+          "seccion:brief": {
+            "k": 0,
+            "n": 1,
+            "tasa": 0.0,
+            "ic95": [
+              0.0,
+              0.7935
+            ]
+          },
+          "seccion:copy_digital": {
+            "k": 1,
+            "n": 2,
+            "tasa": 0.5,
+            "ic95": [
+              0.0945,
+              0.9055
+            ]
+          },
+          "seccion:enfoque": {
+            "k": 2,
+            "n": 13,
+            "tasa": 0.15384615384615385,
+            "ic95": [
+              0.0433,
+              0.4224
+            ]
+          },
+          "seccion:guion": {
+            "k": 0,
+            "n": 1,
+            "tasa": 0.0,
+            "ic95": [
+              0.0,
+              0.7935
+            ]
+          },
+          "seccion:preguntas": {
+            "k": 0,
+            "n": 12,
+            "tasa": 0.0,
+            "ic95": [
+              0.0,
+              0.2425
+            ]
+          },
+          "seccion:resumen_web": {
+            "k": 0,
+            "n": 1,
+            "tasa": 0.0,
+            "ic95": [
+              0.0,
+              0.7935
+            ]
+          },
+          "seccion:titulares": {
+            "k": 0,
+            "n": 1,
+            "tasa": 0.0,
+            "ic95": [
+              0.0,
+              0.7935
+            ]
+          },
+          "seccion:titulo": {
+            "k": 0,
+            "n": 1,
+            "tasa": 0.0,
+            "ic95": [
+              0.0,
+              0.7935
+            ]
+          },
+          "seccion:titulo_trabajo": {
+            "k": 0,
+            "n": 11,
+            "tasa": 0.0,
+            "ic95": [
+              0.0,
+              0.2588
+            ]
+          }
+        }
+      },
+      "por_regla": {
+        "base_invalida": {
+          "deepseek/deepseek-flash": {
+            "afirmacion": {
+              "k": 3,
+              "n": 76,
+              "tasa": 0.039473684210526314,
+              "ic95": [
+                0.0135,
+                0.1097
+              ]
+            }
+          }
+        },
+        "causalidad": {
+          "deepseek/deepseek-flash": {
+            "afirmacion": {
+              "k": 7,
+              "n": 76,
+              "tasa": 0.09210526315789473,
+              "ic95": [
+                0.0453,
+                0.1781
+              ]
+            }
+          }
+        },
+        "enfoque_como_hecho": {
+          "deepseek/deepseek-flash": {
+            "seccion:enfoque": {
+              "k": 2,
+              "n": 13,
+              "tasa": 0.15384615384615385,
+              "ic95": [
+                0.0433,
+                0.4224
+              ]
+            }
+          }
+        },
+        "limite_palabras": {
+          "deepseek/deepseek-flash": {
+            "seccion:copy_digital": {
+              "k": 1,
+              "n": 2,
+              "tasa": 0.5,
+              "ic95": [
+                0.0945,
+                0.9055
+              ]
+            }
+          }
+        },
+        "nombre_nuevo": {
+          "deepseek/deepseek-flash": {
+            "seccion:copy_digital": {
+              "k": 1,
+              "n": 2,
+              "tasa": 0.5,
+              "ic95": [
+                0.0945,
+                0.9055
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "validez_sustento": {
+    "estado": "pendiente_revision_humana",
+    "de": 30,
+    "revisadas": 0,
+    "meta": 0.9,
+    "muestra_prevista": 30,
+    "nota": "Falta la revisión de una persona que no escribió el código de generación (docs/protocolo_evaluacion.md, sección 4).",
+    "archivo": "revision_sustento.csv",
+    "muestra": {
+      "n": 30,
+      "pool": 108,
+      "semilla": 42,
+      "estado_del_archivo": "reescrita_sin_cambios",
+      "origenes": {
+        "borrador": 14,
+        "consulta": 16
+      }
+    }
+  },
+  "analisis_umbral": {
+    "metodo": "validacion_cruzada_dejando_uno_afuera",
+    "umbral_configurado": 0.874,
+    "percentil": 5.0,
+    "n_en_la_puerta": 23,
+    "n_calibran": 20,
+    "umbral_loo": {
+      "minimo": 0.869,
+      "maximo": 0.874
+    },
+    "validacion_cruzada": {
+      "abstencion_correcta_sin_respuesta": {
+        "n": 7,
+        "de": 7,
+        "proporcion": 1.0,
+        "ic95": [
+          1.0,
+          1.0
+        ],
+        "ic95_wilson": [
+          0.6457,
+          1.0
+        ],
+        "remuestreos": 2000,
+        "bootstrap_degenerado": true,
+        "fallos": []
+      },
+      "abstenciones_incorrectas_sustentadas": {
+        "n": 2,
+        "de": 20,
+        "proporcion": 0.1,
+        "ic95": [
+          0.0,
+          0.25
+        ],
+        "ic95_wilson": [
+          0.0279,
+          0.301
+        ],
+        "remuestreos": 2000,
+        "ids": [
+          "BDEV-004",
+          "BDEV-017"
+        ]
+      }
+    },
+    "con_el_umbral_configurado": {
+      "abstencion_correcta_sin_respuesta": {
+        "n": 7,
+        "de": 7,
+        "proporcion": 1.0,
+        "ic95": [
+          1.0,
+          1.0
+        ],
+        "ic95_wilson": [
+          0.6457,
+          1.0
+        ],
+        "remuestreos": 2000,
+        "bootstrap_degenerado": true,
+        "fallos": []
+      },
+      "abstenciones_incorrectas_sustentadas": {
+        "n": 2,
+        "de": 20,
+        "proporcion": 0.1,
+        "ic95": [
+          0.0,
+          0.25
+        ],
+        "ic95_wilson": [
+          0.0279,
+          0.301
+        ],
+        "remuestreos": 2000,
+        "ids": [
+          "BDEV-004",
+          "BDEV-017"
+        ]
+      }
+    },
+    "sensibilidad": [
+      {
+        "umbral": 0.82,
+        "sin_respuesta_rechazadas": {
+          "n": 7,
+          "de": 7,
+          "fallos": []
+        },
+        "sustentadas_rechazadas": {
+          "n": 0,
+          "de": 20,
+          "ids": []
+        }
+      },
+      {
+        "umbral": 0.83,
+        "sin_respuesta_rechazadas": {
+          "n": 7,
+          "de": 7,
+          "fallos": []
+        },
+        "sustentadas_rechazadas": {
+          "n": 0,
+          "de": 20,
+          "ids": []
+        }
+      },
+      {
+        "umbral": 0.84,
+        "sin_respuesta_rechazadas": {
+          "n": 7,
+          "de": 7,
+          "fallos": []
+        },
+        "sustentadas_rechazadas": {
+          "n": 0,
+          "de": 20,
+          "ids": []
+        }
+      },
+      {
+        "umbral": 0.85,
+        "sin_respuesta_rechazadas": {
+          "n": 7,
+          "de": 7,
+          "fallos": []
+        },
+        "sustentadas_rechazadas": {
+          "n": 0,
+          "de": 20,
+          "ids": []
+        }
+      },
+      {
+        "umbral": 0.86,
+        "sin_respuesta_rechazadas": {
+          "n": 7,
+          "de": 7,
+          "fallos": []
+        },
+        "sustentadas_rechazadas": {
+          "n": 0,
+          "de": 20,
+          "ids": []
+        }
+      },
+      {
+        "umbral": 0.87,
+        "sin_respuesta_rechazadas": {
+          "n": 7,
+          "de": 7,
+          "fallos": []
+        },
+        "sustentadas_rechazadas": {
+          "n": 1,
+          "de": 20,
+          "ids": [
+            "BDEV-017"
+          ]
+        }
+      },
+      {
+        "umbral": 0.88,
+        "sin_respuesta_rechazadas": {
+          "n": 7,
+          "de": 7,
+          "fallos": []
+        },
+        "sustentadas_rechazadas": {
+          "n": 3,
+          "de": 20,
+          "ids": [
+            "BDEV-004",
+            "BDEV-015",
+            "BDEV-017"
+          ]
+        }
+      },
+      {
+        "umbral": 0.89,
+        "sin_respuesta_rechazadas": {
+          "n": 7,
+          "de": 7,
+          "fallos": []
+        },
+        "sustentadas_rechazadas": {
+          "n": 5,
+          "de": 20,
+          "ids": [
+            "BDEV-004",
+            "BDEV-009",
+            "BDEV-015",
+            "BDEV-017",
+            "BDEV-019"
+          ]
+        }
+      },
+      {
+        "umbral": 0.9,
+        "sin_respuesta_rechazadas": {
+          "n": 7,
+          "de": 7,
+          "fallos": []
+        },
+        "sustentadas_rechazadas": {
+          "n": 9,
+          "de": 20,
+          "ids": [
+            "BDEV-002",
+            "BDEV-003",
+            "BDEV-004",
+            "BDEV-006",
+            "BDEV-009",
+            "BDEV-015",
+            "BDEV-017",
+            "BDEV-019",
+            "BDEV-020"
+          ]
+        }
+      }
+    ],
+    "nota": "La validación cruzada recalcula solo el umbral; las reglas por patrón se escribieron viendo estas consultas, así que la cifra sigue siendo optimista en lo que dependen de ellas. La sensibilidad es una curva descriptiva: no es una calibración y no se usa para elegir el umbral sobre las mismas consultas."
+  },
+  "avisos": [
+    "El benchmark de desarrollo se construyó con el equipo y las reglas por patrón de la consulta se redactaron viendo esas mismas consultas: las cifras de abstención son optimistas, no independientes.",
+    "n es pequeño (decenas de consultas): los intervalos son anchos y las metas son orientativas."
+  ]
+}

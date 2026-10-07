@@ -43,8 +43,9 @@ import numpy as np
 
 from eval import metricas, sustento
 from eval.recuperacion import ids_del_sistema, ids_recuperados, llega_a_la_similitud, truncar
-from src.configuracion import RAIZ, CriterioAB, cargar_benchmark, cargar_consulta
-from src.consulta import CAMPOS_CITABLES, METODOS, RUTA_SINTETICOS, Consultor, RespuestaConsulta, crear_consultor, validar_citas
+from src.configuracion import RAIZ, CriterioAB, cargar_benchmark
+from src.consulta import CAMPOS_CITABLES, RUTA_SINTETICOS, Consultor, RespuestaConsulta, crear_consultor, sanear, validar_citas
+from src.embeddings import clave_cache
 from src.esquemas import Afirmacion
 
 logger = logging.getLogger(__name__)
@@ -55,6 +56,7 @@ METRICAS_DEV = RAIZ / "outputs" / "metricas.json"
 REVISION_DEV = RAIZ / "outputs" / "revision_sustento.csv"
 TIPOS = ("respuesta_sustentada", "contradiccion_ambiguedad", "sin_respuesta", "adversarial")
 VERSION_METRICAS = 1
+_ARRANQUE_S = [0.0]   # segundos que tardó el primer uso del modelo de embeddings (carga en memoria) en la última corrida
 
 
 # ============================================================================================ lectura
@@ -137,9 +139,15 @@ def _citas_texto(a: Any) -> str:
 
 
 def _respuestas_a_registros(consultor: Consultor, consultas: Sequence[dict[str, Any]]) -> list[tuple[dict[str, Any], RespuestaConsulta]]:
-    consultor.responder(consultas[0]["consulta"])   # calentamiento (carga del modelo y de los índices): no se cuenta en la latencia
+    emb = consultor.indice.emb
+    emb.usar_cache = False   # nada de lo que se consulta aquí se persiste: la evaluación solo escribe en la carpeta de salida
+    arranque = time.perf_counter()
+    emb.motor.codificar([f"{emb.prefijo('titular')}calentamiento"])   # carga el modelo en memoria; se reporta aparte, no entra en la latencia
+    _ARRANQUE_S[0] = round(time.perf_counter() - arranque, 3)
     salida = []
     for c in consultas:
+        # latencia en frío: el vector de la consulta (ya saneada) se descarta de la memoria para que el modelo la codifique de verdad
+        emb._vectores.pop(clave_cache(emb.prefijo("titular"), sanear(c["consulta"], consultor.cfg).limpia), None)
         inicio = time.perf_counter()
         r = consultor.responder(c["consulta"])
         latencia = time.perf_counter() - inicio
@@ -218,7 +226,8 @@ def evaluar_consultas(
         },
         "latencia": {"consulta": {"n": len(latencias), "unidad": "s", "p50": metricas.percentil_con_ic(latencias, 50, criterio),
                                   "p95": metricas.percentil_con_ic(latencias, 95, criterio),
-                                  "nota": "consulta de punta a punta con modelo de embeddings local ya cargado (una consulta de calentamiento no cuenta); sin red"}},
+                                  "arranque_modelo_s": _ARRANQUE_S[0],
+                                  "nota": "consulta de punta a punta en frío (el vector de la consulta se codifica de verdad, sin caché) con el modelo de embeddings local ya cargado; sin red. La carga del modelo se reporta aparte (arranque_modelo_s)"}},
         "tokens_y_costo": {"consulta": {"tokens_por_consulta": 0, "usd_por_consulta": 0.0,
                                         "nota": "La consulta no usa LLM (sin LLM): el único modelo es el de embeddings, local (USD 0)."}},
     }
@@ -310,6 +319,7 @@ def _afirmaciones_borrador(g: Any, paquete: Any, id_grupo: str, criterio: Criter
               for a in paquete.afirmaciones]
     pasan = {a.id for a in validar_afirmaciones(crudas, g.ctx).validas}
     filas = []
+    textos = {a.id: a.texto for a in paquete.afirmaciones}
     for a in paquete.afirmaciones:
         evidencia = []
         for c in a.citas:
@@ -317,6 +327,8 @@ def _afirmaciones_borrador(g: Any, paquete: Any, id_grupo: str, criterio: Criter
             valor = r.campos.get(c.campo) if r else None
             ctx_txt = "; ".join(f"{k}: {v}" for k, v in (r.contexto if r else {}).items())
             evidencia.append(f"{c.id} · {c.campo}: «{valor}»" + (f" ({ctx_txt})" if ctx_txt else "") if valor is not None else f"{c.id} · {c.campo}: (no existe)")
+        if not a.citas and a.base:   # inferencia o hipótesis: la «evidencia» son las afirmaciones en que se apoya
+            evidencia = [f"{b}: «{textos.get(b, '(no existe)')}»" for b in a.base]
         existe = bool(a.citas) and all(c.id in g.ctx.registros and c.campo in g.ctx.registros[c.id].campos for c in a.citas)
         filas.append({
             "origen": "borrador", "id_unidad": id_grupo, "id_afirmacion": a.id, "tipo": a.tipo, "texto": a.texto,
@@ -435,7 +447,7 @@ def resumen_medicion_llm(corrida: Mapping[str, Any], criterio: CriterioAB, ruta_
     usd_paquetes = [usd(p["tokens_entrada"], p["tokens_salida"]) for p in por_paquete]
     return {
         "fecha_utc": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"), "proveedor": corrida["proveedor"], "modelo": corrida["modelo"],
-        "grupos": [{k: g[k] for k in ("id_grupo", "estado", "accion") if k in g} | {"secciones_vacias": g.get("secciones_vacias", []),
+        "grupos": [{k: g[k] for k in ("id_grupo", "estado", "accion", "tipo_paquete") if k in g} | {"secciones_vacias": g.get("secciones_vacias", []),
                    "latencia_primera_respuesta_s": g.get("latencia_primera_respuesta_s"), "latencia_paquete_s": g.get("latencia_paquete_s")}
                    for g in corrida["grupos"]],
         "n_grupos": len(corrida["grupos"]), "n_paquetes_medidos": len(ok),
@@ -444,6 +456,11 @@ def resumen_medicion_llm(corrida: Mapping[str, Any], criterio: CriterioAB, ruta_
                                   "p95": metricas.percentil_con_ic([g["latencia_primera_respuesta_s"] for g in ok], 95, criterio)},
             "paquete_completo": {"n": len(ok), "unidad": "s", "p50": metricas.percentil_con_ic([g["latencia_paquete_s"] for g in ok], 50, criterio),
                                  "p95": metricas.percentil_con_ic([g["latencia_paquete_s"] for g in ok], 95, criterio)},
+            "por_tipo_de_paquete": {
+                tipo: {"n": len(sel), "unidad": "s", "p50": metricas.percentil_con_ic([g["latencia_paquete_s"] for g in sel], 50, criterio),
+                       "p95": metricas.percentil_con_ic([g["latencia_paquete_s"] for g in sel], 95, criterio)}
+                for tipo in sorted({g["tipo_paquete"] for g in ok}) for sel in [[g for g in ok if g["tipo_paquete"] == tipo]]
+            },
             "por_llamada": {"n": len(llamadas), "unidad": "s", "p50": metricas.percentil_con_ic([c["latencia_s"] for c in llamadas], 50, criterio),
                             "p95": metricas.percentil_con_ic([c["latencia_s"] for c in llamadas], 95, criterio)},
         },
@@ -500,8 +517,9 @@ def _ejecutar(args: argparse.Namespace) -> int:
         return 1
     try:
         consultor = crear_consultor_real()
-    except RuntimeError as exc:
-        print(f"ERROR: {exc}", file=sys.stderr)
+    except Exception as exc:  # noqa: BLE001 - falta la base o el modelo local: se dice qué hacer y no se muestra una traza
+        print(f"ERROR: no se pudo preparar la consulta ({type(exc).__name__}: {str(exc)[:200]}). Haga falta la base data/senales.duckdb y el modelo de "
+              "embeddings local en models/ (se descarga una sola vez con red: HF_HUB_OFFLINE=0 poetry run python -m src.consulta \"prueba\").", file=sys.stderr)
         return 1
     salida.mkdir(parents=True, exist_ok=True)
     registros, m = evaluar_consultas(consultor, consultas, criterio)
@@ -542,9 +560,12 @@ def _ejecutar(args: argparse.Namespace) -> int:
         m["latencia"]["paquete_completo"] = medicion["latencia"]["paquete_completo"]
         m["latencia"]["primera_respuesta_borrador"] = medicion["latencia"]["primera_respuesta"]
         m["latencia"]["llamada_llm"] = medicion["latencia"]["por_llamada"]
-        mediana = m["latencia"]["paquete_completo"]["p50"]["valor"]
-        m["latencia"]["meta_sugerida"] = {"mediana_s": 15, "consulta_cumple": m["latencia"]["consulta"]["p50"]["valor"] <= 15,
-                                          "paquete_completo_cumple": mediana is not None and mediana <= 15}
+        m["latencia"]["paquete_por_tipo"] = medicion["latencia"]["por_tipo_de_paquete"]
+        m["latencia"]["meta_sugerida"] = {
+            "mediana_s": 15, "consulta_cumple": m["latencia"]["consulta"]["p50"]["valor"] <= 15,
+            "paquete_cumple_por_tipo": {t: v["p50"]["valor"] is not None and v["p50"]["valor"] <= 15 for t, v in medicion["latencia"]["por_tipo_de_paquete"].items()},
+            "nota": "El paquete editorial es más largo (más secciones, más llamadas) que el de investigación: se reporta por tipo y con su n.",
+        }
         m["tokens_y_costo"]["borradores"] = {
             "estado": "medido", "fecha_utc": medicion["fecha_utc"], "proveedor": medicion["proveedor"], "modelo": medicion["modelo"],
             "n_paquetes": medicion["n_paquetes_medidos"], "tokens_por_paquete": medicion["tokens_por_paquete"],
