@@ -13,7 +13,8 @@ Todo número de ``docs/ia_vs_baseline.md`` sale de este módulo (``outputs/ia_vs
 * **Búsqueda:** Recall@5 por IDs de la búsqueda semántica contra BM25 sobre el benchmark de desarrollo (las reglas de búsqueda se
   escribieron viendo esas consultas), con bootstrap pareado sobre consultas.
 * **Ranking:** el ranking es código determinista (reglas v1.3), no un LLM. Su utilidad (Precision@5 contra la selección de un
-  editor independiente) **no es medible todavía**: falta ``eval/seleccion_editor.csv`` (E1-19, requiere una persona). Aquí solo
+  editor independiente) **no se mide aquí**: ``eval/seleccion_editor.csv`` existe pero es una selección **provisional del asistente**
+  (D-101; se rehace a mano en C-09) y su Precision@5 está en ``outputs/precision_at_5.json``, rotulada como tal. Aquí solo
   hay hechos descriptivos: solapamiento del top 5 con el de «más reciente primero» y ejemplos de grupos que difieren.
 
 **Veredicto (D-21/D-57):** una diferencia está «demostrada» solo si el IC95 de la diferencia pareada excluye el cero.
@@ -556,7 +557,8 @@ def evaluar_ranking(ruta_base: Path, sensibilidad: Path = RAIZ / "outputs" / "se
     sens = json.loads(sensibilidad.read_text(encoding="utf-8")) if sensibilidad.exists() else None
     return {
         "utilidad_medible": False,
-        "motivo": "falta eval/seleccion_editor.csv: la selección independiente de un editor (E1-19) no existe; no se inventa ninguna.",
+        "motivo": "eval/seleccion_editor.csv existe pero es una selección provisional del asistente (D-101), no de un editor; "
+                  "su Precision@5 está en outputs/precision_at_5.json y se rehace a mano en C-09.",
         "baseline": "grupos ordenados solo por publicación más reciente (PDF sección 8); empate por ID ascendente",
         "grupos": len(puntajes),
         "top": TAMANO_TOP,

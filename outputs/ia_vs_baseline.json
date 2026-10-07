@@ -2384,7 +2384,7 @@
   },
   "ranking": {
     "utilidad_medible": false,
-    "motivo": "falta eval/seleccion_editor.csv: la selección independiente de un editor (E1-19) no existe; no se inventa ninguna.",
+    "motivo": "eval/seleccion_editor.csv existe pero es una selección provisional del asistente (D-101), no de un editor; su Precision@5 está en outputs/precision_at_5.json y se rehace a mano en C-09.",
     "baseline": "grupos ordenados solo por publicación más reciente (PDF sección 8); empate por ID ascendente",
     "grupos": 58,
     "top": 5,
