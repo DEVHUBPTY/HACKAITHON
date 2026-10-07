@@ -1,6 +1,6 @@
 """Cinco fichas trazables · C-01: selección determinista y comprobación de la trazabilidad de punta a punta.
 
-* ``seleccionar``: la regla de ``config/fichas_trazables.yaml`` (cupos por estado de evidencia recorriendo el ranking oficial). Nadie elige
+* ``seleccionar``: la regla de ``config/fichas_trazables.yaml`` (una ficha por caso de uso del reto, D-118, recorriendo el ranking oficial). Nadie elige
   a mano las fichas (D-101).
 * ``verificar_ficha``: comprueba una ficha **contra los datos**, no contra sí misma: cada afirmación cita ``ID + campo``; cada ID existe en
   ``senales.duckdb`` (o en el CSV de la fuente) con ese campo y un valor; hay URL; las declaraciones son comillas literales del campo
@@ -14,6 +14,7 @@ Sin LLM y sin red: es código determinista sobre lo ya calculado. Lo corre ``pyt
 from __future__ import annotations
 
 import csv
+import json
 import re
 import unicodedata
 from collections.abc import Iterable, Mapping, Sequence
@@ -26,6 +27,7 @@ from src.carga import intervalo_wilson
 from src.configuracion import (
     RAIZ,
     ConfigFichasTrazables,
+    CriterioFichaTrazable,
     RegistroTrazable,
     cargar_normalizacion,
     cargar_restricciones,
@@ -66,45 +68,116 @@ class ErrorDeTrazabilidad(ValueError):
 
 @dataclass(frozen=True)
 class Candidato:
+    """Un grupo del ranking oficial con lo que necesitan los criterios de ``config/fichas_trazables.yaml`` (todo sale de ``senales.duckdb``)."""
+
     id_grupo: str
     posicion: int
     puntaje: float
     estado: str
+    tema: str = ""
+    n_titulares: int = 0
+    n_procedencias: int = 0
+    con_dato_oficial: bool = False
+    contradicciones_abiertas: int = 0
+    vacios: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class Elegida:
+    """La ficha elegida para un caso de uso y por qué: qué criterio la eligió (``criterio`` 0 = el principal; > 0 = respaldo declarado)."""
+
+    caso_de_uso: str
+    pregunta: str
+    id_grupo: str
+    candidato: Candidato | None        # ``None`` en un grupo fijo (su ficha sale del caso ya revisado, no del ranking de esta base)
+    modalidad: str | None              # solo en un grupo fijo
+    criterio: int
+    criterio_texto: str
+    garantia: bool = False             # se volvió a elegir para garantizar una ficha con evidencia insuficiente
+
+    @property
+    def es_respaldo(self) -> bool:
+        return self.criterio > 0 or self.garantia
 
 
 def candidatos(con: Any, modalidad: str) -> list[Candidato]:
     """Los grupos del ranking oficial en orden (posición, ID), con su estado de evidencia. Falla si la corrida es de otra modalidad."""
     db.exigir_modalidad_de_la_base(con, modalidad)
     filas = con.execute(
-        "SELECT p.id_grupo, p.posicion, p.puntaje, e.estado FROM puntajes p JOIN evidencia e USING (id_grupo) WHERE e.modalidad = ? ORDER BY p.posicion, p.id_grupo",
+        "SELECT p.id_grupo, p.posicion, p.puntaje, e.estado, COALESCE(g.tema_clasificado, ''), g.n_titulares, e.n_procedencias, e.tiene_oficial, "
+        "e.contradicciones_abiertas, e.vacios FROM puntajes p JOIN evidencia e USING (id_grupo) JOIN grupos g USING (id_grupo) "
+        "WHERE e.modalidad = ? ORDER BY p.posicion, p.id_grupo",
         [modalidad],
     ).fetchall()
-    return [Candidato(str(i), int(pos), float(p), str(e)) for i, pos, p, e in filas]
+    return [
+        Candidato(str(i), int(pos), float(p), str(e), str(tema), int(nt), int(npr), bool(of), int(ca), tuple(v["codigo"] for v in json.loads(vac or "[]")))
+        for i, pos, p, e, tema, nt, npr, of, ca, vac in filas
+    ]
 
 
-def seleccionar(ranking: Sequence[Candidato], cfg: ConfigFichasTrazables) -> list[Candidato]:
-    """Recorre el ranking en orden y toma, por estado de evidencia, los primeros ``cupo``; completa con los siguientes del ranking hasta
-    ``minimo_total`` si lo pide la configuración. Devuelve las fichas en orden de ranking. Determinista: no depende de nada fuera de los datos."""
+def cumple(c: Candidato, criterio: CriterioFichaTrazable) -> bool:
+    """``True`` si el grupo cumple TODAS las condiciones declaradas del criterio (un criterio vacío lo cumple cualquiera)."""
+    return (
+        (criterio.tema is None or c.tema == criterio.tema)
+        and (criterio.estado is None or c.estado == criterio.estado)
+        and (criterio.con_dato_oficial is None or c.con_dato_oficial == criterio.con_dato_oficial)
+        and (criterio.contradiccion_abierta is None or (c.contradicciones_abiertas > 0) == criterio.contradiccion_abierta)
+        and (criterio.mas_titulares_que_procedencias is None or (c.n_titulares > c.n_procedencias) == criterio.mas_titulares_que_procedencias)
+        and (criterio.procedencias_minimas is None or c.n_procedencias >= criterio.procedencias_minimas)
+        and (criterio.vacio is None or criterio.vacio in c.vacios)
+    )
+
+
+def _texto_criterio(criterio: CriterioFichaTrazable) -> str:
+    partes = [f"{k}={v}" for k, v in criterio.model_dump(exclude_none=True).items()]
+    return ", ".join(partes) if partes else "primero del ranking"
+
+
+def _primero_que_cumple(ranking: Sequence[Candidato], criterios: Sequence[CriterioFichaTrazable], tomados: set[str]) -> tuple[Candidato, int] | None:
+    """Prueba los criterios en orden; el primero que tiene algún grupo libre manda y gana el de mejor posición."""
+    for i, criterio in enumerate(criterios):
+        for c in ranking:
+            if c.id_grupo not in tomados and cumple(c, criterio):
+                return c, i
+    return None
+
+
+def seleccionar(ranking: Sequence[Candidato], cfg: ConfigFichasTrazables) -> list[Elegida]:
+    """Una ficha por caso de uso (D-118), en el orden de ``cfg.seleccion.casos_de_uso``. Determinista: no depende del orden de entrada.
+
+    Los grupos fijos (CU-05) se reservan antes; luego cada caso de uso toma el mejor grupo del ranking que cumple su primer criterio con
+    candidatos, sin repetir grupos. Si ninguna ficha resulta con evidencia insuficiente, ``garantia_insuficiente`` vuelve a elegir un
+    caso de uso (PDF sección 5). Falla con un mensaje si un caso de uso no tiene ningún grupo o si no queda ninguna ficha insuficiente.
+    """
     reglas = cfg.seleccion
     ranking = sorted(ranking, key=lambda c: (c.posicion, c.id_grupo))     # el orden de entrada no importa: manda el del ranking oficial
-    tomados: dict[str, int] = dict.fromkeys(reglas.cupos, 0)
-    elegidos: list[Candidato] = []
-    for c in ranking:
-        if tomados.get(c.estado, 0) < reglas.cupos.get(c.estado, 0):
-            tomados[c.estado] += 1
-            elegidos.append(c)
-    if reglas.completar_con_ranking:
-        for c in ranking:
-            if len(elegidos) >= reglas.minimo_total:
-                break
-            if c not in elegidos:
-                elegidos.append(c)
-    elegidos.sort(key=lambda c: (c.posicion, c.id_grupo))
-    if len(elegidos) < reglas.minimo_total:
-        raise ErrorDeTrazabilidad(f"solo hay {len(elegidos)} fichas seleccionables y se piden {reglas.minimo_total}")
-    if sum(c.estado == "insuficiente" for c in elegidos) < reglas.minimo_insuficiente:
-        raise ErrorDeTrazabilidad("el ranking no tiene ninguna ficha con evidencia insuficiente; el reto pide al menos una (sección 5)")
-    return elegidos
+    tomados: set[str] = {cu.grupo for cu in reglas.casos_de_uso if cu.grupo}
+    elegidas: dict[str, Elegida] = {}
+    for cu in reglas.casos_de_uso:
+        if cu.grupo:
+            elegidas[cu.id] = Elegida(cu.id, cu.pregunta, cu.grupo, None, cu.modalidad, 0, f"grupo fijo {cu.grupo} ({cu.modalidad})")
+            continue
+        hallado = _primero_que_cumple(ranking, cu.criterios, tomados)
+        if hallado is None:
+            raise ErrorDeTrazabilidad(f"{cu.id}: ningún grupo del ranking cumple sus criterios ({'; '.join(_texto_criterio(c) for c in cu.criterios)}); no se inventa uno")
+        c, i = hallado
+        tomados.add(c.id_grupo)
+        elegidas[cu.id] = Elegida(cu.id, cu.pregunta, c.id_grupo, c, None, i, _texto_criterio(cu.criterios[i]))
+
+    insuficientes = sum(e.candidato is not None and e.candidato.estado == "insuficiente" for e in elegidas.values())
+    if insuficientes < reglas.minimo_insuficiente:
+        g = reglas.garantia_insuficiente
+        previo = elegidas[g.caso_de_uso]
+        libres = tomados - ({previo.id_grupo} if previo.candidato else set())
+        hallado = _primero_que_cumple(ranking, g.criterios, libres)
+        if hallado is None:
+            raise ErrorDeTrazabilidad("el ranking no tiene ninguna ficha con evidencia insuficiente; el reto pide al menos una (sección 5)")
+        c, i = hallado
+        elegidas[g.caso_de_uso] = Elegida(g.caso_de_uso, previo.pregunta, c.id_grupo, c, None, i, _texto_criterio(g.criterios[i]), garantia=True)
+    resultado = [elegidas[cu.id] for cu in reglas.casos_de_uso]
+    if len(resultado) < reglas.minimo_total:
+        raise ErrorDeTrazabilidad(f"solo hay {len(resultado)} fichas seleccionables y se piden {reglas.minimo_total}")
+    return resultado
 
 
 # ---------------------------------------------------------------------------------------------------- resolución de citas

@@ -34,6 +34,7 @@ motivos_descarte:
   - "Fuera de los temas o de Panamá"
   - "Vínculo oficial mal aplicado"
   - "Ya cubierto por el medio de referencia"
+  - "Reemplazado por la selección por caso de uso (D-118)"
   - "Otro"
 motivos_con_comentario: ["Otro"]      # estos motivos exigen además un comentario que explique
 

@@ -54,7 +54,7 @@ poetry run python -m src.consulta "pregunta"         # consulta en español con 
 poetry run python -m eval.recuperacion               # Recall@5 y abstención, semántica vs. BM25, con n e IC
 poetry run streamlit run app.py                      # interfaz: 6 pantallas (E1-15); ?caso=GRP-… o ?caso=CASO-… abre la ficha; la pantalla Revisión es el flujo de la etapa 7 (E1-16)
 poetry run python -m src.revision --abrir GRP-… --revisor "Nombre"   # abre el grupo como CASO-… (también --estado GRP-…, --historial CASO-…); las acciones se hacen en la app (E1-16)
-poetry run python -m scripts.fichas_trazables --casos   # C-01: 5 fichas reales elegidas por regla (config/fichas_trazables.yaml), trazabilidad comprobada contra los datos → outputs/fichas_trazables/ y CASO- (revisión provisional del asistente); sin --casos solo lee
+poetry run python -m scripts.fichas_trazables --casos   # C-01: 5 fichas reales, una por caso de uso CU-01…CU-05 (D-118), elegidas por regla (config/fichas_trazables.yaml), trazabilidad comprobada contra los datos → outputs/fichas_trazables/ y CASO- (revisión provisional del asistente); sin --casos solo lee
 poetry run python -m src.exportar --caso CASO-001    # (--demo: rutas de la demo) Markdown + fila CSV de «Casos y evidencias» (Notion) en outputs/notion/, y outputs/fichas.jsonl; volver a exportar actualiza (E1-16)
 poetry run python -m eval.revision                   # tasas de aceptación, corrección y descarte con n e IC, motivos, tiempo por caso y % de afirmaciones editadas → outputs/revision.json (E1-16)
 poetry run python -m eval.reporte_pruebas          # corre T01–T10 por marcador y escribe outputs/pruebas.csv con las columnas de la base Pruebas de Notion; pendientes en config/pruebas.yaml (E1-17)

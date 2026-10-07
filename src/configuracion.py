@@ -1257,6 +1257,14 @@ def validar_coherencia(carpeta: Path | None = None) -> list[str]:
         tipos, columnas = set(cargar_notion(carpeta).propiedades), set(cargar_revision(carpeta).exportacion.columnas)
         if tipos != columnas:
             problemas.append(f"notion.yaml: propiedades y revision.yaml exportacion.columnas difieren: {sorted(tipos ^ columnas)}")
+    if (carpeta / "fichas_trazables.yaml").exists() and (carpeta / "revision.yaml").exists():  # C-01 (D-118): temas y motivo de descarte existentes
+        trazables = cargar_fichas_trazables(carpeta)
+        if trazables.reemplazo.motivo not in cargar_revision(carpeta).motivos_descarte:
+            problemas.append(f"fichas_trazables.yaml: reemplazo.motivo {trazables.reemplazo.motivo!r} no está en revision.yaml: motivos_descarte")
+        usados = {c.tema for cu in trazables.seleccion.casos_de_uso for c in cu.criterios if c.tema}
+        usados |= {c.tema for c in trazables.seleccion.garantia_insuficiente.criterios if c.tema}
+        if usados - set(temas.temas):
+            problemas.append(f"fichas_trazables.yaml: temas inexistentes: {sorted(usados - set(temas.temas))}")
     reales = {e.id_noticia for t in temas.temas.values() for e in t.ejemplos if e.real}
     excluidos = _ids_excluidos(carpeta / "ejemplos_excluidos.txt")
     if reales != excluidos:
@@ -2972,20 +2980,64 @@ def cargar_precision(carpeta: Path | None = None) -> ConfigPrecision:
 ESTADOS_DE_EVIDENCIA = ("suficiente", "parcial", "insuficiente")
 
 
-class SeleccionFichasTrazables(ModeloConfig):
-    cupos: dict[str, int]
-    minimo_total: int = Field(ge=1)
-    minimo_insuficiente: int = Field(ge=0)
-    completar_con_ranking: bool
+class CriterioFichaTrazable(ModeloConfig):
+    """Una condición sobre un grupo del ranking oficial; todas las que se declaran deben cumplirse. Vacío = el primero del ranking."""
+
+    tema: str | None = None                                  # tema_clasificado del grupo
+    estado: Literal["suficiente", "parcial", "insuficiente"] | None = None
+    con_dato_oficial: bool | None = None                     # el grupo tiene un vínculo directo con un dato oficial (IND-…) en su ficha
+    contradiccion_abierta: bool | None = None                # al menos una contradicción abierta
+    mas_titulares_que_procedencias: bool | None = None       # repetición: más titulares que procedencias independientes
+    procedencias_minimas: int | None = Field(default=None, ge=1)
+    vacio: str | None = None                                 # código de un vacío de la ficha (p. ej. cifras_sin_dato_oficial)
+
+
+class CasoDeUsoTrazable(ModeloConfig):
+    """Un caso de uso del reto (PDF sección 4) y cómo se elige su ficha: o un grupo fijo, o criterios ordenados sobre el ranking."""
+
+    id: str = Field(pattern=r"^CU-\d{2}$")
+    pregunta: str = Field(min_length=1)
+    criterios: list[CriterioFichaTrazable] = Field(default_factory=list)   # en orden: el primero que tiene algún grupo manda; los siguientes son respaldo declarado
+    grupo: str | None = None                                  # grupo fijo (caso ya revisado en otra modalidad)
+    modalidad: str | None = None                              # solo con grupo fijo: modalidad del caso revisado que se reutiliza
 
     @model_validator(mode="after")
-    def _cupos_coherentes(self) -> SeleccionFichasTrazables:
-        if set(self.cupos) != set(ESTADOS_DE_EVIDENCIA) or any(v < 0 for v in self.cupos.values()):
-            raise ValueError(f"cupos: un cupo (>= 0) por estado de evidencia {ESTADOS_DE_EVIDENCIA}")
-        if sum(self.cupos.values()) < self.minimo_total:
-            raise ValueError("cupos: la suma no alcanza minimo_total")
-        if self.cupos["insuficiente"] < self.minimo_insuficiente:
-            raise ValueError("cupos.insuficiente: menor que minimo_insuficiente (el reto pide al menos una ficha con evidencia insuficiente)")
+    def _grupo_o_criterios(self) -> CasoDeUsoTrazable:
+        if self.grupo:
+            if self.criterios or not self.modalidad:
+                raise ValueError(f"{self.id}: un grupo fijo lleva modalidad y no lleva criterios")
+        elif not self.criterios or self.modalidad:
+            raise ValueError(f"{self.id}: sin grupo fijo se necesitan criterios y no hay modalidad")
+        return self
+
+
+class GarantiaInsuficienteTrazable(ModeloConfig):
+    """Si ninguna ficha elegida resulta insuficiente (PDF sección 5), este caso de uso se vuelve a elegir con estos criterios."""
+
+    caso_de_uso: str
+    criterios: list[CriterioFichaTrazable] = Field(min_length=1)
+
+
+class SeleccionFichasTrazables(ModeloConfig):
+    casos_de_uso: list[CasoDeUsoTrazable] = Field(min_length=1)
+    minimo_total: int = Field(ge=1)
+    minimo_insuficiente: int = Field(ge=0)
+    garantia_insuficiente: GarantiaInsuficienteTrazable
+
+    @model_validator(mode="after")
+    def _coherente(self) -> SeleccionFichasTrazables:
+        ids = [c.id for c in self.casos_de_uso]
+        if len(set(ids)) != len(ids):
+            raise ValueError("casos_de_uso: id repetido")
+        if len(ids) < self.minimo_total:
+            raise ValueError("casos_de_uso: hay menos casos de uso que minimo_total")
+        if self.minimo_insuficiente < 1:
+            raise ValueError("minimo_insuficiente: el reto pide al menos una ficha con evidencia insuficiente (sección 5)")
+        destino = next((c for c in self.casos_de_uso if c.id == self.garantia_insuficiente.caso_de_uso), None)
+        if destino is None or destino.grupo:
+            raise ValueError("garantia_insuficiente.caso_de_uso: debe ser un caso de uso con criterios")
+        if any(c.estado != "insuficiente" for c in self.garantia_insuficiente.criterios):
+            raise ValueError("garantia_insuficiente.criterios: todos deben exigir estado insuficiente")
         return self
 
 
@@ -3007,6 +3059,13 @@ class RegistroTrazable(ModeloConfig):
         if self.url_obligatoria and not self.columna_url:
             raise ValueError(f"{self.prefijo}: url_obligatoria exige columna_url")
         return self
+
+
+class ReemplazoFichasTrazables(ModeloConfig):
+    """Qué se hace con los casos que una corrida anterior de C-01 abrió y la selección actual ya no elige (D-118). Nunca se borran."""
+
+    motivo: str = Field(min_length=1)          # debe estar en revision.yaml: motivos_descarte
+    comentario: str = Field(min_length=1)
 
 
 class RevisionFichasTrazables(ModeloConfig):
@@ -3044,6 +3103,7 @@ class ConfigFichasTrazables(ModeloConfig):
     claves_de_autor: list[str] = Field(min_length=1)
     z_intervalo_confianza: float = Field(gt=0)
     revision: RevisionFichasTrazables
+    reemplazo: ReemplazoFichasTrazables
     archivos: ArchivosFichasTrazables
     textos: TextosFichasTrazables
 

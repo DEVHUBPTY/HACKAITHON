@@ -5,17 +5,56 @@ version: "1.0"
 modalidad: editorial              # modalidad principal (CLAUDE.md); las fichas salen de la corrida de E1-10 que guarda senales.duckdb
 
 seleccion:
-  # Se recorre el ranking oficial (posición 1 = mayor P, desempate de E1-10) y, por cada estado de evidencia, se toman los primeros N.
-  # Sin cupos puros por P el top 5 serían cinco fichas del mismo estado (hoy casi todos son insuficientes con 1 procedencia): no
-  # demostrarían la trazabilidad de una ficha con evidencia suficiente ni de una parcial. Así cada estado queda representado.
-  cupos:
-    suficiente: 2
-    parcial: 2
-    insuficiente: 1               # PDF sección 5: al menos una ficha con evidencia insuficiente
-  minimo_total: 5                 # PDF sección 5: al menos 5 fichas trazables
-  minimo_insuficiente: 1
-  # Si un estado no alcanza su cupo, el sobrante se completa con los siguientes del ranking (cualquier estado) hasta `minimo_total`.
-  completar_con_ranking: true
+  # D-118 (2026-10-07): UNA ficha por caso de uso del reto (PDF sección 4), en lugar de los cupos 2/2/1 por estado de evidencia.
+  # Los casos de uso se resuelven EN ESTE ORDEN sobre el ranking oficial (posición 1 = mayor P, desempate de E1-10). Por cada uno se
+  # prueban sus `criterios` en orden y gana el primer grupo (por posición) que cumple el primer criterio que tiene alguno; los
+  # siguientes criterios son respaldos que el informe declara. Un grupo ya elegido por un caso de uso anterior no se vuelve a elegir
+  # (sin duplicados): el siguiente candidato ocupa el lugar. Nadie elige a mano (D-101).
+  casos_de_uso:
+    - id: CU-01
+      pregunta: "¿Qué cinco temas merecen revisión para la agenda de Panamá y por qué?"      # TVN
+      criterios:
+        - {}                                  # el primero del ranking oficial
+
+    - id: CU-02
+      pregunta: "Tema económico con serie oficial y brief, sin confundir dato anual con medición de hoy"   # TVN
+      criterios:
+        - {tema: economia, con_dato_oficial: true}    # el primer grupo económico con un vínculo directo a una serie oficial (IND-…) en su ficha
+
+    - id: CU-03
+      pregunta: "Repetición frente a corroboración independiente; una agencia replicada cuenta como una procedencia"   # Común
+      criterios:
+        - {mas_titulares_que_procedencias: true, procedencias_minimas: 2}   # repetición dentro de un grupo que además tiene corroboración independiente
+        - {mas_titulares_que_procedencias: true, procedencias_minimas: 1}   # respaldo: solo repetición (el informe lo declara)
+
+    - id: CU-04
+      pregunta: "Cifra inexistente o contradicción: abstenerse o mostrar versiones, con la verificación pendiente"   # Común
+      criterios:
+        - {contradiccion_abierta: true}                                       # el primer grupo con una contradicción abierta
+        - {estado: insuficiente, vacio: cifras_sin_dato_oficial}              # respaldo: titulares con cifras sin dato oficial y evidencia insuficiente (el informe lo declara)
+
+    - id: CU-05
+      pregunta: "¿Qué señales públicas del entorno logístico debo revisar?"   # Banca (E2-03)
+      grupo: GRP-da35c3dead                   # el caso de E2-03: la base guarda una modalidad y la ficha bancaria ya está revisada en CASO-001
+      modalidad: banca                        # se REUTILIZA su CASO- (nunca se reabre ni se renumera): la ficha sale de `fichas_revisadas`
+
+  minimo_total: 5                             # PDF sección 5: al menos 5 fichas trazables (uno por caso de uso)
+  minimo_insuficiente: 1                      # PDF sección 5: al menos una con evidencia insuficiente
+
+  # Garantía: si ninguna de las cinco queda con evidencia insuficiente, `caso_de_uso` se vuelve a elegir SOLO con estos criterios (en
+  # orden). Hoy no hace falta (CU-01 es el primero del ranking y es insuficiente); está para que un nuevo ranking (C-10) no la rompa.
+  garantia_insuficiente:
+    caso_de_uso: CU-04
+    criterios:
+      - {estado: insuficiente, vacio: cifras_sin_dato_oficial}
+      - {estado: insuficiente}
+
+# D-118: los casos que una corrida anterior de C-01 abrió (CASO-002…006) y la selección actual ya no elige NO se borran (registro de solo
+# agregar): se reabren y se descartan con este motivo, de forma provisional y rotulada (D-112). Solo se tocan los que abrió C-01 y
+# sigue vigente la fila provisional del asistente; el trabajo de una persona nunca se descarta.
+reemplazo:
+  motivo: "Reemplazado por la selección por caso de uso (D-118)"      # debe estar en revision.yaml: motivos_descarte
+  comentario: "Reemplazado por la selección por caso de uso (D-118): este grupo ya no es la ficha trazable de ningún caso de uso. Se conserva en el registro (solo agregar)."
 
 # Cómo se resuelve cada ID citado contra los datos (no contra la ficha). `origen: tabla` = tabla de data/senales.duckdb;
 # `origen: csv` = archivo de data/processed/ (ruta relativa a la raíz del repositorio).
