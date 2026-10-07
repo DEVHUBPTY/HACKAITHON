@@ -32,7 +32,7 @@ from jinja2 import Environment, FileSystemLoader
 from src.configuracion import RAIZ, ConfigRevision, cargar_interfaz, cargar_notion, leer_local_env, cargar_revision, cargar_temas, cargar_verificacion
 from src.esquemas import ETIQUETA_BORRADOR, Ficha, RegistroFichasJsonl
 from src.ficha import CARPETA_PLANTILLAS, a_registro, escapar_markdown, vista
-from src.notion import ClienteNotion, ErrorNotion, SinConexion
+from src.notion import ClienteNotion, ErrorNotion, SincronizacionIncompleta, SinConexion
 from src.registro import redactar
 from src.interfaz import hora_panama, rotulo_de_elemento, secciones_de_paquete
 from src.revision import ErrorDeRevision, Fila, Revisiones, huellas_de_exportacion, ruta_de_revision, rutas_de_exportacion
@@ -265,6 +265,9 @@ def sincronizar_con_notion(e: Exportacion, env: Mapping[str, str] | None = None,
         cliente = ClienteNotion(token, cfg)
     try:
         s = cliente.sincronizar(e.id_caso, e.fila, e.markdown)
+    except SincronizacionIncompleta:
+        print(cfg.textos.incompleta.format(id_caso=e.id_caso), file=sys.stderr)
+        return 1
     except SinConexion:
         print(cfg.textos.sin_red, file=sys.stderr)
         return 0

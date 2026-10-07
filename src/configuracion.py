@@ -2833,6 +2833,8 @@ class ApiNotion(ModeloConfig):
     reintentos: int = Field(ge=0, le=10)
     espera_base_segundos: float = Field(ge=0)
     espera_maxima_segundos: float = Field(gt=0)
+    tamano_pagina_busqueda: int = Field(ge=1, le=100)   # resultados pedidos al buscar por «ID caso» (más de 1 = duplicado)
+    tamano_pagina_hijos: int = Field(ge=1, le=100)      # bloques por página al listar el cuerpo (límite de Notion: 100)
 
 
 class BaseNotion(ModeloConfig):
@@ -2850,6 +2852,7 @@ class TextosNotion(ModeloConfig):
     sin_red: str
     sincronizado_nuevo: str
     sincronizado_existente: str
+    incompleta: str
 
 
 TIPOS_PROPIEDAD_NOTION = ("titulo", "texto", "seleccion", "numero", "fecha")

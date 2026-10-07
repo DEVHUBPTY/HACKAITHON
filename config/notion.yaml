@@ -7,6 +7,8 @@ api:
   reintentos: 3                        # ante HTTP 429/5xx; respeta Retry-After
   espera_base_segundos: 1.0            # sin Retry-After: espera_base × 2^intento
   espera_maxima_segundos: 30.0
+  tamano_pagina_busqueda: 10           # resultados al buscar por «ID caso»; con más de 1 se detiene (duplicados)
+  tamano_pagina_hijos: 100             # bloques por página al listar el cuerpo (máximo de Notion)
 base_de_datos:
   nombre: "Casos y evidencias"
   id: "c67a0b58ac8b40b6bc11338395231378"   # la base (no es secreta); la integración debe estar compartida con ella
@@ -46,3 +48,4 @@ textos:
   sin_red: "No se sincronizó con Notion: no hay conexión con la API. La exportación local (Markdown y CSV) sí se escribió; vuelva a correr con --notion cuando haya red."
   sincronizado_nuevo: "creada en Notion"
   sincronizado_existente: "actualizada en Notion"
+  incompleta: "Sincronización incompleta de {id_caso} con Notion: se perdió la conexión después de escribir, así que la página puede haber quedado a medias. La exportación local sí se escribió; vuelva a correr con --notion para completarla."

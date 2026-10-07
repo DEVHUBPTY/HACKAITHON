@@ -664,5 +664,7 @@ Clustering: la agrupación es determinista (similitud y umbral, sin inicializaci
 | `api.timeout_segundos` | 20 | Supuesto | Sin red se degrada a la exportación local (prueba) |
 | `api.reintentos` | 3 | Supuesto | Prueba del 429: reintenta y luego falla con error explícito |
 | `api.espera_base_segundos` / `espera_maxima_segundos` | 1.0 / 30.0 | Supuesto | Solo si no hay `Retry-After`; acotado |
+| `api.tamano_pagina_busqueda` | 10 | Supuesto (basta para detectar duplicados: con más de 1 se detiene) | Prueba de duplicados |
+| `api.tamano_pagina_hijos` | 100 | Práctica (máximo de Notion por página de `children`) | `config` lo acota a 100 |
 | `cuerpo.max_caracteres_bloque` | 2000 | Práctica (límite de Notion por texto enriquecido) | Prueba de trozos ≤ 2000 |
 | `cuerpo.max_bloques_por_llamada` | 100 | Práctica (límite de Notion por `children`) | `config` lo acota a 100 |

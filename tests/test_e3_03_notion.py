@@ -128,12 +128,28 @@ def test_cada_valor_se_convierte_al_tipo_de_propiedad_de_notion() -> None:
     assert propiedad("numero", "", 2000) == {"number": None}                  # los nulos son nulos: nunca cero
     assert propiedad("seleccion", "", 2000) == {"select": None}
     assert propiedad("seleccion", "Aprobado como borrador", 2000) == {"select": {"name": "Aprobado como borrador"}}
+    with pytest.raises(ErrorNotion, match="no numérico"):
+        propiedad("numero", "n/d", 2000)                                       # error de la API de Notion, no una traza de ValueError
     assert propiedad("fecha", "2026-10-07T12:00:00Z", 2000) == {"date": {"start": "2026-10-07T12:00:00Z"}}
     largo = propiedad("texto", "x" * 4500, 2000)["rich_text"]
     assert [len(t["text"]["content"]) for t in largo] == [2000, 2000, 500]
 
 
-def test_la_fila_enviada_es_la_del_csv_con_la_marca_provisional(exportado) -> None:
+PROVISIONAL = "Asistente (provisional, D-101)"
+
+
+def test_la_fila_enviada_es_la_del_csv_con_la_marca_provisional(tmp_path, base) -> None:
+    rev = Revisiones(tmp_path / "revision.duckdb", base, ahora=_reloj())
+    c = abrir(rev, revisor=PROVISIONAL).id_caso
+    rev.aceptar(c, PROVISIONAL, "ok")
+    exportado = exportar.exportar_caso(rev, c, tmp_path / "n", tmp_path / "f.jsonl")
+    falso = NotionFalso()
+    cliente(falso).sincronizar(exportado.id_caso, exportado.fila, exportado.markdown)
+    pagina = next(iter(falso.paginas.values()))
+    en_revisor = pagina["props"]["Revisor"]["rich_text"][0]["text"]["content"]
+    en_cuerpo = "\n".join(t["text"]["content"] for b in pagina["bloques"] for t in b[b["type"]]["rich_text"])
+    assert PROVISIONAL in en_revisor and "provisional (D-101)" in en_revisor       # D-112: la marca viaja en la propiedad...
+    assert "provisional (D-101)" in en_cuerpo                                      # ...y en el cuerpo
     props = propiedades_de_fila(exportado.fila, CFG)
     assert set(props) == set(REV.exportacion.columnas)
     revisor = props["Revisor"]["rich_text"][0]["text"]["content"]
@@ -290,3 +306,97 @@ def test_el_filtro_de_logging_redacta_el_token(caplog) -> None:
 def test_el_modulo_no_tiene_numeros_magicos_de_red() -> None:
     codigo = Path(notion.__file__).read_text(encoding="utf-8")
     assert "2000" not in codigo and "api.notion.com" not in codigo
+    assert '"page_size": 10' not in codigo and '"page_size": 100' not in codigo      # X98: viven en config/notion.yaml
+
+
+def test_los_tamanos_de_pagina_salen_de_la_configuracion(exportado) -> None:
+    falso = NotionFalso([{"id": "p", "titulo": exportado.id_caso}])
+    tamanos: list[Any] = []
+    real = falso.request
+
+    def req(m: str, url: str, json: Any = None, params: Any = None, **k: Any) -> Resp:
+        tamanos.append((json or {}).get("page_size") or (params or {}).get("page_size"))
+        return real(m, url, json=json, params=params, **k)
+
+    cliente_ = ClienteNotion(TOKEN, CFG, type("S", (), {"request": staticmethod(req)})(), dormir=lambda s: None)
+    cliente_.sincronizar(exportado.id_caso, exportado.fila, exportado.markdown)
+    assert {CFG.api.tamano_pagina_busqueda, CFG.api.tamano_pagina_hijos} <= set(tamanos)
+
+
+# ------------------------------------------------------------------ revisión independiente PR #46 (X95-X97)
+
+
+def _con_fallo(falso: NotionFalso, cuando, efecto):
+    """Sesión que delega en ``falso`` salvo cuando ``cuando(metodo, ruta, n)`` es cierto: ahí devuelve/lanza ``efecto``. ``n`` cuenta esa ruta."""
+    real, cuenta = falso.request, {}
+
+    def req(m: str, url: str, **k: Any):
+        ruta = url.removeprefix(CFG.api.base_url).strip("/")
+        cuenta[(m, ruta.split("/")[-1])] = cuenta.get((m, ruta.split("/")[-1]), 0) + 1
+        if cuando(m, ruta, cuenta[(m, ruta.split("/")[-1])]):
+            r = efecto(real, m, url, k)
+            if isinstance(r, Exception):
+                raise r
+            return r
+        return real(m, url, **k)
+
+    return type("S", (), {"request": staticmethod(req)})()
+
+
+def test_x95_si_falla_al_agregar_el_cuerpo_anterior_se_conserva(exportado, capsys) -> None:
+    falso = NotionFalso([{"id": "p1", "titulo": exportado.id_caso}])
+    s = _con_fallo(falso, lambda m, r, n: m == "PATCH" and r.endswith("/children"), lambda *a: Resp(400, {"code": "validation_error", "message": "body failed"}))
+    assert exportar.sincronizar_con_notion(exportado, cliente=ClienteNotion(TOKEN, CFG, s, dormir=lambda x: None)) == 1
+    assert falso.paginas["p1"]["hijos"] == ["viejo-1", "viejo-2"]                     # nunca queda vacía
+    assert not [1 for m, _, _ in falso.llamadas if m == "DELETE"]                      # no se borró nada antes de agregar
+
+
+def test_x95_el_cuerpo_viejo_se_borra_solo_despues_de_agregar_el_nuevo(exportado) -> None:
+    falso = NotionFalso([{"id": "p1", "titulo": exportado.id_caso}])
+    cliente(falso).sincronizar(exportado.id_caso, exportado.fila, exportado.markdown)
+    orden = [m for m, r, _ in falso.llamadas if r.endswith("/children") and m == "PATCH" or m == "DELETE"]
+    assert orden.index("DELETE") > max(i for i, m in enumerate(orden) if m == "PATCH")
+    assert not {"viejo-1", "viejo-2"} & set(falso.paginas["p1"]["hijos"])
+
+
+def test_x96_un_corte_despues_de_escribir_es_sincronizacion_incompleta_con_codigo_1(exportado, capsys) -> None:
+    falso = NotionFalso([{"id": "p1", "titulo": exportado.id_caso}])
+    s = _con_fallo(falso, lambda m, r, n: m == "PATCH" and r.endswith("/children"), lambda *a: requests.Timeout(f"t {TOKEN}"))
+    assert exportar.sincronizar_con_notion(exportado, cliente=ClienteNotion(TOKEN, CFG, s, dormir=lambda x: None)) == 1
+    err = capsys.readouterr().err
+    assert "Sincronización incompleta" in err and exportado.id_caso in err and "no hay conexión" not in err and TOKEN not in err
+    assert exportado.ruta_markdown.exists() and exportado.ruta_csv.exists()
+
+
+def test_x96_un_corte_antes_de_escribir_sigue_siendo_sin_conexion_con_codigo_0(exportado, capsys) -> None:
+    falso = NotionFalso()
+    s = _con_fallo(falso, lambda m, r, n: r.endswith("/query"), lambda *a: requests.ConnectionError("x"))
+    assert exportar.sincronizar_con_notion(exportado, cliente=ClienteNotion(TOKEN, CFG, s, dormir=lambda x: None)) == 0
+    assert "no hay conexión" in capsys.readouterr().err and not falso.paginas
+
+
+def test_x97_un_502_tras_crear_no_duplica_la_pagina(exportado) -> None:
+    falso = NotionFalso()
+    s = _con_fallo(falso, lambda m, r, n: m == "POST" and r == "pages" and n == 1, lambda real, m, url, k: (real(m, url, **k), Resp(502, {}))[1])   # Notion crea y la respuesta se pierde
+    r = ClienteNotion(TOKEN, CFG, s, dormir=lambda x: None).sincronizar(exportado.id_caso, exportado.fila, exportado.markdown)
+    assert len(falso.paginas) == 1 and [m for m, rt, _ in falso.llamadas if (m, rt) == ("POST", "pages")] == ["POST"]
+    assert falso.paginas[r.id_pagina]["bloques"]                                       # y la página quedó completa
+
+
+def test_x97_un_502_sin_que_se_haya_creado_reintenta_la_creacion_una_vez_confirmada_su_ausencia(exportado) -> None:
+    falso = NotionFalso()
+    s = _con_fallo(falso, lambda m, r, n: m == "POST" and r == "pages" and n == 1, lambda *a: Resp(502, {}))
+    ClienteNotion(TOKEN, CFG, s, dormir=lambda x: None).sincronizar(exportado.id_caso, exportado.fila, exportado.markdown)
+    assert len(falso.paginas) == 1
+
+
+def test_x97_el_append_de_bloques_no_se_reintenta_ante_5xx_pero_si_ante_429(exportado) -> None:
+    falso = NotionFalso([{"id": "p1", "titulo": exportado.id_caso}])
+    s = _con_fallo(falso, lambda m, r, n: m == "PATCH" and r.endswith("/children") and n == 1, lambda *a: Resp(503, {}))
+    with pytest.raises(ErrorNotion):
+        ClienteNotion(TOKEN, CFG, s, dormir=lambda x: None).sincronizar(exportado.id_caso, exportado.fila, exportado.markdown)
+    assert sum(1 for m, r, _ in falso.llamadas if m == "PATCH" and r.endswith("/children")) == 0     # el 503 cortó antes de llegar al fake: 1 intento
+    falso2, esperas = NotionFalso([{"id": "p1", "titulo": exportado.id_caso}]), []
+    s2 = _con_fallo(falso2, lambda m, r, n: m == "PATCH" and r.endswith("/children") and n == 1, lambda *a: Resp(429, {}, {"Retry-After": "1"}))
+    ClienteNotion(TOKEN, CFG, s2, dormir=esperas.append).sincronizar(exportado.id_caso, exportado.fila, exportado.markdown)
+    assert esperas == [1.0] and falso2.paginas["p1"]["bloques"]
