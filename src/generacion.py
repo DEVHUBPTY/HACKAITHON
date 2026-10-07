@@ -81,7 +81,6 @@ ESPACIOS = re.compile(r"\s+")
 COMILLAS = re.compile(r"[\"“«](.+?)[\"”»]")
 HASHTAG = re.compile(r"#\w+")
 NUMERO = re.compile(r"\d+(?:[.,]\d+)?")
-PALABRAS_VOLATILES = ("actual", "actualmente", "hoy")
 
 Tipo = Literal["editorial", "investigacion", "nada"]
 MARCA_EXCESO = "supera el máximo"
@@ -93,14 +92,16 @@ MARCA_EXCESO = "supera el máximo"
 class RegistroEvidencia(BaseModel):
     """Un registro citable de la ficha: un titular (``NOT-``) o un dato oficial (``IND-``, ``SIS-``, ``SBP-``).
 
-    ``campos`` mapea nombre de campo → valor en texto (``titulo``, ``medio``, ``fecha_publicacion``, ``valor``, ``anio``, ``unidad``…).
-    Una cita válida es (``id``, un nombre de ``campos``). ``idioma`` solo aplica a titulares (D-45).
+    ``campos`` son **solo** los campos que la ficha cita (``titulo_limpio``, ``valor``, ``magnitude``, ``n_titulares``…): una cita
+    válida es (``id``, un nombre de ``campos``). ``contexto`` (medio, fecha, año, indicador) se muestra al LLM pero no se puede
+    citar. ``idioma`` solo aplica a titulares (D-45).
     """
 
     model_config = ConfigDict(extra="forbid")
 
     id: str
     campos: dict[str, str]
+    contexto: dict[str, str] = Field(default_factory=dict)
     idioma: str | None = None
     campo_texto: str = "titulo"  # campo que guarda el texto del titular (en la ficha real, ``titulo_limpio``)
 
@@ -315,6 +316,12 @@ class _Contexto:
         return errores
 
 
+def _anio_del_id(id_: str, ctx: _Contexto) -> str | None:
+    """Año de un ID anual (``IND-PAN-…-2024`` → ``2024``); ``None`` si el ID no es anual."""
+    m = re.search(ctx.cfg.patron_anio_en_id, id_) if id_.startswith(tuple(ctx.cfg.prefijos.hecho_oficial)) else None
+    return m.group(1) if m else None
+
+
 def _cita_ok(ctx: _Contexto, id_: str, campo: str) -> bool:
     r = ctx.registros.get(id_)
     return r is not None and campo in r.campos
@@ -330,19 +337,24 @@ def _errores_de_afirmacion(a: Afirmacion, ctx: _Contexto) -> list[str]:
         return errores
     ids = [c.id for c in a.citas]
     if a.tipo == "hecho":
-        oficiales = _ids_con_prefijo(a.citas, tuple(ctx.cfg.prefijos.oficiales))
-        reportes = _ids_con_prefijo(a.citas, tuple(ctx.cfg.prefijos.reportes))
-        if not (oficiales and not reportes) and len(reportes) < 2:
-            errores.append("un hecho solo puede citar datos oficiales o contar al menos dos reportes (un titular es una declaración)")
+        p = ctx.cfg.prefijos
+        for c in a.citas:
+            oficial = c.id.startswith(tuple(p.hecho_oficial))
+            conteo = c.id.startswith(tuple(p.hecho_conteo)) and c.campo in ctx.cfg.campos_conteo
+            if not (oficial or conteo):
+                errores.append(
+                    f"un hecho solo cita datos oficiales ({', '.join(p.hecho_oficial)}) o el conteo del grupo ({', '.join(p.hecho_conteo)}); "
+                    f"{c.id} es lo que reporta un medio: una declaración"
+                )
+                break
     if a.tipo == "declaración" and not _ids_con_prefijo(a.citas, tuple(ctx.cfg.prefijos.reportes)):
         errores.append("una declaración cita lo que reporta un medio (un titular)")
     for id_ in ids:
         r = ctx.registros[id_]
-        if id_.startswith("IND-"):
-            anio = r.campos.get("anio")
-            if anio and anio not in a.texto:
+        if anio := _anio_del_id(id_, ctx):
+            if anio not in a.texto:
                 errores.append(f"un dato oficial anual incluye su año ({anio}) en el texto")
-            if any(re.search(rf"\b{p}\b", plano(a.texto)) for p in PALABRAS_VOLATILES):
+            if any(re.search(rf"\b{re.escape(p)}\b", plano(a.texto)) for p in ctx.cfg.volatiles):
                 errores.append("un dato oficial anual no se describe como actual ni de hoy")
     errores += ctx.revisar(a.texto, ids)
     return errores
@@ -434,7 +446,7 @@ def _atribuido(o: OracionLlm, ctx: _Contexto) -> bool:
     if not citadas or any(a.tipo != "declaración" for a in citadas):
         return True
     p = plano(o.texto)
-    medios = [plano(ctx.registros[c.id].campos.get("medio", "")) for a in citadas for c in a.citas if c.id in ctx.registros]
+    medios = [plano(ctx.registros[c.id].contexto.get("medio", "")) for a in citadas for c in a.citas if c.id in ctx.registros]
     return any(re.search(rf"\b{re.escape(m)}\b", p) for m in ctx.atribucion) or any(m and m in p for m in medios)
 
 
@@ -525,9 +537,9 @@ def validar_seccion(seccion: str, valor: Any, ctx: _Contexto) -> list[str]:
 
 
 def _neutralizar(texto: str) -> str:
-    """La evidencia es dato: se quitan las marcas de apertura y cierre del delimitador para que nada pueda cerrarlo."""
-    d = cargar_consulta().delimitador_evidencia
-    return re.compile(re.escape(d.abre) + "|" + re.escape(d.cierra), re.IGNORECASE).sub("", texto)
+    """La evidencia es dato: ``<`` y ``>`` pasan a sus homólogos tipográficos ``‹`` y ``›``, así que ningún texto de la ficha o
+    del LLM puede formar una etiqueta (ni la de cierre) por mucho que la parta, la anide o varíe espacios y mayúsculas (X27)."""
+    return texto.replace("<", "‹").replace(">", "›")
 
 
 class Generador:
@@ -589,7 +601,8 @@ class Generador:
         lineas = [f"caso: {n(self.ficha.id_caso)}", "registros:"]
         for r in self.ficha.registros:
             lineas.append(f"registro {n(r.id)}" + (f" (idioma: {n(r.idioma)})" if r.idioma else ""))
-            lineas += [f"  {n(k)}: {n(v)}" for k, v in r.campos.items()]
+            lineas += [f"  campo citable {n(k)}: {n(v)}" for k, v in r.campos.items()]
+            lineas += [f"  contexto (no se cita) {n(k)}: {n(v)}" for k, v in r.contexto.items()]
         if self.ficha.vacios:
             lineas.append("vacíos de la ficha:")
             lineas += [f"  {n(v.id)}: {n(v.descripcion)}" for v in self.ficha.vacios]
@@ -609,7 +622,7 @@ class Generador:
                 r = self.ctx.registros.get(id_)
                 if r is None or r.campo_texto not in r.campos or frag.strip() not in r.campos[r.campo_texto]:
                     continue
-                medio = r.campos.get("medio", "un medio")
+                medio = r.contexto.get("medio", "un medio")
                 salida.append(AfirmacionSalida(id="", tipo="declaración", texto=f"{medio} reporta «{frag.strip()}»", citas=[_cita_salida(id_, r.campo_texto, self.ctx)]))
         return salida
 
@@ -668,11 +681,11 @@ class Generador:
         n = _neutralizar
         lineas = ["afirmaciones validadas:"]
         for a in self._afirmaciones or []:
-            citas = ", ".join(f"{c.id} · {c.campo}" for c in a.citas) or "sin cita directa"
-            base = f"; se apoya en {', '.join(a.base)}" if a.base else ""
-            medios = sorted({n(self.ctx.registros[c.id].campos["medio"]) for c in a.citas if "medio" in self.ctx.registros[c.id].campos})
+            citas = ", ".join(f"{n(c.id)} · {n(c.campo)}" for c in a.citas) or "sin cita directa"
+            base = f"; se apoya en {', '.join(n(b) for b in a.base)}" if a.base else ""
+            medios = sorted({n(self.ctx.registros[c.id].contexto["medio"]) for c in a.citas if "medio" in self.ctx.registros[c.id].contexto})
             medio = f"; medio: {', '.join(medios)}" if medios else ""
-            lineas.append(f"{a.id} [{a.tipo}] {n(a.texto)} (citas: {citas}{base}{medio})")
+            lineas.append(f"{n(a.id)} [{a.tipo}] {n(a.texto)} (citas: {citas}{base}{medio})")
         if grupo in ("brief", "investigacion"):
             lineas.append("vacíos de la ficha:")
             lineas += [f"  {n(v.id)}: {n(v.descripcion)}" for v in self.ficha.vacios] or ["  (ninguno)"]
@@ -842,7 +855,7 @@ def _leer_afirmaciones(crudo: str) -> tuple[list[Afirmacion], list[str]]:
 
 def _retroalimentacion(problemas: Sequence[str]) -> str:
     """Aviso del reintento, **fuera** de la evidencia: qué falló en la respuesta anterior."""
-    lista = "\n".join(f"- {p}" for p in problemas)
+    lista = "\n".join(f"- {_neutralizar(p)}" for p in problemas)
     return f"\n\nLa respuesta anterior tuvo estos problemas; corrígelos sin inventar nada:\n{lista}\nResponde de nuevo solo con el JSON."
 
 
@@ -856,15 +869,16 @@ def planificar(ficha: EntradaFicha, forzar_completo: bool, cfg: ConfigGeneracion
         return Plan("nada", motivo=f"la generación de la modalidad {ficha.modalidad!r} llega con su propia spec (E2-02)")
     if not ficha.registros:
         return Plan("nada", motivo="sin evidencia: la ficha no tiene registros que citar (abstención antes de llamar al LLM)")
+    conocida = ficha.accion in (*a.completo, *a.completo_con_vacios, *a.investigacion, *a.nada)
+    if not conocida:
+        return Plan("nada", motivo=f"acción desconocida: «{ficha.accion}» (ni forzando se genera para una acción que no está en config/generacion.yaml)")
     if ficha.accion in a.completo or ficha.accion in a.completo_con_vacios:
         return Plan("editorial")
-    if forzar_completo:
+    if forzar_completo:  # D-42: la persona puede forzar el paquete completo y queda registrado
         return Plan("editorial", forzado=True)
     if ficha.accion in a.investigacion:
         return Plan("investigacion")
-    if ficha.accion in a.nada:
-        return Plan("nada", motivo=f"la acción «{ficha.accion}» no genera borrador (D-42)")
-    return Plan("nada", motivo=f"acción desconocida: «{ficha.accion}»")
+    return Plan("nada", motivo=f"la acción «{ficha.accion}» no genera borrador (D-42)")
 
 
 def generar(ficha: EntradaFicha, proveedor: Proveedor | None, forzar_completo: bool = False) -> ResultadoGeneracion:
@@ -890,11 +904,6 @@ def fuentes_y_verificaciones(ficha: Ficha) -> list[str]:
     ]
 
 
-def _anio_de(texto: str) -> str | None:
-    m = re.search(r"\b[A-Z]{3} (\d{4}):", texto)
-    return m.group(1) if m else None
-
-
 def desde_ficha(ficha: Ficha) -> EntradaFicha:
     """Convierte la ``Ficha`` real en la única entrada del LLM. Las citas conservan **ID + campo** tal como están en la ficha.
 
@@ -906,20 +915,23 @@ def desde_ficha(ficha: Ficha) -> EntradaFicha:
     """
     registros: dict[str, RegistroEvidencia] = {}
     for t in ficha.quien_lo_reporta.titulares:
-        campos = {t.campo_titular: t.titular, "medio": t.medio}
-        if t.fecha_publicacion:
-            campos["fecha_publicacion"] = t.fecha_publicacion
-        registros[t.id_noticia] = RegistroEvidencia(id=t.id_noticia, idioma=t.idioma, campos=campos, campo_texto=t.campo_titular)
+        contexto = {"medio": t.medio, **({"fecha_publicacion": t.fecha_publicacion} if t.fecha_publicacion else {})}
+        registros[t.id_noticia] = RegistroEvidencia(
+            id=t.id_noticia, idioma=t.idioma, campos={t.campo_titular: t.titular}, contexto=contexto, campo_texto=t.campo_titular
+        )
     r = ficha.respaldado
+    cfg = cargar_generacion()
+    valor_por_anio = re.compile(cfg.patron_valor_por_anio)
     for linea in (*r.reportes, *r.datos_oficiales, *r.eventos_oficiales):
-        solo_uno = len(linea.citas) == 1
-        for c in linea.citas:
+        valores = [m.group(1).strip() for m in valor_por_anio.finditer(linea.texto)] if linea.indicador else []
+        for i, c in enumerate(linea.citas):
             reg = registros.setdefault(c.id, RegistroEvidencia(id=c.id, campos={}))
-            reg.campos[c.campo] = linea.texto
+            # cada ID lleva SU valor (su segmento «PAÍS AAAA: valor»), no la línea entera de varios datos
+            reg.campos.setdefault(c.campo, valores[i] if len(valores) == len(linea.citas) else linea.texto)  # la primera línea que lo cita manda
             if linea.indicador:
-                reg.campos["indicador"] = linea.indicador
-            if solo_uno and c.id.startswith("IND-") and (anio := _anio_de(linea.texto)):
-                reg.campos["anio"] = anio
+                reg.contexto["indicador"] = linea.indicador
+            if m := re.search(cfg.patron_anio_en_id, c.id) if c.id.startswith(tuple(cfg.prefijos.hecho_oficial)) else None:
+                reg.contexto["anio"] = m.group(1)
     abiertas = [
         ContradiccionFicha(
             id_a=c.version_a.id, id_b=c.version_b.id,

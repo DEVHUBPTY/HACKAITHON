@@ -11,7 +11,7 @@ from pydantic import ValidationError
 
 from src.configuracion import cargar_generacion, cargar_restricciones, cargar_salidas
 from src.esquemas import BoletinBanca, PaqueteEditorial, PaqueteInvestigacion
-from src.generacion import Generador, generar
+from src.generacion import Generador, RegistroEvidencia, generar
 from tests.generacion_ayuda import (
     BUENAS,
     ID_IND,
@@ -183,15 +183,36 @@ def test_un_hecho_que_cita_solo_un_titular_se_descarta_porque_un_titular_es_una_
     assert any("declaración" in d or "hecho" in d for d in r.descartadas)
 
 
-def test_un_conteo_de_reportes_si_puede_ser_hecho() -> None:
-    conteo = modificada(
+def test_un_hecho_solo_cita_datos_oficiales_o_el_conteo_del_grupo_nunca_titulares_x28() -> None:
+    """Decisión D-18/D-68 (X28): un titular es una declaración aunque sean dos; el conteo es del grupo (GRP-)."""
+    dos_titulares = modificada(
         BUENAS["afirmaciones"],
         lambda d: d["afirmaciones"].append(
-            {"id": "A5", "tipo": "hecho", "texto": "Dos medios reportan sobre el Canal", "citas": [{"id": ID_TVN, "campo": "titulo"}, {"id": ID_REUTERS, "campo": "titulo"}], "base": []}
+            {"id": "A5", "tipo": "hecho", "texto": "Mulino robó fondos del Canal", "citas": [{"id": ID_TVN, "campo": "titulo"}, {"id": ID_REUTERS, "campo": "titulo"}], "base": []}
         ),
     )
-    p = generar(ficha(), ProveedorGuionado(afirmaciones=conteo)).paquete
-    assert any(a.texto.startswith("Dos medios reportan") for a in p.afirmaciones)  # type: ignore[union-attr]
+    r = generar(ficha(), ProveedorGuionado(afirmaciones=dos_titulares))
+    assert not any("robó" in a.texto for a in r.paquete.afirmaciones)  # type: ignore[union-attr]
+    assert any("hecho" in d and "A5" in d for d in r.descartadas)
+    mezcla = modificada(
+        BUENAS["afirmaciones"],
+        lambda d: d["afirmaciones"][2].update(citas=[{"id": ID_IND, "campo": "valor"}, {"id": ID_TVN, "campo": "titulo"}]),
+    )
+    p = generar(ficha(), ProveedorGuionado(afirmaciones=mezcla)).paquete
+    assert not any(a.tipo == "hecho" for a in p.afirmaciones)  # type: ignore[union-attr]
+    ok = generar(ficha(registros=[*ficha().registros, RegistroEvidencia(id="GRP-0000000001", campos={"n_titulares": "2 titulares de 2 medios reportan este tema"})]), ProveedorGuionado(
+        afirmaciones=modificada(BUENAS["afirmaciones"], lambda d: d["afirmaciones"].append(
+            {"id": "A5", "tipo": "hecho", "texto": "Dos medios reportan este tema", "citas": [{"id": "GRP-0000000001", "campo": "n_titulares"}], "base": []}))
+    )).paquete
+    assert any(a.texto == "Dos medios reportan este tema" and a.tipo == "hecho" for a in ok.afirmaciones)  # type: ignore[union-attr]
+
+
+def test_una_acusacion_nunca_es_hecho_el_prompt_lo_prohibe_y_las_reglas_de_tipo_la_dejan_como_declaracion() -> None:
+    from src.generacion import cargar_prompt
+
+    _, texto = cargar_prompt("afirmaciones_ficha")
+    assert "acusación" in texto and "nunca" in texto.lower() and "NOT-" in texto
+    assert "dos o más" not in texto and "contar al menos dos reportes" not in texto
 
 
 def test_una_cita_con_id_o_campo_inexistente_descarta_la_afirmacion() -> None:
@@ -465,3 +486,36 @@ def test_el_recorte_no_se_aplica_a_secciones_que_fallan_por_otra_razon() -> None
     cuerpo = " ".join(["palabra"] * 30)
     mala = modificada(BUENAS["resumen_web"], lambda d: d.update(resumen_web=[{"texto": f"TVN reporta {cuerpo}.", "afirmaciones": ["A99"]} for _ in range(6)]))
     assert generar(ficha(), ProveedorGuionado(resumen_web=mala)).paquete.resumen_web == []  # type: ignore[union-attr]
+
+
+def test_forzar_el_paquete_completo_no_genera_para_una_accion_desconocida() -> None:
+    prov = ProveedorGuionado()
+    r = generar(ficha("Publicar ya"), prov, forzar_completo=True)
+    assert r.tipo == "nada" and prov.llamadas == [] and "desconocida" in (r.motivo or "")
+    assert generar(ficha("Archivar"), ProveedorGuionado(), forzar_completo=True).paquete.forzado is True  # type: ignore[union-attr]  # D-42: la persona puede forzar
+
+
+def test_el_recorte_nunca_deja_una_contradiccion_con_una_sola_version_ni_toca_la_leyenda() -> None:
+    cuerpo = " ".join(["palabra"] * 60)
+    f = _ficha_contradiccion()
+    pesado = modificada(BUENAS["brief"], lambda d: d.update(brief=[{"texto": f"TVN reporta {cuerpo}.", "afirmaciones": ["A1"]} for _ in range(4)]))
+    brief = lambda s, u, n: modificada(pesado, lambda d: d["brief"].append({"texto": "La Prensa y TVN difieren.", "afirmaciones": _ids_contradiccion(s, u)}))  # noqa: E731
+    p = generar(f, ProveedorGuionado(brief=brief)).paquete
+    assert p.brief == []  # type: ignore[union-attr]  # quitar el final dejaría una sola versión: se entrega vacío, no cortado
+    assert p.leyenda_alcance == RESTR.leyendas_alcance.titular_metadatos  # type: ignore[union-attr]
+
+
+def test_las_listas_de_la_validacion_viven_en_el_yaml() -> None:
+    cfg = cargar_generacion()
+    assert {"actual", "actualmente", "hoy"} <= set(cfg.volatiles) and cfg.patron_anio_en_id
+    assert set(cfg.prefijos.hecho_oficial) == {"IND-", "SIS-", "SBP-"} and cfg.prefijos.hecho_conteo == ["GRP-"]
+    assert {"n_titulares", "n_medios", "n_procedencias"} <= set(cfg.campos_conteo)
+    fuente = open("src/generacion.py", encoding="utf-8").read()
+    assert "PALABRAS_VOLATILES" not in fuente and "def _anio_de(" not in fuente
+
+
+def test_salidas_md_documenta_los_campos_de_metadatos_como_tales() -> None:
+    texto = open("docs/salidas.md", encoding="utf-8").read()
+    assert "Metadatos de la generación" in texto
+    for campo in ("accion", "forzado", "vacios", "afirmaciones"):
+        assert f"`{campo}`" in texto.split("Metadatos de la generación", 1)[1]

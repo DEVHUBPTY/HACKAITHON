@@ -51,23 +51,40 @@ def test_toda_cita_de_la_ficha_se_resuelve_en_la_entrada_con_el_mismo_id_y_campo
             assert c.id in por_id and c.campo in por_id[c.id].campos, (c.id, c.campo)
     for t in f.quien_lo_reporta.titulares:
         r = por_id[t.id_noticia]
-        assert r.campo_texto == t.campo_titular and r.campos[t.campo_titular] == t.titular and r.campos["medio"] == t.medio
+        assert r.campo_texto == t.campo_titular and r.campos == {t.campo_titular: t.titular} and r.contexto["medio"] == t.medio
         assert r.idioma == t.idioma
 
 
-def test_el_dato_oficial_lleva_el_nombre_del_indicador_y_el_anio(con, emb) -> None:
+def test_solo_son_citables_los_campos_que_la_ficha_cita_y_cada_dato_oficial_lleva_su_propio_valor_y_anio(con, emb) -> None:
     visto = False
     for f in fichas(con, emb):
         e = desde_ficha(f)
+        citados = {(c.id, c.campo) for linea in lineas(f) for c in linea.citas} | {(t.id_noticia, t.campo_titular) for t in f.quien_lo_reporta.titulares}
+        for r in e.registros:
+            assert {(r.id, k) for k in r.campos} <= citados, (r.id, r.campos)  # nada citable que la ficha no cite
+            assert "indicador" not in r.campos and "anio" not in r.campos
+        vistos: set[str] = set()
         for linea in f.respaldado.datos_oficiales:
             assert linea.indicador, "la ficha debe nombrar el indicador"
             for c in linea.citas:
+                if c.id in vistos:
+                    continue  # un ID citado por dos líneas conserva el valor de la primera
+                vistos.add(c.id)
                 reg = next(r for r in e.registros if r.id == c.id)
-                assert reg.campos["indicador"] == linea.indicador
-                if len(linea.citas) == 1:
-                    assert reg.campos["anio"].isdigit()
-                visto = True
+                if c.id.startswith("IND-"):
+                    visto = True
+                    assert reg.contexto["indicador"] == linea.indicador
+                    assert reg.contexto["anio"] == c.id.rsplit("-", 1)[1]  # el año del ID, siempre presente
+                    assert reg.campos["valor"] == linea.texto or f"{reg.contexto['anio']}: {reg.campos['valor']}" in linea.texto
     assert visto
+
+
+def test_cada_id_oficial_tiene_el_valor_de_su_propio_anio_y_no_el_de_toda_la_linea(con, emb) -> None:
+    f = construir_ficha(h.G_COMPLETO, "editorial", con, emb=emb)
+    e = desde_ficha(f)
+    valores = {r.id: r.campos["valor"] for r in e.registros if r.id.startswith("IND-")}
+    assert len(valores) >= 3 and valores["IND-COL-FP.CPI.TOTL.ZG-2024"] != valores["IND-PAN-FP.CPI.TOTL.ZG-2024"]
+    assert all(";" not in v and "·" not in v for v in valores.values())
 
 
 def test_el_campo_indicador_es_opcional_y_compatible_hacia_atras() -> None:
@@ -113,15 +130,15 @@ def test_vacios_accion_alcance_y_contradicciones_salen_de_la_ficha(con, emb) -> 
 
 def _proveedor_para(e: EntradaFicha) -> ProveedorGuionado:
     """Un LLM falso que responde sobre la ficha real: una declaración atribuida por titular y una inferencia sin cifras."""
-    titulares = [r for r in e.registros if "medio" in r.campos and r.campo_texto in r.campos]
+    titulares = [r for r in e.registros if "medio" in r.contexto and r.campo_texto in r.campos]
     afirmaciones: list[dict[str, Any]] = [
-        {"id": f"A{n}", "tipo": "declaración", "texto": f"{r.campos['medio']} reporta un titular", "citas": [{"id": r.id, "campo": r.campo_texto}], "base": []}
+        {"id": f"A{n}", "tipo": "declaración", "texto": f"{r.contexto['medio']} reporta un titular", "citas": [{"id": r.id, "campo": r.campo_texto}], "base": []}
         for n, r in enumerate(titulares, start=1)
     ]
     afirmaciones.append({"id": f"A{len(afirmaciones) + 1}", "tipo": "inferencia", "texto": "El tema podría merecer seguimiento", "citas": [], "base": ["A1"]})
     ids = [v.id for v in e.vacios] or ["SIN"]
     preguntas = [{"texto": f"¿Qué falta para {ids[i % len(ids)]}?", "vacio": ids[i % len(ids)]} for i in range(3)]
-    medio = titulares[0].campos["medio"]
+    medio = titulares[0].contexto["medio"]
     return ProveedorGuionado(
         afirmaciones={"afirmaciones": afirmaciones},
         titulo_trabajo={

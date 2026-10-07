@@ -33,10 +33,19 @@ class RegistroCosto:
         self.usd = 0.0
         if ruta is not None:
             try:
-                datos = json.loads(ruta.read_text(encoding="utf-8"))
+                texto = ruta.read_text(encoding="utf-8")
+            except FileNotFoundError:
+                return  # primer uso: acumulado en cero
+            except OSError as exc:
+                raise ErrorProveedor(f"no se pudo leer el registro de costo {ruta.name}: {exc}") from exc
+            try:
+                datos = json.loads(texto)
                 self.tokens, self.usd = int(datos["tokens"]), float(datos["usd"])
-            except (OSError, ValueError, KeyError, TypeError):
-                pass
+            except (ValueError, KeyError, TypeError) as exc:
+                # Falla cerrado: reiniciar el acumulado en silencio permitiría gastar por encima del tope (D-67).
+                raise ErrorProveedor(
+                    f"el registro de costo {ruta.name} está corrupto ({type(exc).__name__}); revíselo o bórrelo a mano para reiniciar el acumulado"
+                ) from exc
 
     def sumar(self, uso: UsoLlm, precios: PreciosDeepSeek) -> None:
         self.tokens += uso.tokens_entrada + uso.tokens_salida

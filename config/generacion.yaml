@@ -23,8 +23,18 @@ acciones:
 
 # Qué prefijo de ID respalda un hecho (dato oficial o conteo)  y cuál es lo que reporta un medio (CLAUDE.md, D-63). `SYN-` son casos sintéticos.
 prefijos:
-  oficiales: ["IND-", "SIS-", "SBP-", "GRP-"]   # GRP- = conteos del grupo (n titulares, medios, procedencias)
-  reportes: ["NOT-", "SYN-"]
+  hecho_oficial: ["IND-", "SIS-", "SBP-"]   # un hecho puede citar solo datos oficiales…
+  hecho_conteo: ["GRP-"]                    # …o el conteo del grupo (campos de `campos_conteo`); nunca un titular (D-18, D-68, X28)
+  reportes: ["NOT-", "SYN-"]                # lo que reporta un medio: declaración
+
+campos_conteo: [n_titulares, n_medios, n_procedencias]
+
+# Un dato oficial anual no se describe con estas palabras (CLAUDE.md: «actual», «hoy»), comparadas sin tildes y como palabra completa.
+volatiles: [actual, actualmente, hoy]
+# Cada dato de una línea de la ficha viene como «PAÍS AAAA: valor unidad»; se toma el valor de cada uno (separados por «;»).
+patron_valor_por_anio: '[A-Z]{3} \d{4}: ([^;]+)'
+# El año de un ID anual (IND-PAN-FP.CPI.TOTL.ZG-2024) es el último grupo de dígitos tras el guion; se exige en el texto.
+patron_anio_en_id: '-(\d{4})$'
 
 # Un título o titular basado en una declaración lleva atribución: el nombre del medio o alguno de estos verbos (palabra completa).
 atribucion:
@@ -66,9 +76,9 @@ deepseek:                  # respaldo provisional de pago (D-80); la clave sale 
     entrada: 0.30     # USD por millón, deepseek-flash, entrada sin caché, tarifa PICO (la off-peak es 0.15); conservador
     salida: 1.20      # tarifa pico (off-peak 0.60)
 
-tope_costo:                # D-67: al alcanzarlo, la siguiente llamada usa el modelo local
-  tokens: 1000000
-  usd: 0.50
+tope_costo:                # D-67, D-95: al alcanzarlo la generación se detiene con TopeDeCostoAlcanzado (sin respaldo local)
+  tokens: 10000000
+  usd: 5.00
   registro: outputs/costo_llm.json   # acumulado entre ejecuciones (fuera de git)
 
 medicion:                  # scripts/medir_generacion.py: latencia de la primera respuesta y del paquete completo

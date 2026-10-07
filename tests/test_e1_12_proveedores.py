@@ -164,3 +164,14 @@ def test_cambiar_llm_provider_cambia_el_proveedor_sin_tocar_codigo() -> None:
 def test_deepseek_sin_clave_falla_con_un_mensaje_claro() -> None:
     with pytest.raises(ErrorProveedor, match="DEEPSEEK_API_KEY"):
         crear_proveedor({"LLM_PROVIDER": "deepseek"})
+
+
+def test_un_registro_de_costo_corrupto_falla_cerrado_y_nunca_se_reinicia_en_silencio(tmp_path: Path) -> None:
+    ruta = tmp_path / "costo.json"
+    for roto in ("{no es json", '{"tokens": "x", "usd": 1}', '{"tokens": 5}', "[]"):
+        ruta.write_text(roto, encoding="utf-8")
+        with pytest.raises(ErrorProveedor, match="costo_llm|registro de costo"):
+            RegistroCosto(ruta)
+        assert ruta.read_text(encoding="utf-8") == roto  # no se pisó
+    ruta.unlink()
+    assert RegistroCosto(ruta).tokens == 0  # sin archivo es un acumulado nuevo

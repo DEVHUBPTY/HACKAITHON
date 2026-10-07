@@ -1856,7 +1856,8 @@ class AccionesGeneracion(ModeloConfig):
 
 
 class PrefijosGeneracion(ModeloConfig):
-    oficiales: list[str] = Field(min_length=1)
+    hecho_oficial: list[str] = Field(min_length=1)
+    hecho_conteo: list[str] = Field(min_length=1)
     reportes: list[str] = Field(min_length=1)
 
 
@@ -1918,6 +1919,10 @@ class ConfigGeneracionBorrador(ModeloConfig):
     modalidades: list[str] = Field(min_length=1)
     acciones: AccionesGeneracion
     prefijos: PrefijosGeneracion
+    campos_conteo: list[str] = Field(min_length=1)
+    volatiles: list[str] = Field(min_length=1)
+    patron_anio_en_id: str
+    patron_valor_por_anio: str
     atribucion: AtribucionGeneracion
     traducido: TraducidoGeneracion
     texto: TextoGeneracion
@@ -1928,6 +1933,12 @@ class ConfigGeneracionBorrador(ModeloConfig):
     deepseek: DeepSeekConfig
     tope_costo: TopeCostoConfig
     medicion: MedicionGeneracion
+
+    @field_validator("patron_anio_en_id", "patron_valor_por_anio")
+    @classmethod
+    def _regex_valida(cls, v: str) -> str:
+        _compilar_todas([v], "patron_anio_en_id")
+        return v
 
 
 def cargar_generacion(carpeta: Path | None = None) -> ConfigGeneracionBorrador:

@@ -26,9 +26,9 @@ def ficha(accion: str = "Producir borrador", **cambios: Any) -> EntradaFicha:
         "accion": accion,
         "uso_descripcion": False,
         "registros": [
-            RegistroEvidencia(id=ID_TVN, idioma="es", campos={"titulo": TITULAR_TVN, "medio": "TVN Panamá", "fecha_publicacion": "2026-10-05T10:00:00Z"}),
-            RegistroEvidencia(id=ID_REUTERS, idioma="en", campos={"titulo": TITULAR_REUTERS, "medio": "Reuters", "fecha_publicacion": "2026-10-05T12:00:00Z"}),
-            RegistroEvidencia(id=ID_IND, campos={"valor": "2.9", "anio": "2023", "unidad": "% anual"}),
+            RegistroEvidencia(id=ID_TVN, idioma="es", campos={"titulo": TITULAR_TVN}, contexto={"medio": "TVN Panamá", "fecha_publicacion": "2026-10-05T10:00:00Z"}),
+            RegistroEvidencia(id=ID_REUTERS, idioma="en", campos={"titulo": TITULAR_REUTERS}, contexto={"medio": "Reuters", "fecha_publicacion": "2026-10-05T12:00:00Z"}),
+            RegistroEvidencia(id=ID_IND, campos={"valor": "2.9 % anual"}, contexto={"anio": "2023", "indicador": "Inflación"}),
         ],
         "vacios": [
             VacioFicha(id="V1", descripcion="Falta confirmar el monto con una fuente oficial"),
@@ -47,7 +47,7 @@ def contradiccion_abierta() -> list[ContradiccionFicha]:
 
 
 def registro_prensa() -> RegistroEvidencia:
-    return RegistroEvidencia(id=ID_PRENSA, idioma="es", campos={"titulo": "Gobierno asegura que no hay sin plan para el Canal", "medio": "La Prensa", "fecha_publicacion": "2026-10-05T11:00:00Z"})
+    return RegistroEvidencia(id=ID_PRENSA, idioma="es", campos={"titulo": "Gobierno asegura que no hay sin plan para el Canal"}, contexto={"medio": "La Prensa", "fecha_publicacion": "2026-10-05T11:00:00Z"})
 
 
 # ------------------------------------------------------------------ respuestas buenas (una por llamada)
@@ -61,7 +61,7 @@ AFIRMACIONES: dict[str, Any] = {
     "afirmaciones": [
         {"id": "A1", "tipo": "declaración", "texto": "TVN Panamá reporta que Mulino anuncia un nuevo plan para el Canal de Panamá", "citas": [_cita(ID_TVN, "titulo")], "base": []},
         {"id": "A2", "tipo": "declaración", "texto": "Reuters informa que la autoridad del Canal reporta tránsitos récord", "citas": [_cita(ID_REUTERS, "titulo")], "base": []},
-        {"id": "A3", "tipo": "hecho", "texto": "La inflación de Panamá fue de 2.9 % anual en 2023", "citas": [_cita(ID_IND, "valor"), _cita(ID_IND, "anio")], "base": []},
+        {"id": "A3", "tipo": "hecho", "texto": "La inflación de Panamá fue de 2.9 % anual en 2023", "citas": [_cita(ID_IND, "valor")], "base": []},
         {"id": "A4", "tipo": "inferencia", "texto": "El plan del Canal podría interesar a quien sigue la evolución de los precios", "citas": [], "base": ["A1", "A3"]},
     ]
 }
