@@ -231,3 +231,62 @@ def test_el_bloque_sismos_prohibe_claves_desconocidas_y_zonas_invalidas(tmp_path
         (tmp_path / "vinculos.yaml").write_text(yaml.safe_dump(malo, allow_unicode=True), encoding="utf-8")
         with pytest.raises(ErrorDeConfiguracion):
             cargar_config("vinculos", ConfigVinculos, tmp_path)
+
+
+# ------------------------------------------------------------------ seguimiento PR #18 (m2, m3, m4)
+
+
+def _filas_vinculos(ruta: Path) -> list[tuple[str, str]]:
+    con = db.conectar(ruta, solo_lectura=True)
+    try:
+        return [(f["fuente"], f["id_grupo"]) for f in db.leer_tabla(con, "vinculos", "fuente, id_grupo")]
+    finally:
+        con.close()
+
+
+def _sembrar_usgs(ruta: Path) -> None:
+    con = db.conectar(ruta)
+    db.insertar(con, "vinculos", [{"id_grupo": "GRP-sismo", "id_evidencia": "SIS-viejo", "tipo": "evento", "regla": "r", "fuente": "usgs", "rol": "evento"}])
+    con.close()
+
+
+def test_m2_sin_eventos_geojson_se_borran_las_filas_usgs_y_el_reporte_lo_dice(tmp_path: Path, caplog):
+    ruta = base_metodo_a(tmp_path)
+    _sembrar_usgs(ruta)
+    r = contexto.ejecutar(ruta, tmp_path / "reporte.json", tmp_path / "no_existe.geojson")
+    assert all(f != "usgs" for f, _ in _filas_vinculos(ruta))   # tabla y reporte coherentes
+    assert r["usgs"]["estado"] == "no ejecutado: falta eventos.geojson" and r["usgs"]["filas_en_vinculos"] == 0
+    assert json.loads((tmp_path / "reporte.json").read_text(encoding="utf-8")) == r
+
+
+def test_m3_la_reescritura_es_atomica_si_usgs_falla_no_cambia_nada(tmp_path: Path, monkeypatch):
+    ruta = base_metodo_a(tmp_path)
+    con = db.conectar(ruta)   # estado previo: una fila de indicador que la reescritura borraría
+    db.insertar(con, "vinculos", [{"id_grupo": "GRP-viejo", "id_evidencia": "IND-PAN-X-2020", "tipo": "directa", "regla": "r", "fuente": "indicador", "rol": "panama"}])
+    con.close()
+    _sembrar_usgs(ruta)
+    antes = _filas_vinculos(ruta)
+    assert antes   # hay filas de indicador y de usgs
+
+    def falla(_ruta):
+        raise ValueError("geojson corrupto")
+
+    monkeypatch.setattr(cs, "cargar_eventos", falla)
+    geojson = escribir_eventos(tmp_path / "eventos.geojson", [])
+    with pytest.raises(ValueError, match="corrupto"):
+        contexto.ejecutar(ruta, tmp_path / "r1.json", geojson)
+    assert _filas_vinculos(ruta) == antes
+    assert not (tmp_path / "r1.json").exists()
+
+
+def test_m4_la_ruta_por_defecto_del_cli_vincula_usgs_si_existe_eventos_geojson(tmp_path: Path, monkeypatch):
+    ruta = base_metodo_a(tmp_path)
+    geojson = escribir_eventos(tmp_path / "eventos.geojson", [{"id": "SIS-us0001", "magnitude": 4.5, "time": "2024-05-10T12:00:00Z"}])
+    monkeypatch.setattr(contexto, "RAIZ", tmp_path)
+    monkeypatch.setattr(contexto, "EVENTOS", Path("eventos.geojson"))
+    (tmp_path / "data").mkdir()
+    geojson.rename(tmp_path / "data" / "eventos.geojson")
+    reporte = tmp_path / "reporte.json"
+    assert contexto.main(["--base", str(ruta), "--reporte", str(reporte)]) == 0   # sin --eventos
+    assert ("usgs", "GRP-sismo") in _filas_vinculos(ruta)
+    assert json.loads(reporte.read_text(encoding="utf-8"))["usgs"]["por_resultado"] == {"vinculado": 1}
