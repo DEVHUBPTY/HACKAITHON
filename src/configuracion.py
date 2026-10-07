@@ -1794,6 +1794,86 @@ def cargar_prioridad(carpeta: Path | None = None) -> ConfigPrioridad:
     return cargar_config("prioridad", ConfigPrioridad, carpeta)
 
 
+# ------------------------------------------------------------------ generacion.yaml (E1-12)
+
+
+class PromptsGeneracion(ModeloConfig):
+    afirmaciones: str
+    redaccion: str
+
+
+class AfirmacionesGeneracion(ModeloConfig):
+    minimas_validas: int = Field(ge=1)
+    maximas: int = Field(ge=1)
+
+
+class AccionesGeneracion(ModeloConfig):
+    completo: list[str]
+    completo_con_vacios: list[str]
+    investigacion: list[str]
+    nada: list[str]
+
+    @model_validator(mode="after")
+    def _sin_repetidas(self) -> AccionesGeneracion:
+        todas = [*self.completo, *self.completo_con_vacios, *self.investigacion, *self.nada]
+        if len(todas) != len(set(todas)):
+            raise ValueError("una acción aparece en más de una lista")
+        return self
+
+
+class TraducidoGeneracion(ModeloConfig):
+    idioma_base: str
+    marca: str
+
+
+class FugaPromptGeneracion(ModeloConfig):
+    palabras_por_fragmento: int = Field(ge=2)
+
+
+class GruposGeneracion(ModeloConfig):
+    editorial: list[str]
+    investigacion: list[str]
+
+
+class PreciosDeepSeek(ModeloConfig):
+    entrada: float = Field(ge=0)
+    salida: float = Field(ge=0)
+
+
+class DeepSeekConfig(ModeloConfig):
+    base_url: str
+    modelo: str
+    timeout_segundos: int = Field(gt=0)
+    max_tokens: int = Field(gt=0)
+    precio_usd_por_millon_tokens: PreciosDeepSeek
+
+
+class TopeCostoConfig(ModeloConfig):
+    tokens: int = Field(gt=0)
+    usd: float = Field(gt=0)
+    registro: str
+
+
+class ConfigGeneracionBorrador(ModeloConfig):
+    """Modelo de ``config/generacion.yaml``."""
+
+    version: str
+    prompts: PromptsGeneracion
+    reintentos: int = Field(ge=0)
+    afirmaciones: AfirmacionesGeneracion
+    acciones: AccionesGeneracion
+    traducido: TraducidoGeneracion
+    fuga_prompt: FugaPromptGeneracion
+    grupos: GruposGeneracion
+    deepseek: DeepSeekConfig
+    tope_costo: TopeCostoConfig
+
+
+def cargar_generacion(carpeta: Path | None = None) -> ConfigGeneracionBorrador:
+    """Atajo para ``config/generacion.yaml``."""
+    return cargar_config("generacion", ConfigGeneracionBorrador, carpeta)
+
+
 MODALIDADES = ("editorial", "banca")
 OPCIONALES = {"modalidad_banca"}  # el esquema la admite aunque todavía no exista
 
@@ -1819,6 +1899,7 @@ CARGADORES = {
     "procedencias": cargar_procedencias,
     "consulta": cargar_consulta,
     "prioridad": cargar_prioridad,
+    "generacion": cargar_generacion,
 }
 
 

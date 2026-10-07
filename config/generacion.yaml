@@ -1,0 +1,48 @@
+# E1-12 · Generación del paquete editorial (D-41 a D-45, D-67). Todo número y toda lista viven aquí (D-79).
+# Origen y validación de cada valor: docs/parametros.md, sección "Generación del borrador (E1-12)".
+version: "1.0"
+
+prompts:
+  afirmaciones: afirmaciones_ficha     # paso 1 (prompts/afirmaciones_ficha.txt)
+  redaccion: paquete_editorial         # paso 2, un bloque por grupo (prompts/paquete_editorial.txt)
+
+# Un reintento ante salida inválida (JSON que no cumple el esquema o sección que no pasa la validación). Si el reintento
+# tampoco sirve, la sección se entrega vacía con el motivo en `vacios`; nunca se rellena.
+reintentos: 1
+
+afirmaciones:
+  minimas_validas: 1       # sin al menos una afirmación válida no se redacta nada
+  maximas: 8               # el LLM puede proponer más; se conservan las primeras
+
+# Qué se genera según la acción de la ficha (D-42). Acción fuera de estas listas: no se genera nada y se avisa.
+acciones:
+  completo: ["Producir borrador", "Borrador opcional"]
+  completo_con_vacios: ["Completar evidencia y producir"]
+  investigacion: ["Investigar ya", "Vigilar"]
+  nada: ["Archivar", "Archivar como contexto"]
+
+traducido:                 # D-45: la cita de un titular que no está en este idioma lleva la marca
+  idioma_base: es
+  marca: "(traducido)"
+
+# El texto de salida no puede repetir fragmentos del system prompt (T07): n palabras consecutivas iguales lo delatan.
+fuga_prompt:
+  palabras_por_fragmento: 6
+
+grupos:                    # D-44: 1 llamada de afirmaciones + 4 de redacción, cada una bajo demanda
+  editorial: [titulos, brief, guion, resumen]
+  investigacion: [investigacion]
+
+deepseek:                  # respaldo provisional de pago (D-80); la clave sale de local.env (DEEPSEEK_API_KEY)
+  base_url: "https://api.deepseek.com"
+  modelo: "deepseek-chat"
+  timeout_segundos: 120
+  max_tokens: 1536
+  precio_usd_por_millon_tokens:
+    entrada: 0.28
+    salida: 0.42
+
+tope_costo:                # D-67: al alcanzarlo, la siguiente llamada usa el modelo local
+  tokens: 300000
+  usd: 0.50
+  registro: outputs/costo_llm.json   # acumulado entre ejecuciones (fuera de git)
