@@ -71,6 +71,16 @@ fuga_semantica:
 #               homicidio, aerolinea) coinciden con casos difíciles. Se reporta aparte como `baseline_ampliado`.
 baseline:
   variante_activa: guia
+  # E1-07c (X79): «puente» suelto es ambiguo. Estas frases lo anulan (no es una obra) en cualquier variante.
+  anula_terminos:
+    servicios_publicos:
+      puente: [puente aereo, puente festivo, puente de asueto, puente de carnaval, puente de noviembre, puente humanitario, puente diplomatico]
+  # E1-07c (X79, regla 5 de docs/guia_temas.md): si el hecho es el fenómeno (deslizamiento, crecida) que daña una carretera o un
+  # puente, es Eventos naturales: la obra no suma a Servicios públicos cuando el texto ya nombra un término de Eventos naturales.
+  cede_ante:
+    - tema: servicios_publicos
+      ante: eventos_naturales
+      terminos: [obras publicas, carretera, puente, mop, autopista, obra vial, infraestructura vial]
   palabras_clave:
     economia:
       guia: [crecimiento, pib, inflacion, precios, canasta basica, combustibles, empleo, deuda, presupuesto, recaudacion,

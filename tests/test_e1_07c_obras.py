@@ -189,3 +189,22 @@ def test_provisional_el_alcance_es_el_de_transporte_publico() -> None:
 
 def test_el_baseline_clasifica_una_obra_publica_en_servicios_publicos() -> None:
     assert Baseline(variante="guia").clasificar("Rehabilitan la carretera y un puente en Chiriquí").principal == "servicios_publicos"
+
+
+@pytest.mark.parametrize(
+    "titular",
+    ["Habilitan un puente aéreo humanitario hacia Darién", "Gobierno anuncia puente festivo para el fin de semana"],
+)
+def test_x79_puente_aereo_y_puente_festivo_no_son_una_obra_en_el_baseline(titular: str) -> None:
+    assert Baseline(variante="guia").clasificar(titular).principal == "sin_tema"
+
+
+def test_x79_el_deslizamiento_que_daña_la_carretera_es_evento_natural_en_el_baseline() -> None:
+    titular = "Deslizamiento destruye un tramo de la carretera a Boquete"           # regla 5 de la guía
+    for variante in ("guia", "ampliado"):
+        assert Baseline(variante=variante).clasificar(titular).principal == "eventos_naturales"
+
+
+def test_x79_la_obra_sin_fenomeno_sigue_siendo_servicios_publicos_en_el_baseline() -> None:
+    assert Baseline(variante="guia").clasificar("Inauguran el puente sobre el río Chagres").principal == "servicios_publicos"
+    assert Baseline(variante="guia").clasificar("MOP rehabilita la carretera Panamericana").principal == "servicios_publicos"
