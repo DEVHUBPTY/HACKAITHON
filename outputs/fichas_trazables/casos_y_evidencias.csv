@@ -18,7 +18,7 @@ Declaración: TVN Panamá reporta: «Minsa enciende alarmas por diagnósticos de
 1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente → Verificar: Buscar el mismo hecho en un medio con fuente propia; una réplica de la misma agencia no cuenta.
 Fuentes sugeridas para verificar (sugerencias para quien verifica; no son evidencia del sistema ni se citan como tal)
 Ministerio de Salud
-Caja de Seguro Social",NOT-3be05280f2,"Asistente (provisional, D-101) · provisional (D-101)","Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09.",2026-10-07T21:35:22Z,2026-10-07T21:54:30Z
+Caja de Seguro Social",NOT-3be05280f2,"Asistente (provisional, D-101) · provisional (D-101)","Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09.",2026-10-07T21:35:22Z,2026-10-07T22:28:14Z
 CASO-003,Editorial,Economía,CU-02,Aprobado como borrador,Parcial,Completar evidencia y producir,1,1,0.329261,1,0.466667,1.3,sin borrador,basado únicamente en titular/metadatos,"Titular central: «¿Cómo se fija el precio del combustible en Panamá? El MEF explica la fórmula quincenal tras aprobarse nuevo subsidio» — panamaamerica.com.pa
 Cobertura: 2 titulares · 1 medio · de 2026-10-01 18:30 a 2026-10-02 03:00 (hora de Panamá); fecha de detección
 Tema: Economía · Subtema: Inflación y precios (canasta básica, combustibles) (criterio: lexico)
@@ -43,43 +43,44 @@ Declaración: panamaamerica.com.pa reporta: «¿Cómo se fija el precio del comb
 urgencia estimada: fecha de publicación desconocida → Verificar: Abrir el enlace de cada titular para identificar el medio y la fecha de publicación original.
 Fuentes sugeridas para verificar (sugerencias para quien verifica; no son evidencia del sistema ni se citan como tal)
 Contraloría General de la República (INEC)
-Autoridad de Protección al Consumidor y Defensa de la Competencia","IND-COL-FP.CPI.TOTL.ZG-2024, IND-CRI-FP.CPI.TOTL.ZG-2024, IND-DOM-FP.CPI.TOTL.ZG-2024, IND-GTM-FP.CPI.TOTL.ZG-2024, IND-MEX-FP.CPI.TOTL.ZG-2024, IND-PAN-FP.CPI.TOTL.ZG-2020, IND-PAN-FP.CPI.TOTL.ZG-2021, IND-PAN-FP.CPI.TOTL.ZG-2022, IND-PAN-FP.CPI.TOTL.ZG-2023, IND-PAN-FP.CPI.TOTL.ZG-2024, NOT-1710ce462f, NOT-96d1ecac7d","Asistente (provisional, D-101) · provisional (D-101)","Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09.",2026-10-07T21:35:23Z,2026-10-07T21:54:31Z
-CASO-006,Editorial,,CU-03,Aprobado como borrador,Suficiente,Borrador opcional,0.5,0.4,0.330749,0.918275,0.5,1.3,sin borrador,basado únicamente en titular/metadatos,"Titular central: «Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika» — tz.de
-Cobertura: 12 titulares · 12 medios · de 2026-10-02 02:30 a 2026-10-02 03:15 (hora de Panamá); fecha de detección
-Tema: sin_tema · Subtema: no determinado
+Autoridad de Protección al Consumidor y Defensa de la Competencia","IND-COL-FP.CPI.TOTL.ZG-2024, IND-CRI-FP.CPI.TOTL.ZG-2024, IND-DOM-FP.CPI.TOTL.ZG-2024, IND-GTM-FP.CPI.TOTL.ZG-2024, IND-MEX-FP.CPI.TOTL.ZG-2024, IND-PAN-FP.CPI.TOTL.ZG-2020, IND-PAN-FP.CPI.TOTL.ZG-2021, IND-PAN-FP.CPI.TOTL.ZG-2022, IND-PAN-FP.CPI.TOTL.ZG-2023, IND-PAN-FP.CPI.TOTL.ZG-2024, NOT-1710ce462f, NOT-96d1ecac7d","Asistente (provisional, D-101) · provisional (D-101)","Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09.",2026-10-07T21:35:23Z,2026-10-07T22:28:14Z
+CASO-008,Editorial,Eventos naturales,CU-03,Requiere evidencia,Insuficiente,Vigilar,0.5,0.65,0.341166,1,0.166667,1.3,sin borrador,basado únicamente en titular/metadatos,"Titular central: «Intensifying El Nino deepens economic risks across LatAm» — massachusettssun.com
+Cobertura: 20 titulares · 18 medios · de 2026-10-02 01:15 a 2026-10-02 05:00 (hora de Panamá); fecha de detección
+Tema: Eventos naturales · Subtema: Sequía y El Niño (criterio: lexico)
 Tema secundario: sin dato
-Alcance: basado únicamente en titular/metadatos","«Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika» — tz.de (Alemania) · agencia: sin agencia · firma: sin firma · publicación: desconocida · http://www.tz.de/politik/trump-streicht-europa-hilfe-lenkt-millionen-nach-lateinamerika-zr-94521334.html
-«Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika» — az-online.de (Alemania) · agencia: sin agencia · firma: sin firma · publicación: desconocida · https://www.az-online.de/politik/trump-streicht-europa-hilfe-lenkt-millionen-nach-lateinamerika-zr-94521334.html
-«Допомога США Європі - Трамп перенаправляє гроші, схвалені для європейських країн, Латинській Америці» — zn.ua (Ucrania) · agencia: sin agencia · firma: sin firma · publicación: desconocida · https://zn.ua/ukr/usa/tramp-perenapravljaje-desjatki-miljoniv-dolariv-dopomohi-ssha-priznachenoji-dlja-jevropi-krajinam-latinskoji-ameriki-wp.html
-«Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika» — wa.de (Alemania) · agencia: sin agencia · firma: sin firma · publicación: desconocida · http://www.wa.de/politik/trump-streicht-europa-hilfe-lenkt-millionen-nach-lateinamerika-zr-94521334.html
-«Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika» — hna.de (Alemania) · agencia: sin agencia · firma: sin firma · publicación: desconocida · http://www.hna.de/politik/trump-streicht-europa-hilfe-lenkt-millionen-nach-lateinamerika-zr-94521334.html
-«Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika» — wlz-online.de (Alemania) · agencia: sin agencia · firma: sin firma · publicación: desconocida · http://www.wlz-online.de/politik/trump-streicht-europa-hilfe-lenkt-millionen-nach-lateinamerika-zr-94521334.html
-«Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika» — merkur.de (Alemania) · agencia: sin agencia · firma: sin firma · publicación: desconocida · http://www.merkur.de/politik/trump-streicht-europa-hilfe-lenkt-millionen-nach-lateinamerika-zr-94521334.html
-«Tru… (completo en el cuerpo de la página)","Conteos de reportes
-Hecho: 12 titulares de 12 medios reportan este tema · Cita: GRP-0dfdd5a021 · n_titulares; GRP-0dfdd5a021 · n_medios
-Hecho: 3 procedencias independientes estimadas (los titulares que replican a una misma fuente cuentan como una) · Cita: GRP-0dfdd5a021 · n_procedencias
+Alcance: basado únicamente en titular/metadatos","«World Insights: Intensifying El Nino deepens economic risks across LatAm» — english.news.cn · agencia: sin agencia · firma: sin firma · publicación: desconocida · https://english.news.cn/20261002/3ed0d41ec72b4abab6a0f33ec809c6f3/c.html
+«Intensifying El Nino deepens economic risks across LatAm» — massachusettssun.com (Estados Unidos) · agencia: sin agencia · firma: sin firma · publicación: desconocida · http://www.massachusettssun.com/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam
+«Intensifying El Nino deepens economic risks across LatAm» — thailandnews.net (Tailandia) · agencia: sin agencia · firma: sin firma · publicación: desconocida · http://www.thailandnews.net/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam
+«Intensifying El Nino deepens economic risks across LatAm» — russiaherald.com (Rusia) · agencia: sin agencia · firma: sin firma · publicación: desconocida · http://www.russiaherald.com/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam
+«World Insights: Intensifying El Nino deepens economic risks across LatAm» — trinidadtimes.com (Trinidad y Tobago) · agencia: sin agencia · firma: sin firma · publicación: desconocida · http://www.trinidadtimes.com/news/279347044/world-insights-intensifying-el-nino-deepens-economic-risks-across-latam
+«Intensifying El Nino deepens economic risks across LatAm» — jamaicantimes.com (Jamaica) · agencia: sin agencia · firma: sin firma · publicación: desconocida · http://www.jamaicantimes.com/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam
+«Intensifying El Nino deepens economic risks across LatAm» — trinidadtimes.com (Trinidad y Tobago) · agencia: sin agencia · firma: sin firma · publicación: desconocida · http://www.trinidadtimes.com/news/279346957/intensifying-el-nino-deepens-economic-risks-across-latam
+«Intensifying El Nino deepens economic risks across LatAm» — newzealandstar.com (Nueva Zelanda) · a… (completo en el cuerpo de la página)","Conteos de reportes
+Hecho: 20 titulares de 18 medios reportan este tema · Cita: GRP-79f3183472 · n_titulares; GRP-79f3183472 · n_medios
+Hecho: 1 procedencia independiente estimada (los titulares que replican a una misma fuente cuentan como una) · Cita: GRP-79f3183472 · n_procedencias
 Datos oficiales
 Sin dato oficial que mida el hecho (ver «Qué falta comprobar»)
 Eventos oficiales
 Sin evento oficial vinculado
 Lo que dicen los titulares (declaraciones atribuidas a su medio)
-Declaración: tz.de reporta: «Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika» · Cita: NOT-1ba5a41e46 · titulo_limpio
-Declaración: az-online.de reporta: «Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika» · Cita: NOT-203cd5b44e · titulo_limpio
-Declaración: zn.ua reporta: «Допомога США Європі - Трамп перенаправляє гроші, схвалені для європейських країн, Латинській Америці» · Cita: NOT-213eb698b8 · titulo_limpio
-Declaración: wa.de reporta: «Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika» · Cita: NOT-26fd75f865 · titulo_limpio
-Declaración: hna.de reporta: «Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika» · Cita: NOT-5d839301a6 · titulo_limpio
-Declaración: wlz-online.de reporta: «Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika» · Cita: NOT-6717a15ab7 · titulo_limpio
-Declaración: merkur.de reporta: «Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika» · Cita: NOT-99ea1a995f · titulo_limpio
-Declaración: ovb-online.de reporta: «Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika» · Cita: NOT-adb01e330f · titulo_limpio
-Declaración: kreiszeitung.de reporta: «Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika» · Cita: NOT-d1dad65858 · titulo_limpio
-Declaración: op-online.de reporta: «Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika» · Cita: NOT-e80ba5ef9d · titulo_limpio
-Declaración: fnp.de reporta: «Trump streicht Europa -… (completo en el cuerpo de la página)","sin dato oficial vinculado (el tema no tiene un indicador oficial asignado) → Verificar: Consultar a la institución oficial responsable del tema por un dato que mida el hecho.
-12 de 12 titulares sin medio o fecha de publicación conocidos → Verificar: Abrir el enlace de cada titular para identificar el medio y la fecha de publicación original.
-urgencia estimada: fecha de publicación desconocida → Verificar: Abrir el enlace de cada titular para identificar el medio y la fecha de publicación original.
+Declaración: english.news.cn reporta: «World Insights: Intensifying El Nino deepens economic risks across LatAm» · Cita: NOT-0969f86532 · titulo_limpio
+Declaración: massachusettssun.com reporta: «Intensifying El Nino deepens economic risks across LatAm» · Cita: NOT-2ece201ac9 · titulo_limpio
+Declaración: thailandnews.net reporta: «Intensifying El Nino deepens economic risks across LatAm» · Cita: NOT-364916b1e1 · titulo_limpio
+Declaración: russiaherald.com reporta: «Intensifying El Nino deepens economic risks across LatAm» · Cita: NOT-65049548e8 · titulo_limpio
+Declaración: trinidadtimes.com reporta: «World Insights: Intensifying El Nino deepens economic risks across LatAm» · Cita: NOT-7170117798 · titulo_limpio
+Declaración: jamaicantimes.com reporta: «Intensifying El Nino deepens economic risks across LatAm» · Cita: NOT-7bc0adfe59 · titulo_limpio
+Declaración: trinidadtimes.com reporta: «Intensifying El Nino deepens economic risks across LatAm» · Cita: NOT-89b5cc1eb2 · titulo_limpio
+Declaración: newzealandstar.com reporta: «Intensifying El Nino deepens economic risks across LatAm» · Cita: NOT-9013970ab7 · titulo_limpio
+Declaración: oklahomastar.com reporta: «Intensifying El Nino deepens economic risks across LatAm» · Cita: NOT-9112a370be · titulo_limpio
+Declaración: africaleader.com reporta: «Intensifying El Nino deepens economic risks across LatAm» · Cita: NOT-af2c98a539 · titulo_limpio
+Declaración: irishsun.com reporta: «Intensifying El Nino deepens economic ri… (completo en el cuerpo de la página)","sin dato oficial vinculado (el tema no tiene un indicador oficial asignado) → Verificar: Consultar a la institución oficial responsable del tema por un dato que mida el hecho.
+1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente → Verificar: Buscar el mismo hecho en un medio con fuente propia; una réplica de la misma agencia no cuenta.
+20 de 20 titulares sin medio o fecha de publicación conocidos → Verificar: Abrir el enlace de cada titular para identificar el medio y la fecha de publicación original.
 Otros vacíos (1)
-subtema no determinado: se usó el alcance neutro de impacto → Verificar: Confirmar de qué asunto trata el grupo; sin subtema no hay fuentes sugeridas específicas.
+urgencia estimada: fecha de publicación desconocida → Verificar: Abrir el enlace de cada titular para identificar el medio y la fecha de publicación original.
 Fuentes sugeridas para verificar (sugerencias para quien verifica; no son evidencia del sistema ni se citan como tal)
-Ninguna: el grupo no tiene tema ni subtema conocido","NOT-1ba5a41e46, NOT-203cd5b44e, NOT-213eb698b8, NOT-26fd75f865, NOT-5d839301a6, NOT-6717a15ab7, NOT-99ea1a995f, NOT-adb01e330f, NOT-d1dad65858, NOT-e80ba5ef9d, NOT-eb363c1b4e, NOT-fb0597e7e5","Asistente (provisional, D-101) · provisional (D-101)","Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09.",2026-10-07T21:35:26Z,2026-10-07T21:54:31Z
+Empresa de Transmisión Eléctrica (Hidrometeorología)
+Autoridad del Canal de Panamá","NOT-0969f86532, NOT-2ece201ac9, NOT-364916b1e1, NOT-65049548e8, NOT-7170117798, NOT-7bc0adfe59, NOT-89b5cc1eb2, NOT-9013970ab7, NOT-9112a370be, NOT-af2c98a539, NOT-b0fc5636be, NOT-b449afb957, NOT-b55ac9551b, NOT-b627063783, NOT-b9a18baba2, NOT-bac341eccd, NOT-bd4d4c3bb9, NOT-c8859ae7ee, NOT-dde43008f3, NOT-e795e93c9d","Asistente (provisional, D-101) · provisional (D-101)","Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09.",2026-10-07T22:28:15Z,2026-10-07T22:28:15Z
 CASO-007,Editorial,Servicios públicos,CU-04,Requiere evidencia,Insuficiente,Investigar ya,1,0.9,0.862001,1,0.366667,1.3,sin borrador,basado únicamente en titular/metadatos,"Titular central: «Más de 30 mujeres han muerto de forma violenta en Panamá este año» — TVN Panamá
 Cobertura: 1 titular · 1 medio · de 2026-10-05 20:30 a 2026-10-05 20:30 (hora de Panamá); fecha de publicación
 Tema: Servicios públicos · Subtema: Seguridad ciudadana (policía, operativos, cárceles, delitos) (criterio: lexico)
@@ -100,7 +101,7 @@ sin dato oficial vinculado (el tema no tiene un indicador oficial asignado) → 
 1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente → Verificar: Buscar el mismo hecho en un medio con fuente propia; una réplica de la misma agencia no cuenta.
 Fuentes sugeridas para verificar (sugerencias para quien verifica; no son evidencia del sistema ni se citan como tal)
 Ministerio de Seguridad Pública
-Ministerio Público",NOT-0d91fa48b0,"Asistente (provisional, D-101) · provisional (D-101)","Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09.",2026-10-07T21:54:21Z,2026-10-07T21:54:32Z
+Ministerio Público",NOT-0d91fa48b0,"Asistente (provisional, D-101) · provisional (D-101)","Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09.",2026-10-07T21:54:21Z,2026-10-07T22:28:16Z
 CASO-001,Banca,Logística/Canal,CU-05,Aprobado como borrador,Suficiente,Incluir en el boletín como observación,1,1,0.256344,1,0.5,1.3,versión 3 (corregida),basado únicamente en titular/metadatos,"Titular central: «Mulino viajará a Asia: suscribirá convenios bilaterales con Singapur y Vietnam» — laestrella.com.pa
 Cobertura: 3 titulares · 3 medios · de 2026-10-01 11:30 a 2026-10-01 14:45 (hora de Panamá); fecha de detección
 Tema: Logística/Canal · Subtema: no determinado
@@ -129,4 +130,4 @@ Autoridad del Canal de Panamá
 Autoridad Marítima de Panamá
 Superintendencia de Bancos de Panamá
 Ministerio de Economía y Finanzas
-Contraloría General de la República (INEC)","NOT-1819a7014e, NOT-33032542b7, NOT-fbc3efaa5d","Asistente (provisional, D-101) · provisional (D-101)","Re-aprobado como borrador tras corregir un bloque de cada tipo (provisional, D-112)",2026-10-07T18:55:31Z,2026-10-07T21:54:33Z
+Contraloría General de la República (INEC)","NOT-1819a7014e, NOT-33032542b7, NOT-fbc3efaa5d","Asistente (provisional, D-101) · provisional (D-101)","Re-aprobado como borrador tras corregir un bloque de cada tipo (provisional, D-112)",2026-10-07T18:55:31Z,2026-10-07T22:28:16Z

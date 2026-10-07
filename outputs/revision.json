@@ -1,5 +1,5 @@
 {
-  "casos_abiertos": 1,
+  "casos_abiertos": 8,
   "origen_juicio": "humano",
   "juicio_humano": true,
   "casos_decididos": 0,
@@ -35,47 +35,54 @@
     "proporcion": null,
     "ic95": null
   },
-  "casos_decididos_provisionales": 1,
+  "casos_decididos_provisionales": 2,
+  "descartes_administrativos": {
+    "n": 3,
+    "motivos": {
+      "Reemplazado por la selección por caso de uso (D-118)": 3
+    },
+    "nota": "Descartes administrativos (no son un juicio editorial): fuera de todas las tasas."
+  },
   "nota": "Las afirmaciones de un caso no son independientes: el intervalo de afirmaciones editadas es orientativo.",
   "provisionales": {
     "origen_juicio": "asistente_provisional (D-101)",
     "juicio_humano": false,
     "aviso_origen": "JUICIO PROVISIONAL DEL ASISTENTE, NO HUMANO (D-101): se rehace a mano en C-09; no reportar como juicio de una persona.",
-    "casos_decididos": 1,
+    "casos_decididos": 2,
     "tasas": {
       "aceptacion": {
-        "k": 1,
-        "n": 1,
+        "k": 2,
+        "n": 2,
         "proporcion": 1.0,
         "ic95": [
-          0.20654329147389294,
+          0.34237195288961925,
           1.0
         ]
       },
       "correccion": {
         "k": 1,
-        "n": 1,
-        "proporcion": 1.0,
+        "n": 2,
+        "proporcion": 0.5,
         "ic95": [
-          0.20654329147389294,
-          1.0
+          0.09452865480086614,
+          0.9054713451991339
         ]
       },
       "descarte": {
         "k": 0,
-        "n": 1,
+        "n": 2,
         "proporcion": 0.0,
         "ic95": [
           0.0,
-          0.7934567085261071
+          0.6576280471103807
         ]
       }
     },
     "motivos_descarte": {},
     "tiempo_por_caso_min": {
-      "n": 1,
-      "mediana": 42.65,
-      "media": 42.65
+      "n": 2,
+      "mediana": 21.325,
+      "media": 21.325
     },
     "afirmaciones_editadas": {
       "k": 0,

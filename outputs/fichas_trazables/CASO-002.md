@@ -7,7 +7,7 @@
 - Versión del borrador: sin borrador
 - Modalidad: Editorial
 - Alcance: basado únicamente en titular/metadatos
-- Exportado: 2026-10-07 16:54 (hora de Panamá)
+- Exportado: 2026-10-07 17:28 (hora de Panamá)
 
 ## 1 · Qué se reporta
 - Titular central: «Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá» — TVN Panamá
