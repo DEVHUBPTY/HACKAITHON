@@ -65,7 +65,7 @@ def test_el_reparto_de_un_par_mantiene_la_suma() -> None:
 
 
 NOMBRES_ESPERADOS = {
-    "Partes de R (foco · temática)", "Foco: otro país que afecta a Panamá", "Foco: Panamá sujeto", "Partes de I (subtema · geográfico)",
+    "Foco: otro país que afecta a Panamá", "Foco: Panamá sujeto", "Partes de I (subtema · geográfico)",
     "Alcance geográfico nacional", "Alcance geográfico provincial", "Alcance geográfico local", "Alcance geográfico desconocido",
     "Alcance por subtema (la tabla entera)", "Alcance de I sin subtema", "U: horas con U = 1", "U: días con U = 0",
     "Partes de E: procedencias", "Partes de E: oficial", "Partes de E: identificable", "Tope de procedencias en E", "N del primer grupo",
@@ -128,9 +128,12 @@ def test_evaluar_recalcula_el_top_de_todas_las_variantes(base, emb, reglas_de_pr
 
 
 def test_mover_los_pesos_puede_cambiar_el_top_y_comparar_lo_detecta() -> None:
-    """A gana en relevancia (similitud alta, vieja); B gana en urgencia (reciente, similitud baja): el peso decide quién va primero."""
+    """A gana en relevancia (sobre Panamá, vieja); B gana en urgencia (reciente, regional): el peso decide quién va primero.
+
+    D-103: R ya no usa la similitud temática, así que la diferencia de R sale del foco (antes, de la similitud).
+    """
     a = entrada("GRP-a", [miembro("NOT-a", similitud=0.95, publicado_hace=24 * 20)], n_procedencias=2)
-    b = entrada("GRP-b", [miembro("NOT-b", similitud=0.60, publicado_hace=1)], n_procedencias=2)
+    b = entrada("GRP-b", [miembro("NOT-b", similitud=0.60, publicado_hace=1, regional=True)], n_procedencias=2)
     solo_r = REGLAS.model_copy(update={"pesos": REGLAS.pesos.model_copy(update={"R": 100.0, "I": 0.0, "U": 0.0, "N": 0.0, "E": 0.0})})
     solo_u = REGLAS.model_copy(update={"pesos": REGLAS.pesos.model_copy(update={"R": 0.0, "I": 0.0, "U": 100.0, "N": 0.0, "E": 0.0})})
     por_r = sensibilidad.top([a, b], solo_r, CFG, AHORA, 1)

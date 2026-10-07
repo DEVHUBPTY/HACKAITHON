@@ -16,13 +16,10 @@ rangos:                     # [desde, hasta): el último incluye su límite supe
 
 desempate: [u_desc, id_asc]  # mayor U; si empatan, menor ID
 
-percentil:                  # las similitudes se convierten a percentil dentro del snapshot antes de usarse (D-35)
-  ambito: snapshot
-  aplica_a: [similitud_tematica_r, similitud_maxima_n]
+# D-103: ni R ni N usan ya percentiles de similitud (antes D-35: «percentil dentro del snapshot»).
 
-relevancia:                 # R = peso_foco × foco + peso_tematica × percentil(similitud temática)
-  peso_foco: 0.5
-  peso_tematica: 0.5
+relevancia:                 # R = peso_foco × foco. D-103 quitó la parte temática (confianza del clasificador) y renormalizó
+  peso_foco: 1.0            # antes 0.5 foco + 0.5 percentil(similitud temática); la única parte que queda pesa 1
   foco_panama_sujeto: 1.0
   foco_otro_pais_afecta: 0.5
 
@@ -78,7 +75,9 @@ urgencia:                   # U usa la publicación original MÁS RECIENTE del g
   fecha_sin_publicacion: fecha_deteccion
   vacio_sin_publicacion: "urgencia estimada: fecha de publicación desconocida"
 
-novedad:                    # N = 1 − percentil(similitud máxima con grupos anteriores, por fecha de publicación)
+novedad:                    # D-103: s = similitud máxima con un titular de un grupo anterior; u = agrupacion.umbral_similitud
+  # N = 1 si s < u (no es el mismo evento: no se descuenta); si s ≥ u, N = (1 − s) / (1 − u), lineal de 1 (en el umbral)
+  # a 0 (duplicado exacto). El umbral es el MISMO con que se agrupa (no se copia aquí).
   sin_grupos_previos: 1.0   # el primer grupo no tiene con qué compararse
 
 evidencia:                  # E (v1.3, D-56)

@@ -529,22 +529,16 @@ class Rangos(ModeloConfig):
         return self
 
 
-class Percentil(ModeloConfig):
-    """Las similitudes se convierten a percentil dentro del snapshot antes de usarse (D-35)."""
-
-    ambito: Literal["snapshot"]
-    aplica_a: list[str]
-
-
 class Relevancia(ModeloConfig):
+    """R = ``peso_foco`` × foco. D-103 quitó la parte temática (percentil de la similitud con el tema)."""
+
     peso_foco: float = Unidad
-    peso_tematica: float = Unidad
     foco_panama_sujeto: float = Unidad
     foco_otro_pais_afecta: float = Unidad
 
     @model_validator(mode="after")
     def _partes(self) -> Relevancia:
-        _suma_es([self.peso_foco, self.peso_tematica], 1, "las partes de R")
+        _suma_es([self.peso_foco], 1, "las partes de R")
         return self
 
 
@@ -649,7 +643,6 @@ class ReglasV13(ModeloConfig):
     pesos: Pesos
     rangos: Rangos
     desempate: list[Literal["u_desc", "id_asc"]]
-    percentil: Percentil
     relevancia: Relevancia
     impacto: Impacto
     urgencia: Urgencia

@@ -152,8 +152,11 @@ def test_suficiente_exige_sin_contradiccion_abierta(tmp_path: Path) -> None:
         cargar_reglas(escribir(tmp_path, "reglas_v1.3", d))
 
 
-def test_percentil_dentro_del_snapshot_esta_declarado_en_yaml() -> None:
-    assert cargar_reglas().percentil.ambito == "snapshot"
+def test_d103_ya_no_hay_percentiles_ni_parte_tematica_en_r() -> None:
+    """D-103 reemplaza al percentil de D-35: R tiene una sola parte (foco) y N usa el umbral de agrupación."""
+    reglas = cargar_reglas()
+    assert not hasattr(reglas, "percentil") and set(type(reglas.relevancia).model_fields) == {"peso_foco", "foco_panama_sujeto", "foco_otro_pais_afecta"}
+    assert reglas.relevancia.peso_foco == 1.0
 
 
 # 6 · banca: sectores de D-11 y alcance por sector

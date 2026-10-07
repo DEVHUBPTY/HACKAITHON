@@ -13,9 +13,9 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 | Pesos R · I · U · N · E | 30 · 25 · 20 · 15 · 10 | PDF | X02 (sensibilidad) · Precision@5 |
 | Rangos | bajo [0,40) · medio [40,70) · alto [70,100] | PDF | — |
 | Desempate | Mayor U, luego menor ID | PDF | Test |
-| Partes de R (foco · temática) | 0.5 · 0.5 | Supuesto | X02 |
+| Partes de R | foco 1.0 (antes foco 0.5 · temática 0.5) | **Decisión D-103**: se quitó la parte temática (percentil de la similitud con el tema = confianza del clasificador, que no mide relación con Panamá ni con los temas) y la única parte que queda se renormaliza a 1. R queda en {0.5, 1}: casi constante (eval.puntaje lo marca), por diseño | `test_d103_r_no_usa_la_confianza_del_clasificador` |
 | Foco (Panamá sujeto · otro país que afecta) | 1 · 0.5 | Supuesto | Revisión editorial |
-| Similitudes en percentil | — | Calibrado | X04 (distribución) |
+| Similitudes en percentil | Ya no se usan en R ni en N (antes D-35) | **Decisión D-103** | `test_d103_ya_no_hay_percentiles_ni_parte_tematica_en_r` |
 | Partes de I (subtema · geográfico) | 0.5 · 0.5 | Supuesto | X02 |
 | Alcance por subtema (38 subtemas, 0.4 a 1.0) | Tabla en `reglas_v1.3.yaml` | Supuesto (criterio editorial; el diseño pide la tabla documentada en YAML, D-35) | Precision@5 y revisión editorial |
 | Alcance geográfico | nacional 1 · provincial 0.6 · local 0.3 · desconocido 0.5 | Supuesto. `desconocido` es el valor neutro (igual que el subtema desconocido), por eso queda **por encima** de `local`: un titular que nombra un distrito puntúa menos en I que uno que no nombra ningún lugar. Es consecuencia del diseño (imputación neutra), no un error de cálculo; E1-10c (X42) lo reporta y no lo cambia | X02 |
@@ -24,6 +24,7 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 | Tope de procedencias en E | 3 | Supuesto | X02 |
 | U sin fecha de publicación en ningún titular | Usa `fecha_deteccion` y agrega el vacío "urgencia estimada: fecha de publicación desconocida" | Supuesto (88 de 221 noticias del snapshot v1.2 traen publicación; GDELT no) | Test de E1-10 |
 | N del primer grupo (sin grupos previos) | 1.0 | Supuesto | Test de E1-10 |
+| N con grupos previos (`novedad`, D-103) | s = similitud máxima con un titular de un grupo anterior; u = `agrupacion.umbral_similitud` (0.69, el mismo valor con que se agrupa, leído de la configuración y no copiado). s < u → N = 1 (no es el mismo evento: no hay duplicación que descontar). s ≥ u → N = (1 − s)/(1 − u): lineal, vale 1 en el umbral (continua con el tramo anterior) y 0 en un duplicado exacto | **Decisión D-103** (el mapeo lineal es supuesto: el más simple continuo y monótono entre el umbral y el duplicado). La similitud es máxima por par de titulares y el umbral de agrupación es un promedio (enlace promedio), así que N puede descontar a un grupo que la agrupación no unió: es el caso buscado (mismo evento partido por la ventana de días o por el enlace) | `test_d103_*` |
 | Listas de provincias, comarcas y distritos | 10 · 6 · 60 | Práctica (división político-administrativa; lista parcial de distritos) | Titulares reales de TVN; `validar_coherencia` |
 | Agencias de noticias para el tipo de firma | 10 nombres | Práctica (el RSS de TVN no trae firma, no se derivan de datos) | Se usa solo si un titular de GDELT la nombra |
 
@@ -34,8 +35,8 @@ Las reglas v1.3 fijan las fórmulas; estas filas fijan lo que dejan abierto. Tod
 | Parámetro | Valor | Origen | Cómo se valida |
 |---|---|---|---|
 | Fecha de referencia de U | `fecha_corte_UTC` del manifest (opción `--ahora`) | Diseño (reproducibilidad: U no depende del reloj) | `test_la_fecha_de_referencia_se_registra_en_utc` · `test_dos_ejecuciones_producen_el_mismo_ranking` |
-| Percentil | `(rango medio) / (n − 1)`: 0 el menor, 1 el mayor, empates comparten el rango medio; un solo valor = 0.5 | Práctica (rango percentil) | `test_los_percentiles_ocupan_el_rango_completo_*` |
-| Similitud temática de un grupo (R) | Media de `tema_similitud` de sus titulares | Supuesto | X02 · `eval.puntaje` (R no casi constante) |
+| Percentil | `(rango medio) / (n − 1)`: 0 el menor, 1 el mayor, empates comparten el rango medio; un solo valor = 0.5 | **Retirado por D-103** (antes: Práctica (rango percentil)) | `test_los_percentiles_ocupan_el_rango_completo_*` |
+| Similitud temática de un grupo (R) | Media de `tema_similitud` de sus titulares | **Retirado por D-103** (antes: Supuesto) | X02 · `eval.puntaje` (R no casi constante) |
 | Foco de un grupo (R) | 1 si algún titular trata a Panamá como sujeto; 0.5 si todos son notas regionales o de otro país que afectan a Panamá (`alcance_regional`, D-84) | Supuesto | `test_noticia_de_otro_pais_*` · revisión editorial |
 | Alcance geográfico de un grupo (I) | El más amplio que nombran sus titulares (nacional explícito > provincial > local); sin ninguno de esos, el país nombrado o una institución nacional dan `nacional` (E1-10c); sin nada, `desconocido` | Supuesto | `test_alcance_geografico_*` · `test_x42_*` |
 | Mención implícita del país (`geografia.nacional_implicito_terminos`, E1-10c) | «Panamá», «panameño(s)/a(s)», «en el país», «del país», el Ejecutivo, los órganos del Estado y las instituciones nacionales (CSS, Minsa, Meduca, MEF, MOP, Mides, Ifarhu, Idaan, ACP, AMP, ASEP, Sinaproc…) | Supuesto (X42: con solo los términos explícitos, 0 de 58 grupos llegaban a nacional; con esta lista, 22 de 58). Solo cuenta si ningún titular del grupo nombra un lugar concreto: el lugar nombrado ubica el hecho («Lluvias en Panamá dejan inundaciones en Chepo» es local). Una institución nacional no prueba que el hecho sea nacional (p. ej. un traslado de un solo asegurado de la CSS); es la lectura conservadora frente a `desconocido`, a revisar con Precision@5 | `test_x42_*` |

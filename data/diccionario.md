@@ -285,10 +285,10 @@ Los reemplaza `python -m src.puntaje`. Cada componente guarda de qué valores sa
 | `posicion` | INTEGER | no | puntaje | derivado | 1 = el más prioritario: mayor P, luego mayor U, luego menor ID. |
 | `version_reglas` | VARCHAR | no | `reglas_v1.3.yaml` | derivado | Versión de las reglas con que se calculó (`1.3`). |
 | `fecha_referencia` | VARCHAR | no | `manifest.json` | derivado | ISO 8601 UTC contra la que se midió U: el corte del snapshot, no el reloj. |
-| `relevancia` | DOUBLE | no | puntaje | derivado | R en [0, 1]: foco y percentil de la similitud temática. |
+| `relevancia` | DOUBLE | no | puntaje | derivado | R en [0, 1]: foco (1 Panamá sujeto · 0.5 otro país que afecta). D-103 quitó el percentil de la similitud temática. |
 | `impacto` | DOUBLE | no | puntaje | derivado | I en [0, 1]: alcance del subtema y alcance geográfico. Ni el dato oficial ni las procedencias suman (D-15, D-35). |
 | `urgencia` | DOUBLE | no | puntaje | derivado | U en [0, 1] sobre la publicación original más reciente del grupo (o la detección más reciente, con el vacío correspondiente). |
-| `novedad` | DOUBLE | no | puntaje | derivado | N en [0, 1]: 1 − percentil de la similitud máxima con grupos anteriores. |
+| `novedad` | DOUBLE | no | puntaje | derivado | N en [0, 1] (D-103): 1 si la similitud máxima con un grupo anterior no llega al umbral de agrupación `u`; si llega, (1 − s)/(1 − u). |
 | `evidencia` | DOUBLE | no | puntaje | derivado | E en [0, 1]: procedencias independientes (no titulares), dato oficial y titulares identificables (D-56). |
 | `puntaje` | DOUBLE | no | puntaje | derivado | P = 30R + 25I + 20U + 15N + 10E, de 0 a 100. |
 | `rango` | VARCHAR | no | `reglas_v1.3.yaml` | derivado | `bajo` [0, 40) · `medio` [40, 70) · `alto` [70, 100]. |

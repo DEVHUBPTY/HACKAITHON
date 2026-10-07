@@ -4,22 +4,23 @@
 fijan, en ``config/prioridad.yaml``). Es una herramienta de **ordenamiento**: no es una probabilidad de verdad ni de pérdida,
 y **no habilita publicación** (``Puntaje.habilita_publicacion`` es siempre falso).
 
-* **R** = ``peso_foco × foco + peso_tematica × percentil(similitud temática)``. Foco: 1 si algún titular del grupo trata a
-  Panamá como sujeto; 0.5 si todos son notas regionales o de otro país que afectan a Panamá (``alcance_regional``, D-84).
-  La similitud temática de un grupo es la media de ``tema_similitud`` de sus titulares.
+* **R** = ``peso_foco × foco`` (D-103: sin la parte temática, que era la confianza del clasificador). Foco: 1 si algún
+  titular del grupo trata a Panamá como sujeto; 0.5 si todos son notas regionales o de otro país que afectan a Panamá
+  (``alcance_regional``, D-84).
 * **I** = ``peso_subtema × alcance(subtema) + peso_geografico × alcance geográfico``. Ni el dato oficial ni las
   procedencias suman aquí (D-15, D-35). El alcance geográfico es el más amplio que nombren los titulares; sin término
   explícito ni lugar concreto, el país nombrado o una institución nacional lo hacen nacional (E1-10c, X42).
 * **U**: lineal entre ``horas_pleno`` (U = 1) y ``dias_nulo`` (U = 0) desde la publicación ORIGINAL más reciente del grupo,
   medida contra la fecha de referencia (el corte del snapshot). Si ningún titular trae ``fecha_publicacion`` se usa la
   detección como cota y se agrega el vacío «urgencia estimada: fecha de publicación desconocida»; nunca se sustituye en silencio.
-* **N** = ``1 − percentil(similitud máxima con grupos anteriores)``; anterior = empezó antes (``fecha_publicacion`` y, si falta,
-  ``fecha_deteccion``). El primer grupo no tiene con qué compararse (``novedad.sin_grupos_previos``). La duplicación no sube N.
+* **N** (D-103): ``s`` = similitud máxima entre un titular del grupo y uno de un grupo anterior (empezó antes:
+  ``fecha_publicacion`` y, si falta, ``fecha_deteccion``); ``u`` = ``agrupacion.umbral_similitud``, el mismo umbral con que
+  se agrupa. Si ``s < u`` no es el mismo evento y N = 1; si ``s ≥ u``, N = ``(1 − s) / (1 − u)`` (1 en el umbral, 0 un
+  duplicado). El primer grupo no tiene con qué compararse (``novedad.sin_grupos_previos``). La duplicación no sube N.
 * **E** = ``peso_procedencias × min(n, tope)/tope + peso_oficial × (hay dato oficial directo o evento) + peso_identificables × (titulares con
   medio y fecha de publicación conocidos / titulares)``. Cuenta **procedencias**, nunca titulares (``procedencias.fraccion_de_procedencias``).
 
-Las similitudes se convierten a **percentil dentro del snapshot** (los embeddings dan valores comprimidos): el rango
-completo 0–1 se usa siempre. Rango y desempate (mayor U, menor ID) salen de ``reglas.rangos`` y ``reglas.desempate``.
+Rango y desempate (mayor U, menor ID) salen de ``reglas.rangos`` y ``reglas.desempate``.
 Cada componente guarda su explicación (de qué valores sale) para la ficha.
 
 Uso: ``poetry run python -m src.puntaje`` (después de ``src.contexto``); ver ``src/prioridad.py``.
@@ -29,7 +30,6 @@ from __future__ import annotations
 
 import re
 import sys
-from bisect import bisect_left, bisect_right
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
@@ -48,7 +48,6 @@ COMPONENTES = ("R", "I", "U", "N", "E")
 NIVELES_GEOGRAFICOS = ("nacional", "provincial", "local")   # de más a menos amplio; sin términos = desconocido
 NIVEL_NACIONAL = NIVELES_GEOGRAFICOS[0]
 NIVEL_DESCONOCIDO = "desconocido"
-PERCENTIL_NEUTRO = 0.5          # rango medio de [0, 1]: lo que vale un percentil con un solo valor (definición, no parámetro)
 SEGUNDOS_POR_HORA = 3600
 HORAS_POR_DIA = 24
 FORMATO_FECHA = "%Y-%m-%dT%H:%M:%SZ"
@@ -141,24 +140,6 @@ class Alcance:
     terminos: tuple[str, ...] = field(default_factory=tuple)
 
 
-# ------------------------------------------------------------------ percentil
-
-
-def percentiles(valores: Sequence[float]) -> list[float]:
-    """Percentil de cada valor dentro de ``valores``: ``(rango medio) / (n − 1)``, de 0 (el menor) a 1 (el mayor).
-
-    Los empates comparten el rango medio. Con un solo valor es ``PERCENTIL_NEUTRO``. Así el rango 0–1 se usa completo
-    aunque las similitudes estén comprimidas.
-    """
-    n = len(valores)
-    if n == 0:
-        return []
-    if n == 1:
-        return [PERCENTIL_NEUTRO]
-    orden = sorted(valores)
-    return [((bisect_left(orden, v) + bisect_right(orden, v) - 1) / 2) / (n - 1) for v in valores]
-
-
 # ------------------------------------------------------------------ R · relevancia
 
 
@@ -169,14 +150,6 @@ def foco_de(miembros: Sequence[Mapping[str, Any]], reglas: ReglasV13) -> tuple[f
     foco = reglas.relevancia.foco_otro_pais_afecta if todos_regionales else reglas.relevancia.foco_panama_sujeto
     motivo = "otro_pais_afecta" if todos_regionales else "panama_sujeto"
     return foco, {"foco": foco, "foco_motivo": motivo, "titulares_regionales": regionales, "titulares": len(miembros)}
-
-
-def similitud_tematica(miembros: Sequence[Mapping[str, Any]]) -> float:
-    """Media de ``tema_similitud`` de los titulares del grupo (similitud con su tema clasificado)."""
-    valores = [float(m["tema_similitud"]) for m in miembros if m.get("tema_similitud") is not None]
-    if not valores:
-        raise ValueError("grupo sin similitud temática: ejecute `poetry run python -m src.clasificacion`")
-    return float(np.mean(valores))
 
 
 # ------------------------------------------------------------------ I · impacto
@@ -328,6 +301,23 @@ def _similitudes_maximas(entradas: Sequence[EntradaGrupo], reglas: ReglasV13) ->
     return resultado
 
 
+def umbral_novedad(reglas: ReglasV13) -> float:
+    """El umbral desde el que N descuenta: ``agrupacion.umbral_similitud``, el mismo con que se agrupa (D-103)."""
+    umbral = reglas.agrupacion.umbral_similitud
+    if umbral is None:
+        raise ValueError("agrupacion.umbral_similitud sin calibrar: N lo necesita (D-103); ejecute `python -m eval.agrupacion`")
+    return umbral
+
+
+def novedad_de(similitud: float, umbral: float) -> float:
+    """N (D-103): 1 si ``similitud < umbral``; si no, ``(1 − similitud) / (1 − umbral)`` en [0, 1] (1 en el umbral, 0 un duplicado)."""
+    if similitud < umbral:
+        return 1.0
+    if umbral >= 1.0:   # umbral 1: solo un duplicado exacto lo alcanza
+        return 0.0
+    return min(1.0, max(0.0, (1.0 - similitud) / (1.0 - umbral)))
+
+
 # ------------------------------------------------------------------ E · evidencia
 
 
@@ -393,29 +383,25 @@ def calcular_puntajes(
     if len(set(ids)) != len(ids):
         raise ValueError("id_grupo repetido en la entrada")
     ahora = ahora.astimezone(UTC)
-    similitudes = [similitud_tematica(e.miembros) for e in entradas]
-    percentil_r = percentiles(similitudes)
     maximas = _similitudes_maximas(entradas, reglas)
-    con_previos = [i for i, m in enumerate(maximas) if m is not None]
-    percentil_n: dict[int, float] = dict(zip(con_previos, percentiles([maximas[i][0] for i in con_previos]), strict=True))  # type: ignore[index]
+    umbral = umbral_novedad(reglas)
     rel = reglas.relevancia
     resultado: list[Puntaje] = []
     for i, e in enumerate(entradas):
         foco, detalle_foco = foco_de(e.miembros, reglas)
-        r = Componente(
-            rel.peso_foco * foco + rel.peso_tematica * percentil_r[i],
-            {**detalle_foco, "similitud_tematica": similitudes[i], "percentil_similitud_tematica": percentil_r[i],
-             "peso_foco": rel.peso_foco, "peso_tematica": rel.peso_tematica},
-        )
+        r = Componente(rel.peso_foco * foco, {**detalle_foco, "peso_foco": rel.peso_foco})
         c_i, vacios_i = impacto(e, reglas, cfg)
         c_u, vacios_u = urgencia(e.miembros, ahora, reglas)
         if maximas[i] is None:
-            c_n = Componente(reglas.novedad.sin_grupos_previos, {"grupos_previos": 0, "similitud_maxima": None, "percentil_similitud_maxima": None, "grupo_mas_parecido": None})
+            c_n = Componente(
+                reglas.novedad.sin_grupos_previos,
+                {"grupos_previos": 0, "similitud_maxima": None, "umbral_similitud": umbral, "descuenta": False, "grupo_mas_parecido": None},
+            )
         else:
             sim, parecido, previos = maximas[i]  # type: ignore[misc]
             c_n = Componente(
-                1.0 - percentil_n[i],
-                {"grupos_previos": previos, "similitud_maxima": sim, "percentil_similitud_maxima": percentil_n[i], "grupo_mas_parecido": parecido},
+                novedad_de(sim, umbral),
+                {"grupos_previos": previos, "similitud_maxima": sim, "umbral_similitud": umbral, "descuenta": sim >= umbral, "grupo_mas_parecido": parecido},
             )
         componentes = {"R": r, "I": c_i, "U": c_u, "N": c_n, "E": evidencia_e(e, reglas, cfg)}
         total = puntaje_total({k: c.valor for k, c in componentes.items()}, reglas)
