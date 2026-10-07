@@ -54,7 +54,7 @@ El texto del LLM no es una salida determinista. Por eso:
 
 Commit de partida y si el árbol tenía cambios sin commitear al empezar (`arbol_con_cambios`; ninguno de los dos se compara porque cambian en cada ejecución) · versión de Python y sistema · modelo de embeddings de agrupación y de clasificación (id y revisión exacta) · proveedor, modelo, temperatura y semilla del LLM · versión y SHA-256 de las reglas · SHA-256 de cada prompt · todas las semillas de `config/*.yaml`. Si en una verificación difiere alguna, sale como `AVISO` (explica por qué podrían cambiar los hashes); no es un fallo por sí misma.
 
-Semillas (todas en `config/`, documentadas en `docs/parametros.md`): `clasificacion.yaml:semilla`, `clasificacion.yaml:criterio_ab.semilla`, `etiquetado.yaml:muestra.semilla`, `benchmark.yaml:intervalos.semilla`, `benchmark.yaml:sustento.semilla` y `llm.yaml:generacion.semilla`. `tests/test_e1_20_reproducibilidad.py` falla si aparece una semilla nueva sin documentar.
+Semillas (todas en `config/`, documentadas en `docs/parametros.md`): `clasificacion.yaml:semilla`, `clasificacion.yaml:criterio_ab.semilla`, `etiquetado.yaml:muestra.semilla`, `benchmark.yaml:intervalos.semilla`, `benchmark.yaml:sustento.semilla`, `precision.yaml:hoja_ciega.semilla` y `llm.yaml:generacion.semilla`. `tests/test_e1_20_reproducibilidad.py` falla si aparece una semilla nueva sin documentar.
 
 ## Lo que se excluye del hash, y por qué
 

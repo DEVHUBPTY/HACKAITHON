@@ -579,6 +579,7 @@ Todo lo aleatorio tiene su semilla en `config/` y `scripts.reproducir` las regis
 | `etiquetado.yaml:muestra.semilla` | 20261006 | Muestra del etiquetado humano |
 | `benchmark.yaml:intervalos.semilla` | 42 | Bootstrap de los intervalos del benchmark |
 | `benchmark.yaml:sustento.semilla` | 42 | Muestra de validez de sustento |
+| `precision.yaml:hoja_ciega.semilla` | `e1-19-hoja-ciega` | Orden de la hoja ciega de Precision@5 (SHA-256 de «semilla\|id_grupo»; E1-19) |
 | `llm.yaml:generacion.semilla` | 0 | Semilla enviada al LLM (con temperatura 0); DeepSeek no la garantiza bit a bit, por eso el texto va a la caché |
 
 Clustering: la agrupación es determinista (similitud y umbral, sin inicialización aleatoria), no tiene semilla.
