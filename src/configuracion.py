@@ -1178,6 +1178,17 @@ def validar_coherencia(carpeta: Path | None = None) -> list[str]:
             faltan = set(cargar_modalidad(modalidad, carpeta).grupos_restricciones) - grupos
             if faltan:
                 problemas.append(f"modalidad_{modalidad}.yaml: grupos_restricciones inexistentes: {sorted(faltan)}")
+    if (carpeta / "generacion.yaml").exists():  # E2-02: cada acción de la tabla de una modalidad con generación decide qué se genera
+        gen = cargar_generacion(carpeta)
+        conocidas = {x for lista in gen.acciones.model_dump().values() for x in lista}
+        for modalidad in gen.modalidades:
+            if (carpeta / f"modalidad_{modalidad}.yaml").exists():
+                tabla = cargar_modalidad(modalidad, carpeta).tabla_acciones
+                acciones = {getattr(getattr(tabla, r), e).accion for r in TablaAcciones.model_fields for e in FilaAcciones.model_fields}
+                problemas += [f"generacion.yaml: la acción «{x}» de modalidad_{modalidad}.yaml no está en acciones" for x in sorted(acciones - conocidas)]
+        for modalidad, paquete in gen.modalidades.items():
+            if not getattr(gen.grupos, paquete):
+                problemas.append(f"generacion.yaml: el paquete {paquete} de la modalidad {modalidad} no tiene grupos de redacción")
     return problemas
 
 
@@ -1913,6 +1924,7 @@ def cargar_prioridad(carpeta: Path | None = None) -> ConfigPrioridad:
 class PromptsGeneracion(ModeloConfig):
     afirmaciones: str
     redaccion: str
+    paquetes: dict[str, str] = Field(default_factory=dict)  # E2-02: paquete -> prompt propio con los dos pasos (bloques ``## afirmaciones``…)
 
 
 class AfirmacionesGeneracion(ModeloConfig):
@@ -1962,6 +1974,29 @@ class FugaPromptGeneracion(ModeloConfig):
 class GruposGeneracion(ModeloConfig):
     editorial: list[str]
     investigacion: list[str]
+    boletin: list[str] = Field(default_factory=list)  # E2-02
+
+
+PaqueteGeneracion = Literal["editorial", "boletin"]  # paquete completo de una modalidad (docs/salidas.md §1 y §2)
+
+
+class MotivoSectorBoletin(ModeloConfig):
+    principal: str
+    secundario: str
+
+    @model_validator(mode="after")
+    def _con_marcadores(self) -> MotivoSectorBoletin:
+        for texto in (self.principal, self.secundario):
+            if "{tema}" not in texto or "{sector}" not in texto:
+                raise ValueError("motivo_sector: cada texto lleva {tema} y {sector}")
+        return self
+
+
+class BoletinGeneracion(ModeloConfig):
+    """Textos de los campos de origen «Regla» del boletín de entorno (E2-02, docs/salidas.md §2)."""
+
+    motivo_sector: MotivoSectorBoletin
+    sin_sector: str
 
 
 class PreciosDeepSeek(ModeloConfig):
@@ -1996,7 +2031,7 @@ class ConfigGeneracionBorrador(ModeloConfig):
     prompts: PromptsGeneracion
     reintentos: int = Field(ge=0)
     afirmaciones: AfirmacionesGeneracion
-    modalidades: list[str] = Field(min_length=1)
+    modalidades: dict[str, PaqueteGeneracion] = Field(min_length=1)  # modalidad -> su paquete completo (E2-02)
     acciones: AccionesGeneracion
     prefijos: PrefijosGeneracion
     campos_conteo: list[str] = Field(min_length=1)
@@ -2010,6 +2045,7 @@ class ConfigGeneracionBorrador(ModeloConfig):
     objetivo_fraccion_limite: float = Field(gt=0, le=1)
     fuga_prompt: FugaPromptGeneracion
     grupos: GruposGeneracion
+    boletin: BoletinGeneracion
     deepseek: DeepSeekConfig
     tope_costo: TopeCostoConfig
     medicion: MedicionGeneracion
@@ -2044,12 +2080,31 @@ class ListaValidador(ModeloConfig):
     excepcion_literal: bool
     tipos: list[str] = Field(default_factory=list)
     sin_excepcion_en: list[str] = Field(default_factory=list)
+    excepcion_tipos: list[str] = Field(default_factory=list)  # E2-02: la excepción solo vale si todo lo citado es de estos tipos
 
 
 class TransicionesValidador(ModeloConfig):
     max_palabras: int = Field(ge=1)
     secciones: list[str]
     inicio_no_entidad: list[str]
+
+
+TIPOS_DE_AFIRMACION = ("hecho", "declaración", "inferencia", "hipótesis")  # D-41
+
+
+class BloquesBoletinValidador(ModeloConfig):
+    """Tipos de afirmación que puede citar cada bloque del resumen del boletín (E2-02, docs/salidas.md §2)."""
+
+    observaciones: list[str] = Field(min_length=1)
+    hipotesis_impacto: list[str] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _tipos_conocidos_y_separados(self) -> BloquesBoletinValidador:
+        if not set(self.observaciones) | set(self.hipotesis_impacto) <= set(TIPOS_DE_AFIRMACION):
+            raise ValueError(f"bloques_boletin: tipos fuera de {TIPOS_DE_AFIRMACION}")
+        if set(self.observaciones) & set(self.hipotesis_impacto):
+            raise ValueError("bloques_boletin: un tipo no puede estar en los dos bloques (observación e hipótesis no se mezclan)")
+        return self
 
 
 class ConfigValidador(ModeloConfig):
@@ -2078,6 +2133,7 @@ class ConfigValidador(ModeloConfig):
     meses: list[str] = Field(min_length=12, max_length=13)
     nombre_min_caracteres: int = Field(ge=1)
     campos_fecha: list[str] = Field(min_length=1)
+    bloques_boletin: BloquesBoletinValidador  # E2-02
 
     @field_validator("patrones")
     @classmethod

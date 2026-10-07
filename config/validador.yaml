@@ -86,14 +86,17 @@ frases_sin_cifra: [las dos versiones, ambas versiones, las dos partes, las dos p
 #  tipos: solo se aplica a oraciones o afirmaciones de estos tipos (vacío = a todo)
 #  excepcion_literal: se permite si la frase está literalmente en un titular citado
 #  sin_excepcion_en: secciones donde la excepción no vale
+#  excepcion_tipos: la excepción solo vale si lo que se cita es de estos tipos (vacío = cualquiera)
 listas:
   lectura_simulada: {excepcion_literal: false}
   sensacionalistas: {excepcion_literal: true, sin_excepcion_en: [titulo, titulo_trabajo, titulares, copy_digital]}
   entrevistas: {excepcion_literal: true}
   imagenes: {excepcion_literal: false}
   recomendacion: {excepcion_literal: false}
-  certeza: {excepcion_literal: false, tipos: [hipótesis]}
-  perdidas_en_inferencias: {excepcion_literal: true, tipos: [inferencia, hipótesis]}
+  # E2-02 (D-54): la certeza se rechaza en todo lo que el boletín muestra como hipótesis de impacto (inferencia e hipótesis); el léxico
+  # de pérdidas, impagos o exposición se rechaza en todo tipo salvo en una declaración que lo trae literal en su titular.
+  certeza: {excepcion_literal: false, tipos: [inferencia, hipótesis]}
+  perdidas_en_inferencias: {excepcion_literal: true, excepcion_tipos: [declaración]}
 
 # D-41: oraciones sin cita (transiciones). Sin cifras, fechas, nombres ni entidades; el máximo por sección está en salidas.yaml.
 transiciones:
@@ -112,3 +115,9 @@ nombre_min_caracteres: 2
 
 # D-45: campos de la evidencia que son fechas (clave que contiene alguna de estas cadenas, comparada sin tildes) y el campo del año.
 campos_fecha: [fecha, anio, año]
+
+# E2-02 · Boletín de entorno (docs/salidas.md §2): qué tipos de afirmación puede citar cada bloque del resumen. Una observación nunca se
+# apoya en una inferencia o hipótesis; una hipótesis de impacto solo en ellas y siempre en condicional (marcadores de `condicionales`).
+bloques_boletin:
+  observaciones: [hecho, declaración]
+  hipotesis_impacto: [inferencia, hipótesis]

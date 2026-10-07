@@ -74,6 +74,12 @@ paquete:                            # etiquetas de los campos del paquete (docs/
     resumen_web: "Resumen web"
     copy_digital: "Copy digital"
     titulo_trabajo: "Título de trabajo"
+    observaciones: "Resumen · Observaciones"                   # boletín de entorno (banca, E2-02)
+    hipotesis_impacto: "Resumen · Hipótesis de impacto"
+    sectores: "Sectores potencialmente relacionados"
+    horizonte: "Horizonte temporal"
+    evidencia: "Evidencia"
+    aviso: "Aviso"
 
 revision:                           # los cinco estados del reto (sección 8); las transiciones y el registro viven en config/revision.yaml (E1-16)
   estados: ["nuevo", "en revisión", "requiere evidencia", "aprobado como borrador", "descartado"]

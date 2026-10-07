@@ -46,6 +46,7 @@ poetry run python -m eval.puntaje                    # distribución de P y de c
 poetry run python -m eval.sensibilidad               # top 5 ante cada peso ±5 y cada supuesto ±20 % → outputs/sensibilidad.json (E1-10, X02)
 poetry run python -m src.ficha --grupo GRP-… --modalidad editorial|banca   # ficha de evidencia con las 5 partes, en Markdown (--formato jsonl: línea de fichas.jsonl); después de src.puntaje (E1-10b)
 poetry run python -m src.generacion --ficha-json tests/fixtures/ficha_generacion.json  # borrador desde una ficha (E1-12); --grupo GRP-… genera desde la ficha real
+poetry run python -m src.generacion --grupo GRP-… --modalidad banca   # boletín de entorno bancario (E2-02); antes: src.puntaje --modalidad banca
 poetry run python -m scripts.medir_generacion --proveedor ollama  # latencia: primera respuesta y paquete completo (E1-12)
 poetry run python -m src.validador --tasas            # tasa de rechazo por modelo y por regla (n e IC 95 %) desde outputs/rechazos.jsonl (E1-13)
 poetry run python -m src.consulta "pregunta"         # consulta en español con abstención (--metodo semantica|bm25)
@@ -85,7 +86,7 @@ config/      reglas_v1.3.yaml · temas.yaml · ejemplos_excluidos.txt · vinculo
              cache.yaml (E1-14) · ruido.yaml · fuentes.yaml · contrato.yaml · carga.yaml · normalizacion.yaml · clasificacion.yaml · etiquetado.yaml · exploracion.yaml · llm.yaml · benchmark.yaml · consulta.yaml · prioridad.yaml (E1-10) · generacion.yaml (E1-12)
              verificacion.yaml (E1-10b) · interfaz.yaml (E1-15) · revision.yaml (E1-16: estados, transiciones, motivos de descarte, revisores y roles, columnas de Notion) · modalidad_banca.yaml (E1-10b, PARCIAL: solo tabla de acciones y fuentes extra; E2-01 la completa, D-90)
 templates/   ficha.md.j2 (E1-10b) · caso.md.j2 (E1-16: ficha + versión + historial + leyenda, para Notion)
-prompts/     afirmaciones_citadas.txt (E0-07) · comparar_contradicciones.txt (E1-10) · afirmaciones_ficha.txt · paquete_editorial.txt (E1-12, versionados)
+prompts/     afirmaciones_citadas.txt (E0-07) · comparar_contradicciones.txt (E1-10) · afirmaciones_ficha.txt · paquete_editorial.txt (E1-12) · boletin_banca.txt (E2-02: los dos pasos del boletín), versionados
 data/        raw/ (inmutable) · processed/ (validos/ fuera de git) · registro_extraccion/ · manifest.json · CHANGELOG.md · diccionario.md · README.md
              senales.duckdb (generado, fuera de git) · revision.duckdb (E1-16: casos, versiones y `revisiones` de solo agregar; fuera de git, NO se regenera con el pipeline) · cache_llm/ (E1-14: borradores generados, SÍ versionada; docs/fallback.md)
 src/         carga · contexto (E1-09) · normalizacion · limpieza · embeddings · clasificacion · baseline · consulta · db · registro (D-75) · configuracion (D-79; config = alias de su CLI) · consultas_gdelt · esquemas (`Ficha` de E1-10b; paso 1 y paquetes de E1-12)
@@ -108,7 +109,7 @@ Previsto (lo crea la spec indicada):
 ```
 data/demo.duckdb (C-06)
 config/      modalidad_banca.yaml completa (E2-01: sectores, horizonte, bandeja)
-prompts/     comparar_contradicciones.txt (E1-10) · respuesta_consulta.txt (E1-11) · boletin_banca.txt (E2-02)
+prompts/     comparar_contradicciones.txt (E1-10) · respuesta_consulta.txt (E1-11)
 scripts/     buscar_casos.py · preparar_demo.py · capturas_demo.py · verificar_offline.py (C-06) · reproducir.py (E1-20)
              empaquetar_datos.py · auditoria_final.py (C-07)
 eval/        run_benchmark.py (E1-18) · precision_at_5.py (E1-19) · y los módulos de métricas que pide cada spec

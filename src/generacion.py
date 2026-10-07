@@ -16,10 +16,15 @@ resumen web— se redacta con solo las afirmaciones válidas. Cada oración debe
 pasa tras el reintento se entrega **vacía** con el motivo en ``vacios``: nunca se rellena. Fuentes y verificaciones se copian de
 la ficha sin LLM (D-43).
 
+**Boletín de entorno (banca, E2-02).** El mismo flujo con su propio prompt versionado (``prompts/boletin_banca.txt``): paso 1 igual y
+un grupo de redacción (observaciones · hipótesis de impacto · 3 preguntas para el analista). Sectores y horizonte salen por regla
+(``src/sectores.py``, ``modalidad_banca.yaml``), la evidencia se copia de la ficha y el aviso fijo, de ``restricciones.yaml``. Qué paquete
+arma cada modalidad lo dice ``config/generacion.yaml`` (``modalidades``): el código nunca pregunta por el nombre de la modalidad.
+
 **VALIDACIÓN (E1-13).** Todo pasa por ``src/validador.py``: las afirmaciones del paso 1 (``validar_afirmaciones``) y cada sección del
 paso 2 (``validar_seccion``). Lo que no valida no se emite; cada rechazo lleva su regla y queda en ``outputs/rechazos.jsonl``.
 
-CLI: ``python -m src.generacion --ficha-json ruta.json`` (la forma ``--grupo GRP-001`` llega con la integración de E1-10b).
+CLI: ``python -m src.generacion --grupo GRP-… [--modalidad editorial|banca]`` (ficha real) o ``--ficha-json ruta.json``.
 """
 
 from __future__ import annotations
@@ -32,6 +37,7 @@ import sys
 import time
 from collections.abc import Callable, Sequence
 from dataclasses import asdict, dataclass, field
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Literal
 
@@ -46,11 +52,14 @@ from src.configuracion import (
     cargar_generacion,
     cargar_modalidad,
     cargar_normalizacion,
+    cargar_reglas,
     cargar_restricciones,
     cargar_salidas,
+    cargar_temas,
 )
 from src.esquemas import (
     Afirmacion,
+    BoletinBanca,
     Ficha,
     AfirmacionSalida,
     CitaSalida,
@@ -59,11 +68,13 @@ from src.esquemas import (
     PaqueteEditorial,
     PaqueteInvestigacion,
     PreguntaInvestigacion,
+    SalidaBoletin,
     SalidaBrief,
     SalidaGuion,
     SalidaInvestigacion,
     SalidaResumen,
     SalidaTitulos,
+    SectorRelacionado,
     Vacio,
     esquema_json_afirmaciones,
 )
@@ -80,13 +91,26 @@ from src.cache import (
 )
 from src.llm.costo import TopeDeCostoAlcanzado
 from src.llm.proveedor import ErrorProveedor, Proveedor
-from src.validador import LIMITE_PALABRAS, Contexto, RegistroRechazos, Rechazo, mensajes, validar_afirmaciones, validar_paquete, validar_seccion
+from src.sectores import edad_en_dias, horizonte_de, sector_de_tema
+from src.validador import (
+    BLOQUES_RESUMEN,
+    LIMITE_PALABRAS,
+    Contexto,
+    RegistroRechazos,
+    Rechazo,
+    mensajes,
+    validar_afirmaciones,
+    validar_conjunto,
+    validar_paquete,
+    validar_seccion,
+)
 
 logger = logging.getLogger(__name__)
 
 CARPETA_PROMPTS = RAIZ / "prompts"
 
-Tipo = Literal["editorial", "investigacion", "nada"]
+Tipo = Literal["editorial", "investigacion", "boletin", "nada"]
+Paquete = PaqueteEditorial | PaqueteInvestigacion | BoletinBanca
 
 
 # ============================================================================================ entrada: la ficha (forma mínima)
@@ -144,6 +168,12 @@ class EntradaFicha(BaseModel):
     vacios: list[VacioFicha] = Field(default_factory=list)
     fuentes_verificaciones: list[str] = Field(default_factory=list)
     contradicciones: list[ContradiccionFicha] = Field(default_factory=list)
+    # E2-02 · lo que el boletín toma de la ficha sin LLM: lo respaldado (con citas y limitaciones), los temas (para el sector) y la edad
+    # en días de la noticia más reciente frente al corte (para el horizonte; ``None``: sin fechas de noticia, solo datos anuales).
+    evidencia: list[str] = Field(default_factory=list)
+    tema: str | None = None
+    tema_secundario: str | None = None
+    edad_evidencia_dias: float | None = None
 
 
 # ============================================================================================ resultado y registro de llamadas
@@ -169,7 +199,7 @@ class ResultadoGeneracion:
     """Qué se generó y cómo: el paquete (si hay), el motivo de no generar, las llamadas y lo descartado por la validación."""
 
     tipo: Tipo
-    paquete: PaqueteEditorial | PaqueteInvestigacion | None
+    paquete: Paquete | None
     motivo: str | None = None
     llamadas: list[RegistroLlamada] = field(default_factory=list)
     descartadas: list[str] = field(default_factory=list)
@@ -234,6 +264,7 @@ GRUPOS: dict[str, GrupoRedaccion] = {
     "guion": GrupoRedaccion(SalidaGuion, ("guion",), "grupo guion"),
     "resumen": GrupoRedaccion(SalidaResumen, ("resumen_web",), "grupo resumen"),
     "investigacion": GrupoRedaccion(SalidaInvestigacion, ("titulo_trabajo", "enfoque", "preguntas"), "grupo investigacion"),
+    "boletin": GrupoRedaccion(SalidaBoletin, ("observaciones", "hipotesis_impacto", "preguntas"), "grupo boletin"),  # E2-02
 }
 
 
@@ -281,7 +312,8 @@ class Generador:
         self.cfg = cfg or cargar_generacion()
         self.restricciones, self.salidas = cargar_restricciones(), cargar_salidas()
         self.plan = planificar(ficha, forzar_completo, self.cfg)
-        grupos_restr = cargar_modalidad(ficha.modalidad).grupos_restricciones if self.plan.tipo != "nada" else []
+        self.modalidad = cargar_modalidad(ficha.modalidad) if self.plan.tipo != "nada" else None
+        grupos_restr = self.modalidad.grupos_restricciones if self.modalidad else []
         self.ctx = Contexto(ficha, grupos_restr, cfg=self.cfg, salidas=self.salidas, restricciones=self.restricciones)
         self.registro_rechazos = RegistroRechazos(
             proveedor=getattr(proveedor, "nombre", ""), modelo=getattr(proveedor, "modelo", ""), id_caso=ficha.id_caso
@@ -292,18 +324,20 @@ class Generador:
         self._secciones: dict[str, Any] = {}
         self._vacios: list[Vacio] = []
         self._hechos: set[str] = set()
-        self._v_afirm, self._t_afirm = cargar_prompt(self.cfg.prompts.afirmaciones)
-        self._v_red, self._t_red = cargar_prompt(self.cfg.prompts.redaccion)
+        propio = self.cfg.prompts.paquetes.get(self.plan.tipo)
+        if propio:  # E2-02: un archivo con los dos pasos (bloque «afirmaciones» para el paso 1; «comunes» y el del grupo para el paso 2)
+            self._v_red, self._t_red = cargar_prompt(propio)
+            self._v_afirm, self._t_afirm = self._v_red, _bloques(self._t_red)["afirmaciones"]
+        else:
+            self._v_afirm, self._t_afirm = cargar_prompt(self.cfg.prompts.afirmaciones)
+            self._v_red, self._t_red = cargar_prompt(self.cfg.prompts.redaccion)
 
     # ---- grupos de este paquete
 
     @property
     def grupos(self) -> list[str]:
-        if self.plan.tipo == "editorial":
-            return list(self.cfg.grupos.editorial)
-        if self.plan.tipo == "investigacion":
-            return list(self.cfg.grupos.investigacion)
-        return []
+        """Los grupos de redacción del paquete del plan (``generacion.yaml`` · ``grupos``); ninguno si no se genera nada."""
+        return list(getattr(self.cfg.grupos, self.plan.tipo, None) or [])
 
     # ---- una llamada al LLM
 
@@ -430,7 +464,7 @@ class Generador:
             medios = sorted({n(self.ctx.registros[c.id].contexto["medio"]) for c in a.citas if "medio" in self.ctx.registros[c.id].contexto})
             medio = f"; medio: {', '.join(medios)}" if medios else ""
             lineas.append(f"{n(a.id)} [{a.tipo}] {n(a.texto)} (citas: {citas}{base}{medio})")
-        if grupo in ("brief", "investigacion"):
+        if "preguntas" in GRUPOS[grupo].secciones:  # las preguntas nacen de los vacíos (D-43)
             lineas.append("vacíos de la ficha:")
             lineas += [f"  {n(v.id)}: {n(v.descripcion)}" for v in self.ficha.vacios] or ["  (ninguno)"]
         abiertas = [c for c in self.ficha.contradicciones if c.abierta]
@@ -446,6 +480,9 @@ class Generador:
             "copy_digital": e.copy_max_palabras, "brief": e.brief_max_palabras, "resumen_web": e.resumen_web_max_palabras,
         }
         partes = [f"{s} ≤ {m} palabras (apunta a {int(m * f)})" for s in GRUPOS[grupo].secciones if (m := maximos.get(s))]
+        if set(BLOQUES_RESUMEN) <= set(GRUPOS[grupo].secciones):
+            m = self.salidas.banca.resumen_max_palabras
+            partes.append(f"{' + '.join(BLOQUES_RESUMEN)} ≤ {m} palabras en total (apunta a {int(m * f)})")
         if "guion" in GRUPOS[grupo].secciones:
             partes.append(f"guion entre {e.guion_palabras_min} y {e.guion_palabras_max} palabras (sin contar los marcadores)")
         return ("Límites estrictos de palabras: " + "; ".join(partes) + ". Cuéntalas antes de responder.\n\n") if partes else ""
@@ -498,6 +535,13 @@ class Generador:
                 else:
                     self._secciones[s] = valor
                     pendientes.remove(s)
+            # reglas que cruzan secciones del grupo (E2-02: el resumen del boletín suma sus dos bloques): lo que no pasa vuelve a pendiente
+            for r in validar_conjunto({s: self._secciones[s] for s in g.secciones if s in self._secciones}, self.ctx):
+                self.registro_rechazos.evaluacion("seccion", r.seccion, r.seccion, [r], intento)
+                self._secciones.pop(r.seccion, None)
+                errores.setdefault(r.seccion, []).append(r)
+                if r.seccion not in pendientes:
+                    pendientes.append(r.seccion)
             registro.valida = not pendientes
             if not pendientes:
                 break
@@ -541,7 +585,7 @@ class Generador:
     def _preguntas(self) -> list[PreguntaInvestigacion]:
         return [PreguntaInvestigacion(texto=q.texto.strip(), vacio=q.vacio) for q in self._secciones.get("preguntas", [])]
 
-    def paquete(self) -> PaqueteEditorial | PaqueteInvestigacion | None:
+    def paquete(self) -> Paquete | None:
         """El paquete con lo generado hasta ahora (lo que no se generó queda vacío, sin motivo: está pendiente).
 
         Compuerta final (E1-13): el paquete armado pasa por ``validar_paquete``. Una sección que no valida **no sale**: se vacía con su
@@ -561,13 +605,13 @@ class Generador:
             self._vacios.append(Vacio(origen="seccion", referencia=seccion, motivo="; ".join(mensajes(propios))[: self.cfg.texto.motivo_max_caracteres]))
         return self._armar()
 
-    def _armar(self) -> PaqueteEditorial | PaqueteInvestigacion | None:
+    def _armar(self) -> Paquete | None:
         if self.plan.tipo == "nada":
             return None
         vacios = list(self._vacios)
         if self.ficha.accion in self.cfg.acciones.completo_con_vacios:
             vacios = [Vacio(origen="ficha", referencia=v.id, motivo=v.descripcion) for v in self.ficha.vacios] + vacios
-        comunes: dict[str, Any] = {
+        base: dict[str, Any] = {
             "marca": self.restricciones.marca_borrador,
             "id_caso": self.ficha.id_caso,
             "version": self.ficha.version,
@@ -578,10 +622,11 @@ class Generador:
             "forzado": self.plan.forzado,
             "vacios": vacios,
             "afirmaciones": self._afirmaciones or [],
-            "fuentes_verificaciones": list(self.ficha.fuentes_verificaciones),
-            "enfoque": self._lista("enfoque"),
             "preguntas": self._preguntas(),
         }
+        if self.plan.tipo == "boletin":
+            return self._boletin(base)
+        comunes = {**base, "fuentes_verificaciones": list(self.ficha.fuentes_verificaciones), "enfoque": self._lista("enfoque")}
         if self.plan.tipo == "investigacion":
             return PaqueteInvestigacion(titulo_trabajo=self._uno("titulo_trabajo"), **comunes)
         return PaqueteEditorial(
@@ -593,6 +638,38 @@ class Generador:
             copy_digital=self._lista("copy_digital"),
             **comunes,
         )
+
+    def _boletin(self, base: dict[str, Any]) -> BoletinBanca:
+        """Boletín de entorno (docs/salidas.md §2): resumen en dos bloques y preguntas del LLM; sectores, horizonte y aviso por regla;
+        evidencia copiada de la ficha (D-43). Un grupo sin tema con sector no recibe sector: queda constancia en ``vacios``."""
+        assert self.modalidad is not None
+        sectores = self._sectores()
+        vacios = list(base["vacios"])
+        if not sectores:
+            vacios.append(Vacio(origen="seccion", referencia="sectores", motivo=self.cfg.boletin.sin_sector))
+        return BoletinBanca(
+            **{**base, "vacios": vacios},
+            observaciones=self._lista("observaciones"),
+            hipotesis_impacto=self._lista("hipotesis_impacto"),
+            sectores=sectores,
+            horizonte=horizonte_de(self.ficha.edad_evidencia_dias, self.modalidad),
+            evidencia=list(self.ficha.evidencia),
+            aviso=self.restricciones.aviso_banca,
+        )
+
+    def _sectores(self) -> list[SectorRelacionado]:
+        """Sector del tema principal y del secundario (mapeo tema → sector de la modalidad, D-11), cada uno con su motivo y sin repetir."""
+        assert self.modalidad is not None
+        temas = cargar_temas().temas
+        motivos = self.cfg.boletin.motivo_sector
+        salida: list[SectorRelacionado] = []
+        for tema, plantilla in ((self.ficha.tema, motivos.principal), (self.ficha.tema_secundario, motivos.secundario)):
+            sector = sector_de_tema(tema, self.modalidad)
+            if sector is None or tema is None or any(x.sector == sector for x in salida):
+                continue
+            nombre = temas[tema].nombre if tema in temas else tema
+            salida.append(SectorRelacionado(sector=sector, motivo=plantilla.format(tema=nombre, sector=sector)))
+        return salida
 
     def resultado(self) -> ResultadoGeneracion:
         return ResultadoGeneracion(self.plan.tipo, self.paquete(), self.plan.motivo, self.llamadas, self.descartadas)
@@ -627,19 +704,22 @@ def _retroalimentacion(problemas: Sequence[str]) -> str:
 
 
 def planificar(ficha: EntradaFicha, forzar_completo: bool, cfg: ConfigGeneracionBorrador) -> Plan:
-    """Qué se genera según la acción de la ficha (D-42). La persona puede forzar el paquete completo (queda registrado)."""
+    """Qué se genera según la acción de la ficha (D-42). La persona puede forzar el paquete completo (queda registrado).
+
+    El paquete completo es el de la modalidad (``generacion.yaml`` · ``modalidades``): editorial o boletín de entorno (E2-02)."""
     a = cfg.acciones
     if ficha.modalidad not in cfg.modalidades:
-        return Plan("nada", motivo=f"la generación de la modalidad {ficha.modalidad!r} llega con su propia spec (E2-02)")
+        return Plan("nada", motivo=f"la modalidad {ficha.modalidad!r} no tiene generación (config/generacion.yaml · modalidades)")
+    completo = cfg.modalidades[ficha.modalidad]
     if not ficha.registros:
         return Plan("nada", motivo="sin evidencia: la ficha no tiene registros que citar (abstención antes de llamar al LLM)")
     conocida = ficha.accion in (*a.completo, *a.completo_con_vacios, *a.investigacion, *a.nada)
     if not conocida:
         return Plan("nada", motivo=f"acción desconocida: «{ficha.accion}» (ni forzando se genera para una acción que no está en config/generacion.yaml)")
     if ficha.accion in a.completo or ficha.accion in a.completo_con_vacios:
-        return Plan("editorial")
+        return Plan(completo)
     if forzar_completo:  # D-42: la persona puede forzar el paquete completo y queda registrado
-        return Plan("editorial", forzado=True)
+        return Plan(completo, forzado=True)
     if ficha.accion in a.investigacion:
         return Plan("investigacion")
     return Plan("nada", motivo=f"la acción «{ficha.accion}» no genera borrador (D-42)")
@@ -676,7 +756,11 @@ def desde_ficha(ficha: Ficha) -> EntradaFicha:
     - Datos y eventos oficiales: el texto de la línea de la ficha en el campo que citan (``valor``, ``magnitude``) y el nombre del
       indicador; el año se toma de la línea cuando la línea cita un solo dato.
     - Vacíos: los de la ficha (principales y otros). Contradicciones: ambas versiones; sin fragmento literal se usa el titular.
+    - Boletín (E2-02): lo respaldado como lo muestra la ficha (``texto_respaldo``), el tema principal y el secundario, y la edad de la
+      noticia más reciente frente al corte del puntaje (``edad_evidencia_ficha``).
     """
+    from src.ficha import texto_respaldo
+
     registros: dict[str, RegistroEvidencia] = {}
     for t in ficha.quien_lo_reporta.titulares:
         contexto = {"medio": t.medio, **({"fecha_publicacion": t.fecha_publicacion} if t.fecha_publicacion else {})}
@@ -713,7 +797,22 @@ def desde_ficha(ficha: Ficha) -> EntradaFicha:
         vacios=[VacioFicha(id=v.codigo, descripcion=v.texto) for v in [*f.principales, *f.otros]],
         fuentes_verificaciones=fuentes_y_verificaciones(ficha),
         contradicciones=abiertas,
+        evidencia=[texto_respaldo(x) for x in (*r.reportes, *r.datos_oficiales, *r.eventos_oficiales, *r.declaraciones)],
+        tema=ficha.que_se_reporta.tema,
+        tema_secundario=ficha.que_se_reporta.tema_secundario,
+        edad_evidencia_dias=edad_evidencia_ficha(ficha),
     )
+
+
+def edad_evidencia_ficha(ficha: Ficha) -> float | None:
+    """Días entre la noticia más reciente de la ficha y el corte de su puntaje (``fecha_referencia``), con la misma regla que el
+    horizonte de la bandeja (E2-01): la publicación más reciente y, si ningún titular la trae, la detección (``cobertura.fecha_fin``,
+    que sin publicaciones es la detección más reciente). ``None`` sin ninguna fecha de noticia."""
+    reglas = cargar_reglas()
+    miembros: list[dict[str, Any]] = [{"fecha_publicacion": t.fecha_publicacion} for t in ficha.quien_lo_reporta.titulares]
+    miembros.append({reglas.urgencia.fecha_sin_publicacion: ficha.que_se_reporta.cobertura.fecha_fin})
+    corte = datetime.fromisoformat(ficha.puntaje.fecha_referencia.replace("Z", "+00:00"))
+    return edad_en_dias(miembros, corte if corte.tzinfo else corte.replace(tzinfo=timezone.utc), reglas)
 
 
 # ============================================================================================ entrada para la interfaz y la caché (E1-14)
@@ -731,7 +830,7 @@ def generar_paquete(
     forzar_completo: bool = False,
     refrescar: bool = False,
     entrada: EntradaFicha | None = None,
-) -> PaqueteEditorial | PaqueteInvestigacion:
+) -> Paquete:
     """El borrador del grupo, **desde la caché** (``solo_cache=True``, lo que usa la interfaz) o generándolo y guardándolo.
 
     - ``solo_cache=True``: nunca crea un proveedor ni abre una conexión. Rearma el paquete con las respuestas guardadas (la validación

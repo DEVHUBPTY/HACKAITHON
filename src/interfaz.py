@@ -635,6 +635,8 @@ def _texto_de_elemento(x: Any) -> str:
             return f"{parte}{x['texto']}" + (f" [{apoyo}]" if apoyo else "")
         if "motivo" in x and "referencia" in x:  # vacío
             return f"{x['referencia']}: {x['motivo']}"
+        if "sector" in x and "motivo" in x:  # sector del boletín bancario (E2-02)
+            return f"{x['sector']}: {x['motivo']}"
     return json.dumps(x, ensure_ascii=False)
 
 
