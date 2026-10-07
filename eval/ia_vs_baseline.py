@@ -36,6 +36,7 @@ from typing import Any
 import numpy as np
 
 from eval import metricas
+from eval import origen_etiquetas as oe
 from src.configuracion import RAIZ, CriterioAB, cargar_benchmark, cargar_clasificacion
 
 SALIDA = RAIZ / "outputs" / "ia_vs_baseline.json"
@@ -311,6 +312,7 @@ def evaluar_clasificacion(ruta_base: Path) -> dict[str, Any]:
     d_pipe = metricas.diferencia_con_ic(todos_reales, base_todos, ia_todos, clases, cfg.criterio_ab)
     disc_pipe = discordantes(validos, todos_reales, ia_todos, base_todos)
     return {
+        **oe.marcar({}, oe.SOLO_HUMANOS),   # D-101: de qué procedencia son las etiquetas con que se midió (la página lo lee de aquí)
         "modelo": modelo,
         "metodo": metodo,
         "baseline": f"src/baseline.py, variante {cfg.baseline.variante_activa}",
@@ -419,6 +421,7 @@ def evaluar_agrupacion(ruta_base: Path, referencia: Path = RAIZ / "outputs" / "a
     cv_ref = None if referencia_json is None else referencia_json["validacion_cruzada"]["agrupado"]
     tp_cv, fp_n, fn_n = _conteos(real, cv, alcance_cv)
     return {
+        **oe.marcar({}, oe.SOLO_HUMANOS),   # D-101: los grupos son los de leer_grupos_humanos (solo personas)
         "modelo": cfg.modelo_activo,
         "umbral_elegido_con_todas_las_etiquetas": elegido,
         "umbral_por_pliegue_validacion_cruzada": umbral_de_pliegue,
