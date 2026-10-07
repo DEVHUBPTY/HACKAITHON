@@ -154,6 +154,34 @@ def test_x78_el_sobrecosto_sin_marcador_judicial_sigue_entrando(titular: str) ->
     assert decidir("agua_potable", titular) == ("obras_publicas", "lexico")
 
 
+@pytest.mark.parametrize(
+    "titular",
+    [
+        "Audiencia de imputación a contratista del MOP por la carretera",
+        "Fijan audiencia preliminar contra exdirector del MOP",
+        "Inicia juicio oral por sobrecostos en el puente",
+        "Piden llamamiento a juicio de contratista de la autopista",
+        "Tribunal de juicio condena a constructor de la carretera",
+        "Tribunal Superior ordena revisar contrato de la autopista",
+    ],
+)
+def test_x83_las_frases_del_proceso_penal_siguen_excluyendo_obras_publicas(titular: str) -> None:
+    assert decidir("agua_potable", titular) == (None, None)
+
+
+@pytest.mark.parametrize(
+    "titular",
+    [
+        "Audiencia pública sobre el nuevo puente de Chiriquí",
+        "MOP presenta en audiencia pública el diseño de la autopista",
+        "A juicio del MOP, la carretera estará lista en diciembre",
+        "Tribunal Electoral y MOP firman convenio de carreteras",
+    ],
+)
+def test_x83_audiencia_juicio_y_tribunal_sueltos_no_quitan_el_subtema_de_obras(titular: str) -> None:
+    assert decidir("agua_potable", titular) == ("obras_publicas", "lexico")
+
+
 def test_x78_los_marcadores_no_vuelven_ruido_al_titular() -> None:
     from src import limpieza
     from src.limpieza import Reglas

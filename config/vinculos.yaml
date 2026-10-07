@@ -104,10 +104,14 @@ subtema:                            # D-92 (enmienda a E1-09) y E1-10c (X41): el
     obras_publicas:
       - '(?<!\w)(?:(?:construccion|ampliacion|rehabilitacion|remodelacion|obras?)\s+(?:de|del)\s+(?:(?:un|el|los)\s+)?(?:nuevo\s+)?|nuevos?\s+)acueductos?(?!\w)'
   # E1-07c (X78, D-111): el proceso judicial por corrupción NO es obras públicas (ni subtema de justicia: la nota es otro asunto).
+  # X83: «audiencia», «juicio» y «tribunal» sueltos quitaban el subtema a «Audiencia pública sobre el nuevo puente» o «Tribunal
+  # Electoral y MOP firman convenio»: solo cuentan las frases del proceso penal.
   # Un titular con alguno de estos marcadores (palabra o frase completa, sin tildes) no respalda el subtema; no se vuelve ruido.
   exclusiones_por_subtema:
     obras_publicas: [imputa, imputan, imputacion, imputaciones, imputado, imputados, imputada, juez, jueza, jueces, fiscalia,
-                     tribunal, magistrado, audiencia, juicio, condena, condenan, condenado, condenados, peculado, corrupcion,
+                     magistrado, audiencia de imputacion, audiencia preliminar, juicio oral, llamamiento a juicio,
+                     tribunal de juicio, tribunal superior,
+                     condena, condenan, condenado, condenados, peculado, corrupcion,
                      detienen a, detenido por, detenidos por, aprehenden a, aprehendido por, prision preventiva, acusan a]
 
 sismos:                             # E1-09b: presentación y textos fijos del vínculo con eventos USGS
