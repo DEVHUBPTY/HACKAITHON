@@ -1,0 +1,11 @@
+{
+ "clave": "e10477d5c341972610292d66707b5f6038b953395336c55e51f1c10a2ca64131",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 2057,
+ "tokens_salida": 282,
+ "creado_utc": "2026-10-07T11:59:27Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"Medios reportan que El Niño profundiza riesgos económicos en América Latina\", \"afirmaciones\": [\"A1\", \"A2\", \"A3\", \"A4\", \"A5\", \"A6\"]}, \"enfoque\": [{\"texto\": \"Si los reportes sobre la intensificación de El Niño se sostienen, los riesgos económicos en América Latina podrían agravarse.\", \"afirmaciones\": [\"A1\"]}, {\"texto\": \"El grupo reúne 20 titulares de 18 medios, aunque la procedencia independiente estimada es de solo 1.\", \"afirmaciones\": [\"A7\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún indicador oficial asignado a los riesgos económicos de El Niño en América Latina?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Cuántas de las 20 piezas provienen de medios con independencia editorial entre sí?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Qué medio y qué fecha de publicación corresponden a cada uno de los 20 titulares?\", \"vacio\": \"medios_o_fechas_desconocidos\"}]}"
+}

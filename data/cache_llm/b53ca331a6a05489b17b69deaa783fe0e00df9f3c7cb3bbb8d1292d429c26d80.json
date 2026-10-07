@@ -1,0 +1,11 @@
+{
+ "clave": "b53ca331a6a05489b17b69deaa783fe0e00df9f3c7cb3bbb8d1292d429c26d80",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1836,
+ "tokens_salida": 305,
+ "creado_utc": "2026-10-07T12:00:20Z",
+ "respuesta": "{\n  \"titulo_trabajo\": {\n    \"texto\": \"TVN Panamá reporta: \\\"Coclé, se seca el campo\\\"\",\n    \"afirmaciones\": [\"A1\"]\n  },\n  \"enfoque\": [\n    {\n      \"texto\": \"El grupo de registros sobre este tema reúne 1 titular de 1 medio, según los datos del grupo.\",\n      \"afirmaciones\": [\"A2\"]\n    },\n    {\n      \"texto\": \"Si la procedencia independiente estimada es de 1, la evidencia disponible sería insuficiente para sostener el tema.\",\n      \"afirmaciones\": [\"A3\"]\n    }\n  ],\n  \"preguntas\": [\n    {\n      \"texto\": \"¿Existe algún indicador oficial asignado al tema de la sequía en Coclé que permita contrastar lo reportado?\",\n      \"vacio\": \"sin_dato_oficial\"\n    },\n    {\n      \"texto\": \"¿Qué otras coberturas independientes sobre el tema pueden identificarse además del titular de TVN Panamá?\",\n      \"vacio\": \"procedencias_insuficientes\"\n    },\n    {\n      \"texto\": \"¿Qué fuentes oficiales podrían aportar datos verificables sobre la situación del campo en Coclé?\",\n      \"vacio\": \"sin_dato_oficial\"\n    }\n  ]\n}"
+}

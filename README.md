@@ -42,6 +42,7 @@ poetry run python -m eval.validar_benchmark          # valida el benchmark de de
 poetry run python -m eval.run_benchmark --split dev  # benchmark de desarrollo (E1-18)
 poetry run python -m eval.ia_vs_baseline             # IA contra su línea base con IC (docs/ia_vs_baseline.md, E1-18)
 poetry run python -m eval.sustento                   # validez de sustento, cuando una persona completó outputs/revision_sustento.csv (E1-18)
+poetry run python -m scripts.reproducir --verificar  # reconstruye todo desde data/raw/ y compara con el manifest (E1-20)
 ```
 
 Previstos; cada uno estará disponible cuando se implemente su spec:
@@ -50,8 +51,21 @@ Previstos; cada uno estará disponible cuando se implemente su spec:
 poetry run streamlit run app.py                      # interfaz (E1-15)
 poetry run streamlit run app.py -- --demo            # modo demo con data/demo.duckdb (C-06)
 poetry run python -m scripts.verificar_offline       # chequeo antes del pitch (C-06)
-poetry run python -m scripts.reproducir --verificar  # reproduce y compara con el manifest (E1-20)
 ```
+
+## Reproducir en una máquina nueva (E1-20)
+
+```bash
+poetry install                                       # dependencias fijadas en poetry.lock (Python 3.11)
+poetry run python -m scripts.reproducir --verificar  # un solo comando
+```
+
+Reconstruye todo desde `data/raw/` (conversión, validación, normalización, limpieza, clasificación, agrupación, contexto, puntaje, fichas, benchmark y métricas) y compara el SHA-256 de cada salida determinista con `data/manifest.json`. Imprime cada diferencia y sale con código 1 si hay alguna. Tarda ≈ 1 minuto.
+
+- La primera vez, con red, se descargan los dos modelos de embeddings locales a `models/`; después no hace falta red (`HF_HUB_OFFLINE=1` la evita). No llama a ningún proveedor de LLM y no necesita clave.
+- Los borradores del LLM salen de `data/cache_llm/` y se comparan como tales; nunca se regeneran. Sin caché pueden variar (se declara como limitación).
+- RSS y GDELT no se versionan (D-72): sin esos crudos no se reconstruye `processed/` y se usa el versionado (también se declara). Cómo recuperarlos: `data/README.md`.
+- Qué se compara, qué se excluye del hash y por qué, y los no determinismos encontrados: `docs/reproducibilidad.md`.
 
 ## Evaluación reservada (para el jurado)
 

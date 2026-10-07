@@ -1,0 +1,11 @@
+{
+ "clave": "1a1fd6d95ef20b6e5fba41fff79022009ab37f5ac614d58a0a85b7c2a3dbdda6",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1888,
+ "tokens_salida": 300,
+ "creado_utc": "2026-10-07T11:59:53Z",
+ "respuesta": "{\n  \"titulo_trabajo\": {\n    \"texto\": \"TVN Panamá reporta que César Caicedo está recluido en el Hospital Santo Tomás\",\n    \"afirmaciones\": [\"A1\"]\n  },\n  \"enfoque\": [\n    {\n      \"texto\": \"La ficha estima una sola procedencia independiente para este tema, por debajo del mínimo de dos que considera evidencia suficiente.\",\n      \"afirmaciones\": [\"A3\"]\n    },\n    {\n      \"texto\": \"Si esa procedencia única se mantiene, la cobertura del caso quedaría limitada a lo que reporta un solo medio.\",\n      \"afirmaciones\": [\"A2\"]\n    }\n  ],\n  \"preguntas\": [\n    {\n      \"texto\": \"¿Existe algún dato oficial vinculado a este tema que la ficha aún no tenga asignado?\",\n      \"vacio\": \"sin_dato_oficial\"\n    },\n    {\n      \"texto\": \"¿Qué otras procedencias independientes podrían sumarse para alcanzar al menos dos?\",\n      \"vacio\": \"procedencias_insuficientes\"\n    },\n    {\n      \"texto\": \"¿Qué indicador oficial podría corresponder a este tema para cubrir el vacío de dato oficial?\",\n      \"vacio\": \"sin_dato_oficial\"\n    }\n  ]\n}"
+}
