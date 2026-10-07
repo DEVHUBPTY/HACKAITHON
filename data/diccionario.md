@@ -335,8 +335,8 @@ El LLM solo agrega una nota (`nota_llm`); **nunca cierra un par** (X21): si no e
 | `estado` | VARCHAR | no | contradicciones | derivado | Siempre `verificar`: abierta hasta que una persona la cierre en la revisión (E1-16). |
 | `nota_llm` | VARCHAR | no | LLM | derivado | Anotación para la persona: `posible_contradiccion`, `compatible` o `pendiente` (sin LLM, falló o respondió algo inválido). No cambia el estado de evidencia ni oculta el par. |
 | `etiqueta` | VARCHAR | no | `prioridad.yaml` | derivado | «posible contradicción, verificar». |
-| `fragmento_a` | VARCHAR | sí | LLM | derivado | Fragmento literal del titular A que cita el LLM (validado como subcadena); solo con `verificar`. |
-| `fragmento_b` | VARCHAR | sí | LLM | derivado | Fragmento literal del titular B; solo con `verificar`. |
+| `fragmento_a` | VARCHAR | sí | LLM | derivado | Fragmento literal del titular A que cita el LLM (validado como subcadena); solo con `nota_llm = posible_contradiccion`. |
+| `fragmento_b` | VARCHAR | sí | LLM | derivado | Fragmento literal del titular B; solo con `nota_llm = posible_contradiccion`. |
 | `proveedor` | VARCHAR | sí | `local.env` | derivado | Proveedor del LLM (`ollama`); nulo si no hubo. |
 | `modelo` | VARCHAR | sí | `local.env` | derivado | Modelo del proveedor. |
 | `motivo_pendiente` | VARCHAR | sí | contradicciones | derivado | Solo con `nota_llm = pendiente`: por qué no se comparó (sin proveedor, proveedor caído, salida inválida, sobre el tope). |
