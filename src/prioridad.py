@@ -113,13 +113,19 @@ def parsear_fecha(texto: str) -> datetime:
     return fecha.astimezone(UTC)
 
 
-def _oficial_por_grupo(vinculos: Sequence[Mapping[str, Any]]) -> tuple[dict[str, bool], dict[str, str]]:
-    """Por grupo: ¿hay un dato o evento oficial vinculado con valor? y el motivo si no lo hay."""
+def _oficial_por_grupo(
+    vinculos: Sequence[Mapping[str, Any]], relaciones_aceptadas: Sequence[str]
+) -> tuple[dict[str, bool], dict[str, str]]:
+    """Por grupo: ¿hay un dato o evento oficial vinculado con valor? y el motivo si no lo hay.
+
+    Solo cuentan las relaciones de ``relaciones_aceptadas`` (``directa`` y ``evento``): un vínculo ``indirecta`` es contexto
+    lejano y no mide el hecho (X22), así que no es dato oficial.
+    """
     oficial: dict[str, bool] = {}
     motivos: dict[str, str] = {}
     for v in vinculos:
         grupo = str(v["id_grupo"])
-        if v.get("id_evidencia") and not v.get("motivo_sin_vinculo") and v.get("valor") is not None:
+        if v.get("id_evidencia") and v.get("tipo") in relaciones_aceptadas and not v.get("motivo_sin_vinculo") and v.get("valor") is not None:
             oficial[grupo] = True
         elif v.get("motivo_sin_vinculo"):
             motivos.setdefault(grupo, str(v["motivo_sin_vinculo"]))
@@ -127,7 +133,7 @@ def _oficial_por_grupo(vinculos: Sequence[Mapping[str, Any]]) -> tuple[dict[str,
 
 
 def leer_entradas(
-    con: Any, reglas: ReglasV13, emb: Embeddings
+    con: Any, reglas: ReglasV13, emb: Embeddings, cfg: ConfigPrioridad | None = None
 ) -> tuple[list[EntradaGrupo], dict[str, int], dict[str, str]]:
     """Entradas del puntaje, procedencia de cada noticia (su ``orden``) y titular central de cada grupo."""
     grupos = db.leer_tabla(con, "grupos", "id_grupo")
@@ -146,7 +152,8 @@ def leer_entradas(
         for id_noticia in str(p["ids_noticia"]).split(SEPARADOR_LISTA):
             procedencia_de[id_noticia] = int(p["orden"])
     subtemas = {g["id_grupo"]: g["subtema"] for g in leer_contexto_de_grupos(con)}
-    oficial, motivos = _oficial_por_grupo(db.leer_tabla(con, "vinculos"))
+    cfg = cfg or cargar_prioridad()
+    oficial, motivos = _oficial_por_grupo(db.leer_tabla(con, "vinculos"), cfg.dato_oficial.relaciones_aceptadas)
     entradas = []
     for g in grupos:
         id_grupo = str(g["id_grupo"])

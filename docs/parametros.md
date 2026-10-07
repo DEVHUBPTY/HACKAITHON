@@ -43,7 +43,7 @@ Las reglas v1.3 fijan las fórmulas; estas filas fijan lo que dejan abierto. Tod
 | N: con quién se compara | Máxima similitud entre un titular del grupo y un titular de un grupo que **empezó antes** (`fecha_publicacion`, si falta `fecha_deteccion`); empate de fecha: menor ID | Supuesto | `test_n_compara_solo_con_grupos_anteriores_*` |
 | Medios que no identifican (`medios.desconocidos`) | `""`, `desconocido`, `unknown`, `n/a` | Supuesto | `test_un_medio_desconocido_no_cuenta_como_identificable` |
 | Decimales para comparar P y U al desempatar (`comparacion.decimales_p`) | 9 | Práctica (evita que el ruido de coma flotante rompa un empate) | `test_un_empate_por_ruido_de_coma_flotante_no_decide_el_orden` |
-| Dato oficial en E | Hay al menos un vínculo con `id_evidencia` y valor no nulo (Banco Mundial o USGS) en `vinculos` | Diseño (E1-09, E1-09b) | `test_dos_grupos_identicos_salvo_por_tener_dato_oficial_*` |
+| Dato oficial en E y en el estado de evidencia (`dato_oficial.relaciones_aceptadas`) | Hay al menos un vínculo en `vinculos` con `id_evidencia`, valor no nulo, sin motivo de «sin vínculo» y de relación `directa` o `evento`. **`indirecta` no cuenta**: el indicador es contexto lejano y no mide el hecho (X22) | Diseño (E1-09, E1-09b; revisión del PR #22) | `test_x22_*` · `test_dos_grupos_identicos_salvo_por_tener_dato_oficial_*` |
 | Cifras de un titular (`cifras.*`) | Un número que no es fecha («2 de octubre»), año (1900–2100 sin `%`) ni identificador (ley, decreto, resolución…); `84.000` = 84 mil, `3,2` = decimal; la unidad es `%` o la raíz de 5 letras de la palabra siguiente | Supuesto (conservador: ante la duda no cuenta como cifra) | `test_extraccion_de_cifras_*` · `test_valores_numericos_con_separadores` |
 
 ## Estado de evidencia

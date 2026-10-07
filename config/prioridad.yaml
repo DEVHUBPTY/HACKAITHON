@@ -9,6 +9,9 @@ comparacion:
 impacto:
   alcance_subtema_desconocido: 0.5   # grupo sin subtema (tema `sin_tema`): alcance neutro, igual que `alcance_geografico.desconocido`
 
+dato_oficial:                     # qué vínculos de `vinculos` (columna `tipo`) cuentan como dato oficial en E y en el estado de evidencia
+  relaciones_aceptadas: [directa, evento]   # `indirecta` NO: el indicador es contexto lejano y no mide el hecho (vinculos.yaml)
+
 geografia:                        # alcance geográfico de I: se buscan los términos de reglas_v1.3.yaml:geografia en los titulares
   # Términos que nombran al país y a una provincia a la vez: solo cuentan como la provincia si los precede alguno de estos prefijos.
   prefijos_obligatorios:

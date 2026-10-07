@@ -14,7 +14,7 @@ y **no habilita publicación** (``Puntaje.habilita_publicacion`` es siempre fals
   detección como cota y se agrega el vacío «urgencia estimada: fecha de publicación desconocida»; nunca se sustituye en silencio.
 * **N** = ``1 − percentil(similitud máxima con grupos anteriores)``; anterior = empezó antes (``fecha_publicacion`` y, si falta,
   ``fecha_deteccion``). El primer grupo no tiene con qué compararse (``novedad.sin_grupos_previos``). La duplicación no sube N.
-* **E** = ``peso_procedencias × min(n, tope)/tope + peso_oficial × (hay dato oficial) + peso_identificables × (titulares con
+* **E** = ``peso_procedencias × min(n, tope)/tope + peso_oficial × (hay dato oficial directo o evento) + peso_identificables × (titulares con
   medio y fecha de publicación conocidos / titulares)``. Cuenta **procedencias**, nunca titulares (``procedencias.fraccion_de_procedencias``).
 
 Las similitudes se convierten a **percentil dentro del snapshot** (los embeddings dan valores comprimidos): el rango

@@ -1688,6 +1688,10 @@ class ImpactoPrioridad(ModeloConfig):
     alcance_subtema_desconocido: float = Unidad
 
 
+class DatoOficialPrioridad(ModeloConfig):
+    relaciones_aceptadas: list[str] = Field(min_length=1)
+
+
 class GeografiaPrioridad(ModeloConfig):
     prefijos_obligatorios: dict[str, list[str]]
 
@@ -1775,6 +1779,7 @@ class ConfigPrioridad(ModeloConfig):
     version: int
     comparacion: ComparacionPrioridad
     impacto: ImpactoPrioridad
+    dato_oficial: DatoOficialPrioridad
     geografia: GeografiaPrioridad
     medios: MediosPrioridad
     cifras: CifrasPrioridad

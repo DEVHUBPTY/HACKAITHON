@@ -181,3 +181,46 @@ def test_x21_el_estado_de_evidencia_es_el_mismo_con_llm_compatible_que_sin_llm(b
     assert notas == {"GRP-a": "compatible", "GRP-d": "compatible"}
     visibles = [c for fila in reporte["ranking"] for c in fila["contradicciones"]]
     assert len(visibles) == 2 and {c["nota_llm"] for c in visibles} == {"compatible"}
+
+
+# ------------------------------------------------------------------ X22: solo vínculos directos o eventos son dato oficial
+
+
+def _fila_vinculo(grupo: str, tipo: str | None, **campos) -> dict:
+    fila = dict.fromkeys(db.columnas("vinculos")) | {"id_grupo": grupo, "regla": "prueba", "fuente": "indicador", "id_evidencia": "IND-PAN-X-2024", "valor": 1.0, "tipo": tipo}
+    return fila | campos
+
+
+def test_x22_un_vinculo_indirecto_no_es_dato_oficial() -> None:
+    cfg = prioridad.cargar_prioridad()
+    filas = [
+        _fila_vinculo("GRP-dir", "directa"),
+        _fila_vinculo("GRP-ind", "indirecta"),
+        _fila_vinculo("GRP-evt", "evento", fuente="usgs", id_evidencia="SIS-us1"),
+        _fila_vinculo("GRP-mix", "indirecta"),
+        _fila_vinculo("GRP-mix", "directa", rol="tendencia"),
+    ]
+    oficial, _ = prioridad._oficial_por_grupo(filas, cfg.dato_oficial.relaciones_aceptadas)
+    assert oficial == {"GRP-dir": True, "GRP-evt": True, "GRP-mix": True}
+    assert "GRP-ind" not in oficial
+
+
+def test_x22_las_relaciones_aceptadas_salen_de_la_configuracion_y_existen_en_vinculos_yaml() -> None:
+    from src.configuracion import cargar_vinculos
+
+    cfg = prioridad.cargar_prioridad()
+    assert set(cfg.dato_oficial.relaciones_aceptadas) == {"directa", "evento"}
+    assert set(cfg.dato_oficial.relaciones_aceptadas) <= set(cargar_vinculos().tipos_relacion)
+    assert "indirecta" not in cfg.dato_oficial.relaciones_aceptadas
+
+
+def test_x22_un_grupo_solo_con_vinculo_indirecto_no_tiene_dato_oficial_ni_e_oficial(tmp_path, emb) -> None:
+    ruta = tmp_path / "s.duckdb"
+    noticias = [fila_noticia("NOT-i000000001", "Canal: tránsitos suben", "m.example", "GRP-i")]
+    vinculos = [_fila_vinculo("GRP-i", "indirecta", id_evidencia="IND-PAN-NE.EXP.GNFS.ZS-2024", rol="panama")]
+    db.guardar_todo(ruta, {"noticias": noticias, "grupos": [fila_grupo("GRP-i", ["NOT-i000000001"], "Canal", 1)], "procedencias": filas_procedencias("GRP-i", ["NOT-i000000001"]), "vinculos": vinculos})
+    prioridad.ejecutar(ruta, tmp_path / "p.json", CORTE, None, emb=emb)
+    (e,) = _tabla(ruta, "evidencia", "id_grupo")
+    assert e["tiene_oficial"] is False
+    (p,) = _tabla(ruta, "puntajes", "posicion")
+    assert json.loads(p["componentes"])["E"]["explicacion"]["tiene_oficial"] is False

@@ -305,7 +305,7 @@ Los reemplaza `python -m src.puntaje`.
 | `id_grupo` | VARCHAR | no | `grupos` | derivado | Grupo evaluado. Clave primaria. |
 | `estado` | VARCHAR | no | `reglas_v1.3.yaml` | derivado | `insuficiente`, `parcial` o `suficiente` (para el borrador). |
 | `n_procedencias` | INTEGER | no | `procedencias` | derivado | Procedencias independientes, **estimadas** (E1-08). |
-| `tiene_oficial` | BOOLEAN | no | `vinculos` | derivado | Hay un dato o evento oficial vinculado (Banco Mundial o USGS) con valor. |
+| `tiene_oficial` | BOOLEAN | no | `vinculos` | derivado | Hay un dato oficial `directa` o un evento `evento` (USGS) vinculado con valor. Un vínculo `indirecta` no cuenta (X22): no mide el hecho. |
 | `hay_cifras` | BOOLEAN | no | `noticias` | derivado | Algún titular trae una cifra (sin contar fechas, años ni identificadores). |
 | `contradicciones_abiertas` | INTEGER | no | `contradicciones` | derivado | Pares detectados por reglas: todos cuentan, diga lo que diga el LLM (solo una persona puede cerrarlos). |
 | `vacios` | VARCHAR | no | evidencia | derivado | JSON: vacíos de verificación de la evidencia (procedencias, dato oficial, contradicciones, titulares sin medio o fecha). |

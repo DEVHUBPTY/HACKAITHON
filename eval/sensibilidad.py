@@ -254,7 +254,8 @@ def entradas_reagrupadas(insumos: Insumos, reglas: ReglasV13) -> list[EntradaGru
         fecha = central.get("fecha_publicacion") or central.get("fecha_deteccion")
         vinculables.append({"id_grupo": g.id_grupo, "tema": g.tema_clasificado, "subtema": subtema, "titular": g.titular_central, "anio_publicacion": _anio_de(fecha)})
     filas_vinculo, _ = contexto.construir_vinculos(vinculables, insumos.indicadores, insumos.vinculos)
-    oficial = {f["id_grupo"] for f in filas_vinculo if f["id_evidencia"] and not f["motivo_sin_vinculo"] and f["valor"] is not None}
+    aceptadas = cargar_prioridad().dato_oficial.relaciones_aceptadas
+    oficial = {f["id_grupo"] for f in filas_vinculo if f["id_evidencia"] and f["tipo"] in aceptadas and not f["motivo_sin_vinculo"] and f["valor"] is not None}
     entradas = []
     for g, v in zip(grupos, vinculables, strict=True):
         indices = [por_id[i] for i in g.ids_noticia]
