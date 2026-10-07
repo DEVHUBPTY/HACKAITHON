@@ -979,6 +979,7 @@ def generar_paquete(
     grupos: Sequence[str] | None = None,
     forzar_completo: bool = False,
     refrescar: bool = False,
+    entrada: EntradaFicha | None = None,
 ) -> PaqueteEditorial | PaqueteInvestigacion:
     """El borrador del grupo, **desde la caché** (``solo_cache=True``, lo que usa la interfaz) o generándolo y guardándolo.
 
@@ -989,8 +990,10 @@ def generar_paquete(
       configurado se comporta como ``solo_cache=True``. Si se alcanza el tope de costo o se agota el saldo (D-98) lanza
       ``TopeDeCostoAlcanzado``/``SaldoAgotado``: lo ya guardado sigue disponible.
     - ``proveedor`` y ``cache`` se inyectan en las pruebas; ``grupos`` limita qué grupos se piden (por defecto, todos).
+    - ``entrada`` (E1-16): la ficha ya armada, p. ej. sin un vínculo oficial que una persona rechazó; por defecto se arma desde la base.
     """
-    entrada = _entrada_desde_grupo(id_grupo, modalidad, base or RAIZ / "data" / cargar_normalizacion().salida.base_de_datos)
+    if entrada is None:
+        entrada = _entrada_desde_grupo(id_grupo, modalidad, base or RAIZ / "data" / cargar_normalizacion().salida.base_de_datos)
     cache = cache if cache is not None else CacheLlm()
     cfg_cache = cache.cfg
     if not solo_cache and (modo_offline(cfg=cfg_cache) or (proveedor is None and not red_disponible(cfg=cfg_cache))):

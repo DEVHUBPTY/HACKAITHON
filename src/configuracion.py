@@ -2214,7 +2214,129 @@ def cargar_cache(carpeta: Path | None = None) -> ConfigCache:
     return cargar_config("cache", ConfigCache, carpeta)
 
 
-CODIGO_URGENCIA_SIN_PUBLICACION = "urgencia_sin_publicacion"   # el único vacío de E1-10 cuyo texto vive en reglas_v1.3.yaml
+# ------------------------------------------------------------------ revision.yaml (E1-16)
+
+
+class AlmacenRevision(ModeloConfig):
+    base: str = Field(min_length=1)
+    base_demo: str = Field(min_length=1)
+
+
+class CasosRevision(ModeloConfig):
+    prefijo: str = Field(pattern=r"^[A-Z]+-$")
+    ancho: int = Field(ge=1)
+
+
+class AccionRevision(ModeloConfig):
+    etiqueta: str = Field(min_length=1)
+    desde: list[str] = Field(min_length=1)
+    hacia: str
+    motivo: Literal["ninguno", "lista", "texto"]
+    nueva_version: bool
+
+
+class RevisorConfig(ModeloConfig):
+    nombre: str = Field(min_length=1)
+    rol: str = Field(min_length=1)
+    modalidad: Literal["editorial", "banca"]
+
+
+class VinculoRechazadoRevision(ModeloConfig):
+    codigo: str = Field(min_length=1)
+    texto: str = Field(min_length=1)
+    verificacion: str = Field(min_length=1)
+
+
+class CorreccionRevision(ModeloConfig):
+    prefijo_afirmaciones: str = Field(min_length=1)
+    advertencia_numero: str = Field(min_length=1)
+    advertencia_vacio: str = Field(min_length=1)
+
+
+class ExportacionRevision(ModeloConfig):
+    carpeta: str = Field(min_length=1)
+    csv: str = Field(min_length=1)
+    fichas_jsonl: str = Field(min_length=1)
+    max_caracteres_texto: int = Field(ge=100)
+    marca_recorte: str
+    columnas: list[str] = Field(min_length=1)
+    modalidades: dict[str, str]
+    sin_borrador: str = Field(min_length=1)
+
+
+class TextosRevision(ModeloConfig):
+    limitacion_historial: str
+    sin_datos: str
+
+
+class ConfigRevision(ModeloConfig):
+    """Modelo de ``config/revision.yaml``: estados, transiciones, motivos y revisores de la revisión humana (E1-16)."""
+
+    version: str
+    almacen: AlmacenRevision
+    casos: CasosRevision
+    estados: list[str] = Field(min_length=5, max_length=5)
+    estado_inicial: str
+    acciones: dict[str, AccionRevision]
+    motivos_descarte: list[str] = Field(min_length=1)
+    motivos_con_comentario: list[str]
+    revisores: list[RevisorConfig] = Field(min_length=1)
+    limitacion_revisor: str
+    vinculo_rechazado: VinculoRechazadoRevision
+    correccion: CorreccionRevision
+    exportacion: ExportacionRevision
+    textos: TextosRevision
+
+    @model_validator(mode="after")
+    def _coherente(self) -> ConfigRevision:
+        if self.estado_inicial != self.estados[0]:
+            raise ValueError("estado_inicial: debe ser el primero de estados")
+        aprobado = "aprobado como borrador"
+        if self.estados[3] != aprobado or self.estados[-1] == aprobado:
+            raise ValueError("estados: los cinco del reto (sección 8); «aprobado como borrador» es el estado máximo y no es el último de la lista")
+        obligatorias = {"abrir", "aceptar", "corregir", "pedir_evidencia", "descartar", "reabrir", "regenerar", "rechazar_vinculo", "restaurar_vinculo"}
+        if set(self.acciones) != obligatorias:
+            raise ValueError(f"acciones: deben ser exactamente {sorted(obligatorias)}")
+        for nombre, a in self.acciones.items():
+            if a.hacia not in self.estados or any(d not in self.estados for d in a.desde):
+                raise ValueError(f"acciones.{nombre}: desde y hacia deben ser estados conocidos")
+            if self.estado_inicial in a.desde and nombre != "abrir":
+                raise ValueError("solo «abrir» parte del estado inicial")
+            if a.hacia == self.estado_inicial:
+                raise ValueError("ninguna acción vuelve al estado inicial")
+        if self.acciones["aceptar"].etiqueta != "Aprobar como borrador" or self.acciones["aceptar"].hacia != aprobado:
+            raise ValueError("aceptar: el botón dice «Aprobar como borrador» y llega a «aprobado como borrador»")
+        if self.acciones["descartar"].motivo != "lista" or self.acciones["descartar"].hacia != "descartado":
+            raise ValueError("descartar: lleva un motivo obligatorio de la lista y llega a «descartado»")
+        if not set(self.motivos_con_comentario) <= set(self.motivos_descarte):
+            raise ValueError("motivos_con_comentario: deben estar en motivos_descarte")
+        if len(self.motivos_descarte) != len(set(self.motivos_descarte)):
+            raise ValueError("motivos_descarte: sin repetidos")
+        if {r.modalidad for r in self.revisores} != {"editorial", "banca"}:
+            raise ValueError("revisores: debe haber al menos uno por modalidad")
+        if len({(r.nombre, r.modalidad) for r in self.revisores}) != len(self.revisores):
+            raise ValueError("revisores: una persona aparece una sola vez por modalidad")
+        if len(self.exportacion.columnas) != len(set(self.exportacion.columnas)) or "ID caso" not in self.exportacion.columnas:
+            raise ValueError("exportacion.columnas: sin repetidos y con «ID caso»")
+        textos = [
+            *self.estados, *self.motivos_descarte, self.limitacion_revisor, *self.textos.model_dump().values(),
+            *(a.etiqueta for a in self.acciones.values()), *self.exportacion.columnas, self.vinculo_rechazado.texto, self.vinculo_rechazado.verificacion,
+        ]
+        if any(FORMAS_DE_PUBLICAR.search(t) for t in textos):
+            raise ValueError("ningún texto de la revisión puede hablar de publicar")
+        return self
+
+    def transiciones(self) -> dict[str, set[tuple[str, str]]]:
+        """Acción -> pares ``(estado anterior, estado nuevo)`` permitidos. Es la única fuente de las transiciones."""
+        return {n: {(d, a.hacia) for d in a.desde} for n, a in self.acciones.items()}
+
+
+def cargar_revision(carpeta: Path | None = None) -> ConfigRevision:
+    """Atajo para ``config/revision.yaml``."""
+    return cargar_config("revision", ConfigRevision, carpeta)
+
+
+CODIGO_URGENCIA_SIN_PUBLICACION ="urgencia_sin_publicacion"   # el único vacío de E1-10 cuyo texto vive en reglas_v1.3.yaml
 MODALIDADES = ("editorial", "banca")
 OPCIONALES = {"modalidad_banca"}  # el esquema la admite aunque todavía no exista
 
@@ -2244,6 +2366,7 @@ CARGADORES = {
     "verificacion": cargar_verificacion,
     "interfaz": cargar_interfaz,
     "cache": cargar_cache,
+    "revision": cargar_revision,
 }
 
 

@@ -74,7 +74,7 @@ paquete:                            # etiquetas de los campos del paquete (docs/
     copy_digital: "Copy digital"
     titulo_trabajo: "Título de trabajo"
 
-revision:                           # los cinco estados del reto (sección 8); E1-16 define las transiciones y el registro
+revision:                           # los cinco estados del reto (sección 8); las transiciones y el registro viven en config/revision.yaml (E1-16)
   estados: ["nuevo", "en revisión", "requiere evidencia", "aprobado como borrador", "descartado"]
   estado_inicial: "nuevo"
 
@@ -89,5 +89,5 @@ textos:
   sin_borrador: "Generación disponible cuando se integre E1-12."
   sin_borrador_ayuda: "Aquí aparecerá el borrador de la modalidad (paquete editorial o de investigación) con su leyenda de alcance."
   borrador_no_listo: "No hay borrador en caché para este grupo: la interfaz no espera al modelo ni usa la red."
-  sin_revision: "El registro de revisiones llega con E1-16: por ahora todo grupo está en el estado inicial y la revisión solo se consulta."
+  sin_revision: "Este grupo todavía no se abrió para revisar. Al abrirlo nace su caso (CASO-…) y la revisión queda registrada fila por fila."
   aprobar_aviso: "El estado máximo es «aprobado como borrador»: aprobar no convierte nada en contenido definitivo, y toda salida sigue siendo borrador para una decisión humana."

@@ -530,3 +530,47 @@ class Ficha(ModeloFicha):
     respaldado: Respaldado
     falta_comprobar: FaltaComprobar
     accion_recomendada: AccionRecomendada
+
+
+# ======================================================================================================================
+# E1-16 · Revisión humana: la línea de ``fichas.jsonl`` (contrato de datos, sección 7 del reto).
+# ======================================================================================================================
+
+ESTADOS_DE_REVISION = ("nuevo", "en revisión", "requiere evidencia", "aprobado como borrador", "descartado")  # PDF sección 8
+
+
+class RegistroFichasJsonl(BaseModel):
+    """Una línea de ``outputs/fichas.jsonl``: los diez campos del contrato, con sus tipos, más los que agrega el sistema.
+
+    ``estado_revision`` es la última fila de la tabla ``revisiones`` del caso. ``borrador`` es siempre ``true``: nada se publica.
+    Los campos extra (``id_grupo``, ``version``, ``alcance`` y ``ficha``) están declarados; cualquier otro se rechaza.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    # contrato (sección 7)
+    id_caso: str = Field(pattern=r"^CASO-\d+$")
+    modalidad: Literal["editorial", "banca"]
+    ids_fuente: list[str]
+    afirmaciones: list[dict[str, Any]] = Field(min_length=1)
+    citas: list[Cita] = Field(min_length=1)
+    puntaje: float = Field(ge=0, le=100)
+    componentes: dict[str, float]
+    estado_evidencia: Literal["insuficiente", "parcial", "suficiente"]
+    borrador: Literal[True]
+    estado_revision: Literal["nuevo", "en revisión", "requiere evidencia", "aprobado como borrador", "descartado"]
+    # lo que agrega el sistema
+    id_grupo: str = Field(min_length=1)
+    version: int | None = None
+    alcance: str = Field(min_length=1)
+    ficha: Ficha
+
+    @model_validator(mode="after")
+    def _coherente(self) -> RegistroFichasJsonl:
+        if set(self.componentes) != {"R", "I", "U", "N", "E"}:
+            raise ValueError("componentes: R, I, U, N y E")
+        if any(not 0 <= v <= 1 for v in self.componentes.values()):
+            raise ValueError("componentes: valores entre 0 y 1")
+        if self.ficha.id_grupo != self.id_grupo or self.ficha.modalidad != self.modalidad:
+            raise ValueError("la ficha no coincide con el grupo y la modalidad del registro")
+        return self

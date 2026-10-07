@@ -39,3 +39,10 @@ data/processed/validos/
 # Muestra de exploración y archivos de trabajo (E0-09)
 data/exploracion/
 outputs/costo_llm.json
+
+# E1-16: las revisiones humanas son datos de la sesión del equipo, no del repositorio
+data/revision.duckdb
+data/revision_demo.duckdb
+data/revision.duckdb.wal
+data/revision_demo.duckdb.wal
+outputs/notion/

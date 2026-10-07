@@ -1,0 +1,101 @@
+# E1-16 · Revisión humana (etapa 7 del reto, D-46 a D-50): estados, acciones y transiciones permitidas, motivos de descarte,
+# lista de revisores con su rol y constantes de la exportación a Notion. Ningún estado va después de «aprobado como borrador».
+# Cada número está en docs/parametros.md. Ningún texto habla de publicar (lo valida el modelo).
+version: "1.0"
+
+almacen:                              # la app (DuckDB) es la fuente de verdad; Notion solo recibe exportaciones (D-50)
+  base: data/revision.duckdb          # aparte de senales.duckdb: esa base se regenera en cada corrida y borraría las revisiones
+  base_demo: data/revision_demo.duckdb  # la demo nunca mezcla sus revisiones con las reales ni con las métricas
+
+casos:
+  prefijo: "CASO-"                    # ID estable y correlativo (D-63): el mismo grupo abre siempre el mismo caso
+  ancho: 3                            # CASO-001
+
+estados: ["nuevo", "en revisión", "requiere evidencia", "aprobado como borrador", "descartado"]
+estado_inicial: "nuevo"               # un grupo sin caso; no tiene filas en `revisiones`
+
+# Acción -> de qué estados parte y a cuál llega. Las transiciones permitidas son exactamente estas.
+# motivo: ninguno | lista (de `motivos_descarte`, obligatorio) | texto (obligatorio, libre)
+acciones:
+  abrir:             {etiqueta: "Abrir para revisar",     desde: ["nuevo"],                                          hacia: "en revisión",            motivo: ninguno, nueva_version: false}
+  aceptar:           {etiqueta: "Aprobar como borrador",  desde: ["en revisión"],                                    hacia: "aprobado como borrador", motivo: ninguno, nueva_version: false}
+  corregir:          {etiqueta: "Guardar corrección",     desde: ["en revisión"],                                    hacia: "en revisión",            motivo: ninguno, nueva_version: true}
+  regenerar:         {etiqueta: "Regenerar borrador",     desde: ["en revisión"],                                    hacia: "en revisión",            motivo: ninguno, nueva_version: true}
+  pedir_evidencia:   {etiqueta: "Pedir evidencia",        desde: ["en revisión"],                                    hacia: "requiere evidencia",     motivo: ninguno, nueva_version: false}
+  descartar:         {etiqueta: "Descartar",              desde: ["en revisión", "requiere evidencia"],              hacia: "descartado",             motivo: lista,   nueva_version: false}
+  reabrir:           {etiqueta: "Reabrir",                desde: ["requiere evidencia", "aprobado como borrador", "descartado"], hacia: "en revisión", motivo: texto,   nueva_version: false}
+  rechazar_vinculo:  {etiqueta: "Rechazar vínculo oficial", desde: ["en revisión"],                                  hacia: "en revisión",            motivo: texto,   nueva_version: false}
+  restaurar_vinculo: {etiqueta: "Restaurar vínculo oficial", desde: ["en revisión"],                                 hacia: "en revisión",            motivo: texto,   nueva_version: false}
+
+motivos_descarte:
+  - "Sin evidencia suficiente"
+  - "Duplicado de otro caso"
+  - "No es una noticia con contenido"
+  - "Fuera de los temas o de Panamá"
+  - "Vínculo oficial mal aplicado"
+  - "Ya cubierto por el medio de referencia"
+  - "Otro"
+motivos_con_comentario: ["Otro"]      # estos motivos exigen además un comentario que explique
+
+# D-49: la persona se elige de esta lista con su rol. No hay autenticación (fuera de alcance del reto): es una limitación declarada.
+# El revisor editorial es la editora; en banca, el analista. Se reemplazan por la lista real del equipo antes del evento.
+revisores:
+  - {nombre: "David Fen",     rol: "Revisión editorial", modalidad: editorial}
+  - {nombre: "Javier Acosta",  rol: "Revisión editorial", modalidad: editorial}
+  - {nombre: "Juan Zhou",      rol: "Revisión editorial", modalidad: editorial}
+  - {nombre: "David Fen",     rol: "Analista",           modalidad: banca}
+  - {nombre: "Javier Acosta",  rol: "Analista",           modalidad: banca}
+  - {nombre: "Juan Zhou",      rol: "Analista",           modalidad: banca}
+limitacion_revisor: "Sin autenticación: el revisor se elige de la lista y el registro confía en esa elección (D-49)."
+
+# El vacío que se agrega a la ficha cuando la persona rechaza vínculos oficiales: el dato ya no respalda el caso. No nombra el ID
+# rechazado (así el borrador regenerado no lo menciona en ningún lado); el registro de revisiones sí lo guarda.
+vinculo_rechazado:
+  codigo: "vinculo_rechazado"
+  texto: "La persona rechazó {n} vínculo(s) oficial(es) mal aplicado(s): no se usan en el borrador"
+  verificacion: "Buscar el dato oficial que sí mide el hecho, o confirmar que no existe"
+
+# Las correcciones editan el texto de las afirmaciones y de las oraciones; cada una se revalida (D-48).
+correccion:
+  prefijo_afirmaciones: "afirmaciones"
+  advertencia_numero: "contiene la cifra «{numero}», que no está en la evidencia que cita"
+  advertencia_vacio: "el texto no puede quedar vacío"
+
+exportacion:
+  carpeta: outputs/notion             # un .md por caso y el CSV de «Casos y evidencias»
+  csv: casos_y_evidencias.csv
+  fichas_jsonl: outputs/fichas.jsonl
+  max_caracteres_texto: 2000          # una propiedad de texto de Notion admite 2000 caracteres por bloque
+  marca_recorte: "… (completo en el cuerpo de la página)"
+  # Columnas EXACTAS de la base «Casos y evidencias» de Notion, menos las fórmulas (P y Rango), que Notion calcula.
+  columnas:
+    - "ID caso"
+    - "Modalidad"
+    - "Tema"
+    - "Caso de uso"
+    - "Estado de revisión"
+    - "Estado de evidencia"
+    - "Acción recomendada"
+    - "R"
+    - "I"
+    - "U"
+    - "N"
+    - "E"
+    - "Versión de reglas"
+    - "Versión del borrador"
+    - "Alcance del texto"
+    - "Qué se reporta"
+    - "Quién lo reporta"
+    - "Qué está respaldado"
+    - "Qué falta comprobar"
+    - "IDs de fuente"
+    - "Revisor"
+    - "Comentario del revisor"
+    - "Fecha de revisión"
+    - "Última exportación"
+  modalidades: {editorial: "Editorial", banca: "Banca"}   # opciones de la propiedad «Modalidad»
+  sin_borrador: "sin borrador"
+
+textos:
+  limitacion_historial: "El historial es de solo agregar: ninguna fila se modifica ni se borra."
+  sin_datos: "sin datos"
