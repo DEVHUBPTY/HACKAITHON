@@ -2212,6 +2212,7 @@ class BandejaInterfaz(ModeloConfig):
     decimales_puntaje: int = Field(ge=0)
     largo_titular_selector: int = Field(ge=10)
     filas_iniciales_por_sector: int = Field(ge=1)
+    ancho_titular_cli: int = Field(ge=10)
 
 
 class CalidadInterfaz(ModeloConfig):

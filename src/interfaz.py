@@ -60,7 +60,6 @@ PARAMETRO_DEMO = "--demo"
 COLUMNA_COMPONENTE = {"R": "relevancia", "I": "impacto", "U": "urgencia", "N": "novedad", "E": "evidencia"}
 ORIGEN_SINTETICO = "sintetico"
 SIN_TEMA = "sin tema"
-ANCHO_TITULAR_EN_LINEA = 70      # caracteres del titular en la bandeja impresa por la CLI
 # Prefijo de ID -> (tabla, columna del ID, columna de URL, datos que acompañan a la cita como (etiqueta, columna, clase)).
 # Cada fecha lleva SU etiqueta (de qué es): nunca una «Fecha» genérica ni una por otra (publicación ≠ detección; el año ≠ la extracción).
 # Es un mapa fijo: nunca se arma SQL con texto del usuario. Clases: texto | fecha (UTC -> hora de Panamá).
@@ -231,16 +230,17 @@ def etiqueta_de_horizonte(horizonte: str | None, modalidad: ConfigModalidad) -> 
     return modalidad.horizonte.etiquetas.get(horizonte, horizonte)
 
 
-def lineas_de_bandeja(filas: Sequence[FilaBandeja], modalidad: ConfigModalidad) -> list[str] | None:
+def lineas_de_bandeja(filas: Sequence[FilaBandeja], modalidad: ConfigModalidad, cfg: ConfigInterfaz | None = None) -> list[str] | None:
     """La bandeja por sector en texto (para la CLI de ``src.puntaje``); ``None`` si la modalidad no puntúa por sector."""
     bloques = agrupar_por_sector(filas, modalidad)
     if bloques is None:
         return None
+    ancho = (cfg or cargar_interfaz()).bandeja.ancho_titular_cli
     lineas = []
     for b in bloques:
         lineas.append(f"{b.etiqueta} ({len(b.filas)})")
         lineas += [
-            f"  {f.posicion}. {f.id_grupo} · P={f.puntaje:.1f} ({f.rango}) · {etiqueta_de_horizonte(f.horizonte, modalidad) or '-'} · {f.accion} · {f.titular[:ANCHO_TITULAR_EN_LINEA]}"
+            f"  {f.posicion}. {f.id_grupo} · P={f.puntaje:.1f} ({f.rango}) · {etiqueta_de_horizonte(f.horizonte, modalidad) or '-'} · {f.accion} · {f.titular[:ancho]}"
             for f in b.filas
         ]
     return lineas

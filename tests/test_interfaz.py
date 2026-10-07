@@ -509,7 +509,7 @@ def test_la_modalidad_banca_sin_puntajes_en_la_base_no_inventa_una_bandeja(app) 
     at = app.run()
     at.selectbox(key="modalidad").select("banca").run()
     at = ir(at, "bandeja")
-    assert not at.exception and any(CFG.textos.sin_puntajes == str(i.value) for i in at.info)
+    assert not at.exception and any(CFG.textos.sin_puntajes.format(modalidad="banca") == str(i.value) for i in at.info)
     assert not at.dataframe
 
 

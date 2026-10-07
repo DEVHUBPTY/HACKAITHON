@@ -513,7 +513,7 @@ def test_misma_ficha_distinta_modalidad_solo_cambian_accion_medio_de_referencia_
     assert [s for s in b.falta_comprobar.fuentes_sugeridas if s.origen != "modalidad"] == base_e and all(s.origen != "modalidad" for s in base_e)
 
 
-def test_la_accion_cambia_entre_modalidades_para_el_mismo_rango_y_estado(con, emb) -> None:
+def test_la_accion_de_cada_modalidad_sale_del_rango_de_su_propia_corrida_y_el_estado_es_el_mismo(con, emb) -> None:
     e, b = hacer(con, emb, h.G_CIFRAS, "editorial"), hacer(con, emb, h.G_CIFRAS, "banca")
     assert e.accion_recomendada.accion != b.accion_recomendada.accion
     assert e.accion_recomendada.estado_evidencia == b.accion_recomendada.estado_evidencia
