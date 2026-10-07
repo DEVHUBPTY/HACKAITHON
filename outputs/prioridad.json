@@ -1,0 +1,287 @@
+{
+  "nota": "Puntaje de ordenamiento, no una probabilidad de verdad ni de pérdida. Todo es borrador para una decisión humana; ninguna acción habilita publicar.",
+  "version_reglas": "1.3",
+  "modalidad": "editorial",
+  "fecha_referencia": "2026-10-06T17:07:06Z",
+  "grupos": 45,
+  "por_rango": {
+    "alto": {
+      "n": 12,
+      "de": 45,
+      "proporcion": 0.2667,
+      "ic95": [
+        0.1596,
+        0.4104
+      ]
+    },
+    "medio": {
+      "n": 32,
+      "de": 45,
+      "proporcion": 0.7111,
+      "ic95": [
+        0.5663,
+        0.8227
+      ]
+    },
+    "bajo": {
+      "n": 1,
+      "de": 45,
+      "proporcion": 0.0222,
+      "ic95": [
+        0.0039,
+        0.1157
+      ]
+    }
+  },
+  "por_estado_de_evidencia": {
+    "suficiente": {
+      "n": 3,
+      "de": 45,
+      "proporcion": 0.0667,
+      "ic95": [
+        0.0229,
+        0.1786
+      ]
+    },
+    "parcial": {
+      "n": 7,
+      "de": 45,
+      "proporcion": 0.1556,
+      "ic95": [
+        0.0775,
+        0.2878
+      ]
+    },
+    "insuficiente": {
+      "n": 35,
+      "de": 45,
+      "proporcion": 0.7778,
+      "ic95": [
+        0.6373,
+        0.8746
+      ]
+    }
+  },
+  "contradicciones": {
+    "candidatos": 0,
+    "por_estado": {},
+    "grupos_con_candidatos": 0
+  },
+  "llm": {
+    "estado": "sin_candidatos",
+    "proveedor": "ollama",
+    "modelo": "qwen3.5:9b",
+    "motivos_pendientes": {}
+  },
+  "ranking": [
+    {
+      "posicion": 1,
+      "id_grupo": "GRP-ef3acec21e",
+      "titular_central": "Minsa: Adelantan vacunación contra VSR en embarazadas",
+      "puntaje": 86.73,
+      "rango": "alto",
+      "componentes": {
+        "R": 0.9886,
+        "I": 0.75,
+        "U": 1.0,
+        "N": 0.9767,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (tema_sin_indicador)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 2,
+      "id_grupo": "GRP-84a6b3a04b",
+      "titular_central": "Colegios particulares atribuyen aumento de matrícula a migración al sector oficial y altos costos de operación",
+      "puntaje": 79.48,
+      "rango": "alto",
+      "componentes": {
+        "R": 0.875,
+        "I": 0.75,
+        "U": 1.0,
+        "N": 0.7209,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (tema_sin_indicador)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 3,
+      "id_grupo": "GRP-65d565abd0",
+      "titular_central": "MiBus responde por filtraciones: lamenta incomodidad de usuarios; afirma que realiza correctivos",
+      "puntaje": 78.68,
+      "rango": "alto",
+      "componentes": {
+        "R": 0.9432,
+        "I": 0.65,
+        "U": 1.0,
+        "N": 0.6977,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (tema_sin_indicador)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 4,
+      "id_grupo": "GRP-39773bed5a",
+      "titular_central": "Árbol cae sobre dos vehículos en estacionamientos del hospital San Miguel Arcángel",
+      "puntaje": 78.53,
+      "rango": "alto",
+      "componentes": {
+        "R": 0.7386,
+        "I": 0.75,
+        "U": 1.0,
+        "N": 0.9302,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (tema_sin_indicador)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 5,
+      "id_grupo": "GRP-0ecdae94e7",
+      "titular_central": "Veraguas: Preocupación por aumento de muertes por enfermedades transmisibles y respiratorias",
+      "puntaje": 76.58,
+      "rango": "alto",
+      "componentes": {
+        "R": 0.8295,
+        "I": 0.8,
+        "U": 1.0,
+        "N": 0.5349,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (tema_sin_indicador)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 6,
+      "id_grupo": "GRP-8af4196527",
+      "titular_central": "César Caicedo ahora está recluido en el Hospital Santo Tomás; había sido trasladado a Coiba",
+      "puntaje": 75.45,
+      "rango": "alto",
+      "componentes": {
+        "R": 0.6591,
+        "I": 0.75,
+        "U": 1.0,
+        "N": 0.8837,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (tema_sin_indicador)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 7,
+      "id_grupo": "GRP-21ad932d54",
+      "titular_central": "Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá",
+      "puntaje": 73.92,
+      "rango": "alto",
+      "componentes": {
+        "R": 0.8523,
+        "I": 0.75,
+        "U": 1.0,
+        "N": 0.3953,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (tema_sin_indicador)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 8,
+      "id_grupo": "GRP-f4a44182b1",
+      "titular_central": "Panamá reforzará su presencia marítima en Vietnam con nueva oficina de servicio técnico de la AMP en Ho Chi Minh",
+      "puntaje": 73.4,
+      "rango": "alto",
+      "componentes": {
+        "R": 0.8864,
+        "I": 0.75,
+        "U": 1.0,
+        "N": 0.093,
+        "E": 0.6667
+      },
+      "estado_de_evidencia": "parcial",
+      "accion": "Completar evidencia y producir",
+      "vacios": [
+        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 9,
+      "id_grupo": "GRP-45aebb27b2",
+      "titular_central": "Contenido Exclusivo: Coclé, se seca el campo",
+      "puntaje": 72.48,
+      "rango": "alto",
+      "componentes": {
+        "R": 0.9773,
+        "I": 0.8,
+        "U": 0.225,
+        "N": 1.0,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (tema_sin_indicador)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 10,
+      "id_grupo": "GRP-9442098153",
+      "titular_central": "Contenido Exclusivo: El metro por la Tumba Muerto",
+      "puntaje": 71.47,
+      "rango": "alto",
+      "componentes": {
+        "R": 0.8636,
+        "I": 0.75,
+        "U": 1.0,
+        "N": 0.2093,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (tema_sin_indicador)"
+      ],
+      "contradicciones": []
+    }
+  ]
+}

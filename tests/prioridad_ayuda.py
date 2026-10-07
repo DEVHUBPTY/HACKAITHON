@@ -8,6 +8,9 @@ from typing import Any
 
 import numpy as np
 
+from pathlib import Path
+
+from src import db
 from src.configuracion import cargar_prioridad, cargar_reglas
 from src.llm.proveedor import ErrorProveedor
 from src.puntaje import EntradaGrupo
@@ -94,3 +97,63 @@ class ProveedorFalso:
             raise ErrorProveedor("proveedor de prueba no disponible")
         assert self.respuesta is not None
         return self.respuesta
+
+
+# ------------------------------------------------------------------ una base DuckDB mínima (4 grupos)
+
+
+def fila_noticia(id_noticia: str, titulo: str, dominio: str, grupo: str, horas: float = 3, regional: bool = False, sim: float = 0.8) -> dict:
+    publicada = f"2026-10-06T{int(12 - horas):02d}:00:00Z"
+    return {
+        "id_noticia": id_noticia, "titulo": titulo, "url": f"https://{dominio}/{id_noticia}", "url_canonica": f"https://{dominio}/{id_noticia}",
+        "medio": dominio, "dominio": dominio, "tipo_firma": "sin firma", "fecha_publicacion": publicada, "fecha_deteccion": publicada,
+        "titulo_limpio": titulo, "es_ruido": False, "alcance_regional": regional, "tema_similitud": sim, "tema_clasificado": "economia",
+        "id_grupo": grupo, "descripcion": None,
+    }
+
+
+def fila_grupo(id_grupo: str, ids: list[str], titular: str, n_proc: int) -> dict:
+    return {
+        "id_grupo": id_grupo, "titular_central": titular, "id_noticia_central": ids[0], "n_titulares": len(ids), "n_medios": len(ids),
+        "n_procedencias": n_proc, "idiomas": "es", "tema_clasificado": "economia", "ids_noticia": ",".join(ids), "estimado": True,
+    }
+
+
+def filas_procedencias(id_grupo: str, ids: list[str]) -> list[dict]:
+    return [
+        {"id_grupo": id_grupo, "orden": i, "etiqueta": f"fuente {i}", "reglas": None, "n_titulares": 1, "medios": "x", "ids_noticia": nid}
+        for i, nid in enumerate(ids, start=1)
+    ]
+
+
+def fila_vinculo(id_grupo: str, **campos) -> dict:
+    fila = dict.fromkeys(db.columnas("vinculos")) | {"id_grupo": id_grupo, "regla": "prueba", "fuente": "indicador"}
+    return fila | campos
+
+
+def construir_base(ruta: Path) -> Path:
+    """Base con cuatro grupos: dos con versiones distintas de una cifra (a, d), uno con dato oficial (b) y uno regional (c)."""
+    noticias = [
+        fila_noticia("NOT-a000000001", "Cierran 12 escuelas en Veraguas por lluvias", "medio-a.example", "GRP-a", 2, sim=0.9),
+        fila_noticia("NOT-a000000002", "Más de 40 escuelas cerradas en Veraguas por lluvias", "medio-b.example", "GRP-a", 3, sim=0.9),
+        fila_noticia("NOT-b000000001", "Panamá reporta inflación estable", "medio-c.example", "GRP-b", 1, sim=0.85),
+        fila_noticia("NOT-c000000001", "El Niño amenaza a Centroamérica", "medio-d.example", "GRP-c", 5, regional=True, sim=0.7),
+        fila_noticia("NOT-d000000001", "Cierran 12 colegios en Chiriquí", "medio-e.example", "GRP-d", 4, sim=0.8),
+        fila_noticia("NOT-d000000002", "Cierran 40 colegios en Chiriquí", "medio-f.example", "GRP-d", 4, sim=0.8),
+    ]
+    grupos = [
+        fila_grupo("GRP-a", ["NOT-a000000001", "NOT-a000000002"], "Cierran escuelas", 2),
+        fila_grupo("GRP-b", ["NOT-b000000001"], "Inflación estable", 1),
+        fila_grupo("GRP-c", ["NOT-c000000001"], "El Niño", 1),
+        fila_grupo("GRP-d", ["NOT-d000000001", "NOT-d000000002"], "Cierran colegios", 2),
+    ]
+    procs = filas_procedencias("GRP-a", ["NOT-a000000001", "NOT-a000000002"]) + filas_procedencias("GRP-b", ["NOT-b000000001"]) + filas_procedencias("GRP-c", ["NOT-c000000001"]) + filas_procedencias("GRP-d", ["NOT-d000000001", "NOT-d000000002"])
+    vinculos = [
+        fila_vinculo("GRP-b", id_evidencia="IND-PAN-FP.CPI.TOTL.ZG-2024", tipo="directa", rol="panama", valor=0.7, anio=2024),
+        fila_vinculo("GRP-c", motivo_sin_vinculo="tema_sin_indicador"),
+        fila_vinculo("GRP-a", id_evidencia="SIS-us0001", motivo_sin_vinculo="candidatos_ambiguos", fuente="usgs", valor=4.1),   # ambiguo: no cuenta como dato oficial
+    ]
+    db.guardar_todo(ruta, {"noticias": noticias, "grupos": grupos, "procedencias": procs, "vinculos": vinculos})
+    return ruta
+
+
