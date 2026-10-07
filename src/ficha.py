@@ -100,6 +100,8 @@ SEPARADOR_FUENTES = "; "
 ROL_PANAMA, ROL_COMPARABLE, ROL_TENDENCIA = "panama", "comparable", "tendencia"
 ORDEN_DE_ROLES = (ROL_PANAMA, ROL_COMPARABLE, ROL_TENDENCIA)
 FUENTE_INDICADOR = "indicador"
+FUENTE_SBP = "sbp"
+PREFIJO_SBP = "SBP-"
 SIN_DATO = "sin dato"
 TITULOS = {
     "que_se_reporta": "1 · Qué se reporta",
@@ -429,6 +431,28 @@ def _lineas_de_indicadores(indicadores: Sequence[Mapping[str, Any]], cfg: Config
     return lineas
 
 
+def _lineas_de_sbp(filas: Sequence[Mapping[str, Any]], cfg: ConfigVerificacion) -> list[LineaRespaldo]:
+    """Una línea por serie agregada de la SBP (E3-02): serie, período, valor con su unidad, informe y página de origen; la limitación va aparte.
+
+    Todo dato lleva su período y su unidad: es un dato mensual de 2024, no del mes de la noticia.
+    """
+    p = cfg.presentacion
+    series = {f"{PREFIJO_SBP}{k}": x.nombre for k, x in cargar_fuentes().sbp.series.items()}
+    return [
+        LineaRespaldo(
+            tipo="hecho",
+            texto=(
+                f"{p.fuentes_oficiales[FUENTE_SBP]} · {p.roles.get(str(v['rol']), str(v['rol']))} · {series.get(str(v['indicador_id']), v['indicador_id'])}, "
+                f"período {v['periodo']}: {round(float(v['valor']), p.decimales_valor_sbp):g} {v['unidad']}; "
+                f"informe «{v['informe']}»; página: {v['pagina']}"
+            ),
+            citas=[Cita(id=str(v["id_evidencia"]), campo="valor")],
+            limitacion=v.get("limitacion"),
+        )
+        for v in sorted(filas, key=lambda v: str(v["id_evidencia"]))
+    ]
+
+
 def _respaldado(datos: Datos, titulares: list[TitularReportado], cfg: ConfigVerificacion) -> Respaldado:
     g, p = datos.grupo, cfg.presentacion
     id_grupo = str(g["id_grupo"])
@@ -450,7 +474,7 @@ def _respaldado(datos: Datos, titulares: list[TitularReportado], cfg: ConfigVeri
         (v for v in oficiales if v.get("fuente") == FUENTE_INDICADOR and v.get("rol") in ORDEN_DE_ROLES),
         key=lambda v: (ORDEN_DE_ROLES.index(v["rol"]), -int(v["anio"] or 0), str(v["id_evidencia"])),
     )
-    datos_oficiales = _lineas_de_indicadores(indicadores, cfg)
+    datos_oficiales = _lineas_de_indicadores(indicadores, cfg) + _lineas_de_sbp([v for v in oficiales if v.get("fuente") == FUENTE_SBP], cfg)
     eventos = [
         LineaRespaldo(
             tipo="hecho",
