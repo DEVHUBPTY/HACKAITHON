@@ -23,6 +23,21 @@ bandeja:
   ancho_titular_cli: 70             # caracteres del titular en la bandeja por sector que imprime `src.puntaje` (E2-01)
   filas_iniciales_por_sector: 3     # bandeja por sector (E2-01): filas de cada bloque al abrir; ningún sector se oculta (el resto, con «Mostrar todas»)
 
+pesos_editables:                  # E3-04: vista «¿y si los pesos fueran otros?» de la bandeja. Es del navegador, no la configuración oficial
+  minimo: 5                         # cada peso debe estar entre `minimo` y `maximo` (puntos); la suma es siempre 100 (PDF sección 4)
+  maximo: 50
+  paso: 1
+  decimales: 2                      # los pesos se redondean a estos decimales antes de validar y de mostrar (50.0000001 es 50, no «fuera de rango»)
+  justificacion_minima_caracteres: 15   # PDF: «permitir justificar cambios de pesos»: sin justificación no se puede descargar la propuesta
+  movimientos_mostrados: 10         # filas de la tabla de movimientos frente al ranking oficial
+  textos:
+    aviso: "ESCENARIO, no es la configuración oficial. Reglas v{version} siguen vigentes: el ranking, las fichas, las exportaciones y el registro de revisión usan los pesos oficiales."
+    sin_cambios: "Los pesos son los oficiales: no hay diferencias."
+    suma: "Los pesos suman {suma} y deben sumar {objetivo}."
+    rango: "El peso {componente} ({valor}) debe estar entre {minimo} y {maximo}."
+    justificacion: "Escriba una justificación de al menos {minimo} caracteres para descargar la propuesta."
+    propuesta_estado: "propuesta no oficial: no modifica config/reglas_v1.3.yaml; adoptarla es decisión del dueño"
+
 calidad:
   top_medios: 5                     # medios con más titulares válidos en el reporte
 

@@ -569,9 +569,15 @@ Constantes de presentación: ninguna decide un puntaje, una acción ni un vacío
 | Largo máximo de la pregunta (`consulta.largo_maximo_caracteres`) | 500 | Supuesto (una pregunta, no un documento) | — |
 | Campos que nunca se muestran (`ficha.campos_ocultos`) | `descripcion` | CLAUDE.md (D-31: la descripción del RSS es solo interna) | `test_la_descripcion_del_rss_nunca_se_muestra_ni_aunque_la_cita_la_pida` |
 | Solo caché al pedir el borrador (`generacion.solo_cache`) | `true` | Spec E1-15 (funciona sin red; la interfaz no espera al modelo) | `test_con_generador_se_pide_solo_cache_y_se_aplanan_las_secciones` |
+| Pesos editables (E3-04): rango por peso (`pesos_editables.minimo` · `maximo`) | 5 a 50 puntos; la suma debe ser la oficial (100) | Supuesto: ningún componente se anula ni domina; no cambia los pesos oficiales (`reglas_v1.3.yaml`) | `test_los_pesos_oficiales_salen_de_reglas_y_suman_100` · `test_un_peso_fuera_del_rango_se_rechaza_aunque_la_suma_sea_100` |
+| Pesos editables: decimales (`pesos_editables.decimales`) | 2: los pesos se redondean a estos decimales antes de validar y mostrar (X94: 50.0000001 no es «fuera de rango») | Presentación | `test_un_peso_apenas_fuera_de_rango_por_ruido_*` · `test_una_suma_apenas_distinta_por_ruido_*` |
+| Pesos editables: paso (`pesos_editables.paso`) · filas de movimientos (`movimientos_mostrados`) | 1 punto · 10 filas | Presentación | — |
+| Pesos editables: justificación mínima (`pesos_editables.justificacion_minima_caracteres`) | 15 caracteres | PDF sección 4 (justificar cambios de pesos); el umbral es un supuesto | `test_sin_justificacion_suficiente_no_hay_propuesta` |
 | Estados de revisión (`revision.estados`) | nuevo · en revisión · requiere evidencia · aprobado como borrador · descartado | PDF sección 8 (control humano) | `test_un_grupo_sin_caso_esta_en_el_estado_inicial` |
 | Zona horaria y formato al mostrar | Los de `verificacion.yaml:presentacion` (`America/Panama`) | PDF (hora de Panamá solo en la interfaz) | `test_la_hora_se_muestra_en_panama_y_el_dato_no_cambia` |
 | Intervalo de las proporciones de Calidad | Wilson, z = 1.96 (el de `carga.yaml`) | Práctica estadística | `test_el_resumen_de_calidad_cuenta_el_ruido_con_n_e_intervalo` |
+
+**Cómo se adoptan unos pesos como oficiales (D-117, E3-04).** La interfaz nunca escribe reglas: la propuesta descargable (`propuesta_pesos.json`) es solo el insumo. Para adoptarla: (1) copiar `config/reglas_v1.3.yaml` a `config/reglas_v1.4.yaml` con los pesos nuevos y la versión incrementada; (2) la justificación y el efecto de la propuesta van en la descripción del PR; (3) revisión independiente (D-78); (4) una decisión D-xx registrada; (5) correr `poetry run python -m src.config --validar`, `src.puntaje` y `scripts.reproducir` (cambian el ranking oficial, las fichas y los hashes). Hasta el merge, los pesos oficiales son los de v1.3.
 
 ## Revisión humana y exportación (E1-16, `config/revision.yaml`)
 
