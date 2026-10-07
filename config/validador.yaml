@@ -40,8 +40,13 @@ detalle_sin_cita: [fuentes confirmaron, fuentes oficiales confirmaron, fuentes o
 # Patrones (regex sobre texto sin tildes ni mayúsculas) que se suman a las frases de cada lista de restricciones.yaml (M1).
 patrones:
   # X50: recomendaciones de acción sobre el crédito sin «comprar» ni «vender»; y certeza al abrir la oración («De seguro…»)
-  recomendacion: ['\bdeberia(n|mos)? (limitar|reducir|aumentar|recortar|evitar|suspender|restringir|ampliar|vender|comprar|invertir|retirar|disminuir|incrementar|frenar|congelar|endurecer|flexibilizar)\b']
+  recomendacion: ['\bdeberia(n|mos)? (limitar|reducir|aumentar|recortar|evitar|suspender|restringir|ampliar|vender|comprar|invertir|retirar|disminuir|incrementar|frenar|congelar|endurecer|flexibilizar)\b',
+                  # X62: «sería / podría ser / resultaría + oportuno…» recomienda sin usar «recomendar»
+                  '\b(seria|podria ser|resultaria|podria resultar) (mas )?(oportuno|conveniente|prudente|recomendable|aconsejable|razonable)\b']
   certeza: ['(^|[.;:!?¿¡]\s*)de seguro\b']
+  # X62: futuro asertivo general, sobre el texto CON tildes (lista `con_tildes`): «va a + infinitivo» y el futuro simple en -rá/-rán
+  # («se desplomará», «sufrirá», «habrá»). Una hipótesis de impacto se redacta en condicional, nunca en futuro indicativo.
+  futuro_asertivo: ['\bvan? a \w{2,}(ar|er|ir)(se)?\b', '\b\w{2,}r(á|án)\b']
   lectura_simulada: ['\b(articulo|nota|reportaje|texto|noticia|cronica|informe)\s+(explica|detalla|senala|indica|revela|cuenta|menciona|describe|asegura|precisa|advierte)\b', '\bsegun (el|la) (articulo|nota|reportaje|texto|noticia|cronica)\b']
   entrevistas: ['\b(dijo|declaro|aseguro|conto|afirmo|explico|revelo) a (tvn|la prensa|los medios|los periodistas|este medio|nuestro medio|la estrella|telemetro|critica)\b']
 

@@ -560,7 +560,8 @@ def _reglas_de_texto(
             encontradas = [f for f in ctx.listas_originales.get(nombre, []) if _contiene_acento(texto, f)]
         else:
             encontradas = [f for f in frases if contiene(p, f)]
-        encontradas += [m.group(0).strip(" .;:!?¿¡") for pat in ctx.val.patrones.get(nombre, []) if (m := re.search(pat, p))]
+        base = _acento(texto) if conf and conf.con_tildes else p  # X62: los patrones de una lista `con_tildes` ven las tildes (futuro en -rá)
+        encontradas += [m.group(0).strip(" .;:!?¿¡") for pat in ctx.val.patrones.get(nombre, []) if (m := re.search(pat, base))]
         for f in dict.fromkeys(encontradas):
             tipos_ok = not conf or not conf.excepcion_tipos or (bool(tipos) and tipos <= set(conf.excepcion_tipos))
             if conf and conf.excepcion_literal and tipos_ok and seccion not in conf.sin_excepcion_en and _excepcion_literal(ctx, p, f, s.citas, conf.ventana_literal):

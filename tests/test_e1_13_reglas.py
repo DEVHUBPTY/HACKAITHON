@@ -679,6 +679,57 @@ def test_x50_la_hipotesis_condicional_sin_certeza_sigue_valida() -> None:
     assert not validar_seccion("hipotesis_impacto", [o("Las lluvias en Chiriquí podrían afectar la actividad agrícola, a verificar.", "A3")], ctx)
 
 
+X62_RECOMENDACION = ["Habría que reducir créditos al agro", "Convendría recortar el crédito al agro", "Lo prudente sería restringir el crédito al agro",
+                     "Podría ser oportuno restringir el crédito al agro", "Sería conveniente limitar los préstamos al agro", "Lo mejor sería esperar y no prestar al agro",
+                     "Resultaría recomendable endurecer las condiciones del crédito agrícola"]
+
+
+@pytest.mark.parametrize("texto", X62_RECOMENDACION)
+def test_x62_formas_condicionales_de_recomendacion_rechazadas(texto: str) -> None:
+    ctx = _ctx_boletin()
+    for seccion in ("hipotesis_impacto", "observaciones"):
+        assert "recomendacion" in reglas(validar_seccion(seccion, [o(f"{texto}; las lluvias podrían afectar la actividad agrícola, a verificar.", "A3")], ctx)), (seccion, texto)
+
+
+X62_CERTEZA = ["Es evidente que la actividad agrícola podría caer, a verificar.", "Es un hecho que las lluvias podrían afectar la actividad agrícola.",
+               "Está claro que las lluvias podrían afectar la actividad agrícola, a verificar.", "No cabe duda de que la actividad agrícola podría caer."]
+
+
+@pytest.mark.parametrize("texto", X62_CERTEZA)
+def test_x62_la_certeza_evidente_se_rechaza_en_las_hipotesis(texto: str) -> None:
+    ctx = _ctx_boletin()
+    assert "certeza" in reglas(validar_seccion("hipotesis_impacto", [o(texto, "A3")], ctx)), texto
+
+
+X62_FUTURO = ["La actividad agrícola va a caer, a verificar.", "Las exportaciones van a reducirse en el corto plazo, a verificar.",
+              "La actividad agrícola se desplomará, a verificar.", "El sector sufrirá un golpe, a verificar.",
+              "El sector agrícola perderá dinamismo, a verificar.", "La actividad portuaria se contraerá, a verificar.",
+              "Habrá menos exportaciones agrícolas, a verificar.", "Las lluvias podrían afectar el agro y el sector se resentirá, a verificar."]
+
+
+@pytest.mark.parametrize("texto", X62_FUTURO)
+def test_x62_el_futuro_asertivo_general_se_rechaza_en_las_hipotesis(texto: str) -> None:
+    ctx = _ctx_boletin()
+    assert "futuro_asertivo" in reglas(validar_seccion("hipotesis_impacto", [o(texto, "A3")], ctx)), texto
+
+
+X62_LEGITIMAS = ["Es posible que la cobertura de una gira presidencial resulte relevante para el comercio exterior, a verificar con fuentes adicionales.",
+                 "Podría ser que el peso de las exportaciones se relacione con actividades exportadoras, extremo que requeriría confirmación.",
+                 "Las lluvias en Chiriquí podrían afectar la actividad agrícola, a verificar.",
+                 "Sería posible que la demanda cambie si se confirma el dato; a verificar."]
+
+
+@pytest.mark.parametrize("texto", X62_LEGITIMAS)
+def test_x62_el_lexico_nuevo_no_rechaza_hipotesis_condicionales_legitimas(texto: str) -> None:
+    ctx = _ctx_boletin()
+    assert not validar_seccion("hipotesis_impacto", [o(texto, "A3")], ctx), texto
+
+
+def test_x62_el_patron_de_futuro_no_toca_la_modalidad_editorial() -> None:
+    ctx = ctx_con_base()
+    assert "futuro_asertivo" not in reglas(validar_seccion("copy_digital", [o("TVN Panamá reporta que Mulino viajará a Asia.", "A1")], ctx))
+
+
 def test_cada_lista_de_restricciones_tiene_su_regla_en_el_yaml_del_validador() -> None:
     from src.configuracion import cargar_restricciones, cargar_validador
 
