@@ -1,4 +1,89 @@
 {
-  "estado": "pendiente",
-  "mensaje": "pendiente de selección humana"
+  "estado": "medido",
+  "k": 5,
+  "origen_juicio": "asistente_provisional (D-101)",
+  "juicio_humano": false,
+  "aviso_origen": "JUICIO PROVISIONAL DEL ASISTENTE, NO HUMANO (D-101): se rehace a mano en C-09; no reportar como juicio de una persona.",
+  "cortes": [
+    {
+      "corte": "2026-10-07T00:41:03Z",
+      "candidatos": 58,
+      "elegidos": [
+        "GRP-0f8fb5a5bb",
+        "GRP-4776222797",
+        "GRP-5e6531917f",
+        "GRP-e78a143f9a",
+        "GRP-fcdfc2a3cc"
+      ],
+      "sistema": {
+        "k": 0,
+        "n": 5,
+        "proporcion": 0.0,
+        "ic95": [
+          0.0,
+          0.4345
+        ],
+        "top": [
+          "GRP-84a6b3a04b",
+          "GRP-ef3acec21e",
+          "GRP-65d565abd0",
+          "GRP-8af4196527",
+          "GRP-6e737ecad5"
+        ],
+        "ids_fallidos": [
+          "GRP-84a6b3a04b",
+          "GRP-ef3acec21e",
+          "GRP-65d565abd0",
+          "GRP-8af4196527",
+          "GRP-6e737ecad5"
+        ]
+      },
+      "baseline": {
+        "k": 1,
+        "n": 5,
+        "proporcion": 0.2,
+        "ic95": [
+          0.0362,
+          0.6245
+        ],
+        "top": [
+          "GRP-f9e3ba0bd2",
+          "GRP-87e128925b",
+          "GRP-0c210ad795",
+          "GRP-1df3ab1e22",
+          "GRP-0f8fb5a5bb"
+        ],
+        "ids_fallidos": [
+          "GRP-f9e3ba0bd2",
+          "GRP-87e128925b",
+          "GRP-0c210ad795",
+          "GRP-1df3ab1e22"
+        ]
+      },
+      "baseline_sin_fecha_publicacion": 23
+    }
+  ],
+  "nota": "Los temas de un mismo corte no son independientes: el intervalo es orientativo. No se infiere audiencia, rentabilidad ni reducción de riesgo.",
+  "pruebas": 1,
+  "especialista": false,
+  "exploratoria": true,
+  "cortes_minimos": 3,
+  "sistema": {
+    "k": 0,
+    "n": 5,
+    "proporcion": 0.0,
+    "ic95": [
+      0.0,
+      0.4345
+    ]
+  },
+  "baseline": {
+    "k": 1,
+    "n": 5,
+    "proporcion": 0.2,
+    "ic95": [
+      0.0362,
+      0.6245
+    ]
+  }
 }

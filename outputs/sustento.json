@@ -1,0 +1,70 @@
+{
+  "estado": "completa",
+  "de": 30,
+  "revisadas": 30,
+  "meta": 0.9,
+  "muestra_prevista": 30,
+  "origen_juicio": "asistente_provisional (D-101)",
+  "juicio_humano": false,
+  "aviso_origen": "JUICIO PROVISIONAL DEL ASISTENTE, NO HUMANO (D-101): se rehace a mano en C-09; no reportar como juicio de una persona.",
+  "conteo": {
+    "sustentada": 29,
+    "parcial": 1,
+    "no sustentada": 0,
+    "tipo incorrecto": 0
+  },
+  "sustentadas": {
+    "n": 29,
+    "de": 30,
+    "proporcion": 0.9667,
+    "ic95": [
+      0.9,
+      1.0
+    ],
+    "ic95_wilson": [
+      0.8333,
+      0.9941
+    ],
+    "remuestreos": 2000
+  },
+  "parciales": {
+    "n": 1,
+    "de": 30,
+    "proporcion": 0.0333,
+    "ic95": [
+      0.0,
+      0.1
+    ],
+    "ic95_wilson": [
+      0.0059,
+      0.1667
+    ],
+    "remuestreos": 2000
+  },
+  "tipo_incorrecto": {
+    "n": 0,
+    "de": 30,
+    "proporcion": 0.0,
+    "ic95": [
+      0.0,
+      0.0
+    ],
+    "ic95_wilson": [
+      0.0,
+      0.1135
+    ],
+    "remuestreos": 2000,
+    "bootstrap_degenerado": true
+  },
+  "fallos": [
+    {
+      "id_muestra": "S01",
+      "id": "GRP-39773bed5a/A4",
+      "veredicto": "parcial"
+    }
+  ],
+  "cumple_meta": true,
+  "revisores": [
+    "asistente (D-101)"
+  ]
+}

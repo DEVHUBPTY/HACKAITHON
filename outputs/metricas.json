@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "fecha_utc": "2026-10-07T11:46:44Z",
+  "fecha_utc": "2026-10-07T12:09:30Z",
   "benchmark": {
     "archivo": "benchmark_dev.jsonl",
     "sha256": "27c791a86055322eece5c45570b35ae4fe0f06bb89a4bed67c8d861c809f11cc",
@@ -413,23 +413,23 @@
       "unidad": "s",
       "p50": {
         "n": 40,
-        "valor": 0.0068,
+        "valor": 0.0064,
         "ic95": [
           0.0003,
-          0.0072
+          0.0069
         ],
         "remuestreos": 2000
       },
       "p95": {
         "n": 40,
-        "valor": 0.0085,
+        "valor": 0.0082,
         "ic95": [
-          0.0076,
+          0.0075,
           0.0091
         ],
         "remuestreos": 2000
       },
-      "arranque_modelo_s": 3.292,
+      "arranque_modelo_s": 3.712,
       "nota": "consulta de punta a punta en frío (el vector de la consulta se codifica de verdad, sin caché) con el modelo de embeddings local ya cargado; sin red. La carga del modelo se reporta aparte (arranque_modelo_s)"
     },
     "paquete_completo": {
@@ -808,18 +808,80 @@
     }
   },
   "validez_sustento": {
-    "estado": "pendiente_revision_humana",
+    "estado": "completa",
     "de": 30,
-    "revisadas": 0,
+    "revisadas": 30,
     "meta": 0.9,
     "muestra_prevista": 30,
-    "nota": "Falta la revisión de una persona que no escribió el código de generación (docs/protocolo_evaluacion.md, sección 4).",
+    "origen_juicio": "asistente_provisional (D-101)",
+    "juicio_humano": false,
+    "aviso_origen": "JUICIO PROVISIONAL DEL ASISTENTE, NO HUMANO (D-101): se rehace a mano en C-09; no reportar como juicio de una persona.",
+    "conteo": {
+      "sustentada": 29,
+      "parcial": 1,
+      "no sustentada": 0,
+      "tipo incorrecto": 0
+    },
+    "sustentadas": {
+      "n": 29,
+      "de": 30,
+      "proporcion": 0.9667,
+      "ic95": [
+        0.9,
+        1.0
+      ],
+      "ic95_wilson": [
+        0.8333,
+        0.9941
+      ],
+      "remuestreos": 2000
+    },
+    "parciales": {
+      "n": 1,
+      "de": 30,
+      "proporcion": 0.0333,
+      "ic95": [
+        0.0,
+        0.1
+      ],
+      "ic95_wilson": [
+        0.0059,
+        0.1667
+      ],
+      "remuestreos": 2000
+    },
+    "tipo_incorrecto": {
+      "n": 0,
+      "de": 30,
+      "proporcion": 0.0,
+      "ic95": [
+        0.0,
+        0.0
+      ],
+      "ic95_wilson": [
+        0.0,
+        0.1135
+      ],
+      "remuestreos": 2000,
+      "bootstrap_degenerado": true
+    },
+    "fallos": [
+      {
+        "id_muestra": "S01",
+        "id": "GRP-39773bed5a/A4",
+        "veredicto": "parcial"
+      }
+    ],
+    "cumple_meta": true,
+    "revisores": [
+      "asistente (D-101)"
+    ],
     "archivo": "revision_sustento.csv",
     "muestra": {
       "n": 30,
       "pool": 108,
       "semilla": 42,
-      "estado_del_archivo": "reescrita_sin_cambios",
+      "estado_del_archivo": "conservada_con_veredictos",
       "origenes": {
         "borrador": 14,
         "consulta": 16
