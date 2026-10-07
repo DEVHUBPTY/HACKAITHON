@@ -95,6 +95,18 @@ def test_si_faltan_meses_del_rango_la_conversion_falla(tmp_path: Path) -> None:
         conversion.sbp.convertir_sbp(raw, conversion.cargar_config())
 
 
+def test_si_falta_el_crudo_de_un_informe_el_error_lo_nombra(tmp_path: Path) -> None:
+    """X90: con un solo informe no se devuelve ``[]`` en silencio: el error nombra el que falta."""
+    raw = tmp_path / "raw"
+    escribir_sbp_sintetico(raw / "sbp")
+    cfg = conversion.cargar_config()
+    faltante = next(iter(cfg["sbp"]["informes"]))
+    for p in (raw / "sbp").glob(f"*{faltante}*"):
+        p.unlink()
+    with pytest.raises(sbp.ErrorSbp, match=faltante):
+        conversion.sbp.convertir_sbp(raw, cfg)
+
+
 def test_sin_crudos_de_la_sbp_la_fuente_es_opcional_y_no_toca_el_csv_existente(tmp_path: Path) -> None:
     assert conversion.sbp.convertir_sbp(tmp_path / "raw", conversion.cargar_config()) == []
 
@@ -124,13 +136,16 @@ def test_validar_snapshot_rechaza_una_fila_sin_pagina(data_sintetica: Path, conf
 
 
 def test_validar_snapshot_solo_advierte_si_no_hay_fuente_d(data_sintetica: Path, config: dict[str, Any]) -> None:
+    """Un snapshot sin fuente D (sin CSV ni huella en el manifest) solo advierte; el CSV, ya versionado (D-116), no se omite si el manifest lo lista."""
     (data_sintetica / "processed" / sbp.NOMBRE_CSV).unlink()
+    ruta = data_sintetica / "manifest.json"
+    manifiesto = json.loads(ruta.read_text("utf-8"))
+    manifiesto["sha256"].pop("processed/sbp_series.csv")
+    ruta.write_text(json.dumps(manifiesto, ensure_ascii=False), encoding="utf-8")
     informe = validar_snapshot.validar(data_sintetica, config)
     assert _estados(informe)["archivo:sbp_series.csv"] == "advertencia"
     assert not [c for c in informe["comprobaciones"] if c["comprobacion"].startswith("sbp:") and c["estado"] == "error"]
-    # D-72 / X84: el CSV no se versiona; su huella en el manifest no verificable es una advertencia, no un error
-    assert _estados(informe)["manifest:sha256:processed/sbp_series.csv"] == "advertencia"
-    assert "manifest:sha256" not in _estados(informe) or _estados(informe)["manifest:sha256"] != "error"
+    assert _estados(informe).get("manifest:sha256") != "error"
 
 
 def test_el_manifest_incluye_la_fuente_d_con_su_hash_y_sus_condiciones(data_sintetica: Path) -> None:

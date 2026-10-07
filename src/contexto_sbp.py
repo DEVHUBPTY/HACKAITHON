@@ -137,8 +137,3 @@ def vincular_grupo(
             )
         )
     return filas
-
-
-def ficha_de_dato(fila: Mapping[str, Any]) -> dict[str, Any]:
-    """Campos para mostrar un dato de la SBP: período, unidad, informe, página y limitación (nada se omite en la ficha)."""
-    return {k: fila.get(k) for k in ("id_evidencia", "periodo", "valor", "unidad", "informe", "pagina", "limitacion", "url_fuente")}

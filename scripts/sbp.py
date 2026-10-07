@@ -118,19 +118,24 @@ def leer_serie(ruta: Path, id_serie: str, cfg: dict[str, Any], informe: dict[str
 
 
 def convertir_sbp(carpeta_raw: Path, config: dict[str, Any]) -> list[dict[str, Any]]:
-    """Filas de ``sbp_series.csv`` desde ``raw/sbp/``. Sin crudos devuelve ``[]`` (la fuente D es opcional).
+    """Filas de ``sbp_series.csv`` desde ``raw/sbp/``. Sin ningún crudo devuelve ``[]`` (la fuente D es opcional); si falta alguno de los informes, falla nombrando el que falta.
 
     La URL de cada informe sale del registro de extracción que dejó ``scripts.extraer`` junto al crudo (clave ``url`` del crudo).
     """
     cfg = config["sbp"]
     carpeta = carpeta_raw / cfg["carpeta_cruda"]
     filas: list[dict[str, Any]] = []
+    rutas = {clave: crudo_mas_reciente(carpeta, clave) if carpeta.is_dir() else None for clave in cfg["informes"]}
+    if not any(rutas.values()):
+        return []
+    faltan = [f"{cfg['informes'][clave]['nombre']} ({clave})" for clave, ruta in rutas.items() if ruta is None]
+    if faltan:   # X90: con un solo informe no se publica una fuente a medias ni se descarta en silencio
+        raise ErrorSbp(f"falta el crudo de {', '.join(faltan)} en {carpeta}; corré `scripts.extraer --sbp` o borrá los demás crudos de la SBP")
     for id_serie, serie in cfg["series"].items():
         clave = serie["informe"]
         informe = cfg["informes"][clave]
-        ruta = crudo_mas_reciente(carpeta, clave) if carpeta.is_dir() else None
-        if ruta is None:
-            return []
+        ruta = rutas[clave]
+        assert ruta is not None
         extraccion = fecha_de_crudo(ruta).strftime(FORMATO_ISO)
         url = _url_registrada(carpeta_raw, ruta, cfg, informe)
         for dato in leer_serie(ruta, id_serie, cfg, informe):
