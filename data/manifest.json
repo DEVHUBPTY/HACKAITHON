@@ -569,11 +569,11 @@
         "estado": "sin_cache",
         "sha256": null
       },
-      "GRP-39dfe8d714": {
+      "GRP-39773bed5a": {
         "estado": "sin_cache",
         "sha256": null
       },
-      "GRP-5ab17b45cd": {
+      "GRP-39dfe8d714": {
         "estado": "sin_cache",
         "sha256": null
       },
@@ -604,8 +604,8 @@
     },
     "decimales_del_hash": 4,
     "ejecucion": {
-      "arbol_con_cambios": true,
-      "commit": "2053f99c56217b55a2c240558114281ca03ea5d2",
+      "arbol_con_cambios": false,
+      "commit": "336ad8ab8b54747dc74bf3ee402e80b6b13962a5",
       "embeddings": {
         "clave": "minilm",
         "id": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
@@ -632,7 +632,7 @@
       "python": "3.11.14",
       "reglas": {
         "archivo": "config/reglas_v1.3.yaml",
-        "sha256": "fb3e64d2a4116cc168ec79a721daf412e398e5b08d802e56fbaaab292b5e0f45",
+        "sha256": "1006bb0c62357d9aad5d1eeb032df4c917643e8a1fab9cf762fba2600ec62486",
         "version": "1.3"
       },
       "semillas": {
@@ -671,12 +671,12 @@
       "archivo:data/processed/validos/fuentes.json": "799b74b1f7766e193659f6c08f41ad9052ed838049812797c80ef75751db9b52",
       "archivo:data/processed/validos/indicadores.csv": "6238f1c008ac313a1cc1f9ebc5e5459c21a47c36460900aa47cce726a8e34b12",
       "archivo:data/processed/validos/noticias.csv": "fca44ad5c80ab71674fdf46f8b50c9dd6e7acf1ade125b824e335621f2336a7f",
-      "fichas": "ef8ca52a52fd94de3b9375eb636ffda3ebc38e2094268878887055f370488a8e",
-      "informe:outputs/prioridad.json": "926b31b83c0bec0e9662b4bcd35e9a2737a4a01778d6331059acd3995a8e1745",
-      "informe:outputs/reporte_calidad.json": "6567b311fe570f323805c5ecb330ffb3342bc22aa45b3a0b37d94c69bfa7b8ed",
+      "fichas": "f80a23ebd58eed23fd661228157be0e5fd5922abaa6f2810b7238f1487c74bc2",
+      "informe:outputs/prioridad.json": "f71be8948eb2ef27edd2cd240fb52b222d395bf94fb13a38e88a103f9c86c480",
+      "informe:outputs/reporte_calidad.json": "d94a5389209586020f085e764efcb18f1b1040c9fbc6a4dedb0631c6a5f5a622",
       "informe:outputs/reporte_vinculos.json": "fe679ddbd4ea9f285e4330a43c15effbde821454cd9811604764386315c7fa08",
       "informe:outputs/validacion_snapshot.json": "5226e8f58d2ab29730f532909a82015ab320f5194244008eafd0f3a46204bb1a",
-      "metricas": "8850ed03ae5c6b6285614c603b5f40336f97306b874ee4eda21b18d3cf346fb3",
+      "metricas": "5bbeeed9ea473157a2b369fcd6fb05d41c64fb2610e14bfd7fc573b8f478c1a0",
       "muestra_sustento": "3f9da12d97656494337abb8931af4d8fa43cc93ba22851c444853af940f34ff3",
       "reconstruido:data/processed/conversion.json": "fb8ac3865ff48f3f394e70e580c7a5f69f3b4665a810fd935055a18810d47481",
       "reconstruido:data/processed/eventos.geojson": "c43507e5934652ff45fcb0bdae781d498a08167457c9e9d82f67446d6966d411",
@@ -686,13 +686,13 @@
       "tabla:contradicciones": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
       "tabla:evidencia": "d0bc41ee229bf7cc675e38cdaca8ab6b3b6bbfe87de0416f604a74b85547e4a6",
       "tabla:fuentes": "2ddbf345cf5f3eec321a7377cc1026562b04567ff979fca70dedd6ba7eacb9f8",
-      "tabla:grupos": "50090f76bb01302929034aa56db287ad6f73a84e84d854cbf67339c591a125fa",
+      "tabla:grupos": "3c4d942e6b44920c5d7c68cd023f8bf2dd5ec451912f6e303b63643b2b0b9633",
       "tabla:indicadores": "ad1ae3982192304c02fe722d8bde0b7101f599606174c6a823d8643cf9216113",
-      "tabla:noticias": "03262daaf8166572e0073116d57c0f9cf77ee3571890b3ac24ae5a3ec4bb34ea",
+      "tabla:noticias": "ddaa370ca1ee59e825b316c452bebb0eba9b47417fe90d9e0d6a31486ea942d8",
       "tabla:procedencias": "bd68e527771c57816350172d37e59d2737a0f95cbca7f4daa17d8be6e5c5b507",
-      "tabla:puntajes": "16836a5953aab78f0950e3b062b4a250159dc9ea9c76679aa04f476142d741be",
+      "tabla:puntajes": "cd6d0b7db6d5ab3617e69b54c785a1b252264c67bf584a0b6506191688b47aaa",
       "tabla:sismos": "51591108be48bc00cefe3742de11bee45343aadbd91f682e015f4f8c97b506aa",
-      "tabla:vinculos": "cd39d4aea46abcbd333dad25f7bc0be37f2da8442c0f87949f4279c025616d22"
+      "tabla:vinculos": "f4c0de43068c9599dd415e6d16ced952210e8098fc9761b2d6be7cfec472ea2d"
     }
   },
   "sha256": {

@@ -658,24 +658,24 @@
       },
       "e5/A": {
         "exactitud_principal": {
-          "n": 10,
+          "n": 11,
           "de": 15,
-          "proporcion": 0.6667,
+          "proporcion": 0.7333,
           "ic95": [
-            0.4171,
-            0.8482
+            0.4805,
+            0.891
           ]
         },
         "macro_f1": {
           "n": 15,
-          "macro_f1": 0.6136,
+          "macro_f1": 0.6211,
           "ic95": [
-            0.3284,
-            0.8807
+            0.3285,
+            0.9207
           ],
           "ic95_exacto": [
-            0.32839133089133105,
-            0.880702380952381
+            0.32849206349206356,
+            0.920674603174603
           ],
           "remuestreos": 1000,
           "ponderado": false
@@ -692,14 +692,14 @@
         "por_tema": {
           "economia": {
             "soporte": 1,
-            "predichos": 1,
+            "predichos": 2,
             "precision": {
               "n": 1,
-              "de": 1,
-              "proporcion": 1.0,
+              "de": 2,
+              "proporcion": 0.5,
               "ic95": [
-                0.2065,
-                1.0
+                0.0945,
+                0.9055
               ]
             },
             "recall": {
@@ -711,7 +711,7 @@
                 1.0
               ]
             },
-            "f1": 1.0
+            "f1": 0.6667
           },
           "logistica": {
             "soporte": 3,
@@ -763,35 +763,35 @@
             "soporte": 4,
             "predichos": 3,
             "precision": {
-              "n": 2,
+              "n": 3,
               "de": 3,
-              "proporcion": 0.6667,
+              "proporcion": 1.0,
               "ic95": [
-                0.2077,
-                0.9385
+                0.4385,
+                1.0
               ]
             },
             "recall": {
-              "n": 2,
+              "n": 3,
               "de": 4,
-              "proporcion": 0.5,
+              "proporcion": 0.75,
               "ic95": [
-                0.15,
-                0.85
+                0.3006,
+                0.9544
               ]
             },
-            "f1": 0.5714
+            "f1": 0.8571
           },
           "eventos_naturales": {
             "soporte": 1,
-            "predichos": 4,
+            "predichos": 3,
             "precision": {
               "n": 1,
-              "de": 4,
-              "proporcion": 0.25,
+              "de": 3,
+              "proporcion": 0.3333,
               "ic95": [
-                0.0456,
-                0.6994
+                0.0615,
+                0.7923
               ]
             },
             "recall": {
@@ -803,7 +803,7 @@
                 1.0
               ]
             },
-            "f1": 0.4
+            "f1": 0.5
           },
           "regulacion": {
             "soporte": 4,
@@ -891,8 +891,8 @@
               0,
               0,
               0,
-              2,
-              2,
+              3,
+              1,
               0,
               0
             ],
@@ -906,10 +906,10 @@
               0
             ],
             [
-              0,
-              0,
-              0,
               1,
+              0,
+              0,
+              0,
               0,
               3,
               0
@@ -926,30 +926,30 @@
           ]
         },
         "secundario_esperado_acertado": {
-          "n": 1,
+          "n": 2,
           "de": 7,
-          "proporcion": 0.1429,
+          "proporcion": 0.2857,
           "ic95": [
-            0.0257,
-            0.5131
+            0.0822,
+            0.6411
           ]
         },
         "secundario_esperado_es_el_segundo_mejor": {
-          "n": 4,
+          "n": 5,
           "de": 7,
-          "proporcion": 0.5714,
+          "proporcion": 0.7143,
           "ic95": [
-            0.2505,
-            0.8418
+            0.3589,
+            0.9178
           ]
         },
         "secundario_dado_donde_no_se_espera": {
-          "n": 0,
+          "n": 1,
           "de": 8,
-          "proporcion": 0.0,
+          "proporcion": 0.125,
           "ic95": [
-            0.0,
-            0.3244
+            0.0224,
+            0.4709
           ]
         },
         "fallos": [
@@ -966,10 +966,10 @@
             "id": "CD-04",
             "titular": "ASEP aprueba aumento de la tarifa eléctrica",
             "esperado": "regulacion",
-            "predicho": "servicios_publicos",
+            "predicho": "economia",
             "secundario_esperado": "servicios_publicos",
-            "secundario_predicho": "economia",
-            "similitud": 0.8715
+            "secundario_predicho": "servicios_publicos",
+            "similitud": 0.87
           },
           {
             "id": "CD-08",
@@ -979,15 +979,6 @@
             "secundario_esperado": null,
             "secundario_predicho": null,
             "similitud": 0.8835
-          },
-          {
-            "id": "CD-12",
-            "titular": "Paro docente deja sin clases a escuelas",
-            "esperado": "servicios_publicos",
-            "predicho": "eventos_naturales",
-            "secundario_esperado": null,
-            "secundario_predicho": null,
-            "similitud": 0.8489
           },
           {
             "id": "CD-15",
@@ -1276,12 +1267,12 @@
           ]
         },
         "secundario_esperado_es_el_segundo_mejor": {
-          "n": 4,
+          "n": 3,
           "de": 7,
-          "proporcion": 0.5714,
+          "proporcion": 0.4286,
           "ic95": [
-            0.2505,
-            0.8418
+            0.1582,
+            0.7495
           ]
         },
         "secundario_dado_donde_no_se_espera": {
@@ -1693,7 +1684,7 @@
             "predicho": "sin_tema",
             "secundario_esperado": null,
             "secundario_predicho": null,
-            "similitud": 0.1311
+            "similitud": 0.1168
           },
           {
             "id": "CD-13",
@@ -2091,26 +2082,26 @@
       "e5": {
         "criterio_A_vs_B": {
           "n": 15,
-          "diferencia_macro_f1": -0.1816,
+          "diferencia_macro_f1": -0.1891,
           "ic95": [
-            -0.4946,
-            0.2652
+            -0.4947,
+            0.2235
           ],
           "ic95_exacto": [
-            -0.49462653748368024,
-            0.2651607142857143
+            -0.4947222222222221,
+            0.2235066137566137
           ],
           "por_clase": {
             "economia": {
               "soporte": true,
-              "diferencia_f1": -0.5,
+              "diferencia_f1": -0.1667,
               "ic95": [
-                -0.7143,
-                0.0
+                -0.6667,
+                0.3333
               ],
               "ic95_exacto": [
-                -0.7142857142857143,
-                0.0
+                -0.6666666666666667,
+                0.33333333333333337
               ]
             },
             "logistica": {
@@ -2139,26 +2130,26 @@
             },
             "servicios_publicos": {
               "soporte": true,
-              "diferencia_f1": 0.2857,
+              "diferencia_f1": 0.0,
               "ic95": [
-                -0.6667,
+                -1.0,
                 1.0
               ],
               "ic95_exacto": [
-                -0.6666666666666666,
+                -1.0,
                 1.0
               ]
             },
             "eventos_naturales": {
               "soporte": true,
-              "diferencia_f1": 0.1,
+              "diferencia_f1": 0.0,
               "ic95": [
-                -0.3333,
-                0.6
+                -0.5,
+                0.5
               ],
               "ic95_exacto": [
-                -0.33333333333333337,
-                0.6
+                -0.5,
+                0.5
               ]
             },
             "regulacion": {
@@ -2196,25 +2187,25 @@
         },
         "A_menos_baseline": {
           "n": 15,
-          "diferencia_macro_f1": -0.2078,
+          "diferencia_macro_f1": -0.2003,
           "ic95": [
-            -0.4491,
-            0.144
+            -0.4136,
+            0.1418
           ],
           "ic95_exacto": [
-            -0.449104797979798,
-            0.14403061224489788
+            -0.41356524427953,
+            0.1417738095238096
           ],
           "por_clase": {
             "economia": {
               "soporte": true,
-              "diferencia_f1": 0.0,
+              "diferencia_f1": -0.3333,
               "ic95": [
-                0.0,
+                -0.6,
                 0.0
               ],
               "ic95_exacto": [
-                0.0,
+                -0.6,
                 0.0
               ]
             },
@@ -2244,25 +2235,25 @@
             },
             "servicios_publicos": {
               "soporte": true,
-              "diferencia_f1": -0.1786,
+              "diferencia_f1": 0.1071,
               "ic95": [
-                -0.6692,
-                0.2053
+                0.0,
+                0.4286
               ],
               "ic95_exacto": [
-                -0.6692307692307685,
-                0.2052759740259734
+                0.0,
+                0.4285714285714286
               ]
             },
             "eventos_naturales": {
               "soporte": true,
-              "diferencia_f1": -0.2667,
+              "diferencia_f1": -0.1667,
               "ic95": [
-                -0.6,
+                -0.5,
                 0.0
               ],
               "ic95_exacto": [
-                -0.6,
+                -0.5,
                 0.0
               ]
             },
@@ -2702,35 +2693,39 @@
   },
   "datos_reales": {
     "estado": "EVALUADO",
+    "origenes": [
+      "humano"
+    ],
+    "usa_etiquetas_provisionales": false,
     "conteo": {
       "etiquetados": 100,
       "ejemplos_excluidos": 0,
       "no_estan_en_la_base": 0,
-      "marcados_como_ruido_por_el_sistema": 37,
-      "evaluados": 63
+      "marcados_como_ruido_por_el_sistema": 36,
+      "evaluados": 64
     },
     "nota": "Sin ponderar y ponderado (peso_muestreo) se reportan juntos; los IC de precisión y recall son sin ponderar.",
     "configuraciones": {
       "baseline": {
         "exactitud_principal": {
           "n": 29,
-          "de": 63,
-          "proporcion": 0.4603,
+          "de": 64,
+          "proporcion": 0.4531,
           "ic95": [
-            0.3431,
-            0.5821
+            0.3373,
+            0.5743
           ]
         },
         "macro_f1": {
-          "n": 63,
-          "macro_f1": 0.5151,
+          "n": 64,
+          "macro_f1": 0.4669,
           "ic95": [
-            0.2767,
-            0.6074
+            0.2348,
+            0.5749
           ],
           "ic95_exacto": [
-            0.276742958683492,
-            0.6074116316603019
+            0.23476668647600005,
+            0.5749063039850085
           ],
           "remuestreos": 1000,
           "ponderado": false
@@ -2769,7 +2764,7 @@
             "f1": 0.1429
           },
           "logistica": {
-            "soporte": 1,
+            "soporte": 2,
             "predichos": 1,
             "precision": {
               "n": 1,
@@ -2782,14 +2777,14 @@
             },
             "recall": {
               "n": 1,
-              "de": 1,
-              "proporcion": 1.0,
+              "de": 2,
+              "proporcion": 0.5,
               "ic95": [
-                0.2065,
-                1.0
+                0.0945,
+                0.9055
               ]
             },
-            "f1": 1.0
+            "f1": 0.6667
           },
           "turismo": {
             "soporte": 1,
@@ -2885,14 +2880,14 @@
           },
           "sin_tema": {
             "soporte": 5,
-            "predichos": 34,
+            "predichos": 35,
             "precision": {
               "n": 3,
-              "de": 34,
-              "proporcion": 0.0882,
+              "de": 35,
+              "proporcion": 0.0857,
               "ic95": [
-                0.0305,
-                0.2296
+                0.0296,
+                0.2238
               ]
             },
             "recall": {
@@ -2904,7 +2899,7 @@
                 0.8824
               ]
             },
-            "f1": 0.1538
+            "f1": 0.15
           }
         },
         "matriz_confusion": {
@@ -2934,7 +2929,7 @@
               0,
               0,
               0,
-              0
+              1
             ],
             [
               0,
@@ -2997,11 +2992,11 @@
         },
         "secundario_dado_donde_no_se_espera": {
           "n": 1,
-          "de": 63,
-          "proporcion": 0.0159,
+          "de": 64,
+          "proporcion": 0.0156,
           "ic95": [
             0.0028,
-            0.0846
+            0.0833
           ]
         },
         "fallos": [
@@ -3310,25 +3305,34 @@
             "secundario_esperado": null,
             "secundario_predicho": null,
             "similitud": null
+          },
+          {
+            "id": "NOT-fc94561c6d",
+            "titular": "US LNG Exports Increase in September, Europe Outbids Asia for Cargoes",
+            "esperado": "logistica",
+            "predicho": "sin_tema",
+            "secundario_esperado": null,
+            "secundario_predicho": null,
+            "similitud": null
           }
         ],
         "ponderado": {
           "exactitud_principal": {
             "suma_pesos_aciertos": 29.0,
-            "suma_pesos": 63.0,
-            "proporcion": 0.4603,
-            "n": 63
+            "suma_pesos": 65.8919,
+            "proporcion": 0.4401,
+            "n": 64
           },
           "macro_f1": {
-            "n": 63,
-            "macro_f1": 0.5151,
+            "n": 64,
+            "macro_f1": 0.4291,
             "ic95": [
-              0.2767,
-              0.6074
+              0.2332,
+              0.5691
             ],
             "ic95_exacto": [
-              0.276742958683492,
-              0.6074116316603019
+              0.2331699682900407,
+              0.5691191723069391
             ],
             "remuestreos": 1000,
             "ponderado": true
@@ -3338,23 +3342,23 @@
       "baseline_ampliado": {
         "exactitud_principal": {
           "n": 30,
-          "de": 63,
-          "proporcion": 0.4762,
+          "de": 64,
+          "proporcion": 0.4688,
           "ic95": [
-            0.3578,
-            0.5973
+            0.3518,
+            0.5893
           ]
         },
         "macro_f1": {
-          "n": 63,
-          "macro_f1": 0.5248,
+          "n": 64,
+          "macro_f1": 0.4766,
           "ic95": [
-            0.2908,
-            0.6162
+            0.2512,
+            0.5937
           ],
           "ic95_exacto": [
-            0.29076575203252036,
-            0.616154317491341
+            0.2512189209946179,
+            0.5936648890325361
           ],
           "remuestreos": 1000,
           "ponderado": false
@@ -3393,7 +3397,7 @@
             "f1": 0.2069
           },
           "logistica": {
-            "soporte": 1,
+            "soporte": 2,
             "predichos": 1,
             "precision": {
               "n": 1,
@@ -3406,14 +3410,14 @@
             },
             "recall": {
               "n": 1,
-              "de": 1,
-              "proporcion": 1.0,
+              "de": 2,
+              "proporcion": 0.5,
               "ic95": [
-                0.2065,
-                1.0
+                0.0945,
+                0.9055
               ]
             },
-            "f1": 1.0
+            "f1": 0.6667
           },
           "turismo": {
             "soporte": 1,
@@ -3509,14 +3513,14 @@
           },
           "sin_tema": {
             "soporte": 5,
-            "predichos": 33,
+            "predichos": 34,
             "precision": {
               "n": 3,
-              "de": 33,
-              "proporcion": 0.0909,
+              "de": 34,
+              "proporcion": 0.0882,
               "ic95": [
-                0.0314,
-                0.2357
+                0.0305,
+                0.2296
               ]
             },
             "recall": {
@@ -3528,7 +3532,7 @@
                 0.8824
               ]
             },
-            "f1": 0.1579
+            "f1": 0.1538
           }
         },
         "matriz_confusion": {
@@ -3558,7 +3562,7 @@
               0,
               0,
               0,
-              0
+              1
             ],
             [
               0,
@@ -3621,11 +3625,11 @@
         },
         "secundario_dado_donde_no_se_espera": {
           "n": 1,
-          "de": 63,
-          "proporcion": 0.0159,
+          "de": 64,
+          "proporcion": 0.0156,
           "ic95": [
             0.0028,
-            0.0846
+            0.0833
           ]
         },
         "fallos": [
@@ -3925,25 +3929,34 @@
             "secundario_esperado": null,
             "secundario_predicho": null,
             "similitud": null
+          },
+          {
+            "id": "NOT-fc94561c6d",
+            "titular": "US LNG Exports Increase in September, Europe Outbids Asia for Cargoes",
+            "esperado": "logistica",
+            "predicho": "sin_tema",
+            "secundario_esperado": null,
+            "secundario_predicho": null,
+            "similitud": null
           }
         ],
         "ponderado": {
           "exactitud_principal": {
             "suma_pesos_aciertos": 30.0,
-            "suma_pesos": 63.0,
-            "proporcion": 0.4762,
-            "n": 63
+            "suma_pesos": 65.8919,
+            "proporcion": 0.4553,
+            "n": 64
           },
           "macro_f1": {
-            "n": 63,
-            "macro_f1": 0.5248,
+            "n": 64,
+            "macro_f1": 0.4388,
             "ic95": [
-              0.2908,
-              0.6162
+              0.2472,
+              0.588
             ],
             "ic95_exacto": [
-              0.29076575203252036,
-              0.616154317491341
+              0.24723893683788079,
+              0.5879926819212532
             ],
             "remuestreos": 1000,
             "ponderado": true
@@ -3952,24 +3965,24 @@
       },
       "e5/A": {
         "exactitud_principal": {
-          "n": 33,
-          "de": 63,
-          "proporcion": 0.5238,
+          "n": 35,
+          "de": 64,
+          "proporcion": 0.5469,
           "ic95": [
-            0.4027,
-            0.6422
+            0.4257,
+            0.6627
           ]
         },
         "macro_f1": {
-          "n": 63,
-          "macro_f1": 0.4007,
+          "n": 64,
+          "macro_f1": 0.4296,
           "ic95": [
-            0.2446,
-            0.5102
+            0.2762,
+            0.5418
           ],
           "ic95_exacto": [
-            0.24460528673835127,
-            0.510195229234703
+            0.27624643299763596,
+            0.5418440835077923
           ],
           "remuestreos": 1000,
           "ponderado": false
@@ -3986,49 +3999,49 @@
         "por_tema": {
           "economia": {
             "soporte": 26,
-            "predichos": 7,
+            "predichos": 5,
             "precision": {
-              "n": 5,
-              "de": 7,
-              "proporcion": 0.7143,
+              "n": 4,
+              "de": 5,
+              "proporcion": 0.8,
               "ic95": [
-                0.3589,
-                0.9178
+                0.3755,
+                0.9638
               ]
             },
             "recall": {
-              "n": 5,
+              "n": 4,
               "de": 26,
-              "proporcion": 0.1923,
+              "proporcion": 0.1538,
               "ic95": [
-                0.0851,
-                0.3788
+                0.0615,
+                0.3353
               ]
             },
-            "f1": 0.303
+            "f1": 0.2581
           },
           "logistica": {
-            "soporte": 1,
-            "predichos": 2,
+            "soporte": 2,
+            "predichos": 3,
             "precision": {
-              "n": 1,
-              "de": 2,
-              "proporcion": 0.5,
+              "n": 2,
+              "de": 3,
+              "proporcion": 0.6667,
               "ic95": [
-                0.0945,
-                0.9055
+                0.2077,
+                0.9385
               ]
             },
             "recall": {
-              "n": 1,
-              "de": 1,
+              "n": 2,
+              "de": 2,
               "proporcion": 1.0,
               "ic95": [
-                0.2065,
+                0.3424,
                 1.0
               ]
             },
-            "f1": 0.6667
+            "f1": 0.8
           },
           "turismo": {
             "soporte": 1,
@@ -4055,37 +4068,37 @@
           },
           "servicios_publicos": {
             "soporte": 9,
-            "predichos": 12,
+            "predichos": 16,
             "precision": {
-              "n": 6,
-              "de": 12,
+              "n": 8,
+              "de": 16,
               "proporcion": 0.5,
               "ic95": [
-                0.2538,
-                0.7462
+                0.28,
+                0.72
               ]
             },
             "recall": {
-              "n": 6,
+              "n": 8,
               "de": 9,
-              "proporcion": 0.6667,
+              "proporcion": 0.8889,
               "ic95": [
-                0.3542,
-                0.8794
+                0.565,
+                0.9801
               ]
             },
-            "f1": 0.5714
+            "f1": 0.64
           },
           "eventos_naturales": {
             "soporte": 20,
-            "predichos": 23,
+            "predichos": 21,
             "precision": {
               "n": 20,
-              "de": 23,
-              "proporcion": 0.8696,
+              "de": 21,
+              "proporcion": 0.9524,
               "ic95": [
-                0.6787,
-                0.9546
+                0.7733,
+                0.9915
               ]
             },
             "recall": {
@@ -4097,7 +4110,7 @@
                 1.0
               ]
             },
-            "f1": 0.9302
+            "f1": 0.9756
           },
           "regulacion": {
             "soporte": 1,
@@ -4158,38 +4171,38 @@
           ],
           "filas_real_columnas_predicho": [
             [
-              5,
-              1,
-              1,
               4,
+              1,
+              1,
+              5,
               0,
               3,
               12
             ],
             [
               0,
-              1,
-              0,
-              0,
-              0,
-              0,
-              0
-            ],
-            [
-              0,
-              0,
-              0,
-              1,
-              0,
-              0,
-              0
-            ],
-            [
-              1,
-              0,
-              0,
-              6,
               2,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              8,
+              1,
               0,
               0
             ],
@@ -4215,8 +4228,8 @@
               1,
               0,
               1,
-              1,
-              1,
+              2,
+              0,
               1,
               0
             ]
@@ -4235,12 +4248,12 @@
           "ic95": null
         },
         "secundario_dado_donde_no_se_espera": {
-          "n": 11,
-          "de": 63,
-          "proporcion": 0.1746,
+          "n": 9,
+          "de": 64,
+          "proporcion": 0.1406,
           "ic95": [
-            0.1004,
-            0.2862
+            0.0758,
+            0.2462
           ]
         },
         "fallos": [
@@ -4254,22 +4267,13 @@
             "similitud": 0.8514
           },
           {
-            "id": "NOT-0d91fa48b0",
-            "titular": "Más de 30 mujeres han muerto de forma violenta en Panamá este año",
-            "esperado": "servicios_publicos",
-            "predicho": "economia",
-            "secundario_esperado": null,
-            "secundario_predicho": "servicios_publicos",
-            "similitud": 0.8277
-          },
-          {
             "id": "NOT-14dcb8e259",
             "titular": "Contenido Exclusivo: Turismo en transporte público",
             "esperado": "turismo",
             "predicho": "servicios_publicos",
             "secundario_esperado": null,
             "secundario_predicho": null,
-            "similitud": 0.91
+            "similitud": 0.9093
           },
           {
             "id": "NOT-1819a7014e",
@@ -4332,7 +4336,7 @@
             "predicho": "servicios_publicos",
             "secundario_esperado": null,
             "secundario_predicho": null,
-            "similitud": 0.8364
+            "similitud": 0.8348
           },
           {
             "id": "NOT-5d839301a6",
@@ -4353,15 +4357,6 @@
             "similitud": 0.8528
           },
           {
-            "id": "NOT-66fdc7fa16",
-            "titular": "Disparan contra el vehículo del exdiputado Pedro Torres en Colón",
-            "esperado": "servicios_publicos",
-            "predicho": "eventos_naturales",
-            "secundario_esperado": null,
-            "secundario_predicho": null,
-            "similitud": 0.8341
-          },
-          {
             "id": "NOT-6717a15ab7",
             "titular": "Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika",
             "esperado": "economia",
@@ -4376,8 +4371,8 @@
             "esperado": "economia",
             "predicho": "servicios_publicos",
             "secundario_esperado": null,
-            "secundario_predicho": "economia",
-            "similitud": 0.8546
+            "secundario_predicho": null,
+            "similitud": 0.8578
           },
           {
             "id": "NOT-8897c80d23",
@@ -4404,7 +4399,7 @@
             "predicho": "servicios_publicos",
             "secundario_esperado": null,
             "secundario_predicho": "turismo",
-            "similitud": 0.8267
+            "similitud": 0.8279
           },
           {
             "id": "NOT-adb01e330f",
@@ -4422,7 +4417,7 @@
             "predicho": "servicios_publicos",
             "secundario_esperado": null,
             "secundario_predicho": null,
-            "similitud": 0.857
+            "similitud": 0.8566
           },
           {
             "id": "NOT-c712a8d7e4",
@@ -4437,10 +4432,19 @@
             "id": "NOT-ca6fae4efb",
             "titular": "Árbol cae sobre dos vehículos en estacionamientos del hospital San Miguel Arcángel",
             "esperado": "sin_tema",
-            "predicho": "eventos_naturales",
+            "predicho": "servicios_publicos",
             "secundario_esperado": null,
-            "secundario_predicho": "servicios_publicos",
-            "similitud": 0.8584
+            "secundario_predicho": null,
+            "similitud": 0.8616
+          },
+          {
+            "id": "NOT-cf027fac38",
+            "titular": "Descentralización explica qué incluye el proyecto de $293,715 para 15 juntas comunales",
+            "esperado": "economia",
+            "predicho": "servicios_publicos",
+            "secundario_esperado": null,
+            "secundario_predicho": null,
+            "similitud": 0.8604
           },
           {
             "id": "NOT-d1dad65858",
@@ -4467,7 +4471,7 @@
             "predicho": "servicios_publicos",
             "secundario_esperado": null,
             "secundario_predicho": null,
-            "similitud": 0.8524
+            "similitud": 0.8535
           },
           {
             "id": "NOT-e4f8660e0d",
@@ -4517,21 +4521,21 @@
         ],
         "ponderado": {
           "exactitud_principal": {
-            "suma_pesos_aciertos": 33.0,
-            "suma_pesos": 63.0,
-            "proporcion": 0.5238,
-            "n": 63
+            "suma_pesos_aciertos": 36.8919,
+            "suma_pesos": 65.8919,
+            "proporcion": 0.5599,
+            "n": 64
           },
           "macro_f1": {
-            "n": 63,
-            "macro_f1": 0.4007,
+            "n": 64,
+            "macro_f1": 0.4419,
             "ic95": [
-              0.2446,
-              0.5102
+              0.2762,
+              0.5476
             ],
             "ic95_exacto": [
-              0.24460528673835127,
-              0.510195229234703
+              0.27624643299763596,
+              0.5476009747691248
             ],
             "remuestreos": 1000,
             "ponderado": true
@@ -4540,24 +4544,24 @@
       },
       "e5/B": {
         "exactitud_principal": {
-          "n": 14,
-          "de": 63,
-          "proporcion": 0.2222,
+          "n": 15,
+          "de": 64,
+          "proporcion": 0.2344,
           "ic95": [
-            0.1372,
-            0.3391
+            0.1475,
+            0.3513
           ]
         },
         "macro_f1": {
-          "n": 63,
-          "macro_f1": 0.1735,
+          "n": 64,
+          "macro_f1": 0.2211,
           "ic95": [
-            0.0914,
-            0.2605
+            0.1106,
+            0.3345
           ],
           "ic95_exacto": [
-            0.09138366422849181,
-            0.26049422799422794
+            0.11061273656101242,
+            0.3344651633921458
           ],
           "remuestreos": 1000,
           "ponderado": false
@@ -4596,27 +4600,27 @@
             "f1": 0.2143
           },
           "logistica": {
-            "soporte": 1,
-            "predichos": 3,
+            "soporte": 2,
+            "predichos": 4,
             "precision": {
-              "n": 0,
-              "de": 3,
-              "proporcion": 0.0,
+              "n": 1,
+              "de": 4,
+              "proporcion": 0.25,
               "ic95": [
-                0.0,
-                0.5615
+                0.0456,
+                0.6994
               ]
             },
             "recall": {
-              "n": 0,
-              "de": 1,
-              "proporcion": 0.0,
+              "n": 1,
+              "de": 2,
+              "proporcion": 0.5,
               "ic95": [
-                0.0,
-                0.7935
+                0.0945,
+                0.9055
               ]
             },
-            "f1": 0.0
+            "f1": 0.3333
           },
           "turismo": {
             "soporte": 1,
@@ -4753,7 +4757,7 @@
             ],
             [
               1,
-              0,
+              1,
               0,
               0,
               0,
@@ -4820,12 +4824,12 @@
           "ic95": null
         },
         "secundario_dado_donde_no_se_espera": {
-          "n": 7,
-          "de": 63,
-          "proporcion": 0.1111,
+          "n": 8,
+          "de": 64,
+          "proporcion": 0.125,
           "ic95": [
-            0.0549,
-            0.212
+            0.0647,
+            0.2277
           ]
         },
         "fallos": [
@@ -4916,7 +4920,7 @@
             "esperado": "economia",
             "predicho": "turismo",
             "secundario_esperado": null,
-            "secundario_predicho": null,
+            "secundario_predicho": "servicios_publicos",
             "similitud": 0.838
           },
           {
@@ -5273,21 +5277,21 @@
         ],
         "ponderado": {
           "exactitud_principal": {
-            "suma_pesos_aciertos": 14.0,
-            "suma_pesos": 63.0,
-            "proporcion": 0.2222,
-            "n": 63
+            "suma_pesos_aciertos": 16.8919,
+            "suma_pesos": 65.8919,
+            "proporcion": 0.2564,
+            "n": 64
           },
           "macro_f1": {
-            "n": 63,
-            "macro_f1": 0.1735,
+            "n": 64,
+            "macro_f1": 0.2579,
             "ic95": [
-              0.0914,
-              0.2605
+              0.1115,
+              0.3659
             ],
             "ic95_exacto": [
-              0.09138366422849181,
-              0.26049422799422794
+              0.11145497672753313,
+              0.36594251530224164
             ],
             "remuestreos": 1000,
             "ponderado": true
@@ -5296,24 +5300,24 @@
       },
       "minilm/A": {
         "exactitud_principal": {
-          "n": 31,
-          "de": 63,
-          "proporcion": 0.4921,
+          "n": 32,
+          "de": 64,
+          "proporcion": 0.5,
           "ic95": [
-            0.3727,
-            0.6124
+            0.381,
+            0.619
           ]
         },
         "macro_f1": {
-          "n": 63,
-          "macro_f1": 0.3567,
+          "n": 64,
+          "macro_f1": 0.3779,
           "ic95": [
-            0.2141,
-            0.4577
+            0.2432,
+            0.4624
           ],
           "ic95_exacto": [
-            0.21414782274023061,
-            0.45771151458126247
+            0.24319944090576065,
+            0.46239426726803573
           ],
           "remuestreos": 1000,
           "ponderado": false
@@ -5352,38 +5356,38 @@
             "f1": 0.303
           },
           "logistica": {
-            "soporte": 1,
-            "predichos": 2,
+            "soporte": 2,
+            "predichos": 3,
             "precision": {
-              "n": 1,
-              "de": 2,
-              "proporcion": 0.5,
+              "n": 2,
+              "de": 3,
+              "proporcion": 0.6667,
               "ic95": [
-                0.0945,
-                0.9055
+                0.2077,
+                0.9385
               ]
             },
             "recall": {
-              "n": 1,
-              "de": 1,
+              "n": 2,
+              "de": 2,
               "proporcion": 1.0,
               "ic95": [
-                0.2065,
+                0.3424,
                 1.0
               ]
             },
-            "f1": 0.6667
+            "f1": 0.8
           },
           "turismo": {
             "soporte": 1,
-            "predichos": 18,
+            "predichos": 19,
             "precision": {
               "n": 1,
-              "de": 18,
-              "proporcion": 0.0556,
+              "de": 19,
+              "proporcion": 0.0526,
               "ic95": [
-                0.0099,
-                0.2576
+                0.0094,
+                0.2464
               ]
             },
             "recall": {
@@ -5395,7 +5399,7 @@
                 1.0
               ]
             },
-            "f1": 0.1053
+            "f1": 0.1
           },
           "servicios_publicos": {
             "soporte": 9,
@@ -5422,14 +5426,14 @@
           },
           "eventos_naturales": {
             "soporte": 20,
-            "predichos": 25,
+            "predichos": 24,
             "precision": {
               "n": 20,
-              "de": 25,
-              "proporcion": 0.8,
+              "de": 24,
+              "proporcion": 0.8333,
               "ic95": [
-                0.6087,
-                0.9114
+                0.6415,
+                0.9332
               ]
             },
             "recall": {
@@ -5441,7 +5445,7 @@
                 1.0
               ]
             },
-            "f1": 0.8889
+            "f1": 0.9091
           },
           "regulacion": {
             "soporte": 1,
@@ -5504,15 +5508,15 @@
             [
               5,
               1,
-              14,
+              15,
               1,
-              2,
+              1,
               2,
               1
             ],
             [
               0,
-              1,
+              2,
               0,
               0,
               0,
@@ -5579,12 +5583,12 @@
           "ic95": null
         },
         "secundario_dado_donde_no_se_espera": {
-          "n": 10,
-          "de": 63,
-          "proporcion": 0.1587,
+          "n": 13,
+          "de": 64,
+          "proporcion": 0.2031,
           "ic95": [
-            0.0886,
-            0.2681
+            0.1227,
+            0.3171
           ]
         },
         "fallos": [
@@ -5702,7 +5706,7 @@
             "esperado": "sin_tema",
             "predicho": "economia",
             "secundario_esperado": null,
-            "secundario_predicho": null,
+            "secundario_predicho": "servicios_publicos",
             "similitud": 0.4538
           },
           {
@@ -5727,10 +5731,10 @@
             "id": "NOT-8206bf1857",
             "titular": "El abrir para cerrar de la mina de cobre genera dudas y cuestionamientos en el frente ambiental y financiero",
             "esperado": "economia",
-            "predicho": "eventos_naturales",
+            "predicho": "servicios_publicos",
             "secundario_esperado": null,
-            "secundario_predicho": null,
-            "similitud": 0.3663
+            "secundario_predicho": "eventos_naturales",
+            "similitud": 0.3664
           },
           {
             "id": "NOT-8897c80d23",
@@ -5792,7 +5796,7 @@
             "esperado": "economia",
             "predicho": "regulacion",
             "secundario_esperado": null,
-            "secundario_predicho": null,
+            "secundario_predicho": "servicios_publicos",
             "similitud": 0.5483
           },
           {
@@ -5810,17 +5814,17 @@
             "esperado": "sin_tema",
             "predicho": "servicios_publicos",
             "secundario_esperado": null,
-            "secundario_predicho": "economia",
-            "similitud": 0.3113
+            "secundario_predicho": null,
+            "similitud": 0.3297
           },
           {
             "id": "NOT-e1ef662816",
             "titular": "Solo dos ciudades de Centroamérica están entre las mejores 300 del mundo, según ranking",
             "esperado": "economia",
-            "predicho": "servicios_publicos",
+            "predicho": "turismo",
             "secundario_esperado": null,
-            "secundario_predicho": "turismo",
-            "similitud": 0.3374
+            "secundario_predicho": "servicios_publicos",
+            "similitud": 0.3269
           },
           {
             "id": "NOT-e4f8660e0d",
@@ -5879,21 +5883,21 @@
         ],
         "ponderado": {
           "exactitud_principal": {
-            "suma_pesos_aciertos": 31.0,
-            "suma_pesos": 63.0,
-            "proporcion": 0.4921,
-            "n": 63
+            "suma_pesos_aciertos": 33.8919,
+            "suma_pesos": 65.8919,
+            "proporcion": 0.5144,
+            "n": 64
           },
           "macro_f1": {
-            "n": 63,
-            "macro_f1": 0.3567,
+            "n": 64,
+            "macro_f1": 0.3902,
             "ic95": [
-              0.2141,
-              0.4577
+              0.2432,
+              0.468
             ],
             "ic95_exacto": [
-              0.21414782274023061,
-              0.45771151458126247
+              0.24319944090576065,
+              0.4680178341867433
             ],
             "remuestreos": 1000,
             "ponderado": true
@@ -5902,24 +5906,24 @@
       },
       "minilm/B": {
         "exactitud_principal": {
-          "n": 26,
-          "de": 63,
-          "proporcion": 0.4127,
+          "n": 27,
+          "de": 64,
+          "proporcion": 0.4219,
           "ic95": [
-            0.2996,
-            0.5358
+            0.3087,
+            0.5439
           ]
         },
         "macro_f1": {
-          "n": 63,
-          "macro_f1": 0.2374,
+          "n": 64,
+          "macro_f1": 0.2731,
           "ic95": [
-            0.1492,
-            0.3178
+            0.1672,
+            0.3686
           ],
           "ic95_exacto": [
-            0.14918070435311817,
-            0.31779031942388897
+            0.16724379362134462,
+            0.36857047372441465
           ],
           "remuestreos": 1000,
           "ponderado": false
@@ -5958,27 +5962,27 @@
             "f1": 0.2
           },
           "logistica": {
-            "soporte": 1,
-            "predichos": 5,
+            "soporte": 2,
+            "predichos": 6,
             "precision": {
-              "n": 0,
-              "de": 5,
-              "proporcion": 0.0,
+              "n": 1,
+              "de": 6,
+              "proporcion": 0.1667,
               "ic95": [
-                0.0,
-                0.4345
+                0.0301,
+                0.5635
               ]
             },
             "recall": {
-              "n": 0,
-              "de": 1,
-              "proporcion": 0.0,
+              "n": 1,
+              "de": 2,
+              "proporcion": 0.5,
               "ic95": [
-                0.0,
-                0.7935
+                0.0945,
+                0.9055
               ]
             },
-            "f1": 0.0
+            "f1": 0.25
           },
           "turismo": {
             "soporte": 1,
@@ -6118,7 +6122,7 @@
             ],
             [
               1,
-              0,
+              1,
               0,
               0,
               0,
@@ -6186,11 +6190,11 @@
         },
         "secundario_dado_donde_no_se_espera": {
           "n": 8,
-          "de": 63,
-          "proporcion": 0.127,
+          "de": 64,
+          "proporcion": 0.125,
           "ic95": [
-            0.0658,
-            0.2311
+            0.0647,
+            0.2277
           ]
         },
         "fallos": [
@@ -6530,21 +6534,21 @@
         ],
         "ponderado": {
           "exactitud_principal": {
-            "suma_pesos_aciertos": 26.0,
-            "suma_pesos": 63.0,
-            "proporcion": 0.4127,
-            "n": 63
+            "suma_pesos_aciertos": 28.8919,
+            "suma_pesos": 65.8919,
+            "proporcion": 0.4385,
+            "n": 64
           },
           "macro_f1": {
-            "n": 63,
-            "macro_f1": 0.2374,
+            "n": 64,
+            "macro_f1": 0.3075,
             "ic95": [
-              0.1492,
-              0.3178
+              0.1675,
+              0.4026
             ],
             "ic95_exacto": [
-              0.14918070435311817,
-              0.31779031942388897
+              0.1674848181696921,
+              0.402625731448277
             ],
             "remuestreos": 1000,
             "ponderado": true
@@ -6555,39 +6559,39 @@
     "comparaciones": {
       "e5": {
         "criterio_A_vs_B": {
-          "n": 63,
-          "diferencia_macro_f1": -0.2272,
+          "n": 64,
+          "diferencia_macro_f1": -0.2085,
           "ic95": [
-            -0.3719,
-            -0.0362
+            -0.3693,
+            -0.047
           ],
           "ic95_exacto": [
-            -0.3719227425972229,
-            -0.03622011946153114
+            -0.36928152191406455,
+            -0.046950020449025305
           ],
           "por_clase": {
             "economia": {
               "soporte": true,
-              "diferencia_f1": -0.0887,
+              "diferencia_f1": -0.0438,
               "ic95": [
-                -0.2364,
-                0.0815
+                -0.2243,
+                0.1428
               ],
               "ic95_exacto": [
-                -0.2363600748829477,
-                0.08148526077097505
+                -0.22433005459044725,
+                0.14276334776334776
               ]
             },
             "logistica": {
               "soporte": true,
-              "diferencia_f1": -0.6667,
+              "diferencia_f1": -0.4667,
               "ic95": [
                 -1.0,
-                0.0
+                0.0125
               ],
               "ic95_exacto": [
                 -1.0,
-                0.0
+                0.012500000000001244
               ]
             },
             "turismo": {
@@ -6604,26 +6608,26 @@
             },
             "servicios_publicos": {
               "soporte": true,
-              "diferencia_f1": 0.0952,
+              "diferencia_f1": 0.0267,
               "ic95": [
-                -0.0884,
-                0.3144
+                -0.171,
+                0.2059
               ],
               "ic95_exacto": [
-                -0.08838235294117636,
-                0.3144047619047618
+                -0.170952380952381,
+                0.20592760180995476
               ]
             },
             "eventos_naturales": {
               "soporte": true,
-              "diferencia_f1": -0.9302,
+              "diferencia_f1": -0.9756,
               "ic95": [
                 -1.0,
-                -0.8333
+                -0.9091
               ],
               "ic95_exacto": [
                 -1.0,
-                -0.8333333333333334
+                -0.9090909090909091
               ]
             },
             "regulacion": {
@@ -6660,39 +6664,39 @@
           "motivo": "el IC95 de B − A excluye el cero pero a favor de A: se usa A"
         },
         "A_menos_baseline": {
-          "n": 63,
-          "diferencia_macro_f1": -0.1144,
+          "n": 64,
+          "diferencia_macro_f1": -0.0374,
           "ic95": [
-            -0.2929,
-            0.1062
+            -0.2316,
+            0.2292
           ],
           "ic95_exacto": [
-            -0.2928810204505932,
-            0.10624530203528512
+            -0.23159014679409415,
+            0.2292236337532031
           ],
           "por_clase": {
             "economia": {
               "soporte": true,
-              "diferencia_f1": 0.1602,
+              "diferencia_f1": 0.1152,
               "ic95": [
-                -0.1508,
-                0.4242
+                -0.1655,
+                0.3918
               ],
               "ic95_exacto": [
-                -0.15082497911445275,
-                0.42424242424242425
+                -0.1654718137254902,
+                0.39181818181818157
               ]
             },
             "logistica": {
               "soporte": true,
-              "diferencia_f1": -0.3333,
+              "diferencia_f1": 0.1333,
               "ic95": [
-                -0.6,
-                0.0
+                -0.5,
+                1.0
               ],
               "ic95_exacto": [
-                -0.6,
-                0.0
+                -0.5,
+                1.0
               ]
             },
             "turismo": {
@@ -6709,26 +6713,26 @@
             },
             "servicios_publicos": {
               "soporte": true,
-              "diferencia_f1": 0.2381,
+              "diferencia_f1": 0.3067,
               "ic95": [
-                -0.1368,
-                0.6
+                -0.0952,
+                0.6897
               ],
               "ic95_exacto": [
-                -0.13684210526315777,
-                0.6000197628458498
+                -0.09523809523809523,
+                0.6896551724137931
               ]
             },
             "eventos_naturales": {
               "soporte": true,
-              "diferencia_f1": -0.0454,
+              "diferencia_f1": 0.0,
               "ic95": [
-                -0.1515,
-                0.0452
+                -0.0767,
+                0.0698
               ],
               "ic95_exacto": [
-                -0.1515151515151515,
-                0.04524157280609346
+                -0.07669751301330247,
+                0.06984758013827776
               ]
             },
             "regulacion": {
@@ -6745,13 +6749,13 @@
             },
             "sin_tema": {
               "soporte": true,
-              "diferencia_f1": -0.1538,
+              "diferencia_f1": -0.15,
               "ic95": [
-                -0.3078,
+                -0.3,
                 0.0
               ],
               "ic95_exacto": [
-                -0.3077777777777777,
+                -0.3,
                 0.0
               ]
             }
@@ -6759,39 +6763,39 @@
           "remuestreos": 1000
         },
         "B_menos_baseline": {
-          "n": 63,
-          "diferencia_macro_f1": -0.3416,
+          "n": 64,
+          "diferencia_macro_f1": -0.2458,
           "ic95": [
-            -0.4177,
-            -0.1374
+            -0.3804,
+            -0.0137
           ],
           "ic95_exacto": [
-            -0.4176801909575019,
-            -0.1373898615482262
+            -0.38042236342233343,
+            -0.013666057399942045
           ],
           "por_clase": {
             "economia": {
               "soporte": true,
               "diferencia_f1": 0.0714,
               "ic95": [
-                -0.1429,
-                0.268
+                -0.1376,
+                0.2712
               ],
               "ic95_exacto": [
-                -0.1428662769455608,
-                0.2680006428801029
+                -0.13758749876762297,
+                0.2712249614791987
               ]
             },
             "logistica": {
               "soporte": true,
-              "diferencia_f1": -1.0,
+              "diferencia_f1": -0.3333,
               "ic95": [
                 -1.0,
-                -1.0
+                0.8043
               ],
               "ic95_exacto": [
                 -1.0,
-                -1.0
+                0.8042857142857104
               ]
             },
             "turismo": {
@@ -6799,23 +6803,23 @@
               "diferencia_f1": -0.6667,
               "ic95": [
                 -0.7778,
-                -0.1667
+                -0.1429
               ],
               "ic95_exacto": [
                 -0.7777777777777778,
-                -0.16666666666666663
+                -0.1428571428571429
               ]
             },
             "servicios_publicos": {
               "soporte": true,
               "diferencia_f1": 0.3333,
               "ic95": [
-                -0.0386,
-                0.7001
+                -0.0457,
+                0.7
               ],
               "ic95_exacto": [
-                -0.038636363636363455,
-                0.7000724637681158
+                -0.045681818181817935,
+                0.7000347222222223
               ]
             },
             "eventos_naturales": {
@@ -6844,13 +6848,13 @@
             },
             "sin_tema": {
               "soporte": true,
-              "diferencia_f1": -0.1538,
+              "diferencia_f1": -0.15,
               "ic95": [
-                -0.3078,
+                -0.3,
                 0.0
               ],
               "ic95_exacto": [
-                -0.3077777777777777,
+                -0.3,
                 0.0
               ]
             }
@@ -6860,32 +6864,32 @@
       },
       "minilm": {
         "criterio_A_vs_B": {
-          "n": 63,
-          "diferencia_macro_f1": -0.1194,
+          "n": 64,
+          "diferencia_macro_f1": -0.1049,
           "ic95": [
-            -0.2563,
-            0.0317
+            -0.2348,
+            0.0123
           ],
           "ic95_exacto": [
-            -0.25630285861946767,
-            0.031691637834494926
+            -0.2348183854285045,
+            0.012322323672143013
           ],
           "por_clase": {
             "economia": {
               "soporte": true,
               "diferencia_f1": -0.103,
               "ic95": [
-                -0.3542,
-                0.1551
+                -0.3573,
+                0.1631
               ],
               "ic95_exacto": [
-                -0.35424107142857136,
-                0.15509511059046657
+                -0.35730095859406186,
+                0.1630583003952569
               ]
             },
             "logistica": {
               "soporte": true,
-              "diferencia_f1": -0.6667,
+              "diferencia_f1": -0.55,
               "ic95": [
                 -1.0,
                 0.0
@@ -6897,38 +6901,38 @@
             },
             "turismo": {
               "soporte": true,
-              "diferencia_f1": -0.0053,
+              "diferencia_f1": 0.0,
               "ic95": [
-                -0.0606,
-                0.0301
+                -0.0337,
+                0.0357
               ],
               "ic95_exacto": [
-                -0.06062543594512902,
-                0.030075816631880702
+                -0.03369784804567412,
+                0.0357142857142857
               ]
             },
             "servicios_publicos": {
               "soporte": true,
               "diferencia_f1": -0.3667,
               "ic95": [
-                -0.7143,
+                -0.7144,
                 0.0
               ],
               "ic95_exacto": [
-                -0.7142857142857143,
+                -0.7144285714285713,
                 0.0
               ]
             },
             "eventos_naturales": {
               "soporte": true,
-              "diferencia_f1": 0.0202,
+              "diferencia_f1": 0.0,
               "ic95": [
-                -0.0945,
-                0.1429
+                -0.0992,
+                0.1065
               ],
               "ic95_exacto": [
-                -0.09450581395348831,
-                0.14290328534514582
+                -0.09919859391124862,
+                0.10649105854463
               ]
             },
             "regulacion": {
@@ -6963,75 +6967,75 @@
           "motivo": "el IC95 de B − A incluye el cero: no hay evidencia de que B mejore; se usa A por ser más simple"
         },
         "A_menos_baseline": {
-          "n": 63,
-          "diferencia_macro_f1": -0.1584,
+          "n": 64,
+          "diferencia_macro_f1": -0.089,
           "ic95": [
-            -0.2771,
-            0.0111
+            -0.2297,
+            0.1406
           ],
           "ic95_exacto": [
-            -0.27705804600563494,
-            0.011115133506909253
+            -0.22970151211985576,
+            0.1405762569312603
           ],
           "por_clase": {
             "economia": {
               "soporte": true,
               "diferencia_f1": 0.1602,
               "ic95": [
-                -0.1535,
-                0.411
+                -0.1264,
+                0.4377
               ],
               "ic95_exacto": [
-                -0.15352022529441875,
-                0.4109790033194288
+                -0.12644790507971818,
+                0.43772192028985485
               ]
             },
             "logistica": {
               "soporte": true,
-              "diferencia_f1": -0.3333,
+              "diferencia_f1": 0.1333,
               "ic95": [
-                -0.6,
-                0.0
+                -0.5,
+                1.0
               ],
               "ic95_exacto": [
-                -0.6,
-                0.0
+                -0.5,
+                1.0
               ]
             },
             "turismo": {
               "soporte": true,
-              "diferencia_f1": -0.8947,
+              "diferencia_f1": -0.9,
               "ic95": [
-                -0.92,
-                -0.6667
+                -0.9231,
+                -0.6948
               ],
               "ic95_exacto": [
-                -0.92,
-                -0.6666666666666667
+                -0.9230769230769231,
+                -0.6948076923076927
               ]
             },
             "servicios_publicos": {
               "soporte": true,
               "diferencia_f1": 0.2,
               "ic95": [
-                -0.2667,
-                0.635
+                -0.3217,
+                0.6252
               ],
               "ic95_exacto": [
-                -0.26666666666666666,
-                0.6349567099567099
+                -0.32172619047619017,
+                0.6252083333333331
               ]
             },
             "eventos_naturales": {
               "soporte": true,
-              "diferencia_f1": -0.0867,
+              "diferencia_f1": -0.0665,
               "ic95": [
-                -0.2002,
-                0.0
+                -0.1819,
+                0.0222
               ],
               "ic95_exacto": [
-                -0.20017538815411134,
-                0.0
+                -0.18186456400742107,
+                0.022243589743589757
               ]
             },
             "regulacion": {
@@ -7048,13 +7052,13 @@
             },
             "sin_tema": {
               "soporte": true,
-              "diferencia_f1": -0.1538,
+              "diferencia_f1": -0.15,
               "ic95": [
-                -0.3079,
+                -0.3,
                 0.0
               ],
               "ic95_exacto": [
-                -0.3078632478632478,
+                -0.3,
                 0.0
               ]
             }
@@ -7062,74 +7066,74 @@
           "remuestreos": 1000
         },
         "B_menos_baseline": {
-          "n": 63,
-          "diferencia_macro_f1": -0.2777,
+          "n": 64,
+          "diferencia_macro_f1": -0.1939,
           "ic95": [
-            -0.4227,
-            -0.0469
+            -0.373,
+            0.0601
           ],
           "ic95_exacto": [
-            -0.42270606012462136,
-            -0.04690525186164652
+            -0.3730202285175662,
+            0.06012472439661378
           ],
           "por_clase": {
             "economia": {
               "soporte": true,
               "diferencia_f1": 0.0571,
               "ic95": [
-                -0.143,
-                0.2759
+                -0.1429,
+                0.2667
               ],
               "ic95_exacto": [
-                -0.1429716117216116,
-                0.27586206896551724
+                -0.1429041353383458,
+                0.26673076923076916
               ]
             },
             "logistica": {
               "soporte": true,
-              "diferencia_f1": -1.0,
+              "diferencia_f1": -0.4167,
               "ic95": [
                 -1.0,
-                -1.0
+                0.605
               ],
               "ic95_exacto": [
                 -1.0,
-                -1.0
+                0.6049999999999954
               ]
             },
             "turismo": {
               "soporte": true,
               "diferencia_f1": -0.9,
               "ic95": [
-                -0.9251,
-                -0.7
+                -0.925,
+                -0.6842
               ],
               "ic95_exacto": [
-                -0.9250712250712251,
-                -0.7
+                -0.9249999999999999,
+                -0.6842105263157895
               ]
             },
             "servicios_publicos": {
               "soporte": true,
               "diferencia_f1": -0.1667,
               "ic95": [
-                -0.6,
-                0.3077
+                -0.6252,
+                0.3333
               ],
               "ic95_exacto": [
-                -0.6,
-                0.3076923076923077
+                -0.6251644736842104,
+                0.3333333333333333
               ]
             },
             "eventos_naturales": {
               "soporte": true,
               "diferencia_f1": -0.0665,
               "ic95": [
-                -0.1619,
+                -0.1667,
                 0.0
               ],
               "ic95_exacto": [
-                -0.16190476190476188,
+                -0.16674242424242414,
                 0.0
               ]
             },
@@ -7147,13 +7151,13 @@
             },
             "sin_tema": {
               "soporte": true,
-              "diferencia_f1": -0.1538,
+              "diferencia_f1": -0.15,
               "ic95": [
-                -0.3079,
+                -0.3,
                 0.0
               ],
               "ic95_exacto": [
-                -0.3078632478632478,
+                -0.3,
                 0.0
               ]
             }
@@ -8431,24 +8435,24 @@
         "e5/A": {
           "sin_ponderar": {
             "exactitud_principal": {
-              "n": 69,
+              "n": 71,
               "de": 100,
-              "proporcion": 0.69,
+              "proporcion": 0.71,
               "ic95": [
-                0.5937,
-                0.7722
+                0.6146,
+                0.7899
               ]
             },
             "macro_f1": {
               "n": 100,
-              "macro_f1": 0.4911,
+              "macro_f1": 0.5451,
               "ic95": [
-                0.3362,
-                0.6214
+                0.38,
+                0.6692
               ],
               "ic95_exacto": [
-                0.3362263926549641,
-                0.6214289137149295
+                0.3800118971041328,
+                0.6692180333005975
               ],
               "remuestreos": 1000,
               "ponderado": false
@@ -8465,49 +8469,49 @@
             "por_tema": {
               "economia": {
                 "soporte": 26,
-                "predichos": 7,
+                "predichos": 5,
                 "precision": {
-                  "n": 5,
-                  "de": 7,
-                  "proporcion": 0.7143,
+                  "n": 4,
+                  "de": 5,
+                  "proporcion": 0.8,
                   "ic95": [
-                    0.3589,
-                    0.9178
+                    0.3755,
+                    0.9638
                   ]
                 },
                 "recall": {
-                  "n": 5,
+                  "n": 4,
                   "de": 26,
-                  "proporcion": 0.1923,
+                  "proporcion": 0.1538,
                   "ic95": [
-                    0.0851,
-                    0.3788
+                    0.0615,
+                    0.3353
                   ]
                 },
-                "f1": 0.303
+                "f1": 0.2581
               },
               "logistica": {
                 "soporte": 2,
-                "predichos": 2,
+                "predichos": 3,
                 "precision": {
-                  "n": 1,
-                  "de": 2,
-                  "proporcion": 0.5,
+                  "n": 2,
+                  "de": 3,
+                  "proporcion": 0.6667,
                   "ic95": [
-                    0.0945,
-                    0.9055
+                    0.2077,
+                    0.9385
                   ]
                 },
                 "recall": {
-                  "n": 1,
+                  "n": 2,
                   "de": 2,
-                  "proporcion": 0.5,
+                  "proporcion": 1.0,
                   "ic95": [
-                    0.0945,
-                    0.9055
+                    0.3424,
+                    1.0
                   ]
                 },
-                "f1": 0.5
+                "f1": 0.8
               },
               "turismo": {
                 "soporte": 1,
@@ -8534,37 +8538,37 @@
               },
               "servicios_publicos": {
                 "soporte": 9,
-                "predichos": 12,
+                "predichos": 16,
                 "precision": {
-                  "n": 6,
-                  "de": 12,
+                  "n": 8,
+                  "de": 16,
                   "proporcion": 0.5,
                   "ic95": [
-                    0.2538,
-                    0.7462
+                    0.28,
+                    0.72
                   ]
                 },
                 "recall": {
-                  "n": 6,
+                  "n": 8,
                   "de": 9,
-                  "proporcion": 0.6667,
+                  "proporcion": 0.8889,
                   "ic95": [
-                    0.3542,
-                    0.8794
+                    0.565,
+                    0.9801
                   ]
                 },
-                "f1": 0.5714
+                "f1": 0.64
               },
               "eventos_naturales": {
                 "soporte": 20,
-                "predichos": 23,
+                "predichos": 21,
                 "precision": {
                   "n": 20,
-                  "de": 23,
-                  "proporcion": 0.8696,
+                  "de": 21,
+                  "proporcion": 0.9524,
                   "ic95": [
-                    0.6787,
-                    0.9546
+                    0.7733,
+                    0.9915
                   ]
                 },
                 "recall": {
@@ -8576,7 +8580,7 @@
                     1.0
                   ]
                 },
-                "f1": 0.9302
+                "f1": 0.9756
               },
               "regulacion": {
                 "soporte": 1,
@@ -8603,14 +8607,14 @@
               },
               "sin_tema": {
                 "soporte": 41,
-                "predichos": 49,
+                "predichos": 48,
                 "precision": {
                   "n": 36,
-                  "de": 49,
-                  "proporcion": 0.7347,
+                  "de": 48,
+                  "proporcion": 0.75,
                   "ic95": [
-                    0.5974,
-                    0.8379
+                    0.6122,
+                    0.8508
                   ]
                 },
                 "recall": {
@@ -8622,7 +8626,7 @@
                     0.9468
                   ]
                 },
-                "f1": 0.8
+                "f1": 0.809
               }
             },
             "matriz_confusion": {
@@ -8637,22 +8641,22 @@
               ],
               "filas_real_columnas_predicho": [
                 [
-                  5,
-                  1,
-                  1,
                   4,
+                  1,
+                  1,
+                  5,
                   0,
                   3,
                   12
                 ],
                 [
                   0,
-                  1,
+                  2,
                   0,
                   0,
                   0,
                   0,
-                  1
+                  0
                 ],
                 [
                   0,
@@ -8664,11 +8668,11 @@
                   0
                 ],
                 [
+                  0,
+                  0,
+                  0,
+                  8,
                   1,
-                  0,
-                  0,
-                  6,
-                  2,
                   0,
                   0
                 ],
@@ -8694,8 +8698,8 @@
                   1,
                   0,
                   1,
-                  1,
-                  1,
+                  2,
+                  0,
                   1,
                   36
                 ]
@@ -8714,12 +8718,12 @@
               "ic95": null
             },
             "secundario_dado_donde_no_se_espera": {
-              "n": 11,
+              "n": 9,
               "de": 100,
-              "proporcion": 0.11,
+              "proporcion": 0.09,
               "ic95": [
-                0.0625,
-                0.1863
+                0.0481,
+                0.1623
               ]
             },
             "fallos": [
@@ -8733,22 +8737,13 @@
                 "similitud": 0.8514
               },
               {
-                "id": "NOT-0d91fa48b0",
-                "titular": "NOT-0d91fa48b0",
-                "esperado": "servicios_publicos",
-                "predicho": "economia",
-                "secundario_esperado": null,
-                "secundario_predicho": "servicios_publicos",
-                "similitud": 0.8277
-              },
-              {
                 "id": "NOT-14dcb8e259",
                 "titular": "NOT-14dcb8e259",
                 "esperado": "turismo",
                 "predicho": "servicios_publicos",
                 "secundario_esperado": null,
                 "secundario_predicho": null,
-                "similitud": 0.91
+                "similitud": 0.9093
               },
               {
                 "id": "NOT-1819a7014e",
@@ -8811,7 +8806,7 @@
                 "predicho": "servicios_publicos",
                 "secundario_esperado": null,
                 "secundario_predicho": null,
-                "similitud": 0.8364
+                "similitud": 0.8348
               },
               {
                 "id": "NOT-5d839301a6",
@@ -8832,15 +8827,6 @@
                 "similitud": 0.8528
               },
               {
-                "id": "NOT-66fdc7fa16",
-                "titular": "NOT-66fdc7fa16",
-                "esperado": "servicios_publicos",
-                "predicho": "eventos_naturales",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": 0.8341
-              },
-              {
                 "id": "NOT-6717a15ab7",
                 "titular": "NOT-6717a15ab7",
                 "esperado": "economia",
@@ -8855,8 +8841,8 @@
                 "esperado": "economia",
                 "predicho": "servicios_publicos",
                 "secundario_esperado": null,
-                "secundario_predicho": "economia",
-                "similitud": 0.8546
+                "secundario_predicho": null,
+                "similitud": 0.8578
               },
               {
                 "id": "NOT-8897c80d23",
@@ -8883,7 +8869,7 @@
                 "predicho": "servicios_publicos",
                 "secundario_esperado": null,
                 "secundario_predicho": "turismo",
-                "similitud": 0.8267
+                "similitud": 0.8279
               },
               {
                 "id": "NOT-adb01e330f",
@@ -8901,7 +8887,7 @@
                 "predicho": "servicios_publicos",
                 "secundario_esperado": null,
                 "secundario_predicho": null,
-                "similitud": 0.857
+                "similitud": 0.8566
               },
               {
                 "id": "NOT-c712a8d7e4",
@@ -8916,10 +8902,19 @@
                 "id": "NOT-ca6fae4efb",
                 "titular": "NOT-ca6fae4efb",
                 "esperado": "sin_tema",
-                "predicho": "eventos_naturales",
+                "predicho": "servicios_publicos",
                 "secundario_esperado": null,
-                "secundario_predicho": "servicios_publicos",
-                "similitud": 0.8584
+                "secundario_predicho": null,
+                "similitud": 0.8616
+              },
+              {
+                "id": "NOT-cf027fac38",
+                "titular": "NOT-cf027fac38",
+                "esperado": "economia",
+                "predicho": "servicios_publicos",
+                "secundario_esperado": null,
+                "secundario_predicho": null,
+                "similitud": 0.8604
               },
               {
                 "id": "NOT-d1dad65858",
@@ -8946,7 +8941,7 @@
                 "predicho": "servicios_publicos",
                 "secundario_esperado": null,
                 "secundario_predicho": null,
-                "similitud": 0.8524
+                "similitud": 0.8535
               },
               {
                 "id": "NOT-e4f8660e0d",
@@ -8992,35 +8987,26 @@
                 "secundario_esperado": null,
                 "secundario_predicho": "economia",
                 "similitud": 0.8402
-              },
-              {
-                "id": "NOT-fc94561c6d",
-                "titular": "NOT-fc94561c6d",
-                "esperado": "logistica",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
               }
             ]
           },
           "ponderado": {
             "exactitud_principal": {
-              "suma_pesos_aciertos": 137.108,
+              "suma_pesos_aciertos": 140.9999,
               "suma_pesos": 169.9999,
-              "proporcion": 0.8065,
+              "proporcion": 0.8294,
               "n": 100
             },
             "macro_f1": {
               "n": 100,
-              "macro_f1": 0.4843,
+              "macro_f1": 0.574,
               "ic95": [
-                0.3526,
-                0.6235
+                0.3992,
+                0.6913
               ],
               "ic95_exacto": [
-                0.3525889518170818,
-                0.6234816268654103
+                0.39920783470549814,
+                0.6913430658537143
               ],
               "remuestreos": 1000,
               "ponderado": true
@@ -9030,24 +9016,24 @@
         "e5/B": {
           "sin_ponderar": {
             "exactitud_principal": {
-              "n": 50,
+              "n": 51,
               "de": 100,
-              "proporcion": 0.5,
+              "proporcion": 0.51,
               "ic95": [
-                0.4038,
-                0.5962
+                0.4135,
+                0.6058
               ]
             },
             "macro_f1": {
               "n": 100,
-              "macro_f1": 0.2878,
+              "macro_f1": 0.3367,
               "ic95": [
-                0.2065,
-                0.3879
+                0.2228,
+                0.464
               ],
               "ic95_exacto": [
-                0.20648482526948697,
-                0.38786286989357943
+                0.2228442004879772,
+                0.4640391116682313
               ],
               "remuestreos": 1000,
               "ponderado": false
@@ -9087,26 +9073,26 @@
               },
               "logistica": {
                 "soporte": 2,
-                "predichos": 3,
+                "predichos": 4,
                 "precision": {
-                  "n": 0,
-                  "de": 3,
-                  "proporcion": 0.0,
+                  "n": 1,
+                  "de": 4,
+                  "proporcion": 0.25,
                   "ic95": [
-                    0.0,
-                    0.5615
+                    0.0456,
+                    0.6994
                   ]
                 },
                 "recall": {
-                  "n": 0,
+                  "n": 1,
                   "de": 2,
-                  "proporcion": 0.0,
+                  "proporcion": 0.5,
                   "ic95": [
-                    0.0,
-                    0.6576
+                    0.0945,
+                    0.9055
                   ]
                 },
-                "f1": 0.0
+                "f1": 0.3333
               },
               "turismo": {
                 "soporte": 1,
@@ -9199,14 +9185,14 @@
               },
               "sin_tema": {
                 "soporte": 41,
-                "predichos": 49,
+                "predichos": 48,
                 "precision": {
                   "n": 36,
-                  "de": 49,
-                  "proporcion": 0.7347,
+                  "de": 48,
+                  "proporcion": 0.75,
                   "ic95": [
-                    0.5974,
-                    0.8379
+                    0.6122,
+                    0.8508
                   ]
                 },
                 "recall": {
@@ -9218,7 +9204,7 @@
                     0.9468
                   ]
                 },
-                "f1": 0.8
+                "f1": 0.809
               }
             },
             "matriz_confusion": {
@@ -9243,12 +9229,12 @@
                 ],
                 [
                   1,
+                  1,
                   0,
                   0,
                   0,
                   0,
-                  0,
-                  1
+                  0
                 ],
                 [
                   0,
@@ -9310,12 +9296,12 @@
               "ic95": null
             },
             "secundario_dado_donde_no_se_espera": {
-              "n": 7,
+              "n": 8,
               "de": 100,
-              "proporcion": 0.07,
+              "proporcion": 0.08,
               "ic95": [
-                0.0343,
-                0.1375
+                0.0411,
+                0.15
               ]
             },
             "fallos": [
@@ -9406,7 +9392,7 @@
                 "esperado": "economia",
                 "predicho": "turismo",
                 "secundario_esperado": null,
-                "secundario_predicho": null,
+                "secundario_predicho": "servicios_publicos",
                 "similitud": 0.838
               },
               {
@@ -9759,35 +9745,26 @@
                 "secundario_esperado": null,
                 "secundario_predicho": null,
                 "similitud": 0.7783
-              },
-              {
-                "id": "NOT-fc94561c6d",
-                "titular": "NOT-fc94561c6d",
-                "esperado": "logistica",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
               }
             ]
           },
           "ponderado": {
             "exactitud_principal": {
-              "suma_pesos_aciertos": 118.108,
+              "suma_pesos_aciertos": 120.9999,
               "suma_pesos": 169.9999,
-              "proporcion": 0.6948,
+              "proporcion": 0.7118,
               "n": 100
             },
             "macro_f1": {
               "n": 100,
-              "macro_f1": 0.3039,
+              "macro_f1": 0.39,
               "ic95": [
-                0.225,
-                0.4056
+                0.2398,
+                0.5096
               ],
               "ic95_exacto": [
-                0.22502387540587737,
-                0.4055542195031771
+                0.23983228232947004,
+                0.5095787259079877
               ],
               "remuestreos": 1000,
               "ponderado": true
@@ -9797,24 +9774,24 @@
         "minilm/A": {
           "sin_ponderar": {
             "exactitud_principal": {
-              "n": 67,
+              "n": 68,
               "de": 100,
-              "proporcion": 0.67,
+              "proporcion": 0.68,
               "ic95": [
-                0.5731,
-                0.7544
+                0.5834,
+                0.7633
               ]
             },
             "macro_f1": {
               "n": 100,
-              "macro_f1": 0.4599,
+              "macro_f1": 0.5065,
               "ic95": [
-                0.3345,
-                0.5636
+                0.3668,
+                0.589
               ],
               "ic95_exacto": [
-                0.3344512314495176,
-                0.5635846925749594
+                0.36678942230402745,
+                0.5890128305880425
               ],
               "remuestreos": 1000,
               "ponderado": false
@@ -9854,37 +9831,37 @@
               },
               "logistica": {
                 "soporte": 2,
-                "predichos": 2,
+                "predichos": 3,
                 "precision": {
-                  "n": 1,
-                  "de": 2,
-                  "proporcion": 0.5,
+                  "n": 2,
+                  "de": 3,
+                  "proporcion": 0.6667,
                   "ic95": [
-                    0.0945,
-                    0.9055
+                    0.2077,
+                    0.9385
                   ]
                 },
                 "recall": {
-                  "n": 1,
+                  "n": 2,
                   "de": 2,
-                  "proporcion": 0.5,
+                  "proporcion": 1.0,
                   "ic95": [
-                    0.0945,
-                    0.9055
+                    0.3424,
+                    1.0
                   ]
                 },
-                "f1": 0.5
+                "f1": 0.8
               },
               "turismo": {
                 "soporte": 1,
-                "predichos": 18,
+                "predichos": 19,
                 "precision": {
                   "n": 1,
-                  "de": 18,
-                  "proporcion": 0.0556,
+                  "de": 19,
+                  "proporcion": 0.0526,
                   "ic95": [
-                    0.0099,
-                    0.2576
+                    0.0094,
+                    0.2464
                   ]
                 },
                 "recall": {
@@ -9896,7 +9873,7 @@
                     1.0
                   ]
                 },
-                "f1": 0.1053
+                "f1": 0.1
               },
               "servicios_publicos": {
                 "soporte": 9,
@@ -9923,14 +9900,14 @@
               },
               "eventos_naturales": {
                 "soporte": 20,
-                "predichos": 25,
+                "predichos": 24,
                 "precision": {
                   "n": 20,
-                  "de": 25,
-                  "proporcion": 0.8,
+                  "de": 24,
+                  "proporcion": 0.8333,
                   "ic95": [
-                    0.6087,
-                    0.9114
+                    0.6415,
+                    0.9332
                   ]
                 },
                 "recall": {
@@ -9942,7 +9919,7 @@
                     1.0
                   ]
                 },
-                "f1": 0.8889
+                "f1": 0.9091
               },
               "regulacion": {
                 "soporte": 1,
@@ -9969,14 +9946,14 @@
               },
               "sin_tema": {
                 "soporte": 41,
-                "predichos": 40,
+                "predichos": 39,
                 "precision": {
                   "n": 36,
-                  "de": 40,
-                  "proporcion": 0.9,
+                  "de": 39,
+                  "proporcion": 0.9231,
                   "ic95": [
-                    0.7695,
-                    0.9604
+                    0.7968,
+                    0.9735
                   ]
                 },
                 "recall": {
@@ -9988,7 +9965,7 @@
                     0.9468
                   ]
                 },
-                "f1": 0.8889
+                "f1": 0.9
               }
             },
             "matriz_confusion": {
@@ -10005,20 +9982,20 @@
                 [
                   5,
                   1,
-                  14,
+                  15,
                   1,
-                  2,
+                  1,
                   2,
                   1
                 ],
                 [
                   0,
-                  1,
+                  2,
                   0,
                   0,
                   0,
                   0,
-                  1
+                  0
                 ],
                 [
                   0,
@@ -10080,12 +10057,12 @@
               "ic95": null
             },
             "secundario_dado_donde_no_se_espera": {
-              "n": 10,
+              "n": 13,
               "de": 100,
-              "proporcion": 0.1,
+              "proporcion": 0.13,
               "ic95": [
-                0.0552,
-                0.1744
+                0.0776,
+                0.2098
               ]
             },
             "fallos": [
@@ -10203,7 +10180,7 @@
                 "esperado": "sin_tema",
                 "predicho": "economia",
                 "secundario_esperado": null,
-                "secundario_predicho": null,
+                "secundario_predicho": "servicios_publicos",
                 "similitud": 0.4538
               },
               {
@@ -10228,10 +10205,10 @@
                 "id": "NOT-8206bf1857",
                 "titular": "NOT-8206bf1857",
                 "esperado": "economia",
-                "predicho": "eventos_naturales",
+                "predicho": "servicios_publicos",
                 "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": 0.3663
+                "secundario_predicho": "eventos_naturales",
+                "similitud": 0.3664
               },
               {
                 "id": "NOT-8897c80d23",
@@ -10293,7 +10270,7 @@
                 "esperado": "economia",
                 "predicho": "regulacion",
                 "secundario_esperado": null,
-                "secundario_predicho": null,
+                "secundario_predicho": "servicios_publicos",
                 "similitud": 0.5483
               },
               {
@@ -10311,17 +10288,17 @@
                 "esperado": "sin_tema",
                 "predicho": "servicios_publicos",
                 "secundario_esperado": null,
-                "secundario_predicho": "economia",
-                "similitud": 0.3113
+                "secundario_predicho": null,
+                "similitud": 0.3297
               },
               {
                 "id": "NOT-e1ef662816",
                 "titular": "NOT-e1ef662816",
                 "esperado": "economia",
-                "predicho": "servicios_publicos",
+                "predicho": "turismo",
                 "secundario_esperado": null,
-                "secundario_predicho": "turismo",
-                "similitud": 0.3374
+                "secundario_predicho": "servicios_publicos",
+                "similitud": 0.3269
               },
               {
                 "id": "NOT-e4f8660e0d",
@@ -10376,35 +10353,26 @@
                 "secundario_esperado": null,
                 "secundario_predicho": null,
                 "similitud": 0.4613
-              },
-              {
-                "id": "NOT-fc94561c6d",
-                "titular": "NOT-fc94561c6d",
-                "esperado": "logistica",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
               }
             ]
           },
           "ponderado": {
             "exactitud_principal": {
-              "suma_pesos_aciertos": 135.108,
+              "suma_pesos_aciertos": 137.9999,
               "suma_pesos": 169.9999,
-              "proporcion": 0.7948,
+              "proporcion": 0.8118,
               "n": 100
             },
             "macro_f1": {
               "n": 100,
-              "macro_f1": 0.4458,
+              "macro_f1": 0.5278,
               "ic95": [
-                0.3396,
-                0.5609
+                0.3793,
+                0.6034
               ],
               "ic95_exacto": [
-                0.3395735118669953,
-                0.5609352346696703
+                0.37933904494878823,
+                0.6034294466950794
               ],
               "remuestreos": 1000,
               "ponderado": true
@@ -10414,24 +10382,24 @@
         "minilm/B": {
           "sin_ponderar": {
             "exactitud_principal": {
-              "n": 62,
+              "n": 63,
               "de": 100,
-              "proporcion": 0.62,
+              "proporcion": 0.63,
               "ic95": [
-                0.5221,
-                0.709
+                0.5322,
+                0.7182
               ]
             },
             "macro_f1": {
               "n": 100,
-              "macro_f1": 0.3659,
+              "macro_f1": 0.4033,
               "ic95": [
-                0.2801,
-                0.4466
+                0.2915,
+                0.5002
               ],
               "ic95_exacto": [
-                0.2800958134191217,
-                0.44659377596215694
+                0.2915317981878862,
+                0.5001934557099887
               ],
               "remuestreos": 1000,
               "ponderado": false
@@ -10471,26 +10439,26 @@
               },
               "logistica": {
                 "soporte": 2,
-                "predichos": 5,
+                "predichos": 6,
                 "precision": {
-                  "n": 0,
-                  "de": 5,
-                  "proporcion": 0.0,
+                  "n": 1,
+                  "de": 6,
+                  "proporcion": 0.1667,
                   "ic95": [
-                    0.0,
-                    0.4345
+                    0.0301,
+                    0.5635
                   ]
                 },
                 "recall": {
-                  "n": 0,
+                  "n": 1,
                   "de": 2,
-                  "proporcion": 0.0,
+                  "proporcion": 0.5,
                   "ic95": [
-                    0.0,
-                    0.6576
+                    0.0945,
+                    0.9055
                   ]
                 },
-                "f1": 0.0
+                "f1": 0.25
               },
               "turismo": {
                 "soporte": 1,
@@ -10586,14 +10554,14 @@
               },
               "sin_tema": {
                 "soporte": 41,
-                "predichos": 39,
+                "predichos": 38,
                 "precision": {
                   "n": 36,
-                  "de": 39,
-                  "proporcion": 0.9231,
+                  "de": 38,
+                  "proporcion": 0.9474,
                   "ic95": [
-                    0.7968,
-                    0.9735
+                    0.8271,
+                    0.9854
                   ]
                 },
                 "recall": {
@@ -10605,7 +10573,7 @@
                     0.9468
                   ]
                 },
-                "f1": 0.9
+                "f1": 0.9114
               }
             },
             "matriz_confusion": {
@@ -10630,12 +10598,12 @@
                 ],
                 [
                   1,
+                  1,
                   0,
                   0,
                   0,
                   0,
-                  0,
-                  1
+                  0
                 ],
                 [
                   0,
@@ -11038,35 +11006,26 @@
                 "secundario_esperado": null,
                 "secundario_predicho": null,
                 "similitud": 0.7228
-              },
-              {
-                "id": "NOT-fc94561c6d",
-                "titular": "NOT-fc94561c6d",
-                "esperado": "logistica",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
               }
             ]
           },
           "ponderado": {
             "exactitud_principal": {
-              "suma_pesos_aciertos": 130.108,
+              "suma_pesos_aciertos": 132.9999,
               "suma_pesos": 169.9999,
-              "proporcion": 0.7653,
+              "proporcion": 0.7824,
               "n": 100
             },
             "macro_f1": {
               "n": 100,
-              "macro_f1": 0.3737,
+              "macro_f1": 0.4457,
               "ic95": [
-                0.2889,
-                0.4524
+                0.3008,
+                0.5397
               ],
               "ic95_exacto": [
-                0.2888532947136074,
-                0.45243827945227044
+                0.3007945643606265,
+                0.539719402275757
               ],
               "remuestreos": 1000,
               "ponderado": true

@@ -285,15 +285,15 @@
     },
     {
       "posicion": 10,
-      "id_grupo": "GRP-5ab17b45cd",
-      "titular_central": "Asesinan a taxista en Remedios; fue hallado dentro de su vehículo con varias heridas",
-      "puntaje": 81.65,
+      "id_grupo": "GRP-39773bed5a",
+      "titular_central": "Árbol cae sobre dos vehículos en estacionamientos del hospital San Miguel Arcángel",
+      "puntaje": 81.76,
       "empate_con": 0,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
-        "I": 0.55,
-        "U": 0.9616,
+        "I": 0.65,
+        "U": 0.8422,
         "N": 1.0,
         "E": 0.3667
       },
