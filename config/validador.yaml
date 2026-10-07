@@ -61,7 +61,7 @@ juicios_transicion: [mala noticia, buena noticia, preocupante, preocupa, preocup
 
 # Traducción (D-45): equivalencias que una cita de un titular en otro idioma legitima. Una entidad ausente del titular y de esta tabla se rechaza.
 equivalencias_traduccion:
-  América Latina: [Latin America]
+  América Latina: [Latin America, LatAm]
   Ciudad de Panamá: [Panama City]
   Canal de Panamá: [Panama Canal]
   Estados Unidos: [United States, US, USA, U.S.]

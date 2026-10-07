@@ -61,6 +61,7 @@ ESPACIOS = re.compile(r"\s+")
 COMILLAS = re.compile(r"[\"“«](.+?)[\"”»]")
 COMILLAS_SIMPLES = re.compile(r"(?<!\w)'(.+?)'(?!\w)")  # un apóstrofo («L'Équipe») no abre una cita
 HASHTAG = re.compile(r"#\w+")
+ID_EN_TEXTO = re.compile(r"\b(?:not|ind|grp|sis|sbp|syn|caso)-[\w.\-]+")  # sobre texto ya sin tildes ni mayúsculas
 ENV_REGISTRO = "RECHAZOS_JSONL"  # sobrescribe la ruta del registro (las pruebas no escriben en outputs/)
 MARCA_EXCESO = "supera el máximo"
 SECCIONES_TITULAR = ("titulo", "titulo_trabajo", "titulares")
@@ -172,7 +173,7 @@ def _numero_de_mes(meses: Sequence[str]) -> dict[str, int]:
 
 def extraer_fechas(texto: str, meses: Sequence[str]) -> tuple[list[Fecha], str]:
     """Fechas que dice el texto (ISO, «5 de octubre de 2026», «octubre de 2026», un año, un mes) y el texto sin ellas (en minúsculas)."""
-    t = plano(texto)
+    t = ID_EN_TEXTO.sub(" ", plano(texto))  # el ID de una cita («GRP-0123456789») no trae cifras ni fechas
     tabla = _numero_de_mes(meses)
     alt = "|".join(sorted(tabla, key=len, reverse=True))
     fechas: list[Fecha] = []
@@ -628,7 +629,7 @@ def _nombres_nuevos(texto: str, s: Soporte, ctx: Contexto) -> list[Rechazo]:
     """Nombres propios que ni los campos citados, su contexto (medio, indicador), ni las afirmaciones de apoyo traen (D-41, D-51)."""
     ids = s.ids
     contexto = [v for i in ids for v in (ctx.registros[i].contexto.values() if i in ctx.registros else [])]
-    permitido = " ".join([*s.textos, ctx.texto_citado(s.citas), *contexto, *ctx.val.nombres_permitidos])
+    permitido = " ".join([*s.textos, ctx.texto_citado(s.citas), *contexto, *ids, *ctx.val.nombres_permitidos])  # el ID citado es el ancla de la cita
     tokens = set(re.findall(r"\w+", plano(permitido)))
     traducidos = [i for i in ids if ctx.traducido(i)]
     palabras_fuente: set[str] = set()
