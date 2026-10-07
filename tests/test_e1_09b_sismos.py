@@ -156,8 +156,8 @@ def base_metodo_a(tmp_path: Path) -> Path:
         {**grupo, "id_grupo": "GRP-lluvia", "id_noticia_central": "NOT-b", "ids_noticia": "NOT-b"},
     ]
     sim = [
-        {"id_noticia": "NOT-a", "metodo": "B", "tema": "eventos_naturales", "similitud": 0.7, "subtema": "sismos"},
-        {"id_noticia": "NOT-b", "metodo": "B", "tema": "eventos_naturales", "similitud": 0.7, "subtema": "inundaciones_lluvias"},
+        {"id_noticia": "NOT-a", "metodo": "B", "tema": "eventos_naturales", "similitud": 0.7, "subtema": "sismos", "margen_subtema": 0.05},
+        {"id_noticia": "NOT-b", "metodo": "B", "tema": "eventos_naturales", "similitud": 0.7, "subtema": "inundaciones_lluvias", "margen_subtema": 0.05},
     ]
     db.guardar_todo(ruta, {"noticias": noticias, "grupos": grupos, "similitud_tema": sim})
     return ruta

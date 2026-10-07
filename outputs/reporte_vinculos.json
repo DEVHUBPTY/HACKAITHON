@@ -4,45 +4,43 @@
   "grupos_del_banco_mundial": 58,
   "grupos_delegados_a_otra_fuente": 0,
   "con_vinculo": {
-    "n": 9,
+    "n": 7,
     "de": 58,
-    "proporcion": 0.1552,
+    "proporcion": 0.1207,
     "ic95": [
-      0.0838,
-      0.2693
+      0.0597,
+      0.2288
     ]
   },
   "sin_vinculo": {
-    "n": 49,
+    "n": 51,
     "de": 58,
-    "proporcion": 0.8448,
+    "proporcion": 0.8793,
     "ic95": [
-      0.7307,
-      0.9162
+      0.7712,
+      0.9403
     ]
   },
   "sin_vinculo_por_motivo": {
-    "tema_sin_indicador": 49
+    "tema_sin_indicador": 51
   },
   "con_vinculo_por_relacion": {
-    "directa": 4,
+    "directa": 2,
     "indirecta": 5
   },
   "con_vinculo_por_subtema": {
-    "comercio_exterior": 2,
-    "crecimiento_pib": 1,
+    "comercio_exterior": 1,
     "inflacion_precios": 1,
-    "operacion_canal": 2,
-    "transporte_carga": 1,
-    "zona_libre": 2
+    "operacion_canal": 1,
+    "sin_subtema": 3,
+    "transporte_carga": 1
   },
   "con_vinculo_por_indicador": {
     "FP.CPI.TOTL.ZG": 1,
-    "NE.EXP.GNFS.ZS": 7,
-    "NY.GDP.MKTP.KD.ZG": 1
+    "NE.EXP.GNFS.ZS": 6
   },
   "comparacion_con_cifra_del_titular": {},
-  "filas_en_vinculos": 148,
+  "filas_en_vinculos": 128,
   "usgs": {
     "nota": "Eventos de USGS como contexto; no informan daños ni pérdidas. Solo cubre el periodo extraído de USGS (fuentes.yaml).",
     "grupos_de_sismos": 0,

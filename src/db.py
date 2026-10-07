@@ -21,6 +21,8 @@ logger = logging.getLogger(__name__)
 RUTA_BASE = RAIZ / "data" / "senales.duckdb"
 
 # Tabla -> [(columna, tipo)]. El orden es el de la tabla.
+# SIEMPRE se agregan columnas nuevas AL FINAL de su tabla: `asegurar_esquema` las agrega con ALTER TABLE (quedan al final en una
+# base ya creada) y los inserts son posicionales; una columna en medio desordena las bases viejas (error de conversión).
 ESQUEMA: dict[str, list[tuple[str, str]]] = {
     "noticias": [
         ("id_noticia", "VARCHAR PRIMARY KEY"),
@@ -106,6 +108,7 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("tema", "VARCHAR NOT NULL"),
         ("similitud", "DOUBLE NOT NULL"),
         ("subtema", "VARCHAR"),
+        ("margen_subtema", "DOUBLE"),  # D-92: similitud del 1.º menos la del 2.º subtema del tema (solo método B)
     ],
     "grupos": [  # E1-08: un grupo por evento; el conteo de procedencias es una ESTIMACIÓN (CU-03)
         ("id_grupo", "VARCHAR PRIMARY KEY"),
@@ -141,7 +144,7 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("motivo_sin_vinculo", "VARCHAR"),     # solo en filas sin vínculo (config/vinculos.yaml)
         ("fuente", "VARCHAR NOT NULL"),        # quién la escribe: `indicador` (src.contexto) o `usgs` (src.contexto_sismos)
         ("rol", "VARCHAR"),                    # panama · comparable · tendencia · evento
-        ("subtema", "VARCHAR"),                # subtema más cercano dentro del tema del grupo
+        ("subtema", "VARCHAR"),                # subtema más cercano dentro del tema del grupo (D-92: solo si hay margen o término)
         ("pais_iso3", "VARCHAR"),
         ("indicador_id", "VARCHAR"),
         ("anio", "INTEGER"),
@@ -158,6 +161,7 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("estado_evento", "VARCHAR"),          # `automatic` o `reviewed`
         ("url_evento", "VARCHAR"),
         ("diferencia_horas", "DOUBLE"),        # distancia a la noticia más cercana del grupo
+        ("criterio_subtema", "VARCHAR"),       # D-92: por qué se aceptó el subtema: `margen` o `lexico`
     ],
     "puntajes": [  # E1-10: R, I, U, N, E y P de cada grupo, con la explicación de cada componente (reglas v1.3)
         ("id_grupo", "VARCHAR PRIMARY KEY"),
