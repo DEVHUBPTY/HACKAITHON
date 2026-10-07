@@ -241,7 +241,7 @@ Una fila por procedencia estimada. Nunca guarda el nombre de un autor (D-32): so
 ### `vinculos`: contexto oficial de cada grupo (E1-09, E1-09b)
 
 Una fila por dato (o una por grupo sin vínculo). Es **contexto, nunca prueba de causa**. Los datos del Banco Mundial son
-**anuales**. `python -m src.contexto` reemplaza solo sus filas (`fuente = 'indicador'`); las de USGS las escribe E1-09b.
+**anuales**. `python -m src.contexto` reemplaza solo sus filas (`fuente = 'indicador'`) y, con `eventos.geojson`, las de USGS (`fuente = 'usgs'`, E1-09b); nunca mezcla unas con otras.
 
 | Campo | Tipo | Nullable | Fuente | Clase | Descripción |
 |---|---|---|---|---|---|
@@ -263,6 +263,14 @@ Una fila por dato (o una por grupo sin vínculo). Es **contexto, nunca prueba de
 | `cifra_titular` | DOUBLE | sí | `grupos` | derivado | Solo en la fila `panama`: cifra (%) del titular central sobre el mismo indicador. |
 | `anio_titular` | INTEGER | sí | `grupos` | derivado | Año que declara el titular; nulo si no declara uno solo. |
 | `comparacion_titular` | VARCHAR | sí | `vinculos.yaml` | derivado | `posible discrepancia, verificar`, `período distinto, no comparable` o `cifra coincidente con la oficial`. Nunca se corrige al medio. |
+| `place` | VARCHAR | sí | `eventos.geojson` | derivado | Solo filas `usgs`: lugar tal como lo da USGS, sin traducir. Puede estar fuera de territorio panameño. |
+| `profundidad_km` | DOUBLE | sí | `eventos.geojson` | derivado | Solo filas `usgs`: profundidad (`depth`); nulo = sin dato, nunca 0. |
+| `hora_utc` | VARCHAR | sí | `eventos.geojson` | derivado | Solo filas `usgs`: hora del evento en ISO 8601 UTC (la hora de Panamá se calcula solo al mostrar). |
+| `estado_evento` | VARCHAR | sí | `eventos.geojson` | derivado | Solo filas `usgs`: `automatic` o `reviewed`; un evento automático puede cambiar. |
+| `url_evento` | VARCHAR | sí | `eventos.geojson` | derivado | Solo filas `usgs`: página del evento en USGS. |
+| `diferencia_horas` | DOUBLE | sí | contexto | derivado | Solo filas `usgs`: horas entre el evento y la noticia más cercana del grupo. |
+
+En las filas `usgs`, `valor` es la magnitud y `unidad` es `magnitud`. `tipo` es `evento` solo con un `SIS-` (vinculado o candidato ambiguo) y nulo si no hay vínculo; `rol` es siempre `evento`.
 
 ### `registro_normalizacion`: valores que no se pudieron normalizar
 

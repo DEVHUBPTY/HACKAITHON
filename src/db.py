@@ -151,6 +151,13 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("cifra_titular", "DOUBLE"),           # solo en la fila `panama`, si el titular trae su propia cifra
         ("anio_titular", "INTEGER"),
         ("comparacion_titular", "VARCHAR"),
+        # E1-09b: solo en las filas `usgs` (la magnitud va en `valor`/`unidad`)
+        ("place", "VARCHAR"),                  # texto original de USGS, sin traducir
+        ("profundidad_km", "DOUBLE"),          # NULL = sin dato; nunca 0
+        ("hora_utc", "VARCHAR"),               # ISO 8601 UTC del evento
+        ("estado_evento", "VARCHAR"),          # `automatic` o `reviewed`
+        ("url_evento", "VARCHAR"),
+        ("diferencia_horas", "DOUBLE"),        # distancia a la noticia más cercana del grupo
     ],
     "registro_normalizacion": [
         ("tabla", "VARCHAR NOT NULL"),

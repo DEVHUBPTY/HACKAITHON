@@ -12,6 +12,7 @@ import re
 import sys
 from pathlib import Path
 from typing import Literal, TypeVar, get_args
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
@@ -743,6 +744,28 @@ class Vinculo(ModeloConfig):
         return self
 
 
+class SismosVinculo(ModeloConfig):
+    """Presentación y textos fijos del vínculo con eventos de USGS (E1-09b)."""
+
+    zona_horaria: str
+    formato_hora: str
+    formato_hora_utc: str
+    decimales_horas: int = Field(ge=0)
+    unidad_magnitud: str
+    plantilla_regla: str
+    nota_fecha_deteccion: str
+    limitaciones: list[str] = Field(min_length=1)
+
+    @field_validator("zona_horaria")
+    @classmethod
+    def _zona_existe(cls, v: str) -> str:
+        try:
+            ZoneInfo(v)
+        except (ZoneInfoNotFoundError, ValueError) as exc:
+            raise ValueError(f"zona horaria desconocida: {v}") from exc
+        return v
+
+
 class NotasDato(ModeloConfig):
     """Plantillas de la nota de limitación que acompaña a cada dato anual (E1-09)."""
 
@@ -810,6 +833,7 @@ class ConfigVinculos(ModeloConfig):
     motivo_por_defecto: str
     ventana_coincidencia_dias: int = Field(ge=0)
     pais_por_defecto: str
+    sismos: SismosVinculo
     vinculos: dict[str, Vinculo]  # por subtema
     vinculos_por_tema: dict[str, Vinculo]  # cualquier subtema del tema
     tendencia_anios: int = Field(ge=1)

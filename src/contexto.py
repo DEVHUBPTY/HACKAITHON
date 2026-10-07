@@ -13,7 +13,8 @@ Cada grupo (``GRP-``) se vincula con el indicador que le corresponde **por subte
 * **Cifra del titular:** si el titular trae su propia cifra (%) del mismo indicador, se compara con la oficial sin corregir
   al medio: mismo año -> «posible discrepancia, verificar»; otro período -> «período distinto, no comparable».
 * **USGS (sismos):** lo resuelve ``src/contexto_sismos.py`` (E1-09b). Aquí un vínculo cuya ``fuente`` no es ``indicador`` se
-  deja pasar y se cuenta como ``delegados``: no se inventa un vínculo del Banco Mundial para un sismo.
+  deja pasar y se cuenta como ``delegados``: no se inventa un vínculo del Banco Mundial para un sismo. Con ``--eventos``,
+  ``aplicar_sismos`` vincula esos grupos con ``eventos.geojson`` (mismo subtema, ``fuente = 'usgs'``).
 
 Los datos son anuales: ningún texto de salida usa la palabra «actual» (``palabras_prohibidas``). Cada fila guarda la
 ``regla`` que la generó y ``fuente = 'indicador'``; ``src.contexto`` reemplaza solo sus propias filas al volver a correr.
@@ -33,14 +34,16 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
-from src import db
+from src import contexto_sismos, db
 from src.clasificacion import proporcion
 from src.configuracion import (
     RAIZ,
     ConfigVinculos,
     Vinculo,
     cargar_carga,
+    cargar_fuentes,
     cargar_normalizacion,
+    cargar_reglas,
     cargar_vinculos,
 )
 from src.registro import configurar_logging
@@ -57,6 +60,7 @@ MOTIVO_SIN_DATO = "sin_dato_en_periodo"
 REGLA_SIN_DATO = MOTIVO_SIN_DATO
 SEPARADOR_ANIOS = ", "
 REPORTE = "reporte_vinculos.json"
+EVENTOS = Path("processed") / "eventos.geojson"   # bajo ``data/``
 POSICION_ANIO = slice(0, 4)      # ``YYYY`` de una fecha ISO 8601
 
 
@@ -337,7 +341,58 @@ def aplicar_a_base(ruta_base: Path, cfg: ConfigVinculos) -> tuple[list[dict[str,
         con.close()
 
 
+def aplicar_sismos(ruta_base: Path, ruta_eventos: Path, cfg: ConfigVinculos) -> tuple[list[contexto_sismos.ResultadoSismos], list[dict[str, Any]], int]:
+    """Vincula con USGS los grupos que ``vinculos.yaml`` delega a esa fuente y reemplaza solo las filas ``fuente = 'usgs'``.
+
+    El subtema es el de ``leer_grupos`` (el mismo de los vínculos del Banco Mundial). Devuelve ``(resultados, filas,
+    eventos_sin_magnitud)``.
+    """
+    fuentes, campos_fecha = cargar_fuentes(), cargar_reglas().agrupacion.campos_fecha
+    eventos = contexto_sismos.cargar_eventos(ruta_eventos)
+    sin_magnitud = contexto_sismos.contar_sin_magnitud(eventos)
+    con = db.conectar(ruta_base)
+    try:
+        db.asegurar_esquema(con)
+        fechas = contexto_sismos.leer_noticias_por_grupo(con)
+        resultados = []
+        for g in leer_grupos(con):
+            vinculo, _ = elegir_vinculo(g["tema"], g["subtema"], cfg)
+            if vinculo is None or vinculo.fuente != contexto_sismos.FUENTE_USGS:
+                continue
+            r = contexto_sismos.vincular_grupo(g["id_grupo"], g["subtema"], fechas.get(g["id_grupo"], []), eventos, cfg, fuentes, campos_fecha)
+            if r is not None:
+                resultados.append(r)
+        filas = [f for r in resultados for f in contexto_sismos.a_filas_vinculo(r, cfg)]
+        verificar_texto(filas, cfg)
+        con.begin()
+        try:
+            con.execute("DELETE FROM vinculos WHERE fuente = ?", [contexto_sismos.FUENTE_VINCULO])
+            db.insertar(con, "vinculos", [{**dict.fromkeys(db.columnas("vinculos")), **f} for f in filas])
+            con.commit()
+        except BaseException:
+            con.rollback()
+            raise
+        return resultados, filas, sin_magnitud
+    finally:
+        con.close()
+
+
 # ------------------------------------------------------------------ reporte
+
+
+def construir_reporte_usgs(
+    resultados: Sequence[contexto_sismos.ResultadoSismos], filas: Sequence[Mapping[str, Any]], eventos_sin_magnitud: int, z: float
+) -> dict[str, Any]:
+    """Grupos de sismos por resultado (vinculado o motivo), con n e IC de Wilson de los vinculados."""
+    por_estado = Counter(r.estado for r in resultados)
+    return {
+        "nota": "Eventos de USGS como contexto; no informan daños ni pérdidas. Solo cubre el periodo extraído de USGS (fuentes.yaml).",
+        "grupos_de_sismos": len(resultados),
+        "vinculados": proporcion(por_estado[contexto_sismos.VINCULADO], len(resultados), z),
+        "por_resultado": dict(sorted(por_estado.items())),
+        "filas_en_vinculos": len(filas),
+        "eventos_sin_magnitud": eventos_sin_magnitud,
+    }
 
 
 def construir_reporte(filas: Sequence[Mapping[str, Any]], delegados: Sequence[str], total_grupos: int, z: float) -> dict[str, Any]:
@@ -361,11 +416,18 @@ def construir_reporte(filas: Sequence[Mapping[str, Any]], delegados: Sequence[st
     }
 
 
-def ejecutar(ruta_base: Path, ruta_reporte: Path) -> dict[str, Any]:
-    """Vincula los grupos de la base y escribe ``outputs/reporte_vinculos.json``. Devuelve el reporte."""
+def ejecutar(ruta_base: Path, ruta_reporte: Path, ruta_eventos: Path | None = None) -> dict[str, Any]:
+    """Vincula los grupos de la base y escribe ``outputs/reporte_vinculos.json``. Devuelve el reporte.
+
+    Con ``ruta_eventos`` también vincula los grupos de sismos con USGS (``reporte["usgs"]``); sin ella no toca filas ``usgs``.
+    """
     cfg = cargar_vinculos()
+    z = cargar_carga().salida.z_intervalo_confianza
     filas, delegados, total = aplicar_a_base(ruta_base, cfg)
-    reporte = construir_reporte(filas, delegados, total, cargar_carga().salida.z_intervalo_confianza)
+    reporte = construir_reporte(filas, delegados, total, z)
+    if ruta_eventos is not None:
+        resultados, filas_usgs, sin_magnitud = aplicar_sismos(ruta_base, ruta_eventos, cfg)
+        reporte["usgs"] = construir_reporte_usgs(resultados, filas_usgs, sin_magnitud, z)
     ruta_reporte.parent.mkdir(parents=True, exist_ok=True)
     with ruta_reporte.open("w", encoding="utf-8") as f:
         json.dump(reporte, f, ensure_ascii=False, indent=2)
@@ -379,17 +441,22 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="E1-09: contexto del Banco Mundial por subtema")
     parser.add_argument("--base", type=Path, default=RAIZ / "data" / cargar_normalizacion().salida.base_de_datos)
     parser.add_argument("--reporte", type=Path, default=RAIZ / "outputs" / REPORTE)
+    parser.add_argument("--eventos", type=Path, default=RAIZ / "data" / EVENTOS, help="eventos.geojson de USGS (E1-09b)")
     args = parser.parse_args(argv)
+    if not args.eventos.exists():
+        logger.warning("No existe %s: los grupos de sismos quedan sin vincular con USGS", args.eventos)
     if not args.base.exists():
         logger.error("No existe %s: ejecute primero `normalizacion`, `limpieza`, `clasificacion` y `agrupacion`", args.base)
         return 1
     try:
-        r = ejecutar(args.base, args.reporte)
+        r = ejecutar(args.base, args.reporte, args.eventos if args.eventos.exists() else None)
     except Exception as exc:  # noqa: BLE001 - CLI: reportar y salir con error
         logger.error("%s", exc)
         return 1
     logger.info("%d grupos: %d con vínculo, %d sin vínculo, %d delegados", r["grupos_en_base"], r["con_vinculo"]["n"], r["sin_vinculo"]["n"], r["grupos_delegados_a_otra_fuente"])
     logger.info("sin vínculo por motivo: %s", r["sin_vinculo_por_motivo"])
+    if "usgs" in r:
+        logger.info("sismos (USGS): %d grupos; resultado: %s", r["usgs"]["grupos_de_sismos"], r["usgs"]["por_resultado"])
     return 0
 
 

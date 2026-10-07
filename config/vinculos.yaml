@@ -14,6 +14,19 @@ motivo_por_defecto: tema_sin_indicador
 ventana_coincidencia_dias: 2        # sismos: ± días entre evento USGS y noticia (supuesto)
 pais_por_defecto: PAN
 
+sismos:                             # E1-09b: presentación y textos fijos del vínculo con eventos USGS
+  zona_horaria: America/Panama      # solo para mostrar; los datos siguen en UTC
+  formato_hora: "%Y-%m-%d %H:%M"
+  formato_hora_utc: "%Y-%m-%dT%H:%M:%SZ"   # ISO 8601 UTC de los datos
+  decimales_horas: 2                # precisión de la diferencia en horas entre noticia y evento
+  unidad_magnitud: "magnitud"       # unidad de la columna `valor` en `vinculos` (USGS no la fija en nuestro contrato)
+  plantilla_regla: "Evento USGS a ± {dias} días de la noticia y magnitud mínima {magnitud_minima}."
+  nota_fecha_deteccion: "Alguna noticia del grupo no tiene fecha de publicación: se usó su fecha de detección."
+  limitaciones:
+    - "El lugar puede estar fuera de territorio panameño: se muestra tal como lo da USGS."
+    - "La fuente solo describe el evento sísmico; no informa daños ni pérdidas."
+    - "Un evento con estado automático puede cambiar al ser revisado."
+
 # E1-09 · contextualización con el Banco Mundial (src/contexto.py). Todo dato del Banco Mundial es ANUAL.
 tendencia_anios: 5                  # PDF/spec E1-09: tendencia = últimos 5 años de Panamá (nulos siguen nulos)
 indicadores_solo_contexto: [SP.POP.TOTL]   # la población nunca se vincula sola (spec E1-09)
