@@ -33,6 +33,7 @@ from src.configuracion import (
     RegistroTrazable,
     cargar_normalizacion,
     cargar_restricciones,
+    cargar_temas,
     cargar_verificacion,
 )
 from src.esquemas import Ficha, RegistroFichasJsonl
@@ -83,6 +84,7 @@ class Candidato:
     con_dato_oficial: bool = False
     contradicciones_abiertas: int = 0
     vacios: tuple[str, ...] = ()
+    con_ruido: bool = False            # algún titular del grupo está marcado como ruido (no debería: el ruido no entra a un grupo)
 
 
 @dataclass(frozen=True)
@@ -108,13 +110,14 @@ def candidatos(con: Any, modalidad: str) -> list[Candidato]:
     db.exigir_modalidad_de_la_base(con, modalidad)
     filas = con.execute(
         "SELECT p.id_grupo, p.posicion, p.puntaje, e.estado, COALESCE(g.tema_clasificado, ''), g.n_titulares, e.n_procedencias, e.tiene_oficial, "
-        "e.contradicciones_abiertas, e.vacios FROM puntajes p JOIN evidencia e USING (id_grupo) JOIN grupos g USING (id_grupo) "
+        "e.contradicciones_abiertas, e.vacios, "
+        "EXISTS (SELECT 1 FROM noticias n WHERE n.id_grupo = p.id_grupo AND n.es_ruido) FROM puntajes p JOIN evidencia e USING (id_grupo) JOIN grupos g USING (id_grupo) "
         "WHERE e.modalidad = ? ORDER BY p.posicion, p.id_grupo",
         [modalidad],
     ).fetchall()
     return [
-        Candidato(str(i), int(pos), float(p), str(e), str(tema), int(nt), int(npr), bool(of), int(ca), tuple(v["codigo"] for v in json.loads(vac or "[]")))
-        for i, pos, p, e, tema, nt, npr, of, ca, vac in filas
+        Candidato(str(i), int(pos), float(p), str(e), str(tema), int(nt), int(npr), bool(of), int(ca), tuple(v["codigo"] for v in json.loads(vac or "[]")), bool(ruido))
+        for i, pos, p, e, tema, nt, npr, of, ca, vac, ruido in filas
     ]
 
 
@@ -127,6 +130,9 @@ def cumple(c: Candidato, criterio: CriterioFichaTrazable) -> bool:
         and (criterio.contradiccion_abierta is None or (c.contradicciones_abiertas > 0) == criterio.contradiccion_abierta)
         and (criterio.mas_titulares_que_procedencias is None or (c.n_titulares > c.n_procedencias) == criterio.mas_titulares_que_procedencias)
         and (criterio.procedencias_minimas is None or c.n_procedencias >= criterio.procedencias_minimas)
+        and (criterio.titulares_minimos is None or c.n_titulares >= criterio.titulares_minimos)
+        and (criterio.tema_del_reto is None or (c.tema in cargar_temas().temas) == criterio.tema_del_reto)
+        and (criterio.sin_ruido is None or (not c.con_ruido) == criterio.sin_ruido)
         and (criterio.vacio is None or criterio.vacio in c.vacios)
     )
 
@@ -395,7 +401,8 @@ def verificar_ficha(
         desc = normalizar(str(reg.valores.get("descripcion") or "")) if reg else ""
         titulo = normalizar(str(reg.valores.get("titulo_limpio") or reg.valores.get("titulo") or "")) if reg else ""
         evaluable = len(desc) >= cfg.descripcion_minimo_caracteres and desc not in titulo
-        u(Unidad("sin_descripcion_rss", not (evaluable and desc in texto_de_salidas), f"{t.id_noticia}"))
+        if evaluable:                      # X107: sin descripción no hay nada que comprobar: la unidad no se cuenta (el informe dice «no aplica»)
+            u(Unidad("sin_descripcion_rss", desc not in texto_de_salidas, f"{t.id_noticia}"))
 
     # --- D-32: ninguna clave de autor y solo agencia / tipo de firma permitidos
     cfg_norm = cargar_normalizacion()
@@ -435,7 +442,7 @@ def informe(resultados: Sequence[ResultadoFicha], cfg: ConfigFichasTrazables) ->
     for regla in REGLAS:
         ok = sum(r.conteo(regla)[0] for r in resultados)
         n = sum(r.conteo(regla)[1] for r in resultados)
-        por_regla[regla] = _proporcion(ok, n, z) if n else {"n": 0, "ok": 0, "proporcion": None, "ic95": None, "nota": "no aplica en esta corrida"}
+        por_regla[regla] = _proporcion(ok, n, z) if n else {"n": 0, "ok": 0, "proporcion": None, "ic95": None, "nota": cfg.textos.no_aplica.get(regla, cfg.textos.no_aplica_por_defecto)}
     fichas = []
     for r in resultados:
         fichas.append({

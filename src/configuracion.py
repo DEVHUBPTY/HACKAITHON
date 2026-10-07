@@ -2795,6 +2795,7 @@ class ConfigRevision(ModeloConfig):
     acciones: dict[str, AccionRevision]
     motivos_descarte: list[str] = Field(min_length=1)
     motivos_con_comentario: list[str]
+    motivos_administrativos: list[str] = Field(default_factory=list)   # X107: descartes que no son un juicio editorial (p. ej. el reemplazo de D-118): no entran a las tasas
     revisores: list[RevisorConfig] = Field(min_length=1)
     limitacion_revisor: str
     vinculo_rechazado: VinculoRechazadoRevision
@@ -2829,6 +2830,8 @@ class ConfigRevision(ModeloConfig):
             raise ValueError("descartar: lleva un motivo obligatorio de la lista y llega a «descartado»")
         if not set(self.motivos_con_comentario) <= set(self.motivos_descarte):
             raise ValueError("motivos_con_comentario: deben estar en motivos_descarte")
+        if not set(self.motivos_administrativos) <= set(self.motivos_descarte):
+            raise ValueError("motivos_administrativos: deben estar en motivos_descarte")
         if len(self.motivos_descarte) != len(set(self.motivos_descarte)):
             raise ValueError("motivos_descarte: sin repetidos")
         if {r.modalidad for r in self.revisores} != {"editorial", "banca"}:
@@ -2905,6 +2908,7 @@ class ConfigNotion(ModeloConfig):
     base_de_datos: BaseNotion
     variable_token: str = Field(pattern=r"^[A-Z][A-Z0-9_]*_TOKEN$")  # termina en _TOKEN: así el logging lo redacta (D-69)
     propiedades: dict[str, str]
+    sin_valor_no_se_envia: list[str] = Field(default_factory=list)   # X107: propiedades que otra corrida rellena; vacías, se dejan como están en Notion
     cuerpo: CuerpoNotion
     textos: TextosNotion
 
@@ -2914,6 +2918,8 @@ class ConfigNotion(ModeloConfig):
             raise ValueError(f"propiedades: tipo desconocido {bad}")
         if sum(1 for t in self.propiedades.values() if t == "titulo") != 1:
             raise ValueError("propiedades: debe haber exactamente una propiedad de título")
+        if desconocidas := sorted(set(self.sin_valor_no_se_envia) - set(self.propiedades)):
+            raise ValueError(f"sin_valor_no_se_envia: no son propiedades {desconocidas}")
         if self.propiedades.get("ID caso") != "titulo":
             raise ValueError("propiedades: «ID caso» es el título (clave de la sincronización idempotente)")
         return self
@@ -2989,6 +2995,9 @@ class CriterioFichaTrazable(ModeloConfig):
     contradiccion_abierta: bool | None = None                # al menos una contradicción abierta
     mas_titulares_que_procedencias: bool | None = None       # repetición: más titulares que procedencias independientes
     procedencias_minimas: int | None = Field(default=None, ge=1)
+    titulares_minimos: int | None = Field(default=None, ge=1)         # X106: replicación real: al menos tantos titulares en el grupo
+    tema_del_reto: bool | None = None                        # X106: el tema_clasificado es uno de los 6 del reto (no sin_tema)
+    sin_ruido: bool | None = None                            # X106: ningún titular del grupo está marcado como ruido
     vacio: str | None = None                                 # código de un vacío de la ficha (p. ej. cifras_sin_dato_oficial)
 
 
@@ -3104,12 +3113,15 @@ class ArchivosFichasTrazables(ModeloConfig):
     carpeta: str = Field(min_length=1)
     informe: str = Field(min_length=1)
     indice: str = Field(min_length=1)
+    vista_previa: str = Field(min_length=1)       # X107: dónde escribe la corrida SIN --casos (nunca pisa lo versionado de `carpeta`)
 
 
 class TextosFichasTrazables(ModeloConfig):
     aviso_provisional: str = Field(min_length=1)
     aviso_corrida: str = Field(min_length=1)
     sin_borrador: str = Field(min_length=1)
+    no_aplica_por_defecto: str = Field(min_length=1)
+    no_aplica: dict[str, str] = Field(default_factory=dict)        # X107: por comprobación, por qué no hubo nada que comprobar
 
 
 class ConfigFichasTrazables(ModeloConfig):

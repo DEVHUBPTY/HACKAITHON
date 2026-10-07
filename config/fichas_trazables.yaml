@@ -23,9 +23,12 @@ seleccion:
 
     - id: CU-03
       pregunta: "Repetición frente a corroboración independiente; una agencia replicada cuenta como una procedencia"   # Común
+      # PDF sección 4: «una agencia replicada cuenta como una sola procedencia». El ejemplo es la REPLICACIÓN (muchos titulares, una
+      # procedencia), no la corroboración: por eso ya no se exige tener 2 o más procedencias (X106). El grupo debe ser un tema del reto,
+      # sin ruido, y tener al menos `titulares_minimos` titulares (un par puede ser una actualización del mismo medio, no una réplica).
       criterios:
-        - {mas_titulares_que_procedencias: true, procedencias_minimas: 2}   # repetición dentro de un grupo que además tiene corroboración independiente
-        - {mas_titulares_que_procedencias: true, procedencias_minimas: 1}   # respaldo: solo repetición (el informe lo declara)
+        - {tema_del_reto: true, sin_ruido: true, mas_titulares_que_procedencias: true, titulares_minimos: 3}
+        - {tema_del_reto: true, sin_ruido: true, mas_titulares_que_procedencias: true}    # respaldo: repetición de apenas un par (el informe lo declara)
 
     - id: CU-04
       pregunta: "Cifra inexistente o contradicción: abstenerse o mostrar versiones, con la verificación pendiente"   # Común
@@ -93,8 +96,12 @@ archivos:
   carpeta: outputs/fichas_trazables
   informe: outputs/fichas_trazables/trazabilidad.json
   indice: outputs/fichas_trazables/indice.md
+  vista_previa: outputs/fichas_trazables/vista_previa     # sin --casos (X107): fuera de git; no borra ni pisa los CASO-*.md, el CSV, el informe ni el índice versionados
 
 textos:
   aviso_provisional: "REVISIÓN PROVISIONAL DEL ASISTENTE, NO HUMANA (D-101): la rehace una persona en C-09. Todo es BORRADOR."
   aviso_corrida: "Las fichas salen de la corrida guardada en senales.duckdb (reglas {version_reglas}, corte {fecha_referencia}). Si el ranking cambia (C-10), se vuelve a correr este comando: es otra corrida, no se rehace el trabajo; los CASO- anteriores se conservan (registro de solo agregar)."
   sin_borrador: "sin borrador en la caché de generación (no se llamó a ningún proveedor)"
+  no_aplica_por_defecto: "no aplica en esta corrida"
+  no_aplica:
+    sin_descripcion_rss: "no aplica (0 descripciones en los datos)"      # X107: no se informa 100 % de una comprobación que no tuvo nada que comparar

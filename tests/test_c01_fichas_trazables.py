@@ -129,8 +129,8 @@ def test_la_configuracion_rechaza_un_registro_sin_url_ni_id() -> None:
         ConfigFichasTrazables.model_validate(datos)
 
 
-def _c(i: int, estado: str = "insuficiente", tema: str = "servicios_publicos", nt: int = 1, npr: int = 1, oficial: bool = False, contra: int = 0, vacios: tuple[str, ...] = ()) -> Candidato:
-    return Candidato(f"GRP-{i:02d}", i, 100 - i, estado, tema, nt, npr, oficial, contra, vacios)
+def _c(i: int, estado: str = "insuficiente", tema: str = "servicios_publicos", nt: int = 1, npr: int = 1, oficial: bool = False, contra: int = 0, vacios: tuple[str, ...] = (), ruido: bool = False) -> Candidato:
+    return Candidato(f"GRP-{i:02d}", i, 100 - i, estado, tema, nt, npr, oficial, contra, vacios, ruido)
 
 
 def _ranking() -> list[Candidato]:
@@ -139,7 +139,7 @@ def _ranking() -> list[Candidato]:
         _c(1),                                                                           # CU-01
         _c(2, tema="economia"),                                                          # economía sin dato oficial: no es CU-02
         _c(3, "parcial", "economia", oficial=True),                                      # CU-02
-        _c(4, nt=5, npr=1),                                                              # repetición sin corroboración: no es CU-03 (pide >= 2 procedencias)
+        _c(4, nt=2, npr=1),                                                              # un par del mismo medio: solo respaldo de CU-03 (pide >= 3 titulares)
         _c(5, "suficiente", nt=4, npr=2),                                                # CU-03
         _c(6, vacios=("sin_dato_oficial",)),                                             # insuficiente sin cifras: no es CU-04
         _c(7, vacios=("procedencias_insuficientes", "cifras_sin_dato_oficial")),         # CU-04 por respaldo (no hay contradicción)
@@ -169,12 +169,25 @@ def test_cu02_pide_tema_economico_y_dato_oficial_a_la_vez() -> None:
     assert _por_cu(seleccionar(r, CFG))["CU-02"].id_grupo == "GRP-04"
 
 
-def test_cu03_prefiere_repeticion_con_dos_procedencias_y_declara_el_respaldo_si_no_la_hay() -> None:
-    base = [_c(1), _c(2, tema="economia", oficial=True), _c(3, nt=6, npr=1), _c(4, vacios=("cifras_sin_dato_oficial",))]
-    sin_corroboracion = _por_cu(seleccionar(base, CFG))["CU-03"]
-    assert sin_corroboracion.id_grupo == "GRP-03" and sin_corroboracion.criterio == 1 and sin_corroboracion.es_respaldo
-    con = _por_cu(seleccionar([*base, _c(9, "suficiente", nt=3, npr=2)], CFG))["CU-03"]
-    assert con.id_grupo == "GRP-09" and con.criterio == 0 and not con.es_respaldo     # un titular por procedencia (3 y 3) no es repetición
+def test_cu03_es_la_replicacion_de_una_agencia_con_varios_titulares_y_declara_el_respaldo_si_solo_hay_un_par() -> None:
+    solo_par = [_c(1), _c(2, tema="economia", oficial=True), _c(3, nt=2, npr=1), _c(4, vacios=("cifras_sin_dato_oficial",))]
+    par = _por_cu(seleccionar(solo_par, CFG))["CU-03"]
+    assert par.id_grupo == "GRP-03" and par.criterio == 1 and par.es_respaldo
+    replica = _por_cu(seleccionar([*solo_par, _c(9, nt=20, npr=1)], CFG))["CU-03"]
+    assert replica.id_grupo == "GRP-09" and replica.criterio == 0 and not replica.es_respaldo     # 20 titulares, 1 procedencia: no hace falta corroboración (PDF sección 4)
+    uno_por_procedencia = _por_cu(seleccionar([*solo_par, _c(9, "suficiente", nt=3, npr=3)], CFG))["CU-03"]
+    assert uno_por_procedencia.id_grupo == "GRP-03"                                                 # un titular por procedencia no es repetición
+
+
+def test_cu03_exige_un_tema_del_reto_y_sin_ruido_aunque_el_grupo_calce_en_lo_demas() -> None:
+    base = [_c(1), _c(2, tema="economia", oficial=True), _c(4, vacios=("cifras_sin_dato_oficial",))]
+    sin_tema = _c(3, "suficiente", tema="sin_tema", nt=12, npr=3)
+    ruidoso = _c(5, tema="turismo", nt=9, npr=1, ruido=True)
+    valido = _c(8, tema="eventos_naturales", nt=20, npr=1)
+    e = _por_cu(seleccionar([*base, sin_tema, ruidoso, valido], CFG))["CU-03"]
+    assert e.id_grupo == "GRP-08" and e.criterio == 0
+    with pytest.raises(ErrorDeTrazabilidad, match="CU-03"):
+        seleccionar([*base, sin_tema, ruidoso], CFG)
 
 
 def test_cu04_prefiere_la_contradiccion_abierta_sobre_la_cifra_sin_dato_oficial() -> None:
@@ -294,6 +307,39 @@ def test_una_declaracion_que_ya_no_es_literal_del_campo_citado_falla(base) -> No
 def test_una_cifra_de_conteo_que_difiere_de_los_datos_falla(base) -> None:
     r = _ejecutar(base, h.G_COMPLETO, "UPDATE grupos SET n_titulares = 7 WHERE id_grupo = 'GRP-completo'")
     assert _falla(r, "cifra_de_conteo_coincide")
+
+
+def test_una_cifra_oficial_de_un_indicador_que_difiere_del_dato_falla_y_la_que_coincide_al_redondeo_pasa(base) -> None:
+    ok = _ejecutar(base, h.G_COMPLETO)
+    assert ok.conteo("cifra_oficial_coincide")[1] >= 2 and not _falla(ok, "cifra_oficial_coincide")        # 0.69322 se muestra como 0.69
+    r = _ejecutar(base, h.G_COMPLETO, "UPDATE indicadores SET valor = 5.0 WHERE id_indicador = 'IND-PAN-FP.CPI.TOTL.ZG-2024'")
+    assert _falla(r, "cifra_oficial_coincide") and "IND-PAN-FP.CPI.TOTL.ZG-2024" in next(u.detalle for u in r.fallos() if u.regla == "cifra_oficial_coincide")
+    cerca = _ejecutar(base, h.G_COMPLETO, "UPDATE indicadores SET valor = 0.6949 WHERE id_indicador = 'IND-PAN-FP.CPI.TOTL.ZG-2024'")
+    assert not _falla(cerca, "cifra_oficial_coincide")                                                      # 0.6949 y 0.69322 se muestran igual (2 decimales)
+    lejos = _ejecutar(base, h.G_COMPLETO, "UPDATE indicadores SET valor = 0.70 WHERE id_indicador = 'IND-PAN-FP.CPI.TOTL.ZG-2024'")
+    assert _falla(lejos, "cifra_oficial_coincide")                                                          # otro valor al redondeo mostrado
+
+
+def test_la_magnitud_de_un_sismo_que_difiere_del_dato_falla(base) -> None:
+    assert _ejecutar(base, h.G_SISMO).conteo("cifra_oficial_coincide")[1] == 1
+    r = _ejecutar(base, h.G_SISMO, "UPDATE sismos SET magnitude = 7.9")
+    assert _falla(r, "cifra_oficial_coincide")
+
+
+def test_una_cifra_de_la_sbp_se_compara_con_sus_decimales_propios() -> None:
+    from src.configuracion import cargar_verificacion
+    from src.trazabilidad import Registro, _cifra_oficial
+    regla = next(r for r in CFG.registros if r.prefijo == "SBP-")
+    reg = Registro("SBP-MOROSIDAD-SISTEMA-2024-01", {"periodo": "2024-01", "valor": "0.01741113516302623"}, "https://x.example")
+    pres = cargar_verificacion().presentacion
+
+    def comprobar(texto: str, valor: str = "0.01741113516302623"):
+        return _cifra_oficial(reg.id, valor, texto, reg, regla.cifra, CFG, pres)
+
+    assert comprobar("SBP · Saldo moroso, período 2024-01: 0.0174 proporción; informe «x»; página: 1").ok
+    assert not comprobar("SBP · Saldo moroso, período 2024-01: 0.0199 proporción; informe «x»; página: 1").ok
+    assert not comprobar("SBP · Saldo moroso, período 2024-01: 0.0174 proporción", valor="0.5").ok           # el dato cambió
+    assert not comprobar("SBP · Saldo moroso, período 2024-02: 0.0174 proporción").ok                         # la ficha no muestra la cifra de ESTE período
 
 
 def test_la_descripcion_del_rss_en_una_salida_falla_y_en_ninguna_pasa(base) -> None:
@@ -554,3 +600,30 @@ def test_si_el_caso_bancario_de_cu05_no_existe_el_comando_falla_con_un_mensaje(c
     corrida["ruta"].with_suffix(".casos.csv").unlink(missing_ok=True)
     assert _lanzar(corrida) == 1
     assert "CU-05" in capsys.readouterr().err
+
+
+def test_x107_sin_casos_y_sin_salida_escribe_en_la_vista_previa_y_no_toca_lo_versionado(corrida, tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr(cli, "RAIZ", tmp_path / "repo")
+    oficial = tmp_path / "repo" / CFG.archivos.carpeta
+    oficial.mkdir(parents=True)
+    versionados = {oficial / "CASO-001.md": "caso", oficial / cargar_revision().exportacion.csv: "csv", oficial / "trazabilidad.json": "{}", oficial / "indice.md": "indice"}
+    for ruta, texto in versionados.items():
+        ruta.write_text(texto, encoding="utf-8")
+    assert cli.principal(["--base", str(corrida["base"]), "--revision", str(corrida["ruta"])]) == 0
+    assert {r: r.read_text(encoding="utf-8") for r in versionados} == versionados                  # nada borrado ni pisado
+    previa = tmp_path / "repo" / CFG.archivos.vista_previa
+    assert (previa / "trazabilidad.json").exists() and (previa / "indice.md").exists() and len(list(previa.glob("GRP-*.md"))) == 5
+    assert json.loads((previa / "trazabilidad.json").read_text())["con_casos"] is False
+
+
+def test_x107_sin_ninguna_descripcion_la_comprobacion_no_aplica_y_no_se_informa_100_por_ciento(base) -> None:
+    r = _ejecutar(base, h.G_COMPLETO)
+    assert r.conteo("sin_descripcion_rss") == (0, 0)                      # los datos de prueba no traen descripciones: no hay nada que comparar
+    inf = informe([r], CFG)["por_regla"]["sin_descripcion_rss"]
+    assert inf["n"] == 0 and inf["proporcion"] is None and inf["nota"] == "no aplica (0 descripciones en los datos)"
+
+
+def test_x107_con_una_descripcion_evaluable_la_comprobacion_si_se_cuenta(base) -> None:
+    descripcion = "Texto interno del RSS que nunca debe republicarse en una ficha"
+    r = _ejecutar(base, h.G_COMPLETO, f"UPDATE noticias SET descripcion = '{descripcion}' WHERE id_noticia = 'NOT-c000000001'")
+    assert r.conteo("sin_descripcion_rss") == (1, 1)
