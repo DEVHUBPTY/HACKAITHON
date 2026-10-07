@@ -8,8 +8,8 @@ Reglas del estado:
 
 * **Pasa:** el marcador tiene al menos una prueba, y ninguna falla, da error ni se omite.
 * **Falla:** cualquier otra cosa (incluido «0 pruebas» o un error de colección). Nunca se rebaja a Pendiente para taparla.
-* **Pendiente:** el test pasa, pero queda una parte que solo hace una persona (T09: boletín bancario de E2-02; T10: ensayo C-04).
-  Se dice en *Resultado observado*; la prueba no se da por cerrada.
+* **Pendiente:** el test pasa, pero queda una parte que solo hace una persona (``config/pruebas.yaml``: T09 boletín bancario de
+  E2-02; T10 ensayo C-04). Se dice en *Resultado observado*; la prueba no se da por cerrada.
 
 Una prueba que falla se registra en Notion (estado *Falla*) **antes** de corregirla (docs/REVISION.md, paso 3): este reporte no
 escribe en Notion; la persona lo importa.
@@ -24,11 +24,12 @@ import csv
 import subprocess
 import sys
 import tempfile
+from datetime import UTC, datetime
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from pathlib import Path
 
-from src.configuracion import RAIZ
+from src.configuracion import RAIZ, cargar_pruebas
 
 PLANTILLA = RAIZ / "notion" / "bases" / "Pruebas.csv"
 SALIDA = RAIZ / "outputs" / "pruebas.csv"
@@ -37,10 +38,7 @@ COLUMNAS = (
     "Evidencia de ejecución", "Estado", "Corrección aplicada", "Tareas relacionadas", "Archivo de test",
 )
 IDS = tuple(f"T{n:02d}" for n in range(1, 11))
-PENDIENTES = {
-    "T09": "pendiente la parte del boletín bancario (E2-02); el test cubre solo el brief editorial",
-    "T10": "pendiente el ensayo C-04 con Wi-Fi apagado y su evidencia en Notion; el test cubre el recorrido con snapshot y caché",
-}
+PENDIENTES = cargar_pruebas().pendientes   # config/pruebas.yaml
 ESTADO_PASA, ESTADO_FALLA, ESTADO_PENDIENTE = "Pasa", "Falla", "Pendiente"
 
 
@@ -79,6 +77,18 @@ def leer_junit(ruta: Path) -> ResultadoPrueba:
     return ResultadoPrueba(suma("tests"), suma("failures"), suma("errors"), suma("skipped"))
 
 
+def ahora_utc() -> str:
+    """Instante de la ejecución en ISO 8601 UTC, al segundo."""
+    return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def commit_actual() -> str:
+    """SHA corto de HEAD; con ``+sin-confirmar`` si el árbol tiene cambios sin commitear (la evidencia no sería reproducible)."""
+    corre = lambda *a: subprocess.run(["git", *a], cwd=RAIZ, capture_output=True, text=True, check=True).stdout.strip()  # noqa: E731
+    sha = corre("rev-parse", "--short=12", "HEAD")
+    return sha + ("+sin-confirmar" if corre("status", "--porcelain", "--untracked-files=no") else "")
+
+
 def comando(id_prueba: str) -> list[str]:
     """El comando que ejecuta una prueba por su marcador."""
     return ["pytest", "-q", "tests/", "-m", id_prueba.lower()]
@@ -103,7 +113,7 @@ def _observado(r: ResultadoPrueba) -> str:
     return "; ".join(partes)
 
 
-def construir_filas(plantilla: list[dict[str, str]], resultados: dict[str, ResultadoPrueba], pendientes: dict[str, str]) -> list[dict[str, str]]:
+def construir_filas(plantilla: list[dict[str, str]], resultados: dict[str, ResultadoPrueba], pendientes: dict[str, str], *, ejecutado_utc: str, commit: str) -> list[dict[str, str]]:
     """Mezcla la plantilla de Notion con lo observado; el estado sale solo de la ejecución."""
     filas: list[dict[str, str]] = []
     for base in plantilla:
@@ -119,7 +129,7 @@ def construir_filas(plantilla: list[dict[str, str]], resultados: dict[str, Resul
             estado = ESTADO_PASA
         fila.update({
             "Resultado observado": observado,
-            "Evidencia de ejecución": "poetry run " + " ".join(comando(id_prueba)),
+            "Evidencia de ejecución": f"poetry run {' '.join(comando(id_prueba))} · {ejecutado_utc} · commit {commit}",
             "Estado": estado,
         })
         filas.append(fila)
@@ -141,7 +151,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--salida", type=Path, default=SALIDA)
     args = ap.parse_args(argv)
     plantilla = leer_plantilla()
-    filas = construir_filas(plantilla, {f["ID"]: ejecutar(f["ID"]) for f in plantilla}, PENDIENTES)
+    ejecutado_utc, commit = ahora_utc(), commit_actual()
+    filas = construir_filas(plantilla, {f["ID"]: ejecutar(f["ID"]) for f in plantilla}, PENDIENTES, ejecutado_utc=ejecutado_utc, commit=commit)
     escribir_csv(filas, args.salida)
     for f in filas:
         print(f"{f['ID']}  {f['Estado']:<9} {f['Resultado observado']}")
