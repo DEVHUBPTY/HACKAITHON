@@ -37,6 +37,7 @@ Sin caché y sin red, no hay borrador y la pantalla lo dice; no se inventa nada.
 
 ```bash
 poetry run python -m scripts.calentar_cache              # top 10 de la bandeja + los GRP- de docs/demo.md
+poetry run python -m src.puntaje --modalidad banca && poetry run python -m scripts.calentar_cache --modalidad banca   # boletines (E2-02): la base debe tener los puntajes de banca
 poetry run python -m scripts.calentar_cache --grupos GRP-… GRP-…
 poetry run python -m scripts.calentar_cache --refrescar  # vuelve a llamar aunque haya respuesta guardada
 ```
