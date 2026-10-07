@@ -242,7 +242,7 @@ def test_cargar_config_rechaza_un_yaml_roto(tmp_path: Path) -> None:
 # ------------------------------------------------------------------ X46: la muestra de sustento entra en el hash
 
 
-COLUMNAS_MUESTRA = ["id_muestra", "origen", "id_unidad", "id_afirmacion", "tipo", "texto", "citas", "evidencia_citada", "veredicto", "comentario", "revisor"]
+COLUMNAS_MUESTRA = ["id_muestra", "origen", "id_unidad", "id_afirmacion", "tipo", "texto", "citas", "evidencia_citada", "veredicto", "comentario", "revisor", "origen_juicio"]
 HUMANAS = ["veredicto", "comentario", "revisor", "origen_juicio"]   # origen_juicio: quién juzgó (D-101)
 
 
