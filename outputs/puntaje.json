@@ -1,118 +1,118 @@
 {
   "nota": "Descripción de los datos del snapshot; el ranking se valida con Precision@5 y revisión editorial. P es de ordenamiento: no habilita publicación.",
   "version_reglas": "1.3",
-  "grupos": 45,
+  "grupos": 58,
   "puntaje": {
-    "n": 45,
-    "min": 33.7683,
-    "mediana": 64.978,
-    "max": 86.7269,
-    "media": 63.0092,
-    "desviacion": 10.9172
+    "n": 58,
+    "min": 32.7175,
+    "mediana": 65.5998,
+    "max": 86.2066,
+    "media": 63.9732,
+    "desviacion": 10.1979
   },
   "componentes": {
     "R": {
-      "n": 45,
+      "n": 58,
       "min": 0.25,
-      "mediana": 0.7273,
+      "mediana": 0.7325,
       "max": 1.0,
-      "media": 0.7056,
-      "desviacion": 0.19,
+      "media": 0.7155,
+      "desviacion": 0.177,
       "casi_constante": false
     },
     "I": {
-      "n": 45,
+      "n": 58,
       "min": 0.5,
-      "mediana": 0.75,
+      "mediana": 0.65,
       "max": 0.8,
-      "media": 0.6756,
-      "desviacion": 0.0952,
+      "media": 0.6647,
+      "desviacion": 0.0924,
       "casi_constante": false
     },
     "U": {
-      "n": 45,
+      "n": 58,
       "min": 0.0,
-      "mediana": 1.0,
+      "mediana": 0.9878,
       "max": 1.0,
-      "media": 0.6929,
-      "desviacion": 0.3208,
+      "media": 0.739,
+      "desviacion": 0.3305,
       "casi_constante": false
     },
     "N": {
-      "n": 45,
+      "n": 58,
       "min": 0.0,
-      "mediana": 0.5116,
+      "mediana": 0.5089,
       "max": 1.0,
-      "media": 0.5111,
-      "desviacion": 0.3012,
+      "media": 0.5086,
+      "desviacion": 0.2984,
       "casi_constante": false
     },
     "E": {
-      "n": 45,
+      "n": 58,
       "min": 0.1667,
       "mediana": 0.3667,
       "max": 0.8,
-      "media": 0.343,
-      "desviacion": 0.1462,
+      "media": 0.3483,
+      "desviacion": 0.1291,
       "casi_constante": false
     }
   },
   "umbral_casi_constante": 0.05,
   "por_rango": {
     "alto": {
-      "n": 12,
-      "de": 45,
-      "proporcion": 0.2667,
+      "n": 15,
+      "de": 58,
+      "proporcion": 0.2586,
       "ic95": [
-        0.1596,
-        0.4104
+        0.1635,
+        0.3838
       ]
     },
     "medio": {
-      "n": 32,
-      "de": 45,
-      "proporcion": 0.7111,
+      "n": 42,
+      "de": 58,
+      "proporcion": 0.7241,
       "ic95": [
-        0.5663,
-        0.8227
+        0.598,
+        0.8225
       ]
     },
     "bajo": {
       "n": 1,
-      "de": 45,
-      "proporcion": 0.0222,
+      "de": 58,
+      "proporcion": 0.0172,
       "ic95": [
-        0.0039,
-        0.1157
+        0.003,
+        0.0914
       ]
     }
   },
   "por_estado_de_evidencia": {
     "suficiente": {
       "n": 3,
-      "de": 45,
-      "proporcion": 0.0667,
+      "de": 58,
+      "proporcion": 0.0517,
       "ic95": [
-        0.0229,
-        0.1786
+        0.0177,
+        0.1414
       ]
     },
     "parcial": {
       "n": 7,
-      "de": 45,
-      "proporcion": 0.1556,
+      "de": 58,
+      "proporcion": 0.1207,
       "ic95": [
-        0.0775,
-        0.2878
+        0.0597,
+        0.2288
       ]
     },
     "insuficiente": {
-      "n": 35,
-      "de": 45,
-      "proporcion": 0.7778,
+      "n": 48,
+      "de": 58,
+      "proporcion": 0.8276,
       "ic95": [
-        0.6373,
-        0.8746
+        0.7109,
+        0.9036
       ]
     }
   },
@@ -130,140 +130,161 @@
     "celdas": {
       "alto|suficiente": {
         "n": 0,
-        "de": 45,
+        "de": 58,
         "proporcion": 0.0,
         "ic95": [
           0.0,
-          0.0787
+          0.0621
         ],
         "casos": []
       },
       "alto|parcial": {
         "n": 1,
-        "de": 45,
-        "proporcion": 0.0222,
+        "de": 58,
+        "proporcion": 0.0172,
         "ic95": [
-          0.0039,
-          0.1157
+          0.003,
+          0.0914
         ],
         "casos": [
           {
             "id_grupo": "GRP-f4a44182b1",
             "posicion": 8,
-            "puntaje": 73.4,
+            "puntaje": 73.86,
             "accion": "Completar evidencia y producir",
             "titular_central": "Panamá reforzará su presencia marítima en Vietnam con nueva oficina de servicio técnico de la AMP en Ho Chi Minh"
           }
         ]
       },
       "alto|insuficiente": {
-        "n": 11,
-        "de": 45,
-        "proporcion": 0.2444,
+        "n": 14,
+        "de": 58,
+        "proporcion": 0.2414,
         "ic95": [
-          0.1424,
-          0.3867
+          0.1496,
+          0.3653
         ],
         "casos": [
           {
             "id_grupo": "GRP-ef3acec21e",
             "posicion": 1,
-            "puntaje": 86.73,
+            "puntaje": 86.21,
             "accion": "Investigar ya",
             "titular_central": "Minsa: Adelantan vacunación contra VSR en embarazadas"
           },
           {
             "id_grupo": "GRP-84a6b3a04b",
             "posicion": 2,
-            "puntaje": 79.48,
+            "puntaje": 81.31,
             "accion": "Investigar ya",
             "titular_central": "Colegios particulares atribuyen aumento de matrícula a migración al sector oficial y altos costos de operación"
           },
           {
             "id_grupo": "GRP-65d565abd0",
             "posicion": 3,
-            "puntaje": 78.68,
+            "puntaje": 79.71,
             "accion": "Investigar ya",
             "titular_central": "MiBus responde por filtraciones: lamenta incomodidad de usuarios; afirma que realiza correctivos"
           },
           {
             "id_grupo": "GRP-39773bed5a",
             "posicion": 4,
-            "puntaje": 78.53,
+            "puntaje": 79.16,
             "accion": "Investigar ya",
             "titular_central": "Árbol cae sobre dos vehículos en estacionamientos del hospital San Miguel Arcángel"
           },
           {
-            "id_grupo": "GRP-0ecdae94e7",
+            "id_grupo": "GRP-87e128925b",
             "posicion": 5,
-            "puntaje": 76.58,
+            "puntaje": 76.18,
             "accion": "Investigar ya",
             "titular_central": "Veraguas: Preocupación por aumento de muertes por enfermedades transmisibles y respiratorias"
           },
           {
             "id_grupo": "GRP-8af4196527",
             "posicion": 6,
-            "puntaje": 75.45,
+            "puntaje": 76.09,
             "accion": "Investigar ya",
             "titular_central": "César Caicedo ahora está recluido en el Hospital Santo Tomás; había sido trasladado a Coiba"
           },
           {
-            "id_grupo": "GRP-21ad932d54",
+            "id_grupo": "GRP-6e737ecad5",
             "posicion": 7,
-            "puntaje": 73.92,
+            "puntaje": 75.25,
+            "accion": "Investigar ya",
+            "titular_central": "MOP solicita $43.1 millones para pagar compromisos y continuar obras en ejecución"
+          },
+          {
+            "id_grupo": "GRP-1e2c34f6bf",
+            "posicion": 9,
+            "puntaje": 73.73,
+            "accion": "Investigar ya",
+            "titular_central": "Pase-U: Largas filas en Changuinola en el segundo día de entrega de tarjetas Punch del Ifarhu"
+          },
+          {
+            "id_grupo": "GRP-21ad932d54",
+            "posicion": 10,
+            "puntaje": 73.67,
             "accion": "Investigar ya",
             "titular_central": "Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá"
           },
           {
-            "id_grupo": "GRP-45aebb27b2",
-            "posicion": 9,
-            "puntaje": 72.48,
+            "id_grupo": "GRP-fcdfc2a3cc",
+            "posicion": 11,
+            "puntaje": 71.82,
             "accion": "Investigar ya",
-            "titular_central": "Contenido Exclusivo: Coclé, se seca el campo"
+            "titular_central": "Aprehenden a Enrique Lau, exdirector de la CSS, por supuesto enriquecimiento injustificado"
           },
           {
             "id_grupo": "GRP-9442098153",
-            "posicion": 10,
-            "puntaje": 71.47,
+            "posicion": 12,
+            "puntaje": 71.67,
             "accion": "Investigar ya",
             "titular_central": "Contenido Exclusivo: El metro por la Tumba Muerto"
           },
           {
+            "id_grupo": "GRP-45aebb27b2",
+            "posicion": 13,
+            "puntaje": 71.59,
+            "accion": "Investigar ya",
+            "titular_central": "Contenido Exclusivo: Coclé, se seca el campo"
+          },
+          {
             "id_grupo": "GRP-821afe7eec",
-            "posicion": 11,
-            "puntaje": 71.36,
+            "posicion": 14,
+            "puntaje": 71.0,
             "accion": "Investigar ya",
             "titular_central": "Chiriquí: Emiten Alerta Amber por desaparición de adolescente de 16 años y su bebé"
           },
           {
-            "id_grupo": "GRP-fcdfc2a3cc",
-            "posicion": 12,
-            "puntaje": 70.26,
+            "id_grupo": "GRP-d03e52e97f",
+            "posicion": 15,
+            "puntaje": 70.21,
             "accion": "Investigar ya",
-            "titular_central": "Aprehenden a Enrique Lau, exdirector de la CSS, por supuesto enriquecimiento injustificado"
+            "titular_central": "Alcaldesa Stefany Peñalba: residentes protestan frente al Municipio de Arraiján y exigen auditorías contra su gestión"
           }
         ]
       },
       "medio|suficiente": {
         "n": 2,
-        "de": 45,
-        "proporcion": 0.0444,
+        "de": 58,
+        "proporcion": 0.0345,
         "ic95": [
-          0.0123,
-          0.1483
+          0.0095,
+          0.1173
         ],
         "casos": [
           {
             "id_grupo": "GRP-da35c3dead",
-            "posicion": 19,
-            "puntaje": 66.43,
+            "posicion": 23,
+            "puntaje": 67.16,
             "accion": "Borrador opcional",
             "titular_central": "Presidente de Panamá visita Singapur y Vietnam en busca de inversiones"
           },
           {
             "id_grupo": "GRP-e78a143f9a",
-            "posicion": 25,
-            "puntaje": 62.09,
+            "posicion": 37,
+            "puntaje": 61.21,
             "accion": "Borrador opcional",
             "titular_central": "Ejecutivo sanciona la Ley 552 del Presupuesto del Canal de Panamá por $5,555 millones"
           }
@@ -271,231 +292,301 @@
       },
       "medio|parcial": {
         "n": 6,
-        "de": 45,
-        "proporcion": 0.1333,
+        "de": 58,
+        "proporcion": 0.1034,
         "ic95": [
-          0.0626,
-          0.2618
+          0.0483,
+          0.2079
         ],
         "casos": [
           {
             "id_grupo": "GRP-66048e9c28",
-            "posicion": 18,
-            "puntaje": 66.53,
+            "posicion": 24,
+            "puntaje": 66.83,
             "accion": "Vigilar",
             "titular_central": "Central America Trade Squeeze"
           },
           {
             "id_grupo": "GRP-9fea8ec754",
-            "posicion": 21,
-            "puntaje": 65.81,
+            "posicion": 29,
+            "puntaje": 65.64,
             "accion": "Vigilar",
             "titular_central": "Exportaciones de banano superan los $17 millones en junio y marcan recuperación"
           },
           {
-            "id_grupo": "GRP-81a11a5998",
-            "posicion": 26,
-            "puntaje": 61.86,
-            "accion": "Vigilar",
-            "titular_central": "¿Cómo se fija el precio del combustible en Panamá? El MEF explica la fórmula quincenal tras aprobarse nuevo subsidio"
-          },
-          {
             "id_grupo": "GRP-3aebb6f23a",
-            "posicion": 28,
-            "puntaje": 60.53,
+            "posicion": 38,
+            "puntaje": 61.05,
             "accion": "Vigilar",
             "titular_central": "Miguel Lorenzo Fábrega toma posesión como nuevo subadministrador del Canal de Panamá"
           },
           {
+            "id_grupo": "GRP-81a11a5998",
+            "posicion": 40,
+            "puntaje": 60.87,
+            "accion": "Vigilar",
+            "titular_central": "¿Cómo se fija el precio del combustible en Panamá? El MEF explica la fórmula quincenal tras aprobarse nuevo subsidio"
+          },
+          {
             "id_grupo": "GRP-4776222797",
-            "posicion": 36,
-            "puntaje": 57.01,
+            "posicion": 49,
+            "puntaje": 56.08,
             "accion": "Vigilar",
             "titular_central": "Cobre Panamá volvería a producir: lo que falta definir es bajo qué modelo"
           },
           {
             "id_grupo": "GRP-1083f5e540",
-            "posicion": 38,
-            "puntaje": 52.69,
+            "posicion": 51,
+            "puntaje": 52.91,
             "accion": "Vigilar",
             "titular_central": "Inland navigation workers stand with Panama Canal workers after death of tug captain"
           }
         ]
       },
       "medio|insuficiente": {
-        "n": 24,
-        "de": 45,
-        "proporcion": 0.5333,
+        "n": 34,
+        "de": 58,
+        "proporcion": 0.5862,
         "ic95": [
-          0.3908,
-          0.6707
+          0.458,
+          0.7037
         ],
         "casos": [
           {
-            "id_grupo": "GRP-f394306d06",
-            "posicion": 13,
-            "puntaje": 68.27,
+            "id_grupo": "GRP-1df3ab1e22",
+            "posicion": 16,
+            "puntaje": 69.71,
             "accion": "Vigilar",
-            "titular_central": "Déficit de personal limita la capacidad operativa de los bomberos en el país"
+            "titular_central": "Mides solicita $47 millones para completar último pago de transferencias monetarias de 2026"
           },
           {
             "id_grupo": "GRP-cf758ba062",
-            "posicion": 14,
-            "puntaje": 68.09,
+            "posicion": 17,
+            "puntaje": 69.7,
             "accion": "Vigilar",
             "titular_central": "Piscina del Parque Omar cierra por reparaciones; trabajos podrían durar hasta un mes"
           },
           {
+            "id_grupo": "GRP-0f8fb5a5bb",
+            "posicion": 18,
+            "puntaje": 69.19,
+            "accion": "Vigilar",
+            "titular_central": "Caso Pandora: Legalizan aprehensión de exejecutivo bancario señalado por autorizar pagos de créditos fiscales de la DGI"
+          },
+          {
+            "id_grupo": "GRP-be613f0763",
+            "posicion": 19,
+            "puntaje": 69.17,
+            "accion": "Vigilar",
+            "titular_central": "Reformas electorales: Blandón defiende el 3% para nuevos partidos y rechaza aumento del financiamiento privado"
+          },
+          {
+            "id_grupo": "GRP-0c210ad795",
+            "posicion": 20,
+            "puntaje": 68.75,
+            "accion": "Vigilar",
+            "titular_central": "Adultos mayores lo pierden todo tras incendio de su vivienda en Portachuelo"
+          },
+          {
+            "id_grupo": "GRP-f394306d06",
+            "posicion": 21,
+            "puntaje": 68.57,
+            "accion": "Vigilar",
+            "titular_central": "Déficit de personal limita la capacidad operativa de los bomberos en el país"
+          },
+          {
             "id_grupo": "GRP-ad0e219d38",
-            "posicion": 15,
+            "posicion": 22,
             "puntaje": 67.42,
             "accion": "Vigilar",
             "titular_central": "Contenido Exclusivo: Turismo en transporte público"
           },
           {
-            "id_grupo": "GRP-be613f0763",
-            "posicion": 16,
-            "puntaje": 67.28,
-            "accion": "Vigilar",
-            "titular_central": "Reformas electorales: Blandón defiende el 3% para nuevos partidos y rechaza aumento del financiamiento privado"
-          },
-          {
             "id_grupo": "GRP-038c4f0643",
-            "posicion": 17,
-            "puntaje": 66.56,
+            "posicion": 25,
+            "puntaje": 66.79,
             "accion": "Vigilar",
             "titular_central": "Clima en Panamá: Martes con lluvias y tormentas eléctricas en varias regiones durante la tarde"
           },
           {
             "id_grupo": "GRP-5c66ab40e9",
-            "posicion": 20,
-            "puntaje": 66.25,
+            "posicion": 26,
+            "puntaje": 66.29,
             "accion": "Vigilar",
             "titular_central": "Descentralización explica qué incluye el proyecto de $293,715 para 15 juntas comunales"
           },
           {
             "id_grupo": "GRP-e2e32056c3",
-            "posicion": 22,
-            "puntaje": 65.31,
+            "posicion": 27,
+            "puntaje": 65.72,
             "accion": "Vigilar",
             "titular_central": "Tres hombres asaltan casino y despojan a clientes de sus pertenencias en San Miguelito"
           },
           {
             "id_grupo": "GRP-39dfe8d714",
-            "posicion": 23,
-            "puntaje": 64.98,
+            "posicion": 28,
+            "puntaje": 65.69,
             "accion": "Vigilar",
             "titular_central": "Aeropuerto panameño suscribe convenio con empresa asiática"
           },
           {
+            "id_grupo": "GRP-f9e3ba0bd2",
+            "posicion": 30,
+            "puntaje": 65.56,
+            "accion": "Vigilar",
+            "titular_central": "Comisión de Presupuesto tramita traslados y créditos por casi $100 millones entre seis instituciones"
+          },
+          {
+            "id_grupo": "GRP-dc0c06491a",
+            "posicion": 31,
+            "puntaje": 64.68,
+            "accion": "Vigilar",
+            "titular_central": "Mujer es aprehendida en Santiago tras hallazgo de 162 paquetes de presunta droga en el vehículo que conducía"
+          },
+          {
             "id_grupo": "GRP-3fb1b2c9b4",
-            "posicion": 24,
-            "puntaje": 63.98,
+            "posicion": 32,
+            "puntaje": 64.23,
             "accion": "Vigilar",
             "titular_central": "La Chorrera proyecta renovar el parque Tomás Martín Feuillet con una inversión de 620 mil dólares"
           },
           {
-            "id_grupo": "GRP-6224b4e884",
-            "posicion": 27,
-            "puntaje": 60.89,
+            "id_grupo": "GRP-1a231154dc",
+            "posicion": 33,
+            "puntaje": 63.66,
+            "accion": "Vigilar",
+            "titular_central": "Suspenden audiencia contra Genaro López y otros miembros del Suntracs"
+          },
+          {
+            "id_grupo": "GRP-276c88e7f3",
+            "posicion": 34,
+            "puntaje": 62.39,
+            "accion": "Vigilar",
+            "titular_central": "Tribunal Electoral avanza en la coordinación del Plan General del Elecciones de 2029"
+          },
+          {
+            "id_grupo": "GRP-5ab17b45cd",
+            "posicion": 35,
+            "puntaje": 62.31,
+            "accion": "Vigilar",
+            "titular_central": "Asesinan a taxista en Remedios; fue hallado dentro de su vehículo con varias heridas"
+          },
+          {
+            "id_grupo": "GRP-29baaf270e",
+            "posicion": 36,
+            "puntaje": 61.94,
+            "accion": "Vigilar",
+            "titular_central": "Panamá mantiene vigilancia epidemiológica ante caso sospechoso de peste neumónica en Rusia"
+          },
+          {
+            "id_grupo": "GRP-4d3630957d",
+            "posicion": 39,
+            "puntaje": 61.04,
             "accion": "Vigilar",
             "titular_central": "Semana de la RSE busca impulsar la sostenibilidad en las empresas"
           },
           {
-            "id_grupo": "GRP-d08b11be1c",
-            "posicion": 29,
-            "puntaje": 59.8,
-            "accion": "Vigilar",
-            "titular_central": "Las manzanas de Sodoma o la ilusión minera"
-          },
-          {
             "id_grupo": "GRP-1b52bb958d",
-            "posicion": 30,
-            "puntaje": 59.57,
+            "posicion": 41,
+            "puntaje": 60.59,
             "accion": "Vigilar",
             "titular_central": "Disparan contra el vehículo del exdiputado Pedro Torres en Colón"
           },
           {
-            "id_grupo": "GRP-e0b0f0f335",
-            "posicion": 31,
-            "puntaje": 58.77,
+            "id_grupo": "GRP-d08b11be1c",
+            "posicion": 42,
+            "puntaje": 60.32,
             "accion": "Vigilar",
-            "titular_central": "Profesor Angel Dust, el rey de la noche de Barcelona que acabó en una prisión de Panamá: Sigo pensando que fue un sueño, pero me perdí cinco años de la vida de mi hija"
+            "titular_central": "Las manzanas de Sodoma o la ilusión minera"
+          },
+          {
+            "id_grupo": "GRP-1c2f1d950d",
+            "posicion": 43,
+            "puntaje": 59.6,
+            "accion": "Vigilar",
+            "titular_central": "Obispos panameños presentarán en Roma la realidad de sus diócesis durante la visita ad limina"
           },
           {
             "id_grupo": "GRP-2820cdd711",
-            "posicion": 32,
-            "puntaje": 58.58,
+            "posicion": 44,
+            "puntaje": 58.92,
             "accion": "Vigilar",
             "titular_central": "Aduanas decomisa de cigarrillos y ropa falsificada en puestos de control de Chiriquí"
           },
           {
+            "id_grupo": "GRP-e0b0f0f335",
+            "posicion": 45,
+            "puntaje": 58.81,
+            "accion": "Vigilar",
+            "titular_central": "Profesor Angel Dust, el rey de la noche de Barcelona que acabó en una prisión de Panamá: Sigo pensando que fue un sueño, pero me perdí cinco años de la vida de mi hija"
+          },
+          {
             "id_grupo": "GRP-551ba86248",
-            "posicion": 33,
-            "puntaje": 58.41,
+            "posicion": 46,
+            "puntaje": 58.18,
             "accion": "Vigilar",
             "titular_central": "El abrir para cerrar de la mina de cobre genera dudas y cuestionamientos en el frente ambiental y financiero"
           },
           {
             "id_grupo": "GRP-5e6531917f",
-            "posicion": 34,
-            "puntaje": 57.63,
+            "posicion": 47,
+            "puntaje": 57.75,
             "accion": "Vigilar",
             "titular_central": "Más de 30 mujeres han muerto de forma violenta en Panamá este año"
           },
           {
             "id_grupo": "GRP-eaeabe3e2a",
-            "posicion": 35,
-            "puntaje": 57.27,
+            "posicion": 48,
+            "puntaje": 57.41,
             "accion": "Vigilar",
             "titular_central": "The Duality of Latin America FDI"
           },
           {
             "id_grupo": "GRP-b2028a457f",
-            "posicion": 37,
-            "puntaje": 52.79,
+            "posicion": 50,
+            "puntaje": 53.43,
             "accion": "Vigilar",
             "titular_central": "Solo dos ciudades de Centroamérica están entre las mejores 300 del mundo, según ranking"
           },
           {
             "id_grupo": "GRP-f2aa06ea27",
-            "posicion": 39,
-            "puntaje": 52.67,
+            "posicion": 52,
+            "puntaje": 52.19,
             "accion": "Vigilar",
             "titular_central": "Montería estrenará vuelo directo a Panamá con Satena y conexión aérea de menos de una hora"
           },
           {
             "id_grupo": "GRP-96eb79d57a",
-            "posicion": 40,
-            "puntaje": 52.16,
+            "posicion": 53,
+            "puntaje": 51.57,
             "accion": "Vigilar",
             "titular_central": "Panamá apunta a salir de la lista fiscal de la Unión Europea, pero aún enfrenta una revisión clave en 2027"
           },
           {
             "id_grupo": "GRP-79f3183472",
-            "posicion": 41,
-            "puntaje": 46.62,
+            "posicion": 54,
+            "puntaje": 46.52,
             "accion": "Vigilar",
             "titular_central": "Intensifying El Nino deepens economic risks across LatAm"
           },
           {
             "id_grupo": "GRP-d420b7bd51",
-            "posicion": 42,
-            "puntaje": 44.66,
+            "posicion": 55,
+            "puntaje": 44.45,
             "accion": "Vigilar",
             "titular_central": "WP: США перенаправят в Латинскую Америку $52 млн, выделенные на проекты в Европе"
           },
           {
             "id_grupo": "GRP-0a10e8fec2",
-            "posicion": 43,
-            "puntaje": 41.45,
+            "posicion": 56,
+            "puntaje": 41.26,
             "accion": "Vigilar",
             "titular_central": "El BID moviliza proyectos por US$84.000 millones desde Miami: Quiero cerrar acuerdos que beneficien a América Latina, dice su nuevo director"
           },
           {
             "id_grupo": "GRP-71176bb291",
-            "posicion": 44,
-            "puntaje": 40.97,
+            "posicion": 57,
+            "puntaje": 40.73,
             "accion": "Vigilar",
             "titular_central": "Negocios de Gilinski y de Ecopetrol son claves para Colombia en América Latina"
           }
@@ -503,17 +594,17 @@
       },
       "bajo|suficiente": {
         "n": 1,
-        "de": 45,
-        "proporcion": 0.0222,
+        "de": 58,
+        "proporcion": 0.0172,
         "ic95": [
-          0.0039,
-          0.1157
+          0.003,
+          0.0914
         ],
         "casos": [
           {
             "id_grupo": "GRP-0dfdd5a021",
-            "posicion": 45,
-            "puntaje": 33.77,
+            "posicion": 58,
+            "puntaje": 32.72,
             "accion": "Archivar como contexto",
             "titular_central": "Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika"
           }
@@ -521,21 +612,21 @@
       },
       "bajo|parcial": {
         "n": 0,
-        "de": 45,
+        "de": 58,
         "proporcion": 0.0,
         "ic95": [
           0.0,
-          0.0787
+          0.0621
         ],
         "casos": []
       },
       "bajo|insuficiente": {
         "n": 0,
-        "de": 45,
+        "de": 58,
         "proporcion": 0.0,
         "ic95": [
           0.0,
-          0.0787
+          0.0621
         ],
         "casos": []
       }
@@ -544,86 +635,107 @@
       {
         "id_grupo": "GRP-ef3acec21e",
         "posicion": 1,
-        "puntaje": 86.73,
+        "puntaje": 86.21,
         "accion": "Investigar ya",
         "titular_central": "Minsa: Adelantan vacunación contra VSR en embarazadas"
       },
       {
         "id_grupo": "GRP-84a6b3a04b",
         "posicion": 2,
-        "puntaje": 79.48,
+        "puntaje": 81.31,
         "accion": "Investigar ya",
         "titular_central": "Colegios particulares atribuyen aumento de matrícula a migración al sector oficial y altos costos de operación"
       },
       {
         "id_grupo": "GRP-65d565abd0",
         "posicion": 3,
-        "puntaje": 78.68,
+        "puntaje": 79.71,
         "accion": "Investigar ya",
         "titular_central": "MiBus responde por filtraciones: lamenta incomodidad de usuarios; afirma que realiza correctivos"
       },
       {
         "id_grupo": "GRP-39773bed5a",
         "posicion": 4,
-        "puntaje": 78.53,
+        "puntaje": 79.16,
         "accion": "Investigar ya",
         "titular_central": "Árbol cae sobre dos vehículos en estacionamientos del hospital San Miguel Arcángel"
       },
       {
-        "id_grupo": "GRP-0ecdae94e7",
+        "id_grupo": "GRP-87e128925b",
         "posicion": 5,
-        "puntaje": 76.58,
+        "puntaje": 76.18,
         "accion": "Investigar ya",
         "titular_central": "Veraguas: Preocupación por aumento de muertes por enfermedades transmisibles y respiratorias"
       },
       {
         "id_grupo": "GRP-8af4196527",
         "posicion": 6,
-        "puntaje": 75.45,
+        "puntaje": 76.09,
         "accion": "Investigar ya",
         "titular_central": "César Caicedo ahora está recluido en el Hospital Santo Tomás; había sido trasladado a Coiba"
       },
       {
-        "id_grupo": "GRP-21ad932d54",
+        "id_grupo": "GRP-6e737ecad5",
         "posicion": 7,
-        "puntaje": 73.92,
+        "puntaje": 75.25,
+        "accion": "Investigar ya",
+        "titular_central": "MOP solicita $43.1 millones para pagar compromisos y continuar obras en ejecución"
+      },
+      {
+        "id_grupo": "GRP-1e2c34f6bf",
+        "posicion": 9,
+        "puntaje": 73.73,
+        "accion": "Investigar ya",
+        "titular_central": "Pase-U: Largas filas en Changuinola en el segundo día de entrega de tarjetas Punch del Ifarhu"
+      },
+      {
+        "id_grupo": "GRP-21ad932d54",
+        "posicion": 10,
+        "puntaje": 73.67,
         "accion": "Investigar ya",
         "titular_central": "Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá"
       },
       {
-        "id_grupo": "GRP-45aebb27b2",
-        "posicion": 9,
-        "puntaje": 72.48,
+        "id_grupo": "GRP-fcdfc2a3cc",
+        "posicion": 11,
+        "puntaje": 71.82,
         "accion": "Investigar ya",
-        "titular_central": "Contenido Exclusivo: Coclé, se seca el campo"
+        "titular_central": "Aprehenden a Enrique Lau, exdirector de la CSS, por supuesto enriquecimiento injustificado"
       },
       {
         "id_grupo": "GRP-9442098153",
-        "posicion": 10,
-        "puntaje": 71.47,
+        "posicion": 12,
+        "puntaje": 71.67,
         "accion": "Investigar ya",
         "titular_central": "Contenido Exclusivo: El metro por la Tumba Muerto"
       },
       {
+        "id_grupo": "GRP-45aebb27b2",
+        "posicion": 13,
+        "puntaje": 71.59,
+        "accion": "Investigar ya",
+        "titular_central": "Contenido Exclusivo: Coclé, se seca el campo"
+      },
+      {
         "id_grupo": "GRP-821afe7eec",
-        "posicion": 11,
-        "puntaje": 71.36,
+        "posicion": 14,
+        "puntaje": 71.0,
         "accion": "Investigar ya",
         "titular_central": "Chiriquí: Emiten Alerta Amber por desaparición de adolescente de 16 años y su bebé"
       },
       {
-        "id_grupo": "GRP-fcdfc2a3cc",
-        "posicion": 12,
-        "puntaje": 70.26,
+        "id_grupo": "GRP-d03e52e97f",
+        "posicion": 15,
+        "puntaje": 70.21,
         "accion": "Investigar ya",
-        "titular_central": "Aprehenden a Enrique Lau, exdirector de la CSS, por supuesto enriquecimiento injustificado"
+        "titular_central": "Alcaldesa Stefany Peñalba: residentes protestan frente al Municipio de Arraiján y exigen auditorías contra su gestión"
       }
     ],
     "bajo_suficiente": [
       {
         "id_grupo": "GRP-0dfdd5a021",
-        "posicion": 45,
-        "puntaje": 33.77,
+        "posicion": 58,
+        "puntaje": 32.72,
         "accion": "Archivar como contexto",
         "titular_central": "Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika"
       }
