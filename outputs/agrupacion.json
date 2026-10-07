@@ -1,7 +1,7 @@
 {
   "modelo": "minilm",
   "titulares_etiquetados": 100,
-  "titulares_utiles_agrupados": 79,
+  "titulares_utiles_agrupados": 94,
   "pares_evaluados": 4950,
   "pares_positivos": 272,
   "ventana_dias": 7,

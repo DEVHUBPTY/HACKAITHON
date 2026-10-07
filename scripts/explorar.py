@@ -390,12 +390,23 @@ def seccion_cobertura(d: dict[str, Any], z: float) -> str:
     for r in cob["gdelt_rangos_sin_resolver"]:
         sin[(r["tema"], r["motivo"])] += r["dias"]
     filas2 = [[t, m, v] for (t, m), v in sorted(sin.items())]
+    hist = cob.get("gdelt_dias_por_tema_consulta_historica") or {}
+    filas_h = [[t, v["crudos"], v["dias_cubiertos"], v["dias_esperados"], prop(v["dias_cubiertos"], v["dias_esperados"], z)]
+               for t, v in hist.items()]
+    bloque_h = (
+        "\n\nLas noticias de GDELT del snapshot salen de los crudos de las consultas anteriores a E0-04 (D-89); su "
+        "cobertura va aparte de la tabla anterior, que mide solo las consultas vigentes:\n\n"
+        + tabla(filas_h, ["Tema (consulta histórica)", "Crudos", "Días cubiertos", "Días esperados", "Cobertura (IC 95 %)"])
+        if filas_h else ""
+    )
     return (
-        tabla(filas, ["Tema GDELT", "Días cubiertos", "Días esperados", "Cobertura (IC 95 %)"])
+        "Consultas vigentes (E0-04, dos patas por tema):\n\n"
+        + tabla(filas, ["Tema GDELT", "Días cubiertos", "Días esperados", "Cobertura (IC 95 %)"])
+        + bloque_h
         + "\n\nDías sin resolver (suma de rangos):\n\n" + tabla(filas2, ["Tema", "Motivo", "Días"])
         + f"\n\nRSS: de {cob.get('fecha_publicacion_inicial')} a {cob.get('fecha_publicacion_final')}; "
         f"detección GDELT: de {cob.get('fecha_deteccion_inicial')} a {cob.get('fecha_deteccion_final')}."
-        "\n\n**`eventos_naturales` tiene 0 días cubiertos**: no hay ni un titular de GDELT en ese tema, y los sismos/lluvias "
+        "\n\n**`eventos_naturales` tiene 0 días cubiertos** (vigentes e históricos): no hay ni un titular de GDELT en ese tema, y los sismos/lluvias "
         "son un tema central del reto. Los números de este informe no representan los 30 días de la ventana (D-74)."
     )
 
@@ -475,7 +486,7 @@ def seccion_revision(d: dict[str, Any], cfg: ConfigExploracion, raiz: Path) -> t
         sub = rev[rev["tema_propuesto"] == t]
         claro = int((sub["ambiguo"] == "no").sum())
         kw = {i for i, tit in nt["titulo"].items() if coincide(str(tit), [w.lower() for w in palabras[t]])}
-        # Candidatos = propuestos por palabra clave ∪ asignados a mano; revisados = todos (se revisaron las 186 filas).
+        # Candidatos = propuestos por palabra clave ∪ asignados a mano; revisados = todos (se revisaron todas las filas del snapshot).
         cand = kw | set(sub["id_noticia"])
         cuenta[t] = len(sub)
         filas.append([t, len(cand), len(sub), claro, int((sub["ejemplo"] == "si").sum()), "sí" if len(sub) >= minimo else f"**NO** (faltan {minimo - len(sub)})"])
