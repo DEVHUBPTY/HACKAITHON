@@ -8,9 +8,11 @@ Dos pasos, y el segundo nunca decide solo:
    titular (``src/esquemas.py``). No hay texto libre ni veredicto: lo que se muestra es la etiqueta fija «posible
    contradicción, verificar» con **ambas versiones y su fuente**. Los fragmentos se validan como subcadenas del titular.
 
-Sin candidatos no se llama al LLM (abstención antes de llamar). Si el proveedor no está configurado, no responde o devuelve
-algo inválido, el candidato queda **pendiente de comparación** (sigue siendo una contradicción abierta: se verifica a mano) y
-se registra el motivo; nunca se rompe el puntaje. Un par que el LLM descarta se conserva como ``descartada`` (visible, no abierta).
+**El LLM nunca cierra un par** (X21): todo candidato detectado por reglas queda ABIERTO para el estado de evidencia, diga lo que
+diga el LLM. Su resultado es solo una **nota** para la persona (``nota_llm``: ``posible_contradiccion``, ``compatible`` o
+``pendiente``, más los fragmentos literales). Solo una persona podrá cerrar un par (revisión, E1-16). Sin candidatos no se llama
+al LLM (abstención antes de llamar). Si el proveedor no está configurado, no responde o devuelve algo inválido, la nota es
+``pendiente`` y se registra el motivo; nunca se rompe el puntaje.
 """
 
 from __future__ import annotations
@@ -34,10 +36,10 @@ logger = logging.getLogger(__name__)
 
 REGLA_CIFRAS = "cifras_distintas"
 REGLA_VERBOS = "verbos_opuestos"
-ESTADO_VERIFICAR = "verificar"         # el LLM la marcó «posible contradicción, verificar»
-ESTADO_PENDIENTE = "pendiente_llm"     # sin comparar: sigue abierta y se verifica a mano
-ESTADO_DESCARTADA = "descartada"       # el LLM dijo que las versiones son compatibles
-ESTADOS_ABIERTOS = (ESTADO_VERIFICAR, ESTADO_PENDIENTE)
+ESTADO_VERIFICAR = "verificar"         # el único estado: detectada por reglas, abierta hasta que una persona la cierre
+NOTA_POSIBLE = "posible_contradiccion"  # nota del LLM: también ve una posible contradicción (con fragmentos literales)
+NOTA_COMPATIBLE = "compatible"          # nota del LLM: las versiones le parecen compatibles (el par sigue abierto)
+NOTA_PENDIENTE = "pendiente"            # sin nota: no hay LLM, falló, o respondió algo inválido
 CARPETA_PROMPTS = RAIZ / "prompts"
 SEPARADOR_DETALLE = "; "
 ESPACIOS = re.compile(r"\s+")
@@ -61,11 +63,12 @@ class Candidato:
 
 @dataclass(frozen=True)
 class Contradiccion:
-    """Un candidato con el resultado de su comparación."""
+    """Un candidato y la nota del LLM; el par está siempre abierto."""
 
     candidato: Candidato
     estado: str
     etiqueta: str
+    nota_llm: str
     fragmento_a: str = ""
     fragmento_b: str = ""
     proveedor: str | None = None
@@ -74,7 +77,8 @@ class Contradiccion:
 
     @property
     def abierta(self) -> bool:
-        return self.estado in ESTADOS_ABIERTOS
+        """Siempre abierta: el LLM no la cierra (X21); solo una persona, en la revisión."""
+        return True
 
 
 # ------------------------------------------------------------------ candidatos por reglas
@@ -177,7 +181,7 @@ def _literal(fragmento: str, titular: str) -> bool:
 
 def _pendiente(c: Candidato, cfg: ConfigPrioridad, motivo: str, proveedor: Proveedor | None) -> Contradiccion:
     return Contradiccion(
-        c, ESTADO_PENDIENTE, cfg.contradicciones.etiqueta,
+        c, ESTADO_VERIFICAR, cfg.contradicciones.etiqueta, NOTA_PENDIENTE,
         proveedor=proveedor.nombre if proveedor else None, modelo=proveedor.modelo if proveedor else None, motivo_pendiente=motivo,
     )
 
@@ -187,7 +191,7 @@ def comparar(
 ) -> list[Contradiccion]:
     """Compara los candidatos de un grupo con el LLM; devuelve un resultado por candidato, en el mismo orden.
 
-    Sin candidatos no hay llamada. Ante cualquier fallo del proveedor o de la salida, el candidato queda ``pendiente_llm``.
+    Sin candidatos no hay llamada. Ante cualquier fallo del proveedor o de la salida, la nota es ``pendiente`` y el par sigue abierto.
     """
     if not candidatos:
         return []
@@ -200,10 +204,10 @@ def comparar(
         crudo = proveedor.generar_json(system or cargar_system(cfg.contradicciones.prompt), mensaje_de_usuario(enviados), esquema_json_comparacion())
         salida = ComparacionContradicciones.model_validate_json(crudo)
     except ErrorProveedor as exc:
-        logger.warning("LLM no disponible (%s): %d pares quedan pendientes de comparación", exc, len(enviados))
+        logger.warning("LLM no disponible (%s): %d pares quedan sin nota del LLM", exc, len(enviados))
         resultados.update({(c.id_a, c.id_b): _pendiente(c, cfg, f"proveedor no disponible: {exc}", proveedor) for c in enviados})
     except (ValidationError, ValueError) as exc:
-        logger.warning("Salida del LLM inválida (%s): %d pares quedan pendientes de comparación", str(exc).splitlines()[0], len(enviados))
+        logger.warning("Salida del LLM inválida (%s): %d pares quedan sin nota del LLM", str(exc).splitlines()[0], len(enviados))
         resultados.update({(c.id_a, c.id_b): _pendiente(c, cfg, "salida del LLM inválida", proveedor) for c in enviados})
     else:
         for c in enviados:
@@ -218,11 +222,11 @@ def _resolver(c: Candidato, salida: ComparacionContradicciones, proveedor: Prove
         return _pendiente(c, cfg, "el LLM no respondió este par exactamente una vez", proveedor)
     p = propias[0]
     if not p.posible_contradiccion:
-        return Contradiccion(c, ESTADO_DESCARTADA, cfg.contradicciones.etiqueta, proveedor=proveedor.nombre, modelo=proveedor.modelo)
+        return Contradiccion(c, ESTADO_VERIFICAR, cfg.contradicciones.etiqueta, NOTA_COMPATIBLE, proveedor=proveedor.nombre, modelo=proveedor.modelo)
     frag_a, frag_b = (p.fragmento_a, p.fragmento_b) if p.id_a == c.id_a else (p.fragmento_b, p.fragmento_a)
     if not (_literal(frag_a, c.titular_a) and _literal(frag_b, c.titular_b)):
         return _pendiente(c, cfg, "los fragmentos citados no son literales del titular", proveedor)
-    return Contradiccion(c, ESTADO_VERIFICAR, cfg.contradicciones.etiqueta, frag_a.strip(), frag_b.strip(), proveedor.nombre, proveedor.modelo)
+    return Contradiccion(c, ESTADO_VERIFICAR, cfg.contradicciones.etiqueta, NOTA_POSIBLE, frag_a.strip(), frag_b.strip(), proveedor.nombre, proveedor.modelo)
 
 
 def evaluar_grupo(

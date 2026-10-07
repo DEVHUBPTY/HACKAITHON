@@ -189,7 +189,7 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("accion", "VARCHAR NOT NULL"),        # celda (rango × estado) de la tabla de la modalidad; nunca «publicar»
         ("motivo_accion", "VARCHAR NOT NULL"),
     ],
-    "contradicciones": [  # E1-10: pares candidatos por reglas y su comparación (el LLM solo compara; nunca un veredicto)
+    "contradicciones": [  # E1-10: pares candidatos por reglas y la nota del LLM (solo anota; nunca cierra ni decide)
         ("id_grupo", "VARCHAR NOT NULL"),
         ("id_noticia_a", "VARCHAR NOT NULL"),
         ("id_noticia_b", "VARCHAR NOT NULL"),
@@ -201,13 +201,14 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("fecha_publicacion_b", "VARCHAR"),
         ("reglas", "VARCHAR NOT NULL"),        # cifras_distintas · verbos_opuestos (separadas por coma)
         ("detalle", "VARCHAR NOT NULL"),
-        ("estado", "VARCHAR NOT NULL"),        # verificar · pendiente_llm · descartada
+        ("estado", "VARCHAR NOT NULL"),        # siempre `verificar`: abierta hasta que una persona la cierre (el LLM no la cierra)
+        ("nota_llm", "VARCHAR NOT NULL"),      # posible_contradiccion · compatible · pendiente: solo una nota para la persona
         ("etiqueta", "VARCHAR NOT NULL"),      # «posible contradicción, verificar»
         ("fragmento_a", "VARCHAR"),            # fragmento literal del titular A que cita el LLM
         ("fragmento_b", "VARCHAR"),
         ("proveedor", "VARCHAR"),
         ("modelo", "VARCHAR"),
-        ("motivo_pendiente", "VARCHAR"),       # solo con estado pendiente_llm
+        ("motivo_pendiente", "VARCHAR"),       # solo con nota_llm = pendiente
     ],
     "registro_normalizacion": [
         ("tabla", "VARCHAR NOT NULL"),

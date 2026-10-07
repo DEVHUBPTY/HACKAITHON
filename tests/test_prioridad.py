@@ -97,20 +97,20 @@ def test_volver_a_correr_reemplaza_las_filas_y_no_las_duplica(base, tmp_path, em
 def test_una_posible_contradiccion_abierta_impide_evidencia_suficiente_y_aparece_con_ambas_versiones(base, tmp_path, emb) -> None:
     _correr(base, tmp_path, emb, _llm({"a": True, "d": False}))
     c = {x["id_grupo"]: x for x in _tabla(base, "contradicciones", "id_grupo")}
-    assert c["GRP-a"]["estado"] == "verificar" and c["GRP-a"]["etiqueta"] == "posible contradicción, verificar"
+    assert c["GRP-a"]["estado"] == "verificar" and c["GRP-a"]["nota_llm"] == "posible_contradiccion" and c["GRP-a"]["etiqueta"] == "posible contradicción, verificar"
     assert (c["GRP-a"]["medio_a"], c["GRP-a"]["medio_b"]) == ("medio-a.example", "medio-b.example")
-    assert c["GRP-d"]["estado"] == "descartada"
+    assert c["GRP-d"]["estado"] == "verificar" and c["GRP-d"]["nota_llm"] == "compatible"   # el LLM anota, no cierra
     e = {x["id_grupo"]: x for x in _tabla(base, "evidencia", "id_grupo")}
     assert e["GRP-a"]["contradicciones_abiertas"] == 1 and e["GRP-a"]["estado"] == "parcial"   # 2 procedencias pero con contradicción y cifras sin dato oficial
-    assert e["GRP-d"]["contradicciones_abiertas"] == 0
+    assert e["GRP-d"]["contradicciones_abiertas"] == 1
 
 
 def test_si_el_llm_falla_el_puntaje_se_calcula_igual_y_los_pares_quedan_pendientes(base, tmp_path, emb) -> None:
     proveedor = ProveedorFalso(falla=True)
     reporte = _correr(base, tmp_path, emb, proveedor)
     assert len(_tabla(base, "puntajes", "posicion")) == 4
-    assert {c["estado"] for c in _tabla(base, "contradicciones", "id_grupo")} == {"pendiente_llm"}
-    assert reporte["llm"]["estado"] == "no_disponible" and reporte["contradicciones"]["por_estado"] == {"pendiente_llm": 2}
+    assert {c["nota_llm"] for c in _tabla(base, "contradicciones", "id_grupo")} == {"pendiente"}
+    assert reporte["llm"]["estado"] == "no_disponible" and reporte["contradicciones"]["por_nota_llm"] == {"pendiente": 2}
     assert len(proveedor.llamadas) == 1              # tras el primer fallo no se vuelve a intentar (corte)
     assert all(e["contradicciones_abiertas"] == 1 for e in _tabla(base, "evidencia", "id_grupo") if e["id_grupo"] in ("GRP-a", "GRP-d"))
 
@@ -165,3 +165,19 @@ def test_la_fecha_de_corte_sale_del_manifest_en_utc(tmp_path) -> None:
     assert prioridad.fecha_de_corte(ruta) == datetime(2026, 10, 6, 17, 7, 6, tzinfo=UTC)
     with pytest.raises(ValueError, match="zona"):
         prioridad.parsear_fecha("2026-10-06T17:07:06")
+
+
+# ------------------------------------------------------------------ X21: el estado de evidencia no depende de lo que diga el LLM
+
+
+def test_x21_el_estado_de_evidencia_es_el_mismo_con_llm_compatible_que_sin_llm(base, tmp_path, emb) -> None:
+    _correr(base, tmp_path, emb, None)
+    sin_llm = {e["id_grupo"]: (e["estado"], e["contradicciones_abiertas"], e["accion"]) for e in _tabla(base, "evidencia", "id_grupo")}
+    reporte = _correr(base, tmp_path, emb, _llm({"a": False, "d": False}))
+    con_llm = {e["id_grupo"]: (e["estado"], e["contradicciones_abiertas"], e["accion"]) for e in _tabla(base, "evidencia", "id_grupo")}
+    assert con_llm == sin_llm
+    assert sin_llm["GRP-a"][1] == 1 and sin_llm["GRP-d"][1] == 1
+    notas = {c["id_grupo"]: c["nota_llm"] for c in _tabla(base, "contradicciones", "id_grupo")}
+    assert notas == {"GRP-a": "compatible", "GRP-d": "compatible"}
+    visibles = [c for fila in reporte["ranking"] for c in fila["contradicciones"]]
+    assert len(visibles) == 2 and {c["nota_llm"] for c in visibles} == {"compatible"}

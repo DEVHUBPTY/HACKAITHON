@@ -307,7 +307,7 @@ Los reemplaza `python -m src.puntaje`.
 | `n_procedencias` | INTEGER | no | `procedencias` | derivado | Procedencias independientes, **estimadas** (E1-08). |
 | `tiene_oficial` | BOOLEAN | no | `vinculos` | derivado | Hay un dato o evento oficial vinculado (Banco Mundial o USGS) con valor. |
 | `hay_cifras` | BOOLEAN | no | `noticias` | derivado | Algún titular trae una cifra (sin contar fechas, años ni identificadores). |
-| `contradicciones_abiertas` | INTEGER | no | `contradicciones` | derivado | Pares en estado `verificar` o `pendiente_llm`. |
+| `contradicciones_abiertas` | INTEGER | no | `contradicciones` | derivado | Pares detectados por reglas: todos cuentan, diga lo que diga el LLM (solo una persona puede cerrarlos). |
 | `vacios` | VARCHAR | no | evidencia | derivado | JSON: vacíos de verificación de la evidencia (procedencias, dato oficial, contradicciones, titulares sin medio o fecha). |
 | `modalidad` | VARCHAR | no | `modalidad_<modalidad>.yaml` | derivado | Modalidad cuya tabla de acciones se aplicó (`editorial`). |
 | `rango` | VARCHAR | no | `puntajes` | derivado | Rango de P usado para elegir la celda. |
@@ -317,7 +317,7 @@ Los reemplaza `python -m src.puntaje`.
 ### `contradicciones`: pares de titulares con versiones distintas (E1-10, D-23)
 
 Candidatos por reglas (cifras distintas de la misma unidad, verbos opuestos); el LLM solo los compara y nunca emite un veredicto: lo que se muestra es «posible contradicción, verificar» con ambas versiones y su fuente.
-Si el LLM no está disponible el par queda `pendiente_llm` (sigue abierto). Los reemplaza `python -m src.puntaje`.
+El LLM solo agrega una nota (`nota_llm`); **nunca cierra un par** (X21): si no está disponible la nota es `pendiente` y el par sigue abierto. Los reemplaza `python -m src.puntaje`.
 
 | Campo | Tipo | Nullable | Fuente | Clase | Descripción |
 |---|---|---|---|---|---|
@@ -332,13 +332,14 @@ Si el LLM no está disponible el par queda `pendiente_llm` (sigue abierto). Los 
 | `fecha_publicacion_b` | VARCHAR | sí | `noticias` | derivado | Publicación de B. |
 | `reglas` | VARCHAR | no | contradicciones | derivado | Reglas que lo hicieron candidato: `cifras_distintas`, `verbos_opuestos` (separadas por coma). |
 | `detalle` | VARCHAR | no | contradicciones | derivado | Qué cifras o verbos chocan. |
-| `estado` | VARCHAR | no | contradicciones | derivado | `verificar` (el LLM lo marcó), `pendiente_llm` (sin comparar) o `descartada` (el LLM dice que son compatibles). |
+| `estado` | VARCHAR | no | contradicciones | derivado | Siempre `verificar`: abierta hasta que una persona la cierre en la revisión (E1-16). |
+| `nota_llm` | VARCHAR | no | LLM | derivado | Anotación para la persona: `posible_contradiccion`, `compatible` o `pendiente` (sin LLM, falló o respondió algo inválido). No cambia el estado de evidencia ni oculta el par. |
 | `etiqueta` | VARCHAR | no | `prioridad.yaml` | derivado | «posible contradicción, verificar». |
 | `fragmento_a` | VARCHAR | sí | LLM | derivado | Fragmento literal del titular A que cita el LLM (validado como subcadena); solo con `verificar`. |
 | `fragmento_b` | VARCHAR | sí | LLM | derivado | Fragmento literal del titular B; solo con `verificar`. |
 | `proveedor` | VARCHAR | sí | `local.env` | derivado | Proveedor del LLM (`ollama`); nulo si no hubo. |
 | `modelo` | VARCHAR | sí | `local.env` | derivado | Modelo del proveedor. |
-| `motivo_pendiente` | VARCHAR | sí | contradicciones | derivado | Por qué no se comparó (sin proveedor, proveedor caído, salida inválida, sobre el tope). |
+| `motivo_pendiente` | VARCHAR | sí | contradicciones | derivado | Solo con `nota_llm = pendiente`: por qué no se comparó (sin proveedor, proveedor caído, salida inválida, sobre el tope). |
 
 ### `registro_normalizacion`: valores que no se pudieron normalizar
 

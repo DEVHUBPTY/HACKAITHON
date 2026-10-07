@@ -235,7 +235,7 @@ def filas_de(resultados: Sequence[ResultadoGrupo], modalidad: ConfigModalidad) -
                 {
                     "id_grupo": p.id_grupo, "id_noticia_a": k.id_a, "id_noticia_b": k.id_b, "medio_a": k.medio_a, "medio_b": k.medio_b,
                     "titular_a": k.titular_a, "titular_b": k.titular_b, "fecha_publicacion_a": k.fecha_a, "fecha_publicacion_b": k.fecha_b,
-                    "reglas": SEPARADOR_LISTA.join(k.reglas), "detalle": k.detalle, "estado": c.estado, "etiqueta": c.etiqueta,
+                    "reglas": SEPARADOR_LISTA.join(k.reglas), "detalle": k.detalle, "estado": c.estado, "nota_llm": c.nota_llm, "etiqueta": c.etiqueta,
                     "fragmento_a": c.fragmento_a or None, "fragmento_b": c.fragmento_b or None,
                     "proveedor": c.proveedor, "modelo": c.modelo, "motivo_pendiente": c.motivo_pendiente,
                 }
@@ -267,7 +267,7 @@ def guardar(ruta_base: Path, filas: Mapping[str, Sequence[Mapping[str, Any]]]) -
 def estado_del_llm(proveedor: Proveedor | None, resultados: Sequence[ResultadoGrupo]) -> dict[str, Any]:
     """Si el LLM se usó, falló o no se configuró (nunca incluye credenciales)."""
     cs = [c for r in resultados for c in r.contradicciones]
-    pendientes = [c for c in cs if c.estado == contradiccion_mod.ESTADO_PENDIENTE]
+    pendientes = [c for c in cs if c.nota_llm == contradiccion_mod.NOTA_PENDIENTE]
     if proveedor is None:
         estado = ESTADOS_DE_LLM[0]          # no hay proveedor configurado (o --sin-llm)
     elif not cs:
@@ -306,8 +306,15 @@ def construir_reporte(
         "por_estado_de_evidencia": {k: proporcion(sum(1 for r in resultados if r.evidencia.estado == k), n, z) for k in ("suficiente", "parcial", "insuficiente")},
         "contradicciones": {
             "candidatos": len(cs),
-            "por_estado": dict(sorted(Counter(c.estado for c in cs).items())),
+            "abiertas": len(cs),
+            "por_nota_llm": dict(sorted(Counter(c.nota_llm for c in cs).items())),
             "grupos_con_candidatos": sum(1 for r in resultados if r.contradicciones),
+            "pares": [
+                {"id_grupo": r.puntaje.id_grupo, "estado": c.estado, "nota_llm": c.nota_llm, "reglas": list(c.candidato.reglas), "detalle": c.candidato.detalle,
+                 "versiones": [{"id": c.candidato.id_a, "medio": c.candidato.medio_a, "titular": c.candidato.titular_a, "fragmento": c.fragmento_a or None},
+                               {"id": c.candidato.id_b, "medio": c.candidato.medio_b, "titular": c.candidato.titular_b, "fragmento": c.fragmento_b or None}]}
+                for r in resultados for c in r.contradicciones
+            ],
         },
         "llm": estado_del_llm(proveedor, resultados),
         "ranking": [
@@ -322,7 +329,7 @@ def construir_reporte(
                 "accion": r.accion.accion,
                 "vacios": [v.texto for v in (*r.puntaje.vacios, *r.evidencia.vacios)],
                 "contradicciones": [
-                    {"estado": c.estado, "etiqueta": c.etiqueta, "versiones": [
+                    {"estado": c.estado, "nota_llm": c.nota_llm, "fragmentos": [c.fragmento_a or None, c.fragmento_b or None], "etiqueta": c.etiqueta, "versiones": [
                         {"id": c.candidato.id_a, "medio": c.candidato.medio_a, "titular": c.candidato.titular_a},
                         {"id": c.candidato.id_b, "medio": c.candidato.medio_b, "titular": c.candidato.titular_b}]}
                     for c in r.contradicciones if c.abierta
@@ -366,12 +373,12 @@ def ejecutar(
 
 def _proveedor(sin_llm: bool) -> Proveedor | None:
     if sin_llm:
-        logger.info("--sin-llm: los pares candidatos a contradicción quedan pendientes de comparación")
+        logger.info("--sin-llm: los pares candidatos a contradicción quedan sin nota del LLM")
         return None
     try:
         return crear_proveedor()
     except ErrorProveedor as exc:
-        logger.warning("Sin LLM (%s): los pares candidatos a contradicción quedan pendientes de comparación", exc)
+        logger.warning("Sin LLM (%s): los pares candidatos a contradicción quedan sin nota del LLM", exc)
         return None
 
 
@@ -398,7 +405,7 @@ def main(argv: list[str] | None = None) -> int:
     logger.info("%d grupos puntuados con las reglas %s (referencia %s)", reporte["grupos"], reporte["version_reglas"], reporte["fecha_referencia"])
     logger.info("rango: %s", {k: v["n"] for k, v in reporte["por_rango"].items()})
     logger.info("estado de evidencia: %s", {k: v["n"] for k, v in reporte["por_estado_de_evidencia"].items()})
-    logger.info("contradicciones: %s · LLM: %s", reporte["contradicciones"]["por_estado"] or "ninguna", reporte["llm"]["estado"])
+    logger.info("contradicciones: %s · LLM: %s", reporte["contradicciones"]["por_nota_llm"] or "ninguna", reporte["llm"]["estado"])
     for fila in reporte["ranking"][:5]:
         logger.info("  %d. %s · P=%.1f (%s) · evidencia %s · %s · %s", fila["posicion"], fila["id_grupo"], fila["puntaje"], fila["rango"], fila["estado_de_evidencia"], fila["accion"], (fila["titular_central"] or "")[:ANCHO_TITULAR_EN_LOG])
     return 0

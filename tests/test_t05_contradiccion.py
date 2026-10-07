@@ -13,7 +13,7 @@ import pytest
 
 from src import agrupacion, contradicciones, embeddings, limpieza, normalizacion
 from src.configuracion import cargar_fuentes, cargar_normalizacion, cargar_procedencias, cargar_reglas
-from src.contradicciones import ESTADO_DESCARTADA, ESTADO_PENDIENTE, ESTADO_VERIFICAR
+from src.contradicciones import ESTADO_VERIFICAR, NOTA_COMPATIBLE, NOTA_PENDIENTE
 from src.llm.proveedor import ErrorProveedor
 from tests.motor_falso import MotorFalso, config_de_prueba
 from tests.prioridad_ayuda import CFG, ProveedorFalso, miembro
@@ -147,11 +147,11 @@ def test_una_marca_de_cierre_dentro_del_titular_no_escapa_de_la_evidencia() -> N
     assert usuario.count("</evidencia>") == 1 and usuario.rstrip().endswith("Compara cada par y responde con el JSON.")
 
 
-def test_si_el_llm_descarta_el_par_queda_visible_pero_no_abierto(grupo) -> None:
+def test_si_el_llm_dice_compatible_el_par_sigue_abierto_con_esa_nota(grupo) -> None:
     filas, procedencia = grupo
     (r,) = contradicciones.evaluar_grupo(filas, procedencia, ProveedorFalso(_respuesta(_par(posible=False))), CFG)
-    assert r.estado == ESTADO_DESCARTADA and not r.abierta
-    assert contradicciones.abiertas([r]) == 0
+    assert r.nota_llm == NOTA_COMPATIBLE and r.abierta
+    assert contradicciones.abiertas([r]) == 1
 
 
 def test_el_par_puede_llegar_con_los_ids_invertidos(grupo) -> None:
@@ -179,7 +179,7 @@ def test_el_par_puede_llegar_con_los_ids_invertidos(grupo) -> None:
 def test_si_el_llm_no_esta_o_responde_mal_el_candidato_queda_pendiente_y_abierto(grupo, proveedor, motivo) -> None:
     filas, procedencia = grupo
     (r,) = contradicciones.evaluar_grupo(filas, procedencia, proveedor, CFG)
-    assert r.estado == ESTADO_PENDIENTE and r.abierta
+    assert r.nota_llm == NOTA_PENDIENTE and r.estado == ESTADO_VERIFICAR and r.abierta
     assert r.etiqueta == ETIQUETA
     assert motivo in (r.motivo_pendiente or "")
     assert r.candidato.titular_a and r.candidato.titular_b       # las dos versiones siguen visibles
@@ -195,8 +195,9 @@ def test_un_par_sobre_el_tope_queda_pendiente_y_los_demas_se_comparan() -> None:
         {"id_a": c.id_a, "id_b": c.id_b, "posible_contradiccion": False} for c in todos[:2]
     ])
     resultado = contradicciones.comparar(todos, ProveedorFalso(respuesta), cfg)
-    assert [r.estado for r in resultado[:2]] == [ESTADO_DESCARTADA] * 2
-    assert {r.estado for r in resultado[2:]} == {ESTADO_PENDIENTE}
+    assert [r.nota_llm for r in resultado[:2]] == [NOTA_COMPATIBLE] * 2
+    assert {r.nota_llm for r in resultado[2:]} == {NOTA_PENDIENTE}
+    assert all(r.abierta for r in resultado)
     assert all("tope" in (r.motivo_pendiente or "") for r in resultado[2:])
 
 
@@ -206,3 +207,29 @@ def test_el_prompt_de_comparacion_sigue_el_estilo_del_proyecto() -> None:
     assert not re.search(r"\b(publica|publicar)\b", texto, re.IGNORECASE)
     assert json.loads(json.dumps(contradicciones.esquema_json_comparacion()))["required"] == ["pares"]
     assert ErrorProveedor  # el contrato de degradación es el de proveedor.py
+
+
+# ------------------------------------------------------------------ X21: el LLM nunca cierra un par detectado por reglas
+
+
+def test_x21_un_par_que_el_llm_dice_compatible_sigue_abierto_y_solo_lleva_una_nota(grupo) -> None:
+    filas, procedencia = grupo
+    (r,) = contradicciones.evaluar_grupo(filas, procedencia, ProveedorFalso(_respuesta(_par(posible=False))), CFG)
+    assert r.abierta and r.estado == ESTADO_VERIFICAR and r.etiqueta == ETIQUETA
+    assert r.nota_llm == "compatible"
+    assert contradicciones.abiertas([r]) == 1
+
+
+@pytest.mark.parametrize(
+    ("proveedor", "nota"),
+    [
+        (None, "pendiente"),
+        (ProveedorFalso(falla=True), "pendiente"),
+        (ProveedorFalso(_respuesta(_par())), "posible_contradiccion"),
+        (ProveedorFalso(_respuesta(_par(posible=False))), "compatible"),
+    ],
+)
+def test_x21_todo_par_detectado_por_reglas_queda_abierto_con_cualquier_respuesta_del_llm(grupo, proveedor, nota) -> None:
+    filas, procedencia = grupo
+    (r,) = contradicciones.evaluar_grupo(filas, procedencia, proveedor, CFG)
+    assert r.abierta and r.nota_llm == nota

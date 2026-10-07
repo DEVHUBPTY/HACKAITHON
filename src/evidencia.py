@@ -8,8 +8,8 @@ El **estado de evidencia es independiente del puntaje** (PDF sección 4): no rec
   procedencia con dato (o evento) oficial.
 * ``insuficiente``: lo demás.
 
-Una contradicción abierta es un par de titulares con versiones distintas que el LLM marcó «posible contradicción, verificar»
-o que todavía no se comparó (``src/contradicciones.py``); nunca es un veredicto.
+Una contradicción abierta es todo par de titulares con versiones distintas que detectaron las reglas
+(«posible contradicción, verificar», ``src/contradicciones.py``). El LLM solo la anota: no la cierra ni cambia este estado (X21).
 
 La **acción recomendada** sale de la tabla 3×3 (rango × estado) de la modalidad (``config/modalidad_<modalidad>.yaml``):
 nunca del LLM y ninguna celda habilita publicar (``Accion`` lo valida al cargar y aquí se vuelve a comprobar).
