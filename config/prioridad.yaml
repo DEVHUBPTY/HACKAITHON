@@ -20,6 +20,10 @@ geografia:                        # alcance geográfico de I: se buscan los tér
   # E1-10c (X42): un término de `nacional_implicito_terminos` no cuenta si lo precede alguno de estos prefijos.
   prefijos_excluidos:
     Panamá: ["ciudad de", "provincia de", "distrito de"]
+  # X51: sin tilde, un término de lugar no cuenta si lo sigue una de estas palabras («pese a» es la locución concesiva, no el
+  # distrito de Pesé). Escrito con su tilde («Pesé») siempre cuenta.
+  sufijos_excluidos:
+    Pesé: ["a"]
 
 medios:
   desconocidos: ["", "desconocido", "unknown", "n/a"]   # valores de `medio` que no identifican un medio (componente identificable de E)

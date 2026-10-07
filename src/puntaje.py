@@ -166,18 +166,40 @@ def normalizar_geografia(texto: str) -> str:
 
 
 @lru_cache(maxsize=None)
-def _patron_termino(termino: str, prefijos: tuple[str, ...]) -> re.Pattern[str]:
-    """Palabra completa, sin tildes ni mayúsculas; con ``prefijos`` solo cuenta si la precede alguno."""
+def _patron_termino(termino: str, prefijos: tuple[str, ...], sufijos: tuple[str, ...] = ()) -> re.Pattern[str]:
+    """Palabra completa, sin tildes ni mayúsculas; con ``prefijos`` solo cuenta si la precede alguno; con ``sufijos``, si no lo sigue ninguno."""
     cuerpo = re.escape(normalizar_geografia(termino))
     if prefijos:
         cuerpo = r"(?:" + "|".join(re.escape(normalizar_geografia(p)) for p in prefijos) + r")\s+" + cuerpo
+    if sufijos:
+        cuerpo += r"(?!\s+(?:" + "|".join(re.escape(normalizar_geografia(s)) for s in sufijos) + r")(?!\w))"
     return re.compile(rf"(?<!\w){cuerpo}(?!\w)")
 
 
-def terminos_presentes(texto: str, terminos: Sequence[str], prefijos: Mapping[str, Sequence[str]]) -> list[str]:
-    """Términos de ``terminos`` que aparecen en ``texto`` (en el orden dado)."""
+@lru_cache(maxsize=None)
+def _patron_con_tilde(termino: str) -> re.Pattern[str]:
+    """El término tal como se escribe (con sus tildes), palabra completa y sin distinguir mayúsculas."""
+    return re.compile(rf"(?<!\w){re.escape(termino.casefold())}(?!\w)")
+
+
+def terminos_presentes(
+    texto: str, terminos: Sequence[str], prefijos: Mapping[str, Sequence[str]], sufijos_excluidos: Mapping[str, Sequence[str]] | None = None
+) -> list[str]:
+    """Términos de ``terminos`` que aparecen en ``texto`` (en el orden dado).
+
+    X51: un término con ``sufijos_excluidos`` no cuenta sin tilde si lo sigue una de esas palabras («pese a»); escrito con su
+    tilde («Pesé») siempre cuenta.
+    """
     plano_texto = normalizar_geografia(texto)
-    return [t for t in terminos if _patron_termino(t, tuple(prefijos.get(t, ()))).search(plano_texto)]
+    sufijos = sufijos_excluidos or {}
+    presentes = []
+    for t in terminos:
+        excluir = tuple(sufijos.get(t, ()))
+        if _patron_termino(t, tuple(prefijos.get(t, ())), excluir).search(plano_texto) or (
+            excluir and _patron_con_tilde(t).search(texto.casefold())
+        ):
+            presentes.append(t)
+    return presentes
 
 
 def terminos_sin_prefijo_excluido(texto: str, terminos: Sequence[str], excluidos: Mapping[str, Sequence[str]]) -> list[str]:
@@ -208,7 +230,7 @@ def alcance_geografico(miembros: Sequence[Mapping[str, Any]], reglas: ReglasV13,
     for m in miembros:
         titular = str(m.get("titulo_limpio") or "")
         for nivel in NIVELES_GEOGRAFICOS:
-            hallados[nivel].extend(terminos_presentes(titular, listas[nivel], prefijos))
+            hallados[nivel].extend(terminos_presentes(titular, listas[nivel], prefijos, cfg.geografia.sufijos_excluidos))
         implicitos.extend(terminos_sin_prefijo_excluido(titular, g.nacional_implicito_terminos, cfg.geografia.prefijos_excluidos))
     for nivel in NIVELES_GEOGRAFICOS:
         if hallados[nivel]:

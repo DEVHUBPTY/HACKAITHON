@@ -1801,6 +1801,7 @@ class DatoOficialPrioridad(ModeloConfig):
 class GeografiaPrioridad(ModeloConfig):
     prefijos_obligatorios: dict[str, list[str]]
     prefijos_excluidos: dict[str, list[str]]   # E1-10c (X42): el término implícito no cuenta precedido de estos
+    sufijos_excluidos: dict[str, list[str]]    # X51: sin tilde, el término no cuenta seguido de estas palabras («pese a»)
 
 
 class MediosPrioridad(ModeloConfig):
