@@ -136,10 +136,10 @@ geografia:                  # alcance geográfico (comparación sin tildes ni ma
     Chipre, Cyprus, Colombia, Congo, Corea del Sur, South Korea, Corea del Norte, North Korea, Costa Rica, Costa de Marfil,
     Ivory Coast, Croacia, Croatia, Cuba, Dinamarca, Denmark, Ecuador, Egipto, Egypt, El Salvador, Emiratos Árabes Unidos,
     United Arab Emirates, Eslovaquia, Slovakia, Eslovenia, Slovenia, España, Spain, Estados Unidos, United States, EEUU, EE UU,
-    USA, Estonia, Etiopía, Ethiopia, Filipinas, Philippines, Finlandia, Finland, Francia, France, Gabón, Georgia, Ghana, Grecia,
-    Greece, Guatemala, Guinea, Guyana, Haití, Honduras, Hungría, Hungary, India, Indonesia, Irak, Iraq, Irán, Irlanda, Ireland,
-    Islandia, Iceland, Israel, Italia, Italy, Jamaica, Japón, Japan, Jordania, Kazajistán, Kazakhstan, Kenia, Kenya, Kosovo,
-    Kuwait, Letonia, Latvia, Líbano, Lebanon, Libia, Libya, Lituania, Lithuania, Luxemburgo, Luxembourg, Malasia, Malaysia, Mali,
+    USA, Estonia, Etiopía, Ethiopia, Filipinas, Philippines, Finlandia, Finland, Francia, France, Gabón, Grecia,
+    Greece, Guatemala, Guyana, Haití, Honduras, Hungría, Hungary, Indonesia, Irak, Iraq, Irán, Irlanda, Ireland,
+    Islandia, Iceland, Israel, Italia, Italy, Jamaica, Japón, Japan, Kazajistán, Kazakhstan, Kenia, Kenya, Kosovo,
+    Kuwait, Letonia, Latvia, Líbano, Lebanon, Libia, Libya, Lituania, Lithuania, Luxemburgo, Luxembourg, Malasia, Malaysia,
     Malta, Marruecos, Morocco, México, Moldavia, Mónaco, Mongolia, Mozambique, Namibia, Nepal, Nicaragua, Níger, Nigeria,
     Noruega, Norway, Nueva Zelanda, Nueva Zelandia, New Zealand, Omán, Países Bajos, Netherlands, Holanda, Pakistán, Palestina,
     Palestine, Paraguay, Perú, Polonia, Poland, Portugal, Puerto Rico, Reino Unido, United Kingdom, Gran Bretaña, Great Britain,
@@ -152,12 +152,20 @@ geografia:                  # alcance geográfico (comparación sin tildes ni ma
     Barcelona, Barranquilla, Beirut, Belgrado, Belgrade, Berlín, Bogotá, Boston, Brasilia, Bruselas, Brussels, Budapest,
     Buenos Aires, Cartagena de Indias, Caracas, Chicago, Ciudad de Guatemala, Ciudad de México, Copenhague, Copenhagen, Dallas,
     Dubái, Dublín, El Cairo, Cairo, Estambul, Istanbul, Estocolmo, Stockholm, Ginebra, Geneva, Hanoi, Helsinki, Ho Chi Minh,
-    Houston, Jerusalén, Jerusalem, Johannesburgo, Johannesburg, Kiev, Kyiv, Kingston, La Habana, Havana, Lima, Lisboa, Lisbon,
+    Houston, Jerusalén, Jerusalem, Johannesburgo, Johannesburg, Kiev, Kyiv, Kingston, La Habana, Havana, Lisboa, Lisbon,
     Londres, London, Los Ángeles, Madrid, Managua, Manila, Medellín, Miami, Milán, Montevideo, Moscú, Moscow, Mumbai, Múnich,
     Nairobi, Nueva Delhi, New Delhi, Nueva York, New York, Nueva Orleans, New Orleans, Oslo, Pekín, Beijing, París, Quito, Riad,
     Riyadh, Río de Janeiro, Roma, Rome, San Salvador, Santiago de Chile, Santo Domingo, São Paulo, Seúl, Seoul, Shanghái, Sídney,
-    Sydney, Tegucigalpa, Teherán, Tehran, Tel Aviv, Tokio, Tokyo, Toronto, Varsovia, Warsaw, Viena, Vienna, Washington, Zúrich
+    Sydney, Tegucigalpa, Teherán, Tehran, Tel Aviv, Tokio, Tokyo, Toronto, Varsovia, Warsaw, Viena, Vienna, Zúrich,
+    # C-10 (D7): estados y provincias extranjeras no ambiguos. Quedan fuera los nombres que también son persona, lugar de otro país o palabra
+    # común (Georgia, Washington, Santiago, Lima, Mali, India, Jordania, Guinea, Ghana): ver docs/parametros.md.
+    Texas, California, Arizona, Quebec, Ontario, Alberta, Cataluña, Catalonia, Andalucía, Baviera, Bavaria, Jalisco, Sicilia, Sicily
   ]
+  # C-10 (D6): cómo se nombra al país. Un titular que lo nombra como parte del hecho no suma su lugar o contraparte extranjera al exterior
+  # («Panamá y Colombia firman acuerdo en Bogotá»). El gentilicio no cuenta (D-115); «Ciudad de Panamá» tampoco (prioridad.yaml: prefijos_excluidos).
+  pais_terminos: [Panamá]
+  # C-10 (D3): nombres propios con «Panamá» que cuentan como mención del país («Cobre Panamá: gobierno de Canadá negocia» no es exterior).
+  panama_nombres_propios: [Canal de Panamá, Cobre Panamá]
   provincias: [Bocas del Toro, Chiriquí, Coclé, Colón, Darién, Herrera, Los Santos, Panamá, Panamá Oeste, Veraguas]
   comarcas: [Guna Yala, Emberá-Wounaan, Ngäbe-Buglé, Madugandí, Wargandí, Naso Tjër Di]
   distritos:
