@@ -3,62 +3,62 @@
   "version_reglas": "1.3",
   "modalidad": "editorial",
   "fecha_referencia": "2026-10-07T00:41:03Z",
-  "grupos": 61,
+  "grupos": 60,
   "por_rango": {
     "alto": {
-      "n": 46,
-      "de": 61,
-      "proporcion": 0.7541,
+      "n": 45,
+      "de": 60,
+      "proporcion": 0.75,
       "ic95": [
-        0.6332,
-        0.8449
+        0.6277,
+        0.8422
       ]
     },
     "medio": {
       "n": 15,
-      "de": 61,
-      "proporcion": 0.2459,
+      "de": 60,
+      "proporcion": 0.25,
       "ic95": [
-        0.1551,
-        0.3668
+        0.1578,
+        0.3723
       ]
     },
     "bajo": {
       "n": 0,
-      "de": 61,
+      "de": 60,
       "proporcion": 0.0,
       "ic95": [
         0.0,
-        0.0592
+        0.0602
       ]
     }
   },
   "por_estado_de_evidencia": {
     "suficiente": {
       "n": 2,
-      "de": 61,
-      "proporcion": 0.0328,
+      "de": 60,
+      "proporcion": 0.0333,
       "ic95": [
-        0.009,
-        0.1119
+        0.0092,
+        0.1136
       ]
     },
     "parcial": {
       "n": 3,
-      "de": 61,
-      "proporcion": 0.0492,
+      "de": 60,
+      "proporcion": 0.05,
       "ic95": [
-        0.0169,
-        0.1349
+        0.0171,
+        0.137
       ]
     },
     "insuficiente": {
-      "n": 56,
-      "de": 61,
-      "proporcion": 0.918,
+      "n": 55,
+      "de": 60,
+      "proporcion": 0.9167,
       "ic95": [
-        0.8221,
-        0.9645
+        0.8193,
+        0.9639
       ]
     }
   },
@@ -78,21 +78,21 @@
   "ranking": [
     {
       "posicion": 1,
-      "id_grupo": "GRP-038c4f0643",
-      "titular_central": "Clima en Panamá: Martes con lluvias y tormentas eléctricas en varias regiones durante la tarde",
-      "puntaje": 87.42,
+      "id_grupo": "GRP-21ad932d54",
+      "titular_central": "Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá",
+      "puntaje": 93.25,
+      "empate_con": 0,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
-        "I": 0.75,
-        "U": 1.0,
+        "I": 1.0,
+        "U": 0.9789,
         "N": 1.0,
         "E": 0.3667
       },
       "estado_de_evidencia": "insuficiente",
       "accion": "Investigar ya",
       "vacios": [
-        "subtema no determinado: se usó el alcance neutro de impacto",
         "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
         "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
       ],
@@ -100,21 +100,21 @@
     },
     {
       "posicion": 2,
-      "id_grupo": "GRP-1c2f1d950d",
-      "titular_central": "Obispos panameños presentarán en Roma la realidad de sus diócesis durante la visita ad limina",
-      "puntaje": 87.42,
+      "id_grupo": "GRP-ef3acec21e",
+      "titular_central": "Minsa: Adelantan vacunación contra VSR en embarazadas",
+      "puntaje": 92.99,
+      "empate_con": 0,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
-        "I": 0.75,
-        "U": 1.0,
+        "I": 1.0,
+        "U": 0.966,
         "N": 1.0,
         "E": 0.3667
       },
       "estado_de_evidencia": "insuficiente",
       "accion": "Investigar ya",
       "vacios": [
-        "subtema no determinado: se usó el alcance neutro de impacto",
         "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
         "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
       ],
@@ -122,13 +122,14 @@
     },
     {
       "posicion": 3,
-      "id_grupo": "GRP-1df3ab1e22",
-      "titular_central": "Mides solicita $47 millones para completar último pago de transferencias monetarias de 2026",
-      "puntaje": 87.42,
+      "id_grupo": "GRP-038c4f0643",
+      "titular_central": "Clima en Panamá: Martes con lluvias y tormentas eléctricas en varias regiones durante la tarde",
+      "puntaje": 91.17,
+      "empate_con": 0,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
-        "I": 0.75,
+        "I": 0.9,
         "U": 1.0,
         "N": 1.0,
         "E": 0.3667
@@ -136,18 +137,17 @@
       "estado_de_evidencia": "insuficiente",
       "accion": "Investigar ya",
       "vacios": [
-        "subtema no determinado: se usó el alcance neutro de impacto",
         "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
-        "los titulares traen cifras y no hay dato oficial vinculado",
         "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
       ],
       "contradicciones": []
     },
     {
       "posicion": 4,
-      "id_grupo": "GRP-276c88e7f3",
-      "titular_central": "Tribunal Electoral avanza en la coordinación del Plan General del Elecciones de 2029",
+      "id_grupo": "GRP-1c2f1d950d",
+      "titular_central": "Obispos panameños presentarán en Roma la realidad de sus diócesis durante la visita ad limina",
       "puntaje": 87.42,
+      "empate_con": 8,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
@@ -167,9 +167,10 @@
     },
     {
       "posicion": 5,
-      "id_grupo": "GRP-29baaf270e",
-      "titular_central": "Panamá mantiene vigilancia epidemiológica ante caso sospechoso de peste neumónica en Rusia",
+      "id_grupo": "GRP-1df3ab1e22",
+      "titular_central": "Mides solicita $47 millones para completar último pago de transferencias monetarias de 2026",
       "puntaje": 87.42,
+      "empate_con": 8,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
@@ -183,15 +184,17 @@
       "vacios": [
         "subtema no determinado: se usó el alcance neutro de impacto",
         "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "los titulares traen cifras y no hay dato oficial vinculado",
         "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
       ],
       "contradicciones": []
     },
     {
       "posicion": 6,
-      "id_grupo": "GRP-5e6531917f",
-      "titular_central": "Más de 30 mujeres han muerto de forma violenta en Panamá este año",
+      "id_grupo": "GRP-276c88e7f3",
+      "titular_central": "Tribunal Electoral avanza en la coordinación del Plan General del Elecciones de 2029",
       "puntaje": 87.42,
+      "empate_con": 8,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
@@ -205,16 +208,39 @@
       "vacios": [
         "subtema no determinado: se usó el alcance neutro de impacto",
         "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
-        "los titulares traen cifras y no hay dato oficial vinculado",
         "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
       ],
       "contradicciones": []
     },
     {
       "posicion": 7,
-      "id_grupo": "GRP-6e737ecad5",
-      "titular_central": "MOP solicita $43.1 millones para pagar compromisos y continuar obras en ejecución",
+      "id_grupo": "GRP-29baaf270e",
+      "titular_central": "Panamá mantiene vigilancia epidemiológica ante caso sospechoso de peste neumónica en Rusia",
       "puntaje": 87.42,
+      "empate_con": 8,
+      "rango": "alto",
+      "componentes": {
+        "R": 1.0,
+        "I": 0.75,
+        "U": 1.0,
+        "N": 1.0,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "subtema no determinado: se usó el alcance neutro de impacto",
+        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 8,
+      "id_grupo": "GRP-5e6531917f",
+      "titular_central": "Más de 30 mujeres han muerto de forma violenta en Panamá este año",
+      "puntaje": 87.42,
+      "empate_con": 8,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
@@ -234,10 +260,11 @@
       "contradicciones": []
     },
     {
-      "posicion": 8,
-      "id_grupo": "GRP-84a6b3a04b",
-      "titular_central": "Colegios particulares atribuyen aumento de matrícula a migración al sector oficial y altos costos de operación",
+      "posicion": 9,
+      "id_grupo": "GRP-6e737ecad5",
+      "titular_central": "MOP solicita $43.1 millones para pagar compromisos y continuar obras en ejecución",
       "puntaje": 87.42,
+      "empate_con": 8,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
@@ -249,38 +276,19 @@
       "estado_de_evidencia": "insuficiente",
       "accion": "Investigar ya",
       "vacios": [
+        "subtema no determinado: se usó el alcance neutro de impacto",
         "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "los titulares traen cifras y no hay dato oficial vinculado",
         "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
       ],
       "contradicciones": []
     },
     {
-      "posicion": 9,
-      "id_grupo": "GRP-f4a44182b1",
-      "titular_central": "Panamá reforzará su presencia marítima en Vietnam con nueva oficina de servicio técnico de la AMP en Ho Chi Minh",
-      "puntaje": 87.42,
-      "rango": "alto",
-      "componentes": {
-        "R": 1.0,
-        "I": 0.75,
-        "U": 1.0,
-        "N": 1.0,
-        "E": 0.3667
-      },
-      "estado_de_evidencia": "insuficiente",
-      "accion": "Investigar ya",
-      "vacios": [
-        "subtema no determinado: se usó el alcance neutro de impacto",
-        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (solo vínculo indirecto: no mide el hecho)"
-      ],
-      "contradicciones": []
-    },
-    {
       "posicion": 10,
-      "id_grupo": "GRP-fcdfc2a3cc",
-      "titular_central": "Aprehenden a Enrique Lau, exdirector de la CSS, por supuesto enriquecimiento injustificado",
+      "id_grupo": "GRP-84a6b3a04b",
+      "titular_central": "Colegios particulares atribuyen aumento de matrícula a migración al sector oficial y altos costos de operación",
       "puntaje": 87.42,
+      "empate_con": 8,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
@@ -292,7 +300,6 @@
       "estado_de_evidencia": "insuficiente",
       "accion": "Investigar ya",
       "vacios": [
-        "subtema no determinado: se usó el alcance neutro de impacto",
         "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
         "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
       ],
