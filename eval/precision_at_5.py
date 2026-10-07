@@ -178,9 +178,13 @@ def escribir_hoja(ruta: Path, filas: Sequence[Mapping[str, str]], cfg: ConfigPre
 
 
 def leer_seleccion(ruta: Path, cfg: ConfigPrecision) -> dict[str, set[str]] | None:
-    """``corte -> IDs marcados``; ``None`` si el archivo no existe o no tiene ninguna marca (selección pendiente)."""
+    """``corte -> IDs marcados``; ``None`` si el archivo existe pero no tiene ninguna marca (selección pendiente).
+
+    Un archivo que no existe es un error (X35): una ruta mal escrita no puede pasar por «pendiente». Un ID marcado dos veces en el
+    mismo corte también lo es, y el error lo nombra.
+    """
     if not ruta.exists():
-        return None
+        raise SeleccionInvalida(f"no existe el archivo de selección {ruta}")
     with ruta.open(encoding="utf-8", newline="") as f:
         lector = csv.DictReader(f)
         faltan = {"corte", "id_grupo", "seleccion"} - set(lector.fieldnames or [])
@@ -190,7 +194,10 @@ def leer_seleccion(ruta: Path, cfg: ConfigPrecision) -> dict[str, set[str]] | No
         porcorte: dict[str, set[str]] = {}
         for fila in lector:
             if (fila["seleccion"] or "").strip().lower() == marca:
-                porcorte.setdefault(fila["corte"].strip(), set()).add(fila["id_grupo"].strip())
+                corte, id_grupo = fila["corte"].strip(), fila["id_grupo"].strip()
+                if id_grupo in porcorte.setdefault(corte, set()):
+                    raise SeleccionInvalida(f"{ruta}: el ID {id_grupo} está marcado más de una vez en el corte {corte}")
+                porcorte[corte].add(id_grupo)
     return porcorte or None
 
 
@@ -236,6 +243,13 @@ def _escribir_json(ruta: Path, datos: Mapping[str, Any]) -> None:
     ruta.write_text(json.dumps(datos, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def _salida_medida(ruta: Path) -> bool:
+    try:
+        return json.loads(ruta.read_text(encoding="utf-8")).get("estado") == ESTADO_MEDIDO
+    except (OSError, ValueError, AttributeError):
+        return False
+
+
 def _abrir(base: Path) -> Any:
     return db.conectar(base, solo_lectura=True)
 
@@ -243,7 +257,7 @@ def _abrir(base: Path) -> Any:
 def principal(argv: list[str] | None = None) -> int:
     cfg = cargar_precision()
     parser = argparse.ArgumentParser(description="E1-19: Precision@5 contra la selección de un editor y hoja ciega")
-    parser.add_argument("--seleccion", type=Path, action="append", help=f"hoja marcada por el editor (por defecto {cfg.archivos.seleccion}); se puede repetir")
+    parser.add_argument("--seleccion", type=Path, action="append", help=f"hoja marcada por el editor; se puede repetir, y una ruta que no existe es un error (sin el flag: {cfg.archivos.seleccion}, y si falta está pendiente)")
     parser.add_argument("--base", type=Path, action="append", help="base DuckDB de cada corte (por defecto data/senales.duckdb); se puede repetir")
     parser.add_argument("--salida", type=Path, default=RAIZ / cfg.archivos.salida)
     parser.add_argument("--hoja", action="store_true", help="escribe la hoja ciega para el editor y termina")
@@ -251,6 +265,7 @@ def principal(argv: list[str] | None = None) -> int:
     parser.add_argument("--corte", default=None, help="corte que lleva la hoja (por defecto, el de la base)")
     args = parser.parse_args(argv)
     bases = args.base or [db.RUTA_BASE]
+    por_defecto = not args.seleccion
     selecciones = args.seleccion or [RAIZ / cfg.archivos.seleccion]
 
     if args.hoja:
@@ -267,10 +282,15 @@ def principal(argv: list[str] | None = None) -> int:
     try:
         marcadas: dict[str, set[str]] = {}
         for ruta in selecciones:
+            if por_defecto and not ruta.exists():
+                continue          # sin --seleccion y sin el archivo del editor: todavía no hay selección
             for corte, ids in (leer_seleccion(ruta, cfg) or {}).items():
-                marcadas.setdefault(corte, set()).update(ids)
+                if corte in marcadas:
+                    raise SeleccionInvalida(f"el corte {corte} aparece en más de una hoja ({ruta}): una hoja por corte")
+                marcadas[corte] = ids
         if not marcadas:
-            _escribir_json(args.salida, {"estado": ESTADO_PENDIENTE, "mensaje": cfg.textos.pendiente})
+            if not _salida_medida(args.salida):     # nunca se pisa un resultado medido con «pendiente»
+                _escribir_json(args.salida, {"estado": ESTADO_PENDIENTE, "mensaje": cfg.textos.pendiente})
             print(f"Precision@{cfg.k}: {cfg.textos.pendiente}. Generar la hoja con --hoja; el editor la marca sin ver el ranking.")
             return 0
         z = cargar_carga().salida.z_intervalo_confianza
