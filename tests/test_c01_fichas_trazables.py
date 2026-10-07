@@ -595,6 +595,28 @@ def test_con_casos_descarta_los_de_una_corrida_anterior_que_ya_no_son_la_ficha_d
     assert viejo not in {e["id_caso"] for e in inf["seleccion"]["elegidas"]} and "reemplazados" in (corrida["salida"] / "indice.md").read_text()
 
 
+def test_con_casos_y_notion_el_caso_reemplazado_se_sincroniza_con_caso_de_uso_vacio_explicito(corrida, base, tmp_path, monkeypatch) -> None:
+    """X108: un caso que C-01 ya había subido con «CU-03» y la selección reemplaza queda con su estado nuevo y SIN «Caso de uso» en Notion."""
+    from tests.test_e3_03_notion import CFG as CFG_NOTION, TOKEN, NotionFalso
+    from src.notion import ClienteNotion
+    previo = Revisiones(corrida["ruta"], base, huellas=[tmp_path / "notion", tmp_path / "fichas.jsonl"])
+    viejo = _abrir_como_c01(previo, base, h.G_SOLO, "parcial", tmp_path)
+    falso = NotionFalso([{"id": "pagina-vieja", "titulo": viejo, "props": {"Caso de uso": {"select": {"name": "CU-03"}}, "Estado de revisión": {"select": {"name": "En revisión"}}}}])
+    cliente = ClienteNotion(TOKEN, CFG_NOTION, falso, dormir=lambda x: None)
+    llamadas: list[tuple[str, bool]] = []
+
+    def enviar(e, limpiar_vacias=False):
+        llamadas.append((e.id_caso, limpiar_vacias))
+        return exportar.sincronizar_con_notion(e, cliente=cliente, limpiar_vacias=limpiar_vacias)
+
+    monkeypatch.setattr(cli, "sincronizar_con_notion", enviar)
+    assert _lanzar(corrida, "--casos", "--notion") == 0
+    assert Revisiones(corrida["ruta"]).estado(viejo) == "descartado"
+    assert (viejo, True) in llamadas and all(not limpiar for id_caso, limpiar in llamadas if id_caso != viejo)   # solo el reemplazado limpia
+    props = falso.paginas["pagina-vieja"]["props"]
+    assert props["Caso de uso"] == {"select": None} and props["Estado de revisión"] != {"select": {"name": "En revisión"}}
+
+
 def test_si_el_caso_bancario_de_cu05_no_existe_el_comando_falla_con_un_mensaje(corrida, tmp_path, capsys) -> None:
     corrida["ruta"].unlink()
     corrida["ruta"].with_suffix(".casos.csv").unlink(missing_ok=True)

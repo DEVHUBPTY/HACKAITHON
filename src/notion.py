@@ -78,15 +78,17 @@ def propiedad(tipo: str, valor: str, maximo: int) -> dict[str, Any]:
     raise ErrorNotion(f"tipo de propiedad desconocido: {tipo}")
 
 
-def propiedades_de_fila(fila: dict[str, str], cfg: ConfigNotion) -> dict[str, Any]:
-    """Todas las propiedades de la base a partir de la fila del CSV (``P`` y ``Rango`` son fórmulas y no se envían)."""
+def propiedades_de_fila(fila: dict[str, str], cfg: ConfigNotion, limpiar_vacias: bool = False) -> dict[str, Any]:
+    """Todas las propiedades de la base a partir de la fila del CSV (``P`` y ``Rango`` son fórmulas y no se envían).
+
+    ``limpiar_vacias`` (X108): también envía vacías (``null``) las de ``sin_valor_no_se_envia``; solo el reemplazo de C-01 lo pide."""
     faltan = sorted(set(cfg.propiedades) - set(fila))
     if faltan:
         raise ErrorNotion(f"la fila no trae las propiedades: {faltan}")
     return {
         n: propiedad(t, fila[n], cfg.cuerpo.max_caracteres_bloque)
         for n, t in cfg.propiedades.items()
-        if fila[n].strip() or n not in cfg.sin_valor_no_se_envia      # X107: sin valor, la propiedad no se toca (no se envía null)
+        if limpiar_vacias or fila[n].strip() or n not in cfg.sin_valor_no_se_envia      # X107: sin valor, la propiedad no se toca (no se envía null)
     }
 
 
@@ -200,11 +202,11 @@ class ClienteNotion:
                 self._dormir(_espera_base(intento, self.cfg))
         raise ErrorNotion("Notion: reintentos agotados")  # pragma: no cover
 
-    def sincronizar(self, id_caso: str, fila: dict[str, str], markdown: str) -> Sincronizacion:
+    def sincronizar(self, id_caso: str, fila: dict[str, str], markdown: str, limpiar_vacias: bool = False) -> Sincronizacion:
         """Crea o actualiza la página del caso (clave: ``ID caso``) con la fila y el Markdown ya exportados."""
         if fila.get("ID caso") != id_caso:
             raise ErrorNotion(f"la fila exportada no es la de {id_caso}")
-        props = propiedades_de_fila(fila, self.cfg)
+        props = propiedades_de_fila(fila, self.cfg, limpiar_vacias)
         bloques = bloques_de_markdown(markdown, self.cfg)
         existentes = self.buscar_paginas(id_caso)
         if len(existentes) > 1:

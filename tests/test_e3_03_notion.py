@@ -167,6 +167,19 @@ def test_sin_caso_de_uso_la_exportacion_no_envia_null_y_con_caso_de_uso_lo_envia
     assert propiedades_de_fila({**exportado.fila, "Tema": ""}, CFG)["Tema"] == {"select": None}      # las demás propiedades vacías se siguen enviando vacías
 
 
+def test_limpiar_vacias_envia_null_en_caso_de_uso_solo_cuando_se_pide(exportado) -> None:
+    """X108: el reemplazo de C-01 limpia «Caso de uso» de forma explícita; la sincronización normal no lo hace."""
+    fila = {**exportado.fila, "Caso de uso": ""}
+    assert propiedades_de_fila(fila, CFG, limpiar_vacias=True)["Caso de uso"] == {"select": None}
+    assert "Caso de uso" not in propiedades_de_fila(fila, CFG)
+    falso = NotionFalso([{"id": "previa", "titulo": exportado.id_caso, "props": {"Caso de uso": {"select": {"name": "CU-03"}}}}])
+    cliente(falso).sincronizar(exportado.id_caso, fila, exportado.markdown)
+    enviadas = [j["properties"] for m, r, j in falso.llamadas if m == "PATCH" and r == "pages/previa"]
+    assert enviadas and "Caso de uso" not in enviadas[-1]                                       # sin limpiar_vacias, la sincronización normal no envía «Caso de uso»
+    cliente(falso).sincronizar(exportado.id_caso, fila, exportado.markdown, limpiar_vacias=True)
+    assert falso.paginas["previa"]["props"]["Caso de uso"] == {"select": None}
+
+
 def test_el_markdown_pasa_a_bloques_literales(exportado) -> None:
     bloques = bloques_de_markdown(exportado.markdown, CFG)
     tipos = {b["type"] for b in bloques}

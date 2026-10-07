@@ -169,6 +169,11 @@ def principal(argv: list[str] | None = None) -> int:
         reemplazados: list[str] = []
         if args.casos:
             reemplazados = retirar_reemplazadas(rev, {(e.id_grupo, e.modalidad or cfg.modalidad) for e in elegidas}, cfg)
+            if args.notion:   # X108: el caso reemplazado deja de ser un caso de uso: su fila se actualiza y «Caso de uso» se limpia de forma explícita
+                for id_viejo in reemplazados:
+                    if sincronizar_con_notion(exportar_caso(rev, id_viejo), limpiar_vacias=True) != 0:
+                        print(f"ERROR: {id_viejo} (reemplazado) no se sincronizó con Notion", file=sys.stderr)
+                        return 1
 
         resultados: list[ResultadoFicha] = []
         filas: list[dict[str, Any]] = []
