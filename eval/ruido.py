@@ -51,10 +51,20 @@ def leer_etiquetas(ruta: Path, columna: str, origenes: Iterable[str] = oe.SOLO_H
     return etiquetas
 
 
-def medir(etiquetas: dict[str, str | None], predichas: dict[str, str | None], z: float) -> list[str]:
-    """Líneas de reporte: precisión y recall del filtro (ruido sí/no) y por motivo, solo sobre IDs en ambos lados."""
+def _marca(origenes: Iterable[str] | str) -> list[str]:
+    """La línea PROVISIONAL (D-101) que abre un informe hecho con etiquetas provisionales; vacía si son solo humanas."""
+    return [oe.AVISO_PROVISIONAL] if oe.usa_provisionales(origenes) else []
+
+
+def medir(
+    etiquetas: dict[str, str | None], predichas: dict[str, str | None], z: float, origenes: Iterable[str] | str = oe.SOLO_HUMANOS
+) -> list[str]:
+    """Líneas de reporte: precisión y recall del filtro (ruido sí/no) y por motivo, solo sobre IDs en ambos lados.
+
+    ``origenes`` declara de dónde salen las etiquetas: con provisionales (D-101) el informe abre con la marca PROVISIONAL.
+    """
     comunes = sorted(set(etiquetas) & set(predichas))
-    lineas = [f"Titulares etiquetados presentes en la base: {len(comunes)} de {len(etiquetas)} etiquetados"]
+    lineas = [*_marca(origenes), f"Titulares etiquetados presentes en la base: {len(comunes)} de {len(etiquetas)} etiquetados"]
     humanos = {i: etiquetas[i] is not None for i in comunes}
     modelo = {i: predichas[i] is not None for i in comunes}
     tp = sum(1 for i in comunes if humanos[i] and modelo[i])
@@ -79,11 +89,14 @@ def leer_regional(
     return {fila["id_noticia"].strip(): (fila[columna] or "").strip().casefold() in SI_REGIONAL for fila in oe.leer_filas(ruta, origenes)}
 
 
-def medir_regional(humanos: dict[str, bool], predichas: dict[str, bool], z: float) -> list[str]:
+def medir_regional(
+    humanos: dict[str, bool], predichas: dict[str, bool], z: float, origenes: Iterable[str] | str = oe.SOLO_HUMANOS
+) -> list[str]:
     """Subconjunto regional (D-84), aparte del ruido: precisión y recall de ``alcance_regional`` del filtro."""
     comunes = sorted(set(humanos) & set(predichas))
     tp = sum(1 for i in comunes if humanos[i] and predichas[i])
     return [
+        *_marca(origenes),
         f"Alcance regional (D-84), aparte del ruido; titulares comparados: {len(comunes)}",
         "  Precisión (marcados regionales que la persona confirma): " + _texto_proporcion(tp, sum(predichas[i] for i in comunes), z),
         "  Recall (regionales según la persona que el filtro marcó): " + _texto_proporcion(tp, sum(humanos[i] for i in comunes), z),

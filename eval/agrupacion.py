@@ -235,9 +235,21 @@ def linea_base_identicos(filas_etiquetadas: Sequence[dict[str, Any] | None], rea
     return _presentar(*conteo_de_pares(real, m), z)
 
 
-def evaluar(ruta_base: Path, ruta_etiquetas: Path, cfg: ConfigClasificacion, reglas: ReglasV13, z: float) -> dict[str, Any]:
-    """Calibra y mide la agrupación con el modelo de ``cfg.modelo_activo``. Devuelve el informe completo."""
-    humanos = leer_grupos_humanos(ruta_etiquetas)
+def evaluar(
+    ruta_base: Path,
+    ruta_etiquetas: Path,
+    cfg: ConfigClasificacion,
+    reglas: ReglasV13,
+    z: float,
+    origenes: Iterable[str] = oe.SOLO_HUMANOS,
+) -> dict[str, Any]:
+    """Calibra y mide la agrupación con el modelo de ``cfg.modelo_activo``. Devuelve el informe completo.
+
+    ``origenes``: por defecto solo los grupos de las personas. Con las ``asistente_provisional`` (D-101) el informe lo
+    declara (``usa_etiquetas_provisionales``, ``aviso``).
+    """
+    origenes = oe.validar_origenes(origenes)
+    humanos = leer_grupos_humanos(ruta_etiquetas, origenes)
     con = db.conectar(ruta_base, solo_lectura=True)
     try:
         todas = db.leer_tabla(con, "noticias", "id_noticia")
@@ -267,6 +279,7 @@ def evaluar(ruta_base: Path, ruta_etiquetas: Path, cfg: ConfigClasificacion, reg
     pares_total = n * (n - 1) // 2
     positivos = int(np.triu(barrido.real, k=1).sum())
     return {
+        **oe.marcar({}, origenes),
         "modelo": cfg.modelo_activo,
         "titulares_etiquetados": n,
         "titulares_utiles_agrupados": len(utiles),

@@ -75,10 +75,8 @@ ADVERTENCIA_BASE = (
     "Una sola persona etiquetó (D-85); las etiquetas son un censo del estrato «no ruido» del snapshot anterior: "
     "no hay datos de prueba independientes de los usados para diagnosticar."
 )
-ADVERTENCIA_PROVISIONAL = (
-    "Usa etiquetas que propuso un agente y aprobó provisionalmente el asistente (D-101): riesgo de circularidad, "
-    "pendientes de la revisión humana C-09; no son una verdad de referencia."
-)
+ADVERTENCIA_PROVISIONAL = oe.AVISO_PROVISIONAL
+ADVERTENCIA_SOLO_PROVISIONAL = "Ninguna persona etiquetó estas filas: las propuso un agente y las aprobó provisionalmente el asistente."
 VIAS = {
     "humano": (oe.HUMANO,),
     "asistente_provisional": (oe.ASISTENTE_PROVISIONAL,),
@@ -461,7 +459,7 @@ def diagnosticar(
             "titulares_utiles_del_snapshot": len(ids),
             "origenes": list(origenes),
             "usa_etiquetas_provisionales": oe.ASISTENTE_PROVISIONAL in origenes,
-            "advertencia": ADVERTENCIA_BASE if oe.ASISTENTE_PROVISIONAL not in origenes else f"PROVISIONAL (D-101). {ADVERTENCIA_PROVISIONAL} {ADVERTENCIA_BASE}",
+            "advertencia": _advertencia(origenes),
         },
         "errores_del_clasificador_activo": {
             "por_fila": descomponer_errores(list(y), list(pred_actual_etq)),
@@ -480,6 +478,21 @@ def diagnosticar(
     }
 
 
+def _advertencia(origenes: Iterable[str]) -> str:
+    """El aviso propio de cada combinación de procedencias (no se dice «una persona etiquetó» donde no etiquetó ninguna)."""
+    origenes = oe.validar_origenes(origenes)
+    if oe.ASISTENTE_PROVISIONAL not in origenes:
+        return ADVERTENCIA_BASE
+    if oe.HUMANO not in origenes:
+        return f"{ADVERTENCIA_PROVISIONAL} {ADVERTENCIA_SOLO_PROVISIONAL}"
+    return f"{ADVERTENCIA_PROVISIONAL} Mezcla las 100 etiquetas de una persona (D-85) con las 61 provisionales. {ADVERTENCIA_BASE}"
+
+
+def avisos_por_via() -> dict[str, str]:
+    """El aviso de cada vía del informe en tres vías."""
+    return {nombre: _advertencia(origenes) for nombre, origenes in VIAS.items()}
+
+
 def diagnosticar_en_tres_vias(
     ruta_etiquetas: Path, ruta_base: Path, cfg: ConfigClasificacion, temas: ConfigTemas, motores: dict[str, Any] | None = None
 ) -> dict[str, Any]:
@@ -494,7 +507,7 @@ def diagnosticar_en_tres_vias(
         via: dict[str, Any] = {
             "origenes": list(origenes),
             "usa_etiquetas_provisionales": provisional,
-            "aviso": f"PROVISIONAL (D-101). {ADVERTENCIA_PROVISIONAL}" if provisional else ADVERTENCIA_BASE,
+            "aviso": _advertencia(origenes),
         }
         try:
             via["diagnostico"] = diagnosticar(ruta_etiquetas, ruta_base, cfg, temas, motores, origenes)

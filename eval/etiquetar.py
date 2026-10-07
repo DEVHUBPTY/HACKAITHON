@@ -324,7 +324,7 @@ def validar_hoja(ruta: Path, cfg: ConfigEtiquetado, temas: ConfigTemas, ids_mues
         return [f"{ruta.name}: columnas {campos} no son las esperadas {COLUMNAS}"]
     # Las filas ``asistente_provisional`` (D-101) no son de una persona ni de la muestra de E1-06: su contrato es otro y lo
     # valida ``eval/origen_etiquetas.py``. Aquí solo se validan las humanas.
-    filas = [f for f in leer_csv(ruta) if f.get(oe.COLUMNA_ORIGEN) != oe.ASISTENTE_PROVISIONAL]
+    filas = [f for f in leer_csv(ruta) if oe.normalizar_origen(f.get(oe.COLUMNA_ORIGEN)) != oe.ASISTENTE_PROVISIONAL]
     vistos: Counter[str] = Counter(f["id_noticia"] for f in filas)
     for i, fila in enumerate(filas, start=2):
         problemas += [f"{ruta.name}:{i} ({fila['id_noticia']}): {m}" for m in validar_fila(fila, cfg, temas)]
@@ -656,8 +656,13 @@ def main(argv: list[str] | None = None) -> int:
         print(f"No existe {args.base}: sin la base no se pueden registrar el estrato ni los pesos de muestreo.", file=sys.stderr)
         return 1
     finales, disputas_ids = consolidar(hojas, cfg, muestra_completa)
-    escribir_csv(consolidado, finales, COLUMNAS_CONSOLIDADO)
-    print(f"Escrito {consolidado}: {len(finales)} titulares")
+    provisionales: list[Fila] = []
+    if consolidado.exists() and oe.tiene_columna_origen(consolidado):     # las provisionales (D-101) no salen de las hojas: se conservan, nunca se borran en silencio
+        provisionales = [f for f in oe.leer_filas(consolidado, (oe.ASISTENTE_PROVISIONAL,)) if f["id_noticia"] not in {x["id_noticia"] for x in finales}]
+    escribir_csv(consolidado, [*finales, *provisionales], COLUMNAS_CONSOLIDADO)
+    print(f"Escrito {consolidado}: {len(finales)} titulares humanos")
+    if provisionales:
+        print(f"Se conservaron {len(provisionales)} filas provisionales (D-101) del consolidado anterior: no vienen de las hojas.")
     if disputas_ids:
         todas = en_disputa(hojas)
         print(f"EXCLUIDOS POR DISPUTA: {len(disputas_ids)} titulares (fuera del consolidado hasta que una tercera persona los etiquete con --desempate):")

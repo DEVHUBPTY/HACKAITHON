@@ -1079,7 +1079,7 @@
         "asistente_provisional"
       ],
       "usa_etiquetas_provisionales": true,
-      "aviso": "PROVISIONAL (D-101). Usa etiquetas que propuso un agente y aprobó provisionalmente el asistente (D-101): riesgo de circularidad, pendientes de la revisión humana C-09; no son una verdad de referencia.",
+      "aviso": "PROVISIONAL (D-101). Usa etiquetas que propuso un agente y aprobó provisionalmente el asistente: riesgo de circularidad, pendientes de la revisión humana C-09; no son una verdad de referencia. Ninguna persona etiquetó estas filas: las propuso un agente y las aprobó provisionalmente el asistente.",
       "diagnostico": {
         "modelo": "e5",
         "metodo": "A",
@@ -1099,7 +1099,7 @@
             "asistente_provisional"
           ],
           "usa_etiquetas_provisionales": true,
-          "advertencia": "PROVISIONAL (D-101). Usa etiquetas que propuso un agente y aprobó provisionalmente el asistente (D-101): riesgo de circularidad, pendientes de la revisión humana C-09; no son una verdad de referencia. Una sola persona etiquetó (D-85); las etiquetas son un censo del estrato «no ruido» del snapshot anterior: no hay datos de prueba independientes de los usados para diagnosticar."
+          "advertencia": "PROVISIONAL (D-101). Usa etiquetas que propuso un agente y aprobó provisionalmente el asistente: riesgo de circularidad, pendientes de la revisión humana C-09; no son una verdad de referencia. Ninguna persona etiquetó estas filas: las propuso un agente y las aprobó provisionalmente el asistente."
         },
         "errores_del_clasificador_activo": {
           "por_fila": {
@@ -2010,7 +2010,7 @@
         "asistente_provisional"
       ],
       "usa_etiquetas_provisionales": true,
-      "aviso": "PROVISIONAL (D-101). Usa etiquetas que propuso un agente y aprobó provisionalmente el asistente (D-101): riesgo de circularidad, pendientes de la revisión humana C-09; no son una verdad de referencia.",
+      "aviso": "PROVISIONAL (D-101). Usa etiquetas que propuso un agente y aprobó provisionalmente el asistente: riesgo de circularidad, pendientes de la revisión humana C-09; no son una verdad de referencia. Mezcla las 100 etiquetas de una persona (D-85) con las 61 provisionales. Una sola persona etiquetó (D-85); las etiquetas son un censo del estrato «no ruido» del snapshot anterior: no hay datos de prueba independientes de los usados para diagnosticar.",
       "diagnostico": {
         "modelo": "e5",
         "metodo": "A",
@@ -2035,7 +2035,7 @@
             "asistente_provisional"
           ],
           "usa_etiquetas_provisionales": true,
-          "advertencia": "PROVISIONAL (D-101). Usa etiquetas que propuso un agente y aprobó provisionalmente el asistente (D-101): riesgo de circularidad, pendientes de la revisión humana C-09; no son una verdad de referencia. Una sola persona etiquetó (D-85); las etiquetas son un censo del estrato «no ruido» del snapshot anterior: no hay datos de prueba independientes de los usados para diagnosticar."
+          "advertencia": "PROVISIONAL (D-101). Usa etiquetas que propuso un agente y aprobó provisionalmente el asistente: riesgo de circularidad, pendientes de la revisión humana C-09; no son una verdad de referencia. Mezcla las 100 etiquetas de una persona (D-85) con las 61 provisionales. Una sola persona etiquetó (D-85); las etiquetas son un censo del estrato «no ruido» del snapshot anterior: no hay datos de prueba independientes de los usados para diagnosticar."
         },
         "errores_del_clasificador_activo": {
           "por_fila": {
