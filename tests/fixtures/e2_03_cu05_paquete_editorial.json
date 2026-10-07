@@ -1,0 +1,239 @@
+{
+  "marca": "BORRADOR · requiere revisión",
+  "id_caso": "GRP-da35c3dead",
+  "version": 1,
+  "leyenda_alcance": "basado únicamente en titular/metadatos",
+  "accion": "Producir borrador",
+  "forzado": false,
+  "vacios": [
+    {
+      "origen": "seccion",
+      "referencia": "titulares",
+      "motivo": "el nombre «Estrella» no está en las afirmaciones ni en la evidencia citadas; el nombre «Revista» no está en las afirmaciones ni en la evidencia citadas; el nombre «EY» no está en las afirmaciones ni en la evidencia citadas"
+    },
+    {
+      "origen": "seccion",
+      "referencia": "copy_digital",
+      "motivo": "el nombre «Singapur» no está en las afirmaciones ni en la evidencia citadas; el nombre «Vietnam» no está en las afirmaciones ni en la evidencia citadas; el nombre «Estrella» no está en las afirmaciones ni en la evidencia citadas; el nombre «Revista» no está en las afirmaciones ni en la evidencia citadas; el nombre «EY» no está en las afirmaciones ni en la evidencia citadas"
+    },
+    {
+      "origen": "seccion",
+      "referencia": "guion",
+      "motivo": "la cifra «tres» no coincide con el valor de la evidencia citada; el guion tiene 93 palabras y debe tener entre 110 y 150"
+    }
+  ],
+  "afirmaciones": [
+    {
+      "id": "A1",
+      "tipo": "declaración",
+      "texto": "El medio prensa-latina.cu reporta que el presidente panameño visitará Singapur y Vietnam.",
+      "citas": [
+        {
+          "id": "NOT-1819a7014e",
+          "campo": "titulo_limpio",
+          "traducido": false
+        }
+      ],
+      "base": []
+    },
+    {
+      "id": "A2",
+      "tipo": "declaración",
+      "texto": "El medio laestrella.com.pa reporta que Mulino viajará a Asia y suscribirá convenios bilaterales con Singapur y Vietnam.",
+      "citas": [
+        {
+          "id": "NOT-33032542b7",
+          "campo": "titulo_limpio",
+          "traducido": false
+        }
+      ],
+      "base": []
+    },
+    {
+      "id": "A3",
+      "tipo": "declaración",
+      "texto": "El medio revistaeyn.com reporta que el presidente de Panamá visita Singapur y Vietnam en busca de inversiones.",
+      "citas": [
+        {
+          "id": "NOT-fbc3efaa5d",
+          "campo": "titulo_limpio",
+          "traducido": false
+        }
+      ],
+      "base": []
+    },
+    {
+      "id": "A4",
+      "tipo": "hecho",
+      "texto": "El grupo de registros reúne 3 titulares de 3 medios que reportan este tema.",
+      "citas": [
+        {
+          "id": "GRP-da35c3dead",
+          "campo": "n_titulares",
+          "traducido": false
+        },
+        {
+          "id": "GRP-da35c3dead",
+          "campo": "n_medios",
+          "traducido": false
+        }
+      ],
+      "base": []
+    },
+    {
+      "id": "A5",
+      "tipo": "hecho",
+      "texto": "El grupo de registros estima 3 procedencias independientes.",
+      "citas": [
+        {
+          "id": "GRP-da35c3dead",
+          "campo": "n_procedencias",
+          "traducido": false
+        }
+      ],
+      "base": []
+    },
+    {
+      "id": "A6",
+      "tipo": "hipótesis",
+      "texto": "Si la población panameña sigue los anuncios sobre viajes presidenciales y convenios bilaterales, el tema podría resultar relevante para quienes esperan información sobre inversiones y relaciones exteriores.",
+      "citas": [],
+      "base": [
+        "A1",
+        "A2",
+        "A3"
+      ]
+    }
+  ],
+  "titulo": {
+    "texto": "Medios reportan viaje de Mulino a Singapur y Vietnam por convenios",
+    "afirmaciones": [
+      "A1",
+      "A2"
+    ],
+    "parte": null
+  },
+  "titulares": [],
+  "enfoque": [
+    {
+      "texto": "Como hipótesis, si la población panameña sigue los anuncios sobre viajes presidenciales y convenios bilaterales, el tema podría resultar relevante para quienes esperan información sobre inversiones y relaciones exteriores.",
+      "afirmaciones": [
+        "A6"
+      ],
+      "parte": null
+    }
+  ],
+  "brief": [
+    {
+      "texto": "El medio prensa-latina.cu reporta que el presidente panameño visitará Singapur y Vietnam.",
+      "afirmaciones": [
+        "A1"
+      ],
+      "parte": null
+    },
+    {
+      "texto": "El medio laestrella.com.pa reporta que Mulino viajará a Asia y suscribirá convenios bilaterales con Singapur y Vietnam.",
+      "afirmaciones": [
+        "A2"
+      ],
+      "parte": null
+    },
+    {
+      "texto": "El medio revistaeyn.com reporta que el presidente de Panamá visita Singapur y Vietnam en busca de inversiones.",
+      "afirmaciones": [
+        "A3"
+      ],
+      "parte": null
+    },
+    {
+      "texto": "El grupo de registros reúne 3 titulares de 3 medios que reportan este tema.",
+      "afirmaciones": [
+        "A4"
+      ],
+      "parte": null
+    },
+    {
+      "texto": "El grupo de registros estima 3 procedencias independientes.",
+      "afirmaciones": [
+        "A5"
+      ],
+      "parte": null
+    },
+    {
+      "texto": "Como hipótesis, si la población panameña sigue los anuncios sobre viajes presidenciales y convenios bilaterales, el tema podría resultar relevante para quienes esperan información sobre inversiones y relaciones exteriores.",
+      "afirmaciones": [
+        "A6"
+      ],
+      "parte": null
+    }
+  ],
+  "preguntas": [
+    {
+      "texto": "¿Qué datos oficiales permiten vincular los anuncios sobre el viaje presidencial con convenios bilaterales o inversiones?",
+      "vacio": "solo_vinculo_indirecto"
+    },
+    {
+      "texto": "¿Qué medio y qué fecha de publicación corresponden a cada uno de los 3 titulares del grupo de registros?",
+      "vacio": "medios_o_fechas_desconocidos"
+    },
+    {
+      "texto": "¿Qué subtema concreto, dentro del alcance neutro de impacto, describe mejor este grupo de titulares?",
+      "vacio": "subtema_desconocido"
+    }
+  ],
+  "fuentes_verificaciones": [
+    "sin dato oficial vinculado (solo vínculo indirecto: no mide el hecho) → El indicador vinculado es contexto lejano: buscar un dato oficial que mida el hecho directamente.",
+    "3 de 3 titulares sin medio o fecha de publicación conocidos → Abrir el enlace de cada titular para identificar el medio y la fecha de publicación original.",
+    "urgencia estimada: fecha de publicación desconocida → Abrir el enlace de cada titular para identificar el medio y la fecha de publicación original.",
+    "subtema no determinado: se usó el alcance neutro de impacto → Confirmar de qué asunto trata el grupo; sin subtema no hay fuentes sugeridas específicas.",
+    "Fuente sugerida: Autoridad del Canal de Panamá",
+    "Fuente sugerida: Autoridad Marítima de Panamá",
+    "sugerencias para quien verifica; no son evidencia del sistema ni se citan como tal"
+  ],
+  "guion": [],
+  "resumen_web": [
+    {
+      "texto": "El medio prensa-latina.cu reporta que el presidente panameño visitará Singapur y Vietnam.",
+      "afirmaciones": [
+        "A1"
+      ],
+      "parte": null
+    },
+    {
+      "texto": "El medio laestrella.com.pa reporta que Mulino viajará a Asia y suscribirá convenios bilaterales con Singapur y Vietnam.",
+      "afirmaciones": [
+        "A2"
+      ],
+      "parte": null
+    },
+    {
+      "texto": "El medio revistaeyn.com reporta que el presidente de Panamá visita Singapur y Vietnam en busca de inversiones.",
+      "afirmaciones": [
+        "A3"
+      ],
+      "parte": null
+    },
+    {
+      "texto": "El grupo de registros reúne 3 titulares de 3 medios que reportan este tema.",
+      "afirmaciones": [
+        "A4"
+      ],
+      "parte": null
+    },
+    {
+      "texto": "El grupo de registros estima 3 procedencias independientes.",
+      "afirmaciones": [
+        "A5"
+      ],
+      "parte": null
+    },
+    {
+      "texto": "Si la población panameña sigue los anuncios sobre viajes presidenciales y convenios bilaterales, el tema podría resultar relevante para quienes esperan información sobre inversiones y relaciones exteriores.",
+      "afirmaciones": [
+        "A6"
+      ],
+      "parte": null
+    }
+  ],
+  "copy_digital": []
+}

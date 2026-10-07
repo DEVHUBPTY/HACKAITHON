@@ -56,3 +56,16 @@ Los nulos de `t01_indicadores_nulos.csv` **no son errores**: se conservan como n
 | `duplicado_url` | `SYN-RUI-009` a `-011` | Mismo artículo que `SYN-RUI-008` con URL `/amp`, `m.` y `http`; canonicalizadas coinciden |
 
 No son ruido (controles): `SYN-RUI-008` (URL canónica; las cuatro variantes de la inflación usan coma decimal, "1,5 por ciento", como en el español de Panamá, y comparten título porque son el mismo artículo), `-012` y `-013` (sufijo del medio y entidades HTML que la limpieza debe resolver, pero la noticia se conserva) y `-014` y `-015` (agencia global, sección `/mundo/`, sobre hechos que afectan a Panamá; CLAUDE.md: no es ruido).
+
+## Caso real congelado de E2-03 (no sintético)
+
+`e2_03_cu05_*.json` son la **excepción** de esta carpeta: congelan un caso **real** del snapshot (corte 2026-10-07T00:41Z) para probar T09 banca sin la base ni el LLM en vivo. Solo metadatos de noticias (ID, titular limpio, medio) y conteos del grupo; sin descripciones del RSS ni cuerpos (D-31, D-72). Nunca se usan para calcular métricas.
+
+| Archivo | Qué es |
+|---|---|
+| `e2_03_cu05_ficha.json` | `EntradaFicha` de `GRP-da35c3dead` en modalidad `banca` (acción «Incluir en el boletín como observación») |
+| `e2_03_cu05_boletin.json` | El `BoletinBanca` que entrega la caché de borradores (`data/cache_llm/`) para esa ficha |
+| `e2_03_cu05_ficha_editorial.json`, `e2_03_cu05_paquete_editorial.json` | Lo mismo en modalidad `editorial` (comprobación 6: sigue igual) |
+| `e2_03_cu05_ficha_abstencion.json` | `EntradaFicha` de `GRP-f4a44182b1` en banca (acción «Seguimiento prioritario»: no genera boletín, D-104) |
+
+Si cambia un prompt o una regla del validador, la caché deja de servir y `tests/test_e2_03_cu05.py` falla: se vuelve a calentar (`scripts.calentar_cache`) y a congelar.
