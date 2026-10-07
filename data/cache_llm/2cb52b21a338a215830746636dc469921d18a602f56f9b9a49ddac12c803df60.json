@@ -1,0 +1,11 @@
+{
+ "clave": "2cb52b21a338a215830746636dc469921d18a602f56f9b9a49ddac12c803df60",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1766,
+ "tokens_salida": 276,
+ "creado_utc": "2026-10-07T03:27:08Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta que el MOP pide $43.1 millones para obras\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La evidencia disponible se apoya en una sola procedencia independiente estimada, por lo que aún no puede considerarse suficiente.\", \"afirmaciones\": [\"A3\"]}, {\"texto\": \"Si esa única procedencia se confirma como la fuente de todos los titulares, la cobertura del tema podría reducirse a un solo reporte.\", \"afirmaciones\": [\"A2\"]}], \"preguntas\": [{\"texto\": \"¿Existe un dato oficial vinculado a los $43.1 millones que el MOP solicita, según reporta TVN Panamá?\", \"vacio\": \"cifras_sin_dato_oficial\"}, {\"texto\": \"¿Qué documento o indicador oficial permite verificar el monto solicitado por el MOP?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Hay otros medios que reporten el tema con fuente propia y no como réplica de TVN Panamá?\", \"vacio\": \"procedencias_insuficientes\"}]}"
+}

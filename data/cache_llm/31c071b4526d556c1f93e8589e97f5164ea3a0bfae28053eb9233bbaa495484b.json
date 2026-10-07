@@ -1,0 +1,11 @@
+{
+ "clave": "31c071b4526d556c1f93e8589e97f5164ea3a0bfae28053eb9233bbaa495484b",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1727,
+ "tokens_salida": 340,
+ "creado_utc": "2026-10-07T03:27:01Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta que César Caicedo está recluido en el Hospital Santo Tomás\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La cobertura se sostiene en una sola procedencia independiente estimada, por lo que la verificación del traslado reportado por TVN Panamá requeriría contraste con otras fuentes.\", \"afirmaciones\": [\"A3\"]}, {\"texto\": \"Si no aparece un dato oficial vinculado al tema, la reconstrucción del recorrido entre Coiba y el Hospital Santo Tomás quedaría apoyada únicamente en lo que reporta TVN Panamá.\", \"afirmaciones\": [\"A3\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún dato oficial vinculado al tema que permita contrastar lo que reporta TVN Panamá sobre la reclusión de César Caicedo en el Hospital Santo Tomás?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras procedencias independientes pueden aportar información sobre el traslado a Coiba y la reclusión reportados por TVN Panamá?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Qué documentos o registros oficiales permitirían confirmar el traslado y la reclusión que reporta TVN Panamá?\", \"vacio\": \"sin_dato_oficial\"}]}"
+}

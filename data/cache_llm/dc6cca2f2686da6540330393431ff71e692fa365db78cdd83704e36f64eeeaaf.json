@@ -1,0 +1,11 @@
+{
+ "clave": "dc6cca2f2686da6540330393431ff71e692fa365db78cdd83704e36f64eeeaaf",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 2130,
+ "tokens_salida": 249,
+ "creado_utc": "2026-10-07T03:26:49Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"Medios reportan que El Niño profundiza riesgos económicos en América Latina\", \"afirmaciones\": [\"A1\", \"A2\", \"A3\", \"A4\", \"A5\", \"A6\"]}, \"enfoque\": [{\"texto\": \"La población de América Latina tendría interés en este tema, dado que los riesgos económicos asociados a El Niño pueden afectar sus condiciones de vida.\", \"afirmaciones\": [\"A8\"]}], \"preguntas\": [{\"texto\": \"¿Qué dato oficial o indicador permite dimensionar los riesgos económicos asociados a El Niño en América Latina?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué procedencias independientes adicionales reportan la intensificación de El Niño y sus riesgos económicos en América Latina?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"Qué medios y fechas de publicación corresponden a los 20 titulares que reportan este tema?\", \"vacio\": \"medios_o_fechas_desconocidos\"}]}"
+}

@@ -1,0 +1,11 @@
+{
+ "clave": "0c8b547bb1c3f88c458b2a921b080e9afc0c1abc3c34d1dc6d5d3aa675d62c3e",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1786,
+ "tokens_salida": 248,
+ "creado_utc": "2026-10-07T03:27:27Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta que en Coclé se seca el campo\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"Un tema con una sola procedencia independiente puede resultar relevante para la población que depende del campo.\", \"afirmaciones\": [\"A4\"]}, {\"texto\": \"La disponibilidad de agua y de tierras cultivables importa a esa población, según la inferencia del grupo.\", \"afirmaciones\": [\"A4\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún dato oficial anual que mida la disponibilidad de agua o de tierras cultivables en Coclé?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué indicador oficial permitiría seguir este tema con cifras comparables entre años?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras procedencias independientes podrían aportar evidencia sobre la sequía del campo en Coclé?\", \"vacio\": \"procedencias_insuficientes\"}]}"
+}

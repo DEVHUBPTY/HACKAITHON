@@ -1,0 +1,11 @@
+{
+ "clave": "39094270f76aa8930beaa3ee37cdbc244190f2088c257dd87ffc3a5b20e58cd1",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1885,
+ "tokens_salida": 307,
+ "creado_utc": "2026-10-07T03:26:44Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta que colegios particulares atribuyen el aumento de matrícula a la migración\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La cobertura disponible sobre este tema resulta limitada para la población interesada en la matrícula de los colegios particulares, pues se apoya en una sola procedencia independiente estimada.\", \"afirmaciones\": [\"A4\"]}, {\"texto\": \"Si las familias y los colegios particulares contaran con más procedencias independientes sobre este tema, la discusión sobre la matrícula y los costos de operación podría ganar contexto para la población.\", \"afirmaciones\": [\"A5\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún dato oficial vinculado al tema de la matrícula de los colegios particulares?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué indicadores oficiales permitirían seguir la evolución de la matrícula en los colegios particulares?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué procedencias independientes adicionales podrían aportar contexto sobre la matrícula y los costos de operación de los colegios particulares?\", \"vacio\": \"procedencias_insuficientes\"}]}"
+}

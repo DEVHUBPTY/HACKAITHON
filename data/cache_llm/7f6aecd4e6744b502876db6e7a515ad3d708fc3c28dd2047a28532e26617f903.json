@@ -1,0 +1,11 @@
+{
+ "clave": "7f6aecd4e6744b502876db6e7a515ad3d708fc3c28dd2047a28532e26617f903",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1851,
+ "tokens_salida": 296,
+ "creado_utc": "2026-10-07T03:27:31Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta refuerzo marítimo en Vietnam con oficina de la AMP\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La información disponible sobre este tema es limitada, por lo que conviene tratarla con cautela antes de sacar conclusiones amplias.\", \"afirmaciones\": [\"A4\"]}, {\"texto\": \"Si la población sigue este tema, podría interesarle saber cómo se verifica y amplía la cobertura cuando solo hay una procedencia independiente.\", \"afirmaciones\": [\"A5\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún dato oficial vinculado al refuerzo de la presencia marítima en Vietnam que permita contrastar lo reportado por TVN Panamá?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras fuentes independientes podrían confirmar o ampliar la información sobre la nueva oficina de servicio técnico de la AMP en Ho Chi Minh?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Cómo se verifica y amplía la cobertura de un tema cuando solo se cuenta con una procedencia independiente?\", \"vacio\": \"procedencias_insuficientes\"}]}"
+}

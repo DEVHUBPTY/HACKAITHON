@@ -1,0 +1,11 @@
+{
+ "clave": "a3a116ced7642334fc7dc158cf6da57dfae6d6ac7e3d43141929120b43418ce7",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 2017,
+ "tokens_salida": 324,
+ "creado_utc": "2026-10-07T03:27:03Z",
+ "respuesta": "{\n  \"titulo_trabajo\": {\n    \"texto\": \"TVN Panamá reporta que César Caicedo está recluido en un hospital\",\n    \"afirmaciones\": [\"A1\"]\n  },\n  \"enfoque\": [\n    {\n      \"texto\": \"La cobertura se sostiene en una sola procedencia independiente estimada, por lo que la verificación del traslado reportado requeriría contraste con otras fuentes.\",\n      \"afirmaciones\": [\"A3\"]\n    },\n    {\n      \"texto\": \"Si no aparece un dato oficial vinculado al tema, la reconstrucción del recorrido reportado quedaría apoyada únicamente en lo que reporta TVN Panamá.\",\n      \"afirmaciones\": [\"A3\"]\n    }\n  ],\n  \"preguntas\": [\n    {\n      \"texto\": \"¿Existe un dato oficial vinculado al tema que permita contrastar lo que reporta TVN Panamá?\",\n      \"vacio\": \"sin_dato_oficial\"\n    },\n    {\n      \"texto\": \"¿Qué otras procedencias independientes pueden aportar cobertura sobre este tema?\",\n      \"vacio\": \"procedencias_insuficientes\"\n    },\n    {\n      \"texto\": \"¿Qué documentos o registros oficiales permitirían verificar el traslado y la reclusión reportados?\",\n      \"vacio\": \"sin_dato_oficial\"\n    }\n  ]\n}"
+}

@@ -1,0 +1,11 @@
+{
+ "clave": "4bb61f6ad75ea24cdb7caa80de97c137a12fe0e56e8af85bcf39eea3f21f417a",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1819,
+ "tokens_salida": 278,
+ "creado_utc": "2026-10-07T03:26:53Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta que el Minsa adelanta la vacunación contra el VSR en embarazadas\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La información disponible sobre esta vacunación resulta relevante para las embarazadas y para quienes toman decisiones de salud pública, dado que la cobertura informativa se apoya en una sola procedencia.\", \"afirmaciones\": [\"A4\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún dato oficial del Minsa u otra autoridad sanitaria que respalde el adelanto de la vacunación contra el VSR en embarazadas reportado por TVN Panamá?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras procedencias independientes han informado sobre el adelanto de la vacunación contra el VSR en embarazadas?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Qué subtemas específicos, como grupos priorizados, calendario o disponibilidad de dosis, abarca la cobertura sobre esta vacunación?\", \"vacio\": \"subtema_desconocido\"}]}"
+}
