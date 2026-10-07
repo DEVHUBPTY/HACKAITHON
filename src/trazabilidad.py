@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import csv
 import json
+import math
 import re
 import unicodedata
 from collections.abc import Iterable, Mapping, Sequence
@@ -27,6 +28,7 @@ from src.carga import intervalo_wilson
 from src.configuracion import (
     RAIZ,
     ConfigFichasTrazables,
+    CifraOficialTrazable,
     CriterioFichaTrazable,
     RegistroTrazable,
     cargar_normalizacion,
@@ -46,6 +48,7 @@ REGLAS = (
     "cita_con_id_en_datos",
     "cita_con_campo_y_valor",
     "cifra_de_conteo_coincide",
+    "cifra_oficial_coincide",
     "declaracion_literal",
     "url_presente",
     "procedencias_y_estado",
@@ -295,6 +298,26 @@ def _claves_de(obj: Any) -> Iterable[str]:
             yield from _claves_de(v)
 
 
+def _cifra_oficial(id_: str, valor: Any, texto: str, reg: Registro, cifra: CifraOficialTrazable, cfg: ConfigFichasTrazables, presentacion: Any) -> Unidad:
+    """X105: la cifra que la ficha muestra para un dato oficial es la del dato, al redondeo con que la ficha la muestra.
+
+    Se busca en el texto de la afirmación la cifra de ESE registro (``cifra.patron`` con sus columnas) y se compara con
+    ``round(dato, decimales)``. Un dato que cambió después de armar la ficha, o una cifra editada, falla.
+    """
+    detalle = f"{id_} · {cifra.campo} = {valor}"
+    try:
+        patron = cifra.patron.format_map({k: re.escape(str(v)) for k, v in reg.valores.items()})
+        hallada = re.search(patron, texto)
+        dato = round(float(valor), int(getattr(presentacion, cifra.decimales_en)))
+        mostrada = float(hallada.group("cifra")) if hallada else None
+    except (KeyError, ValueError, IndexError):
+        return Unidad("cifra_oficial_coincide", False, f"{detalle}: no se pudo leer la cifra del texto ni del dato")
+    if mostrada is None:
+        return Unidad("cifra_oficial_coincide", False, f"{detalle}: la ficha no muestra la cifra de este dato")
+    ok = math.isclose(mostrada, dato, rel_tol=0.0, abs_tol=cfg.tolerancia_cifra)
+    return Unidad("cifra_oficial_coincide", ok, detalle + ("" if ok else f": la ficha muestra {mostrada:g} y el dato (a {cifra.decimales_en}) es {dato:g}"))
+
+
 def verificar_ficha(
     ficha: Ficha,
     resolutor: Resolutor,
@@ -315,6 +338,7 @@ def verificar_ficha(
     md = a_markdown(ficha)
     salidas = [md, str(registro), *textos_extra]
     u = res.unidades.append
+    decimales = cargar_verificacion().presentacion
 
     # --- afirmaciones y citas, resueltas contra los datos
     vistas: set[tuple[str, str]] = set()
@@ -335,6 +359,9 @@ def verificar_ficha(
                 res.trazas.append(Traza(id_, campo, reg is not None, _extracto(valor) if _hay_valor(valor) else "", reg.url if reg else None, a["tipo"]))
             if id_.startswith("GRP-") and campo.startswith("n_") and reg is not None:
                 u(Unidad("cifra_de_conteo_coincide", re.search(rf"(?<!\d){re.escape(str(valor))}(?!\d)", a["texto"]) is not None, f"{id_} · {campo} = {valor}"))
+            regla_cifra = resolutor.regla(id_)
+            if regla_cifra is not None and regla_cifra.cifra is not None and campo == regla_cifra.cifra.campo and reg is not None and _hay_valor(valor):
+                u(_cifra_oficial(id_, valor, a["texto"], reg, regla_cifra.cifra, cfg, decimales))
         if a["tipo"] == "declaración":
             fuentes = [normalizar(str(resolutor.buscar(c["id"]).valores.get(c["campo"], ""))) for c in citas if resolutor.buscar(c["id"])]
             frases = COMILLAS.findall(a["texto"])

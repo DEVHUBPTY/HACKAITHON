@@ -3041,6 +3041,25 @@ class SeleccionFichasTrazables(ModeloConfig):
         return self
 
 
+class CifraOficialTrazable(ModeloConfig):
+    """X105: cómo se encuentra en el texto de la ficha la cifra de un dato oficial y a qué redondeo se compara con el dato.
+
+    ``patron`` es una expresión regular con el grupo ``cifra``; sus ``{campos}`` se rellenan con las columnas del registro citado
+    (así encuentra la cifra de ESE dato aunque la línea traiga varias). ``decimales_en`` nombra el decimal de ``verificacion.yaml``
+    (``presentacion``) con que la ficha MUESTRA ese valor: se compara el dato redondeado igual que se mostró.
+    """
+
+    campo: str = Field(min_length=1)
+    patron: str = Field(min_length=1)
+    decimales_en: Literal["decimales_valor", "decimales_valor_sbp"]
+
+    @model_validator(mode="after")
+    def _grupo_cifra(self) -> CifraOficialTrazable:
+        if "(?P<cifra>" not in self.patron:
+            raise ValueError("cifra.patron: debe llevar el grupo (?P<cifra>…)")
+        return self
+
+
 class RegistroTrazable(ModeloConfig):
     """Cómo se resuelve en los datos un ID citado: tabla de DuckDB o CSV de ``data/processed``."""
 
@@ -3051,6 +3070,7 @@ class RegistroTrazable(ModeloConfig):
     plantilla_id: str | None = None
     columna_url: str | None = None
     url_obligatoria: bool
+    cifra: CifraOficialTrazable | None = None                # X105: solo los datos oficiales con una cifra mostrada (IND-, SBP-, SIS-)
 
     @model_validator(mode="after")
     def _id_y_url(self) -> RegistroTrazable:
@@ -3102,6 +3122,7 @@ class ConfigFichasTrazables(ModeloConfig):
     descripcion_minimo_caracteres: int = Field(ge=1)
     claves_de_autor: list[str] = Field(min_length=1)
     z_intervalo_confianza: float = Field(gt=0)
+    tolerancia_cifra: float = Field(ge=0)                    # X105: diferencia absoluta máxima entre la cifra mostrada y el dato redondeado (solo ruido de coma flotante)
     revision: RevisionFichasTrazables
     reemplazo: ReemplazoFichasTrazables
     archivos: ArchivosFichasTrazables
