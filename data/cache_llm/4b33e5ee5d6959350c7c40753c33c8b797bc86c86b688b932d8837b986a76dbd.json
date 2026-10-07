@@ -1,0 +1,11 @@
+{
+ "clave": "4b33e5ee5d6959350c7c40753c33c8b797bc86c86b688b932d8837b986a76dbd",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1822,
+ "tokens_salida": 256,
+ "creado_utc": "2026-10-07T12:00:00Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta caída de árbol sobre vehículos en hospital San Miguel Arcángel\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La caída de un árbol sobre vehículos en los estacionamientos de un hospital puede importar a la población que acude o trabaja en ese centro de salud, en la medida en que afecta el acceso y el uso de esas instalaciones.\", \"afirmaciones\": [\"A4\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún dato oficial vinculado a este tema que permita contrastar lo reportado?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras procedencias independientes han reportado la caída de un árbol sobre vehículos en los estacionamientos del hospital San Miguel Arcángel?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿A qué subtema corresponde este tema dentro del alcance neutro de impacto utilizado en la ficha?\", \"vacio\": \"subtema_desconocido\"}]}"
+}

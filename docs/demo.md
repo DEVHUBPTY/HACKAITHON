@@ -20,7 +20,7 @@ Los atajos `?caso=<GRP-…|posición>` abren la ficha directamente (ej. `http://
 | 1:00–1:30 | Ficha `?caso=GRP-79f3183472` | Abrir *Quién lo reporta*: 20 titulares de 18 medios y **1 procedencia** (Xinhua + Big News Network) | "20 titulares, 18 medios, una sola procedencia: se cuenta una fuente independiente." | Ficha en Markdown (`python -m src.ficha --grupo GRP-79f3183472`) |
 | 1:30–2:00 | Consulta | Preguntar «¿Cuál fue la inflación de Panamá en 2023?»; hacer clic en la cita `IND-PAN-FP.CPI.TOTL.ZG-2023 · valor` (valor con su unidad, **año del dato**, **fecha de extracción**, país, indicador y URL) | "Este dato es del Banco Mundial, anual, de 2023: el sistema no lo presenta como actual." | `python -m src.consulta "…"` |
 | 2:00–2:40 | Ficha `?caso=GRP-da35c3dead` | Titular central, 3 medios, 3 procedencias, **Borrador opcional**; abrir *Qué está respaldado* y hacer clic en una cita `NOT-… · titulo_limpio` | "Cada línea respaldada lleva su cita ID + campo; un titular es una declaración de su medio, no un hecho." | Ficha en Markdown |
-| 2:40–3:20 | Paquete → Revisión | Paquete: el borrador del grupo (**hoy muestra «Generación disponible cuando se integre E1-12»**; ver *Estado de la pasada*). Revisión: los cinco estados del reto y lo que la persona debe comprobar | "Todo es borrador: el estado máximo es «aprobado como borrador»." | Pantalla de Revisión |
+| 2:40–3:20 | Paquete → Revisión | Paquete: el borrador del grupo, leído de la caché (`data/cache_llm/`, sin red). **Aviso:** `GRP-da35c3dead` quedó con `titulares`, `copy_digital` y `guion` vacíos tras recalentar la caché (X45; `docs/reproducibilidad.md`); la tarea E1-12b lo corrige. Revisión: los cinco estados del reto y lo que la persona debe comprobar | "Todo es borrador: el estado máximo es «aprobado como borrador»." | Pantalla de Revisión |
 | 3:20–4:00 | Consulta | Preguntar «¿Cuál fue el desempleo de Panamá en 2025?» → **abstención** con el último dato disponible (2024: 8.45 %) y qué haría falta | "Si no hay evidencia, se abstiene y dice qué falta." | `python -m src.consulta "…"` |
 
 ## Pruebas dinámicas del jurado
@@ -43,8 +43,8 @@ Pasada ejecutada el 2026-10-06 con el snapshot real (`data/senales.duckdb`), sin
 - **Falta una persona con navegador:** el cronometraje real del recorrido (≤ 4:00), el aspecto visual (barras, recuadros de cita, insignia),
   y apagar de verdad el Wi-Fi. La pasada con `AppTest` no mide tiempos de una persona ni lo que se ve.
 - **Pendiente de otras tareas (la app ya lo prevé):**
-  - **Borrador (E1-12 y E1-14):** ya integrado: la pestaña *Paquete* llama a `src.generacion.generar_paquete(id_grupo, modalidad, solo_cache=True)` y muestra lo guardado en `data/cache_llm/` (ver `docs/fallback.md`). La línea siguiente es histórica:
-    (configurable en `config/interfaz.yaml:generacion`). Hasta que exista, dice que la generación se integra con E1-12 y no inventa nada.
+  - **Borrador (E1-12 y E1-14):** ya integrado: la pestaña *Paquete* llama a `src.generacion.generar_paquete(id_grupo, modalidad, solo_cache=True)` y muestra lo guardado en `data/cache_llm/` (ver `docs/fallback.md`). 
+    La integración se configura en `config/interfaz.yaml:generacion`.
   - **`CASO-00N` y revisión (E1-16):** ya integrado. Al abrir un grupo en *Revisión* nace su `CASO-00N`; `?caso=` acepta un `GRP-…`, un `CASO-…` o la posición en la bandeja. La revisión de la demo va a `data/revision_demo.duckdb`, aparte de la real.
   - **Base y capturas de demo (C-06):** `data/demo.duckdb`, `preparar_demo`, y `capturas_demo` todavía no existen (`scripts/calentar_cache.py` ya existe, E1-14); `--demo` cae al snapshot y lo avisa.
   - **Banca (E2-01):** la modalidad se puede elegir y se declara parcial (D-90); la bandeja bancaria llega con esa tarea.

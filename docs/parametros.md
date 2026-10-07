@@ -558,3 +558,35 @@ Ninguno de estos valores decide un puntaje, una acción ni qué se responde: sol
 
 | Metas reportadas (`metas`) | abstención correcta ≥ 0.8 · latencia mediana ≤ 15 s | PDF 9.1 (antes escritas en `eval/run_benchmark.py`, ahora en `config/benchmark.yaml`) | `test_las_metas_de_abstencion_y_latencia_viven_en_la_configuracion` |
 | Medición del LLM versionada | `outputs/benchmark/medicion_llm.json` (excepción en `.gitignore`); si falta, el runner avisa en consola y en `avisos` y deja `no_corrido` | X38 (revisión del PR #33) | `test_sin_medicion_del_llm_se_advierte_en_consola_y_en_las_metricas` · `test_la_medicion_del_llm_del_benchmark_de_desarrollo_se_versiona` |
+
+## Reproducibilidad (E1-20, `config/reproducibilidad.yaml`)
+
+Ninguno de estos valores decide un puntaje ni una respuesta: solo gobiernan cómo se comprueba que dos ejecuciones dan lo mismo. Detalle y motivos en `docs/reproducibilidad.md`.
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| Decimales del hash (`decimales`) | 4 | Medido: el ruido entre lotes del modelo de embeddings es ~1e-7; con 6 decimales cruzaría el redondeo en ~20 % de los valores, con 4 en ~0,2 % | `test_la_huella_redondea_el_ruido_de_flotantes_pero_no_un_cambio_real` |
+| Reiniciar la caché de embeddings (`reiniciar_cache_embeddings`) | `true` | Medido (E1-20): el mismo texto codificado en otro lote difiere ~1e-7; vacía, dos corridas dan lo mismo | `scripts.reproducir --dos-veces` |
+| Orden del pipeline (`pasos`) | validación, normalización, limpieza, clasificación, agrupación, contexto, puntaje, fichas, benchmark | Spec E1-20 | `test_los_pasos_siguen_el_orden_de_la_spec` |
+| Puntaje sin LLM (`--sin-llm`) | siempre | Práctica (reproducibilidad): la nota del LLM es texto del LLM | Hoy no hay pares candidatos; `docs/reproducibilidad.md` |
+| Salidas comparadas (`salidas`) | 30 hashes: `processed/`, tablas, informes, fichas y `metricas.json` | Spec E1-20 | `scripts.reproducir --verificar` |
+| Muestra de sustento (`muestra_sustento`) | Se hashean las columnas de muestra de `revision_sustento.csv`, no `veredicto`, `comentario` ni `revisor` | X46: un conteo igual no prueba la misma muestra; las columnas humanas cambian en C-09 | `test_una_muestra_distinta_con_los_mismos_conteos_se_detecta` · `test_los_veredictos_humanos_no_cambian_el_hash_de_la_muestra` |
+| Claves excluidas del hash | marcas de reloj, entorno y latencia de la consulta (`excluir_de_metricas`, `informes`) | Solo lo que cambia por el reloj o la máquina | `docs/reproducibilidad.md`, sección «Lo que se excluye del hash» |
+| Borradores del LLM | solo desde `data/cache_llm/` (`solo_cache=True`); nunca se llama al proveedor | Spec E1-20; D-94, D-95 | `test_el_borrador_registrado_completo_que_ya_no_sale_de_la_cache_es_una_diferencia` |
+| Modalidad de las fichas y los borradores (`modalidad`) | editorial | Modalidad principal del reto | `config/benchmark.yaml:llm.modalidad` (misma) |
+
+### Semillas registradas (E1-20)
+
+Todo lo aleatorio tiene su semilla en `config/` y `scripts.reproducir` las registra en cada ejecución (`reproducibilidad.ejecucion.semillas`).
+
+| Semilla (`archivo:clave`) | Valor | Para qué |
+|---|---|---|
+| `clasificacion.yaml:semilla` | 42 | Global: torch, numpy y bootstrap de la clasificación |
+| `clasificacion.yaml:criterio_ab.semilla` | 42 | Bootstrap del criterio A vs B |
+| `etiquetado.yaml:muestra.semilla` | 20261006 | Muestra del etiquetado humano |
+| `benchmark.yaml:intervalos.semilla` | 42 | Bootstrap de los intervalos del benchmark |
+| `benchmark.yaml:sustento.semilla` | 42 | Muestra de validez de sustento |
+| `precision.yaml:hoja_ciega.semilla` | `e1-19-hoja-ciega` | Orden de la hoja ciega de Precision@5 (SHA-256 de «semilla\|id_grupo»; E1-19) |
+| `llm.yaml:generacion.semilla` | 0 | Semilla enviada al LLM (con temperatura 0); DeepSeek no la garantiza bit a bit, por eso el texto va a la caché |
+
+Clustering: la agrupación es determinista (similitud y umbral, sin inicialización aleatoria), no tiene semilla.

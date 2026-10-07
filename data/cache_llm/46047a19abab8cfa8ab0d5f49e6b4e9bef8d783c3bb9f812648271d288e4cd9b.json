@@ -1,0 +1,11 @@
+{
+ "clave": "46047a19abab8cfa8ab0d5f49e6b4e9bef8d783c3bb9f812648271d288e4cd9b",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1958,
+ "tokens_salida": 481,
+ "creado_utc": "2026-10-07T11:59:05Z",
+ "respuesta": "{\"brief\": [{\"texto\": \"El medio prensa-latina.cu reporta que el presidente panameño visitará Singapur y Vietnam.\", \"afirmaciones\": [\"A1\"]}, {\"texto\": \"El medio laestrella.com.pa reporta que Mulino viajará a Asia y suscribirá convenios bilaterales con Singapur y Vietnam.\", \"afirmaciones\": [\"A2\"]}, {\"texto\": \"El medio revistaeyn.com reporta que el presidente de Panamá visita Singapur y Vietnam en busca de inversiones.\", \"afirmaciones\": [\"A3\"]}, {\"texto\": \"El grupo de registros reúne 3 titulares de 3 medios que reportan este tema.\", \"afirmaciones\": [\"A4\"]}, {\"texto\": \"El grupo de registros estima 3 procedencias independientes.\", \"afirmaciones\": [\"A5\"]}, {\"texto\": \"Como hipótesis, si la población panameña sigue los anuncios sobre viajes presidenciales y convenios bilaterales, el tema podría resultar relevante para quienes esperan información sobre inversiones y relaciones exteriores.\", \"afirmaciones\": [\"A6\"]}], \"enfoque\": [{\"texto\": \"Como hipótesis, si la población panameña sigue los anuncios sobre viajes presidenciales y convenios bilaterales, el tema podría resultar relevante para quienes esperan información sobre inversiones y relaciones exteriores.\", \"afirmaciones\": [\"A6\"]}], \"preguntas\": [{\"texto\": \"¿Qué datos oficiales permiten vincular los anuncios sobre el viaje presidencial con convenios bilaterales o inversiones?\", \"vacio\": \"solo_vinculo_indirecto\"}, {\"texto\": \"¿Qué medio y qué fecha de publicación corresponden a cada uno de los 3 titulares del grupo de registros?\", \"vacio\": \"medios_o_fechas_desconocidos\"}, {\"texto\": \"¿Qué subtema concreto, dentro del alcance neutro de impacto, describe mejor este grupo de titulares?\", \"vacio\": \"subtema_desconocido\"}]}"
+}
