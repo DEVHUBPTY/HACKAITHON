@@ -1,1 +1,397 @@
-"""Contextualización de casos con indicadores del Banco Mundial."""
+"""Contextualización de grupos con indicadores del Banco Mundial · E1-09, etapa 3, CU-02, T04.
+
+Cada grupo (``GRP-``) se vincula con el indicador que le corresponde **por subtema** y solo según
+``config/vinculos.yaml``; nada fuera de esa tabla. El resultado va a la tabla ``vinculos`` (``src/db.py``).
+
+* **Subtema:** el subtema más cercano dentro del tema asignado al grupo (método B de ``src/clasificacion.py``, tabla
+  ``similitud_tema``), aunque el método activo sea el A. Voto de los titulares del grupo; desempata la suma de similitudes.
+* **Vínculo:** primero ``vinculos`` (por subtema), después ``vinculos_por_tema``; si no hay, ``tema_sin_indicador``.
+  Un indicador sin ningún valor no nulo de Panamá es ``sin_dato_en_periodo``.
+* **Panamá:** el último año con valor no nulo, declarado en la limitación junto con los años posteriores sin valor.
+  **Comparables:** los demás países de la cuadrícula en **ese mismo año**, solo los que tienen dato. **Tendencia:** los
+  últimos ``tendencia_anios`` años de Panamá hasta el declarado; los nulos siguen siendo nulos (nunca 0).
+* **Cifra del titular:** si el titular trae su propia cifra (%) del mismo indicador, se compara con la oficial sin corregir
+  al medio: mismo año -> «posible discrepancia, verificar»; otro período -> «período distinto, no comparable».
+* **USGS (sismos):** lo resuelve ``src/contexto_sismos.py`` (E1-09b). Aquí un vínculo cuya ``fuente`` no es ``indicador`` se
+  deja pasar y se cuenta como ``delegados``: no se inventa un vínculo del Banco Mundial para un sismo.
+
+Los datos son anuales: ningún texto de salida usa la palabra «actual» (``palabras_prohibidas``). Cada fila guarda la
+``regla`` que la generó y ``fuente = 'indicador'``; ``src.contexto`` reemplaza solo sus propias filas al volver a correr.
+
+Uso: ``poetry run python -m src.contexto`` (después de ``src.agrupacion``).
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import logging
+import re
+import sys
+from collections import Counter, defaultdict
+from collections.abc import Mapping, Sequence
+from pathlib import Path
+from typing import Any
+
+from src import db
+from src.clasificacion import proporcion
+from src.configuracion import (
+    RAIZ,
+    ConfigVinculos,
+    Vinculo,
+    cargar_carga,
+    cargar_normalizacion,
+    cargar_vinculos,
+)
+from src.registro import configurar_logging
+
+logger = logging.getLogger(__name__)
+
+FUENTE_INDICADOR = "indicador"   # valor de ``vinculos.fuente`` de las filas que escribe este módulo
+METODO_SUBTEMA = "B"             # el subtema solo existe en el método B (prototipos por subtema)
+ROL_PANAMA, ROL_COMPARABLE, ROL_TENDENCIA = "panama", "comparable", "tendencia"
+REGLA_SUBTEMA = "vinculo_por_subtema"
+REGLA_TEMA = "vinculo_por_tema"
+REGLA_SIN_ENTRADA = "sin_vinculo_en_tabla"
+MOTIVO_SIN_DATO = "sin_dato_en_periodo"
+REGLA_SIN_DATO = MOTIVO_SIN_DATO
+SEPARADOR_ANIOS = ", "
+REPORTE = "reporte_vinculos.json"
+POSICION_ANIO = slice(0, 4)      # ``YYYY`` de una fecha ISO 8601
+
+
+# ------------------------------------------------------------------ subtema
+
+
+def subtema_del_grupo(candidatos: Sequence[tuple[str, float]]) -> str | None:
+    """Subtema más cercano de un grupo a partir de ``(subtema, similitud)`` de sus titulares (método B, tema del grupo).
+
+    Gana el subtema con más titulares; empata la suma de similitudes y, si sigue el empate, el nombre (determinista).
+    """
+    if not candidatos:
+        return None
+    votos: Counter[str] = Counter(s for s, _ in candidatos)
+    suma: defaultdict[str, float] = defaultdict(float)
+    for subtema, similitud in candidatos:
+        suma[subtema] += similitud
+    return min(votos, key=lambda s: (-votos[s], -suma[s], s))
+
+
+# ------------------------------------------------------------------ cifra del titular
+
+
+def _numero(texto: str) -> float:
+    return float(texto.replace(",", ".").replace("−", "-"))
+
+
+def _alternativa(palabras: Sequence[str]) -> re.Pattern[str]:
+    """Patrón que reconoce cualquiera de ``palabras`` como palabra completa (mayor longitud primero)."""
+    return re.compile(r"(?<!\w)(?:" + "|".join(re.escape(p) for p in sorted(palabras, key=len, reverse=True)) + r")(?!\w)", re.IGNORECASE)
+
+
+def _cifra_con_contexto(cifra: float, entre: str, indicador_id: str, cfg: ConfigVinculos) -> float | None:
+    """Interpreta ``cifra`` según lo que la precede (``entre`` = texto entre la palabra clave y la cifra).
+
+    * Verbo de cambio + «a»/«hasta» («cae a 0,7 %»): es el **nivel alcanzado**; conserva su signo (X19).
+    * Verbo de cambio sin «a» («cae 2 %»): es una **variación**. Solo se compara si el indicador oficial es una tasa de
+      cambio (``indicadores_de_variacion``, p. ej. el PIB), y entonces la baja invierte el signo (X17). Contra el nivel
+      oficial de inflación o desempleo no es comparable: ``None``. «baja» es ambigua y nunca se asume como verbo.
+    * Palabra de cota o aproximación («bajo», «menos de», «hasta» suelto): ``None``.
+    * Sin ninguna de ellas («fue de 3,2 %»): es un nivel y se compara tal cual.
+    """
+    c = cfg.cifra_titular
+    cambios = [*c.palabras_de_baja, *c.palabras_de_baja_ambiguas, *c.palabras_de_alza]
+    ultimo = None
+    for ultimo in _alternativa(cambios).finditer(entre):
+        pass
+    if ultimo is not None:
+        if _alternativa(c.palabras_de_nivel).fullmatch(entre[ultimo.end() :].strip()):
+            return cifra
+        if _alternativa(c.palabras_de_cota).search(entre):
+            return None
+        if indicador_id not in c.indicadores_de_variacion or _alternativa(c.palabras_de_baja_ambiguas).fullmatch(ultimo.group(0)):
+            return None
+        return -cifra if cifra > 0 and _alternativa(c.palabras_de_baja).fullmatch(ultimo.group(0)) else cifra
+    return None if _alternativa(c.palabras_de_cota).search(entre) else cifra
+
+
+def extraer_cifra_titular(titulo: str, indicador_id: str, cfg: ConfigVinculos) -> tuple[float, int | None] | None:
+    """Cifra (%) que el titular da sobre ``indicador_id`` y el año que declara, o ``None`` si no hay una clara.
+
+    Conservador: la palabra clave del indicador debe preceder a la cifra a no más de ``ventana_caracteres`` caracteres
+    sin otras cifras ni ``%`` en medio; el titular no puede traer otra cifra en %; lo que precede a la cifra decide si es nivel, variación o cota (``_cifra_con_contexto``, X17/X19); y a lo sumo un año en el titular (si hay varios, el
+    período es ambiguo y el año queda en ``None``).
+    """
+    c = cfg.cifra_titular
+    palabras = c.palabras_clave.get(indicador_id)
+    if not palabras:
+        return None
+    clave = "|".join(re.escape(p) for p in palabras)
+    patron = re.compile(rf"(?<!\w)(?:{clave})(?!\w)(?P<entre>[^\d%]{{0,{c.ventana_caracteres}}}?){c.patron_numero}", re.IGNORECASE)
+    todas = {_numero(m.group(1)) for m in re.finditer(c.patron_numero, titulo)}
+    ligadas = list(patron.finditer(titulo))
+    cifras = {_numero(m.group(patron.groups)) for m in ligadas}
+    if len(todas) != 1 or cifras != todas:  # una sola cifra en el titular y ligada a la palabra clave
+        return None
+    cifra = next(iter(cifras))
+    for m in ligadas:
+        cifra = _cifra_con_contexto(cifra, m.group("entre"), indicador_id, cfg)
+        if cifra is None:
+            return None  # variación de un indicador de nivel, cota o palabra ambigua: no se compara
+    anios = {int(a) for a in re.findall(c.patron_anio, titulo)}
+    return cifra, (next(iter(anios)) if len(anios) == 1 else None)
+
+
+def decimales(cifra_texto: float) -> int:
+    """Decimales con que se escribe ``cifra_texto`` (``2.3`` -> 1)."""
+    texto = repr(float(cifra_texto))
+    return len(texto.split(".")[1].rstrip("0")) if "." in texto else 0
+
+
+def comparar_cifra(
+    cifra: float, anio_titular: int | None, anio_publicacion: int | None, oficial: float, anio_oficial: int, cfg: ConfigVinculos
+) -> str | None:
+    """Etiqueta de la comparación entre la cifra del titular y la oficial; ``None`` si no se puede afirmar nada.
+
+    Año del titular igual al oficial: coincide (redondeando la oficial a los decimales del titular) o posible discrepancia.
+    Año distinto: período distinto. Titular sin año: solo si su año de publicación difiere del oficial se puede afirmar
+    «período distinto»; si coincide no se sabe a qué período se refiere y no se compara.
+    """
+    etiquetas = cfg.cifra_titular.etiquetas
+    periodo = anio_titular if anio_titular is not None else anio_publicacion
+    if periodo is None:
+        return None
+    if periodo != anio_oficial:
+        return etiquetas.periodo_distinto
+    if anio_titular is None:
+        return None
+    return etiquetas.coincide if round(oficial, decimales(cifra)) == cifra else etiquetas.discrepancia
+
+
+# ------------------------------------------------------------------ vínculo de un grupo
+
+
+def elegir_vinculo(tema: str | None, subtema: str | None, cfg: ConfigVinculos) -> tuple[Vinculo | None, str]:
+    """Vínculo definido en la tabla para (tema, subtema) y la regla que lo eligió; sin entrada -> ``(None, regla)``."""
+    if subtema and subtema in cfg.vinculos:
+        return cfg.vinculos[subtema], f"{REGLA_SUBTEMA}:{subtema}"
+    if tema and tema in cfg.vinculos_por_tema:
+        return cfg.vinculos_por_tema[tema], f"{REGLA_TEMA}:{tema}"
+    return None, f"{REGLA_SIN_ENTRADA}:{tema or 'sin_tema'}/{subtema or 'sin_subtema'}"
+
+
+def _fila(id_grupo: str, **campos: Any) -> dict[str, Any]:
+    """Fila de ``vinculos`` con todas las columnas (lo no dado es NULL)."""
+    fila = dict.fromkeys(db.columnas("vinculos"))
+    fila.update(id_grupo=id_grupo, fuente=FUENTE_INDICADOR, **campos)
+    return fila
+
+
+def _fila_dato(id_grupo: str, dato: Mapping[str, Any], vinculo: Vinculo, regla: str, rol: str, subtema: str | None, nota: str) -> dict[str, Any]:
+    return _fila(
+        id_grupo,
+        id_evidencia=dato["id_indicador"],
+        tipo=vinculo.relacion,
+        regla=regla,
+        limitacion=f"{vinculo.limitacion} {nota}",
+        rol=rol,
+        subtema=subtema,
+        pais_iso3=dato["pais_iso3"],
+        indicador_id=dato["indicador_id"],
+        anio=dato["anio"],
+        unidad=dato["unidad"],
+        valor=dato["valor"],
+        fecha_extraccion=dato["fecha_extraccion"],
+    )
+
+
+def vincular_grupo(
+    id_grupo: str,
+    tema: str | None,
+    subtema: str | None,
+    titular: str | None,
+    anio_publicacion: int | None,
+    indicadores: Sequence[Mapping[str, Any]],
+    cfg: ConfigVinculos,
+) -> list[dict[str, Any]] | None:
+    """Filas de ``vinculos`` de un grupo; ``None`` si el vínculo no es del Banco Mundial (lo resuelve otro módulo).
+
+    ``indicadores`` son las filas de la tabla ``indicadores`` (la cuadrícula completa, con nulos explícitos).
+    """
+    vinculo, regla = elegir_vinculo(tema, subtema, cfg)
+    if vinculo is not None and vinculo.fuente != FUENTE_INDICADOR:
+        return None  # gancho E1-09b: sismos y demás fuentes no son del Banco Mundial
+    if vinculo is None:
+        return [_fila(id_grupo, regla=regla, motivo_sin_vinculo=cfg.motivo_por_defecto, subtema=subtema)]
+    serie = {
+        d["anio"]: d for d in indicadores if d["indicador_id"] == vinculo.id and d["pais_iso3"] == cfg.pais_por_defecto
+    }
+    con_valor = sorted(a for a, d in serie.items() if d["valor"] is not None)
+    if not con_valor:
+        return [_fila(id_grupo, regla=f"{REGLA_SIN_DATO}:{vinculo.id}", motivo_sin_vinculo=MOTIVO_SIN_DATO, subtema=subtema)]
+    ultimo = con_valor[-1]
+    sin_valor = sorted(a for a in serie if a > ultimo)
+    nota = cfg.notas.ultimo_anio.format(anio=ultimo)
+    if sin_valor:
+        nota += " " + cfg.notas.anios_sin_valor.format(anios=SEPARADOR_ANIOS.join(map(str, sin_valor)))
+    principal = _fila_dato(id_grupo, serie[ultimo], vinculo, regla, ROL_PANAMA, subtema, nota)
+    if titular:
+        cifra = extraer_cifra_titular(titular, vinculo.id or "", cfg)
+        if cifra is not None:
+            etiqueta = comparar_cifra(cifra[0], cifra[1], anio_publicacion, serie[ultimo]["valor"], ultimo, cfg)
+            if etiqueta is not None:
+                principal.update(cifra_titular=cifra[0], anio_titular=cifra[1], comparacion_titular=etiqueta)
+    filas = [principal]
+    for d in sorted((d for d in indicadores if d["indicador_id"] == vinculo.id and d["anio"] == ultimo), key=lambda d: d["pais_iso3"]):
+        if d["pais_iso3"] != cfg.pais_por_defecto and d["valor"] is not None:  # solo los que tienen dato, el mismo año
+            filas.append(_fila_dato(id_grupo, d, vinculo, regla, ROL_COMPARABLE, subtema, nota))
+    for anio in sorted(a for a in serie if ultimo - cfg.tendencia_anios < a <= ultimo):
+        filas.append(
+            _fila_dato(id_grupo, serie[anio], vinculo, regla, ROL_TENDENCIA, subtema, cfg.notas.serie.format(anio=anio, n=cfg.tendencia_anios))
+        )
+    return filas
+
+
+def verificar_texto(filas: Sequence[Mapping[str, Any]], cfg: ConfigVinculos) -> None:
+    """Falla si algún texto de salida contiene una palabra prohibida (p. ej. «actual»): el dato es anual."""
+    for palabra in cfg.palabras_prohibidas:
+        patron = re.compile(rf"\b{re.escape(palabra)}\b", re.IGNORECASE)
+        for f in filas:
+            for campo in ("limitacion", "comparacion_titular", "regla", "motivo_sin_vinculo"):
+                if f.get(campo) and patron.search(str(f[campo])):
+                    raise ValueError(f"{f['id_grupo']}: {campo} contiene la palabra prohibida {palabra!r}")
+
+
+# ------------------------------------------------------------------ base
+
+
+def _anio_de(fecha: str | None) -> int | None:
+    return int(fecha[POSICION_ANIO]) if fecha and fecha[POSICION_ANIO].isdigit() else None
+
+
+def leer_grupos(con: Any) -> list[dict[str, Any]]:
+    """Cada grupo con su tema, el subtema más cercano (método B), el titular central y su año de publicación."""
+    votos: defaultdict[str, list[tuple[str, float]]] = defaultdict(list)
+    for id_grupo, subtema, similitud in con.execute(
+        """SELECT n.id_grupo, s.subtema, s.similitud FROM noticias n
+           JOIN grupos g ON g.id_grupo = n.id_grupo
+           JOIN similitud_tema s ON s.id_noticia = n.id_noticia AND s.tema = g.tema_clasificado AND s.metodo = ?
+           WHERE s.subtema IS NOT NULL""",
+        [METODO_SUBTEMA],
+    ).fetchall():
+        votos[id_grupo].append((subtema, similitud))
+    grupos = []
+    for id_grupo, tema, titular, publicacion, deteccion in con.execute(
+        """SELECT g.id_grupo, g.tema_clasificado, g.titular_central, n.fecha_publicacion, n.fecha_deteccion
+           FROM grupos g LEFT JOIN noticias n ON n.id_noticia = g.id_noticia_central ORDER BY g.id_grupo"""
+    ).fetchall():
+        grupos.append(
+            {
+                "id_grupo": id_grupo,
+                "tema": tema,
+                "subtema": subtema_del_grupo(votos.get(id_grupo, [])),
+                "titular": titular,
+                "anio_publicacion": _anio_de(publicacion or deteccion),
+            }
+        )
+    return grupos
+
+
+def construir_vinculos(
+    grupos: Sequence[Mapping[str, Any]], indicadores: Sequence[Mapping[str, Any]], cfg: ConfigVinculos
+) -> tuple[list[dict[str, Any]], list[str]]:
+    """Filas de ``vinculos`` de todos los grupos y los IDs de los delegados a otra fuente (sismos)."""
+    filas: list[dict[str, Any]] = []
+    delegados: list[str] = []
+    for g in grupos:
+        resultado = vincular_grupo(g["id_grupo"], g["tema"], g["subtema"], g["titular"], g["anio_publicacion"], indicadores, cfg)
+        if resultado is None:
+            delegados.append(g["id_grupo"])
+            continue
+        verificar_texto(resultado, cfg)
+        filas.extend(resultado)
+    return filas, delegados
+
+
+def aplicar_a_base(ruta_base: Path, cfg: ConfigVinculos) -> tuple[list[dict[str, Any]], list[str], int]:
+    """Calcula los vínculos y reemplaza en ``vinculos`` solo las filas de ``fuente = 'indicador'``.
+
+    Devuelve ``(filas, delegados, total_grupos)``.
+    """
+    con = db.conectar(ruta_base)
+    try:
+        db.asegurar_esquema(con)
+        grupos = leer_grupos(con)
+        indicadores = db.leer_tabla(con, "indicadores")
+        filas, delegados = construir_vinculos(grupos, indicadores, cfg)
+        con.begin()
+        try:
+            con.execute("DELETE FROM vinculos WHERE fuente = ?", [FUENTE_INDICADOR])
+            db.insertar(con, "vinculos", filas)
+            con.commit()
+        except BaseException:
+            con.rollback()
+            raise
+        return filas, delegados, len(grupos)
+    finally:
+        con.close()
+
+
+# ------------------------------------------------------------------ reporte
+
+
+def construir_reporte(filas: Sequence[Mapping[str, Any]], delegados: Sequence[str], total_grupos: int, z: float) -> dict[str, Any]:
+    """Grupos con y sin vínculo (por motivo), con n e IC de Wilson sobre los grupos que resuelve el Banco Mundial."""
+    sin = {f["id_grupo"]: f["motivo_sin_vinculo"] for f in filas if f["motivo_sin_vinculo"]}
+    con = {f["id_grupo"]: f for f in filas if f["rol"] == ROL_PANAMA}
+    propios = len(sin) + len(con)
+    return {
+        "nota": "Contexto anual del Banco Mundial; un vínculo no prueba causa. Sismos (USGS) los resuelve E1-09b.",
+        "grupos_en_base": total_grupos,
+        "grupos_del_banco_mundial": propios,
+        "grupos_delegados_a_otra_fuente": len(delegados),
+        "con_vinculo": proporcion(len(con), propios, z),
+        "sin_vinculo": proporcion(len(sin), propios, z),
+        "sin_vinculo_por_motivo": dict(sorted(Counter(sin.values()).items())),
+        "con_vinculo_por_relacion": dict(sorted(Counter(f["tipo"] for f in con.values()).items())),
+        "con_vinculo_por_subtema": dict(sorted(Counter(f["subtema"] or "sin_subtema" for f in con.values()).items())),
+        "con_vinculo_por_indicador": dict(sorted(Counter(f["indicador_id"] for f in con.values()).items())),
+        "comparacion_con_cifra_del_titular": dict(sorted(Counter(f["comparacion_titular"] for f in con.values() if f["comparacion_titular"]).items())),
+        "filas_en_vinculos": len(filas),
+    }
+
+
+def ejecutar(ruta_base: Path, ruta_reporte: Path) -> dict[str, Any]:
+    """Vincula los grupos de la base y escribe ``outputs/reporte_vinculos.json``. Devuelve el reporte."""
+    cfg = cargar_vinculos()
+    filas, delegados, total = aplicar_a_base(ruta_base, cfg)
+    reporte = construir_reporte(filas, delegados, total, cargar_carga().salida.z_intervalo_confianza)
+    ruta_reporte.parent.mkdir(parents=True, exist_ok=True)
+    with ruta_reporte.open("w", encoding="utf-8") as f:
+        json.dump(reporte, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+    return reporte
+
+
+def main(argv: list[str] | None = None) -> int:
+    """CLI: vincula los grupos de ``data/senales.duckdb`` y escribe ``outputs/reporte_vinculos.json``."""
+    configurar_logging()
+    parser = argparse.ArgumentParser(description="E1-09: contexto del Banco Mundial por subtema")
+    parser.add_argument("--base", type=Path, default=RAIZ / "data" / cargar_normalizacion().salida.base_de_datos)
+    parser.add_argument("--reporte", type=Path, default=RAIZ / "outputs" / REPORTE)
+    args = parser.parse_args(argv)
+    if not args.base.exists():
+        logger.error("No existe %s: ejecute primero `normalizacion`, `limpieza`, `clasificacion` y `agrupacion`", args.base)
+        return 1
+    try:
+        r = ejecutar(args.base, args.reporte)
+    except Exception as exc:  # noqa: BLE001 - CLI: reportar y salir con error
+        logger.error("%s", exc)
+        return 1
+    logger.info("%d grupos: %d con vínculo, %d sin vínculo, %d delegados", r["grupos_en_base"], r["con_vinculo"]["n"], r["sin_vinculo"]["n"], r["grupos_delegados_a_otra_fuente"])
+    logger.info("sin vínculo por motivo: %s", r["sin_vinculo_por_motivo"])
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
