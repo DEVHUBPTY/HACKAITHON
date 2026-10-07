@@ -11,6 +11,7 @@ impacto:
 
 dato_oficial:                     # qué vínculos de `vinculos` (columna `tipo`) cuentan como dato oficial en E y en el estado de evidencia
   relaciones_aceptadas: [directa, evento]   # `indirecta` NO: el indicador es contexto lejano y no mide el hecho (vinculos.yaml)
+  estado_evento_automatico: automatic       # `vinculos.estado_evento` de un evento oficial que todavía no fue revisado (vacío `evento_sin_revisar`)
 
 geografia:                        # alcance geográfico de I: se buscan los términos de reglas_v1.3.yaml:geografia en los titulares
   # Términos que nombran al país y a una provincia a la vez: solo cuentan como la provincia si los precede alguno de estos prefijos.
@@ -60,14 +61,24 @@ contradicciones:
       b: [absuelve, absuelven, absolvio, absolvieron, acquits, acquitted]
 
 vacios:                           # textos de los vacíos de verificación (plantillas con {campos})
-  procedencias_insuficientes: "{n} procedencia(s) independiente(s) estimada(s); se necesitan al menos {minimo} para evidencia suficiente"
+  procedencias_insuficientes: "{procedencias}; se necesitan al menos {minimo} para evidencia suficiente"
   cifras_sin_dato_oficial: "los titulares traen cifras y no hay dato oficial vinculado"
   sin_dato_oficial: "sin dato oficial vinculado ({motivo})"
   contradiccion_abierta: "posible contradicción, verificar: {n} par(es) de titulares con versiones distintas"
   medios_o_fechas_desconocidos: "{n} de {total} titulares sin medio o fecha de publicación conocidos"
+  solo_vinculo_indirecto: "sin dato oficial vinculado (solo vínculo indirecto: no mide el hecho)"
+  cifra_discrepante: "la cifra de un titular difiere de la oficial vinculada ({ids}): posible discrepancia, verificar"
+  cifra_periodo_distinto: "la cifra de un titular corresponde a un período distinto del dato oficial vinculado ({ids}): no es comparable"
+  evento_sin_revisar: "el evento oficial vinculado ({ids}) tiene estado automático: puede cambiar al ser revisado"
   noticia_recirculada: "noticia recirculada: publicada originalmente el {fecha}; no se trata como nueva"
   subtema_desconocido: "subtema no determinado: se usó el alcance neutro de impacto"
-  motivo_sin_dato_oficial_por_defecto: "sin vínculo en la tabla de contexto"
+  motivo_sin_dato_oficial_por_defecto: "no hay un vínculo definido para este tema en la tabla de contexto"
+  motivos_sin_vinculo:            # `vinculos.motivo_sin_vinculo` dicho en palabras: ningún código interno llega a la ficha
+    tema_sin_indicador: "el tema no tiene un indicador oficial asignado"
+    sin_dato_en_periodo: "el indicador oficial no tiene valor en el período"
+    sin_evento_coincidente: "no hay un evento oficial cercano en el tiempo"
+    fuera_de_cobertura: "el tema está fuera de la cobertura de las fuentes oficiales"
+    candidatos_ambiguos: "hay varios eventos oficiales posibles y no se eligió ninguno"
 
 sensibilidad:                     # eval/sensibilidad.py
   variacion_peso: 5               # puntos de peso (PDF: «permitir justificar cambios de pesos»)

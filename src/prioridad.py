@@ -46,6 +46,7 @@ from src.configuracion import (
     cargar_normalizacion,
     cargar_prioridad,
     cargar_reglas,
+    cargar_vinculos,
 )
 from src.contexto import leer_grupos as leer_contexto_de_grupos
 from src.contradicciones import Contradiccion
@@ -132,6 +133,30 @@ def _oficial_por_grupo(
     return oficial, motivos
 
 
+def _hallazgos_de_vinculos(vinculos: Sequence[Mapping[str, Any]], cfg: ConfigPrioridad, etiquetas: Any) -> dict[str, dict[str, Any]]:
+    """Por grupo, lo que los vínculos dicen además de «hay dato oficial»: solo indirecto, cifras discrepantes o de otro período, eventos sin revisar.
+
+    Solo cuentan los vínculos con dato real (``directa`` o ``evento``); el de relación ``indirecta`` solo marca ``solo_indirecto``.
+    """
+    aceptadas = cfg.dato_oficial.relaciones_aceptadas
+    hallazgos: dict[str, dict[str, Any]] = {}
+    for v in vinculos:
+        if not (v.get("id_evidencia") and v.get("valor") is not None and not v.get("motivo_sin_vinculo")):
+            continue
+        h = hallazgos.setdefault(str(v["id_grupo"]), {"indirecto": False, "discrepancias": [], "periodos": [], "eventos": []})
+        if v.get("tipo") not in aceptadas:
+            h["indirecto"] = True
+            continue
+        comparacion, id_ = v.get("comparacion_titular"), str(v["id_evidencia"])
+        if comparacion == etiquetas.discrepancia:
+            h["discrepancias"].append(id_)
+        elif comparacion == etiquetas.periodo_distinto:
+            h["periodos"].append(id_)
+        if str(v.get("fuente")) == "usgs" and v.get("estado_evento") == cfg.dato_oficial.estado_evento_automatico:
+            h["eventos"].append(id_)
+    return hallazgos
+
+
 def leer_entradas(
     con: Any, reglas: ReglasV13, emb: Embeddings, cfg: ConfigPrioridad | None = None
 ) -> tuple[list[EntradaGrupo], dict[str, int], dict[str, str]]:
@@ -153,7 +178,9 @@ def leer_entradas(
             procedencia_de[id_noticia] = int(p["orden"])
     subtemas = {g["id_grupo"]: g["subtema"] for g in leer_contexto_de_grupos(con)}
     cfg = cfg or cargar_prioridad()
-    oficial, motivos = _oficial_por_grupo(db.leer_tabla(con, "vinculos"), cfg.dato_oficial.relaciones_aceptadas)
+    filas_vinculos = db.leer_tabla(con, "vinculos")
+    oficial, motivos = _oficial_por_grupo(filas_vinculos, cfg.dato_oficial.relaciones_aceptadas)
+    hallazgos = _hallazgos_de_vinculos(filas_vinculos, cfg, cargar_vinculos().cifra_titular.etiquetas)
     entradas = []
     for g in grupos:
         id_grupo = str(g["id_grupo"])
@@ -169,6 +196,10 @@ def leer_entradas(
                 n_procedencias=n_procedencias[id_grupo],
                 tiene_oficial=oficial.get(id_grupo, False),
                 motivo_sin_oficial=motivos.get(id_grupo),
+                solo_indirecto=hallazgos.get(id_grupo, {}).get("indirecto", False) and not oficial.get(id_grupo, False),
+                discrepancias=tuple(hallazgos.get(id_grupo, {}).get("discrepancias", ())),
+                periodos_distintos=tuple(hallazgos.get(id_grupo, {}).get("periodos", ())),
+                eventos_sin_revisar=tuple(hallazgos.get(id_grupo, {}).get("eventos", ())),
             )
         )
     return entradas, procedencia_de, {str(g["id_grupo"]): str(g["titular_central"]) for g in grupos}
@@ -201,6 +232,10 @@ def evaluar(
             motivo_sin_oficial=e.motivo_sin_oficial,
             reglas=reglas,
             cfg=cfg,
+            solo_indirecto=e.solo_indirecto,
+            discrepancias=e.discrepancias,
+            periodos_distintos=e.periodos_distintos,
+            eventos_sin_revisar=e.eventos_sin_revisar,
         )
         resultados.append(ResultadoGrupo(p, evidencia, accion_recomendada(p.rango, evidencia.estado, modalidad), contradicciones))
     return resultados

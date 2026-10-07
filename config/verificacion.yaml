@@ -20,37 +20,32 @@ vacios:
     - medios_o_fechas_desconocidos
     - urgencia_sin_publicacion
     - subtema_desconocido
-  estado_evento_automatico: automatic   # `vinculos.estado_evento` de un evento oficial que todavía no fue revisado
   verificacion_por_defecto: "Revisar el vacío con la fuente primaria antes de usar el tema."
-  # Qué hacer para cerrar cada vacío. Los textos de los vacíos que calcula E1-10 vienen de `prioridad.yaml`; los que
-  # solo calcula la ficha (`texto`) viven aquí.
+  # Qué hacer para cerrar cada vacío. Los vacíos y sus textos los calcula E1-10 (`prioridad.yaml`, tabla `evidencia`): la
+  # ficha solo los lee, los ordena y les agrega esta verificación.
   catalogo:
     contradiccion_abierta:
       verificacion: "Comparar ambas versiones con su fuente primaria y decidir cuál se sostiene; ningún par se cierra solo."
     cifra_discrepante:
-      texto: "la cifra de un titular difiere de la oficial vinculada ({id}): posible discrepancia, verificar"
       verificacion: "Revisar si el titular y el dato oficial miden lo mismo y en el mismo período antes de citar cualquiera de los dos."
     cifras_sin_dato_oficial:
       verificacion: "Buscar la cifra en la institución oficial que la publica antes de repetirla."
     sin_dato_oficial:
       verificacion: "Consultar a la institución oficial responsable del tema por un dato que mida el hecho."
     solo_vinculo_indirecto:
-      texto: "sin dato oficial vinculado (solo vínculo indirecto: no mide el hecho)"
       verificacion: "El indicador vinculado es contexto lejano: buscar un dato oficial que mida el hecho directamente."
     procedencias_insuficientes:
       verificacion: "Buscar el mismo hecho en un medio con fuente propia; una réplica de la misma agencia no cuenta."
     noticia_recirculada:
       verificacion: "Confirmar si hay un hecho nuevo o si es una nota antigua que volvió a circular."
     evento_sin_revisar:
-      texto: "el evento oficial vinculado ({id}) tiene estado automático: puede cambiar al ser revisado"
       verificacion: "Volver a consultar el evento en la fuente oficial antes de citar su magnitud o su lugar."
     cifra_periodo_distinto:
-      texto: "la cifra de un titular corresponde a un período distinto del dato oficial vinculado ({id}): no es comparable"
       verificacion: "No comparar ambas cifras; buscar el dato oficial del mismo período que el titular."
     medios_o_fechas_desconocidos:
       verificacion: "Abrir el enlace de cada titular para identificar el medio y la fecha de publicación original."
     urgencia_sin_publicacion:
-      verificacion: "Abrir el enlace de los titulares para confirmar la fecha de publicación original."
+      verificacion: "Abrir el enlace de cada titular para identificar el medio y la fecha de publicación original."
     subtema_desconocido:
       verificacion: "Confirmar de qué asunto trata el grupo; sin subtema no hay fuentes sugeridas específicas."
 

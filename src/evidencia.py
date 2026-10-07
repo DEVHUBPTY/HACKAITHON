@@ -124,12 +124,18 @@ def hay_cifras(titulares: Sequence[str], cfg: ConfigPrioridad) -> bool:
 
 
 def estado_de(
-    n_procedencias: int, tiene_oficial: bool, trae_cifras: bool, contradicciones_abiertas: int, reglas: ReglasV13
+    n_procedencias: int,
+    tiene_oficial: bool,
+    trae_cifras: bool,
+    contradicciones_abiertas: int,
+    reglas: ReglasV13,
+    discrepancias_abiertas: int = 0,
 ) -> str:
     """``suficiente``, ``parcial`` o ``insuficiente`` (ver el docstring del módulo). No recibe P: es independiente del puntaje."""
     e = reglas.estado_evidencia
     necesita_oficial = e.oficial_obligatorio_si_hay_cifras and trae_cifras
-    hay_contradiccion = e.sin_contradiccion_abierta_para_suficiente and contradicciones_abiertas > 0
+    # una cifra del titular que discrepa del dato oficial es una contradicción abierta igual que dos titulares que se contradicen
+    hay_contradiccion = e.sin_contradiccion_abierta_para_suficiente and (contradicciones_abiertas + discrepancias_abiertas) > 0
     suficientes = n_procedencias >= e.procedencias_suficiente
     if suficientes and not hay_contradiccion and (tiene_oficial or not necesita_oficial):
         return ESTADO_SUFICIENTE
@@ -148,21 +154,37 @@ def evaluar_evidencia(
     motivo_sin_oficial: str | None,
     reglas: ReglasV13,
     cfg: ConfigPrioridad,
+    solo_indirecto: bool = False,
+    discrepancias: Sequence[str] = (),
+    periodos_distintos: Sequence[str] = (),
+    eventos_sin_revisar: Sequence[str] = (),
 ) -> Evidencia:
     """Estado de evidencia del grupo y su lista de vacíos (orden fijo: procedencias, oficial, contradicción, identificables)."""
     trae_cifras = hay_cifras(titulares, cfg)
-    estado = estado_de(n_procedencias, tiene_oficial, trae_cifras, contradicciones_abiertas, reglas)
+    estado = estado_de(n_procedencias, tiene_oficial, trae_cifras, contradicciones_abiertas, reglas, len(discrepancias))
     v = cfg.vacios
     vacios: list[Vacio] = []
     minimo = reglas.estado_evidencia.procedencias_suficiente
     if n_procedencias < minimo:
-        vacios.append(Vacio("procedencias_insuficientes", v.procedencias_insuficientes.format(n=n_procedencias, minimo=minimo)))
+        unidad = "procedencia independiente estimada" if n_procedencias == 1 else "procedencias independientes estimadas"
+        vacios.append(Vacio("procedencias_insuficientes", v.procedencias_insuficientes.format(procedencias=f"{n_procedencias} {unidad}", minimo=minimo)))
     if not tiene_oficial:
         if trae_cifras and reglas.estado_evidencia.oficial_obligatorio_si_hay_cifras:
             vacios.append(Vacio("cifras_sin_dato_oficial", v.cifras_sin_dato_oficial))
-        vacios.append(Vacio("sin_dato_oficial", v.sin_dato_oficial.format(motivo=motivo_sin_oficial or v.motivo_sin_dato_oficial_por_defecto)))
+        if solo_indirecto:
+            vacios.append(Vacio("solo_vinculo_indirecto", v.solo_vinculo_indirecto))   # X22: el indicador vinculado no mide el hecho
+        else:
+            motivo = v.motivos_sin_vinculo.get(motivo_sin_oficial or "", v.motivo_sin_dato_oficial_por_defecto)
+            vacios.append(Vacio("sin_dato_oficial", v.sin_dato_oficial.format(motivo=motivo)))
     if contradicciones_abiertas:
         vacios.append(Vacio("contradiccion_abierta", v.contradiccion_abierta.format(n=contradicciones_abiertas)))
+    for codigo, ids, plantilla in (
+        ("cifra_discrepante", discrepancias, v.cifra_discrepante),
+        ("cifra_periodo_distinto", periodos_distintos, v.cifra_periodo_distinto),
+        ("evento_sin_revisar", eventos_sin_revisar, v.evento_sin_revisar),
+    ):
+        if ids:
+            vacios.append(Vacio(codigo, plantilla.format(ids=", ".join(ids))))
     if n_identificables < len(titulares):
         vacios.append(
             Vacio("medios_o_fechas_desconocidos", v.medios_o_fechas_desconocidos.format(n=len(titulares) - n_identificables, total=len(titulares)))

@@ -1121,9 +1121,12 @@ def validar_coherencia(carpeta: Path | None = None) -> list[str]:
         problemas += [f"verificacion.yaml: sin fuentes sugeridas para el tema {t}" for t in sorted(set(temas.temas) - set(ver.fuentes.por_tema))]
         problemas += [f"verificacion.yaml: sin fuentes sugeridas para el subtema {s}" for s in sorted(subtemas - set(ver.fuentes.por_subtema))]
         codigos = set(ver.vacios.catalogo)
-        emitidos = (set(VaciosPrioridad.model_fields) - {"motivo_sin_dato_oficial_por_defecto"}) | {CODIGO_URGENCIA_SIN_PUBLICACION}
+        emitidos = (set(VaciosPrioridad.model_fields) - {"motivo_sin_dato_oficial_por_defecto", "motivos_sin_vinculo"}) | {CODIGO_URGENCIA_SIN_PUBLICACION}
         faltan = emitidos - codigos
         problemas += [f"verificacion.yaml: vacío de prioridad.yaml sin entrada en vacios.catalogo: {c}" for c in sorted(faltan)]
+        motivos = set(cargar_prioridad(carpeta).vacios.motivos_sin_vinculo)
+        if motivos != set(vinculos.motivos_sin_vinculo):
+            problemas.append(f"prioridad.yaml: vacios.motivos_sin_vinculo y vinculos.yaml difieren: {sorted(motivos ^ set(vinculos.motivos_sin_vinculo))}")
     grupos = set(cargar_restricciones(carpeta).grupos)
     for modalidad in MODALIDADES:
         if (carpeta / f"modalidad_{modalidad}.yaml").exists():
@@ -1708,7 +1711,8 @@ class ImpactoPrioridad(ModeloConfig):
 
 
 class DatoOficialPrioridad(ModeloConfig):
-    relaciones_aceptadas: list[str] = Field(min_length=1)
+    relaciones_aceptadas: list[str]
+    estado_evento_automatico: str = Field(min_length=1)
 
 
 class GeografiaPrioridad(ModeloConfig):
@@ -1774,11 +1778,16 @@ class VaciosPrioridad(ModeloConfig):
     procedencias_insuficientes: str
     cifras_sin_dato_oficial: str
     sin_dato_oficial: str
+    solo_vinculo_indirecto: str
+    cifra_discrepante: str
+    cifra_periodo_distinto: str
+    evento_sin_revisar: str
     contradiccion_abierta: str
     medios_o_fechas_desconocidos: str
     noticia_recirculada: str
     subtema_desconocido: str
     motivo_sin_dato_oficial_por_defecto: str
+    motivos_sin_vinculo: dict[str, str]
 
 
 class SensibilidadPrioridad(ModeloConfig):
@@ -1817,16 +1826,14 @@ def cargar_prioridad(carpeta: Path | None = None) -> ConfigPrioridad:
 
 
 class VacioCatalogo(ModeloConfig):
-    """Un tipo de vacío: qué hacer para cerrarlo y, si solo lo calcula la ficha, su texto (con ``{id}``)."""
+    """Un tipo de vacío: qué hacer para cerrarlo. El texto del vacío lo calcula E1-10 (``prioridad.yaml``)."""
 
     verificacion: str = Field(min_length=1)
-    texto: str | None = None
 
 
 class VaciosVerificacion(ModeloConfig):
     principales: int = Field(ge=1)
     orden_importancia: list[str] = Field(min_length=1)
-    estado_evento_automatico: str
     verificacion_por_defecto: str = Field(min_length=1)
     catalogo: dict[str, VacioCatalogo]
 
@@ -1910,7 +1917,7 @@ class ConfigVerificacion(ModeloConfig):
     @model_validator(mode="after")
     def _sin_publicar(self) -> ConfigVerificacion:
         textos = [self.vacios.verificacion_por_defecto, self.fuentes.nota]
-        textos += [v.verificacion for v in self.vacios.catalogo.values()] + [v.texto for v in self.vacios.catalogo.values() if v.texto]
+        textos += [v.verificacion for v in self.vacios.catalogo.values()]
         if any(FORMAS_DE_PUBLICAR.search(t) for t in textos):
             raise ValueError("ningún texto de la ficha puede hablar de publicar")
         return self

@@ -310,7 +310,7 @@ Los reemplaza `python -m src.puntaje`.
 | `tiene_oficial` | BOOLEAN | no | `vinculos` | derivado | Hay un dato oficial `directa` o un evento `evento` (USGS) vinculado con valor. Un vínculo `indirecta` no cuenta (X22): no mide el hecho. |
 | `hay_cifras` | BOOLEAN | no | `noticias` | derivado | Algún titular trae una cifra (sin contar fechas, años ni identificadores). |
 | `contradicciones_abiertas` | INTEGER | no | `contradicciones` | derivado | Pares detectados por reglas: todos cuentan, diga lo que diga el LLM (solo una persona puede cerrarlos). |
-| `vacios` | VARCHAR | no | evidencia | derivado | JSON: vacíos de verificación de la evidencia (procedencias, dato oficial, contradicciones, titulares sin medio o fecha). |
+| `vacios` | VARCHAR | no | evidencia | derivado | JSON: vacíos de verificación de la evidencia (procedencias, dato oficial o solo vínculo indirecto, contradicciones, cifra del titular discrepante o de otro período, evento oficial sin revisar, titulares sin medio o fecha). Es la única fuente de vacíos de la ficha. Una cifra discrepante abierta impide `suficiente`. |
 | `modalidad` | VARCHAR | no | `modalidad_<modalidad>.yaml` | derivado | Modalidad cuya tabla de acciones se aplicó (`editorial`). |
 | `rango` | VARCHAR | no | `puntajes` | derivado | Rango de P usado para elegir la celda. |
 | `accion` | VARCHAR | no | `modalidad_<modalidad>.yaml` | derivado | Acción recomendada de la celda (rango × estado). Nunca «publicar». |

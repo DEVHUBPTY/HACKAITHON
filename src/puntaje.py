@@ -79,6 +79,10 @@ class EntradaGrupo:
     n_procedencias: int
     tiene_oficial: bool
     motivo_sin_oficial: str | None = None
+    solo_indirecto: bool = False                 # hay un vínculo con dato, pero indirecto (X22): no cuenta como dato oficial
+    discrepancias: tuple[str, ...] = ()          # IDs de datos oficiales que la cifra de un titular contradice
+    periodos_distintos: tuple[str, ...] = ()     # IDs de datos oficiales de otro período que la cifra de un titular
+    eventos_sin_revisar: tuple[str, ...] = ()    # IDs de eventos oficiales con estado automático
 
 
 @dataclass(frozen=True)
