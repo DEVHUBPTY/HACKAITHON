@@ -34,6 +34,7 @@ import json
 import logging
 import re
 import sys
+from collections import Counter
 from collections.abc import Callable, Collection, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, field
@@ -45,6 +46,7 @@ import duckdb
 from pydantic import BaseModel
 
 from src import db
+from src.limpieza import plano
 from src.configuracion import (
     MODALIDADES,
     RAIZ,
@@ -59,7 +61,9 @@ from src.esquemas import PATRON_ID_REGISTRO, Afirmacion, AfirmacionSalida, Cita,
 logger = logging.getLogger(__name__)
 
 PREFIJOS_OFICIALES = ("IND-", "SIS-", "SBP-")
-SECCIONES_DE_LISTA = ("titulares", "enfoque", "brief", "guion", "resumen_web", "copy_digital", "preguntas")
+# Las secciones de texto de un paquete que la persona puede corregir. ``observaciones`` e ``hipotesis_impacto`` son los dos bloques del
+# boletín de banca (E2-04); qué es válido en cada una lo decide el validador, no esta lista.
+SECCIONES_DE_LISTA = ("titulares", "enfoque", "brief", "guion", "resumen_web", "copy_digital", "preguntas", "observaciones", "hipotesis_impacto")
 SECCIONES_UNICAS = ("titulo", "titulo_trabajo")
 ORIGEN_GENERADA, ORIGEN_CORREGIDA = "generada", "corregida"
 FORMATO_FECHA = "%Y-%m-%dT%H:%M:%SZ"
@@ -241,8 +245,8 @@ def huellas_de_exportacion(demo: bool, cfg: ConfigRevision | None = None, raiz: 
 def elementos_editables(contenido: Mapping[str, Any]) -> dict[str, Elemento]:
     """Los textos de un borrador que una persona puede corregir, por clave estable.
 
-    ``afirmaciones.A1`` (cita registros) · ``titulo`` / ``titulo_trabajo`` · ``titulares.0`` … ``copy_digital.2`` (citan afirmaciones)
-    · ``preguntas.0``. Los marcadores ``[VISUAL: …]`` del guion no se editan: los pone el código (CLAUDE.md).
+    ``afirmaciones.A1`` (cita registros) · ``titulo`` / ``titulo_trabajo`` · ``titulares.0`` … ``copy_digital.2`` · ``observaciones.0`` ·
+    ``hipotesis_impacto.0`` (citan afirmaciones) · ``preguntas.0``. Los marcadores ``[VISUAL: …]`` del guion no se editan: los pone el código (CLAUDE.md).
     """
     editables: dict[str, Elemento] = {}
     marcador = cargar_restricciones().marcador_visual
@@ -301,7 +305,33 @@ def _rechazos_del_borrador(entrada: Any, contenido: Mapping[str, Any], secciones
     for nombre in secciones_a_revisar:
         if nombre in secciones:
             salida += [(nombre, r) for r in v.validar_seccion(nombre, secciones[nombre], ctx)]
+    if set(secciones_a_revisar) & set(v.BLOQUES_RESUMEN):          # E2-04: el límite del resumen es la suma de los dos bloques del boletín
+        salida += [(r.seccion, r) for r in v.validar_conjunto({s: secciones[s] for s in v.BLOQUES_RESUMEN if s in secciones}, ctx)]
     return salida
+
+
+def _ubicar(clave: str, r: Rechazo, textos: Mapping[str, str], editados: Mapping[str, str]) -> tuple[bool, str | None]:
+    """``(es_nuevo, clave_de_la_oración)`` de un rechazo del validador (X74, X80).
+
+    Una afirmación se identifica por su clave. En una sección, el rechazo se atribuye a la oración que contiene su fragmento, buscado con la
+    misma normalización del validador (``plano`` y ``contiene``): una oración editada lo vuelve nuevo; si solo está en oraciones que no se
+    tocaron se compara por conteo contra el borrador anterior; si no se ubica en ninguna y la persona editó la sección, es nuevo (no se puede
+    probar que ya existía). Sin fragmento (límites de palabras) tampoco hay oración que señalar y se compara por conteo.
+    """
+    from src.validador import contiene
+
+    if clave.startswith("afirmaciones."):
+        return clave in editados, clave
+    if not r.fragmento:
+        return False, None
+    fragmento = plano(r.fragmento)
+    de_la_seccion = {k: t for k, t in textos.items() if k.partition(".")[0] == clave}
+    ubicadas = [k for k, t in de_la_seccion.items() if contiene(plano(t), fragmento) or fragmento in plano(t)]
+    if editadas := [k for k in ubicadas if k in editados]:
+        return True, editadas[0]
+    if ubicadas:
+        return False, ubicadas[0]
+    return any(k in editados for k in de_la_seccion), None
 
 
 def revalidar_correccion(
@@ -315,6 +345,8 @@ def revalidar_correccion(
     la corrección. Se revisan las afirmaciones, las secciones editadas y las que citan una afirmación editada (su texto ya no
     necesariamente cabe en lo que ahora dice). Lista vacía = nada que confirmar.
     """
+    from src.validador import BLOQUES_RESUMEN, LIMITE_PALABRAS
+
     cfg = cfg or cargar_revision()
     claves = set(claves)
     editadas = {k.split(".", 1)[1] for k in claves if k.startswith("afirmaciones.")}
@@ -324,16 +356,26 @@ def revalidar_correccion(
         valor = [valor] if isinstance(valor, Mapping) else valor or []
         if editadas & {i for o in valor if isinstance(o, Mapping) for i in o.get("afirmaciones", [])}:
             secciones.add(nombre)
-    previos = {(c, r.regla, r.motivo) for c, r in _rechazos_del_borrador(entrada, antes, secciones)}
+    previos = Counter((c, r.regla, r.motivo, r.fragmento) for c, r in _rechazos_del_borrador(entrada, antes, secciones))
+    textos_antes = {k: e.texto for k, e in elementos_editables(antes).items()}
+    textos_despues = {k: e.texto for k, e in elementos_editables(despues).items()}
+    editados = {k: t for k, t in textos_despues.items() if k in claves and t != textos_antes.get(k)}   # el texto de estas oraciones es nuevo
     primera_clave = {s: next((k for k in sorted(claves) if k == s or k.startswith(f"{s}.")), s) for s in secciones}
+    primera_resumen = next((k for k in sorted(claves) if k.partition(".")[0] in BLOQUES_RESUMEN), None)
     avisos: list[Advertencia] = []
     for texto_vacio in [k for k, e in elementos_editables(despues).items() if k in claves and not e.texto.strip()]:
         avisos.append(Advertencia(texto_vacio, cfg.correccion.advertencia_vacio))
     for clave, r in _rechazos_del_borrador(entrada, despues, secciones):
-        if (clave, r.regla, r.motivo) in previos:
-            continue
-        aviso = Advertencia(primera_clave.get(clave, clave), f"[{r.regla}] {r.mensaje}")
-        if aviso not in avisos:
+        es_nuevo, oracion = _ubicar(clave, r, textos_despues, editados)
+        if not es_nuevo:                                                # X74: un rechazo en una oración editada es siempre nuevo; en las demás, solo si sobra uno
+            llave = (clave, r.regla, r.motivo, r.fragmento)
+            if previos[llave] > 0:
+                previos[llave] -= 1
+                continue
+        # El límite del resumen (conjunto) es uno solo: se avisa una vez y en la primera oración editada de los bloques (X75).
+        conjunto = r.regla == LIMITE_PALABRAS and clave in BLOQUES_RESUMEN and r.seccion == clave and primera_resumen and not r.fragmento
+        aviso = Advertencia(oracion or primera_clave.get(clave, clave) if not conjunto else primera_resumen, f"[{r.regla}] {r.mensaje}")
+        if aviso not in avisos and not (conjunto and any(a.mensaje == aviso.mensaje for a in avisos)):
             avisos.append(aviso)
     return avisos
 
