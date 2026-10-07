@@ -17,26 +17,25 @@
       ],
       "criterio_de_empate": "Empates en el corte: el sistema los resuelve con la regla del reto (P mostrado, luego mayor urgencia, luego ID); el baseline, por ID. Se informa cuántos grupos empatan en el corte y cuántos quedan fuera del top.",
       "sistema": {
-        "k": 0,
+        "k": 1,
         "n": 5,
-        "proporcion": 0.0,
+        "proporcion": 0.2,
         "ic95": [
-          0.0,
-          0.4345
+          0.0362,
+          0.6245
         ],
         "top": [
           "GRP-21ad932d54",
           "GRP-038c4f0643",
-          "GRP-29baaf270e",
-          "GRP-1c2f1d950d",
-          "GRP-f4a44182b1"
+          "GRP-5e6531917f",
+          "GRP-84a6b3a04b",
+          "GRP-39dfe8d714"
         ],
         "ids_fallidos": [
           "GRP-21ad932d54",
           "GRP-038c4f0643",
-          "GRP-29baaf270e",
-          "GRP-1c2f1d950d",
-          "GRP-f4a44182b1"
+          "GRP-84a6b3a04b",
+          "GRP-39dfe8d714"
         ],
         "empate_en_el_corte": null
       },
@@ -73,12 +72,12 @@
   "exploratoria": true,
   "cortes_minimos": 3,
   "sistema": {
-    "k": 0,
+    "k": 1,
     "n": 5,
-    "proporcion": 0.0,
+    "proporcion": 0.2,
     "ic95": [
-      0.0,
-      0.4345
+      0.0362,
+      0.6245
     ]
   },
   "baseline": {

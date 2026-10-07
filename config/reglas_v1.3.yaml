@@ -26,7 +26,7 @@ relevancia:                 # R = peso_foco × foco. D-103 quitó la parte temá
 impacto:                    # I = peso_subtema × alcance(subtema) + peso_geografico × alcance geográfico
   peso_subtema: 0.5         # el dato oficial y las procedencias NO entran en I (D-15, D-35)
   peso_geografico: 0.5
-  alcance_geografico: {nacional: 1.0, provincial: 0.6, local: 0.3, desconocido: 0.3}   # D-109: desconocido = local (antes 0.5, neutro)
+  alcance_geografico: {nacional: 1.0, provincial: 0.6, local: 0.3, desconocido: 0.3, exterior: 0.3}   # D-109: desconocido = local (antes 0.5, neutro) · D-115: exterior = local
   # Alcance por subtema (criterio editorial, supuesto). Las claves son los subtemas de temas.yaml.
   alcance_subtema:
     crecimiento_pib: 1.0
@@ -116,19 +116,57 @@ agrupacion:                 # E1-08 · AgglomerativeClustering(metric='cosine', 
 agencias: [EFE, AFP, AP, Reuters, Europa Press, DPA, ANSA, Xinhua, Prensa Latina, Bloomberg]
 
 geografia:                  # alcance geográfico (comparación sin tildes ni mayúsculas, E1-10)
-  nacional_terminos: [a nivel nacional, todo el país, en todo el país, nacional, asamblea nacional, gobierno nacional]
+  # X85 (E1-10d): «nacional» suelto ya no da alcance nacional («Policía Nacional», «Guardia Nacional de Texas», «Banco Nacional»): solo las frases.
+  nacional_terminos: [a nivel nacional, todo el país, en todo el país, en todo el territorio, territorio nacional, asamblea nacional, gobierno nacional]
   # E1-10c (X42, D-108): mención implícita del país. El país nombrado («en Panamá», «en el país», «del país») o su gentilicio
   # («panameño/a/s») da alcance nacional SOLO si ningún titular del grupo nombra un lugar concreto (provincia, comarca o
   # distrito): el lugar nombrado ubica el hecho. Los términos explícitos de arriba mandan siempre. «Panamá» precedido de «ciudad
   # de» o «provincia de» no es el país (prioridad.yaml: prefijos_excluidos). D-108: una institución nacional SOLA (CSS, Minsa,
   # MOP, ACP, AMP, el Ejecutivo, los órganos del Estado…) NO da alcance nacional: no prueba que el hecho sea de todo el país.
   nacional_implicito_terminos: [Panamá, panameño, panameña, panameños, panameñas, en el país, del país]
+  # D-115 (E1-10d): países y ciudades grandes del exterior, en español e inglés (comparación sin tildes ni mayúsculas). Si los titulares de un
+  # grupo nombran alguno y NINGÚN lugar de Panamá, el alcance es `exterior` (0.3). Un nombre más largo manda sobre el lugar panameño que contiene
+  # («Santiago de Chile» no es el distrito de Santiago). Ver specs/E1-10d.md para la precedencia.
+  exterior_terminos: [
+    # países y territorios
+    Afganistán, Afghanistan, Albania, Alemania, Germany, Andorra, Angola, Arabia Saudita, Arabia Saudí, Saudi Arabia, Argelia,
+    Algeria, Argentina, Armenia, Australia, Austria, Azerbaiyán, Azerbaijan, Bahamas, Baréin, Bahrain, Bangladés, Bangladesh,
+    Barbados, Bélgica, Belgium, Belice, Belize, Benín, Bielorrusia, Belarus, Birmania, Myanmar, Bolivia, Bosnia, Botsuana,
+    Botswana, Brasil, Brazil, Bulgaria, Burkina Faso, Camboya, Cambodia, Camerún, Cameroon, Canadá, Catar, Qatar, Chile, China,
+    Chipre, Cyprus, Colombia, Congo, Corea del Sur, South Korea, Corea del Norte, North Korea, Costa Rica, Costa de Marfil,
+    Ivory Coast, Croacia, Croatia, Cuba, Dinamarca, Denmark, Ecuador, Egipto, Egypt, El Salvador, Emiratos Árabes Unidos,
+    United Arab Emirates, Eslovaquia, Slovakia, Eslovenia, Slovenia, España, Spain, Estados Unidos, United States, EEUU, EE UU,
+    USA, Estonia, Etiopía, Ethiopia, Filipinas, Philippines, Finlandia, Finland, Francia, France, Gabón, Georgia, Ghana, Grecia,
+    Greece, Guatemala, Guinea, Guyana, Haití, Honduras, Hungría, Hungary, India, Indonesia, Irak, Iraq, Irán, Irlanda, Ireland,
+    Islandia, Iceland, Israel, Italia, Italy, Jamaica, Japón, Japan, Jordania, Kazajistán, Kazakhstan, Kenia, Kenya, Kosovo,
+    Kuwait, Letonia, Latvia, Líbano, Lebanon, Libia, Libya, Lituania, Lithuania, Luxemburgo, Luxembourg, Malasia, Malaysia, Mali,
+    Malta, Marruecos, Morocco, México, Moldavia, Mónaco, Mongolia, Mozambique, Namibia, Nepal, Nicaragua, Níger, Nigeria,
+    Noruega, Norway, Nueva Zelanda, Nueva Zelandia, New Zealand, Omán, Países Bajos, Netherlands, Holanda, Pakistán, Palestina,
+    Palestine, Paraguay, Perú, Polonia, Poland, Portugal, Puerto Rico, Reino Unido, United Kingdom, Gran Bretaña, Great Britain,
+    República Checa, Czech Republic, República Dominicana, Dominican Republic, Rumania, Romania, Rusia, Russia, Senegal, Serbia,
+    Singapur, Singapore, Siria, Syria, Somalia, Sudáfrica, South Africa, Sudán, Suecia, Sweden, Suiza, Switzerland, Surinam,
+    Tailandia, Thailand, Taiwán, Tanzania, Trinidad y Tobago, Túnez, Tunisia, Turquía, Ucrania, Ukraine, Uganda, Uruguay,
+    Uzbekistán, Vaticano, Vatican, Venezuela, Vietnam, Yemen, Zambia, Zimbabue, Zimbabwe, Gaza, Cisjordania, West Bank, Hong Kong,
+    # ciudades grandes
+    Abu Dabi, Abu Dhabi, Accra, Addis Abeba, Ámsterdam, Ankara, Asunción, Atenas, Athens, Atlanta, Bagdad, Baghdad, Bangkok,
+    Barcelona, Barranquilla, Beirut, Belgrado, Belgrade, Berlín, Bogotá, Boston, Brasilia, Bruselas, Brussels, Budapest,
+    Buenos Aires, Cartagena de Indias, Caracas, Chicago, Ciudad de Guatemala, Ciudad de México, Copenhague, Copenhagen, Dallas,
+    Dubái, Dublín, El Cairo, Cairo, Estambul, Istanbul, Estocolmo, Stockholm, Ginebra, Geneva, Hanoi, Helsinki, Ho Chi Minh,
+    Houston, Jerusalén, Jerusalem, Johannesburgo, Johannesburg, Kiev, Kyiv, Kingston, La Habana, Havana, Lima, Lisboa, Lisbon,
+    Londres, London, Los Ángeles, Madrid, Managua, Manila, Medellín, Miami, Milán, Montevideo, Moscú, Moscow, Mumbai, Múnich,
+    Nairobi, Nueva Delhi, New Delhi, Nueva York, New York, Nueva Orleans, New Orleans, Oslo, Pekín, Beijing, París, Quito, Riad,
+    Riyadh, Río de Janeiro, Roma, Rome, San Salvador, Santiago de Chile, Santo Domingo, São Paulo, Seúl, Seoul, Shanghái, Sídney,
+    Sydney, Tegucigalpa, Teherán, Tehran, Tel Aviv, Tokio, Tokyo, Toronto, Varsovia, Warsaw, Viena, Vienna, Washington, Zúrich
+  ]
   provincias: [Bocas del Toro, Chiriquí, Coclé, Colón, Darién, Herrera, Los Santos, Panamá, Panamá Oeste, Veraguas]
   comarcas: [Guna Yala, Emberá-Wounaan, Ngäbe-Buglé, Madugandí, Wargandí, Naso Tjër Di]
   distritos:
     # X52: la capital es un lugar concreto (local), no el país: «MOP inaugura obra en Ciudad de Panamá» no es nacional.
     - Ciudad de Panamá
     - distrito de Panamá
+    # X86 (E1-10d): zonas de la capital, no el país; la coincidencia más larga manda sobre «Panamá» suelto.
+    - Panamá Norte
+    - Panamá Pacífico
     - San Miguelito
     - Arraiján
     - La Chorrera

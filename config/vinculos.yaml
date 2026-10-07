@@ -67,12 +67,20 @@ subtema:                            # D-92 (enmienda a E1-09) y E1-10c (X41): el
     # «clase» suelta no («clase media»): solo el plural de la guía («sin clases»).
     educacion_publica: [educacion publica, escuela, escuelas, escolar, escolares, colegio, colegios, clases, docente,
                         docentes, meduca, ministerio de educacion]
+    # E1-10d (X87, D-101): formas de homicidio, agresión con arma, patrimonio y crimen organizado, decididas por auditoría a ciegas del
+    # léxico contra «delitos» de docs/guia_temas.md (specs/E1-10d.md). «disparan» suelto no: «disparan cohetes», «se disparan los precios».
     seguridad_ciudadana: [seguridad ciudadana, policia, policias, policial, policiales, operativo, operativos, carcel,
                           carceles, carcelario, penitenciario, centro penitenciario, prision, recluso, reclusos, recluido,
                           recluida, privado de libertad, privados de libertad, delito, delitos, delincuencia, delincuente,
                           delincuentes, homicidio, homicidios, asesinato, asesinatos, asesinan, asesinado, asesinada,
                           robo, robos, asalto, asaltos, asaltan, hurto, aprehension, aprehenden, aprehendido, aprehendida,
-                          aprehendidos, detenido, detenida, detenidos, droga, drogas, narcotrafico]
+                          aprehendidos, detenido, detenida, detenidos, droga, drogas, narcotrafico,
+                          asesinados, asesinadas, asesinaron, asesino, asesinos, femicidio, femicidios, feminicidio,
+                          feminicidios, muerte violenta, muertes violentas, muerto de forma violenta, muerta de forma violenta,
+                          muertos de forma violenta, muertas de forma violenta, baleado, baleada, baleados, baleadas, balacera,
+                          balaceras, apunalado, apunalada, apunalados, apunaladas, apunalan, disparos, a disparos,
+                          disparan contra, dispararon contra, asaltado, asaltada, asaltaron, atraco, atracos, secuestro,
+                          secuestros, secuestran, extorsion, sicario, sicarios]
     # E1-07c (D-111): «obra(s)» suelta no (obra de teatro, obra social) y «sobrecosto» suelto no (puede ser de una compra):
     # solo las frases que nombran la obra pública. «acueducto» solo, o con Idaan, sigue siendo agua potable (el servicio);
     # la obra de construcción del acueducto es obras públicas (la coincidencia más larga manda, X53).
