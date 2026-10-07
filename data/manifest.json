@@ -604,8 +604,8 @@
     },
     "decimales_del_hash": 4,
     "ejecucion": {
-      "arbol_con_cambios": true,
-      "commit": "5ad2c9b1bf41f97f36b0191514bd75ed17e3be4d",
+      "arbol_con_cambios": false,
+      "commit": "336ad8ab8b54747dc74bf3ee402e80b6b13962a5",
       "embeddings": {
         "clave": "minilm",
         "id": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
@@ -632,7 +632,7 @@
       "python": "3.11.14",
       "reglas": {
         "archivo": "config/reglas_v1.3.yaml",
-        "sha256": "96acdd82edf0bc1b392a8d53916f9e69d1a4ebe90d5ffcd2bb7f738b926a1b86",
+        "sha256": "1006bb0c62357d9aad5d1eeb032df4c917643e8a1fab9cf762fba2600ec62486",
         "version": "1.3"
       },
       "semillas": {
