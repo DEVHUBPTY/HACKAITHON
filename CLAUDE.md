@@ -40,7 +40,7 @@ poetry run python -m src.clasificacion               # embeddings locales y tema
 poetry run python -m eval.clasificacion              # métricas de clasificación (casos difíciles y etiquetas)
 poetry run python -m src.agrupacion                  # grupos GRP- y procedencias independientes (estimadas)
 poetry run python -m eval.agrupacion                 # calibra el umbral y mide precisión/recall de pares con etiquetas
-poetry run python -m src.contexto                    # vínculos con el Banco Mundial por subtema → tabla vinculos y outputs/reporte_vinculos.json (E1-09)
+poetry run python -m src.contexto                    # vínculos por subtema con el Banco Mundial y, por defecto, USGS (--eventos, data/processed/eventos.geojson) → tabla vinculos y outputs/reporte_vinculos.json (E1-09, E1-09b)
 poetry run python -m src.puntaje                     # R I U N E y P, estado de evidencia, vacíos, contradicciones y acción → tablas puntajes, evidencia, contradicciones y outputs/prioridad.json (E1-10; --sin-llm no compara con el LLM)
 poetry run python -m eval.puntaje                    # distribución de P y de cada componente; tabla rango × estado de evidencia → outputs/puntaje.json (E1-10)
 poetry run python -m eval.sensibilidad               # top 5 ante cada peso ±5 y cada supuesto ±20 % → outputs/sensibilidad.json (E1-10, X02)

@@ -141,7 +141,7 @@ class Gdelt(ModeloConfig):
     # tema de origen (D-62) -> pata ('locales', 'internacional') -> definición; ver src/consultas_gdelt.py
     consultas: dict[str, dict[str, PataConsulta]]
     motivo_cambio_consultas: str
-    # Consultas reemplazadas (tema -> consulta antigua): sus crudos siguen en raw/ pero no alimentan el snapshot (D-83).
+    # Consultas reemplazadas (tema -> consulta antigua): sus crudos siguen en raw/ y SÍ alimentan el snapshot, declarados con su consulta (D-89, corrige D-83).
     consultas_historicas: dict[str, str]
     largo_minimo_termino: int
 
@@ -791,22 +791,25 @@ class CifraTitular(ModeloConfig):
     palabras_de_alza: list[str]
     palabras_de_nivel: list[str]  # «a», «hasta»: tras un verbo de cambio, la cifra es el nivel alcanzado
     palabras_de_cota: list[str]  # «bajo», «menos de»…: la cifra es una cota o aproximación
+    palabras_de_proyeccion: list[str]  # «podría», «prevé»…: proyección en cualquier parte del titular, no se compara
+    patrones_de_verbo_no_listado: list[str]  # regex de palabras tipo verbo (futuro, infinitivo, «se …») fuera de las listas
     indicadores_de_variacion: list[str]  # indicadores oficiales que ya son una tasa de cambio
     palabras_clave: dict[str, list[str]]  # indicador -> palabras que ligan la cifra del titular a ese indicador
     etiquetas: EtiquetasCifra
 
-    @field_validator("patron_numero", "patron_anio")
+    @field_validator("patron_numero", "patron_anio", "patrones_de_verbo_no_listado")
     @classmethod
-    def _patron_valido(cls, v: str) -> str:
+    def _patron_valido(cls, v: str | list[str]) -> str | list[str]:
         try:
-            re.compile(v)
+            for patron in [v] if isinstance(v, str) else v:
+                re.compile(patron)
         except re.error as exc:
             raise ValueError(f"expresión regular inválida: {exc}") from exc
         return v
 
     @model_validator(mode="after")
     def _listas_coherentes(self) -> CifraTitular:
-        for nombre in ("palabras_de_baja", "palabras_de_baja_ambiguas", "palabras_de_alza", "palabras_de_nivel", "palabras_de_cota"):
+        for nombre in ("palabras_de_baja", "palabras_de_baja_ambiguas", "palabras_de_alza", "palabras_de_nivel", "palabras_de_cota", "palabras_de_proyeccion", "patrones_de_verbo_no_listado"):
             if any(not p.strip() for p in getattr(self, nombre)):
                 raise ValueError(f"{nombre}: palabras no vacías")
         if "bajo" in self.palabras_de_baja:

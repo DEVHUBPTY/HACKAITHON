@@ -299,3 +299,29 @@ def test_la_ampliacion_a_90_dias_depende_de_la_bandera(raw: Path, cfg: dict, red
     cfg["volumen_noticias"]["minimo"] = 10
     extraer.extraer_gdelt(raw, cfg)
     assert [p["startdatetime"] for p in red["llamadas"]] == llamadas
+
+
+def _articulo_gdelt(n: int) -> dict:
+    return {
+        "url": f"https://medio{n}.test/nota", "title": f"Titular {n}", "seendate": "20261005T130000Z",
+        "domain": f"medio{n}.test", "language": "Spanish", "sourcecountry": "Panama",
+    }
+
+
+@pytest.mark.parametrize("con_historico, llamadas", [(True, []), (False, ["20261004000000"])])
+def test_la_decision_de_ampliar_cuenta_las_noticias_de_consultas_historicas(
+    raw: Path, cfg: dict, red: dict, monkeypatch, con_historico: bool, llamadas: list[str]
+) -> None:
+    """D-89: las noticias de las consultas anteriores a E0-04 son parte del snapshot y cuentan para el mínimo.
+
+    Con solo la consulta vigente hay 1 noticia (< mínimo 2) y se amplía a 2 días; sumando la histórica hay 2 y no.
+    """
+    monkeypatch.setattr(extraer, "_ahora", lambda: _dia(6, 12))
+    cfg["ventana_noticias"].update(dias_base=1, dias_maximo=2, ampliar_si_no_alcanza_minimo=True)
+    cfg["volumen_noticias"]["minimo"] = 2
+    cfg["gdelt"]["consultas_historicas"] = {"economia": "Panama (economia OR economy)"}
+    _escribir(raw, "economia", _dia(5), _dia(6), json.dumps({"articles": [_articulo_gdelt(1)]}), pata="locales")
+    if con_historico:
+        _escribir(raw, "economia", _dia(5), _dia(6), json.dumps({"articles": [_articulo_gdelt(2)]}))  # sin pata
+    extraer.extraer_gdelt(raw, cfg)
+    assert [p["startdatetime"] for p in red["llamadas"]] == llamadas

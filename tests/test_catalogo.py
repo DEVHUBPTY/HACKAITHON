@@ -98,7 +98,10 @@ def test_cobertura_honesta_desde_el_manifest(filas: list[dict[str, str]], manife
     for tema, d in manifest["cobertura_efectiva"]["gdelt_dias_por_tema"].items():
         assert f"{tema} {d['dias_cubiertos']} de {d['dias_esperados']}" in noticias
         if d["dias_cubiertos"] == 0:
-            assert f"Sin cobertura de GDELT: {tema}" in noticias
+            sin = noticias.split("Sin cobertura de las consultas vigentes de GDELT: ")[1].split(" (0 días)")[0]
+            assert tema in sin.split(", ")
+    if manifest["cobertura_efectiva"].get("gdelt_dias_por_tema_consulta_historica"):
+        assert "anteriores a E0-04 (D-89)" in noticias
     sin_pub = sum(1 for r in csv.DictReader((DATA / "processed" / "noticias.csv").open(encoding="utf-8")) if not r["fecha_publicacion"])
     assert f"{sin_pub} de {manifest['cantidad_por_archivo']['noticias.csv']} noticias sin fecha_publicacion" in noticias
     assert "D-81" in filas[1]["Cobertura"]

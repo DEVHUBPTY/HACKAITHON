@@ -177,6 +177,12 @@ def _cobertura(processed: Path, auditoria: dict[str, Any], config: dict[str, Any
             "el RSS de TVN, está en gdelt_rangos_sin_resolver."
         ),
         "gdelt_dias_por_tema": auditoria.get("gdelt_cobertura_por_tema", {}),
+        "gdelt_dias_por_tema_consulta_historica": auditoria.get("gdelt_cobertura_historica_por_tema", {}),
+        "nota_cobertura_historica": (
+            "gdelt_dias_por_tema mide solo las consultas vigentes (E0-04, dos patas por tema). Los crudos de las "
+            "consultas anteriores a E0-04 alimentan noticias.csv (D-89) y su cobertura se informa aparte en "
+            "gdelt_dias_por_tema_consulta_historica; no se suma a la de las consultas vigentes."
+        ),
         "ventana_ampliada_a_90": auditoria["ventana"]["ampliada"],
         "ventana_inicio": auditoria["ventana"]["inicio"],
         "ventana_fin": auditoria["ventana"]["fin"],
@@ -263,10 +269,10 @@ def _revisiones_banco_mundial(raw: Path, config: dict[str, Any]) -> list[str]:
     return revisiones
 
 
-def _contar(items: list[dict[str, Any]]) -> dict[str, int]:
+def _contar_por(items: list[dict[str, Any]], clave: str) -> dict[str, int]:
     cuenta: dict[str, int] = {}
     for x in items:
-        cuenta[x["motivo"]] = cuenta.get(x["motivo"], 0) + 1
+        cuenta[x[clave]] = cuenta.get(x[clave], 0) + 1
     return dict(sorted(cuenta.items()))
 
 
@@ -325,9 +331,9 @@ def _historial(
         "cambios_de_fuente": cambios,
         "revisiones_de_datos": revisiones,
         "fallos_de_extraccion": auditoria.get("gdelt_rangos_sin_resolver", []),
-        "crudos_excluidos": {
-            "total": len(auditoria.get("crudos_excluidos", [])),
-            "por_motivo": _contar(auditoria.get("crudos_excluidos", [])),
+        "crudos_consulta_historica": {
+            "total": len(auditoria.get("crudos_consulta_historica", [])),
+            "por_tema": _contar_por(auditoria.get("crudos_consulta_historica", []), "tema"),
         },
         "registros_excluidos": {"total": len(auditoria["excluidos"]), "por_motivo": dict(sorted(motivos.items()))},
         "cantidad_por_archivo": cantidades,
@@ -369,7 +375,7 @@ def construir_manifest(data: Path, config: dict[str, Any], motivo: str | None = 
         "nota_intervalo_seccion_7": nota_intervalo_pdf(config),
         "nota_cuadricula_banco_mundial": nota_cuadricula(config),
         "crudos": _crudos(raw),
-        "crudos_excluidos": auditoria.get("crudos_excluidos", []),
+        "crudos_consulta_historica": auditoria.get("crudos_consulta_historica", []),
         "registro_extraccion": _registro_extraccion(data, config),
         "historial": historial,
     }

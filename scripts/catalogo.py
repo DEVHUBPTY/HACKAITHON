@@ -126,11 +126,20 @@ def _cobertura_noticias(manifest: dict[str, Any], origenes: Counter[str], sin_pu
         "noticias sin fecha_publicacion); solo tienen fecha_deteccion (seendate).",
         f"Fechas reales: publicación {c['fecha_publicacion_inicial']} a {c['fecha_publicacion_final']}; "
         f"detección {c['fecha_deteccion_inicial']} a {c['fecha_deteccion_final']}.",
-        f"Cobertura PARCIAL de GDELT por tema (días cubiertos de los esperados): {por_tema}.",
+        f"Cobertura PARCIAL de las consultas vigentes de GDELT por tema (días cubiertos de los esperados): {por_tema}.",
     ]
     if sin_cobertura:
         partes.append(
-            "Sin cobertura de GDELT: " + ", ".join(sin_cobertura) + " (0 días; no hay noticias de GDELT de ese tema)."
+            "Sin cobertura de las consultas vigentes de GDELT: " + ", ".join(sin_cobertura) + " (0 días)."
+        )
+    historica = c.get("gdelt_dias_por_tema_consulta_historica") or {}
+    if historica:
+        por_tema_h = "; ".join(
+            f"{t} {h['dias_cubiertos']} de {h['dias_esperados']}" for t, h in historica.items()
+        )
+        partes.append(
+            "Las noticias de GDELT del snapshot vienen de los crudos de las consultas anteriores a E0-04 (D-89), "
+            f"declaradas en el manifest con su consulta histórica; su cobertura va aparte: {por_tema_h}."
         )
     partes.append(
         "El resto de la ventana solo lo aporta el RSS de TVN. Rangos sin resolver (no solicitado, "

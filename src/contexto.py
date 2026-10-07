@@ -13,13 +13,15 @@ Cada grupo (``GRP-``) se vincula con el indicador que le corresponde **por subte
 * **Cifra del titular:** si el titular trae su propia cifra (%) del mismo indicador, se compara con la oficial sin corregir
   al medio: mismo año -> «posible discrepancia, verificar»; otro período -> «período distinto, no comparable».
 * **USGS (sismos):** lo resuelve ``src/contexto_sismos.py`` (E1-09b). Aquí un vínculo cuya ``fuente`` no es ``indicador`` se
-  deja pasar y se cuenta como ``delegados``: no se inventa un vínculo del Banco Mundial para un sismo. Con ``--eventos``,
-  ``aplicar_sismos`` vincula esos grupos con ``eventos.geojson`` (mismo subtema, ``fuente = 'usgs'``).
+  deja pasar y se cuenta como ``delegados``: no se inventa un vínculo del Banco Mundial para un sismo. La CLI también
+  vincula USGS **por defecto** (``--eventos``, por defecto ``data/processed/eventos.geojson``): ``aplicar_sismos`` vincula esos
+  grupos con ``eventos.geojson`` (mismo subtema, ``fuente = 'usgs'``). Si el archivo falta, se borran las filas ``usgs`` viejas
+  y el reporte lo declara. Toda la reescritura de ``vinculos`` es una sola transacción (todo o nada).
 
 Los datos son anuales: ningún texto de salida usa la palabra «actual» (``palabras_prohibidas``). Cada fila guarda la
 ``regla`` que la generó y ``fuente = 'indicador'``; ``src.contexto`` reemplaza solo sus propias filas al volver a correr.
 
-Uso: ``poetry run python -m src.contexto`` (después de ``src.agrupacion``).
+Uso: ``poetry run python -m src.contexto`` (después de ``src.agrupacion``; vincula Banco Mundial y USGS).
 """
 
 from __future__ import annotations
@@ -100,7 +102,9 @@ def _cifra_con_contexto(cifra: float, entre: str, indicador_id: str, cfg: Config
     * Verbo de cambio sin «a» («cae 2 %»): es una **variación**. Solo se compara si el indicador oficial es una tasa de
       cambio (``indicadores_de_variacion``, p. ej. el PIB), y entonces la baja invierte el signo (X17). Contra el nivel
       oficial de inflación o desempleo no es comparable: ``None``. «baja» es ambigua y nunca se asume como verbo.
-    * Palabra de cota o aproximación («bajo», «menos de», «hasta» suelto): ``None``.
+    * Palabra de cota o aproximación («bajo», «menos de», «casi», «cerca del», «hasta» suelto): ``None``.
+    * Palabra tipo verbo fuera de las listas (futuro o condicional «caería», infinitivo «caer», «se desploma»): el signo es
+      incierto, ``None``. Las proyecciones se descartan antes, en ``extraer_cifra_titular``.
     * Sin ninguna de ellas («fue de 3,2 %»): es un nivel y se compara tal cual.
     """
     c = cfg.cifra_titular
@@ -116,7 +120,14 @@ def _cifra_con_contexto(cifra: float, entre: str, indicador_id: str, cfg: Config
         if indicador_id not in c.indicadores_de_variacion or _alternativa(c.palabras_de_baja_ambiguas).fullmatch(ultimo.group(0)):
             return None
         return -cifra if cifra > 0 and _alternativa(c.palabras_de_baja).fullmatch(ultimo.group(0)) else cifra
-    return None if _alternativa(c.palabras_de_cota).search(entre) else cifra
+    if _alternativa(c.palabras_de_cota).search(entre) or _verbo_no_listado(entre, cfg):
+        return None
+    return cifra
+
+
+def _verbo_no_listado(entre: str, cfg: ConfigVinculos) -> bool:
+    """Hay en ``entre`` una palabra tipo verbo que ninguna lista conoce (``patrones_de_verbo_no_listado``)."""
+    return any(re.search(rf"(?<!\w)(?:{p})(?!\w)", entre, re.IGNORECASE) for p in cfg.cifra_titular.patrones_de_verbo_no_listado)
 
 
 def extraer_cifra_titular(titulo: str, indicador_id: str, cfg: ConfigVinculos) -> tuple[float, int | None] | None:
@@ -128,7 +139,7 @@ def extraer_cifra_titular(titulo: str, indicador_id: str, cfg: ConfigVinculos) -
     """
     c = cfg.cifra_titular
     palabras = c.palabras_clave.get(indicador_id)
-    if not palabras:
+    if not palabras or _alternativa(c.palabras_de_proyeccion).search(titulo):  # una proyección no es un dato observado
         return None
     clave = "|".join(re.escape(p) for p in palabras)
     patron = re.compile(rf"(?<!\w)(?:{clave})(?!\w)(?P<entre>[^\d%]{{0,{c.ventana_caracteres}}}?){c.patron_numero}", re.IGNORECASE)
@@ -317,42 +328,60 @@ def construir_vinculos(
     return filas, delegados
 
 
-def aplicar_a_base(ruta_base: Path, cfg: ConfigVinculos) -> tuple[list[dict[str, Any]], list[str], int]:
+def aplicar_a_base(ruta_base: Path, cfg: ConfigVinculos, con: Any | None = None) -> tuple[list[dict[str, Any]], list[str], int]:
     """Calcula los vínculos y reemplaza en ``vinculos`` solo las filas de ``fuente = 'indicador'``.
 
-    Devuelve ``(filas, delegados, total_grupos)``.
+    Con ``con`` (conexión con una transacción abierta) escribe dentro de ella y no confirma: así ``ejecutar`` reescribe
+    todo o nada. Devuelve ``(filas, delegados, total_grupos)``.
     """
-    con = db.conectar(ruta_base)
+    propia = con is None
+    if propia:
+        con = db.conectar(ruta_base)
     try:
-        db.asegurar_esquema(con)
+        if propia:
+            db.asegurar_esquema(con)
         grupos = leer_grupos(con)
         indicadores = db.leer_tabla(con, "indicadores")
         filas, delegados = construir_vinculos(grupos, indicadores, cfg)
-        con.begin()
-        try:
-            con.execute("DELETE FROM vinculos WHERE fuente = ?", [FUENTE_INDICADOR])
-            db.insertar(con, "vinculos", filas)
-            con.commit()
-        except BaseException:
-            con.rollback()
-            raise
+        _reemplazar(con, FUENTE_INDICADOR, filas, propia)
         return filas, delegados, len(grupos)
     finally:
-        con.close()
+        if propia:
+            con.close()
 
 
-def aplicar_sismos(ruta_base: Path, ruta_eventos: Path, cfg: ConfigVinculos) -> tuple[list[contexto_sismos.ResultadoSismos], list[dict[str, Any]], int]:
+def _reemplazar(con: Any, fuente: str, filas: Sequence[Mapping[str, Any]], propia: bool) -> None:
+    """Borra las filas de ``vinculos`` de ``fuente`` e inserta ``filas``; con ``propia`` abre y confirma su transacción."""
+    if propia:
+        con.begin()
+    try:
+        con.execute("DELETE FROM vinculos WHERE fuente = ?", [fuente])
+        db.insertar(con, "vinculos", [{**dict.fromkeys(db.columnas("vinculos")), **f} for f in filas])
+        if propia:
+            con.commit()
+    except BaseException:
+        if propia:
+            con.rollback()
+        raise
+
+
+def aplicar_sismos(
+    ruta_base: Path, ruta_eventos: Path, cfg: ConfigVinculos, con: Any | None = None
+) -> tuple[list[contexto_sismos.ResultadoSismos], list[dict[str, Any]], int]:
     """Vincula con USGS los grupos que ``vinculos.yaml`` delega a esa fuente y reemplaza solo las filas ``fuente = 'usgs'``.
 
-    El subtema es el de ``leer_grupos`` (el mismo de los vínculos del Banco Mundial). Devuelve ``(resultados, filas,
-    eventos_sin_magnitud)``.
+    El subtema es el de ``leer_grupos`` (el mismo de los vínculos del Banco Mundial). Con ``con`` escribe dentro de la
+    transacción abierta del llamador (ver ``aplicar_a_base``). Devuelve ``(resultados, filas, eventos_sin_magnitud)``.
     """
     fuentes, campos_fecha = cargar_fuentes(), cargar_reglas().agrupacion.campos_fecha
     eventos = contexto_sismos.cargar_eventos(ruta_eventos)
     sin_magnitud = contexto_sismos.contar_sin_magnitud(eventos)
-    con = db.conectar(ruta_base)
+    propia = con is None
+    if propia:
+        con = db.conectar(ruta_base)
     try:
-        db.asegurar_esquema(con)
+        if propia:
+            db.asegurar_esquema(con)
         fechas = contexto_sismos.leer_noticias_por_grupo(con)
         resultados = []
         for g in leer_grupos(con):
@@ -364,17 +393,16 @@ def aplicar_sismos(ruta_base: Path, ruta_eventos: Path, cfg: ConfigVinculos) -> 
                 resultados.append(r)
         filas = [f for r in resultados for f in contexto_sismos.a_filas_vinculo(r, cfg)]
         verificar_texto(filas, cfg)
-        con.begin()
-        try:
-            con.execute("DELETE FROM vinculos WHERE fuente = ?", [contexto_sismos.FUENTE_VINCULO])
-            db.insertar(con, "vinculos", [{**dict.fromkeys(db.columnas("vinculos")), **f} for f in filas])
-            con.commit()
-        except BaseException:
-            con.rollback()
-            raise
+        _reemplazar(con, contexto_sismos.FUENTE_VINCULO, filas, propia)
         return resultados, filas, sin_magnitud
     finally:
-        con.close()
+        if propia:
+            con.close()
+
+
+def quitar_filas_usgs(con: Any) -> None:
+    """Borra las filas ``fuente = 'usgs'`` (dentro de la transacción del llamador): sin eventos no queda vínculo viejo."""
+    con.execute("DELETE FROM vinculos WHERE fuente = ?", [contexto_sismos.FUENTE_VINCULO])
 
 
 # ------------------------------------------------------------------ reporte
@@ -416,18 +444,42 @@ def construir_reporte(filas: Sequence[Mapping[str, Any]], delegados: Sequence[st
     }
 
 
+ESTADO_SIN_EVENTOS = "no ejecutado: falta eventos.geojson"
+
+
 def ejecutar(ruta_base: Path, ruta_reporte: Path, ruta_eventos: Path | None = None) -> dict[str, Any]:
     """Vincula los grupos de la base y escribe ``outputs/reporte_vinculos.json``. Devuelve el reporte.
 
     Con ``ruta_eventos`` también vincula los grupos de sismos con USGS (``reporte["usgs"]``); sin ella no toca filas ``usgs``.
+    Si ``ruta_eventos`` no existe se borran las filas ``usgs`` viejas y el reporte lo declara (``ESTADO_SIN_EVENTOS``).
+    La reescritura de ``vinculos`` es una sola transacción: si algo falla, la tabla queda como estaba y no se escribe reporte.
     """
     cfg = cargar_vinculos()
     z = cargar_carga().salida.z_intervalo_confianza
-    filas, delegados, total = aplicar_a_base(ruta_base, cfg)
+    usgs: dict[str, Any] | None = None
+    con = db.conectar(ruta_base)
+    try:
+        db.asegurar_esquema(con)
+        con.begin()
+        try:
+            filas, delegados, total = aplicar_a_base(ruta_base, cfg, con)
+            if ruta_eventos is not None:
+                if ruta_eventos.exists():
+                    resultados, filas_usgs, sin_magnitud = aplicar_sismos(ruta_base, ruta_eventos, cfg, con)
+                    usgs = construir_reporte_usgs(resultados, filas_usgs, sin_magnitud, z)
+                else:
+                    logger.warning("No existe %s: se borran las filas usgs viejas", ruta_eventos)
+                    quitar_filas_usgs(con)
+                    usgs = {"estado": ESTADO_SIN_EVENTOS, "filas_en_vinculos": 0}
+            con.commit()
+        except BaseException:
+            con.rollback()
+            raise
+    finally:
+        con.close()
     reporte = construir_reporte(filas, delegados, total, z)
-    if ruta_eventos is not None:
-        resultados, filas_usgs, sin_magnitud = aplicar_sismos(ruta_base, ruta_eventos, cfg)
-        reporte["usgs"] = construir_reporte_usgs(resultados, filas_usgs, sin_magnitud, z)
+    if usgs is not None:
+        reporte["usgs"] = usgs
     ruta_reporte.parent.mkdir(parents=True, exist_ok=True)
     with ruta_reporte.open("w", encoding="utf-8") as f:
         json.dump(reporte, f, ensure_ascii=False, indent=2)
@@ -438,25 +490,26 @@ def ejecutar(ruta_base: Path, ruta_reporte: Path, ruta_eventos: Path | None = No
 def main(argv: list[str] | None = None) -> int:
     """CLI: vincula los grupos de ``data/senales.duckdb`` y escribe ``outputs/reporte_vinculos.json``."""
     configurar_logging()
-    parser = argparse.ArgumentParser(description="E1-09: contexto del Banco Mundial por subtema")
+    parser = argparse.ArgumentParser(description="E1-09/E1-09b: contexto por subtema con el Banco Mundial y, por defecto, los sismos de USGS (--eventos)")
     parser.add_argument("--base", type=Path, default=RAIZ / "data" / cargar_normalizacion().salida.base_de_datos)
     parser.add_argument("--reporte", type=Path, default=RAIZ / "outputs" / REPORTE)
     parser.add_argument("--eventos", type=Path, default=RAIZ / "data" / EVENTOS, help="eventos.geojson de USGS (E1-09b)")
     args = parser.parse_args(argv)
-    if not args.eventos.exists():
-        logger.warning("No existe %s: los grupos de sismos quedan sin vincular con USGS", args.eventos)
     if not args.base.exists():
         logger.error("No existe %s: ejecute primero `normalizacion`, `limpieza`, `clasificacion` y `agrupacion`", args.base)
         return 1
     try:
-        r = ejecutar(args.base, args.reporte, args.eventos if args.eventos.exists() else None)
+        r = ejecutar(args.base, args.reporte, args.eventos)
     except Exception as exc:  # noqa: BLE001 - CLI: reportar y salir con error
         logger.error("%s", exc)
         return 1
     logger.info("%d grupos: %d con vínculo, %d sin vínculo, %d delegados", r["grupos_en_base"], r["con_vinculo"]["n"], r["sin_vinculo"]["n"], r["grupos_delegados_a_otra_fuente"])
     logger.info("sin vínculo por motivo: %s", r["sin_vinculo_por_motivo"])
     if "usgs" in r:
-        logger.info("sismos (USGS): %d grupos; resultado: %s", r["usgs"]["grupos_de_sismos"], r["usgs"]["por_resultado"])
+        if "estado" in r["usgs"]:
+            logger.info("sismos (USGS): %s", r["usgs"]["estado"])
+        else:
+            logger.info("sismos (USGS): %d grupos; resultado: %s", r["usgs"]["grupos_de_sismos"], r["usgs"]["por_resultado"])
     return 0
 
 
