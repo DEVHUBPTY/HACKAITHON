@@ -921,3 +921,15 @@ def test_x68_las_formas_cortas_del_futuro_se_rechazan(texto: str) -> None:
 def test_x68_iran_el_pais_no_es_un_futuro() -> None:
     texto = "Las lluvias podrían afectar la logística hacia Irán, a verificar."
     assert "futuro_asertivo" not in reglas(validar_seccion("hipotesis_impacto", [o(texto, "A3")], _ctx_boletin()))
+
+
+# ============================================================================================ X69 · sector financiero más ancho
+
+X69_TERMINOS = ["los prestamistas", "los acreedores", "los deudores agrícolas", "las hipotecas", "las hipotecarias", "los financiamientos",
+                "las cooperativas de ahorro", "las aseguradoras", "el prestamista", "el deudor", "la cooperativa", "la aseguradora"]
+
+
+@pytest.mark.parametrize("termino", X69_TERMINOS)
+def test_x69_un_actor_del_credito_fuera_del_titular_invalida_la_excepcion_literal(termino: str) -> None:
+    texto = f"Según La Prensa, las lluvias causaron pérdidas en cultivos y en {termino}"
+    assert SECTOR_FINANCIERO_AJENO in reglas(validar_seccion("observaciones", [o(texto + ".", "A1")], _ctx_boletin())), termino

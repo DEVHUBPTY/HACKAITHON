@@ -145,6 +145,25 @@ sector_financiero:
   - financieras
   - financiero
   - financieros
+  # X69: actores y productos del crédito que la ventana de 2 palabras no frenaba (singular y plural: la comparación es por palabra completa)
+  - prestamista
+  - prestamistas
+  - acreedor
+  - acreedores
+  - deudor
+  - deudores
+  - hipoteca
+  - hipotecas
+  - hipotecario
+  - hipotecaria
+  - hipotecarios
+  - hipotecarias
+  - financiamiento
+  - financiamientos
+  - cooperativa
+  - cooperativas
+  - aseguradora
+  - aseguradoras
 
 # D-41: oraciones sin cita (transiciones). Sin cifras, fechas, nombres ni entidades; el máximo por sección está en salidas.yaml.
 transiciones:
