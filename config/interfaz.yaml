@@ -20,6 +20,8 @@ bandeja:
   alto_filas_px: 36                 # alto de cada fila de la tabla
   decimales_puntaje: 1              # decimales de P y de las barras R·I·U·N·E al mostrarlas (el dato no se redondea)
   largo_titular_selector: 80        # caracteres del titular en los selectores de grupo
+  ancho_titular_cli: 70             # caracteres del titular en la bandeja por sector que imprime `src.puntaje` (E2-01)
+  filas_iniciales_por_sector: 3     # bandeja por sector (E2-01): filas de cada bloque al abrir; ningún sector se oculta (el resto, con «Mostrar todas»)
 
 calidad:
   top_medios: 5                     # medios con más titulares válidos en el reporte
@@ -84,8 +86,8 @@ textos:
   sintetico_ayuda: "Registro de prueba creado por el equipo; no es una noticia real."
   sin_base: "No hay base de datos: ejecute primero la carga, la normalización, la clasificación y el puntaje."
   sin_demo: "No existe la base de demo (data/demo.duckdb). La crea C-06; mientras tanto se usa el snapshot."
-  banca_parcial: "La modalidad Banca está incompleta (D-90): la ficha y la tabla de acciones existen, pero la bandeja bancaria llega con E2-01."
-  sin_puntajes: "Esta modalidad todavía no tiene puntajes en la base."
+  banca_parcial: "La modalidad Banca está incompleta (D-90): la ficha y la tabla de acciones existen, pero la bandeja bancaria todavía no está configurada."
+  sin_puntajes: "Esta modalidad todavía no tiene puntajes en la base: ejecute `poetry run python -m src.puntaje --modalidad {modalidad}` (una base guarda una modalidad a la vez)."
   sin_borrador: "Generación disponible cuando se integre E1-12."
   sin_borrador_ayuda: "Aquí aparecerá el borrador de la modalidad (paquete editorial o de investigación) con su leyenda de alcance."
   borrador_no_listo: "No hay borrador en caché para este grupo: la interfaz no espera al modelo ni usa la red."

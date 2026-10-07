@@ -21,6 +21,7 @@ os.environ.setdefault("HF_HUB_OFFLINE", "1")
 os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 
 import logging  # noqa: E402
+from collections.abc import Sequence  # noqa: E402
 from typing import Any  # noqa: E402
 
 import pandas as pd  # noqa: E402
@@ -110,7 +111,7 @@ def citas_clicables(ctx: ui.Contexto, citas: list[tuple[str, str]], titulo: str 
 def selector_de_grupo(ctx: ui.Contexto, clave: str) -> str | None:
     """Selector de grupo compartido por Ficha, Paquete y Revisión (el grupo elegido sobrevive al cambio de pantalla)."""
     if not ctx.filas:
-        st.info(ctx.cfg.textos.banca_parcial if cargar_modalidad(ctx.modalidad).parcial else ctx.cfg.textos.sin_puntajes)
+        st.info(ctx.cfg.textos.banca_parcial if cargar_modalidad(ctx.modalidad).parcial else ctx.cfg.textos.sin_puntajes.format(modalidad=ctx.modalidad))
         return None
     ids = [f.id_grupo for f in ctx.filas]
     if st.session_state.get("id_grupo") not in ids:
@@ -187,28 +188,17 @@ def pantalla_calidad(ctx: ui.Contexto) -> None:
 # ------------------------------------------------------------------ 2 · Bandeja
 
 
-def pantalla_bandeja(ctx: ui.Contexto) -> None:
-    st.header("Bandeja de temas priorizados")
-    enc = ui.encabezado_bandeja(ctx.con, MANIFEST, ctx.cfg_ver)
-    st.markdown(f"**Reglas v{enc['version_reglas']}** · **Corte del snapshot:** {enc['fecha_corte']} · Modalidad: {cargar_modalidad(ctx.modalidad).nombre}")
-    st.caption("P ordena la atención; no es una probabilidad de verdad ni de pérdida. " + ctx.cfg.textos.alerta)
-    if not ctx.filas:
-        st.info(ctx.cfg.textos.banca_parcial if cargar_modalidad(ctx.modalidad).parcial else ctx.cfg.textos.sin_puntajes)
-        pie(ctx)
-        return
-    if not ui.comprobar_orden(ctx.filas):
-        st.warning("El orden guardado no coincide con la regla de desempate: vuelva a ejecutar `python -m src.puntaje`.")
-    total = len(ctx.filas)
-    todas = st.checkbox(f"Mostrar las {total} filas", value=False, key="bandeja_todas")
-    visibles = ctx.filas if todas else ctx.filas[: ctx.cfg.bandeja.filas_iniciales]
+def tabla_de_bandeja(ctx: ui.Contexto, filas: Sequence[ui.FilaBandeja], modalidad: Any) -> None:
+    """Una tabla de la bandeja (la bandeja entera, o el bloque de un sector); con ``Horizonte`` si la modalidad lo calcula."""
     tabla = pd.DataFrame(
         [
             {
                 "#": f.posicion, "Tema": f.tema, "Titular representativo": f.titular, "P": round(f.puntaje, ctx.cfg.bandeja.decimales_puntaje), "Rango": f.rango,
                 **{k: f.componentes[k] for k in ui.COMPONENTES}, "Evidencia": f.estado_evidencia, "Acción": f.accion,
+                **({"Horizonte": ui.etiqueta_de_horizonte(f.horizonte, modalidad)} if f.horizonte else {}),
                 "Origen": ctx.cfg.textos.sintetico if f.sintetico else "",
             }
-            for f in visibles
+            for f in filas
         ]
     )
     st.dataframe(
@@ -216,6 +206,35 @@ def pantalla_bandeja(ctx: ui.Contexto) -> None:
         column_config={k: st.column_config.ProgressColumn(k, help=f"Componente {k} (0 a 1)", min_value=0.0, max_value=1.0, format=f"%.{ctx.cfg.bandeja.decimales_puntaje + 1}f") for k in ui.COMPONENTES}
         | {"P": st.column_config.NumberColumn("P", format=f"%.{ctx.cfg.bandeja.decimales_puntaje}f"), "Titular representativo": st.column_config.TextColumn(width="large")},
     )
+
+
+def pantalla_bandeja(ctx: ui.Contexto) -> None:
+    st.header("Bandeja de temas priorizados")
+    enc = ui.encabezado_bandeja(ctx.con, MANIFEST, ctx.cfg_ver)
+    st.markdown(f"**Reglas v{enc['version_reglas']}** · **Corte del snapshot:** {enc['fecha_corte']} · Modalidad: {cargar_modalidad(ctx.modalidad).nombre}")
+    st.caption("P ordena la atención; no es una probabilidad de verdad ni de pérdida. " + ctx.cfg.textos.alerta)
+    if not ctx.filas:
+        st.info(ctx.cfg.textos.banca_parcial if cargar_modalidad(ctx.modalidad).parcial else ctx.cfg.textos.sin_puntajes.format(modalidad=ctx.modalidad))
+        pie(ctx)
+        return
+    if not ui.comprobar_orden(ctx.filas):
+        st.warning("El orden guardado no coincide con la regla de desempate: vuelva a ejecutar `python -m src.puntaje`.")
+    total = len(ctx.filas)
+    todas = st.checkbox(f"Mostrar las {total} filas", value=False, key="bandeja_todas")
+    modalidad = cargar_modalidad(ctx.modalidad)
+    bloques = ui.agrupar_por_sector(ctx.filas, modalidad)      # E2-01: solo si la modalidad declara sectores (YAML); si no, bandeja plana
+    if bloques is None:
+        visibles = ctx.filas if todas else ctx.filas[: ctx.cfg.bandeja.filas_iniciales]
+        tabla_de_bandeja(ctx, visibles, modalidad)
+    else:
+        # X40: primero se agrupa y después se limita por sector, para que ningún sector (p. ej. logística, CU-05) quede oculto
+        if not todas:
+            bloques = ui.limitar_por_sector(bloques, ctx.cfg.bandeja.filas_iniciales_por_sector)
+        for bloque in bloques:
+            st.subheader(bloque.etiqueta)
+            tabla_de_bandeja(ctx, bloque.filas, modalidad)
+            st.caption(f"{len(bloque.filas)} de {bloque.total or len(bloque.filas)} grupos de este sector.")
+        visibles = [f for b in bloques for f in b.filas]
     st.caption(f"Se muestran {len(visibles)} de {total} grupos.")
     ids = [f.id_grupo for f in ctx.filas]
     por_id = {f.id_grupo: f for f in ctx.filas}

@@ -177,6 +177,7 @@ def leer_entradas(
         for id_noticia in str(p["ids_noticia"]).split(SEPARADOR_LISTA):
             procedencia_de[id_noticia] = int(p["orden"])
     subtemas = {g["id_grupo"]: g["subtema"] for g in leer_contexto_de_grupos(con)}
+    temas = {str(g["id_grupo"]): g.get("tema_clasificado") for g in grupos}
     cfg = cfg or cargar_prioridad()
     filas_vinculos = db.leer_tabla(con, "vinculos")
     oficial, motivos = _oficial_por_grupo(filas_vinculos, cfg.dato_oficial.relaciones_aceptadas)
@@ -193,6 +194,7 @@ def leer_entradas(
                 miembros=miembros,
                 vectores=np.stack([vectores[posicion[str(m["id_noticia"])]] for m in miembros]),
                 subtema=subtemas.get(id_grupo),
+                tema=temas.get(id_grupo),
                 n_procedencias=n_procedencias[id_grupo],
                 tiene_oficial=oficial.get(id_grupo, False),
                 motivo_sin_oficial=motivos.get(id_grupo),
@@ -220,7 +222,7 @@ def evaluar(
     """Puntaje, contradicciones, estado de evidencia y acción de cada grupo, en orden de ranking."""
     por_id = {e.id_grupo: e for e in entradas}
     resultados = []
-    for p in calcular_puntajes(entradas, reglas, cfg, ahora):
+    for p in calcular_puntajes(entradas, reglas, cfg, ahora, modalidad):
         e = por_id[p.id_grupo]
         contradicciones = tuple(contradiccion_mod.evaluar_grupo(e.miembros, procedencia_de, proveedor, cfg))
         evidencia = evaluar_evidencia(
@@ -425,6 +427,19 @@ def _proveedor(sin_llm: bool) -> Proveedor | None:
         return None
 
 
+def _imprimir_bandeja_por_sector(ruta_base: Path, modalidad: str) -> None:
+    """Si la modalidad puntúa por sector (lo dice su YAML), imprime la bandeja agrupada por sector (E2-01)."""
+    from src import interfaz  # aquí y no arriba: interfaz importa puntaje y este módulo es su orquestador
+
+    con = db.conectar(ruta_base, solo_lectura=True)
+    try:
+        lineas = interfaz.lineas_de_bandeja(interfaz.leer_bandeja(con, modalidad), cargar_modalidad(modalidad))
+    finally:
+        con.close()
+    for linea in lineas or []:
+        logger.info("%s", linea)
+
+
 def main(argv: list[str] | None = None) -> int:
     """CLI: puntaje, evidencia y contradicciones de ``data/senales.duckdb`` y ``outputs/prioridad.json``."""
     configurar_logging()
@@ -451,6 +466,7 @@ def main(argv: list[str] | None = None) -> int:
     logger.info("contradicciones: %s · LLM: %s", reporte["contradicciones"]["por_nota_llm"] or "ninguna", reporte["llm"]["estado"])
     for fila in reporte["ranking"][:5]:
         logger.info("  %d. %s · P=%.1f (%s) · evidencia %s · %s · %s", fila["posicion"], fila["id_grupo"], fila["puntaje"], fila["rango"], fila["estado_de_evidencia"], fila["accion"], (fila["titular_central"] or "")[:ANCHO_TITULAR_EN_LOG])
+    _imprimir_bandeja_por_sector(args.base, args.modalidad)
     return 0
 
 
