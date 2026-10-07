@@ -1,1061 +1,3162 @@
 {
-  "modelo": "e5",
-  "metodo": "A",
-  "umbral_sin_tema_en_yaml": 0.824,
-  "conjunto": {
-    "etiquetados_en_csv": 100,
-    "ejemplos_excluidos_descartados": 0,
-    "evaluados": 63,
-    "eventos": 29,
-    "por_tema_humano": {
-      "economia": 26,
-      "eventos_naturales": 20,
-      "servicios_publicos": 9,
-      "turismo": 1,
-      "sin_tema": 5,
-      "regulacion": 1,
-      "logistica": 1
-    },
-    "titulares_utiles_del_snapshot": 94,
-    "advertencia": "Una sola persona etiquetó (D-85); las etiquetas son un censo del estrato «no ruido» del snapshot anterior: no hay datos de prueba independientes de los usados para diagnosticar."
-  },
-  "errores_del_clasificador_activo": {
-    "por_fila": {
-      "aciertos": 33,
-      "abstencion_falsa": 12,
-      "abstencion_omitida": 5,
-      "confusion_entre_temas": 13,
-      "total": 63
-    },
-    "por_evento": {
-      "valor": 0.4655,
-      "ic95": [
-        0.3103,
-        0.6379
+  "vias": {
+    "humano": {
+      "origenes": [
+        "humano"
       ],
-      "eventos": 29,
-      "remuestreos": 1000
+      "usa_etiquetas_provisionales": false,
+      "aviso": "Una sola persona etiquetó (D-85); las etiquetas son un censo del estrato «no ruido» del snapshot anterior: no hay datos de prueba independientes de los usados para diagnosticar.",
+      "diagnostico": {
+        "modelo": "e5",
+        "metodo": "A",
+        "umbral_sin_tema_en_yaml": 0.824,
+        "conjunto": {
+          "etiquetados_en_csv": 100,
+          "ejemplos_excluidos_descartados": 0,
+          "evaluados": 63,
+          "eventos": 29,
+          "por_tema_humano": {
+            "economia": 26,
+            "eventos_naturales": 20,
+            "servicios_publicos": 9,
+            "turismo": 1,
+            "sin_tema": 5,
+            "regulacion": 1,
+            "logistica": 1
+          },
+          "titulares_utiles_del_snapshot": 94,
+          "origenes": [
+            "humano"
+          ],
+          "usa_etiquetas_provisionales": false,
+          "advertencia": "Una sola persona etiquetó (D-85); las etiquetas son un censo del estrato «no ruido» del snapshot anterior: no hay datos de prueba independientes de los usados para diagnosticar."
+        },
+        "errores_del_clasificador_activo": {
+          "por_fila": {
+            "aciertos": 33,
+            "abstencion_falsa": 12,
+            "abstencion_omitida": 5,
+            "confusion_entre_temas": 13,
+            "total": 63
+          },
+          "por_evento": {
+            "valor": 0.4655,
+            "ic95": [
+              0.3103,
+              0.6379
+            ],
+            "eventos": 29,
+            "remuestreos": 1000
+          }
+        },
+        "senales_de_abstencion": {
+          "positivos_sin_tema": 5,
+          "eventos_con_sin_tema": 5,
+          "positivos_suficientes": false,
+          "auc_sin_tema_tiene_menor_similitud_maxima": 0.4827586206896552,
+          "auc_sin_tema_tiene_menor_margen": 0.5655172413793104,
+          "auc_sin_tema_se_parece_mas_a_fuera_de_temas": 0.7620689655172413,
+          "auc_acierto_tiene_mayor_similitud_maxima_por_evento": 0.7305744138237975,
+          "auc_acierto_tiene_mayor_margen_por_evento": 0.629558304427788,
+          "nota": "AUC 0.5 = la señal no separa. Con 5 positivos cualquier AUC es anecdótico (ver positivos_suficientes)."
+        },
+        "calibracion_umbral_validacion_cruzada_por_evento": {
+          "macro_f1": {
+            "exactitud_fuera_de_muestra": 0.3238,
+            "macro_f1_fuera_de_muestra": 0.3848,
+            "abstenciones_correctas_fuera_de_muestra": 0.59,
+            "abstenciones_por_corrida": 35.0,
+            "abstenciones_falsas_por_corrida": 32.05,
+            "umbral_elegido": {
+              "veces_sin_abstenerse": 1,
+              "decisiones": 100,
+              "minimo": 0.8243,
+              "mediana": 0.8425,
+              "maximo": 0.8596
+            },
+            "objetivo": "macro_f1",
+            "pliegues": 5,
+            "repeticiones": 20
+          },
+          "exactitud": {
+            "exactitud_fuera_de_muestra": 0.5071,
+            "macro_f1_fuera_de_muestra": 0.3591,
+            "abstenciones_correctas_fuera_de_muestra": 0.03,
+            "abstenciones_por_corrida": 4.15,
+            "abstenciones_falsas_por_corrida": 4.0,
+            "umbral_elegido": {
+              "veces_sin_abstenerse": 87,
+              "decisiones": 100,
+              "minimo": 0.8388,
+              "mediana": 0.8425,
+              "maximo": 0.8443
+            },
+            "objetivo": "exactitud",
+            "pliegues": 5,
+            "repeticiones": 20
+          }
+        },
+        "opciones": [
+          {
+            "opcion": "actual (umbral del YAML)",
+            "exactitud_por_fila": {
+              "n": 33,
+              "de": 63,
+              "proporcion": 0.5238,
+              "ic95": [
+                0.4027,
+                0.6422
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.4655,
+              "ic95": [
+                0.3103,
+                0.6379
+              ],
+              "eventos": 29,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.0,
+              "ic95": [
+                0.0,
+                0.0
+              ],
+              "excluye_cero": false,
+              "eventos": 29,
+              "eventos_que_cambian": 0
+            },
+            "macro_f1": {
+              "n": 63,
+              "macro_f1": 0.4007,
+              "ic95": [
+                0.2446,
+                0.5102
+              ],
+              "ic95_exacto": [
+                0.24460528673835127,
+                0.510195229234703
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "5/26",
+              "logistica": "1/1",
+              "turismo": "0/1",
+              "servicios_publicos": "6/9",
+              "eventos_naturales": "20/20",
+              "regulacion": "1/1",
+              "sin_tema": "0/5"
+            },
+            "abstenciones": 12,
+            "abstenciones_falsas": 12,
+            "abstenciones_correctas": "0/5",
+            "errores": {
+              "aciertos": 33,
+              "abstencion_falsa": 12,
+              "abstencion_omitida": 5,
+              "confusion_entre_temas": 13,
+              "total": 63
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 0,
+              "salen_de_sin_tema": 0,
+              "cambian_de_tema": 0
+            }
+          },
+          {
+            "opcion": "sin abstención por similitud",
+            "exactitud_por_fila": {
+              "n": 34,
+              "de": 63,
+              "proporcion": 0.5397,
+              "ic95": [
+                0.4179,
+                0.6569
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.4682,
+              "ic95": [
+                0.3103,
+                0.6379
+              ],
+              "eventos": 29,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.0027,
+              "ic95": [
+                0.0,
+                0.0106
+              ],
+              "excluye_cero": false,
+              "eventos": 29,
+              "eventos_que_cambian": 1
+            },
+            "macro_f1": {
+              "n": 63,
+              "macro_f1": 0.3542,
+              "ic95": [
+                0.2378,
+                0.4632
+              ],
+              "ic95_exacto": [
+                0.23782592407592412,
+                0.4631967764933023
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "6/26",
+              "logistica": "1/1",
+              "turismo": "0/1",
+              "servicios_publicos": "6/9",
+              "eventos_naturales": "20/20",
+              "regulacion": "1/1",
+              "sin_tema": "0/5"
+            },
+            "abstenciones": 0,
+            "abstenciones_falsas": 0,
+            "abstenciones_correctas": "0/5",
+            "errores": {
+              "aciertos": 34,
+              "abstencion_falsa": 0,
+              "abstencion_omitida": 5,
+              "confusion_entre_temas": 24,
+              "total": 63
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 0,
+              "salen_de_sin_tema": 12,
+              "cambian_de_tema": 0
+            }
+          },
+          {
+            "opcion": "abstener en el 10 % de menor margen",
+            "exactitud_por_fila": {
+              "n": 30,
+              "de": 63,
+              "proporcion": 0.4762,
+              "ic95": [
+                0.3578,
+                0.5973
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.3621,
+              "ic95": [
+                0.1897,
+                0.5345
+              ],
+              "eventos": 29,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": -0.1034,
+              "ic95": [
+                -0.2069,
+                0.0
+              ],
+              "excluye_cero": false,
+              "eventos": 29,
+              "eventos_que_cambian": 3
+            },
+            "macro_f1": {
+              "n": 63,
+              "macro_f1": 0.3463,
+              "ic95": [
+                0.2096,
+                0.4431
+              ],
+              "ic95_exacto": [
+                0.20963243361860873,
+                0.4430554894193704
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "4/26",
+              "logistica": "1/1",
+              "turismo": "0/1",
+              "servicios_publicos": "4/9",
+              "eventos_naturales": "20/20",
+              "regulacion": "1/1",
+              "sin_tema": "0/5"
+            },
+            "abstenciones": 7,
+            "abstenciones_falsas": 7,
+            "abstenciones_correctas": "0/5",
+            "errores": {
+              "aciertos": 30,
+              "abstencion_falsa": 7,
+              "abstencion_omitida": 5,
+              "confusion_entre_temas": 21,
+              "total": 63
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 9,
+              "salen_de_sin_tema": 11,
+              "cambian_de_tema": 0
+            }
+          },
+          {
+            "opcion": "abstener en el 20 % de menor margen",
+            "exactitud_por_fila": {
+              "n": 31,
+              "de": 63,
+              "proporcion": 0.4921,
+              "ic95": [
+                0.3727,
+                0.6124
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.3966,
+              "ic95": [
+                0.2414,
+                0.569
+              ],
+              "eventos": 29,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": -0.069,
+              "ic95": [
+                -0.2414,
+                0.0698
+              ],
+              "excluye_cero": false,
+              "eventos": 29,
+              "eventos_que_cambian": 6
+            },
+            "macro_f1": {
+              "n": 63,
+              "macro_f1": 0.4239,
+              "ic95": [
+                0.2581,
+                0.5245
+              ],
+              "ic95_exacto": [
+                0.25813707656237367,
+                0.524455420374538
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "4/26",
+              "logistica": "1/1",
+              "turismo": "0/1",
+              "servicios_publicos": "3/9",
+              "eventos_naturales": "20/20",
+              "regulacion": "1/1",
+              "sin_tema": "2/5"
+            },
+            "abstenciones": 15,
+            "abstenciones_falsas": 13,
+            "abstenciones_correctas": "2/5",
+            "errores": {
+              "aciertos": 31,
+              "abstencion_falsa": 13,
+              "abstencion_omitida": 3,
+              "confusion_entre_temas": 16,
+              "total": 63
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 17,
+              "salen_de_sin_tema": 10,
+              "cambian_de_tema": 0
+            }
+          },
+          {
+            "opcion": "abstener en el 30 % de menor margen",
+            "exactitud_por_fila": {
+              "n": 27,
+              "de": 63,
+              "proporcion": 0.4286,
+              "ic95": [
+                0.314,
+                0.5514
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.3569,
+              "ic95": [
+                0.2069,
+                0.5293
+              ],
+              "eventos": 29,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": -0.1086,
+              "ic95": [
+                -0.3103,
+                0.0932
+              ],
+              "excluye_cero": false,
+              "eventos": 29,
+              "eventos_que_cambian": 10
+            },
+            "macro_f1": {
+              "n": 63,
+              "macro_f1": 0.3968,
+              "ic95": [
+                0.2343,
+                0.4818
+              ],
+              "ic95_exacto": [
+                0.23430481304988124,
+                0.48184326392383936
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "3/26",
+              "logistica": "1/1",
+              "turismo": "0/1",
+              "servicios_publicos": "3/9",
+              "eventos_naturales": "17/20",
+              "regulacion": "0/1",
+              "sin_tema": "3/5"
+            },
+            "abstenciones": 23,
+            "abstenciones_falsas": 20,
+            "abstenciones_correctas": "3/5",
+            "errores": {
+              "aciertos": 27,
+              "abstencion_falsa": 20,
+              "abstencion_omitida": 2,
+              "confusion_entre_temas": 14,
+              "total": 63
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 26,
+              "salen_de_sin_tema": 10,
+              "cambian_de_tema": 0
+            }
+          },
+          {
+            "opcion": "abstener en el 1 % más parecido a «fuera de temas»",
+            "exactitud_por_fila": {
+              "n": 35,
+              "de": 63,
+              "proporcion": 0.5556,
+              "ic95": [
+                0.4332,
+                0.6715
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.5027,
+              "ic95": [
+                0.3328,
+                0.6751
+              ],
+              "eventos": 29,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.0371,
+              "ic95": [
+                0.0,
+                0.1115
+              ],
+              "excluye_cero": false,
+              "eventos": 29,
+              "eventos_que_cambian": 2
+            },
+            "macro_f1": {
+              "n": 63,
+              "macro_f1": 0.4059,
+              "ic95": [
+                0.2583,
+                0.5311
+              ],
+              "ic95_exacto": [
+                0.25832541020360716,
+                0.5310759379509379
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "6/26",
+              "logistica": "1/1",
+              "turismo": "0/1",
+              "servicios_publicos": "6/9",
+              "eventos_naturales": "20/20",
+              "regulacion": "1/1",
+              "sin_tema": "1/5"
+            },
+            "abstenciones": 1,
+            "abstenciones_falsas": 0,
+            "abstenciones_correctas": "1/5",
+            "errores": {
+              "aciertos": 35,
+              "abstencion_falsa": 0,
+              "abstencion_omitida": 4,
+              "confusion_entre_temas": 24,
+              "total": 63
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 1,
+              "salen_de_sin_tema": 12,
+              "cambian_de_tema": 0
+            }
+          },
+          {
+            "opcion": "abstener en el 5 % más parecido a «fuera de temas»",
+            "exactitud_por_fila": {
+              "n": 35,
+              "de": 63,
+              "proporcion": 0.5556,
+              "ic95": [
+                0.4332,
+                0.6715
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.5027,
+              "ic95": [
+                0.3328,
+                0.6751
+              ],
+              "eventos": 29,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.0371,
+              "ic95": [
+                0.0,
+                0.1115
+              ],
+              "excluye_cero": false,
+              "eventos": 29,
+              "eventos_que_cambian": 2
+            },
+            "macro_f1": {
+              "n": 63,
+              "macro_f1": 0.4052,
+              "ic95": [
+                0.2693,
+                0.5204
+              ],
+              "ic95_exacto": [
+                0.26925245098039213,
+                0.5204098780586671
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "6/26",
+              "logistica": "1/1",
+              "turismo": "0/1",
+              "servicios_publicos": "6/9",
+              "eventos_naturales": "20/20",
+              "regulacion": "1/1",
+              "sin_tema": "1/5"
+            },
+            "abstenciones": 4,
+            "abstenciones_falsas": 3,
+            "abstenciones_correctas": "1/5",
+            "errores": {
+              "aciertos": 35,
+              "abstencion_falsa": 3,
+              "abstencion_omitida": 4,
+              "confusion_entre_temas": 21,
+              "total": 63
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 5,
+              "salen_de_sin_tema": 12,
+              "cambian_de_tema": 0
+            }
+          },
+          {
+            "opcion": "abstener en el 10 % más parecido a «fuera de temas»",
+            "exactitud_por_fila": {
+              "n": 35,
+              "de": 63,
+              "proporcion": 0.5556,
+              "ic95": [
+                0.4332,
+                0.6715
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.5027,
+              "ic95": [
+                0.3328,
+                0.6751
+              ],
+              "eventos": 29,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.0371,
+              "ic95": [
+                0.0,
+                0.1115
+              ],
+              "excluye_cero": false,
+              "eventos": 29,
+              "eventos_que_cambian": 2
+            },
+            "macro_f1": {
+              "n": 63,
+              "macro_f1": 0.4006,
+              "ic95": [
+                0.2715,
+                0.5287
+              ],
+              "ic95_exacto": [
+                0.27148464775553444,
+                0.5287295884808968
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "6/26",
+              "logistica": "1/1",
+              "turismo": "0/1",
+              "servicios_publicos": "6/9",
+              "eventos_naturales": "20/20",
+              "regulacion": "1/1",
+              "sin_tema": "1/5"
+            },
+            "abstenciones": 6,
+            "abstenciones_falsas": 5,
+            "abstenciones_correctas": "1/5",
+            "errores": {
+              "aciertos": 35,
+              "abstencion_falsa": 5,
+              "abstencion_omitida": 4,
+              "confusion_entre_temas": 19,
+              "total": 63
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 10,
+              "salen_de_sin_tema": 12,
+              "cambian_de_tema": 0
+            }
+          },
+          {
+            "opcion": "Economía regional: solo descripción",
+            "exactitud_por_fila": {
+              "n": 35,
+              "de": 63,
+              "proporcion": 0.5556,
+              "ic95": [
+                0.4332,
+                0.6715
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.4943,
+              "ic95": [
+                0.333,
+                0.6555
+              ],
+              "eventos": 29,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.0287,
+              "ic95": [
+                0.0,
+                0.0747
+              ],
+              "excluye_cero": false,
+              "eventos": 29,
+              "eventos_que_cambian": 2
+            },
+            "macro_f1": {
+              "n": 63,
+              "macro_f1": 0.4742,
+              "ic95": [
+                0.2945,
+                0.5608
+              ],
+              "ic95_exacto": [
+                0.29449552647145816,
+                0.5608148195211545
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "7/26",
+              "logistica": "1/1",
+              "turismo": "0/1",
+              "servicios_publicos": "6/9",
+              "eventos_naturales": "20/20",
+              "regulacion": "1/1",
+              "sin_tema": "0/5"
+            },
+            "abstenciones": 12,
+            "abstenciones_falsas": 12,
+            "abstenciones_correctas": "0/5",
+            "errores": {
+              "aciertos": 35,
+              "abstencion_falsa": 12,
+              "abstencion_omitida": 5,
+              "confusion_entre_temas": 11,
+              "total": 63
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 0,
+              "salen_de_sin_tema": 0,
+              "cambian_de_tema": 5
+            }
+          },
+          {
+            "opcion": "Economía regional: solo ejemplos",
+            "exactitud_por_fila": {
+              "n": 31,
+              "de": 63,
+              "proporcion": 0.4921,
+              "ic95": [
+                0.3727,
+                0.6124
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.6295,
+              "ic95": [
+                0.4545,
+                0.7931
+              ],
+              "eventos": 29,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.164,
+              "ic95": [
+                0.0,
+                0.3113
+              ],
+              "excluye_cero": false,
+              "eventos": 29,
+              "eventos_que_cambian": 8
+            },
+            "macro_f1": {
+              "n": 63,
+              "macro_f1": 0.4319,
+              "ic95": [
+                0.214,
+                0.5326
+              ],
+              "ic95_exacto": [
+                0.21395384240652787,
+                0.5326089872568746
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "22/26",
+              "logistica": "1/1",
+              "turismo": "0/1",
+              "servicios_publicos": "7/9",
+              "eventos_naturales": "0/20",
+              "regulacion": "1/1",
+              "sin_tema": "0/5"
+            },
+            "abstenciones": 1,
+            "abstenciones_falsas": 1,
+            "abstenciones_correctas": "0/5",
+            "errores": {
+              "aciertos": 31,
+              "abstencion_falsa": 1,
+              "abstencion_omitida": 5,
+              "confusion_entre_temas": 26,
+              "total": 63
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 0,
+              "salen_de_sin_tema": 11,
+              "cambian_de_tema": 34
+            }
+          },
+          {
+            "opcion": "Economía regional: descripción y ejemplos",
+            "exactitud_por_fila": {
+              "n": 30,
+              "de": 63,
+              "proporcion": 0.4762,
+              "ic95": [
+                0.3578,
+                0.5973
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.595,
+              "ic95": [
+                0.4111,
+                0.756
+              ],
+              "eventos": 29,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.1295,
+              "ic95": [
+                -0.0172,
+                0.2821
+              ],
+              "excluye_cero": false,
+              "eventos": 29,
+              "eventos_que_cambian": 7
+            },
+            "macro_f1": {
+              "n": 63,
+              "macro_f1": 0.4206,
+              "ic95": [
+                0.2006,
+                0.5182
+              ],
+              "ic95_exacto": [
+                0.20058458774119137,
+                0.5182294091345457
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "22/26",
+              "logistica": "1/1",
+              "turismo": "0/1",
+              "servicios_publicos": "6/9",
+              "eventos_naturales": "0/20",
+              "regulacion": "1/1",
+              "sin_tema": "0/5"
+            },
+            "abstenciones": 1,
+            "abstenciones_falsas": 1,
+            "abstenciones_correctas": "0/5",
+            "errores": {
+              "aciertos": 30,
+              "abstencion_falsa": 1,
+              "abstencion_omitida": 5,
+              "confusion_entre_temas": 27,
+              "total": 63
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 0,
+              "salen_de_sin_tema": 11,
+              "cambian_de_tema": 33
+            }
+          }
+        ],
+        "grupos_del_snapshot": {
+          "grupos": 58,
+          "con_algun_titular_etiquetado": 31,
+          "tema_del_grupo_igual_al_humano_mayoritario": {
+            "n": 13,
+            "de": 31,
+            "proporcion": 0.4194,
+            "ic95": [
+              0.2642,
+              0.5923
+            ]
+          },
+          "detalle": [
+            {
+              "id_grupo": "GRP-0a10e8fec2",
+              "tema_del_grupo": "regulacion",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-0dfdd5a021",
+              "tema_del_grupo": "sin_tema",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 12
+            },
+            {
+              "id_grupo": "GRP-1b52bb958d",
+              "tema_del_grupo": "eventos_naturales",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-2820cdd711",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-39773bed5a",
+              "tema_del_grupo": "eventos_naturales",
+              "tema_humano_mayoritario": "sin_tema",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-39dfe8d714",
+              "tema_del_grupo": "regulacion",
+              "tema_humano_mayoritario": "regulacion",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-3aebb6f23a",
+              "tema_del_grupo": "logistica",
+              "tema_humano_mayoritario": "logistica",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-3fb1b2c9b4",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-4776222797",
+              "tema_del_grupo": "economia",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-4d3630957d",
+              "tema_del_grupo": "turismo",
+              "tema_humano_mayoritario": "sin_tema",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-551ba86248",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-5c66ab40e9",
+              "tema_del_grupo": "economia",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-5e6531917f",
+              "tema_del_grupo": "economia",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-66048e9c28",
+              "tema_del_grupo": "economia",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-71176bb291",
+              "tema_del_grupo": "regulacion",
+              "tema_humano_mayoritario": "sin_tema",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-79f3183472",
+              "tema_del_grupo": "eventos_naturales",
+              "tema_humano_mayoritario": "eventos_naturales",
+              "etiquetados": 20
+            },
+            {
+              "id_grupo": "GRP-81a11a5998",
+              "tema_del_grupo": "economia",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-821afe7eec",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-87e128925b",
+              "tema_del_grupo": "eventos_naturales",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-8af4196527",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-ad0e219d38",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "turismo",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-b2028a457f",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-be613f0763",
+              "tema_del_grupo": "economia",
+              "tema_humano_mayoritario": "sin_tema",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-cf758ba062",
+              "tema_del_grupo": "eventos_naturales",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-d08b11be1c",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-d420b7bd51",
+              "tema_del_grupo": "regulacion",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-da35c3dead",
+              "tema_del_grupo": "logistica",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 3
+            },
+            {
+              "id_grupo": "GRP-e0b0f0f335",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "sin_tema",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-e2e32056c3",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-eaeabe3e2a",
+              "tema_del_grupo": "economia",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-fcdfc2a3cc",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            }
+          ],
+          "nota": "Comparación con etiquetas humanas; los grupos sin ningún titular etiquetado no se pueden evaluar."
+        }
+      },
+      "estado": "CALCULADO",
+      "evaluados": 63
+    },
+    "asistente_provisional": {
+      "origenes": [
+        "asistente_provisional"
+      ],
+      "usa_etiquetas_provisionales": true,
+      "aviso": "PROVISIONAL (D-101). Usa etiquetas que propuso un agente y aprobó provisionalmente el asistente (D-101): riesgo de circularidad, pendientes de la revisión humana C-09; no son una verdad de referencia.",
+      "diagnostico": {
+        "modelo": "e5",
+        "metodo": "A",
+        "umbral_sin_tema_en_yaml": 0.824,
+        "conjunto": {
+          "etiquetados_en_csv": 61,
+          "ejemplos_excluidos_descartados": 0,
+          "evaluados": 15,
+          "eventos": 13,
+          "por_tema_humano": {
+            "sin_tema": 5,
+            "servicios_publicos": 7,
+            "economia": 3
+          },
+          "titulares_utiles_del_snapshot": 94,
+          "origenes": [
+            "asistente_provisional"
+          ],
+          "usa_etiquetas_provisionales": true,
+          "advertencia": "PROVISIONAL (D-101). Usa etiquetas que propuso un agente y aprobó provisionalmente el asistente (D-101): riesgo de circularidad, pendientes de la revisión humana C-09; no son una verdad de referencia. Una sola persona etiquetó (D-85); las etiquetas son un censo del estrato «no ruido» del snapshot anterior: no hay datos de prueba independientes de los usados para diagnosticar."
+        },
+        "errores_del_clasificador_activo": {
+          "por_fila": {
+            "aciertos": 3,
+            "abstencion_falsa": 0,
+            "abstencion_omitida": 5,
+            "confusion_entre_temas": 7,
+            "total": 15
+          },
+          "por_evento": {
+            "valor": 0.2308,
+            "ic95": [
+              0.0,
+              0.4615
+            ],
+            "eventos": 13,
+            "remuestreos": 1000
+          }
+        },
+        "senales_de_abstencion": {
+          "positivos_sin_tema": 5,
+          "eventos_con_sin_tema": 5,
+          "positivos_suficientes": false,
+          "auc_sin_tema_tiene_menor_similitud_maxima": 0.62,
+          "auc_sin_tema_tiene_menor_margen": 0.2,
+          "auc_sin_tema_se_parece_mas_a_fuera_de_temas": 0.7,
+          "auc_acierto_tiene_mayor_similitud_maxima_por_evento": 0.5333333333333333,
+          "auc_acierto_tiene_mayor_margen_por_evento": 0.3333333333333333,
+          "nota": "AUC 0.5 = la señal no separa. Con 5 positivos cualquier AUC es anecdótico (ver positivos_suficientes)."
+        },
+        "calibracion_umbral_validacion_cruzada_por_evento": {
+          "macro_f1": {
+            "exactitud_fuera_de_muestra": 0.2267,
+            "macro_f1_fuera_de_muestra": 0.1934,
+            "abstenciones_correctas_fuera_de_muestra": 0.48,
+            "abstenciones_por_corrida": 8.0,
+            "abstenciones_falsas_por_corrida": 5.6,
+            "umbral_elegido": {
+              "veces_sin_abstenerse": 0,
+              "decisiones": 100,
+              "minimo": 0.8292,
+              "mediana": 0.8383,
+              "maximo": 0.8647
+            },
+            "objetivo": "macro_f1",
+            "pliegues": 5,
+            "repeticiones": 20
+          },
+          "exactitud": {
+            "exactitud_fuera_de_muestra": 0.2567,
+            "macro_f1_fuera_de_muestra": 0.2081,
+            "abstenciones_correctas_fuera_de_muestra": 0.57,
+            "abstenciones_por_corrida": 8.95,
+            "abstenciones_falsas_por_corrida": 6.1,
+            "umbral_elegido": {
+              "veces_sin_abstenerse": 1,
+              "decisiones": 100,
+              "minimo": 0.8299,
+              "mediana": 0.8625,
+              "maximo": 0.8647
+            },
+            "objetivo": "exactitud",
+            "pliegues": 5,
+            "repeticiones": 20
+          }
+        },
+        "opciones": [
+          {
+            "opcion": "actual (umbral del YAML)",
+            "exactitud_por_fila": {
+              "n": 3,
+              "de": 15,
+              "proporcion": 0.2,
+              "ic95": [
+                0.0705,
+                0.4519
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.2308,
+              "ic95": [
+                0.0,
+                0.4615
+              ],
+              "eventos": 13,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.0,
+              "ic95": [
+                0.0,
+                0.0
+              ],
+              "excluye_cero": false,
+              "eventos": 13,
+              "eventos_que_cambian": 0
+            },
+            "macro_f1": {
+              "n": 15,
+              "macro_f1": 0.1667,
+              "ic95": [
+                0.0,
+                0.2778
+              ],
+              "ic95_exacto": [
+                0.0,
+                0.2777777777777778
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "0/3",
+              "servicios_publicos": "3/7",
+              "sin_tema": "0/5"
+            },
+            "abstenciones": 0,
+            "abstenciones_falsas": 0,
+            "abstenciones_correctas": "0/5",
+            "errores": {
+              "aciertos": 3,
+              "abstencion_falsa": 0,
+              "abstencion_omitida": 5,
+              "confusion_entre_temas": 7,
+              "total": 15
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 0,
+              "salen_de_sin_tema": 0,
+              "cambian_de_tema": 0
+            }
+          },
+          {
+            "opcion": "sin abstención por similitud",
+            "exactitud_por_fila": {
+              "n": 3,
+              "de": 15,
+              "proporcion": 0.2,
+              "ic95": [
+                0.0705,
+                0.4519
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.2308,
+              "ic95": [
+                0.0,
+                0.4615
+              ],
+              "eventos": 13,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.0,
+              "ic95": [
+                0.0,
+                0.0
+              ],
+              "excluye_cero": false,
+              "eventos": 13,
+              "eventos_que_cambian": 0
+            },
+            "macro_f1": {
+              "n": 15,
+              "macro_f1": 0.1667,
+              "ic95": [
+                0.0,
+                0.2778
+              ],
+              "ic95_exacto": [
+                0.0,
+                0.2777777777777778
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "0/3",
+              "servicios_publicos": "3/7",
+              "sin_tema": "0/5"
+            },
+            "abstenciones": 0,
+            "abstenciones_falsas": 0,
+            "abstenciones_correctas": "0/5",
+            "errores": {
+              "aciertos": 3,
+              "abstencion_falsa": 0,
+              "abstencion_omitida": 5,
+              "confusion_entre_temas": 7,
+              "total": 15
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 0,
+              "salen_de_sin_tema": 12,
+              "cambian_de_tema": 0
+            }
+          },
+          {
+            "opcion": "abstener en el 10 % de menor margen",
+            "exactitud_por_fila": {
+              "n": 3,
+              "de": 15,
+              "proporcion": 0.2,
+              "ic95": [
+                0.0705,
+                0.4519
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.2308,
+              "ic95": [
+                0.0,
+                0.4615
+              ],
+              "eventos": 13,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.0,
+              "ic95": [
+                0.0,
+                0.0
+              ],
+              "excluye_cero": false,
+              "eventos": 13,
+              "eventos_que_cambian": 0
+            },
+            "macro_f1": {
+              "n": 15,
+              "macro_f1": 0.1667,
+              "ic95": [
+                0.0,
+                0.2745
+              ],
+              "ic95_exacto": [
+                0.0,
+                0.2745098039215686
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "0/3",
+              "servicios_publicos": "3/7",
+              "sin_tema": "0/5"
+            },
+            "abstenciones": 2,
+            "abstenciones_falsas": 2,
+            "abstenciones_correctas": "0/5",
+            "errores": {
+              "aciertos": 3,
+              "abstencion_falsa": 2,
+              "abstencion_omitida": 5,
+              "confusion_entre_temas": 5,
+              "total": 15
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 9,
+              "salen_de_sin_tema": 11,
+              "cambian_de_tema": 0
+            }
+          },
+          {
+            "opcion": "abstener en el 20 % de menor margen",
+            "exactitud_por_fila": {
+              "n": 3,
+              "de": 15,
+              "proporcion": 0.2,
+              "ic95": [
+                0.0705,
+                0.4519
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.2308,
+              "ic95": [
+                0.0,
+                0.4615
+              ],
+              "eventos": 13,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.0,
+              "ic95": [
+                0.0,
+                0.0
+              ],
+              "excluye_cero": false,
+              "eventos": 13,
+              "eventos_que_cambian": 0
+            },
+            "macro_f1": {
+              "n": 15,
+              "macro_f1": 0.1667,
+              "ic95": [
+                0.0,
+                0.2745
+              ],
+              "ic95_exacto": [
+                0.0,
+                0.2745098039215686
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "0/3",
+              "servicios_publicos": "3/7",
+              "sin_tema": "0/5"
+            },
+            "abstenciones": 3,
+            "abstenciones_falsas": 3,
+            "abstenciones_correctas": "0/5",
+            "errores": {
+              "aciertos": 3,
+              "abstencion_falsa": 3,
+              "abstencion_omitida": 5,
+              "confusion_entre_temas": 4,
+              "total": 15
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 17,
+              "salen_de_sin_tema": 10,
+              "cambian_de_tema": 0
+            }
+          },
+          {
+            "opcion": "abstener en el 30 % de menor margen",
+            "exactitud_por_fila": {
+              "n": 3,
+              "de": 15,
+              "proporcion": 0.2,
+              "ic95": [
+                0.0705,
+                0.4519
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.2308,
+              "ic95": [
+                0.0,
+                0.4615
+              ],
+              "eventos": 13,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.0,
+              "ic95": [
+                0.0,
+                0.0
+              ],
+              "excluye_cero": false,
+              "eventos": 13,
+              "eventos_que_cambian": 0
+            },
+            "macro_f1": {
+              "n": 15,
+              "macro_f1": 0.1818,
+              "ic95": [
+                0.0,
+                0.2857
+              ],
+              "ic95_exacto": [
+                0.0,
+                0.2857142857142857
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "0/3",
+              "servicios_publicos": "3/7",
+              "sin_tema": "0/5"
+            },
+            "abstenciones": 4,
+            "abstenciones_falsas": 4,
+            "abstenciones_correctas": "0/5",
+            "errores": {
+              "aciertos": 3,
+              "abstencion_falsa": 4,
+              "abstencion_omitida": 5,
+              "confusion_entre_temas": 3,
+              "total": 15
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 26,
+              "salen_de_sin_tema": 10,
+              "cambian_de_tema": 0
+            }
+          },
+          {
+            "opcion": "abstener en el 1 % más parecido a «fuera de temas»",
+            "exactitud_por_fila": {
+              "n": 3,
+              "de": 15,
+              "proporcion": 0.2,
+              "ic95": [
+                0.0705,
+                0.4519
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.2308,
+              "ic95": [
+                0.0,
+                0.4615
+              ],
+              "eventos": 13,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.0,
+              "ic95": [
+                0.0,
+                0.0
+              ],
+              "excluye_cero": false,
+              "eventos": 13,
+              "eventos_que_cambian": 0
+            },
+            "macro_f1": {
+              "n": 15,
+              "macro_f1": 0.1667,
+              "ic95": [
+                0.0,
+                0.2778
+              ],
+              "ic95_exacto": [
+                0.0,
+                0.2777777777777778
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "0/3",
+              "servicios_publicos": "3/7",
+              "sin_tema": "0/5"
+            },
+            "abstenciones": 0,
+            "abstenciones_falsas": 0,
+            "abstenciones_correctas": "0/5",
+            "errores": {
+              "aciertos": 3,
+              "abstencion_falsa": 0,
+              "abstencion_omitida": 5,
+              "confusion_entre_temas": 7,
+              "total": 15
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 1,
+              "salen_de_sin_tema": 12,
+              "cambian_de_tema": 0
+            }
+          },
+          {
+            "opcion": "abstener en el 5 % más parecido a «fuera de temas»",
+            "exactitud_por_fila": {
+              "n": 4,
+              "de": 15,
+              "proporcion": 0.2667,
+              "ic95": [
+                0.109,
+                0.5195
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.3077,
+              "ic95": [
+                0.0769,
+                0.5385
+              ],
+              "eventos": 13,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.0769,
+              "ic95": [
+                0.0,
+                0.2308
+              ],
+              "excluye_cero": false,
+              "eventos": 13,
+              "eventos_que_cambian": 1
+            },
+            "macro_f1": {
+              "n": 15,
+              "macro_f1": 0.2778,
+              "ic95": [
+                0.0667,
+                0.4872
+              ],
+              "ic95_exacto": [
+                0.06666666666666667,
+                0.4871794871794872
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "0/3",
+              "servicios_publicos": "3/7",
+              "sin_tema": "1/5"
+            },
+            "abstenciones": 1,
+            "abstenciones_falsas": 0,
+            "abstenciones_correctas": "1/5",
+            "errores": {
+              "aciertos": 4,
+              "abstencion_falsa": 0,
+              "abstencion_omitida": 4,
+              "confusion_entre_temas": 7,
+              "total": 15
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 5,
+              "salen_de_sin_tema": 12,
+              "cambian_de_tema": 0
+            }
+          },
+          {
+            "opcion": "abstener en el 10 % más parecido a «fuera de temas»",
+            "exactitud_por_fila": {
+              "n": 6,
+              "de": 15,
+              "proporcion": 0.4,
+              "ic95": [
+                0.1982,
+                0.6425
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.4615,
+              "ic95": [
+                0.1538,
+                0.6923
+              ],
+              "eventos": 13,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.2308,
+              "ic95": [
+                0.0,
+                0.4615
+              ],
+              "excluye_cero": false,
+              "eventos": 13,
+              "eventos_que_cambian": 3
+            },
+            "macro_f1": {
+              "n": 15,
+              "macro_f1": 0.4167,
+              "ic95": [
+                0.1778,
+                0.5897
+              ],
+              "ic95_exacto": [
+                0.17777777777777778,
+                0.5897435897435898
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "0/3",
+              "servicios_publicos": "3/7",
+              "sin_tema": "3/5"
+            },
+            "abstenciones": 3,
+            "abstenciones_falsas": 0,
+            "abstenciones_correctas": "3/5",
+            "errores": {
+              "aciertos": 6,
+              "abstencion_falsa": 0,
+              "abstencion_omitida": 2,
+              "confusion_entre_temas": 7,
+              "total": 15
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 10,
+              "salen_de_sin_tema": 12,
+              "cambian_de_tema": 0
+            }
+          },
+          {
+            "opcion": "Economía regional: solo descripción",
+            "exactitud_por_fila": {
+              "n": 4,
+              "de": 15,
+              "proporcion": 0.2667,
+              "ic95": [
+                0.109,
+                0.5195
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.2564,
+              "ic95": [
+                0.0769,
+                0.5128
+              ],
+              "eventos": 13,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.0256,
+              "ic95": [
+                0.0,
+                0.0769
+              ],
+              "excluye_cero": false,
+              "eventos": 13,
+              "eventos_que_cambian": 1
+            },
+            "macro_f1": {
+              "n": 15,
+              "macro_f1": 0.3,
+              "ic95": [
+                0.0739,
+                0.5152
+              ],
+              "ic95_exacto": [
+                0.07388888888888906,
+                0.5151893939393939
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "1/3",
+              "servicios_publicos": "3/7",
+              "sin_tema": "0/5"
+            },
+            "abstenciones": 0,
+            "abstenciones_falsas": 0,
+            "abstenciones_correctas": "0/5",
+            "errores": {
+              "aciertos": 4,
+              "abstencion_falsa": 0,
+              "abstencion_omitida": 5,
+              "confusion_entre_temas": 6,
+              "total": 15
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 0,
+              "salen_de_sin_tema": 0,
+              "cambian_de_tema": 5
+            }
+          },
+          {
+            "opcion": "Economía regional: solo ejemplos",
+            "exactitud_por_fila": {
+              "n": 6,
+              "de": 15,
+              "proporcion": 0.4,
+              "ic95": [
+                0.1982,
+                0.6425
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.3077,
+              "ic95": [
+                0.0769,
+                0.6154
+              ],
+              "eventos": 13,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.0769,
+              "ic95": [
+                0.0,
+                0.2308
+              ],
+              "excluye_cero": false,
+              "eventos": 13,
+              "eventos_que_cambian": 1
+            },
+            "macro_f1": {
+              "n": 15,
+              "macro_f1": 0.4675,
+              "ic95": [
+                0.2083,
+                0.5926
+              ],
+              "ic95_exacto": [
+                0.20828373015873022,
+                0.5925925925925926
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "3/3",
+              "servicios_publicos": "3/7",
+              "sin_tema": "0/5"
+            },
+            "abstenciones": 0,
+            "abstenciones_falsas": 0,
+            "abstenciones_correctas": "0/5",
+            "errores": {
+              "aciertos": 6,
+              "abstencion_falsa": 0,
+              "abstencion_omitida": 5,
+              "confusion_entre_temas": 4,
+              "total": 15
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 0,
+              "salen_de_sin_tema": 11,
+              "cambian_de_tema": 34
+            }
+          },
+          {
+            "opcion": "Economía regional: descripción y ejemplos",
+            "exactitud_por_fila": {
+              "n": 6,
+              "de": 15,
+              "proporcion": 0.4,
+              "ic95": [
+                0.1982,
+                0.6425
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.3077,
+              "ic95": [
+                0.0769,
+                0.6154
+              ],
+              "eventos": 13,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.0769,
+              "ic95": [
+                0.0,
+                0.2308
+              ],
+              "excluye_cero": false,
+              "eventos": 13,
+              "eventos_que_cambian": 1
+            },
+            "macro_f1": {
+              "n": 15,
+              "macro_f1": 0.4318,
+              "ic95": [
+                0.1905,
+                0.5833
+              ],
+              "ic95_exacto": [
+                0.19047619047619047,
+                0.5833333333333334
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "3/3",
+              "servicios_publicos": "3/7",
+              "sin_tema": "0/5"
+            },
+            "abstenciones": 0,
+            "abstenciones_falsas": 0,
+            "abstenciones_correctas": "0/5",
+            "errores": {
+              "aciertos": 6,
+              "abstencion_falsa": 0,
+              "abstencion_omitida": 5,
+              "confusion_entre_temas": 4,
+              "total": 15
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 0,
+              "salen_de_sin_tema": 11,
+              "cambian_de_tema": 33
+            }
+          }
+        ],
+        "grupos_del_snapshot": {
+          "grupos": 58,
+          "con_algun_titular_etiquetado": 15,
+          "tema_del_grupo_igual_al_humano_mayoritario": {
+            "n": 3,
+            "de": 15,
+            "proporcion": 0.2,
+            "ic95": [
+              0.0705,
+              0.4519
+            ]
+          },
+          "detalle": [
+            {
+              "id_grupo": "GRP-0c210ad795",
+              "tema_del_grupo": "eventos_naturales",
+              "tema_humano_mayoritario": "sin_tema",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-0f8fb5a5bb",
+              "tema_del_grupo": "regulacion",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-1a231154dc",
+              "tema_del_grupo": "regulacion",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-1c2f1d950d",
+              "tema_del_grupo": "turismo",
+              "tema_humano_mayoritario": "sin_tema",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-1df3ab1e22",
+              "tema_del_grupo": "regulacion",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-1e2c34f6bf",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-276c88e7f3",
+              "tema_del_grupo": "regulacion",
+              "tema_humano_mayoritario": "sin_tema",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-29baaf270e",
+              "tema_del_grupo": "regulacion",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-4d3630957d",
+              "tema_del_grupo": "turismo",
+              "tema_humano_mayoritario": "sin_tema",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-5ab17b45cd",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-6e737ecad5",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-87e128925b",
+              "tema_del_grupo": "eventos_naturales",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-d03e52e97f",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "sin_tema",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-dc0c06491a",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-f9e3ba0bd2",
+              "tema_del_grupo": "regulacion",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            }
+          ],
+          "nota": "Comparación con etiquetas humanas; los grupos sin ningún titular etiquetado no se pueden evaluar."
+        }
+      },
+      "estado": "CALCULADO",
+      "evaluados": 15
+    },
+    "combinado": {
+      "origenes": [
+        "humano",
+        "asistente_provisional"
+      ],
+      "usa_etiquetas_provisionales": true,
+      "aviso": "PROVISIONAL (D-101). Usa etiquetas que propuso un agente y aprobó provisionalmente el asistente (D-101): riesgo de circularidad, pendientes de la revisión humana C-09; no son una verdad de referencia.",
+      "diagnostico": {
+        "modelo": "e5",
+        "metodo": "A",
+        "umbral_sin_tema_en_yaml": 0.824,
+        "conjunto": {
+          "etiquetados_en_csv": 161,
+          "ejemplos_excluidos_descartados": 0,
+          "evaluados": 78,
+          "eventos": 42,
+          "por_tema_humano": {
+            "economia": 29,
+            "eventos_naturales": 20,
+            "servicios_publicos": 16,
+            "turismo": 1,
+            "sin_tema": 10,
+            "regulacion": 1,
+            "logistica": 1
+          },
+          "titulares_utiles_del_snapshot": 94,
+          "origenes": [
+            "humano",
+            "asistente_provisional"
+          ],
+          "usa_etiquetas_provisionales": true,
+          "advertencia": "PROVISIONAL (D-101). Usa etiquetas que propuso un agente y aprobó provisionalmente el asistente (D-101): riesgo de circularidad, pendientes de la revisión humana C-09; no son una verdad de referencia. Una sola persona etiquetó (D-85); las etiquetas son un censo del estrato «no ruido» del snapshot anterior: no hay datos de prueba independientes de los usados para diagnosticar."
+        },
+        "errores_del_clasificador_activo": {
+          "por_fila": {
+            "aciertos": 36,
+            "abstencion_falsa": 12,
+            "abstencion_omitida": 10,
+            "confusion_entre_temas": 20,
+            "total": 78
+          },
+          "por_evento": {
+            "valor": 0.3929,
+            "ic95": [
+              0.2497,
+              0.5476
+            ],
+            "eventos": 42,
+            "remuestreos": 1000
+          }
+        },
+        "senales_de_abstencion": {
+          "positivos_sin_tema": 10,
+          "eventos_con_sin_tema": 10,
+          "positivos_suficientes": false,
+          "auc_sin_tema_tiene_menor_similitud_maxima": 0.5161764705882353,
+          "auc_sin_tema_tiene_menor_margen": 0.34705882352941175,
+          "auc_sin_tema_se_parece_mas_a_fuera_de_temas": 0.7588235294117647,
+          "auc_acierto_tiene_mayor_similitud_maxima_por_evento": 0.6879950577589322,
+          "auc_acierto_tiene_mayor_margen_por_evento": 0.5753400423319794,
+          "nota": "AUC 0.5 = la señal no separa. Con 5 positivos cualquier AUC es anecdótico (ver positivos_suficientes)."
+        },
+        "calibracion_umbral_validacion_cruzada_por_evento": {
+          "macro_f1": {
+            "exactitud_fuera_de_muestra": 0.2904,
+            "macro_f1_fuera_de_muestra": 0.3274,
+            "abstenciones_correctas_fuera_de_muestra": 0.585,
+            "abstenciones_por_corrida": 43.6,
+            "abstenciones_falsas_por_corrida": 37.75,
+            "umbral_elegido": {
+              "veces_sin_abstenerse": 0,
+              "decisiones": 100,
+              "minimo": 0.8384,
+              "mediana": 0.8425,
+              "maximo": 0.8605
+            },
+            "objetivo": "macro_f1",
+            "pliegues": 5,
+            "repeticiones": 20
+          },
+          "exactitud": {
+            "exactitud_fuera_de_muestra": 0.3718,
+            "macro_f1_fuera_de_muestra": 0.3117,
+            "abstenciones_correctas_fuera_de_muestra": 0.06,
+            "abstenciones_por_corrida": 15.25,
+            "abstenciones_falsas_por_corrida": 14.65,
+            "umbral_elegido": {
+              "veces_sin_abstenerse": 74,
+              "decisiones": 100,
+              "minimo": 0.8299,
+              "mediana": 0.8384,
+              "maximo": 0.8584
+            },
+            "objetivo": "exactitud",
+            "pliegues": 5,
+            "repeticiones": 20
+          }
+        },
+        "opciones": [
+          {
+            "opcion": "actual (umbral del YAML)",
+            "exactitud_por_fila": {
+              "n": 36,
+              "de": 78,
+              "proporcion": 0.4615,
+              "ic95": [
+                0.3553,
+                0.5714
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.3929,
+              "ic95": [
+                0.2497,
+                0.5476
+              ],
+              "eventos": 42,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.0,
+              "ic95": [
+                0.0,
+                0.0
+              ],
+              "excluye_cero": false,
+              "eventos": 42,
+              "eventos_que_cambian": 0
+            },
+            "macro_f1": {
+              "n": 78,
+              "macro_f1": 0.3636,
+              "ic95": [
+                0.2275,
+                0.4464
+              ],
+              "ic95_exacto": [
+                0.227539039907461,
+                0.4463601004856557
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "5/29",
+              "logistica": "1/1",
+              "turismo": "0/1",
+              "servicios_publicos": "9/16",
+              "eventos_naturales": "20/20",
+              "regulacion": "1/1",
+              "sin_tema": "0/10"
+            },
+            "abstenciones": 12,
+            "abstenciones_falsas": 12,
+            "abstenciones_correctas": "0/10",
+            "errores": {
+              "aciertos": 36,
+              "abstencion_falsa": 12,
+              "abstencion_omitida": 10,
+              "confusion_entre_temas": 20,
+              "total": 78
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 0,
+              "salen_de_sin_tema": 0,
+              "cambian_de_tema": 0
+            }
+          },
+          {
+            "opcion": "sin abstención por similitud",
+            "exactitud_por_fila": {
+              "n": 37,
+              "de": 78,
+              "proporcion": 0.4744,
+              "ic95": [
+                0.3674,
+                0.5838
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.3947,
+              "ic95": [
+                0.2498,
+                0.5476
+              ],
+              "eventos": 42,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.0018,
+              "ic95": [
+                0.0,
+                0.0055
+              ],
+              "excluye_cero": false,
+              "eventos": 42,
+              "eventos_que_cambian": 1
+            },
+            "macro_f1": {
+              "n": 78,
+              "macro_f1": 0.3357,
+              "ic95": [
+                0.224,
+                0.421
+              ],
+              "ic95_exacto": [
+                0.22404486681842306,
+                0.42102600174050603
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "6/29",
+              "logistica": "1/1",
+              "turismo": "0/1",
+              "servicios_publicos": "9/16",
+              "eventos_naturales": "20/20",
+              "regulacion": "1/1",
+              "sin_tema": "0/10"
+            },
+            "abstenciones": 0,
+            "abstenciones_falsas": 0,
+            "abstenciones_correctas": "0/10",
+            "errores": {
+              "aciertos": 37,
+              "abstencion_falsa": 0,
+              "abstencion_omitida": 10,
+              "confusion_entre_temas": 31,
+              "total": 78
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 0,
+              "salen_de_sin_tema": 12,
+              "cambian_de_tema": 0
+            }
+          },
+          {
+            "opcion": "abstener en el 10 % de menor margen",
+            "exactitud_por_fila": {
+              "n": 33,
+              "de": 78,
+              "proporcion": 0.4231,
+              "ic95": [
+                0.3196,
+                0.5338
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.3214,
+              "ic95": [
+                0.1905,
+                0.4524
+              ],
+              "eventos": 42,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": -0.0714,
+              "ic95": [
+                -0.1667,
+                0.0
+              ],
+              "excluye_cero": false,
+              "eventos": 42,
+              "eventos_que_cambian": 3
+            },
+            "macro_f1": {
+              "n": 78,
+              "macro_f1": 0.3368,
+              "ic95": [
+                0.2069,
+                0.4182
+              ],
+              "ic95_exacto": [
+                0.20686234044593177,
+                0.4182488077626489
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "4/29",
+              "logistica": "1/1",
+              "turismo": "0/1",
+              "servicios_publicos": "7/16",
+              "eventos_naturales": "20/20",
+              "regulacion": "1/1",
+              "sin_tema": "0/10"
+            },
+            "abstenciones": 9,
+            "abstenciones_falsas": 9,
+            "abstenciones_correctas": "0/10",
+            "errores": {
+              "aciertos": 33,
+              "abstencion_falsa": 9,
+              "abstencion_omitida": 10,
+              "confusion_entre_temas": 26,
+              "total": 78
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 9,
+              "salen_de_sin_tema": 11,
+              "cambian_de_tema": 0
+            }
+          },
+          {
+            "opcion": "abstener en el 20 % de menor margen",
+            "exactitud_por_fila": {
+              "n": 34,
+              "de": 78,
+              "proporcion": 0.4359,
+              "ic95": [
+                0.3314,
+                0.5464
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.3452,
+              "ic95": [
+                0.2143,
+                0.4881
+              ],
+              "eventos": 42,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": -0.0476,
+              "ic95": [
+                -0.1667,
+                0.0714
+              ],
+              "excluye_cero": false,
+              "eventos": 42,
+              "eventos_que_cambian": 6
+            },
+            "macro_f1": {
+              "n": 78,
+              "macro_f1": 0.4115,
+              "ic95": [
+                0.2573,
+                0.4677
+              ],
+              "ic95_exacto": [
+                0.25728756908886896,
+                0.46770010778769505
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "4/29",
+              "logistica": "1/1",
+              "turismo": "0/1",
+              "servicios_publicos": "6/16",
+              "eventos_naturales": "20/20",
+              "regulacion": "1/1",
+              "sin_tema": "2/10"
+            },
+            "abstenciones": 18,
+            "abstenciones_falsas": 16,
+            "abstenciones_correctas": "2/10",
+            "errores": {
+              "aciertos": 34,
+              "abstencion_falsa": 16,
+              "abstencion_omitida": 8,
+              "confusion_entre_temas": 20,
+              "total": 78
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 17,
+              "salen_de_sin_tema": 10,
+              "cambian_de_tema": 0
+            }
+          },
+          {
+            "opcion": "abstener en el 30 % de menor margen",
+            "exactitud_por_fila": {
+              "n": 30,
+              "de": 78,
+              "proporcion": 0.3846,
+              "ic95": [
+                0.2845,
+                0.4956
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.3179,
+              "ic95": [
+                0.1869,
+                0.4643
+              ],
+              "eventos": 42,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": -0.075,
+              "ic95": [
+                -0.2179,
+                0.0644
+              ],
+              "excluye_cero": false,
+              "eventos": 42,
+              "eventos_que_cambian": 10
+            },
+            "macro_f1": {
+              "n": 78,
+              "macro_f1": 0.3888,
+              "ic95": [
+                0.2287,
+                0.4373
+              ],
+              "ic95_exacto": [
+                0.2286569724373643,
+                0.4372773405382494
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "3/29",
+              "logistica": "1/1",
+              "turismo": "0/1",
+              "servicios_publicos": "6/16",
+              "eventos_naturales": "17/20",
+              "regulacion": "0/1",
+              "sin_tema": "3/10"
+            },
+            "abstenciones": 27,
+            "abstenciones_falsas": 24,
+            "abstenciones_correctas": "3/10",
+            "errores": {
+              "aciertos": 30,
+              "abstencion_falsa": 24,
+              "abstencion_omitida": 7,
+              "confusion_entre_temas": 17,
+              "total": 78
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 26,
+              "salen_de_sin_tema": 10,
+              "cambian_de_tema": 0
+            }
+          },
+          {
+            "opcion": "abstener en el 1 % más parecido a «fuera de temas»",
+            "exactitud_por_fila": {
+              "n": 38,
+              "de": 78,
+              "proporcion": 0.4872,
+              "ic95": [
+                0.3795,
+                0.5961
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.4185,
+              "ic95": [
+                0.2673,
+                0.5616
+              ],
+              "eventos": 42,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.0256,
+              "ic95": [
+                0.0,
+                0.0751
+              ],
+              "excluye_cero": false,
+              "eventos": 42,
+              "eventos_que_cambian": 2
+            },
+            "macro_f1": {
+              "n": 78,
+              "macro_f1": 0.3641,
+              "ic95": [
+                0.2334,
+                0.47
+              ],
+              "ic95_exacto": [
+                0.23335435222463208,
+                0.46995957566316354
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "6/29",
+              "logistica": "1/1",
+              "turismo": "0/1",
+              "servicios_publicos": "9/16",
+              "eventos_naturales": "20/20",
+              "regulacion": "1/1",
+              "sin_tema": "1/10"
+            },
+            "abstenciones": 1,
+            "abstenciones_falsas": 0,
+            "abstenciones_correctas": "1/10",
+            "errores": {
+              "aciertos": 38,
+              "abstencion_falsa": 0,
+              "abstencion_omitida": 9,
+              "confusion_entre_temas": 31,
+              "total": 78
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 1,
+              "salen_de_sin_tema": 12,
+              "cambian_de_tema": 0
+            }
+          },
+          {
+            "opcion": "abstener en el 5 % más parecido a «fuera de temas»",
+            "exactitud_por_fila": {
+              "n": 39,
+              "de": 78,
+              "proporcion": 0.5,
+              "ic95": [
+                0.3917,
+                0.6083
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.4423,
+              "ic95": [
+                0.2995,
+                0.5852
+              ],
+              "eventos": 42,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.0495,
+              "ic95": [
+                0.0,
+                0.1209
+              ],
+              "excluye_cero": false,
+              "eventos": 42,
+              "eventos_que_cambian": 3
+            },
+            "macro_f1": {
+              "n": 78,
+              "macro_f1": 0.3845,
+              "ic95": [
+                0.2574,
+                0.4879
+              ],
+              "ic95_exacto": [
+                0.2573850059284896,
+                0.4878542736520947
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "6/29",
+              "logistica": "1/1",
+              "turismo": "0/1",
+              "servicios_publicos": "9/16",
+              "eventos_naturales": "20/20",
+              "regulacion": "1/1",
+              "sin_tema": "2/10"
+            },
+            "abstenciones": 5,
+            "abstenciones_falsas": 3,
+            "abstenciones_correctas": "2/10",
+            "errores": {
+              "aciertos": 39,
+              "abstencion_falsa": 3,
+              "abstencion_omitida": 8,
+              "confusion_entre_temas": 28,
+              "total": 78
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 5,
+              "salen_de_sin_tema": 12,
+              "cambian_de_tema": 0
+            }
+          },
+          {
+            "opcion": "abstener en el 10 % más parecido a «fuera de temas»",
+            "exactitud_por_fila": {
+              "n": 41,
+              "de": 78,
+              "proporcion": 0.5256,
+              "ic95": [
+                0.4162,
+                0.6326
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.4899,
+              "ic95": [
+                0.337,
+                0.6328
+              ],
+              "eventos": 42,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.0971,
+              "ic95": [
+                0.0238,
+                0.1941
+              ],
+              "excluye_cero": true,
+              "eventos": 42,
+              "eventos_que_cambian": 5
+            },
+            "macro_f1": {
+              "n": 78,
+              "macro_f1": 0.4079,
+              "ic95": [
+                0.2763,
+                0.5408
+              ],
+              "ic95_exacto": [
+                0.276288775062067,
+                0.5408440972184766
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "6/29",
+              "logistica": "1/1",
+              "turismo": "0/1",
+              "servicios_publicos": "9/16",
+              "eventos_naturales": "20/20",
+              "regulacion": "1/1",
+              "sin_tema": "4/10"
+            },
+            "abstenciones": 9,
+            "abstenciones_falsas": 5,
+            "abstenciones_correctas": "4/10",
+            "errores": {
+              "aciertos": 41,
+              "abstencion_falsa": 5,
+              "abstencion_omitida": 6,
+              "confusion_entre_temas": 26,
+              "total": 78
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 10,
+              "salen_de_sin_tema": 12,
+              "cambian_de_tema": 0
+            }
+          },
+          {
+            "opcion": "Economía regional: solo descripción",
+            "exactitud_por_fila": {
+              "n": 39,
+              "de": 78,
+              "proporcion": 0.5,
+              "ic95": [
+                0.3917,
+                0.6083
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.4206,
+              "ic95": [
+                0.2778,
+                0.5714
+              ],
+              "eventos": 42,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.0278,
+              "ic95": [
+                0.0,
+                0.0635
+              ],
+              "excluye_cero": false,
+              "eventos": 42,
+              "eventos_que_cambian": 3
+            },
+            "macro_f1": {
+              "n": 78,
+              "macro_f1": 0.4377,
+              "ic95": [
+                0.275,
+                0.4963
+              ],
+              "ic95_exacto": [
+                0.2750122933995143,
+                0.49633884131364536
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "8/29",
+              "logistica": "1/1",
+              "turismo": "0/1",
+              "servicios_publicos": "9/16",
+              "eventos_naturales": "20/20",
+              "regulacion": "1/1",
+              "sin_tema": "0/10"
+            },
+            "abstenciones": 12,
+            "abstenciones_falsas": 12,
+            "abstenciones_correctas": "0/10",
+            "errores": {
+              "aciertos": 39,
+              "abstencion_falsa": 12,
+              "abstencion_omitida": 10,
+              "confusion_entre_temas": 17,
+              "total": 78
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 0,
+              "salen_de_sin_tema": 0,
+              "cambian_de_tema": 5
+            }
+          },
+          {
+            "opcion": "Economía regional: solo ejemplos",
+            "exactitud_por_fila": {
+              "n": 37,
+              "de": 78,
+              "proporcion": 0.4744,
+              "ic95": [
+                0.3674,
+                0.5838
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.5299,
+              "ic95": [
+                0.3889,
+                0.6868
+              ],
+              "eventos": 42,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.1371,
+              "ic95": [
+                0.0262,
+                0.2647
+              ],
+              "excluye_cero": true,
+              "eventos": 42,
+              "eventos_que_cambian": 9
+            },
+            "macro_f1": {
+              "n": 78,
+              "macro_f1": 0.3705,
+              "ic95": [
+                0.2024,
+                0.4358
+              ],
+              "ic95_exacto": [
+                0.2023759694136407,
+                0.4357926235255428
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "25/29",
+              "logistica": "1/1",
+              "turismo": "0/1",
+              "servicios_publicos": "10/16",
+              "eventos_naturales": "0/20",
+              "regulacion": "1/1",
+              "sin_tema": "0/10"
+            },
+            "abstenciones": 1,
+            "abstenciones_falsas": 1,
+            "abstenciones_correctas": "0/10",
+            "errores": {
+              "aciertos": 37,
+              "abstencion_falsa": 1,
+              "abstencion_omitida": 10,
+              "confusion_entre_temas": 30,
+              "total": 78
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 0,
+              "salen_de_sin_tema": 11,
+              "cambian_de_tema": 34
+            }
+          },
+          {
+            "opcion": "Economía regional: descripción y ejemplos",
+            "exactitud_por_fila": {
+              "n": 36,
+              "de": 78,
+              "proporcion": 0.4615,
+              "ic95": [
+                0.3553,
+                0.5714
+              ]
+            },
+            "exactitud_por_evento": {
+              "valor": 0.5061,
+              "ic95": [
+                0.3632,
+                0.663
+              ],
+              "eventos": 42,
+              "remuestreos": 1000
+            },
+            "diferencia_por_evento_vs_actual": {
+              "diferencia": 0.1132,
+              "ic95": [
+                0.0079,
+                0.2286
+              ],
+              "excluye_cero": true,
+              "eventos": 42,
+              "eventos_que_cambian": 8
+            },
+            "macro_f1": {
+              "n": 78,
+              "macro_f1": 0.3684,
+              "ic95": [
+                0.1846,
+                0.4375
+              ],
+              "ic95_exacto": [
+                0.18464285714285716,
+                0.4375475809761523
+              ],
+              "remuestreos": 1000,
+              "ponderado": false
+            },
+            "recall_por_tema": {
+              "economia": "25/29",
+              "logistica": "1/1",
+              "turismo": "0/1",
+              "servicios_publicos": "9/16",
+              "eventos_naturales": "0/20",
+              "regulacion": "1/1",
+              "sin_tema": "0/10"
+            },
+            "abstenciones": 1,
+            "abstenciones_falsas": 1,
+            "abstenciones_correctas": "0/10",
+            "errores": {
+              "aciertos": 36,
+              "abstencion_falsa": 1,
+              "abstencion_omitida": 10,
+              "confusion_entre_temas": 31,
+              "total": 78
+            },
+            "snapshot_titulares_utiles": {
+              "total": 94,
+              "pasan_a_sin_tema": 0,
+              "salen_de_sin_tema": 11,
+              "cambian_de_tema": 33
+            }
+          }
+        ],
+        "grupos_del_snapshot": {
+          "grupos": 58,
+          "con_algun_titular_etiquetado": 44,
+          "tema_del_grupo_igual_al_humano_mayoritario": {
+            "n": 16,
+            "de": 44,
+            "proporcion": 0.3636,
+            "ic95": [
+              0.2378,
+              0.5113
+            ]
+          },
+          "detalle": [
+            {
+              "id_grupo": "GRP-0a10e8fec2",
+              "tema_del_grupo": "regulacion",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-0c210ad795",
+              "tema_del_grupo": "eventos_naturales",
+              "tema_humano_mayoritario": "sin_tema",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-0dfdd5a021",
+              "tema_del_grupo": "sin_tema",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 12
+            },
+            {
+              "id_grupo": "GRP-0f8fb5a5bb",
+              "tema_del_grupo": "regulacion",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-1a231154dc",
+              "tema_del_grupo": "regulacion",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-1b52bb958d",
+              "tema_del_grupo": "eventos_naturales",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-1c2f1d950d",
+              "tema_del_grupo": "turismo",
+              "tema_humano_mayoritario": "sin_tema",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-1df3ab1e22",
+              "tema_del_grupo": "regulacion",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-1e2c34f6bf",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-276c88e7f3",
+              "tema_del_grupo": "regulacion",
+              "tema_humano_mayoritario": "sin_tema",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-2820cdd711",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-29baaf270e",
+              "tema_del_grupo": "regulacion",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-39773bed5a",
+              "tema_del_grupo": "eventos_naturales",
+              "tema_humano_mayoritario": "sin_tema",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-39dfe8d714",
+              "tema_del_grupo": "regulacion",
+              "tema_humano_mayoritario": "regulacion",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-3aebb6f23a",
+              "tema_del_grupo": "logistica",
+              "tema_humano_mayoritario": "logistica",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-3fb1b2c9b4",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-4776222797",
+              "tema_del_grupo": "economia",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-4d3630957d",
+              "tema_del_grupo": "turismo",
+              "tema_humano_mayoritario": "sin_tema",
+              "etiquetados": 2
+            },
+            {
+              "id_grupo": "GRP-551ba86248",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-5ab17b45cd",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-5c66ab40e9",
+              "tema_del_grupo": "economia",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-5e6531917f",
+              "tema_del_grupo": "economia",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-66048e9c28",
+              "tema_del_grupo": "economia",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-6e737ecad5",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-71176bb291",
+              "tema_del_grupo": "regulacion",
+              "tema_humano_mayoritario": "sin_tema",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-79f3183472",
+              "tema_del_grupo": "eventos_naturales",
+              "tema_humano_mayoritario": "eventos_naturales",
+              "etiquetados": 20
+            },
+            {
+              "id_grupo": "GRP-81a11a5998",
+              "tema_del_grupo": "economia",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-821afe7eec",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-87e128925b",
+              "tema_del_grupo": "eventos_naturales",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 2
+            },
+            {
+              "id_grupo": "GRP-8af4196527",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-ad0e219d38",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "turismo",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-b2028a457f",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-be613f0763",
+              "tema_del_grupo": "economia",
+              "tema_humano_mayoritario": "sin_tema",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-cf758ba062",
+              "tema_del_grupo": "eventos_naturales",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-d03e52e97f",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "sin_tema",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-d08b11be1c",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-d420b7bd51",
+              "tema_del_grupo": "regulacion",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-da35c3dead",
+              "tema_del_grupo": "logistica",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 3
+            },
+            {
+              "id_grupo": "GRP-dc0c06491a",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-e0b0f0f335",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "sin_tema",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-e2e32056c3",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-eaeabe3e2a",
+              "tema_del_grupo": "economia",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-f9e3ba0bd2",
+              "tema_del_grupo": "regulacion",
+              "tema_humano_mayoritario": "economia",
+              "etiquetados": 1
+            },
+            {
+              "id_grupo": "GRP-fcdfc2a3cc",
+              "tema_del_grupo": "servicios_publicos",
+              "tema_humano_mayoritario": "servicios_publicos",
+              "etiquetados": 1
+            }
+          ],
+          "nota": "Comparación con etiquetas humanas; los grupos sin ningún titular etiquetado no se pueden evaluar."
+        }
+      },
+      "estado": "CALCULADO",
+      "evaluados": 78
     }
-  },
-  "senales_de_abstencion": {
-    "positivos_sin_tema": 5,
-    "eventos_con_sin_tema": 5,
-    "positivos_suficientes": false,
-    "auc_sin_tema_tiene_menor_similitud_maxima": 0.4827586206896552,
-    "auc_sin_tema_tiene_menor_margen": 0.5655172413793104,
-    "auc_sin_tema_se_parece_mas_a_fuera_de_temas": 0.7620689655172413,
-    "auc_acierto_tiene_mayor_similitud_maxima_por_evento": 0.7305744138237975,
-    "auc_acierto_tiene_mayor_margen_por_evento": 0.629558304427788,
-    "nota": "AUC 0.5 = la señal no separa. Con 5 positivos cualquier AUC es anecdótico (ver positivos_suficientes)."
-  },
-  "calibracion_umbral_validacion_cruzada_por_evento": {
-    "macro_f1": {
-      "exactitud_fuera_de_muestra": 0.3238,
-      "macro_f1_fuera_de_muestra": 0.3848,
-      "abstenciones_correctas_fuera_de_muestra": 0.59,
-      "abstenciones_por_corrida": 35.0,
-      "abstenciones_falsas_por_corrida": 32.05,
-      "umbral_elegido": {
-        "veces_sin_abstenerse": 1,
-        "decisiones": 100,
-        "minimo": 0.8243,
-        "mediana": 0.8425,
-        "maximo": 0.8596
-      },
-      "objetivo": "macro_f1",
-      "pliegues": 5,
-      "repeticiones": 20
-    },
-    "exactitud": {
-      "exactitud_fuera_de_muestra": 0.5071,
-      "macro_f1_fuera_de_muestra": 0.3591,
-      "abstenciones_correctas_fuera_de_muestra": 0.03,
-      "abstenciones_por_corrida": 4.15,
-      "abstenciones_falsas_por_corrida": 4.0,
-      "umbral_elegido": {
-        "veces_sin_abstenerse": 87,
-        "decisiones": 100,
-        "minimo": 0.8388,
-        "mediana": 0.8425,
-        "maximo": 0.8443
-      },
-      "objetivo": "exactitud",
-      "pliegues": 5,
-      "repeticiones": 20
-    }
-  },
-  "opciones": [
-    {
-      "opcion": "actual (umbral del YAML)",
-      "exactitud_por_fila": {
-        "n": 33,
-        "de": 63,
-        "proporcion": 0.5238,
-        "ic95": [
-          0.4027,
-          0.6422
-        ]
-      },
-      "exactitud_por_evento": {
-        "valor": 0.4655,
-        "ic95": [
-          0.3103,
-          0.6379
-        ],
-        "eventos": 29,
-        "remuestreos": 1000
-      },
-      "diferencia_por_evento_vs_actual": {
-        "diferencia": 0.0,
-        "ic95": [
-          0.0,
-          0.0
-        ],
-        "excluye_cero": false,
-        "eventos": 29,
-        "eventos_que_cambian": 0
-      },
-      "macro_f1": {
-        "n": 63,
-        "macro_f1": 0.4007,
-        "ic95": [
-          0.2446,
-          0.5102
-        ],
-        "ic95_exacto": [
-          0.24460528673835127,
-          0.510195229234703
-        ],
-        "remuestreos": 1000,
-        "ponderado": false
-      },
-      "recall_por_tema": {
-        "economia": "5/26",
-        "logistica": "1/1",
-        "turismo": "0/1",
-        "servicios_publicos": "6/9",
-        "eventos_naturales": "20/20",
-        "regulacion": "1/1",
-        "sin_tema": "0/5"
-      },
-      "abstenciones": 12,
-      "abstenciones_falsas": 12,
-      "abstenciones_correctas": "0/5",
-      "errores": {
-        "aciertos": 33,
-        "abstencion_falsa": 12,
-        "abstencion_omitida": 5,
-        "confusion_entre_temas": 13,
-        "total": 63
-      },
-      "snapshot_titulares_utiles": {
-        "total": 94,
-        "pasan_a_sin_tema": 0,
-        "salen_de_sin_tema": 0,
-        "cambian_de_tema": 0
-      }
-    },
-    {
-      "opcion": "sin abstención por similitud",
-      "exactitud_por_fila": {
-        "n": 34,
-        "de": 63,
-        "proporcion": 0.5397,
-        "ic95": [
-          0.4179,
-          0.6569
-        ]
-      },
-      "exactitud_por_evento": {
-        "valor": 0.4682,
-        "ic95": [
-          0.3103,
-          0.6379
-        ],
-        "eventos": 29,
-        "remuestreos": 1000
-      },
-      "diferencia_por_evento_vs_actual": {
-        "diferencia": 0.0027,
-        "ic95": [
-          0.0,
-          0.0106
-        ],
-        "excluye_cero": false,
-        "eventos": 29,
-        "eventos_que_cambian": 1
-      },
-      "macro_f1": {
-        "n": 63,
-        "macro_f1": 0.3542,
-        "ic95": [
-          0.2378,
-          0.4632
-        ],
-        "ic95_exacto": [
-          0.23782592407592412,
-          0.4631967764933023
-        ],
-        "remuestreos": 1000,
-        "ponderado": false
-      },
-      "recall_por_tema": {
-        "economia": "6/26",
-        "logistica": "1/1",
-        "turismo": "0/1",
-        "servicios_publicos": "6/9",
-        "eventos_naturales": "20/20",
-        "regulacion": "1/1",
-        "sin_tema": "0/5"
-      },
-      "abstenciones": 0,
-      "abstenciones_falsas": 0,
-      "abstenciones_correctas": "0/5",
-      "errores": {
-        "aciertos": 34,
-        "abstencion_falsa": 0,
-        "abstencion_omitida": 5,
-        "confusion_entre_temas": 24,
-        "total": 63
-      },
-      "snapshot_titulares_utiles": {
-        "total": 94,
-        "pasan_a_sin_tema": 0,
-        "salen_de_sin_tema": 12,
-        "cambian_de_tema": 0
-      }
-    },
-    {
-      "opcion": "abstener en el 10 % de menor margen",
-      "exactitud_por_fila": {
-        "n": 30,
-        "de": 63,
-        "proporcion": 0.4762,
-        "ic95": [
-          0.3578,
-          0.5973
-        ]
-      },
-      "exactitud_por_evento": {
-        "valor": 0.3621,
-        "ic95": [
-          0.1897,
-          0.5345
-        ],
-        "eventos": 29,
-        "remuestreos": 1000
-      },
-      "diferencia_por_evento_vs_actual": {
-        "diferencia": -0.1034,
-        "ic95": [
-          -0.2069,
-          0.0
-        ],
-        "excluye_cero": false,
-        "eventos": 29,
-        "eventos_que_cambian": 3
-      },
-      "macro_f1": {
-        "n": 63,
-        "macro_f1": 0.3463,
-        "ic95": [
-          0.2096,
-          0.4431
-        ],
-        "ic95_exacto": [
-          0.20963243361860873,
-          0.4430554894193704
-        ],
-        "remuestreos": 1000,
-        "ponderado": false
-      },
-      "recall_por_tema": {
-        "economia": "4/26",
-        "logistica": "1/1",
-        "turismo": "0/1",
-        "servicios_publicos": "4/9",
-        "eventos_naturales": "20/20",
-        "regulacion": "1/1",
-        "sin_tema": "0/5"
-      },
-      "abstenciones": 7,
-      "abstenciones_falsas": 7,
-      "abstenciones_correctas": "0/5",
-      "errores": {
-        "aciertos": 30,
-        "abstencion_falsa": 7,
-        "abstencion_omitida": 5,
-        "confusion_entre_temas": 21,
-        "total": 63
-      },
-      "snapshot_titulares_utiles": {
-        "total": 94,
-        "pasan_a_sin_tema": 9,
-        "salen_de_sin_tema": 11,
-        "cambian_de_tema": 0
-      }
-    },
-    {
-      "opcion": "abstener en el 20 % de menor margen",
-      "exactitud_por_fila": {
-        "n": 31,
-        "de": 63,
-        "proporcion": 0.4921,
-        "ic95": [
-          0.3727,
-          0.6124
-        ]
-      },
-      "exactitud_por_evento": {
-        "valor": 0.3966,
-        "ic95": [
-          0.2414,
-          0.569
-        ],
-        "eventos": 29,
-        "remuestreos": 1000
-      },
-      "diferencia_por_evento_vs_actual": {
-        "diferencia": -0.069,
-        "ic95": [
-          -0.2414,
-          0.0698
-        ],
-        "excluye_cero": false,
-        "eventos": 29,
-        "eventos_que_cambian": 6
-      },
-      "macro_f1": {
-        "n": 63,
-        "macro_f1": 0.4239,
-        "ic95": [
-          0.2581,
-          0.5245
-        ],
-        "ic95_exacto": [
-          0.25813707656237367,
-          0.524455420374538
-        ],
-        "remuestreos": 1000,
-        "ponderado": false
-      },
-      "recall_por_tema": {
-        "economia": "4/26",
-        "logistica": "1/1",
-        "turismo": "0/1",
-        "servicios_publicos": "3/9",
-        "eventos_naturales": "20/20",
-        "regulacion": "1/1",
-        "sin_tema": "2/5"
-      },
-      "abstenciones": 15,
-      "abstenciones_falsas": 13,
-      "abstenciones_correctas": "2/5",
-      "errores": {
-        "aciertos": 31,
-        "abstencion_falsa": 13,
-        "abstencion_omitida": 3,
-        "confusion_entre_temas": 16,
-        "total": 63
-      },
-      "snapshot_titulares_utiles": {
-        "total": 94,
-        "pasan_a_sin_tema": 17,
-        "salen_de_sin_tema": 10,
-        "cambian_de_tema": 0
-      }
-    },
-    {
-      "opcion": "abstener en el 30 % de menor margen",
-      "exactitud_por_fila": {
-        "n": 27,
-        "de": 63,
-        "proporcion": 0.4286,
-        "ic95": [
-          0.314,
-          0.5514
-        ]
-      },
-      "exactitud_por_evento": {
-        "valor": 0.3569,
-        "ic95": [
-          0.2069,
-          0.5293
-        ],
-        "eventos": 29,
-        "remuestreos": 1000
-      },
-      "diferencia_por_evento_vs_actual": {
-        "diferencia": -0.1086,
-        "ic95": [
-          -0.3103,
-          0.0932
-        ],
-        "excluye_cero": false,
-        "eventos": 29,
-        "eventos_que_cambian": 10
-      },
-      "macro_f1": {
-        "n": 63,
-        "macro_f1": 0.3968,
-        "ic95": [
-          0.2343,
-          0.4818
-        ],
-        "ic95_exacto": [
-          0.23430481304988124,
-          0.48184326392383936
-        ],
-        "remuestreos": 1000,
-        "ponderado": false
-      },
-      "recall_por_tema": {
-        "economia": "3/26",
-        "logistica": "1/1",
-        "turismo": "0/1",
-        "servicios_publicos": "3/9",
-        "eventos_naturales": "17/20",
-        "regulacion": "0/1",
-        "sin_tema": "3/5"
-      },
-      "abstenciones": 23,
-      "abstenciones_falsas": 20,
-      "abstenciones_correctas": "3/5",
-      "errores": {
-        "aciertos": 27,
-        "abstencion_falsa": 20,
-        "abstencion_omitida": 2,
-        "confusion_entre_temas": 14,
-        "total": 63
-      },
-      "snapshot_titulares_utiles": {
-        "total": 94,
-        "pasan_a_sin_tema": 26,
-        "salen_de_sin_tema": 10,
-        "cambian_de_tema": 0
-      }
-    },
-    {
-      "opcion": "abstener en el 1 % más parecido a «fuera de temas»",
-      "exactitud_por_fila": {
-        "n": 35,
-        "de": 63,
-        "proporcion": 0.5556,
-        "ic95": [
-          0.4332,
-          0.6715
-        ]
-      },
-      "exactitud_por_evento": {
-        "valor": 0.5027,
-        "ic95": [
-          0.3328,
-          0.6751
-        ],
-        "eventos": 29,
-        "remuestreos": 1000
-      },
-      "diferencia_por_evento_vs_actual": {
-        "diferencia": 0.0371,
-        "ic95": [
-          0.0,
-          0.1115
-        ],
-        "excluye_cero": false,
-        "eventos": 29,
-        "eventos_que_cambian": 2
-      },
-      "macro_f1": {
-        "n": 63,
-        "macro_f1": 0.4059,
-        "ic95": [
-          0.2583,
-          0.5311
-        ],
-        "ic95_exacto": [
-          0.25832541020360716,
-          0.5310759379509379
-        ],
-        "remuestreos": 1000,
-        "ponderado": false
-      },
-      "recall_por_tema": {
-        "economia": "6/26",
-        "logistica": "1/1",
-        "turismo": "0/1",
-        "servicios_publicos": "6/9",
-        "eventos_naturales": "20/20",
-        "regulacion": "1/1",
-        "sin_tema": "1/5"
-      },
-      "abstenciones": 1,
-      "abstenciones_falsas": 0,
-      "abstenciones_correctas": "1/5",
-      "errores": {
-        "aciertos": 35,
-        "abstencion_falsa": 0,
-        "abstencion_omitida": 4,
-        "confusion_entre_temas": 24,
-        "total": 63
-      },
-      "snapshot_titulares_utiles": {
-        "total": 94,
-        "pasan_a_sin_tema": 1,
-        "salen_de_sin_tema": 12,
-        "cambian_de_tema": 0
-      }
-    },
-    {
-      "opcion": "abstener en el 5 % más parecido a «fuera de temas»",
-      "exactitud_por_fila": {
-        "n": 35,
-        "de": 63,
-        "proporcion": 0.5556,
-        "ic95": [
-          0.4332,
-          0.6715
-        ]
-      },
-      "exactitud_por_evento": {
-        "valor": 0.5027,
-        "ic95": [
-          0.3328,
-          0.6751
-        ],
-        "eventos": 29,
-        "remuestreos": 1000
-      },
-      "diferencia_por_evento_vs_actual": {
-        "diferencia": 0.0371,
-        "ic95": [
-          0.0,
-          0.1115
-        ],
-        "excluye_cero": false,
-        "eventos": 29,
-        "eventos_que_cambian": 2
-      },
-      "macro_f1": {
-        "n": 63,
-        "macro_f1": 0.4052,
-        "ic95": [
-          0.2693,
-          0.5204
-        ],
-        "ic95_exacto": [
-          0.26925245098039213,
-          0.5204098780586671
-        ],
-        "remuestreos": 1000,
-        "ponderado": false
-      },
-      "recall_por_tema": {
-        "economia": "6/26",
-        "logistica": "1/1",
-        "turismo": "0/1",
-        "servicios_publicos": "6/9",
-        "eventos_naturales": "20/20",
-        "regulacion": "1/1",
-        "sin_tema": "1/5"
-      },
-      "abstenciones": 4,
-      "abstenciones_falsas": 3,
-      "abstenciones_correctas": "1/5",
-      "errores": {
-        "aciertos": 35,
-        "abstencion_falsa": 3,
-        "abstencion_omitida": 4,
-        "confusion_entre_temas": 21,
-        "total": 63
-      },
-      "snapshot_titulares_utiles": {
-        "total": 94,
-        "pasan_a_sin_tema": 5,
-        "salen_de_sin_tema": 12,
-        "cambian_de_tema": 0
-      }
-    },
-    {
-      "opcion": "abstener en el 10 % más parecido a «fuera de temas»",
-      "exactitud_por_fila": {
-        "n": 35,
-        "de": 63,
-        "proporcion": 0.5556,
-        "ic95": [
-          0.4332,
-          0.6715
-        ]
-      },
-      "exactitud_por_evento": {
-        "valor": 0.5027,
-        "ic95": [
-          0.3328,
-          0.6751
-        ],
-        "eventos": 29,
-        "remuestreos": 1000
-      },
-      "diferencia_por_evento_vs_actual": {
-        "diferencia": 0.0371,
-        "ic95": [
-          0.0,
-          0.1115
-        ],
-        "excluye_cero": false,
-        "eventos": 29,
-        "eventos_que_cambian": 2
-      },
-      "macro_f1": {
-        "n": 63,
-        "macro_f1": 0.4006,
-        "ic95": [
-          0.2715,
-          0.5287
-        ],
-        "ic95_exacto": [
-          0.27148464775553444,
-          0.5287295884808968
-        ],
-        "remuestreos": 1000,
-        "ponderado": false
-      },
-      "recall_por_tema": {
-        "economia": "6/26",
-        "logistica": "1/1",
-        "turismo": "0/1",
-        "servicios_publicos": "6/9",
-        "eventos_naturales": "20/20",
-        "regulacion": "1/1",
-        "sin_tema": "1/5"
-      },
-      "abstenciones": 6,
-      "abstenciones_falsas": 5,
-      "abstenciones_correctas": "1/5",
-      "errores": {
-        "aciertos": 35,
-        "abstencion_falsa": 5,
-        "abstencion_omitida": 4,
-        "confusion_entre_temas": 19,
-        "total": 63
-      },
-      "snapshot_titulares_utiles": {
-        "total": 94,
-        "pasan_a_sin_tema": 10,
-        "salen_de_sin_tema": 12,
-        "cambian_de_tema": 0
-      }
-    },
-    {
-      "opcion": "Economía regional: solo descripción",
-      "exactitud_por_fila": {
-        "n": 35,
-        "de": 63,
-        "proporcion": 0.5556,
-        "ic95": [
-          0.4332,
-          0.6715
-        ]
-      },
-      "exactitud_por_evento": {
-        "valor": 0.4943,
-        "ic95": [
-          0.333,
-          0.6555
-        ],
-        "eventos": 29,
-        "remuestreos": 1000
-      },
-      "diferencia_por_evento_vs_actual": {
-        "diferencia": 0.0287,
-        "ic95": [
-          0.0,
-          0.0747
-        ],
-        "excluye_cero": false,
-        "eventos": 29,
-        "eventos_que_cambian": 2
-      },
-      "macro_f1": {
-        "n": 63,
-        "macro_f1": 0.4742,
-        "ic95": [
-          0.2945,
-          0.5608
-        ],
-        "ic95_exacto": [
-          0.29449552647145816,
-          0.5608148195211545
-        ],
-        "remuestreos": 1000,
-        "ponderado": false
-      },
-      "recall_por_tema": {
-        "economia": "7/26",
-        "logistica": "1/1",
-        "turismo": "0/1",
-        "servicios_publicos": "6/9",
-        "eventos_naturales": "20/20",
-        "regulacion": "1/1",
-        "sin_tema": "0/5"
-      },
-      "abstenciones": 12,
-      "abstenciones_falsas": 12,
-      "abstenciones_correctas": "0/5",
-      "errores": {
-        "aciertos": 35,
-        "abstencion_falsa": 12,
-        "abstencion_omitida": 5,
-        "confusion_entre_temas": 11,
-        "total": 63
-      },
-      "snapshot_titulares_utiles": {
-        "total": 94,
-        "pasan_a_sin_tema": 0,
-        "salen_de_sin_tema": 0,
-        "cambian_de_tema": 5
-      }
-    },
-    {
-      "opcion": "Economía regional: solo ejemplos",
-      "exactitud_por_fila": {
-        "n": 31,
-        "de": 63,
-        "proporcion": 0.4921,
-        "ic95": [
-          0.3727,
-          0.6124
-        ]
-      },
-      "exactitud_por_evento": {
-        "valor": 0.6295,
-        "ic95": [
-          0.4545,
-          0.7931
-        ],
-        "eventos": 29,
-        "remuestreos": 1000
-      },
-      "diferencia_por_evento_vs_actual": {
-        "diferencia": 0.164,
-        "ic95": [
-          0.0,
-          0.3113
-        ],
-        "excluye_cero": false,
-        "eventos": 29,
-        "eventos_que_cambian": 8
-      },
-      "macro_f1": {
-        "n": 63,
-        "macro_f1": 0.4319,
-        "ic95": [
-          0.214,
-          0.5326
-        ],
-        "ic95_exacto": [
-          0.21395384240652787,
-          0.5326089872568746
-        ],
-        "remuestreos": 1000,
-        "ponderado": false
-      },
-      "recall_por_tema": {
-        "economia": "22/26",
-        "logistica": "1/1",
-        "turismo": "0/1",
-        "servicios_publicos": "7/9",
-        "eventos_naturales": "0/20",
-        "regulacion": "1/1",
-        "sin_tema": "0/5"
-      },
-      "abstenciones": 1,
-      "abstenciones_falsas": 1,
-      "abstenciones_correctas": "0/5",
-      "errores": {
-        "aciertos": 31,
-        "abstencion_falsa": 1,
-        "abstencion_omitida": 5,
-        "confusion_entre_temas": 26,
-        "total": 63
-      },
-      "snapshot_titulares_utiles": {
-        "total": 94,
-        "pasan_a_sin_tema": 0,
-        "salen_de_sin_tema": 11,
-        "cambian_de_tema": 34
-      }
-    },
-    {
-      "opcion": "Economía regional: descripción y ejemplos",
-      "exactitud_por_fila": {
-        "n": 30,
-        "de": 63,
-        "proporcion": 0.4762,
-        "ic95": [
-          0.3578,
-          0.5973
-        ]
-      },
-      "exactitud_por_evento": {
-        "valor": 0.595,
-        "ic95": [
-          0.4111,
-          0.756
-        ],
-        "eventos": 29,
-        "remuestreos": 1000
-      },
-      "diferencia_por_evento_vs_actual": {
-        "diferencia": 0.1295,
-        "ic95": [
-          -0.0172,
-          0.2821
-        ],
-        "excluye_cero": false,
-        "eventos": 29,
-        "eventos_que_cambian": 7
-      },
-      "macro_f1": {
-        "n": 63,
-        "macro_f1": 0.4206,
-        "ic95": [
-          0.2006,
-          0.5182
-        ],
-        "ic95_exacto": [
-          0.20058458774119137,
-          0.5182294091345457
-        ],
-        "remuestreos": 1000,
-        "ponderado": false
-      },
-      "recall_por_tema": {
-        "economia": "22/26",
-        "logistica": "1/1",
-        "turismo": "0/1",
-        "servicios_publicos": "6/9",
-        "eventos_naturales": "0/20",
-        "regulacion": "1/1",
-        "sin_tema": "0/5"
-      },
-      "abstenciones": 1,
-      "abstenciones_falsas": 1,
-      "abstenciones_correctas": "0/5",
-      "errores": {
-        "aciertos": 30,
-        "abstencion_falsa": 1,
-        "abstencion_omitida": 5,
-        "confusion_entre_temas": 27,
-        "total": 63
-      },
-      "snapshot_titulares_utiles": {
-        "total": 94,
-        "pasan_a_sin_tema": 0,
-        "salen_de_sin_tema": 11,
-        "cambian_de_tema": 33
-      }
-    }
-  ],
-  "grupos_del_snapshot": {
-    "grupos": 58,
-    "con_algun_titular_etiquetado": 31,
-    "tema_del_grupo_igual_al_humano_mayoritario": {
-      "n": 13,
-      "de": 31,
-      "proporcion": 0.4194,
-      "ic95": [
-        0.2642,
-        0.5923
-      ]
-    },
-    "detalle": [
-      {
-        "id_grupo": "GRP-0a10e8fec2",
-        "tema_del_grupo": "regulacion",
-        "tema_humano_mayoritario": "economia",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-0dfdd5a021",
-        "tema_del_grupo": "sin_tema",
-        "tema_humano_mayoritario": "economia",
-        "etiquetados": 12
-      },
-      {
-        "id_grupo": "GRP-1b52bb958d",
-        "tema_del_grupo": "eventos_naturales",
-        "tema_humano_mayoritario": "servicios_publicos",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-2820cdd711",
-        "tema_del_grupo": "servicios_publicos",
-        "tema_humano_mayoritario": "servicios_publicos",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-39773bed5a",
-        "tema_del_grupo": "eventos_naturales",
-        "tema_humano_mayoritario": "sin_tema",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-39dfe8d714",
-        "tema_del_grupo": "regulacion",
-        "tema_humano_mayoritario": "regulacion",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-3aebb6f23a",
-        "tema_del_grupo": "logistica",
-        "tema_humano_mayoritario": "logistica",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-3fb1b2c9b4",
-        "tema_del_grupo": "servicios_publicos",
-        "tema_humano_mayoritario": "economia",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-4776222797",
-        "tema_del_grupo": "economia",
-        "tema_humano_mayoritario": "economia",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-4d3630957d",
-        "tema_del_grupo": "turismo",
-        "tema_humano_mayoritario": "sin_tema",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-551ba86248",
-        "tema_del_grupo": "servicios_publicos",
-        "tema_humano_mayoritario": "economia",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-5c66ab40e9",
-        "tema_del_grupo": "economia",
-        "tema_humano_mayoritario": "economia",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-5e6531917f",
-        "tema_del_grupo": "economia",
-        "tema_humano_mayoritario": "servicios_publicos",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-66048e9c28",
-        "tema_del_grupo": "economia",
-        "tema_humano_mayoritario": "economia",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-71176bb291",
-        "tema_del_grupo": "regulacion",
-        "tema_humano_mayoritario": "sin_tema",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-79f3183472",
-        "tema_del_grupo": "eventos_naturales",
-        "tema_humano_mayoritario": "eventos_naturales",
-        "etiquetados": 20
-      },
-      {
-        "id_grupo": "GRP-81a11a5998",
-        "tema_del_grupo": "economia",
-        "tema_humano_mayoritario": "economia",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-821afe7eec",
-        "tema_del_grupo": "servicios_publicos",
-        "tema_humano_mayoritario": "servicios_publicos",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-87e128925b",
-        "tema_del_grupo": "eventos_naturales",
-        "tema_humano_mayoritario": "servicios_publicos",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-8af4196527",
-        "tema_del_grupo": "servicios_publicos",
-        "tema_humano_mayoritario": "servicios_publicos",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-ad0e219d38",
-        "tema_del_grupo": "servicios_publicos",
-        "tema_humano_mayoritario": "turismo",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-b2028a457f",
-        "tema_del_grupo": "servicios_publicos",
-        "tema_humano_mayoritario": "economia",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-be613f0763",
-        "tema_del_grupo": "economia",
-        "tema_humano_mayoritario": "sin_tema",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-cf758ba062",
-        "tema_del_grupo": "eventos_naturales",
-        "tema_humano_mayoritario": "servicios_publicos",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-d08b11be1c",
-        "tema_del_grupo": "servicios_publicos",
-        "tema_humano_mayoritario": "economia",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-d420b7bd51",
-        "tema_del_grupo": "regulacion",
-        "tema_humano_mayoritario": "economia",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-da35c3dead",
-        "tema_del_grupo": "logistica",
-        "tema_humano_mayoritario": "economia",
-        "etiquetados": 3
-      },
-      {
-        "id_grupo": "GRP-e0b0f0f335",
-        "tema_del_grupo": "servicios_publicos",
-        "tema_humano_mayoritario": "sin_tema",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-e2e32056c3",
-        "tema_del_grupo": "servicios_publicos",
-        "tema_humano_mayoritario": "servicios_publicos",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-eaeabe3e2a",
-        "tema_del_grupo": "economia",
-        "tema_humano_mayoritario": "economia",
-        "etiquetados": 1
-      },
-      {
-        "id_grupo": "GRP-fcdfc2a3cc",
-        "tema_del_grupo": "servicios_publicos",
-        "tema_humano_mayoritario": "servicios_publicos",
-        "etiquetados": 1
-      }
-    ],
-    "nota": "Comparación con etiquetas humanas; los grupos sin ningún titular etiquetado no se pueden evaluar."
   }
 }

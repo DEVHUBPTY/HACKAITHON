@@ -56,7 +56,7 @@ El **n efectivo de Kish** de toda la muestra ponderada es (Σw)² / Σw² = **77
 
 ## Columnas
 
-Hojas por persona: `id_noticia · titulo · tema_principal · tema_secundario · ruido · grupo · alcance_regional · nota · etiquetado_por · fecha_etiquetado`. `eval/etiquetas.csv` (consolidado) agrega `estrato · peso_muestreo · n_etiquetadores`.
+Hojas por persona: `id_noticia · titulo · tema_principal · tema_secundario · ruido · grupo · alcance_regional · nota · etiquetado_por · fecha_etiquetado`. `eval/etiquetas.csv` (consolidado) agrega `estrato · peso_muestreo · n_etiquetadores`. Desde E1-07b agrega también `origen` (`humano` | `asistente_provisional`): las 61 filas `asistente_provisional` (D-101) las propuso un agente y las aprobó provisionalmente el asistente, pendientes de la revisión humana C-09; los lectores de `eval/` usan solo las `humano` por defecto, `--validar` solo valida las humanas, y **`--consolidar` reescribe el CSV solo con las filas humanas de las hojas** (las provisionales hay que volver a importarlas desde Notion).
 
 ## Después de etiquetar (en este orden)
 
