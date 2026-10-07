@@ -386,7 +386,7 @@ def construir_reporte_usgs(
     """Grupos de sismos por resultado (vinculado o motivo), con n e IC de Wilson de los vinculados."""
     por_estado = Counter(r.estado for r in resultados)
     return {
-        "nota": "Eventos de USGS como contexto; no informan daños ni pérdidas. Cobertura 2024.",
+        "nota": "Eventos de USGS como contexto; no informan daños ni pérdidas. Solo cubre el periodo extraído de USGS (fuentes.yaml).",
         "grupos_de_sismos": len(resultados),
         "vinculados": proporcion(por_estado[contexto_sismos.VINCULADO], len(resultados), z),
         "por_resultado": dict(sorted(por_estado.items())),
