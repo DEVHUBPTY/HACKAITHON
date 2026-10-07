@@ -97,6 +97,18 @@ subtema:                            # D-92 (enmienda a E1-09) y E1-10c (X41): el
     listas_internacionales: [lista gris, listas grises, lista negra, listas negras, gafi, lista fiscal, paraisos fiscales]
     contratos_concesiones: [contrato, contratos, concesion, concesiones, licitacion, licitaciones]
     sanciones: [sancion, sanciones, multa, multas, sancionado, sancionada]
+  # E1-07c (X77): la obra del acueducto (construir, ampliar, rehabilitar, uno nuevo) es obras públicas (docs/guia_temas.md); el
+  # servicio («Idaan repara el acueducto») sigue siendo agua potable porque el término suelto «acueducto» es más corto y pierde.
+  # Expresiones regulares sobre texto sin tildes ni mayúsculas.
+  patrones_por_subtema:
+    obras_publicas:
+      - '(?<!\w)(?:(?:construccion|ampliacion|rehabilitacion|remodelacion|obras?)\s+(?:de|del)\s+(?:(?:un|el|los)\s+)?(?:nuevo\s+)?|nuevos?\s+)acueductos?(?!\w)'
+  # E1-07c (X78, D-111): el proceso judicial por corrupción NO es obras públicas (ni subtema de justicia: la nota es otro asunto).
+  # Un titular con alguno de estos marcadores (palabra o frase completa, sin tildes) no respalda el subtema; no se vuelve ruido.
+  exclusiones_por_subtema:
+    obras_publicas: [imputa, imputan, imputacion, imputaciones, imputado, imputados, imputada, juez, jueza, jueces, fiscalia,
+                     tribunal, magistrado, audiencia, juicio, condena, condenan, condenado, condenados, peculado, corrupcion,
+                     detienen a, detenido por, detenidos por, aprehenden a, aprehendido por, prision preventiva, acusan a]
 
 sismos:                             # E1-09b: presentación y textos fijos del vínculo con eventos USGS
   zona_horaria: America/Panama      # solo para mostrar; los datos siguen en UTC

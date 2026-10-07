@@ -748,6 +748,23 @@ class SubtemaVinculo(ModeloConfig):
     criterios: list[Literal["margen", "lexico"]] = Field(min_length=1)   # en este orden; E1-10c: solo ``lexico``
     margen_minimo: float = Field(ge=0)
     terminos_por_subtema: dict[str, list[str]]   # apoyo léxico: un término en el titular respalda el subtema
+    # E1-07c (X77): expresiones regulares (sobre texto sin tildes ni mayúsculas) que también respaldan el subtema; sirven para
+    # las formas de una frase («construcción del/de un acueducto») que una lista literal no cubre.
+    patrones_por_subtema: dict[str, list[str]] = Field(default_factory=dict)
+    # E1-07c (X78, D-111): marcadores (palabra o frase completa) que, en un titular, impiden que ese titular respalde el subtema
+    # («juez imputa a funcionarios del MOP» es un proceso judicial, no una obra). No lo vuelven ruido: el tema se decide aparte.
+    exclusiones_por_subtema: dict[str, list[str]] = Field(default_factory=dict)
+
+    @field_validator("patrones_por_subtema")
+    @classmethod
+    def _patrones_validos(cls, v: dict[str, list[str]]) -> dict[str, list[str]]:
+        for subtema, patrones in v.items():
+            for patron in patrones:
+                try:
+                    re.compile(patron)
+                except re.error as e:
+                    raise ValueError(f"patrones_por_subtema[{subtema}]: {patron!r} no es una expresión regular válida ({e})") from e
+        return v
 
 
 class SismosVinculo(ModeloConfig):

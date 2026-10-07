@@ -103,6 +103,70 @@ def test_el_pedido_de_fondos_del_mop_ya_tiene_subtema_con_sustento() -> None:
     assert decidir("agua_potable", titular) == ("obras_publicas", "lexico")
 
 
+@pytest.mark.parametrize(
+    "titular",
+    [
+        "Avanza la construcción del acueducto de Chiriquí",                    # X77: formas con artículo
+        "Avanza la ampliación del acueducto de Sabanitas",
+        "Inauguran el nuevo acueducto de Arraiján",
+        "Concluye la rehabilitación del acueducto de Penonomé",
+        "Inician la construcción de un nuevo acueducto en Colón",
+        "Obras del acueducto de Veraguas llegan al 80 %",
+    ],
+)
+def test_x77_la_obra_del_acueducto_es_obras_publicas_aunque_el_mas_cercano_sea_agua(titular: str) -> None:
+    assert decidir("agua_potable", titular) == ("obras_publicas", "lexico")
+
+
+@pytest.mark.parametrize(
+    "titular",
+    [
+        "Idaan repara el acueducto y restablece el suministro de agua",
+        "Interrupción del servicio por daño en el acueducto de Chorrera",
+        "Sin agua por una avería en el acueducto",
+    ],
+)
+def test_x77_el_servicio_del_acueducto_sigue_siendo_agua_potable(titular: str) -> None:
+    assert decidir("agua_potable", titular) == ("agua_potable", "lexico")
+
+
+@pytest.mark.parametrize(
+    "titular",
+    [
+        "Juez imputa cargos a funcionarios del MOP por corrupción",           # X78: proceso judicial (D-111)
+        "Corrupción judicial: fiscalía imputa a exministro por sobrecostos en carretera",
+        "Detienen a exfuncionario del MOP por peculado",
+        "Condenan a contratista por sobrecostos en obras del corredor",
+    ],
+)
+def test_x78_el_proceso_judicial_por_corrupcion_no_asigna_obras_publicas(titular: str) -> None:
+    assert decidir("agua_potable", titular) == (None, None)
+
+
+@pytest.mark.parametrize(
+    "titular",
+    [
+        "Contraloría detecta sobrecosto en obras del corredor",               # el sobrecosto de obra sí entra (D-111)
+        "Detienen obras de la carretera por falta de pago",                   # «detienen» sin «a» no es un arresto
+    ],
+)
+def test_x78_el_sobrecosto_sin_marcador_judicial_sigue_entrando(titular: str) -> None:
+    assert decidir("agua_potable", titular) == ("obras_publicas", "lexico")
+
+
+def test_x78_los_marcadores_no_vuelven_ruido_al_titular() -> None:
+    from src import limpieza
+    from src.limpieza import Reglas
+    fila = {"titulo": "Juez imputa cargos a funcionarios del MOP por corrupción", "medio": "TVN", "dominio": "tvn-2.com",
+            "url": "https://www.tvn-2.com/nacionales/x_1_1.html", "origen": "TVN RSS", "categoria_fuente": None, "pais_medio": "Panamá"}
+    r = limpieza.evaluar(fila, Reglas.desde_config())
+    assert (r.es_ruido, r.motivo_ruido) == (False, None)
+
+
+def test_x78_los_patrones_y_marcadores_estan_en_el_yaml() -> None:
+    assert SUB.patrones_por_subtema["obras_publicas"] and SUB.exclusiones_por_subtema["obras_publicas"]
+
+
 # ------------------------------------------------------------------ I usa el alcance del YAML
 
 
