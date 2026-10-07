@@ -1386,6 +1386,9 @@ class FueraDeTemasRuido(ModeloConfig):
     cultura: list[str]
     politica_partidista: list[str]
     autopromocion_tvn: list[str]
+    # C-10 D4: secciones de la URL de TVN que SOLO suben la sospecha de `fuera_de_temas`; se marca únicamente si además
+    # el clasificador no halla tema (sin_tema). Un nombre de sección: minúsculas, sin barras, sin espacios, sin repetir.
+    secciones_sospechosas: list[str]
 
     @model_validator(mode="after")
     def _regex_validas(self) -> FueraDeTemasRuido:
@@ -1393,6 +1396,11 @@ class FueraDeTemasRuido(ModeloConfig):
             [*self.deportes, *self.farandula, *self.cultura, *self.politica_partidista, *self.autopromocion_tvn],
             "fuera_de_temas",
         )
+        for s in self.secciones_sospechosas:
+            if not s or s != s.strip().lower() or any(c in s for c in "/ \t"):
+                raise ValueError(f"fuera_de_temas.secciones_sospechosas: {s!r} debe ser un nombre de sección en minúsculas, sin barras ni espacios")
+        if len(set(self.secciones_sospechosas)) != len(self.secciones_sospechosas):
+            raise ValueError("fuera_de_temas.secciones_sospechosas: hay secciones repetidas")
         return self
 
 

@@ -46,7 +46,14 @@ from src.configuracion import (
     cargar_temas,
 )
 from src.embeddings import Embeddings, crear, fijar_semilla
-from src.limpieza import Reglas, limpiar_titulo
+from src.limpieza import (
+    MOTIVO_FUERA_DE_TEMAS,
+    Reglas,
+    clasificar as clasificar_ruido,
+    limpiar_titulo,
+    seccion_sospechosa_fuera_de_temas,
+    tiene_seccion_tvn,
+)
 from src.registro import configurar_logging
 
 logger = logging.getLogger(__name__)
@@ -211,6 +218,31 @@ def similitud_con_prototipos_panama(textos: list[str], emb: Embeddings, prototip
     return (emb.codificar(textos, "titular") @ emb.codificar(prototipos, "tema").T).max(axis=1)
 
 
+# ------------------------------------------------------------------ sección de la URL (C-10, D4)
+
+
+def marcar_por_seccion(fila: dict[str, Any], decision: Decision, reglas: Reglas) -> bool:
+    """D4: la sección de TVN sube la sospecha; se marca ``fuera_de_temas`` solo si además no hay tema (``sin_tema``).
+
+    ``sin_tema`` ya significa «la mayor similitud no llega a ``umbral_sin_tema``»: no hay umbral nuevo.
+    """
+    return decision.principal == SIN_TEMA and seccion_sospechosa_fuera_de_temas(fila, reglas)
+
+
+def marca_previa_por_seccion(fila: dict[str, Any], reglas: Reglas) -> bool:
+    """La corrida anterior marcó esta nota por su sección (y no por palabras clave): la limpieza no la habría marcado.
+
+    Así volver a correr deshace la marca si cambia la lista de secciones o el tema, sin columna nueva en la base.
+    """
+    return bool(
+        fila.get("es_ruido")
+        and fila.get("motivo_ruido") == MOTIVO_FUERA_DE_TEMAS
+        and not fila.get("ruido_similitud")
+        and tiene_seccion_tvn(fila, reglas)
+        and clasificar_ruido(fila, fila["titulo_limpio"], reglas)[0] is None
+    )
+
+
 # ------------------------------------------------------------------ reporte
 
 
@@ -329,7 +361,7 @@ def aplicar_a_base(
         if sin_limpiar:
             raise RuntimeError(f"{len(sin_limpiar)} noticias sin limpiar: ejecute `poetry run python -m src.limpieza`")
         for f in filas:
-            if f.get("ruido_similitud"):  # una corrida anterior la marcó por similitud: antes no era ruido (solo se marcan las no-ruido)
+            if f.get("ruido_similitud") or marca_previa_por_seccion(f, reglas):  # una corrida anterior la marcó (similitud o sección D4): antes no era ruido
                 f["es_ruido"], f["motivo_ruido"] = False, None
         for f in filas:
             f["_texto"] = texto_de_entrada(f["titulo_limpio"], f.get("descripcion"), cfg.usar_descripcion)
@@ -355,7 +387,11 @@ def aplicar_a_base(
         vectores = emb.codificar([f["_texto"] for f in utiles], "titular") if utiles else np.zeros((0, ref.centroides.shape[1]))
         puntajes = {m: puntuar(vectores, ref, m) for m in (METODO_A, METODO_B)}
         decisiones = decidir_todos(puntajes[metodo], ref.temas, modelo.umbrales[metodo])
+        por_seccion = {f["id_noticia"] for f, d in zip(utiles, decisiones, strict=True) if marcar_por_seccion(f, d, reglas)}
         for f, d in zip(utiles, decisiones, strict=True):
+            if f["id_noticia"] in por_seccion:   # D4: sección sospechosa y sin tema -> ruido fuera_de_temas, sin tema
+                f.update(es_ruido=True, motivo_ruido=MOTIVO_FUERA_DE_TEMAS)
+                continue
             f.update(
                 tema_clasificado=d.principal,
                 tema_similitud=d.similitud,
@@ -372,6 +408,7 @@ def aplicar_a_base(
             ]
             for m in (METODO_A, METODO_B)
             for i, f in enumerate(utiles)
+            if f["id_noticia"] not in por_seccion
             for j, t in enumerate(ref.temas)
         ]
 

@@ -109,6 +109,10 @@ fuera_de_temas:
     - '\bcampana electoral\b'
     - '\bcandidat[oa]s? presidencial(es)?\b'                  # no "candidato a contralor" (cargo no partidista)
 
+  # C-10 D4 (decisión del dueño, 2026-10-07): primera sección de la URL de TVN que SOLO sube la sospecha de fuera_de_temas.
+  # Nunca marca por sí sola: src/clasificacion.py marca la nota solo si además no halla tema (sin_tema, umbral_sin_tema).
+  secciones_sospechosas: [deportes, entretenimiento, cultura]
+
   # Autopromoción de TVN (H5): no es noticia de los temas. "Contenido Exclusivo: ..." sí puede estarlo y no se marca.
   autopromocion_tvn:
     - '^\s*(tvn media|gente tvn|gente que inspira)\b(?!.*\b(inundacion\w*|donacion\w*|damnificad\w*|emergencia|ayuda humanitaria|incendio\w*|tragedia|sismo|lluvias?)\b)'

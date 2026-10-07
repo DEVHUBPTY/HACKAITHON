@@ -28,7 +28,7 @@ exactitud de tema en 35/64 (54,7 %). Fuera de alcance por ahora: generación (ca
 ## Tareas
 - [x] **T1** `specs/C-10.md` (Objetivo, Punteros, Restricciones, Listo cuando). Ruta: delegada (writer).
 - [x] **T2** Ranking D3, D6, D7 en `src/puntaje.py` y `config/reglas_v1.3.yaml`, con tests (RED→GREEN) y filas en `docs/parametros.md`. Ruta: delegada (writer).
-- [ ] **T3** Clasificación: matriz de confusión, Economía regional/multilingüe, D4 (URL como sospecha), sin fuga. Ruta: explorador y luego writer.
+- [~] **T3** Clasificación: matriz de confusión, Economía regional/multilingüe, D4 (URL como sospecha), sin fuga. Ruta: delegada (un writer). D4 hecho; la mejora de Economía quedó sin resolver (ver Evidencia).
 - [ ] **T4** Medir (n, IC 95 %): `eval.clasificacion`, `eval.precision_at_5`, `eval.puntaje`, `eval.sensibilidad`; suite completa, `src.config --validar`, `scripts.reproducir --verificar`. Ruta: delegada (verificación).
 - [ ] **T5** PR con revisión independiente (D-78); corregir todo antes de integrar. Solo con pedido del dueño.
 
@@ -50,5 +50,14 @@ exactitud de tema en 35/64 (54,7 %). Fuera de alcance por ahora: generación (ca
   reescritos. RED 17 failed y 38 passed; GREEN 165 passed en los tres archivos, suite completa 2679 passed, 3 skipped, 6 xfailed,
   `src.config --validar` OK. Verificación del padre: 165 passed y `--validar` OK.
 
+- T3 (ruta delegada, un writer; `partial`): D4 implementado (`fuera_de_temas.secciones_sospechosas` en `config/ruido.yaml`,
+  `marcar_por_seccion` en `src/clasificacion.py`); RED 19 failed y 3 passed, GREEN 22 passed; suite completa 2701 passed, 3 skipped,
+  6 xfailed; `--validar` OK. Verificación del padre: 115 passed (clasificación, casos difíciles y ranking) y `--validar` OK; confirmé
+  que `config/temas.yaml`, `docs/guia_temas.md`, `config/ejemplos_excluidos.txt` y `outputs/clasificacion.json` no cambiaron.
+  D4 no mueve ninguna métrica: las 13 noticias de secciones sospechosas ya eran ruido por palabras clave.
+- Economía regional (medido una vez, e5/A, n = 64): descripción y 5 ejemplos nuevos dieron Economía 4/26 → 19/26 pero Eventos
+  naturales 20/20 → 0/20; exactitud 35/64 → 29/64 (54,7 % → 45,3 %), macro-F1 0.430 → 0.362; IC solapados. Revertido. Detalle en
+  `docs/clasificacion.md`.
+
 ## Próximo paso
-T3 (clasificación y D4).
+Decidir con el dueño cómo atacar Economía sin romper Eventos naturales; después T4.

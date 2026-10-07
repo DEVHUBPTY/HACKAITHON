@@ -237,6 +237,19 @@ def _seccion_tvn(fila: Fila, reglas: Reglas) -> str | None:
     return segmentos[0].lower() if segmentos else None
 
 
+def seccion_sospechosa_fuera_de_temas(fila: Fila, reglas: Reglas) -> bool:
+    """C-10 D4: la sección de TVN está en ``fuera_de_temas.secciones_sospechosas``. Solo SUBE la sospecha: no marca nada.
+
+    La marca la pone ``src.clasificacion`` y solo si el clasificador tampoco halla un tema (``sin_tema``).
+    """
+    return (_seccion_tvn(fila, reglas) or "") in reglas.ruido.fuera_de_temas.secciones_sospechosas
+
+
+def tiene_seccion_tvn(fila: Fila, reglas: Reglas) -> bool:
+    """La URL es de TVN y trae una sección (cualquiera)."""
+    return _seccion_tvn(fila, reglas) is not None
+
+
 def _es_seccion_dudosa(fila: Fila, reglas: Reglas) -> bool:
     return (_seccion_tvn(fila, reglas) or "") in reglas.ruido.panama.secciones_dudosas
 

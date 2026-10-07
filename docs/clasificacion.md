@@ -477,6 +477,51 @@ Lectura honesta:
   `servicios_publicos` (el único del snapshot, un pedido de fondos del MOP, está etiquetado `economia` por el asistente provisional (D-101), sin confirmar por una persona): la precisión del subtema
   `obras_publicas` no se puede medir (n = 0 etiquetados). Se medirá con etiquetas humanas de subtema (C-09).
 
+## C-10 · Economía regional y sección de la URL (D4) · 2026-10-07
+
+**Resultado: la corrección de Economía regional se midió una vez y se REVERTIÓ (empeora). D4 se implementó y no cambia ninguna
+métrica del snapshot.** No se tocó ningún umbral ni peso (`umbral_sin_tema` y `margen_secundario` siguen en 0.824 / 0.002; con 5
+`sin_tema` no hay etiquetas que respalden otro valor).
+
+**Cambio probado (revertido).** La descripción de Economía nombraba la regla D-84 (ayuda y financiamiento para América Latina,
+aranceles y acuerdos comerciales, mercados regionales, precios del transporte y la logística, en cualquier idioma, sin nombrar a
+Panamá) y se agregaron 5 ejemplos ilustrativos nuevos (`real: false`; 3 en español y 2 en inglés), escritos desde la regla y sin
+mirar ni parafrasear titulares etiquetados. Se midió **una vez** con `python -m eval.clasificacion` (e5 · A, n = 64 filas
+etiquetadas por una persona):
+
+| Medida (e5 · A, etiquetas humanas) | Antes | Con el cambio | ¿IC solapados? |
+|---|---|---|---|
+| Exactitud del tema principal | 35/64 = 54.7 % [IC 95 %: 42.6–66.3] | 29/64 = 45.3 % [33.7–57.4] | sí |
+| Macro-F1 | 0.430 [bootstrap 0.276–0.542] | 0.362 [0.159–0.469] | sí |
+| Economía: recall | 4/26 = 15.4 % | 19/26 = 73.1 % [53.9–86.3] | no (mejora de Economía) |
+| Economía: precisión | 4/5 = 80.0 % | 19/42 = 45.2 % [31.2–60.1] | sí |
+| Eventos naturales: recall | 20/20 | 0/20 = 0.0 % [0.0–16.1] | no (empeora) |
+| Servicios públicos: recall | 8/9 | 8/9 = 88.9 % | — |
+| Pipeline completo (n = 100): exactitud · macro-F1 | 71/100 · 0.545 | 65/100 = 65.0 % [55.2–73.6] · 0.495 [0.292–0.613] | sí |
+| Casos difíciles e5 · A (n = 15) | 11/15 = 73.3 % | 11/15 = 73.3 % | — |
+
+Lectura: **Economía recupera su recall (4/26 → 19/26) pero el centroide se vuelve el sumidero**: el evento de El Niño (20 filas,
+Eventos naturales para la persona) pasa por completo a Economía y la exactitud y el macro-F1 bajan. Es el mismo reacomodo que ya
+describía la sección «Opciones medidas» (cambia un evento grande por otro). Los IC de exactitud y macro-F1 se solapan, así que
+la diferencia no es evidencia de empeoramiento, pero **tampoco hay evidencia de mejora** y el cambio traslada el error a otro
+tema; por eso se revirtió `config/temas.yaml` y la fila de Economía de `docs/guia_temas.md` (las dos cambian a la vez). Seis
+pruebas que fijan el tema secundario de los casos difíciles (`tests/test_casos_dificiles.py`) también se movieron con el cambio:
+otro indicio de que alteraba el centroide más de lo previsto. Esta medición se hizo sobre el mismo conjunto que sirvió para
+diagnosticar, así que cualquier ganancia habría sido optimista.
+
+**Qué haría falta.** Separar Economía regional de Eventos naturales sin que el centroide absorba todo lo que nombra a América
+Latina: más etiquetas humanas de más de una persona (hoy 29 eventos, y buena parte de las filas de Economía son un solo evento regional en varios idiomas) y, si se
+vuelve a probar, medir también con una traducción para saber si el problema es el idioma o la cobertura de referencias.
+
+**D4 · la sección de la URL (implementado).** `fuera_de_temas.secciones_sospechosas` (`config/ruido.yaml`: `deportes`,
+`entretenimiento`, `cultura`) solo sube la sospecha. La URL ya está en `noticias.url_canonica` en el paso de clasificación, y la
+limpieza ya extraía la sección (`_seccion_tvn`), así que no cambió el contrato de datos. `src.clasificacion.marcar_por_seccion`
+marca `fuera_de_temas` (`es_ruido = true`, sin tema) únicamente si la sección es sospechosa **y** la decisión es `sin_tema`
+(mayor similitud bajo `umbral_sin_tema`); si hay tema, la nota se conserva. No pisa el motivo que ya puso la limpieza y se
+deshace al volver a correr si cambia la lista o el tema. En el snapshot actual **no cambia nada**: de 221 noticias, 13 están en
+secciones sospechosas y las 13 ya eran ruido por palabras clave. Para la evaluación `sin_tema` y `fuera_de_temas` cuentan igual
+(`FUERA_DE_LOS_TEMAS`), así que D4 no mueve la exactitud ni el macro-F1.
+
 ## Pendiente
 
 1. **Más etiquetas y más personas:** las 100 etiquetas actuales son de una sola persona y repiten titulares. Reetiquetar con
