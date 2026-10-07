@@ -224,6 +224,35 @@ def test_pedir_evidencia_exige_al_menos_un_vacio(rev, vacios) -> None:
     assert rev.estado(c) == "en revisión"
 
 
+def test_pedir_evidencia_sin_vacios_acepta_un_motivo_escrito(rev) -> None:
+    c = abrir(rev).id_caso
+    with pytest.raises(MotivoObligatorio):
+        rev.pedir_evidencia(c, EDITORIAL, [], motivo="   ")
+    f = rev.pedir_evidencia(c, EDITORIAL, [], motivo="Falta una fuente oficial que la ficha no detecta")
+    assert (f.estado_nuevo, f.motivo, f.detalle) == ("requiere evidencia", "Falta una fuente oficial que la ficha no detecta", {"vacios": []})
+
+
+def test_la_ui_pide_evidencia_con_un_motivo_cuando_la_ficha_no_tiene_vacios(app, monkeypatch) -> None:
+    monkeypatch.setattr("sys.argv", ["app.py"])
+    at = _abrir_en_ui(app)                                                     # GRP-completo no tiene vacíos
+    assert at.button(key="revision_pedir").disabled
+    at.text_input(key="revision_motivo_evidencia").input("Falta confirmar con el MEF").run()
+    at = at.button(key="revision_pedir").click().run()
+    assert not at.exception and "Estado actual:** requiere evidencia" in "\n".join(str(m.value) for m in at.markdown)
+
+
+def test_un_conflicto_al_abrir_no_deja_ninguna_fila_en_el_registro(tmp_path, base, monkeypatch) -> None:
+    r = Revisiones(tmp_path / "revision.duckdb", base, ahora=_reloj())
+    r.abrir(h.G_COMPLETO, "editorial", EDITORIAL)
+    antes = r.registro.read_text(encoding="utf-8")
+    monkeypatch.setattr(Revisiones, "_insertar", lambda *a, **k: (_ for _ in ()).throw(duckdb.TransactionException("conflicto")))
+    with pytest.raises(rv.ConflictoDeConcurrencia):
+        r.abrir(h.G_CIFRAS, "editorial", EDITORIAL)
+    assert r.registro.read_text(encoding="utf-8") == antes and [c.id_grupo for c in r.casos()] == [h.G_COMPLETO]
+    monkeypatch.undo()
+    assert r.abrir(h.G_CIFRAS, "editorial", EDITORIAL).id_caso == "CASO-002"        # y el número no quedó gastado
+
+
 # ------------------------------------------------------------------ L4 y L5: el procedimiento de Notion
 
 

@@ -549,11 +549,11 @@ class Revisiones:
                 con.execute("INSERT INTO casos VALUES (?,?,?,?)", [caso.id_caso, caso.id_grupo, caso.modalidad, caso.fecha_apertura_utc])
                 version = self._insertar_version(con, caso, _a_dict(paquete), ORIGEN_GENERADA, revisor, None) if paquete is not None else None
                 self._insertar(con, caso, "abrir", revisor, estado=self.cfg.estado_inicial, hacia=hacia, version=version, comentario=comentario, ficha=ficha)
-                self._registrar(caso)
         except ConflictoDeConcurrencia:
             if (existente := self.caso_de_grupo(id_grupo, modalidad)) is not None:  # otra sesión abrió el mismo grupo: es ese caso
                 return existente
             raise
+        self._registrar(caso)                                  # solo después del COMMIT: un conflicto o un fallo nunca deja una fila fantasma
         return caso
 
     # ---- numeración: un CASO- nunca se reutiliza (M1)
@@ -575,7 +575,11 @@ class Revisiones:
         return max(self._numeros_conocidos(con), default=0) + 1
 
     def _registrar(self, caso: Caso) -> None:
-        """Agrega el caso al registro (CSV de solo agregar, junto a la base). Se escribe antes del ``COMMIT``: a lo sumo sobra un hueco."""
+        """Agrega el caso al registro (CSV de solo agregar, junto a la base), **después** de confirmar la transacción.
+
+        Si el proceso muere entre el ``COMMIT`` y esta línea, el caso existe en la base pero no en el registro: la numeración sigue a salvo
+        mientras la base exista, y el próximo número sale del máximo de lo conocido.
+        """
         nuevo = not self.registro.exists()
         self.registro.parent.mkdir(parents=True, exist_ok=True)
         with self.registro.open("a", encoding="utf-8", newline="") as f:
@@ -596,11 +600,12 @@ class Revisiones:
             ficha = None
         return self._accion_simple(id_caso, "aceptar", revisor, comentario=comentario, ficha=ficha)
 
-    def pedir_evidencia(self, id_caso: str, revisor: str, vacios: Sequence[str], comentario: str | None = None) -> Fila:
-        """Pasa a «requiere evidencia» y enlaza los vacíos de la ficha que lo motivan (sus códigos): al menos uno."""
-        if not [v for v in vacios if str(v).strip()]:
-            raise MotivoObligatorio(f"«{self.cfg.acciones['pedir_evidencia'].etiqueta}» exige enlazar al menos un vacío de la ficha")
-        return self._accion_simple(id_caso, "pedir_evidencia", revisor, comentario=comentario, detalle={"vacios": list(vacios)})
+    def pedir_evidencia(self, id_caso: str, revisor: str, vacios: Sequence[str], comentario: str | None = None, motivo: str | None = None) -> Fila:
+        """Pasa a «requiere evidencia». Enlaza los vacíos de la ficha que lo motivan (sus códigos); si la ficha no tiene ninguno, exige un motivo escrito."""
+        enlazados = [v for v in vacios if str(v).strip()]
+        if not enlazados and not (motivo or "").strip():
+            raise MotivoObligatorio(f"«{self.cfg.acciones['pedir_evidencia'].etiqueta}» exige enlazar al menos un vacío de la ficha o, si no tiene ninguno, un motivo escrito")
+        return self._accion_simple(id_caso, "pedir_evidencia", revisor, comentario=comentario, motivo=motivo, detalle={"vacios": enlazados})
 
     def descartar(self, id_caso: str, revisor: str, motivo: str | None, comentario: str | None = None) -> Fila:
         """Descarta el caso; el motivo es obligatorio y de la lista de ``config/revision.yaml``."""

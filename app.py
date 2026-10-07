@@ -427,8 +427,9 @@ def pantalla_revision(ctx: ui.Contexto) -> None:
         st.caption(ctx.cfg.textos.aprobar_aviso)
         vacios = [v.codigo for v in (*ficha.falta_comprobar.principales, *ficha.falta_comprobar.otros)]
         elegidos = st.multiselect("Vacíos que motivan pedir evidencia (al menos uno)", vacios, key="revision_vacios")
-        if st.button(etiqueta("pedir_evidencia"), key="revision_pedir", disabled=sin_revisor or not elegidos or not disponibles["pedir_evidencia"]):
-            actuar("Pasa a «requiere evidencia».", rev.pedir_evidencia, caso.id_caso, revisor, elegidos, comentario)
+        motivo_evidencia = st.text_input("Motivo (obligatorio si la ficha no tiene vacíos que enlazar)", key="revision_motivo_evidencia")
+        if st.button(etiqueta("pedir_evidencia"), key="revision_pedir", disabled=sin_revisor or not (elegidos or motivo_evidencia.strip()) or not disponibles["pedir_evidencia"]):
+            actuar("Pasa a «requiere evidencia».", rev.pedir_evidencia, caso.id_caso, revisor, elegidos, comentario, motivo=motivo_evidencia)
     with a2:
         motivo = st.selectbox("Motivo del descarte (obligatorio)", cfg_rev.motivos_descarte, index=None, placeholder="Elija un motivo", key="revision_motivo_descarte")
         if st.button(etiqueta("descartar"), key="revision_descartar", disabled=sin_revisor or not disponibles["descartar"]):
