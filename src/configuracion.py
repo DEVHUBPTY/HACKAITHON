@@ -2967,6 +2967,99 @@ def cargar_precision(carpeta: Path | None = None) -> ConfigPrecision:
     return cargar_config("precision", ConfigPrecision, carpeta)
 
 
+# ------------------------------------------------------------------ fichas_trazables.yaml (C-01)
+
+ESTADOS_DE_EVIDENCIA = ("suficiente", "parcial", "insuficiente")
+
+
+class SeleccionFichasTrazables(ModeloConfig):
+    cupos: dict[str, int]
+    minimo_total: int = Field(ge=1)
+    minimo_insuficiente: int = Field(ge=0)
+    completar_con_ranking: bool
+
+    @model_validator(mode="after")
+    def _cupos_coherentes(self) -> SeleccionFichasTrazables:
+        if set(self.cupos) != set(ESTADOS_DE_EVIDENCIA) or any(v < 0 for v in self.cupos.values()):
+            raise ValueError(f"cupos: un cupo (>= 0) por estado de evidencia {ESTADOS_DE_EVIDENCIA}")
+        if sum(self.cupos.values()) < self.minimo_total:
+            raise ValueError("cupos: la suma no alcanza minimo_total")
+        if self.cupos["insuficiente"] < self.minimo_insuficiente:
+            raise ValueError("cupos.insuficiente: menor que minimo_insuficiente (el reto pide al menos una ficha con evidencia insuficiente)")
+        return self
+
+
+class RegistroTrazable(ModeloConfig):
+    """Cómo se resuelve en los datos un ID citado: tabla de DuckDB o CSV de ``data/processed``."""
+
+    prefijo: str = Field(min_length=1)
+    origen: Literal["tabla", "csv"]
+    fuente: str = Field(min_length=1)
+    columna_id: str | None = None
+    plantilla_id: str | None = None
+    columna_url: str | None = None
+    url_obligatoria: bool
+
+    @model_validator(mode="after")
+    def _id_y_url(self) -> RegistroTrazable:
+        if (self.columna_id is None) == (self.plantilla_id is None):
+            raise ValueError(f"{self.prefijo}: exactamente una de columna_id y plantilla_id")
+        if self.url_obligatoria and not self.columna_url:
+            raise ValueError(f"{self.prefijo}: url_obligatoria exige columna_url")
+        return self
+
+
+class RevisionFichasTrazables(ModeloConfig):
+    revisor: str = Field(min_length=1)
+    accion_por_estado: dict[str, Literal["aceptar", "pedir_evidencia"]]
+    comentario: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _todos_los_estados(self) -> RevisionFichasTrazables:
+        if set(self.accion_por_estado) != set(ESTADOS_DE_EVIDENCIA):
+            raise ValueError(f"accion_por_estado: una acción por estado {ESTADOS_DE_EVIDENCIA}")
+        return self
+
+
+class ArchivosFichasTrazables(ModeloConfig):
+    carpeta: str = Field(min_length=1)
+    informe: str = Field(min_length=1)
+    indice: str = Field(min_length=1)
+
+
+class TextosFichasTrazables(ModeloConfig):
+    aviso_provisional: str = Field(min_length=1)
+    aviso_corrida: str = Field(min_length=1)
+    sin_borrador: str = Field(min_length=1)
+
+
+class ConfigFichasTrazables(ModeloConfig):
+    """C-01: regla de selección de las fichas trazables, resolución de citas contra los datos y revisión provisional."""
+
+    version: str
+    modalidad: str = Field(min_length=1)
+    seleccion: SeleccionFichasTrazables
+    registros: list[RegistroTrazable] = Field(min_length=1)
+    descripcion_minimo_caracteres: int = Field(ge=1)
+    claves_de_autor: list[str] = Field(min_length=1)
+    z_intervalo_confianza: float = Field(gt=0)
+    revision: RevisionFichasTrazables
+    archivos: ArchivosFichasTrazables
+    textos: TextosFichasTrazables
+
+    @model_validator(mode="after")
+    def _prefijos_unicos(self) -> ConfigFichasTrazables:
+        prefijos = [r.prefijo for r in self.registros]
+        if len(set(prefijos)) != len(prefijos):
+            raise ValueError("registros: prefijo repetido")
+        return self
+
+
+def cargar_fichas_trazables(carpeta: Path | None = None) -> ConfigFichasTrazables:
+    """Atajo para ``config/fichas_trazables.yaml``."""
+    return cargar_config("fichas_trazables", ConfigFichasTrazables, carpeta)
+
+
 # ------------------------------------------------------------------ origen_juicio.yaml (D-101)
 
 
@@ -3053,6 +3146,7 @@ CARGADORES = {
     "cache": cargar_cache,
     "revision": cargar_revision,
     "precision": cargar_precision,
+    "fichas_trazables": cargar_fichas_trazables,
     "notion": cargar_notion,
     "origen_juicio": cargar_origen_juicio,
     "pruebas": cargar_pruebas,

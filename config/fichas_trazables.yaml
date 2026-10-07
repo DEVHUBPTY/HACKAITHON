@@ -1,0 +1,54 @@
+# C-01 · Cinco fichas trazables. Regla de selección determinista, resolución de citas contra los datos y textos del informe.
+# Cada número y cada lista están en docs/parametros.md. La regla es de configuración (D-101): nadie elige a mano las fichas.
+version: "1.0"
+
+modalidad: editorial              # modalidad principal (CLAUDE.md); las fichas salen de la corrida de E1-10 que guarda senales.duckdb
+
+seleccion:
+  # Se recorre el ranking oficial (posición 1 = mayor P, desempate de E1-10) y, por cada estado de evidencia, se toman los primeros N.
+  # Sin cupos puros por P el top 5 serían cinco fichas del mismo estado (hoy casi todos son insuficientes con 1 procedencia): no
+  # demostrarían la trazabilidad de una ficha con evidencia suficiente ni de una parcial. Así cada estado queda representado.
+  cupos:
+    suficiente: 2
+    parcial: 2
+    insuficiente: 1               # PDF sección 5: al menos una ficha con evidencia insuficiente
+  minimo_total: 5                 # PDF sección 5: al menos 5 fichas trazables
+  minimo_insuficiente: 1
+  # Si un estado no alcanza su cupo, el sobrante se completa con los siguientes del ranking (cualquier estado) hasta `minimo_total`.
+  completar_con_ranking: true
+
+# Cómo se resuelve cada ID citado contra los datos (no contra la ficha). `origen: tabla` = tabla de data/senales.duckdb;
+# `origen: csv` = archivo de data/processed/ (ruta relativa a la raíz del repositorio).
+registros:
+  - {prefijo: "NOT-", origen: tabla, fuente: noticias,    columna_id: id_noticia,   columna_url: url,        url_obligatoria: true}
+  - {prefijo: "IND-", origen: tabla, fuente: indicadores, columna_id: id_indicador, columna_url: fuente_url, url_obligatoria: true}
+  - {prefijo: "SIS-", origen: tabla, fuente: sismos,      columna_id: id,           columna_url: url,        url_obligatoria: true}
+  - {prefijo: "GRP-", origen: tabla, fuente: grupos,      columna_id: id_grupo,     columna_url: null,       url_obligatoria: false}   # un conteo no tiene URL: sus titulares sí (comprobación aparte)
+  - {prefijo: "SBP-", origen: csv,   fuente: data/processed/sbp_series.csv, columna_id: null, plantilla_id: "SBP-{id_serie}-{periodo}", columna_url: url, url_obligatoria: true}
+
+# D-31: la descripción del RSS es de uso interno. Una descripción más corta que esto no se busca (sería una coincidencia casual).
+descripcion_minimo_caracteres: 20
+# D-32: nunca el nombre de un autor. Ninguna clave de la ficha, del registro ni del Markdown puede llamarse así.
+claves_de_autor: [autor, autores, author, authors, byline, creator, dc_creator, periodista, redactor, firma_nombre]
+
+z_intervalo_confianza: 1.96       # IC de Wilson al 95 % para toda proporción reportada (igual que carga.yaml)
+
+# Qué hace la revisión provisional del asistente (D-101, D-112) según el estado de evidencia de la ficha. Visible y rotulada;
+# una persona la rehace en C-09. `pedir_evidencia` enlaza los vacíos de la ficha; ninguna acción aprueba nada que no sea borrador.
+revision:
+  revisor: "Asistente (provisional, D-101)"
+  accion_por_estado:
+    suficiente: aceptar
+    parcial: aceptar
+    insuficiente: pedir_evidencia
+  comentario: "Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09."
+
+archivos:
+  carpeta: outputs/fichas_trazables
+  informe: outputs/fichas_trazables/trazabilidad.json
+  indice: outputs/fichas_trazables/indice.md
+
+textos:
+  aviso_provisional: "REVISIÓN PROVISIONAL DEL ASISTENTE, NO HUMANA (D-101): la rehace una persona en C-09. Todo es BORRADOR."
+  aviso_corrida: "Las fichas salen de la corrida guardada en senales.duckdb (reglas {version_reglas}, corte {fecha_referencia}). Si el ranking cambia (C-10), se vuelve a correr este comando: es otra corrida, no se rehace el trabajo; los CASO- anteriores se conservan (registro de solo agregar)."
+  sin_borrador: "sin borrador en la caché de generación (no se llamó a ningún proveedor)"
