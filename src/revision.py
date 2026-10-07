@@ -34,6 +34,8 @@ import json
 import logging
 import re
 import sys
+import unicodedata
+from collections import Counter
 from collections.abc import Callable, Collection, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, field
@@ -308,6 +310,24 @@ def _rechazos_del_borrador(entrada: Any, contenido: Mapping[str, Any], secciones
     return salida
 
 
+def _sin_tildes(texto: str) -> str:
+    return "".join(c for c in unicodedata.normalize("NFD", texto.lower()) if unicodedata.category(c) != "Mn")
+
+
+def _es_de_texto_nuevo(clave: str, r: Rechazo, editados: Mapping[str, str]) -> bool:
+    """``True`` si el rechazo cae en una oración cuyo texto la persona acaba de escribir (X74).
+
+    Una afirmación se identifica por su clave. En una sección, el rechazo se atribuye a la oración que contiene su fragmento; sin fragmento
+    (límites de palabras) no hay oración que señalar y se compara por conteo contra el borrador anterior.
+    """
+    if clave.startswith("afirmaciones."):
+        return clave in editados
+    if not r.fragmento:
+        return False
+    fragmento = _sin_tildes(r.fragmento)                                 # el validador devuelve el fragmento normalizado (sin tildes ni mayúsculas)
+    return any(k.partition(".")[0] == clave and fragmento in _sin_tildes(t) for k, t in editados.items())
+
+
 def revalidar_correccion(
     entrada: Any, antes: Mapping[str, Any], despues: Mapping[str, Any], claves: Collection[str], cfg: ConfigRevision | None = None
 ) -> list[Advertencia]:
@@ -319,6 +339,8 @@ def revalidar_correccion(
     la corrección. Se revisan las afirmaciones, las secciones editadas y las que citan una afirmación editada (su texto ya no
     necesariamente cabe en lo que ahora dice). Lista vacía = nada que confirmar.
     """
+    from src.validador import BLOQUES_RESUMEN, LIMITE_PALABRAS
+
     cfg = cfg or cargar_revision()
     claves = set(claves)
     editadas = {k.split(".", 1)[1] for k in claves if k.startswith("afirmaciones.")}
@@ -328,16 +350,24 @@ def revalidar_correccion(
         valor = [valor] if isinstance(valor, Mapping) else valor or []
         if editadas & {i for o in valor if isinstance(o, Mapping) for i in o.get("afirmaciones", [])}:
             secciones.add(nombre)
-    previos = {(c, r.regla, r.motivo) for c, r in _rechazos_del_borrador(entrada, antes, secciones)}
+    previos = Counter((c, r.regla, r.motivo, r.fragmento) for c, r in _rechazos_del_borrador(entrada, antes, secciones))
+    textos_antes = {k: e.texto for k, e in elementos_editables(antes).items()}
+    editados = {k: e.texto for k, e in elementos_editables(despues).items() if k in claves and e.texto != textos_antes.get(k)}   # el texto de estas oraciones es nuevo
     primera_clave = {s: next((k for k in sorted(claves) if k == s or k.startswith(f"{s}.")), s) for s in secciones}
+    primera_resumen = next((k for k in sorted(claves) if k.partition(".")[0] in BLOQUES_RESUMEN), None)
     avisos: list[Advertencia] = []
     for texto_vacio in [k for k, e in elementos_editables(despues).items() if k in claves and not e.texto.strip()]:
         avisos.append(Advertencia(texto_vacio, cfg.correccion.advertencia_vacio))
     for clave, r in _rechazos_del_borrador(entrada, despues, secciones):
-        if (clave, r.regla, r.motivo) in previos:
-            continue
-        aviso = Advertencia(primera_clave.get(clave, clave), f"[{r.regla}] {r.mensaje}")
-        if aviso not in avisos:
+        if not _es_de_texto_nuevo(clave, r, editados):                  # X74: un rechazo en una oración editada es siempre nuevo; en las demás, solo si sobra uno
+            llave = (clave, r.regla, r.motivo, r.fragmento)
+            if previos[llave] > 0:
+                previos[llave] -= 1
+                continue
+        # El límite del resumen (conjunto) es uno solo: se avisa una vez y en la primera oración editada de los bloques (X75).
+        conjunto = r.regla == LIMITE_PALABRAS and clave in BLOQUES_RESUMEN and r.seccion == clave and primera_resumen and not r.fragmento
+        aviso = Advertencia(primera_clave.get(clave, clave) if not conjunto else primera_resumen, f"[{r.regla}] {r.mensaje}")
+        if aviso not in avisos and not (conjunto and any(a.mensaje == aviso.mensaje for a in avisos)):
             avisos.append(aviso)
     return avisos
 
