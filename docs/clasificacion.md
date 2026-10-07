@@ -513,6 +513,17 @@ diagnosticar, así que cualquier ganancia habría sido optimista.
 Latina: más etiquetas humanas de más de una persona (hoy 29 eventos, y buena parte de las filas de Economía son un solo evento regional en varios idiomas) y, si se
 vuelve a probar, medir también con una traducción para saber si el problema es el idioma o la cobertura de referencias.
 
+**B' · solo ejemplos regionales de Economía (probado y revertido, 2026-10-07).** Para saber cuál de los dos cambios rompió
+Eventos naturales, se agregaron solo 3 ejemplos ilustrativos (`real: false`; 2 en español y 1 en inglés, escritos desde la regla
+D-84, sin mirar titulares etiquetados) y se dejó intacta la descripción. Regla fijada antes de medir: conservar solo si Eventos
+naturales seguía en 20/20, la exactitud era >= 35/64 y ningún tema con recall > 0 caía a 0. Una sola medición (e5 · A, n = 64):
+exactitud 30/64 = 46.9 % [35.2–58.9] (antes 35/64 = 54.7 % [42.6–66.3]), macro-F1 0.373 (antes 0.430), Economía recall 20/26 =
+76.9 % [58.0–89.0] (antes 4/26 = 15.4 %), Eventos naturales 0/20 = 0.0 % [0.0–16.1] (antes 20/20). También cayeron a 0 Turismo
+(0/1) y sin_tema (0/5). Incumple los criterios (a), (b) y (c): **se revirtió** `config/temas.yaml`. Conclusión: los ejemplos
+solos bastan para mover el centroide de Economía hasta absorber el evento de El Niño; la descripción no era la causa única. Los
+IC de exactitud se solapan; los de Economía y Eventos naturales no. Con el cambio también se movieron cinco pruebas de tema
+secundario de `tests/test_casos_dificiles.py`.
+
 **D4 · la sección de la URL (implementado).** `fuera_de_temas.secciones_sospechosas` (`config/ruido.yaml`: `deportes`,
 `entretenimiento`, `cultura`) solo sube la sospecha. La URL ya está en `noticias.url_canonica` en el paso de clasificación, y la
 limpieza ya extraía la sección (`_seccion_tvn`), así que no cambió el contrato de datos. `src.clasificacion.marcar_por_seccion`

@@ -28,7 +28,7 @@ exactitud de tema en 35/64 (54,7 %). Fuera de alcance por ahora: generación (ca
 ## Tareas
 - [x] **T1** `specs/C-10.md` (Objetivo, Punteros, Restricciones, Listo cuando). Ruta: delegada (writer).
 - [x] **T2** Ranking D3, D6, D7 en `src/puntaje.py` y `config/reglas_v1.3.yaml`, con tests (RED→GREEN) y filas en `docs/parametros.md`. Ruta: delegada (writer).
-- [~] **T3** Clasificación: matriz de confusión, Economía regional/multilingüe, D4 (URL como sospecha), sin fuga. Ruta: delegada (un writer). D4 hecho; la mejora de Economía quedó sin resolver (ver Evidencia).
+- [x] **T3** Clasificación: matriz de confusión, Economía regional/multilingüe, D4 (URL como sospecha), sin fuga. Ruta: delegada (writers). D4 hecho y corregido tras revisión; la mejora de Economía se probó dos veces y se revirtió (limitación documentada, ver Evidencia).
 - [ ] **T4** Medir (n, IC 95 %): `eval.clasificacion`, `eval.precision_at_5`, `eval.puntaje`, `eval.sensibilidad`; suite completa, `src.config --validar`, `scripts.reproducir --verificar`. Ruta: delegada (verificación).
 - [ ] **T5** PR con revisión independiente (D-78); corregir todo antes de integrar. Solo con pedido del dueño.
 
@@ -68,5 +68,14 @@ exactitud de tema en 35/64 (54,7 %). Fuera de alcance por ahora: generación (ca
   medición; se revierte si Eventos naturales baja de 20/20 o la exactitud empeora). El método B original no mejora el producto
   porque el activo es A (B: 15/64).
 
+- Revisión nativa del rango commiteado hasta `943e409` (13 archivos, 737 líneas): aprobada y reconocida; dos sugerencias no
+  bloqueantes sobre D4 (test de duplicados sin caso real; la marca previa se infiere de las reglas actuales).
+- B' (ruta delegada, un writer): 3 ejemplos regionales de Economía, sin tocar la descripción, medido una vez (e5/A, n = 64).
+  Economía 4/26 → 20/26 pero Eventos naturales 20/20 → 0/20; exactitud 35/64 → 30/64 (54,7 % → 46,9 %); macro-F1 0.430 → 0.373;
+  Turismo y sin_tema también caen a 0. La regla fijada de antemano no se cumplió en (a), (b) y (c): REVERTIDO (`config/temas.yaml`
+  y `outputs/clasificacion.json` sin cambios; 5 pruebas de casos difíciles fallaban con el cambio). Conclusión: los ejemplos solos
+  mueven el centroide de Economía hasta absorber El Niño; la descripción no era la causa única. Nota en `docs/clasificacion.md`.
+- T3 cerrada como limitación documentada: dos intentos medidos y revertidos; la exactitud queda en 35/64 = 54,7 %.
+
 ## Próximo paso
-B' (en espera hasta cerrar este commit); después T4. Antes: decidir con el dueño cómo atacar Economía sin romper Eventos naturales; después T4.
+T4 (medición final y reproducibilidad). Antes: decidir con el dueño cómo atacar Economía sin romper Eventos naturales; después T4.
