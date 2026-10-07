@@ -577,9 +577,9 @@ def test_construir_ficha_con_un_grupo_sin_puntaje_pide_correr_src_puntaje(tmp_pa
 # ------------------------------------------------------------------ configuración
 
 
-def test_la_modalidad_banca_es_parcial_y_usa_el_mismo_modelo_que_la_editorial() -> None:
+def test_la_modalidad_banca_esta_completa_y_usa_el_mismo_modelo_que_la_editorial() -> None:
     e, b = cargar_modalidad("editorial"), cargar_modalidad("banca")
-    assert type(e) is type(b) and b.parcial is True and e.parcial is False and b.medio_referencia is None
+    assert type(e) is type(b) and b.parcial is False and e.parcial is False and b.medio_referencia is None
     celdas = [getattr(getattr(b.tabla_acciones, r), s) for r in ("bajo", "medio", "alto") for s in ("insuficiente", "parcial", "suficiente")]
     assert len(celdas) == 9 and not any(FORMAS_DE_PUBLICAR.search(f"{c.accion} {c.motivo}") for c in celdas)
     texto = " ".join(f"{c.accion} {c.motivo}" for c in celdas).lower()

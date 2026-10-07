@@ -21,6 +21,7 @@ os.environ.setdefault("HF_HUB_OFFLINE", "1")
 os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 
 import logging  # noqa: E402
+from collections.abc import Sequence  # noqa: E402
 from typing import Any  # noqa: E402
 
 import pandas as pd  # noqa: E402
@@ -187,6 +188,26 @@ def pantalla_calidad(ctx: ui.Contexto) -> None:
 # ------------------------------------------------------------------ 2 · Bandeja
 
 
+def tabla_de_bandeja(ctx: ui.Contexto, filas: Sequence[ui.FilaBandeja]) -> None:
+    """Una tabla de la bandeja (la bandeja entera, o el bloque de un sector); con ``Horizonte`` si la modalidad lo calcula."""
+    tabla = pd.DataFrame(
+        [
+            {
+                "#": f.posicion, "Tema": f.tema, "Titular representativo": f.titular, "P": round(f.puntaje, ctx.cfg.bandeja.decimales_puntaje), "Rango": f.rango,
+                **{k: f.componentes[k] for k in ui.COMPONENTES}, "Evidencia": f.estado_evidencia, "Acción": f.accion,
+                **({"Horizonte": f.horizonte} if f.horizonte else {}),
+                "Origen": ctx.cfg.textos.sintetico if f.sintetico else "",
+            }
+            for f in filas
+        ]
+    )
+    st.dataframe(
+        tabla, hide_index=True, width="stretch", height=(len(tabla) + 1) * ctx.cfg.bandeja.alto_filas_px,
+        column_config={k: st.column_config.ProgressColumn(k, help=f"Componente {k} (0 a 1)", min_value=0.0, max_value=1.0, format=f"%.{ctx.cfg.bandeja.decimales_puntaje + 1}f") for k in ui.COMPONENTES}
+        | {"P": st.column_config.NumberColumn("P", format=f"%.{ctx.cfg.bandeja.decimales_puntaje}f"), "Titular representativo": st.column_config.TextColumn(width="large")},
+    )
+
+
 def pantalla_bandeja(ctx: ui.Contexto) -> None:
     st.header("Bandeja de temas priorizados")
     enc = ui.encabezado_bandeja(ctx.con, MANIFEST, ctx.cfg_ver)
@@ -201,21 +222,14 @@ def pantalla_bandeja(ctx: ui.Contexto) -> None:
     total = len(ctx.filas)
     todas = st.checkbox(f"Mostrar las {total} filas", value=False, key="bandeja_todas")
     visibles = ctx.filas if todas else ctx.filas[: ctx.cfg.bandeja.filas_iniciales]
-    tabla = pd.DataFrame(
-        [
-            {
-                "#": f.posicion, "Tema": f.tema, "Titular representativo": f.titular, "P": round(f.puntaje, ctx.cfg.bandeja.decimales_puntaje), "Rango": f.rango,
-                **{k: f.componentes[k] for k in ui.COMPONENTES}, "Evidencia": f.estado_evidencia, "Acción": f.accion,
-                "Origen": ctx.cfg.textos.sintetico if f.sintetico else "",
-            }
-            for f in visibles
-        ]
-    )
-    st.dataframe(
-        tabla, hide_index=True, width="stretch", height=(len(tabla) + 1) * ctx.cfg.bandeja.alto_filas_px,
-        column_config={k: st.column_config.ProgressColumn(k, help=f"Componente {k} (0 a 1)", min_value=0.0, max_value=1.0, format=f"%.{ctx.cfg.bandeja.decimales_puntaje + 1}f") for k in ui.COMPONENTES}
-        | {"P": st.column_config.NumberColumn("P", format=f"%.{ctx.cfg.bandeja.decimales_puntaje}f"), "Titular representativo": st.column_config.TextColumn(width="large")},
-    )
+    modalidad = cargar_modalidad(ctx.modalidad)
+    bloques = ui.agrupar_por_sector(visibles, modalidad)       # E2-01: solo si la modalidad declara sectores (YAML); si no, bandeja plana
+    if bloques is None:
+        tabla_de_bandeja(ctx, visibles)
+    else:
+        for bloque in bloques:
+            st.subheader(bloque.etiqueta)
+            tabla_de_bandeja(ctx, bloque.filas)
     st.caption(f"Se muestran {len(visibles)} de {total} grupos.")
     ids = [f.id_grupo for f in ctx.filas]
     por_id = {f.id_grupo: f for f in ctx.filas}

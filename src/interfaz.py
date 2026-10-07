@@ -34,6 +34,7 @@ from src.carga import intervalo_wilson
 from src.configuracion import (
     RAIZ,
     ConfigInterfaz,
+    ConfigModalidad,
     ConfigPrioridad,
     ConfigRestricciones,
     ConfigRevision,
@@ -41,6 +42,7 @@ from src.configuracion import (
     ReglasV13,
     cargar_carga,
     cargar_interfaz,
+    cargar_modalidad,
     cargar_prioridad,
     cargar_reglas,
     cargar_restricciones,
@@ -51,6 +53,7 @@ from src.configuracion import (
 from src.esquemas import Cita, Ficha
 from src.ficha import Linea, Seccion, Vista
 from src.puntaje import COMPONENTES
+from src.sectores import horizonte_de_grupo, sector_de_tema
 
 logger = logging.getLogger(__name__)
 PARAMETRO_DEMO = "--demo"
@@ -133,6 +136,8 @@ class FilaBandeja:
     estado_evidencia: str
     accion: str
     sintetico: bool = False
+    sector: str | None = None       # E2-01: sector del tema según la modalidad (``None``: la modalidad no puntúa por sector o el tema no tiene sector)
+    horizonte: str | None = None    # E2-01: inmediato · corto plazo · estructural (``None``: la modalidad no tiene escala)
 
 
 def leer_bandeja(con: Any, modalidad: str, nombres_de_tema: Mapping[str, str] | None = None) -> list[FilaBandeja]:
@@ -141,28 +146,75 @@ def leer_bandeja(con: Any, modalidad: str, nombres_de_tema: Mapping[str, str] | 
     La acción y el estado salen de ``evidencia`` (ya aplican la tabla de la modalidad); la app no recalcula nada.
     """
     nombres = nombres_de_tema if nombres_de_tema is not None else {k: t.nombre for k, t in cargar_temas().temas.items()}
+    cfg_modalidad = cargar_modalidad(modalidad)
     cur = con.execute(
         "SELECT p.id_grupo, p.posicion, p.puntaje, p.rango, p.relevancia, p.impacto, p.urgencia, p.novedad, p.evidencia AS e_valor, "
-        "g.titular_central, g.tema_clasificado, e.estado, e.accion, "
+        "p.fecha_referencia, g.titular_central, g.tema_clasificado, e.estado, e.accion, "
         "EXISTS (SELECT 1 FROM noticias n WHERE n.id_grupo = p.id_grupo AND n.origen = ?) AS sintetico "
         "FROM puntajes p JOIN grupos g USING (id_grupo) JOIN evidencia e USING (id_grupo) "
         "WHERE e.modalidad = ? ORDER BY p.posicion",
         [ORIGEN_SINTETICO, modalidad],
     )
     nombres_col = [d[0] for d in cur.description]
+    registros = [dict(zip(nombres_col, valores, strict=True)) for valores in cur.fetchall()]
+    miembros = _fechas_de_titulares(con) if cfg_modalidad.horizonte is not None and registros else {}
+    reglas = cargar_reglas()
     filas = []
-    for valores in cur.fetchall():
-        f = dict(zip(nombres_col, valores, strict=True))
+    for f in registros:
         tema = f["tema_clasificado"]
+        referencia = datetime.fromisoformat(str(f["fecha_referencia"]).replace("Z", "+00:00"))
         filas.append(
             FilaBandeja(
                 posicion=int(f["posicion"]), id_grupo=f["id_grupo"], tema=nombres.get(tema, tema) if tema else SIN_TEMA,
                 titular=f["titular_central"], puntaje=float(f["puntaje"]), rango=f["rango"],
                 componentes={"R": f["relevancia"], "I": f["impacto"], "U": f["urgencia"], "N": f["novedad"], "E": f["e_valor"]},
                 estado_evidencia=f["estado"], accion=f["accion"], sintetico=bool(f["sintetico"]),
+                sector=sector_de_tema(tema, cfg_modalidad),
+                horizonte=horizonte_de_grupo(miembros.get(f["id_grupo"], []), referencia, cfg_modalidad, reglas),
             )
         )
     return filas
+
+
+def _fechas_de_titulares(con: Any) -> dict[str, list[dict[str, Any]]]:
+    """Fechas de publicación y detección de los titulares de cada grupo (para el horizonte)."""
+    cur = con.execute("SELECT id_grupo, fecha_publicacion, fecha_deteccion FROM noticias WHERE id_grupo IS NOT NULL")
+    por_grupo: dict[str, list[dict[str, Any]]] = {}
+    for id_grupo, publicacion, deteccion in cur.fetchall():
+        por_grupo.setdefault(str(id_grupo), []).append({"fecha_publicacion": publicacion, "fecha_deteccion": deteccion})
+    return por_grupo
+
+
+@dataclass(frozen=True)
+class BloqueSector:
+    """Un bloque de la bandeja bancaria: las filas de un sector (``sector`` ``None``: grupos sin sector) en el orden de E1-10."""
+
+    sector: str | None
+    etiqueta: str
+    filas: tuple[FilaBandeja, ...]
+
+
+def agrupar_por_sector(filas: Sequence[FilaBandeja], modalidad: ConfigModalidad, cfg: ConfigPrioridad | None = None) -> list[BloqueSector] | None:
+    """Agrupa la bandeja por sector (E2-01); ``None`` si la modalidad no puntúa por sector (bandeja plana).
+
+    Las filas conservan su orden dentro del bloque (el de E1-10). Los sectores se ordenan por el mayor P de sus grupos
+    (comparado a ``decimales_p``) y, en un empate, por el orden de ``sectores_validos``; los grupos sin sector van al final.
+    """
+    if modalidad.bandeja is None:
+        return None
+    d = (cfg or cargar_prioridad()).comparacion.decimales_p
+    declarados = {s: i for i, s in enumerate(cargar_temas().sectores_validos)}
+    por_sector: dict[str | None, list[FilaBandeja]] = {}
+    for f in filas:
+        por_sector.setdefault(f.sector, []).append(f)
+    con_sector = sorted(
+        (s for s in por_sector if s is not None),
+        key=lambda s: (-max(round(f.puntaje, d) for f in por_sector[s]), declarados.get(s, len(declarados)), s),
+    )
+    bloques = [BloqueSector(s, s.capitalize(), tuple(por_sector[s])) for s in con_sector]
+    if None in por_sector:
+        bloques.append(BloqueSector(None, modalidad.bandeja.sin_sector, tuple(por_sector[None])))
+    return bloques
 
 
 def ordenar_bandeja(filas: Sequence[FilaBandeja], reglas: ReglasV13 | None = None, cfg: ConfigPrioridad | None = None) -> list[FilaBandeja]:

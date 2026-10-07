@@ -930,6 +930,25 @@ class TablaAcciones(ModeloConfig):
     alto: FilaAcciones
 
 
+class HorizonteTemporal(ModeloConfig):
+    """Escala de horizonte (D-11): *inmediato* hasta N días, *corto plazo* hasta M días y *estructural* más allá o sin fechas de noticia."""
+
+    inmediato_hasta_dias: float = Field(gt=0)
+    corto_plazo_hasta_dias: float = Field(gt=0)
+
+    @model_validator(mode="after")
+    def _crece(self) -> HorizonteTemporal:
+        if self.inmediato_hasta_dias >= self.corto_plazo_hasta_dias:
+            raise ValueError("horizonte: inmediato_hasta_dias debe ser menor que corto_plazo_hasta_dias")
+        return self
+
+
+class BandejaPorSector(ModeloConfig):
+    """Presentación de la bandeja agrupada por sector (E2-01)."""
+
+    sin_sector: str  # etiqueta del bloque de los grupos cuyo tema no tiene sector
+
+
 class ConfigModalidad(ModeloConfig):
     """Modelo común de ``modalidad_editorial.yaml`` y ``modalidad_banca.yaml`` (D-01)."""
 
@@ -945,6 +964,8 @@ class ConfigModalidad(ModeloConfig):
     # Banca (D-11): tema -> sector; el alcance de I se mide por sector en lugar de subtema (diseño, reglas v1.3).
     sectores_por_tema: dict[str, str] = Field(default_factory=dict)
     alcance_por_sector: dict[str, float] = Field(default_factory=dict)
+    horizonte: HorizonteTemporal | None = None
+    bandeja: BandejaPorSector | None = None
 
 
 def cargar_modalidad(modalidad: str, carpeta: Path | None = None) -> ConfigModalidad:
@@ -958,11 +979,19 @@ def cargar_modalidad(modalidad: str, carpeta: Path | None = None) -> ConfigModal
 
 def _validar_sectores(cfg: ConfigModalidad, carpeta: Path | None) -> None:
     """Los temas y sectores de la banca deben existir en temas.yaml (sectores de D-11)."""
-    if not cfg.sectores_por_tema and not cfg.alcance_por_sector:
+    bloques = {
+        "sectores_por_tema": bool(cfg.sectores_por_tema), "alcance_por_sector": bool(cfg.alcance_por_sector),
+        "horizonte": cfg.horizonte is not None, "bandeja": cfg.bandeja is not None,
+    }
+    if not any(bloques.values()):
         return
+    if not all(bloques.values()):
+        faltan = sorted(b for b, hay in bloques.items() if not hay)
+        raise ErrorDeConfiguracion(f"modalidad_{cfg.modalidad}.yaml: los bloques por sector van todos o ninguno; faltan {faltan}")
     ruta = carpeta if carpeta is not None and (carpeta / "temas.yaml").exists() else CARPETA_CONFIG
     temas = cargar_temas(ruta)
     problemas = [f"tema desconocido en sectores_por_tema: {t}" for t in cfg.sectores_por_tema if t not in temas.temas]
+    problemas += [f"tema sin sector en sectores_por_tema: {t}" for t in temas.temas if t not in cfg.sectores_por_tema]
     problemas += [f"sector fuera de D-11 en sectores_por_tema: {s}" for s in cfg.sectores_por_tema.values() if s not in temas.sectores_validos]
     problemas += [f"sector desconocido en alcance_por_sector: {s}" for s in cfg.alcance_por_sector if s not in temas.sectores_validos]
     problemas += [f"alcance_por_sector sin valor en [0, 1] para {s}" for s, v in cfg.alcance_por_sector.items() if not 0 <= v <= 1]

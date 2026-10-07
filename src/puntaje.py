@@ -38,10 +38,11 @@ from typing import Any
 import numpy as np
 
 from src.agrupacion import fecha_de, fecha_iso_de
-from src.configuracion import ConfigPrioridad, ReglasV13
+from src.configuracion import ConfigModalidad, ConfigPrioridad, ReglasV13
 from src.evidencia import Vacio
 from src.limpieza import plano
 from src.procedencias import fraccion_de_procedencias
+from src.sectores import sector_de_tema
 
 COMPONENTES = ("R", "I", "U", "N", "E")
 NIVELES_GEOGRAFICOS = ("nacional", "provincial", "local")   # de más a menos amplio; sin términos = desconocido
@@ -83,6 +84,7 @@ class EntradaGrupo:
     discrepancias: tuple[str, ...] = ()          # IDs de datos oficiales que la cifra de un titular contradice
     periodos_distintos: tuple[str, ...] = ()     # IDs de datos oficiales de otro período que la cifra de un titular
     eventos_sin_revisar: tuple[str, ...] = ()    # IDs de eventos oficiales con estado automático
+    tema: str | None = None                      # ``tema_clasificado`` del grupo: lo usa el alcance por sector de la modalidad (E2-01)
 
 
 @dataclass(frozen=True)
@@ -219,21 +221,36 @@ def alcance_geografico(miembros: Sequence[Mapping[str, Any]], reglas: ReglasV13,
     return Alcance(NIVEL_DESCONOCIDO, reglas.impacto.alcance_geografico.desconocido)
 
 
-def impacto(entrada: EntradaGrupo, reglas: ReglasV13, cfg: ConfigPrioridad) -> tuple[Componente, list[Vacio]]:
-    """I del grupo. Ni el dato oficial ni las procedencias entran (D-15, D-35)."""
+def impacto(
+    entrada: EntradaGrupo, reglas: ReglasV13, cfg: ConfigPrioridad, modalidad: ConfigModalidad | None = None
+) -> tuple[Componente, list[Vacio]]:
+    """I del grupo. Ni el dato oficial ni las procedencias entran (D-15, D-35).
+
+    Si la modalidad declara ``alcance_por_sector`` (banca, E2-01), el alcance sale del sector del tema y sustituye al del subtema.
+    """
     vacios: list[Vacio] = []
-    if entrada.subtema is None:
+    explicacion_alcance: dict[str, Any]
+    if modalidad is not None and modalidad.alcance_por_sector:
+        sector = sector_de_tema(entrada.tema, modalidad)
+        if sector is None:
+            alcance_subtema = cfg.impacto.alcance_subtema_desconocido
+            vacios.append(Vacio("subtema_desconocido", cfg.vacios.subtema_desconocido))
+        else:
+            alcance_subtema = modalidad.alcance_por_sector[sector]
+        explicacion_alcance = {"sector": sector, "alcance_sector": alcance_subtema}
+    elif entrada.subtema is None:
         alcance_subtema = cfg.impacto.alcance_subtema_desconocido
         vacios.append(Vacio("subtema_desconocido", cfg.vacios.subtema_desconocido))
+        explicacion_alcance = {"subtema": entrada.subtema, "alcance_subtema": alcance_subtema}
     else:
         alcance_subtema = reglas.impacto.alcance_subtema[entrada.subtema]
+        explicacion_alcance = {"subtema": entrada.subtema, "alcance_subtema": alcance_subtema}
     geo = alcance_geografico(entrada.miembros, reglas, cfg)
     valor = reglas.impacto.peso_subtema * alcance_subtema + reglas.impacto.peso_geografico * geo.valor
     return Componente(
         valor,
         {
-            "subtema": entrada.subtema,
-            "alcance_subtema": alcance_subtema,
+            **explicacion_alcance,
             "nivel_geografico": geo.nivel,
             "alcance_geografico": geo.valor,
             "terminos_geograficos": list(geo.terminos),
@@ -358,7 +375,7 @@ def ordenar(puntajes: Sequence[Puntaje], reglas: ReglasV13, cfg: ConfigPrioridad
 
 
 def calcular_puntajes(
-    entradas: Sequence[EntradaGrupo], reglas: ReglasV13, cfg: ConfigPrioridad, ahora: datetime
+    entradas: Sequence[EntradaGrupo], reglas: ReglasV13, cfg: ConfigPrioridad, ahora: datetime, modalidad: ConfigModalidad | None = None
 ) -> list[Puntaje]:
     """R, I, U, N, E, P, rango y posición de cada grupo. Determinista: no depende del orden de ``entradas``.
 
@@ -383,7 +400,7 @@ def calcular_puntajes(
             {**detalle_foco, "similitud_tematica": similitudes[i], "percentil_similitud_tematica": percentil_r[i],
              "peso_foco": rel.peso_foco, "peso_tematica": rel.peso_tematica},
         )
-        c_i, vacios_i = impacto(e, reglas, cfg)
+        c_i, vacios_i = impacto(e, reglas, cfg, modalidad)
         c_u, vacios_u = urgencia(e.miembros, ahora, reglas)
         if maximas[i] is None:
             c_n = Componente(reglas.novedad.sin_grupos_previos, {"grupos_previos": 0, "similitud_maxima": None, "percentil_similitud_maxima": None, "grupo_mas_parecido": None})

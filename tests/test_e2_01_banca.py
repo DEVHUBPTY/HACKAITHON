@@ -291,7 +291,7 @@ def test_la_bandeja_bancaria_trae_sector_y_horizonte_de_cada_grupo(con_banca) ->
     assert {f.horizonte for f in filas.values()} <= set(HORIZONTES)
 
 
-def test_la_bandeja_de_la_editorial_no_trae_sector_ni_horizonte(con_banca) -> None:
+def test_la_bandeja_lee_solo_las_filas_de_la_modalidad_de_la_corrida_y_ninguna_accion_habla_de_publicar(con_banca) -> None:
     editorial = ui.leer_bandeja(con_banca, "editorial")
     assert editorial == []                          # la corrida de esta base es la bancaria: la editorial no tiene filas (E1-10)
     base = ui.leer_bandeja(con_banca, "banca")
@@ -331,15 +331,6 @@ def test_la_pantalla_bandeja_de_banca_muestra_un_bloque_por_sector_con_horizonte
     for tabla in at.dataframe:
         assert "Horizonte" in tabla.value.columns and "Sector" not in tabla.value.columns
     assert not any(FORMAS_DE_PUBLICAR.search(str(t.value)) for t in at.dataframe)
-
-
-def test_la_editorial_sigue_con_su_bandeja_plana(app_banca) -> None:
-    at = app_banca.run()
-    at.session_state["pantalla"] = "bandeja"
-    at = at.run()
-    assert not at.exception
-    assert list(at.selectbox(key="modalidad").options)[0].startswith("Editorial")
-    assert not any("Horizonte" in t.value.columns for t in at.dataframe)
 
 
 def test_banca_ya_no_se_ofrece_como_parcial(app_banca) -> None:

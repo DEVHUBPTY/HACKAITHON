@@ -158,7 +158,7 @@ def test_un_orden_guardado_distinto_del_ranking_se_detecta() -> None:
 
 def test_la_modalidad_sin_puntajes_devuelve_una_bandeja_vacia_y_no_inventa(con) -> None:
     assert ui.leer_bandeja(con, "banca") == []
-    assert cargar_modalidad("banca").parcial is True
+    assert cargar_modalidad("banca").parcial is False
 
 
 def test_la_bandeja_marca_los_grupos_con_registros_sinteticos(con) -> None:
@@ -394,7 +394,7 @@ def test_las_seis_pantallas_abren_sin_errores_y_cada_una_lleva_marca_y_leyenda(a
 def test_la_barra_lateral_ofrece_las_seis_pantallas_y_la_modalidad(app) -> None:
     at = app.run()
     assert list(at.radio(key="pantalla").options) == [p.titulo for p in CFG.pantallas]
-    assert list(at.selectbox(key="modalidad").options) == ["Editorial (TVN)", "Banca (parcial)"]
+    assert list(at.selectbox(key="modalidad").options) == ["Editorial (TVN)", "Banca"]
     assert at.session_state["pantalla"] == CFG.pantalla_inicial
 
 
@@ -505,11 +505,11 @@ def test_la_revision_de_un_grupo_sin_caso_muestra_los_cinco_estados_y_solo_ofrec
     assert "aprobado como borrador" in "\n".join(textos(at))
 
 
-def test_la_modalidad_banca_se_declara_parcial_y_no_inventa_una_bandeja(app) -> None:
+def test_la_modalidad_banca_sin_puntajes_en_la_base_no_inventa_una_bandeja(app) -> None:
     at = app.run()
     at.selectbox(key="modalidad").select("banca").run()
     at = ir(at, "bandeja")
-    assert not at.exception and any(CFG.textos.banca_parcial == str(i.value) for i in at.info)
+    assert not at.exception and any(CFG.textos.sin_puntajes == str(i.value) for i in at.info)
     assert not at.dataframe
 
 

@@ -84,7 +84,7 @@ textos:
   sintetico_ayuda: "Registro de prueba creado por el equipo; no es una noticia real."
   sin_base: "No hay base de datos: ejecute primero la carga, la normalización, la clasificación y el puntaje."
   sin_demo: "No existe la base de demo (data/demo.duckdb). La crea C-06; mientras tanto se usa el snapshot."
-  banca_parcial: "La modalidad Banca está incompleta (D-90): la ficha y la tabla de acciones existen, pero la bandeja bancaria llega con E2-01."
+  banca_parcial: "La modalidad Banca está incompleta (D-90): la ficha y la tabla de acciones existen, pero la bandeja bancaria todavía no está configurada."
   sin_puntajes: "Esta modalidad todavía no tiene puntajes en la base."
   sin_borrador: "Generación disponible cuando se integre E1-12."
   sin_borrador_ayuda: "Aquí aparecerá el borrador de la modalidad (paquete editorial o de investigación) con su leyenda de alcance."
