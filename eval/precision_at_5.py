@@ -1,7 +1,7 @@
 """Precision@5 del ranking contra la selección independiente de un editor (E1-19, PDF 9.1 y 11).
 
 **Qué mide.** De los ``k`` (5) temas que elige el editor, cuántos están en el top ``k`` del sistema y cuántos en el top ``k`` del
-baseline «ranking por fecha» (PDF sección 8: solo la fecha reciente del grupo, desempate por ID; no mira P). Cada proporción
+baseline «ranking por fecha» (PDF sección 8: solo la fecha de **publicación** más reciente del grupo; los grupos sin ella van al final y se cuentan; desempate por ID; no mira P). Cada proporción
 lleva su numerador, su n y su intervalo de Wilson del 95 % (z de ``config/carga.yaml``). Un tema es un grupo ``GRP-`` de la base
 (sin los sintéticos de la demo). No infiere audiencia, rentabilidad ni reducción de riesgo.
 
@@ -39,7 +39,6 @@ from src.carga import intervalo_wilson
 from src.configuracion import RAIZ, ConfigPrecision, cargar_carga, cargar_precision, cargar_temas
 
 ORIGEN_SINTETICO = "sintetico"
-ORIGEN_FECHA_DETECCION = "deteccion"
 DECIMALES = 4          # solo presentación
 ESTADO_PENDIENTE, ESTADO_MEDIDO = "pendiente", "medido"
 NOTA = (
@@ -61,7 +60,10 @@ class Candidato:
     titular: str
     fecha_reciente: str
     posicion: int
-    fecha_es_deteccion: bool = False
+
+    @property
+    def sin_fecha_publicacion(self) -> bool:
+        return not self.fecha_reciente
 
 
 # ------------------------------------------------------------------ candidatos, sistema y baseline
@@ -76,18 +78,23 @@ def corte_de_base(con: Any) -> str:
 
 
 def candidatos(con: Any) -> list[Candidato]:
-    """Los grupos con puntaje de la base, sin los que tienen noticias sintéticas."""
+    """Los grupos con puntaje de la base, sin los que tienen noticias sintéticas.
+
+    ``fecha_reciente`` es **solo** el máximo de ``fecha_publicacion`` de las noticias del grupo (X34). La fecha de detección de GDELT no
+    sustituye a la de publicación (reglas de datos): un grupo sin ninguna fecha de publicación queda con ``""``.
+    """
     nombres = {k: t.nombre for k, t in cargar_temas().temas.items()}
     filas = con.execute(
-        "SELECT g.id_grupo, g.tema_clasificado, g.titular_central, g.fecha_fin, g.fecha_fin_origen, p.posicion "
+        "SELECT g.id_grupo, g.tema_clasificado, g.titular_central, "
+        "(SELECT MAX(n.fecha_publicacion) FROM noticias n WHERE n.id_grupo = g.id_grupo) AS fecha_publicacion, p.posicion "
         "FROM grupos g JOIN puntajes p USING (id_grupo) "
         "WHERE NOT EXISTS (SELECT 1 FROM noticias n WHERE n.id_grupo = g.id_grupo AND n.origen = ?) "
         "ORDER BY p.posicion",
         [ORIGEN_SINTETICO],
     ).fetchall()
     return [
-        Candidato(i, nombres.get(t, t or ""), titular, fecha or "", int(pos), origen == ORIGEN_FECHA_DETECCION)
-        for i, t, titular, fecha, origen, pos in filas
+        Candidato(i, nombres.get(t, t or ""), titular, fecha or "", int(pos))
+        for i, t, titular, fecha, pos in filas
     ]
 
 
@@ -97,7 +104,10 @@ def top_sistema(cands: Sequence[Candidato], k: int) -> list[Candidato]:
 
 
 def top_baseline(cands: Sequence[Candidato], k: int) -> list[Candidato]:
-    """Baseline «ranking por fecha»: fecha reciente descendente; el empate lo decide el ID. No mira P ni la posición."""
+    """Baseline «ranking por fecha»: fecha de publicación reciente descendente; los grupos sin ella van al final; el empate lo decide el ID.
+
+    No mira P, la posición ni la fecha de detección.
+    """
     por_id = sorted(cands, key=lambda c: c.id_grupo)
     return sorted(por_id, key=lambda c: c.fecha_reciente, reverse=True)[:k]   # estable: conserva el orden por ID en los empates
 
@@ -126,7 +136,7 @@ def evaluar_corte(cands: Sequence[Candidato], elegidos: set[str], corte: str, k:
     for nombre, top in (("sistema", top_sistema(cands, k)), ("baseline", top_baseline(cands, k))):
         ids = [c.id_grupo for c in top]
         resultado[nombre] = _proporcion(aciertos(ids, elegidos), k, z) | {"top": ids, "ids_fallidos": [i for i in ids if i not in elegidos]}
-    resultado["baseline_fechas_de_deteccion"] = sum(1 for c in cands if c.fecha_es_deteccion)
+    resultado["baseline_sin_fecha_publicacion"] = sum(1 for c in cands if c.sin_fecha_publicacion)
     return resultado
 
 
@@ -208,7 +218,7 @@ def formatear(r: Mapping[str, Any], cfg: ConfigPrecision) -> str:
     lineas = [f"Precision@{cfg.k} · pruebas (fechas de corte): {r['pruebas']}"]
     for c in r["cortes"]:
         lineas += [
-            f"  Corte {c['corte']} · {c['candidatos']} candidatos",
+            f"  Corte {c['corte']} · {c['candidatos']} candidatos · baseline: {c['baseline_sin_fecha_publicacion']} grupos sin fecha de publicación (van al final)",
             f"    P@{cfg.k} sistema: {_texto(c['sistema'])} · fallos: {', '.join(c['sistema']['ids_fallidos']) or 'ninguno'}",
             f"    P@{cfg.k} baseline 'ranking por fecha': {_texto(c['baseline'])} · fallos: {', '.join(c['baseline']['ids_fallidos']) or 'ninguno'}",
         ]

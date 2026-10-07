@@ -405,7 +405,7 @@ Las listas de frases prohibidas siguen en `config/restricciones.yaml` y los lím
 | `cortes_minimos` | 3 | Spec E1-19 y D-57 (3 fechas de corte distintas si hay editor) | Con menos cortes el resultado se declara exploratorio; con 1, n = 1 |
 | `hoja_ciega.semilla` | `e1-19-hoja-ciega` | Práctica (orden reproducible que no depende de P, posición ni fecha) | `tests/test_e1_19_precision.py`: el orden no cambia si cambian P y fechas |
 | `hoja_ciega.marca` | `x` | Convención de la hoja | Lectura de `eval/seleccion_editor.csv` |
-| Baseline «ranking por fecha» | Fecha reciente del grupo (`fecha_fin`) descendente; empate por ID | PDF sección 8 | Test del baseline; el reporte cuenta los grupos cuya fecha es de detección, no de publicación |
+| Baseline «ranking por fecha» | Máximo de `fecha_publicacion` de las noticias del grupo, descendente; sin fecha de publicación al final; empate por ID. Nunca la fecha de detección | PDF sección 8 y reglas de datos (publicación ≠ detección) | Test del baseline con un grupo solo-GDELT; el reporte y el JSON cuentan los grupos sin fecha de publicación |
 | Pruebas de tiempo por condición | ≥ 3 (6 en total, orden alternado) | `docs/protocolo_evaluacion.md` sección 6 (D-71) | `docs/prueba_tiempo.md`: se reporta n; con pocas pruebas, exploratorio |
 
 ## Etiquetado humano (E1-06, `config/etiquetado.yaml`)
