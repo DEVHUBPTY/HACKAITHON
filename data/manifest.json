@@ -604,7 +604,8 @@
     },
     "decimales_del_hash": 4,
     "ejecucion": {
-      "commit": "4030166f7a0e961afc72c84a12e41ea1b40afd3a",
+      "arbol_con_cambios": false,
+      "commit": "6f8311beaebdf4d18234e59c28fd27fba7dc7583",
       "embeddings": {
         "clave": "minilm",
         "id": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
@@ -639,7 +640,8 @@
         "clasificacion.yaml:criterio_ab.semilla": 42,
         "clasificacion.yaml:semilla": 42,
         "etiquetado.yaml:muestra.semilla": 20261006,
-        "llm.yaml:generacion.semilla": 0
+        "llm.yaml:generacion.semilla": 0,
+        "precision.yaml:hoja_ciega.semilla": "e1-19-hoja-ciega"
       },
       "sistema": "Darwin"
     },
@@ -648,8 +650,7 @@
         "fecha_utc",
         "entorno",
         "latencia.consulta",
-        "latencia.meta_sugerida.consulta_cumple",
-        "validez_sustento.muestra.estado_del_archivo"
+        "latencia.meta_sugerida.consulta_cumple"
       ],
       "outputs/reporte_calidad.json": [
         "generado_utc",
@@ -674,7 +675,8 @@
       "informe:outputs/reporte_calidad.json": "06b34a08500094c58bbc51e14cf32448e433c493ccec90ee7a5ebb96e3b1210c",
       "informe:outputs/reporte_vinculos.json": "048714b6d2cdc126a9ba74b4b8fdc31727b4b0d3616bbe132bc42a32f39a9c0d",
       "informe:outputs/validacion_snapshot.json": "5226e8f58d2ab29730f532909a82015ab320f5194244008eafd0f3a46204bb1a",
-      "metricas": "68074f8021b2e2ad2610f01ee2f54ff5ba5bb89a663288301df1d6a3f72b2d07",
+      "metricas": "2d4ff9cfdd3518373e8e9f68d00c1506c7692e887bbf3d322b3717b039ff4948",
+      "muestra_sustento": "3f9da12d97656494337abb8931af4d8fa43cc93ba22851c444853af940f34ff3",
       "reconstruido:data/processed/conversion.json": "fb8ac3865ff48f3f394e70e580c7a5f69f3b4665a810fd935055a18810d47481",
       "reconstruido:data/processed/eventos.geojson": "c43507e5934652ff45fcb0bdae781d498a08167457c9e9d82f67446d6966d411",
       "reconstruido:data/processed/fuentes.json": "799b74b1f7766e193659f6c08f41ad9052ed838049812797c80ef75751db9b52",
