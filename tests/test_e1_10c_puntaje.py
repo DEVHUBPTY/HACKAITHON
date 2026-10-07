@@ -99,7 +99,7 @@ def test_x42_el_pais_o_una_institucion_nacional_dan_alcance_nacional(titular: st
         (("Lluvias en Panamá dejan inundaciones en Chepo",), "local"),                    # el lugar concreto manda
         (("Minsa refuerza la vacunación en Chiriquí",), "provincial"),
         (("Corte de agua en la provincia de Panamá",), "provincial"),                      # la provincia no es el país
-        (("Tranque en la ciudad de Panamá por obras",), "desconocido"),                    # la ciudad tampoco es el país
+        (("Tranque en la ciudad de Panamá por obras",), "local"),                          # la ciudad no es el país: es un lugar (X52)
         (("Se reúne el comité técnico",), "desconocido"),
         (("Cierran escuela en David", "Gobierno decreta alza a nivel nacional"), "nacional"),   # explícito sigue mandando
     ],
@@ -219,4 +219,15 @@ def test_x51_la_preposicion_pese_a_no_es_el_distrito() -> None:
 
 @pytest.mark.parametrize("titular", ["Inundaciones en Pesé dejan familias evacuadas", "Productores de Pese reclaman pagos", "PESÉ: corte de agua"])
 def test_x51_el_distrito_de_pese_sigue_siendo_local(titular: str) -> None:
+    assert _nivel(titular) == "local"
+
+
+# ------------------------------------------------------------------ X52 · un lugar concreto manda sobre la sigla nacional
+
+
+@pytest.mark.parametrize(
+    "titular",
+    ["MOP inaugura obra en Ciudad de Panamá", "Accidente en el distrito de Panamá deja dos heridos", "Minsa vacuna en la ciudad de Panamá"],
+)
+def test_x52_la_ciudad_o_el_distrito_de_panama_son_un_lugar_concreto(titular: str) -> None:
     assert _nivel(titular) == "local"
