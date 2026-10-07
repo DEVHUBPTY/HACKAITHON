@@ -262,7 +262,7 @@ def filas_de(resultados: Sequence[ResultadoGrupo], modalidad: ConfigModalidad) -
                 "novedad": p.componentes["N"].valor, "evidencia": p.componentes["E"].valor, "puntaje": p.puntaje, "rango": p.rango,
                 "componentes": _json({k: {"valor": c.valor, "explicacion": c.explicacion} for k, c in p.componentes.items()}),
                 "vacios": _json([{"codigo": v.codigo, "texto": v.texto} for v in p.vacios]),
-                "recirculada": p.recirculada, "es_nueva": p.es_nueva,
+                "recirculada": p.recirculada, "es_nueva": p.es_nueva, "empate_con": p.empate_con,
             }
         )
         evidencias.append(
@@ -368,6 +368,7 @@ def construir_reporte(
                 "id_grupo": r.puntaje.id_grupo,
                 "titular_central": titulares_centrales.get(r.puntaje.id_grupo),
                 "puntaje": round(r.puntaje.puntaje, 2),
+                "empate_con": r.puntaje.empate_con,
                 "rango": r.puntaje.rango,
                 "componentes": {k: round(c.valor, 4) for k, c in r.puntaje.componentes.items()},
                 "estado_de_evidencia": r.evidencia.estado,
@@ -440,6 +441,22 @@ def _imprimir_bandeja_por_sector(ruta_base: Path, modalidad: str) -> None:
         logger.info("%s", linea)
 
 
+def lineas_de_ranking(ranking: Sequence[Mapping[str, Any]], cfg: Any | None = None) -> list[str]:
+    """Líneas de la CLI para el ranking; P con los decimales de la bandeja (``interfaz.bandeja.decimales_puntaje``, X60)."""
+    from src.configuracion import cargar_interfaz
+    from src.interfaz import texto_empate  # aquí y no arriba: interfaz importa puntaje y este módulo es su orquestador
+
+    decimales = (cfg or cargar_interfaz()).bandeja.decimales_puntaje
+    lineas = []
+    for fila in ranking:
+        empate = f" · {texto_empate(fila['empate_con'])}" if fila["empate_con"] else ""
+        lineas.append(
+            f"  {fila['posicion']}. {fila['id_grupo']} · P={fila['puntaje']:.{decimales}f} ({fila['rango']}) · evidencia {fila['estado_de_evidencia']}"
+            f" · {fila['accion']} · {(fila['titular_central'] or '')[:ANCHO_TITULAR_EN_LOG]}{empate}"
+        )
+    return lineas
+
+
 def main(argv: list[str] | None = None) -> int:
     """CLI: puntaje, evidencia y contradicciones de ``data/senales.duckdb`` y ``outputs/prioridad.json``."""
     configurar_logging()
@@ -464,8 +481,10 @@ def main(argv: list[str] | None = None) -> int:
     logger.info("rango: %s", {k: v["n"] for k, v in reporte["por_rango"].items()})
     logger.info("estado de evidencia: %s", {k: v["n"] for k, v in reporte["por_estado_de_evidencia"].items()})
     logger.info("contradicciones: %s · LLM: %s", reporte["contradicciones"]["por_nota_llm"] or "ninguna", reporte["llm"]["estado"])
-    for fila in reporte["ranking"][:5]:
-        logger.info("  %d. %s · P=%.1f (%s) · evidencia %s · %s · %s", fila["posicion"], fila["id_grupo"], fila["puntaje"], fila["rango"], fila["estado_de_evidencia"], fila["accion"], (fila["titular_central"] or "")[:ANCHO_TITULAR_EN_LOG])
+    from src.interfaz import texto_empate  # aquí y no arriba: interfaz importa puntaje y este módulo es su orquestador
+
+    for linea in lineas_de_ranking(reporte["ranking"][:5]):
+        logger.info("%s", linea)
     _imprimir_bandeja_por_sector(args.base, args.modalidad)
     return 0
 

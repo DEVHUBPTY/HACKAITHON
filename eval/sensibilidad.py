@@ -55,7 +55,7 @@ from src.configuracion import (
     cargar_vinculos,
 )
 from src.embeddings import Embeddings, crear
-from src.puntaje import COMPONENTES, EntradaGrupo, calcular_puntajes
+from src.puntaje import COMPONENTES, EntradaGrupo, calcular_puntajes, empate_en_el_corte, p_para_empate
 
 logger = logging.getLogger(__name__)
 
@@ -128,11 +128,7 @@ def ajustes(reglas: ReglasV13) -> list[Ajuste]:
 
     rel, imp, urg, nov, evi, agr = reglas.relevancia, reglas.impacto, reglas.urgencia, reglas.novedad, reglas.evidencia, reglas.agrupacion
 
-    def peso_foco(r: ReglasV13, c: ConfigPrioridad, f: float):
-        foco, tematica = _par(rel.peso_foco, rel.peso_tematica, f)
-        return r.model_copy(update={"relevancia": r.relevancia.model_copy(update={"peso_foco": foco, "peso_tematica": tematica})}), c
-
-    agregar("Partes de R (foco · temática)", peso_foco)
+    # D-103: R tiene una sola parte (foco, peso 1); ya no hay reparto de R que variar.
     agregar("Foco: otro país que afecta a Panamá", lambda r, c, f: (r.model_copy(update={"relevancia": r.relevancia.model_copy(update={"foco_otro_pais_afecta": _recortar(rel.foco_otro_pais_afecta * f)})}), c))
     agregar("Foco: Panamá sujeto", lambda r, c, f: (r.model_copy(update={"relevancia": r.relevancia.model_copy(update={"foco_panama_sujeto": _recortar(rel.foco_panama_sujeto * f)})}), c))
 
@@ -157,7 +153,7 @@ def ajustes(reglas: ReglasV13) -> list[Ajuste]:
         "Alcance de I sin subtema",
         lambda r, c, f: (r, c.model_copy(update={"impacto": c.impacto.model_copy(update={"alcance_subtema_desconocido": _recortar(c.impacto.alcance_subtema_desconocido * f)})})),
     )
-    agregar("U: horas con U = 1", lambda r, c, f: (r.model_copy(update={"urgencia": r.urgencia.model_copy(update={"horas_pleno": urg.horas_pleno * f})}), c))
+    # D-106: «horas con U = 1» es 0 por decisión (sin meseta), no un supuesto: no se varía.
     agregar("U: días con U = 0", lambda r, c, f: (r.model_copy(update={"urgencia": r.urgencia.model_copy(update={"dias_nulo": urg.dias_nulo * f})}), c))
     partes_e = {"peso_procedencias": evi.peso_procedencias, "peso_oficial": evi.peso_oficial, "peso_identificables": evi.peso_identificables}
     for clave, nombre in (("peso_procedencias", "procedencias"), ("peso_oficial", "oficial"), ("peso_identificables", "identificable")):
@@ -306,6 +302,8 @@ def evaluar(ruta_base: Path, reglas: ReglasV13, cfg: ConfigPrioridad, ahora: dat
     insumos = leer_insumos(ruta_base, reglas, emb)
     n = cfg.sensibilidad.tamano_ranking
     base = top(insumos.entradas, reglas, cfg, ahora, n)
+    ranking_base = calcular_puntajes(insumos.entradas, reglas, cfg, ahora)
+    empate_base = empate_en_el_corte([p_para_empate(p.puntaje, cfg) for p in ranking_base], n)
     reproduce = sorted(e.id_grupo for e in entradas_reagrupadas(insumos, reglas)) == sorted(e.id_grupo for e in insumos.entradas)
     reagrupadas: dict[tuple[int, float], list[EntradaGrupo]] = {}
     filas: list[dict[str, Any]] = []
@@ -335,6 +333,9 @@ def evaluar(ruta_base: Path, reglas: ReglasV13, cfg: ConfigPrioridad, ahora: dat
         "variacion_peso_puntos": cfg.sensibilidad.variacion_peso,
         "variacion_supuesto": cfg.sensibilidad.variacion_supuesto,
         "top_base": base,
+        # D-105: si el corte del top parte un empate en P, el top base lo completa la regla del reto (mayor U, luego ID) y la
+        # estabilidad de esos puestos dice poco: se informa el empate en el corte.
+        "empate_en_el_corte_base": empate_base,
         "reagrupar_con_las_reglas_actuales_reproduce_la_base": reproduce,
         "variantes": len(filas),
         "variantes_con_efecto": total,
@@ -374,6 +375,9 @@ def imprimir(r: Mapping[str, Any]) -> None:
     print("\n== Top 5 base ==")
     for i, g in enumerate(r["top_base"], start=1):
         print(f"  {i}. {g}")
+    if r.get("empate_en_el_corte_base"):
+        e = r["empate_en_el_corte_base"]
+        print(f"  empate en el corte (D-105): P = {e['valor']} lo comparten {e['empatados']} grupos; {e['dentro_del_top']} entran y {e['fuera_del_top']} quedan fuera por la regla del reto (mayor U, luego ID)")
     print("\n== Variantes que cambian algún tema (de mayor a menor) ==")
     for m in r["mas_sensibles"][:15]:
         print(f"  {m['cambian']} · {m['parametro']} · salen {m['salen']} · entran {m['entran']}")

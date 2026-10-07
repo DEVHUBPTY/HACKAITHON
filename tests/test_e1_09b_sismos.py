@@ -147,8 +147,9 @@ def base_metodo_a(tmp_path: Path) -> Path:
     ruta = tmp_path / "senales.duckdb"
     base = {"titulo": "t", "url": "u", "url_canonica": "u", "medio": "m", "tipo_firma": "sin firma", "es_ruido": False, "subtema_clasificado": None}
     noticias = [
-        {**base, "id_noticia": "NOT-a", "fecha_publicacion": "2024-05-10T15:00:00Z", "id_grupo": "GRP-sismo"},
-        {**base, "id_noticia": "NOT-b", "fecha_publicacion": "2024-05-10T16:00:00Z", "id_grupo": "GRP-lluvia"},
+        # E1-10c (X41): el subtema exige que el titular lo nombre (el margen solo ya no basta)
+        {**base, "titulo": "Sismo de 4,5 sacude Chiriquí", "id_noticia": "NOT-a", "fecha_publicacion": "2024-05-10T15:00:00Z", "id_grupo": "GRP-sismo"},
+        {**base, "titulo": "Lluvias inundan calles de Colón", "id_noticia": "NOT-b", "fecha_publicacion": "2024-05-10T16:00:00Z", "id_grupo": "GRP-lluvia"},
     ]
     grupo = {"titular_central": "t", "n_titulares": 1, "n_medios": 1, "n_procedencias": 1, "estimado": True, "tema_clasificado": "eventos_naturales"}
     grupos = [

@@ -4,21 +4,23 @@
 fijan, en ``config/prioridad.yaml``). Es una herramienta de **ordenamiento**: no es una probabilidad de verdad ni de pérdida,
 y **no habilita publicación** (``Puntaje.habilita_publicacion`` es siempre falso).
 
-* **R** = ``peso_foco × foco + peso_tematica × percentil(similitud temática)``. Foco: 1 si algún titular del grupo trata a
-  Panamá como sujeto; 0.5 si todos son notas regionales o de otro país que afectan a Panamá (``alcance_regional``, D-84).
-  La similitud temática de un grupo es la media de ``tema_similitud`` de sus titulares.
+* **R** = ``peso_foco × foco`` (D-103: sin la parte temática, que era la confianza del clasificador). Foco: 1 si algún
+  titular del grupo trata a Panamá como sujeto; 0.5 si todos son notas regionales o de otro país que afectan a Panamá
+  (``alcance_regional``, D-84).
 * **I** = ``peso_subtema × alcance(subtema) + peso_geografico × alcance geográfico``. Ni el dato oficial ni las
-  procedencias suman aquí (D-15, D-35). El alcance geográfico es el más amplio que nombren los titulares.
-* **U**: lineal entre ``horas_pleno`` (U = 1) y ``dias_nulo`` (U = 0) desde la publicación ORIGINAL más reciente del grupo,
+  procedencias suman aquí (D-15, D-35). El alcance geográfico es el más amplio que nombren los titulares; sin término
+  explícito ni lugar concreto, el país nombrado o una institución nacional lo hacen nacional (E1-10c, X42).
+* **U**: lineal entre ``horas_pleno`` (U = 1; D-106: 0 h, sin meseta) y ``dias_nulo`` (U = 0) desde la publicación ORIGINAL más reciente del grupo,
   medida contra la fecha de referencia (el corte del snapshot). Si ningún titular trae ``fecha_publicacion`` se usa la
   detección como cota y se agrega el vacío «urgencia estimada: fecha de publicación desconocida»; nunca se sustituye en silencio.
-* **N** = ``1 − percentil(similitud máxima con grupos anteriores)``; anterior = empezó antes (``fecha_publicacion`` y, si falta,
-  ``fecha_deteccion``). El primer grupo no tiene con qué compararse (``novedad.sin_grupos_previos``). La duplicación no sube N.
+* **N** (D-103): ``s`` = similitud máxima entre un titular del grupo y uno de un grupo anterior (empezó antes:
+  ``fecha_publicacion`` y, si falta, ``fecha_deteccion``); ``u`` = ``agrupacion.umbral_similitud``, el mismo umbral con que
+  se agrupa. Si ``s < u`` no es el mismo evento y N = 1; si ``s ≥ u``, N = ``(1 − s) / (1 − u)`` (1 en el umbral, 0 un
+  duplicado). El primer grupo no tiene con qué compararse (``novedad.sin_grupos_previos``). La duplicación no sube N.
 * **E** = ``peso_procedencias × min(n, tope)/tope + peso_oficial × (hay dato oficial directo o evento) + peso_identificables × (titulares con
   medio y fecha de publicación conocidos / titulares)``. Cuenta **procedencias**, nunca titulares (``procedencias.fraccion_de_procedencias``).
 
-Las similitudes se convierten a **percentil dentro del snapshot** (los embeddings dan valores comprimidos): el rango
-completo 0–1 se usa siempre. Rango y desempate (mayor U, menor ID) salen de ``reglas.rangos`` y ``reglas.desempate``.
+Rango y desempate (mayor U, menor ID) salen de ``reglas.rangos`` y ``reglas.desempate``.
 Cada componente guarda su explicación (de qué valores sale) para la ficha.
 
 Uso: ``poetry run python -m src.puntaje`` (después de ``src.contexto``); ver ``src/prioridad.py``.
@@ -28,7 +30,7 @@ from __future__ import annotations
 
 import re
 import sys
-from bisect import bisect_left, bisect_right
+from collections import Counter
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
@@ -46,8 +48,8 @@ from src.sectores import sector_de_tema
 
 COMPONENTES = ("R", "I", "U", "N", "E")
 NIVELES_GEOGRAFICOS = ("nacional", "provincial", "local")   # de más a menos amplio; sin términos = desconocido
+NIVEL_NACIONAL = NIVELES_GEOGRAFICOS[0]
 NIVEL_DESCONOCIDO = "desconocido"
-PERCENTIL_NEUTRO = 0.5          # rango medio de [0, 1]: lo que vale un percentil con un solo valor (definición, no parámetro)
 SEGUNDOS_POR_HORA = 3600
 HORAS_POR_DIA = 24
 FORMATO_FECHA = "%Y-%m-%dT%H:%M:%SZ"
@@ -109,6 +111,7 @@ class Puntaje:
     vacios: tuple[Vacio, ...]
     recirculada: bool
     es_nueva: bool
+    empate_con: int = 0      # D-105: cuántos OTROS grupos tienen el mismo P tal como se muestra (``comparacion.decimales_empate``)
 
     @property
     def habilita_publicacion(self) -> bool:
@@ -128,6 +131,7 @@ class Puntaje:
             "vacios": [{"codigo": v.codigo, "texto": v.texto} for v in self.vacios],
             "recirculada": self.recirculada,
             "es_nueva": self.es_nueva,
+            "empate_con": self.empate_con,
             "habilita_publicacion": self.habilita_publicacion,
         }
 
@@ -139,24 +143,6 @@ class Alcance:
     nivel: str
     valor: float
     terminos: tuple[str, ...] = field(default_factory=tuple)
-
-
-# ------------------------------------------------------------------ percentil
-
-
-def percentiles(valores: Sequence[float]) -> list[float]:
-    """Percentil de cada valor dentro de ``valores``: ``(rango medio) / (n − 1)``, de 0 (el menor) a 1 (el mayor).
-
-    Los empates comparten el rango medio. Con un solo valor es ``PERCENTIL_NEUTRO``. Así el rango 0–1 se usa completo
-    aunque las similitudes estén comprimidas.
-    """
-    n = len(valores)
-    if n == 0:
-        return []
-    if n == 1:
-        return [PERCENTIL_NEUTRO]
-    orden = sorted(valores)
-    return [((bisect_left(orden, v) + bisect_right(orden, v) - 1) / 2) / (n - 1) for v in valores]
 
 
 # ------------------------------------------------------------------ R · relevancia
@@ -171,14 +157,6 @@ def foco_de(miembros: Sequence[Mapping[str, Any]], reglas: ReglasV13) -> tuple[f
     return foco, {"foco": foco, "foco_motivo": motivo, "titulares_regionales": regionales, "titulares": len(miembros)}
 
 
-def similitud_tematica(miembros: Sequence[Mapping[str, Any]]) -> float:
-    """Media de ``tema_similitud`` de los titulares del grupo (similitud con su tema clasificado)."""
-    valores = [float(m["tema_similitud"]) for m in miembros if m.get("tema_similitud") is not None]
-    if not valores:
-        raise ValueError("grupo sin similitud temática: ejecute `poetry run python -m src.clasificacion`")
-    return float(np.mean(valores))
-
-
 # ------------------------------------------------------------------ I · impacto
 
 
@@ -191,33 +169,109 @@ def normalizar_geografia(texto: str) -> str:
 
 
 @lru_cache(maxsize=None)
-def _patron_termino(termino: str, prefijos: tuple[str, ...]) -> re.Pattern[str]:
-    """Palabra completa, sin tildes ni mayúsculas; con ``prefijos`` solo cuenta si la precede alguno."""
+def _patron_termino(termino: str, prefijos: tuple[str, ...], sufijos: tuple[str, ...] = ()) -> re.Pattern[str]:
+    """Palabra completa, sin tildes ni mayúsculas; con ``prefijos`` solo cuenta si la precede alguno; con ``sufijos``, si no lo sigue ninguno."""
     cuerpo = re.escape(normalizar_geografia(termino))
     if prefijos:
         cuerpo = r"(?:" + "|".join(re.escape(normalizar_geografia(p)) for p in prefijos) + r")\s+" + cuerpo
+    if sufijos:
+        cuerpo += r"(?!\s+(?:" + "|".join(re.escape(normalizar_geografia(s)) for s in sufijos) + r")(?!\w))"
     return re.compile(rf"(?<!\w){cuerpo}(?!\w)")
 
 
-def terminos_presentes(texto: str, terminos: Sequence[str], prefijos: Mapping[str, Sequence[str]]) -> list[str]:
-    """Términos de ``terminos`` que aparecen en ``texto`` (en el orden dado)."""
+@lru_cache(maxsize=None)
+def _patron_con_tilde(termino: str) -> re.Pattern[str]:
+    """El término tal como se escribe (con sus tildes), palabra completa y sin distinguir mayúsculas."""
+    return re.compile(rf"(?<!\w){re.escape(termino.casefold())}(?!\w)")
+
+
+def _con_tilde_sin_prefijo_excluido(texto: str, termino: str, excluidos: Sequence[str]) -> bool:
+    """X66: el término escrito con su tilde aparece al menos una vez **sin** uno de sus prefijos excluidos delante («Cristóbal Colón»)."""
+    bajo = texto.casefold()
+    previos = [normalizar_geografia(p) for p in excluidos]
+    for m in _patron_con_tilde(termino).finditer(bajo):
+        antes = normalizar_geografia(bajo[: m.start()])
+        if not any(antes == p or antes.endswith(" " + p) for p in previos):
+            return True
+    return False
+
+
+def terminos_presentes(
+    texto: str,
+    terminos: Sequence[str],
+    prefijos: Mapping[str, Sequence[str]],
+    sufijos_excluidos: Mapping[str, Sequence[str]] | None = None,
+    requieren_tilde: Sequence[str] = (),
+    prefijos_excluidos_lugar: Mapping[str, Sequence[str]] | None = None,
+) -> list[str]:
+    """Términos de ``terminos`` que aparecen en ``texto`` (en el orden dado).
+
+    X51: un término con ``sufijos_excluidos`` no cuenta sin tilde si lo sigue una de esas palabras («pese a»); escrito con su
+    tilde («Pesé») siempre cuenta.
+
+    X66: un término de ``requieren_tilde`` solo cuenta escrito con su tilde («Colón»; «colon» es el órgano) y, si tiene
+    ``prefijos_excluidos_lugar``, no cuenta precedido de ellos («Cristóbal Colón»).
+    """
     plano_texto = normalizar_geografia(texto)
-    return [t for t in terminos if _patron_termino(t, tuple(prefijos.get(t, ()))).search(plano_texto)]
+    sufijos = sufijos_excluidos or {}
+    excluidos_lugar = prefijos_excluidos_lugar or {}
+    presentes = []
+    for t in terminos:
+        if t in requieren_tilde:
+            if _con_tilde_sin_prefijo_excluido(texto, t, excluidos_lugar.get(t, ())):
+                presentes.append(t)
+            continue
+        excluir = tuple(sufijos.get(t, ()))
+        if _patron_termino(t, tuple(prefijos.get(t, ())), excluir).search(plano_texto) or (
+            excluir and _patron_con_tilde(t).search(texto.casefold())
+        ):
+            presentes.append(t)
+    return presentes
+
+
+def terminos_sin_prefijo_excluido(texto: str, terminos: Sequence[str], excluidos: Mapping[str, Sequence[str]]) -> list[str]:
+    """Términos de ``terminos`` que aparecen en ``texto`` al menos una vez **sin** uno de sus prefijos excluidos delante."""
+    plano_texto = normalizar_geografia(texto)
+    presentes = []
+    for t in terminos:
+        prefijos = [normalizar_geografia(p) for p in excluidos.get(t, ())]
+        for m in _patron_termino(t, ()).finditer(plano_texto):
+            antes = plano_texto[: m.start()].rstrip()
+            if not any(antes == p or antes.endswith(" " + p) for p in prefijos):
+                presentes.append(t)
+                break
+    return presentes
 
 
 def alcance_geografico(miembros: Sequence[Mapping[str, Any]], reglas: ReglasV13, cfg: ConfigPrioridad) -> Alcance:
-    """Alcance más amplio que nombran los titulares: nacional, provincial (provincias y comarcas) o local (distritos)."""
+    """Alcance más amplio que nombran los titulares: nacional, provincial (provincias y comarcas) o local (distritos).
+
+    Si ningún titular nombra un término explícito ni un lugar concreto, el país nombrado o una institución nacional
+    (``nacional_implicito_terminos``) dan alcance nacional (E1-10c, X42); si tampoco, el alcance es desconocido.
+    """
     g = reglas.geografia
     listas = {"nacional": g.nacional_terminos, "provincial": [*g.provincias, *g.comarcas], "local": g.distritos}
     prefijos = cfg.geografia.prefijos_obligatorios
     hallados: dict[str, list[str]] = {nivel: [] for nivel in NIVELES_GEOGRAFICOS}
+    implicitos: list[str] = []
     for m in miembros:
         titular = str(m.get("titulo_limpio") or "")
         for nivel in NIVELES_GEOGRAFICOS:
-            hallados[nivel].extend(terminos_presentes(titular, listas[nivel], prefijos))
+            hallados[nivel].extend(terminos_presentes(
+                    titular,
+                    listas[nivel],
+                    prefijos,
+                    cfg.geografia.sufijos_excluidos,
+                    cfg.geografia.requieren_tilde,
+                    cfg.geografia.prefijos_excluidos_lugar,
+                )
+            )
+        implicitos.extend(terminos_sin_prefijo_excluido(titular, g.nacional_implicito_terminos, cfg.geografia.prefijos_excluidos))
     for nivel in NIVELES_GEOGRAFICOS:
         if hallados[nivel]:
             return Alcance(nivel, getattr(reglas.impacto.alcance_geografico, nivel), tuple(sorted(set(hallados[nivel]))))
+    if implicitos:
+        return Alcance(NIVEL_NACIONAL, reglas.impacto.alcance_geografico.nacional, tuple(sorted(set(implicitos))))
     return Alcance(NIVEL_DESCONOCIDO, reglas.impacto.alcance_geografico.desconocido)
 
 
@@ -321,6 +375,23 @@ def _similitudes_maximas(entradas: Sequence[EntradaGrupo], reglas: ReglasV13) ->
     return resultado
 
 
+def umbral_novedad(reglas: ReglasV13) -> float:
+    """El umbral desde el que N descuenta: ``agrupacion.umbral_similitud``, el mismo con que se agrupa (D-103)."""
+    umbral = reglas.agrupacion.umbral_similitud
+    if umbral is None:
+        raise ValueError("agrupacion.umbral_similitud sin calibrar: N lo necesita (D-103); ejecute `python -m eval.agrupacion`")
+    return umbral
+
+
+def novedad_de(similitud: float, umbral: float) -> float:
+    """N (D-103): 1 si ``similitud < umbral``; si no, ``(1 − similitud) / (1 − umbral)`` en [0, 1] (1 en el umbral, 0 un duplicado)."""
+    if similitud < umbral:
+        return 1.0
+    if umbral >= 1.0:   # umbral 1: solo un duplicado exacto lo alcanza
+        return 0.0
+    return min(1.0, max(0.0, (1.0 - similitud) / (1.0 - umbral)))
+
+
 # ------------------------------------------------------------------ E · evidencia
 
 
@@ -358,20 +429,47 @@ def evidencia_e(entrada: EntradaGrupo, reglas: ReglasV13, cfg: ConfigPrioridad) 
 # ------------------------------------------------------------------ ranking
 
 
-def ordenar(puntajes: Sequence[Puntaje], reglas: ReglasV13, cfg: ConfigPrioridad) -> list[Puntaje]:
-    """Ordena por P descendente y desempata con ``reglas.desempate`` (mayor U, luego menor ID); asigna ``posicion`` desde 1.
+def p_para_empate(p: float, cfg: ConfigPrioridad) -> float:
+    """P tal como se muestra (``comparacion.decimales_empate``, D-105): dos grupos con el mismo valor están empatados."""
+    return round(p, cfg.comparacion.decimales_empate)
 
-    P y U se comparan redondeados a ``comparacion.decimales_p`` para que el ruido de coma flotante no decida un empate.
+
+def ordenar(puntajes: Sequence[Puntaje], reglas: ReglasV13, cfg: ConfigPrioridad) -> list[Puntaje]:
+    """Ordena por P descendente y desempata con ``reglas.desempate`` (PDF sección 4: mayor U, luego ID); asigna ``posicion`` desde 1.
+
+    D-105: P se compara tal como se muestra (``comparacion.decimales_empate``), así un empate visible siempre lo decide la regla
+    del reto; U se compara a ``comparacion.decimales_p`` para que el ruido de coma flotante no decida. Cada puntaje lleva
+    ``empate_con``: cuántos otros grupos tienen su mismo P.
     """
     d = cfg.comparacion.decimales_p
 
     def clave(p: Puntaje) -> tuple[Any, ...]:
-        partes: list[Any] = [-round(p.puntaje, d)]
+        partes: list[Any] = [-p_para_empate(p.puntaje, cfg)]
         for criterio in reglas.desempate:
             partes.append(-round(p.componentes["U"].valor, d) if criterio == "u_desc" else p.id_grupo)
         return tuple(partes)
 
-    return [replace(p, posicion=i) for i, p in enumerate(sorted(puntajes, key=clave), start=1)]
+    cuantos = Counter(p_para_empate(p.puntaje, cfg) for p in puntajes)
+    return [
+        replace(p, posicion=i, empate_con=cuantos[p_para_empate(p.puntaje, cfg)] - 1)
+        for i, p in enumerate(sorted(puntajes, key=clave), start=1)
+    ]
+
+
+def empate_en_el_corte(claves: Sequence[Any], k: int) -> dict[str, Any] | None:
+    """Empate en el corte de un top ``k`` (D-105). ``claves`` va en el orden del ranking, ya comparable (P mostrado, fecha…).
+
+    Devuelve el valor empatado en el puesto ``k``, cuántos grupos lo comparten y cuántos quedaron dentro y fuera del top;
+    ``None`` si el corte no parte un empate (o hay ``k`` grupos o menos).
+    """
+    if len(claves) <= k:
+        return None
+    valor = claves[k - 1]
+    if claves[k] != valor:
+        return None
+    empatados = [i for i, c in enumerate(claves) if c == valor]
+    dentro = sum(1 for i in empatados if i < k)
+    return {"valor": valor, "empatados": len(empatados), "dentro_del_top": dentro, "fuera_del_top": len(empatados) - dentro}
 
 
 def calcular_puntajes(
@@ -386,29 +484,25 @@ def calcular_puntajes(
     if len(set(ids)) != len(ids):
         raise ValueError("id_grupo repetido en la entrada")
     ahora = ahora.astimezone(UTC)
-    similitudes = [similitud_tematica(e.miembros) for e in entradas]
-    percentil_r = percentiles(similitudes)
     maximas = _similitudes_maximas(entradas, reglas)
-    con_previos = [i for i, m in enumerate(maximas) if m is not None]
-    percentil_n: dict[int, float] = dict(zip(con_previos, percentiles([maximas[i][0] for i in con_previos]), strict=True))  # type: ignore[index]
+    umbral = umbral_novedad(reglas)
     rel = reglas.relevancia
     resultado: list[Puntaje] = []
     for i, e in enumerate(entradas):
         foco, detalle_foco = foco_de(e.miembros, reglas)
-        r = Componente(
-            rel.peso_foco * foco + rel.peso_tematica * percentil_r[i],
-            {**detalle_foco, "similitud_tematica": similitudes[i], "percentil_similitud_tematica": percentil_r[i],
-             "peso_foco": rel.peso_foco, "peso_tematica": rel.peso_tematica},
-        )
+        r = Componente(rel.peso_foco * foco, {**detalle_foco, "peso_foco": rel.peso_foco})
         c_i, vacios_i = impacto(e, reglas, cfg, modalidad)
         c_u, vacios_u = urgencia(e.miembros, ahora, reglas)
         if maximas[i] is None:
-            c_n = Componente(reglas.novedad.sin_grupos_previos, {"grupos_previos": 0, "similitud_maxima": None, "percentil_similitud_maxima": None, "grupo_mas_parecido": None})
+            c_n = Componente(
+                reglas.novedad.sin_grupos_previos,
+                {"grupos_previos": 0, "similitud_maxima": None, "umbral_similitud": umbral, "descuenta": False, "grupo_mas_parecido": None},
+            )
         else:
             sim, parecido, previos = maximas[i]  # type: ignore[misc]
             c_n = Componente(
-                1.0 - percentil_n[i],
-                {"grupos_previos": previos, "similitud_maxima": sim, "percentil_similitud_maxima": percentil_n[i], "grupo_mas_parecido": parecido},
+                novedad_de(sim, umbral),
+                {"grupos_previos": previos, "similitud_maxima": sim, "umbral_similitud": umbral, "descuenta": sim >= umbral, "grupo_mas_parecido": parecido},
             )
         componentes = {"R": r, "I": c_i, "U": c_u, "N": c_n, "E": evidencia_e(e, reglas, cfg)}
         total = puntaje_total({k: c.valor for k, c in componentes.items()}, reglas)

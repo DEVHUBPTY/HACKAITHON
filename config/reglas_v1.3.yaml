@@ -16,20 +16,17 @@ rangos:                     # [desde, hasta): el último incluye su límite supe
 
 desempate: [u_desc, id_asc]  # mayor U; si empatan, menor ID
 
-percentil:                  # las similitudes se convierten a percentil dentro del snapshot antes de usarse (D-35)
-  ambito: snapshot
-  aplica_a: [similitud_tematica_r, similitud_maxima_n]
+# D-103: ni R ni N usan ya percentiles de similitud (antes D-35: «percentil dentro del snapshot»).
 
-relevancia:                 # R = peso_foco × foco + peso_tematica × percentil(similitud temática)
-  peso_foco: 0.5
-  peso_tematica: 0.5
+relevancia:                 # R = peso_foco × foco. D-103 quitó la parte temática (confianza del clasificador) y renormalizó
+  peso_foco: 1.0            # antes 0.5 foco + 0.5 percentil(similitud temática); la única parte que queda pesa 1
   foco_panama_sujeto: 1.0
   foco_otro_pais_afecta: 0.5
 
 impacto:                    # I = peso_subtema × alcance(subtema) + peso_geografico × alcance geográfico
   peso_subtema: 0.5         # el dato oficial y las procedencias NO entran en I (D-15, D-35)
   peso_geografico: 0.5
-  alcance_geografico: {nacional: 1.0, provincial: 0.6, local: 0.3, desconocido: 0.5}
+  alcance_geografico: {nacional: 1.0, provincial: 0.6, local: 0.3, desconocido: 0.3}   # D-109: desconocido = local (antes 0.5, neutro)
   # Alcance por subtema (criterio editorial, supuesto). Las claves son los subtemas de temas.yaml.
   alcance_subtema:
     crecimiento_pib: 1.0
@@ -72,13 +69,17 @@ impacto:                    # I = peso_subtema × alcance(subtema) + peso_geogra
     sanciones: 0.6
 
 urgencia:                   # U usa la publicación original MÁS RECIENTE del grupo
-  horas_pleno: 24           # publicada hace menos de estas horas -> U = 1
+  # D-106: U = fracción de la ventana de revisión que queda («tiempo disponible para revisar», PDF sección 4): lineal de 1 al
+  # publicarse a 0 al cerrarse la ventana. Antes (v1.3) U valía 1 durante las primeras 24 h y se saturaba (2 h = 30 h).
+  horas_pleno: 0            # D-106: sin meseta (antes 24); publicada hace estas horas o menos -> U = 1
   dias_nulo: 7              # hace estos días o más -> U = 0; lineal entre ambos
   # Sin fecha_publicacion en ningún titular (todo GDELT): se usa fecha_deteccion como cota y se agrega este vacío.
   fecha_sin_publicacion: fecha_deteccion
   vacio_sin_publicacion: "urgencia estimada: fecha de publicación desconocida"
 
-novedad:                    # N = 1 − percentil(similitud máxima con grupos anteriores, por fecha de publicación)
+novedad:                    # D-103: s = similitud máxima con un titular de un grupo anterior; u = agrupacion.umbral_similitud
+  # N = 1 si s < u (no es el mismo evento: no se descuenta); si s ≥ u, N = (1 − s) / (1 − u), lineal de 1 (en el umbral)
+  # a 0 (duplicado exacto). El umbral es el MISMO con que se agrupa (no se copia aquí).
   sin_grupos_previos: 1.0   # el primer grupo no tiene con qué compararse
 
 evidencia:                  # E (v1.3, D-56)
@@ -115,9 +116,18 @@ agencias: [EFE, AFP, AP, Reuters, Europa Press, DPA, ANSA, Xinhua, Prensa Latina
 
 geografia:                  # alcance geográfico (comparación sin tildes ni mayúsculas, E1-10)
   nacional_terminos: [a nivel nacional, todo el país, en todo el país, nacional, asamblea nacional, gobierno nacional]
+  # E1-10c (X42, D-108): mención implícita del país. El país nombrado («en Panamá», «en el país», «del país») o su gentilicio
+  # («panameño/a/s») da alcance nacional SOLO si ningún titular del grupo nombra un lugar concreto (provincia, comarca o
+  # distrito): el lugar nombrado ubica el hecho. Los términos explícitos de arriba mandan siempre. «Panamá» precedido de «ciudad
+  # de» o «provincia de» no es el país (prioridad.yaml: prefijos_excluidos). D-108: una institución nacional SOLA (CSS, Minsa,
+  # MOP, ACP, AMP, el Ejecutivo, los órganos del Estado…) NO da alcance nacional: no prueba que el hecho sea de todo el país.
+  nacional_implicito_terminos: [Panamá, panameño, panameña, panameños, panameñas, en el país, del país]
   provincias: [Bocas del Toro, Chiriquí, Coclé, Colón, Darién, Herrera, Los Santos, Panamá, Panamá Oeste, Veraguas]
   comarcas: [Guna Yala, Emberá-Wounaan, Ngäbe-Buglé, Madugandí, Wargandí, Naso Tjër Di]
   distritos:
+    # X52: la capital es un lugar concreto (local), no el país: «MOP inaugura obra en Ciudad de Panamá» no es nacional.
+    - Ciudad de Panamá
+    - distrito de Panamá
     - San Miguelito
     - Arraiján
     - La Chorrera

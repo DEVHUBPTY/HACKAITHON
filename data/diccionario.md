@@ -254,7 +254,7 @@ Una fila por dato (o una por grupo sin vínculo). Es **contexto, nunca prueba de
 | `motivo_sin_vinculo` | VARCHAR | sí | `vinculos.yaml` | derivado | `tema_sin_indicador`, `sin_dato_en_periodo` (y los de sismos de E1-09b). Sin vínculo lleva `id_evidencia` nulo; la excepción es `candidatos_ambiguos` (USGS, E1-09b), que puede traer a la vez el `SIS-` del candidato y el motivo. |
 | `fuente` | VARCHAR | no | contexto | derivado | Quién escribe la fila: `indicador` (`src.contexto`) o `usgs` (`src.contexto_sismos`). |
 | `rol` | VARCHAR | sí | contexto | derivado | `panama` (último año con valor), `comparable` (otros países, mismo año, con dato), `tendencia` (últimos años de Panamá) o `evento` (USGS). |
-| `subtema` | VARCHAR | sí | `similitud_tema` | derivado | Subtema más cercano del grupo dentro de su tema (método B) solo si supera el margen mínimo (D-92); si no, nulo (`sin_subtema`). |
+| `subtema` | VARCHAR | sí | `similitud_tema` | derivado | Subtema más cercano del grupo dentro de su tema (método B) solo si lo respalda un criterio de `vinculos.subtema.criterios` (D-92; desde E1-10c solo `lexico`: un titular nombra el subtema y ningún otro del mismo tema); si no, nulo (`sin_subtema`). |
 | `pais_iso3` | VARCHAR | sí | `indicadores` | derivado | País del dato. |
 | `indicador_id` | VARCHAR | sí | `indicadores` | derivado | Indicador del Banco Mundial. |
 | `anio` | INTEGER | sí | `indicadores` | derivado | Año del dato. |
@@ -270,7 +270,7 @@ Una fila por dato (o una por grupo sin vínculo). Es **contexto, nunca prueba de
 | `estado_evento` | VARCHAR | sí | `eventos.geojson` | derivado | Solo filas `usgs`: `automatic` o `reviewed`; un evento automático puede cambiar. |
 | `url_evento` | VARCHAR | sí | `eventos.geojson` | derivado | Solo filas `usgs`: página del evento en USGS. |
 | `diferencia_horas` | DOUBLE | sí | contexto | derivado | Solo filas `usgs`: horas entre el evento y la noticia más cercana del grupo. |
-| `criterio_subtema` | VARCHAR | sí | contexto | derivado | D-92: por qué se aceptó el subtema del grupo, `margen` (1.º − 2.º subtema ≥ mínimo) o `lexico` (un titular nombra un término del subtema). Nulo si no hay subtema. |
+| `criterio_subtema` | VARCHAR | sí | contexto | derivado | D-92: por qué se aceptó el subtema del grupo, `margen` (1.º − 2.º subtema ≥ mínimo; inactivo desde E1-10c) o `lexico` (un titular nombra un término del subtema). Nulo si no hay subtema. |
 
 En las filas `usgs`, `valor` es la magnitud y `unidad` es `magnitud`. `tipo` es `evento` solo con un `SIS-` (vinculado o candidato ambiguo) y nulo si no hay vínculo; `rol` es siempre `evento`.
 
@@ -285,10 +285,10 @@ Los reemplaza `python -m src.puntaje`. Cada componente guarda de qué valores sa
 | `posicion` | INTEGER | no | puntaje | derivado | 1 = el más prioritario: mayor P, luego mayor U, luego menor ID. |
 | `version_reglas` | VARCHAR | no | `reglas_v1.3.yaml` | derivado | Versión de las reglas con que se calculó (`1.3`). |
 | `fecha_referencia` | VARCHAR | no | `manifest.json` | derivado | ISO 8601 UTC contra la que se midió U: el corte del snapshot, no el reloj. |
-| `relevancia` | DOUBLE | no | puntaje | derivado | R en [0, 1]: foco y percentil de la similitud temática. |
+| `relevancia` | DOUBLE | no | puntaje | derivado | R en [0, 1]: foco (1 Panamá sujeto · 0.5 otro país que afecta). D-103 quitó el percentil de la similitud temática. |
 | `impacto` | DOUBLE | no | puntaje | derivado | I en [0, 1]: alcance del subtema y alcance geográfico. Ni el dato oficial ni las procedencias suman (D-15, D-35). |
 | `urgencia` | DOUBLE | no | puntaje | derivado | U en [0, 1] sobre la publicación original más reciente del grupo (o la detección más reciente, con el vacío correspondiente). |
-| `novedad` | DOUBLE | no | puntaje | derivado | N en [0, 1]: 1 − percentil de la similitud máxima con grupos anteriores. |
+| `novedad` | DOUBLE | no | puntaje | derivado | N en [0, 1] (D-103): 1 si la similitud máxima con un grupo anterior no llega al umbral de agrupación `u`; si llega, (1 − s)/(1 − u). |
 | `evidencia` | DOUBLE | no | puntaje | derivado | E en [0, 1]: procedencias independientes (no titulares), dato oficial y titulares identificables (D-56). |
 | `puntaje` | DOUBLE | no | puntaje | derivado | P = 30R + 25I + 20U + 15N + 10E, de 0 a 100. |
 | `rango` | VARCHAR | no | `reglas_v1.3.yaml` | derivado | `bajo` [0, 40) · `medio` [40, 70) · `alto` [70, 100]. |
@@ -296,6 +296,7 @@ Los reemplaza `python -m src.puntaje`. Cada componente guarda de qué valores sa
 | `vacios` | VARCHAR | no | puntaje | derivado | JSON: vacíos que nacen del puntaje («urgencia estimada: fecha de publicación desconocida», noticia recirculada, subtema no determinado). |
 | `recirculada` | BOOLEAN | no | `noticias` | derivado | Verdadero si todos los titulares del grupo son noticias recirculadas (publicación muy anterior a la detección). |
 | `es_nueva` | BOOLEAN | no | `noticias` | derivado | Falso si el grupo es una noticia recirculada: no se presenta como nueva. |
+| `empate_con` | INTEGER | sí | puntaje | derivado | D-105: cuántos otros grupos tienen el mismo P tal como se muestra (`comparacion.decimales_empate`); 0 = sin empate. Nulo en una base anterior a D-105. |
 
 ### `evidencia`: estado de evidencia y acción recomendada (E1-10)
 

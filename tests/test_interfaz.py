@@ -411,7 +411,8 @@ def test_la_bandeja_trae_reglas_corte_y_el_ranking_con_las_columnas_de_la_spec(a
     texto = "\n".join(textos(at))
     assert "Reglas v" in texto and "Corte del snapshot" in texto and "Una alerta es una invitación a investigar" in texto
     tabla = at.dataframe[0].value
-    assert list(tabla.columns) == ["#", "Tema", "Titular representativo", "P", "Rango", "R", "I", "U", "N", "E", "Evidencia", "Acción", "Origen"]
+    # D-105: la columna «Empate» muestra el empate en P (vacía si el grupo no empata)
+    assert list(tabla.columns) == ["#", "Tema", "Titular representativo", "P", "Rango", "R", "I", "U", "N", "E", "Evidencia", "Acción", "Empate", "Origen"]
     assert len(tabla) == min(CFG.bandeja.filas_iniciales, 11) and list(tabla["#"]) == list(range(1, len(tabla) + 1))
     todas = at.checkbox(key="bandeja_todas").check().run()
     assert len(todas.dataframe[0].value) == 11

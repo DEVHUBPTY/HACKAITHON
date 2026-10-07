@@ -17,6 +17,9 @@ archivos:
   salida: outputs/precision_at_5.json
 
 textos:
+  # D-105: en el corte del top k puede haber un empate en P (sistema) o en la fecha (baseline). El top lo completa la regla de
+  # desempate y la salida declara cuántos grupos empatan en el corte y cuántos quedaron fuera (`empate_en_el_corte`).
+  criterio_de_empate: "Empates en el corte: el sistema los resuelve con la regla del reto (P mostrado, luego mayor urgencia, luego ID); el baseline, por ID. Se informa cuántos grupos empatan en el corte y cuántos quedan fuera del top."
   pendiente: "pendiente de selección humana"
   exploratoria: "exploratoria: {motivos}"
   motivo_pocos_cortes: "{pruebas} fecha(s) de corte, se piden {cortes_minimos} (con n = 1 se declara así, D-57)"

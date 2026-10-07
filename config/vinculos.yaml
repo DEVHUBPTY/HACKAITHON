@@ -14,12 +14,19 @@ motivo_por_defecto: tema_sin_indicador
 ventana_coincidencia_dias: 2        # sismos: ± días entre evento USGS y noticia (supuesto)
 pais_por_defecto: PAN
 
-subtema:                            # D-92 (enmienda a E1-09): el subtema del grupo exige un margen mínimo
-  margen_minimo: 0.015              # supuesto: promedio de (1.º − 2.º subtema) del tema asignado; docs/parametros.md
-  # Apoyo léxico (D-92): si algún titular del grupo contiene uno de estos términos, el subtema más cercano se acepta aunque
-  # el margen no llegue. Palabra completa, sin distinguir mayúsculas ni acentos (los términos de varias palabras admiten
-  # cualquier espacio entre ellas). Salen de las definiciones de docs/guia_temas.md (columna "Incluye") y de las formas
-  # léxicas directas de esas mismas palabras; no de los titulares del snapshot. Los subtemas sin lista usan solo el margen.
+subtema:                            # D-92 (enmienda a E1-09) y E1-10c (X41): el subtema del grupo exige sustento
+  # Criterios que aceptan el subtema más cercano, en orden. E1-10c (X41) quitó `margen`: con un solo prototipo por
+  # subtema, el margen medía el parecido con palabras sueltas del prototipo («obras», «La Chorrera», «CSS») y aceptaba
+  # subtemas que el titular no nombra (MOP → agua potable; aprehensión de un exdirector de la CSS → salud pública).
+  criterios: [lexico]
+  margen_minimo: 0.015              # D-92, sin efecto mientras `margen` no esté en `criterios`; docs/parametros.md
+  # Apoyo léxico (D-92, E1-10c): si algún titular del grupo contiene uno de estos términos, el subtema más cercano se
+  # acepta. Si un titular contiene un término de OTRO subtema del mismo tema, el subtema es ambiguo y no se afirma.
+  # Palabra completa, sin distinguir mayúsculas ni acentos (los términos de varias palabras admiten cualquier espacio
+  # entre ellas). Salen de las definiciones de docs/guia_temas.md (columna "Incluye", los paréntesis de salud, educación
+  # y seguridad y las reglas de frontera) y de las formas léxicas directas de esas palabras; seguridad ciudadana agrega
+  # los nombres de los delitos y actos de un operativo (aprehensión, detención, reclusión) que la guía incluye en él.
+  # Todo subtema del catálogo tiene lista: sin término no hay subtema (alcance neutro de I).
   terminos_por_subtema:
     crecimiento_pib: [pib, producto interno bruto, crecimiento economico]
     # «precio(s)» suelto no es un término (confirmaría un vínculo directo con el IPC para «precio del cobre»): solo frases
@@ -30,6 +37,58 @@ subtema:                            # D-92 (enmienda a E1-09): el subtema del gr
     comercio_exterior: [comercio exterior, exportacion, exportaciones, importacion, importaciones]
     telecomunicaciones: [telecomunicacion, telecomunicaciones, internet]
     sismos: [sismo, sismos, sismico, sismica, temblor, temblores, terremoto]
+    # E1-10c (X41): los demás subtemas del catálogo (antes solo usaban el margen).
+    finanzas_publicas: [finanzas publicas, deuda publica, deuda, presupuesto, presupuestos, presupuestario, recaudacion,
+                        deficit fiscal]
+    inversion: [inversion, inversiones, inversion extranjera, inversionista, inversionistas]
+    # «banco» suelto no: nombra al Banco Mundial y al BID, que no son la banca panameña.
+    banca_calificaciones: [banca, bancos, bancario, bancaria, sistema bancario, calificacion de riesgo, calificadora,
+                           calificadoras, grado de inversion]
+    operacion_canal: [transito, transitos, calado, lago gatun, esclusas]
+    puertos: [puerto, puertos, portuario, portuaria, portuarios]
+    zona_libre: [zona libre, zona libre de colon]
+    carga_aerea: [carga aerea]
+    transporte_carga: [transporte de carga, transportistas de carga]
+    cadenas_suministro: [cadena de suministro, cadenas de suministro]
+    llegada_visitantes: [visitante, visitantes, turista, turistas]
+    cruceros: [crucero, cruceros]
+    hoteleria: [hotel, hoteles, hotelero, hotelera, hoteleria, ocupacion hotelera]
+    aviacion_pasajeros: [vuelo, vuelos, aerolinea, aerolineas, pasajeros, conectividad aerea, ruta aerea, rutas aereas]
+    destinos_promocion: [destino turistico, destinos turisticos, promocion turistica]
+    # X53: «agua» suelta no (el agua de una crecida no es el servicio): solo frases que nombran el suministro.
+    agua_potable: [agua potable, sin agua, suministro de agua, servicio de agua, corte de agua, cortes de agua, idaan, acueducto,
+                   potabilizadora]
+    # «luz» suelta no («dar a luz», «salir a la luz»): solo frases que nombran el servicio.
+    electricidad: [electricidad, energia electrica, apagon, apagones, sin luz, corte de luz, cortes de luz, tarifa electrica]
+    transporte_publico: [transporte publico, metro, mibus, metrobus, autobus, autobuses, buses]
+    recoleccion_basura: [basura, recoleccion de basura, desechos, residuos solidos, relleno sanitario]
+    salud_publica: [salud publica, hospital, hospitales, hospitalario, hospitalaria, css, caja de seguro social, minsa,
+                    ministerio de salud, medicamento, medicamentos]
+    # «clase» suelta no («clase media»): solo el plural de la guía («sin clases»).
+    educacion_publica: [educacion publica, escuela, escuelas, escolar, escolares, colegio, colegios, clases, docente,
+                        docentes, meduca, ministerio de educacion]
+    seguridad_ciudadana: [seguridad ciudadana, policia, policias, policial, policiales, operativo, operativos, carcel,
+                          carceles, carcelario, penitenciario, centro penitenciario, prision, recluso, reclusos, recluido,
+                          recluida, privado de libertad, privados de libertad, delito, delitos, delincuencia, delincuente,
+                          delincuentes, homicidio, homicidios, asesinato, asesinatos, asesinan, asesinado, asesinada,
+                          robo, robos, asalto, asaltos, asaltan, hurto, aprehension, aprehenden, aprehendido, aprehendida,
+                          aprehendidos, detenido, detenida, detenidos, droga, drogas, narcotrafico]
+    inundaciones_lluvias: [inundacion, inundaciones, inundado, inundados, lluvia, lluvias, aguacero, aguaceros, crecida,
+                           desbordamiento]
+    deslizamientos: [deslizamiento, deslizamientos, derrumbe, derrumbes, alud]
+    sequia_nino: [sequia, sequias, el nino, la nina, fenomeno de el nino]   # X53: «seca» no está en la guía
+    incendios_forestales: [incendio forestal, incendios forestales]
+    # X53: «alerta» suelta no («Minsa enciende alertas»): solo Protección Civil o una alerta con su color.
+    alertas_proteccion_civil: [sinaproc, proteccion civil, alerta verde, alerta amarilla, alerta naranja, alerta roja,
+                               aviso de prevencion]
+    # X53: «ley» suelta no («cumplir la ley de tránsito»): solo una norma en trámite o promulgada.
+    leyes_decretos: [leyes, decreto, decretos, decreto ejecutivo, proyecto de ley, anteproyecto de ley, nueva ley,
+                     sanciona la ley, aprueba la ley, gaceta oficial]
+    resoluciones_entes: [resolucion, resoluciones, ente regulador, regulador, asep, superintendencia]
+    reformas: [reforma, reformas]
+    listas_internacionales: [lista gris, listas grises, lista negra, listas negras, gafi, lista fiscal, paraisos fiscales]
+    contratos_concesiones: [contrato, contratos, concesion, concesiones, licitacion, licitaciones]
+    sanciones: [sancion, sanciones, multa, multas, sancionado, sancionada]
 
 sismos:                             # E1-09b: presentación y textos fijos del vínculo con eventos USGS
   zona_horaria: America/Panama      # solo para mostrar; los datos siguen en UTC

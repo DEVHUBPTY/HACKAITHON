@@ -524,6 +524,7 @@ class PuntajeFicha(ModeloFicha):
     version_reglas: str
     fecha_referencia: str
     componentes: dict[str, ComponentePuntaje]
+    empate_con: int = Field(default=0, ge=0)   # D-105: cuántos otros grupos tienen el mismo P tal como se muestra
     habilita_publicacion: Literal[False] = False
 
 

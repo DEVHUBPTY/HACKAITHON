@@ -81,8 +81,9 @@ def construir(ruta: Path, emb: Any, proveedor: ProveedorFalso | None = None, mod
     vinculos += [indicador(G_COMPLETO), indicador(G_COMPLETO, rol="comparable", pais="COL", valor=6.6), *(indicador(G_COMPLETO, anio=a, rol="tendencia", valor=a / 1000) for a in (2022, 2023, 2024))]
     # cifras distintas, sin dato oficial y sin subtema: contradicción abierta + cifras sin dato oficial + sin dato oficial + subtema desconocido
     grupo(G_CIFRAS, [
-        n("NOT-d000000001", "Cierran 12 escuelas en Veraguas por lluvias", "prensa.example", G_CIFRAS, tema_clasificado="servicios_publicos"),
-        n("NOT-d000000002", "Más de 40 escuelas cerradas en Veraguas por lluvias", "english.example", G_CIFRAS, tema_clasificado="servicios_publicos"),
+        # X53: nombran educación («escuelas») y agua potable a la vez -> subtema ambiguo, el grupo sigue sin subtema
+        n("NOT-d000000001", "Cierran 12 escuelas en Veraguas sin agua potable", "prensa.example", G_CIFRAS, tema_clasificado="servicios_publicos"),
+        n("NOT-d000000002", "Más de 40 escuelas cerradas en Veraguas sin agua potable", "english.example", G_CIFRAS, tema_clasificado="servicios_publicos"),
     ], sub=None, tema="servicios_publicos")
     vinculos.append(fila_vinculo(G_CIFRAS, motivo_sin_vinculo="tema_sin_indicador"))
     # un solo vínculo y es indirecto: procedencias insuficientes + «solo vínculo indirecto» (y no «sin vínculo en la tabla»)
