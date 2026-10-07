@@ -970,6 +970,8 @@ class SalidasEditorial(ModeloConfig):
     titulares_min: int
     titulares_max: int
     titular_max_palabras: int
+    enfoque_oraciones_min: int
+    enfoque_oraciones_max: int
     brief_max_palabras: int
     preguntas: int
     guion_segundos_min: int
@@ -983,7 +985,11 @@ class SalidasEditorial(ModeloConfig):
 
     @model_validator(mode="after")
     def _rangos(self) -> SalidasEditorial:
-        if self.guion_palabras_min > self.guion_palabras_max or self.titulares_min > self.titulares_max:
+        if (
+            self.guion_palabras_min > self.guion_palabras_max
+            or self.titulares_min > self.titulares_max
+            or self.enfoque_oraciones_min > self.enfoque_oraciones_max
+        ):
             raise ValueError("un mínimo supera a su máximo")
         return self
 
@@ -1830,6 +1836,11 @@ class AtribucionGeneracion(ModeloConfig):
     marcadores: list[str] = Field(min_length=1)
 
 
+class TextoGeneracion(ModeloConfig):
+    motivo_max_caracteres: int = Field(gt=0)
+    vista_previa_caracteres: int = Field(gt=0)
+
+
 class TraducidoGeneracion(ModeloConfig):
     idioma_base: str
     marca: str
@@ -1880,6 +1891,7 @@ class ConfigGeneracionBorrador(ModeloConfig):
     prefijos: PrefijosGeneracion
     atribucion: AtribucionGeneracion
     traducido: TraducidoGeneracion
+    texto: TextoGeneracion
     fuga_prompt: FugaPromptGeneracion
     grupos: GruposGeneracion
     deepseek: DeepSeekConfig

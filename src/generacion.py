@@ -415,7 +415,7 @@ def _errores_de_oracion(o: OracionLlm, ctx: _Contexto, permite_marcador: bool = 
     if "[VISUAL" in o.texto:
         errores.append(f"el único marcador visual permitido es {marcador}, como oración propia")
     if not o.afirmaciones:
-        errores.append(f"oración sin afirmaciones: «{o.texto[:60]}»")
+        errores.append(f"oración sin afirmaciones: «{o.texto[: ctx.cfg.texto.vista_previa_caracteres]}»")
     desconocidas = [i for i in o.afirmaciones if i not in ctx.afirmaciones]
     if desconocidas:
         errores.append(f"cita afirmaciones que no existen o no se validaron: {', '.join(desconocidas)}")
@@ -476,7 +476,7 @@ def validar_seccion(seccion: str, valor: Any, ctx: _Contexto) -> list[str]:
             errores += [] if _atribuido(o, ctx) else [f"un titular basado en una declaración lleva atribución o verbo de reporte: «{o.texto}»"]
         return errores
     if seccion == "enfoque":
-        errores = _oraciones(seccion, valor, ctx, minimo=1, maximo=2)
+        errores = _oraciones(seccion, valor, ctx, minimo=e.enfoque_oraciones_min, maximo=e.enfoque_oraciones_max)
         for o in valor:
             if not any(a.tipo in ("inferencia", "hipótesis") for a in _citadas(o, ctx)):
                 errores.append("el enfoque se apoya en una inferencia o hipótesis, nunca se presenta como hecho")
@@ -636,7 +636,7 @@ class Generador:
             if len(validas) >= self.cfg.afirmaciones.minimas_validas:
                 registro.valida = True
                 break
-            motivo = "no hubo afirmaciones válidas: " + "; ".join(descartadas)[:600]
+            motivo = "no hubo afirmaciones válidas: " + "; ".join(descartadas)[: self.cfg.texto.motivo_max_caracteres]
             validas = []
         if validas:
             self._afirmaciones = self._con_contradicciones(validas)
@@ -719,7 +719,7 @@ class Generador:
             if not pendientes:
                 break
         for s in pendientes:
-            self._vacios.append(Vacio(origen="seccion", referencia=s, motivo="; ".join(errores.get(s, ["sin respuesta"]))[:600]))
+            self._vacios.append(Vacio(origen="seccion", referencia=s, motivo="; ".join(errores.get(s, ["sin respuesta"]))[: self.cfg.texto.motivo_max_caracteres]))
 
     def generar_todo(self) -> None:
         for g in self.grupos:

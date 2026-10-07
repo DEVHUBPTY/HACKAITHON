@@ -39,6 +39,10 @@ traducido:                 # D-45: la cita de un titular que no está en este id
 fuga_prompt:
   palabras_por_fragmento: 6
 
+texto:                     # recortes de los mensajes de error y de descarte (no de la salida)
+  motivo_max_caracteres: 600
+  vista_previa_caracteres: 60
+
 grupos:                    # D-44: 1 llamada de afirmaciones + 4 de redacción, cada una bajo demanda
   editorial: [titulos, brief, guion, resumen]
   investigacion: [investigacion]
@@ -53,7 +57,7 @@ deepseek:                  # respaldo provisional de pago (D-80); la clave sale 
     salida: 0.42
 
 tope_costo:                # D-67: al alcanzarlo, la siguiente llamada usa el modelo local
-  tokens: 300000
+  tokens: 1000000
   usd: 0.50
   registro: outputs/costo_llm.json   # acumulado entre ejecuciones (fuera de git)
 

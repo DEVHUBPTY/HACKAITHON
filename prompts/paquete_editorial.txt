@@ -23,16 +23,16 @@ Reglas:
 {esquema}
 
 ## grupo titulos
-Tarea: redacta "titulo" (una oración, máximo 14 palabras), "titulares" (2 o 3 alternativas para el productor digital, máximo 14 palabras cada una) y "copy_digital" (máximo 80 palabras en total, como máximo 2 hashtags, sin emojis). El título y los titulares son fieles a una afirmación; si vienen de una declaración, TODOS llevan atribución: el nombre del medio (por ejemplo "según critica.com.pa") o un verbo de reporte ("reporta", "informa", "señala").
+Tarea: redacta "titulo" (una oración, máximo 14 palabras), "titulares" (2 o 3 alternativas para el productor digital, máximo 14 palabras cada una) y "copy_digital" (máximo 80 palabras en total —apunta a unas 50—, como máximo 2 hashtags, sin emojis). El título y los titulares son fieles a una afirmación; si vienen de una declaración, TODOS llevan atribución: el nombre del medio (por ejemplo "según critica.com.pa") o un verbo de reporte ("reporta", "informa", "señala").
 
 ## grupo brief
-Tarea: redacta "brief" (máximo 250 palabras en total, distingue hecho, declaración, inferencia e hipótesis y atribuye cada declaración), "enfoque" (1 o 2 oraciones sobre por qué importa a la población; apóyate en afirmaciones de tipo inferencia o hipótesis y nunca lo presentes como hecho) y "preguntas" (exactamente 3 preguntas de investigación). Cada pregunta nace de un vacío de la ficha: copia en "vacio" el id exacto de ese vacío. Si hay menos de 3 vacíos, puedes repetir un vacío con otra pregunta.
+Tarea: redacta "brief" (máximo 250 palabras en total —apunta a unas 150—, distingue hecho, declaración, inferencia e hipótesis y atribuye cada declaración), "enfoque" (1 o 2 oraciones sobre por qué importa a la población; apóyate en afirmaciones de tipo inferencia o hipótesis y nunca lo presentes como hecho) y "preguntas" (exactamente 3 preguntas de investigación). Cada pregunta nace de un vacío de la ficha: copia en "vacio" el id exacto de ese vacío. Si hay menos de 3 vacíos, puedes repetir un vacío con otra pregunta.
 
 ## grupo guion
-Tarea: redacta "guion" para 45 a 60 segundos de lectura (entre 110 y 150 palabras habladas, sin contar los marcadores). Cada oración indica su "parte": "entrada", "desarrollo" o "cierre", en ese orden, con las tres presentes. Usa atribución hablada ("según reportan…"). Para el material visual escribe solo el marcador {marcador_visual} como una oración propia, sin afirmaciones, y nunca describas imágenes como existentes.
+Tarea: redacta "guion" para 45 a 60 segundos de lectura (entre 110 y 150 palabras habladas, sin contar los marcadores; apunta a unas 130). Cada oración indica su "parte": "entrada", "desarrollo" o "cierre", en ese orden, con las tres presentes. Usa atribución hablada ("según reportan…"). Para el material visual escribe solo el marcador {marcador_visual} como una oración propia, sin afirmaciones, y nunca describas imágenes como existentes.
 
 ## grupo resumen
-Tarea: redacta "resumen_web" (máximo 120 palabras en total) para el productor digital, con las mismas reglas del brief: distingue hecho, declaración, inferencia e hipótesis y atribuye cada declaración.
+Tarea: redacta "resumen_web" (máximo 120 palabras en total —apunta a unas 80—) para el productor digital, con las mismas reglas del brief: distingue hecho, declaración, inferencia e hipótesis y atribuye cada declaración.
 
 ## grupo investigacion
 Tarea: es un paquete de INVESTIGACIÓN, no de publicación: no escribas guion, copy ni titulares. Redacta "titulo_trabajo" (una oración de trabajo, máximo 14 palabras, con atribución si viene de una declaración), "enfoque" (1 o 2 oraciones, tipo inferencia o hipótesis) y "preguntas" (exactamente 3 preguntas de investigación). Cada pregunta nace de un vacío de la ficha: copia en "vacio" el id exacto de ese vacío. Si hay menos de 3 vacíos, puedes repetir un vacío con otra pregunta.
