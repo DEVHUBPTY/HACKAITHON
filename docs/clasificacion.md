@@ -399,6 +399,50 @@ Lectura:
 4. **Filtro de ruido:** 5 filas «útiles» que la persona marcó `sin_tema` indican reglas faltantes (política electoral sin norma,
    notas sobre otro país); es un cambio de `config/ruido.yaml` que necesita más ejemplos para no sobreajustar.
 
+### 6 · Tres vías con las 61 etiquetas provisionales (D-101, 2026-10-07)
+
+**Resultado: la corrección de Economía regional NO se aplicó.** Qué cambió: `eval/etiquetas.csv` tiene ahora la columna
+`origen` (`humano` en las 100 de la persona; `asistente_provisional` en 61 nuevas) y `eval.diagnostico_temas` reporta las tres
+vías. **Las 61 las propuso un agente y las aprobó provisionalmente el asistente (D-101), pendientes de la revisión humana
+(C-09): hay riesgo de circularidad y ningún resultado que las use es una verdad de referencia.** Por eso todo lector del CSV
+(`eval.clasificacion`, `eval.ruido`, `eval.agrupacion`, `eval.diagnostico_temas`) lee **solo las humanas por defecto**; las
+provisionales se piden con `origenes=` y el JSON y la impresión marcan cada vía que las usa como `PROVISIONAL (D-101)`. Las
+provisionales no vienen de un muestreo probabilístico (pesan 1; 46 de las 61 salen del estrato de ruido del filtro), así que no
+sirven para métricas ponderadas. Ninguna usa un titular de `ejemplos_excluidos.txt`. El lector normaliza el encabezado `origen` (sin espacios ni mayúsculas), falla
+ante uno parecido (`origen_`, `orígen`) o repetido y, en `eval/etiquetas.csv`, ante la falta de la columna: nunca cuenta las
+provisionales como humanas en silencio (X47). Los informes de `eval.clasificacion`, `eval.ruido`, `eval.agrupacion` y
+`eval.diagnostico_temas` que se piden con provisionales llevan `usa_etiquetas_provisionales` y el aviso PROVISIONAL (D-101); el de
+clasificación además no pondera (vista ponderada `NO_APLICA`: las provisionales no tienen `peso_muestreo`) y
+`eval.etiquetar --consolidar` conserva las filas provisionales del consolidado.
+
+| Vía | Filas · eventos · `sin_tema` | Actual: macro-F1 [IC 95 %] · exactitud por evento | «Economía regional: solo descripción»: macro-F1 · Δ por evento [IC 95 %] · recall de Economía |
+|---|---|---|---|
+| **humano** | 63 · 29 · 5 | 0.401 [0.245–0.510] · 0.466 [0.310–0.638] | 0.474 [0.294–0.561] · +0.029 [0.000, 0.075] (cambian 2 de 29) · 5/26 [8.5–37.9 %] → 7/26 [13.7–46.1 %] |
+| **asistente_provisional** (PROVISIONAL) | 15 · 13 · 5 | 0.167 [0.000–0.278] · 0.231 [0.000–0.462] | 0.300 [0.074–0.515] · +0.026 [0.000, 0.077] (cambia 1 de 13) · 0/3 [0.0–56.2 %] → 1/3 [6.1–79.2 %] |
+| **combinado** (PROVISIONAL) | 78 · 42 · 10 | 0.364 [0.228–0.446] · 0.393 [0.250–0.548] | 0.438 [0.275–0.496] · +0.028 [0.000, 0.064] (cambian 3 de 42) · 5/29 [7.6–34.5 %] → 8/29 [14.7–45.7 %] |
+
+La vía humana reproduce exactamente las cifras ya integradas (se comparó el JSON campo a campo). Solo 15 de las 61 llegan al
+clasificador: las otras 46 el filtro de ruido ya las había marcado, así que **no entran en este diagnóstico**. IC de macro-F1:
+bootstrap sobre filas (`eval/metricas.py`); IC de la exactitud y de Δ: bootstrap sobre eventos; proporciones por fila: Wilson.
+
+**Por qué no se aplicó.** (1) La mejora es la misma en las tres vías (ninguna clase pierde recall) pero en ninguna es
+distinguible de cero: Δ por evento tiene el límite inferior en 0.000 con 2 a 3 eventos que cambian (el criterio de D-57
+para aceptar un cambio exige que el IC excluya el cero). (2) **Una medición independiente empeora:** en los 15 casos difíciles de la guía (escritos
+sin mirar las etiquetas) el activo e5·A baja de 10/15 a 9/15 y su macro-F1 de 0.614 a 0.539; entra CD-06 («Panamá sale de la
+lista gris del GAFI», esperado Regulación, predicho Economía). MiniLM·A (no activo) sube de 9/15 a 10/15. Con la redacción
+aplicada fallan además 6 tests que fijan la lista de limitaciones (`tests/test_casos_dificiles.py`). (3) La opción se escogió
+entre tres variantes con estas mismas etiquetas, así que su ganancia es optimista. (4) **La causa real de los casos regionales
+está antes del clasificador:** las 5 filas que la persona (o la aprobación provisional) marcó como Economía/Logística
+**regionales** (diésel de EE. UU. ×2, ayuda de EE. UU. a América Latina ×2, carga contenerizada) el filtro de ruido las
+descarta como `no_es_panama` y no marca ninguna como regional: recall de `alcance_regional` sobre las provisionales **0/5**
+[IC 0.0–43.4 %] (sobre las humanas 37/38 = 97.4 % [86.5–99.5 %]). Cambiar la descripción de Economía no las rescata porque
+nunca llegan al clasificador. Tampoco se tocó ningún umbral: `sin_tema` tiene 5 positivos (humano) y 10 (combinado), lejos
+de los 30 documentados; la validación cruzada del umbral sigue sin ganar nada fuera de muestra (humano: exactitud 0.324 con
+objetivo macro-F1 y 0.507 con objetivo exactitud; combinado 0.290 y 0.372; todas por debajo de no abstenerse).
+
+**Qué haría falta para decidirlo:** que una persona confirme las 61 (C-09), la decisión de producto sobre la regla regional del
+filtro (D-84, ver Pendiente) y, solo después, repetir la medición.
+
 ## Pendiente
 
 1. **Más etiquetas y más personas:** las 100 etiquetas actuales son de una sola persona y repiten titulares. Reetiquetar con
@@ -408,3 +452,30 @@ Lectura:
    de fuga semántica) y decidir si se activa el filtro por similitud. **La elección se registra en Notion con los números** (no
    hay números reales todavía, así que no se registró nada).
 3. `docs/ia_vs_baseline.md` (D-66) lo completan E1-11 y E1-18 con las demás tareas.
+4. **Preguntas de la guía de etiquetado para la revisión humana C-09** (salen de aprobar las 61 etiquetas provisionales, D-101;
+   **no son decisiones de producto**, las decide el equipo; cada una con el caso que la origina):
+   1. **Noticias judiciales y policiales.** Una aprehensión o un homicidio se etiquetó `servicios_publicos` (seguridad
+      ciudadana: NOT-6a08378c7c, NOT-d1e861a440, NOT-b45e085430) pero una audiencia contra dirigentes sindicales
+      (NOT-94e9865b40) la pasó el asistente de `fuera_de_temas` a `servicios_publicos` (cambio provisional D-101: es una
+      audiencia de un proceso penal y sigue el criterio de la aprehensión de Enrique Lau; el motivo está en su `nota` y en «Cambios
+      hechos» de Notion), y una protesta municipal (NOT-c5695de607) como `fuera_de_temas`. El clasificador es igual de inconsistente: aprehensiones →
+      `servicios_publicos` o `regulacion`, audiencia → `regulacion`. ¿La guía incluye justicia penal en Servicios públicos o solo
+      la seguridad ciudadana? (Ese cambio es una decisión provisional que se lleva a C-09; mientras tanto la fila cuenta en las
+      vías provisional y combinada.)
+   2. **«No es de Panamá» según la redacción.** El filtro y la persona difieren entre `no_es_panama` y `fuera_de_temas` según
+      si el titular nombra a Panamá (farándula local con Panamá en el texto, p. ej. NOT-c557ad4339 y NOT-e6ee0d9efd, el
+      filtro dice `no_es_panama`; la etiqueta, `fuera_de_temas`; 3 de las 14 `fuera_de_temas` provisionales, y 1 de las 29 `no_es_panama`
+      al revés).
+      Y los temas globales sin mención de Panamá (COP31, banano como commodity, Bolsa de México, rutas de cruceros) quedaron
+      `no_es_panama` con la nota «dudosa»: ¿cuenta como Panamá lo que afecta a la región (D-84) aunque el titular no lo diga?
+      Cuando el motivo de ruido no cambia la bandeja, ¿importa distinguirlos?
+   3. **Regional marcado como ruido.** Las 5 filas de Economía/Logística regionales de arriba (alcance regional = sí) el filtro
+      las descarta (`no_es_panama`) y su `alcance_regional` sale en `False`: la regla regional del filtro (D-84) no las cubre.
+      ¿Un titular en coreano, ruso o portugués sobre ayuda o combustibles que afectan a América Latina debe quedarse? Si sí, es
+      un cambio de `config/ruido.yaml`, no de `temas.yaml`.
+   4. **Páginas que no son una nota.** Tres títulos (`Preview - Asamblea de Panamá`, `Dominican Today`, `Inicio | Periódico
+      CiudadCCS`) se etiquetaron `no_es_noticia` y el filtro acertó los tres. ¿Basta con el título, o la guía debe decir qué
+      hacer con titulares que son el nombre del medio o de una sección?
+   5. **Salud y vivienda.** Enfermedades respiratorias en una comarca y un incendio de vivienda no tienen un tema claro:
+      el primero se etiquetó `servicios_publicos` y el segundo `fuera_de_temas` («no es incendio forestal ni alerta de
+      protección civil»); el clasificador dice `eventos_naturales` para los dos. ¿Dónde acaba Eventos naturales?

@@ -20,11 +20,13 @@ import csv
 import json
 import re
 import sys
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from eval import metricas
+from eval import origen_etiquetas as oe
 from src import db
 from src.baseline import SIN_TEMA, Baseline
 from src.clasificacion import (
@@ -387,40 +389,43 @@ def ids_excluidos(ruta: Path = EXCLUIDOS) -> set[str]:
     }
 
 
-def leer_etiquetas(ruta: Path, columna: str, temas: ConfigTemas) -> dict[str, EtiquetaHumana]:
+def leer_etiquetas(
+    ruta: Path, columna: str, temas: ConfigTemas, origenes: Iterable[str] = oe.SOLO_HUMANOS
+) -> dict[str, EtiquetaHumana]:
     """``id_noticia -> EtiquetaHumana`` del CSV consolidado de E1-06 (``eval/etiquetar.py --consolidar``).
 
     * Un titular que una persona marcó como ruido (``ruido`` = ``no_es_panama``, ``fuera_de_temas`` o ``no_es_noticia``)
       es una **abstención correcta**: su etiqueta de oro es ``sin_tema``. No es "sin etiquetar".
     * Sin ruido y sin ``tema_principal`` (``columna``), el titular no está etiquetado y se omite.
     * ``peso_muestreo`` (población / muestra del estrato) pondera las métricas; si el CSV no trae la columna, pesa 1.
+    * ``origenes``: solo se leen las filas con esa procedencia (por defecto las humanas; las ``asistente_provisional``
+      de D-101 se piden de forma explícita, ver ``eval/origen_etiquetas.py``).
     * Falla si falta ``id_noticia`` o ``columna``, o si un tema, un motivo de ruido o un peso no son válidos.
     """
     with ruta.open(encoding="utf-8", newline="") as f:
-        lector = csv.DictReader(f)
-        campos = lector.fieldnames or []
-        if "id_noticia" not in campos or columna not in campos:
-            raise KeyError(f"{ruta.name} no tiene las columnas id_noticia y {columna!r} (tiene: {campos})")
-        etiquetas: dict[str, EtiquetaHumana] = {}
-        for fila in lector:
-            id_ = fila["id_noticia"].strip()
-            motivo = plano((fila.get(COLUMNA_RUIDO) or "").strip())
-            if motivo in SIN_RUIDO:
-                tema = tema_a_id(fila[columna] or "", temas)
-                if tema is None:    # una celda vacía sin ruido es "sin etiquetar", no una etiqueta
-                    continue
-            elif motivo in FUERA_DE_LOS_TEMAS:
-                tema = SIN_TEMA
-            else:
-                raise ValueError(f"{id_}: ruido {motivo!r} desconocido (use ninguno o {sorted(FUERA_DE_LOS_TEMAS - {SIN_TEMA})})")
-            bruto = (fila.get(COLUMNA_PESO) or "").strip()
-            try:
-                peso = float(bruto) if bruto else 1.0
-            except ValueError as exc:
-                raise ValueError(f"{id_}: {COLUMNA_PESO} {bruto!r} no es un número") from exc
-            if not peso > 0 or peso == float("inf"):
-                raise ValueError(f"{id_}: {COLUMNA_PESO} debe ser un número positivo (es {bruto!r})")
-            etiquetas[id_] = EtiquetaHumana(tema, peso, (fila.get(COLUMNA_ESTRATO) or "").strip() or None)
+        campos = csv.DictReader(f).fieldnames or []
+    if "id_noticia" not in campos or columna not in campos:
+        raise KeyError(f"{ruta.name} no tiene las columnas id_noticia y {columna!r} (tiene: {campos})")
+    etiquetas: dict[str, EtiquetaHumana] = {}
+    for fila in oe.leer_filas(ruta, origenes):
+        id_ = fila["id_noticia"].strip()
+        motivo = plano((fila.get(COLUMNA_RUIDO) or "").strip())
+        if motivo in SIN_RUIDO:
+            tema = tema_a_id(fila[columna] or "", temas)
+            if tema is None:    # una celda vacía sin ruido es "sin etiquetar", no una etiqueta
+                continue
+        elif motivo in FUERA_DE_LOS_TEMAS:
+            tema = SIN_TEMA
+        else:
+            raise ValueError(f"{id_}: ruido {motivo!r} desconocido (use ninguno o {sorted(FUERA_DE_LOS_TEMAS - {SIN_TEMA})})")
+        bruto = (fila.get(COLUMNA_PESO) or "").strip()
+        try:
+            peso = float(bruto) if bruto else 1.0
+        except ValueError as exc:
+            raise ValueError(f"{id_}: {COLUMNA_PESO} {bruto!r} no es un número") from exc
+        if not peso > 0 or peso == float("inf"):
+            raise ValueError(f"{id_}: {COLUMNA_PESO} debe ser un número positivo (es {bruto!r})")
+        etiquetas[id_] = EtiquetaHumana(tema, peso, (fila.get(COLUMNA_ESTRATO) or "").strip() or None)
     return etiquetas
 
 
@@ -432,6 +437,7 @@ def evaluar_etiquetas(
     temas: ConfigTemas,
     nombres_modelos: list[str],
     motores: dict[str, Any] | None = None,
+    origenes: Iterable[str] = oe.SOLO_HUMANOS,
 ) -> dict[str, Any]:
     """Métricas con etiquetas humanas, sin los ejemplos de ``temas.yaml``, en dos vistas.
 
@@ -440,10 +446,16 @@ def evaluar_etiquetas(
     * **Pipeline** (``pipeline``): además los que el filtro descartó, que cuentan como ``sin_tema`` predicho; con
       métricas sin ponderar y ponderadas por ``peso_muestreo`` (las del estrato de ruido pesan más que las del otro).
 
+    ``origenes``: por defecto solo las etiquetas humanas. Si se piden las ``asistente_provisional`` (D-101), el informe lo
+    declara (``usa_etiquetas_provisionales``, ``aviso``) y **no pondera** (no hay pesos de muestreo para ellas: mezclarlos
+    sería inventar una población); la vista ponderada queda ``NO_APLICA``.
+
     El texto sale de ``titulo_limpio``; ``tema`` (origen, D-62) y ``tema_clasificado`` no se leen: las predicciones se
     recalculan aquí con cada modelo y método.
     """
-    etiquetas = leer_etiquetas(ruta_etiquetas, columna, temas)
+    origenes = oe.validar_origenes(origenes)
+    provisional = oe.usa_provisionales(origenes)
+    etiquetas = leer_etiquetas(ruta_etiquetas, columna, temas, origenes)
     excluidos = ids_excluidos()
     con = db.conectar(ruta_base, solo_lectura=True)
     try:
@@ -462,12 +474,12 @@ def evaluar_etiquetas(
         "evaluados": len(pasaron),
     }
     if not pasaron:
-        return {"estado": "SIN_FILAS_EVALUABLES", "conteo": conteo}
+        return oe.marcar({"estado": "SIN_FILAS_EVALUABLES", "conteo": conteo}, origenes)
     reglas = Reglas.desde_config()
     clases = clases_de(temas)
     textos = [texto_de_entrada(en_base[i][1], en_base[i][2], cfg.usar_descripcion) for i in pasaron]
     reales = [etiquetas[i].tema for i in pasaron]
-    pesos = [etiquetas[i].peso for i in pasaron]
+    pesos = None if provisional else [etiquetas[i].peso for i in pasaron]
     ninguno: list[str | None] = [None] * len(pasaron)
     todos_reales = [etiquetas[i].tema for i in validos]
     todos_pesos = [etiquetas[i].peso for i in validos]
@@ -475,6 +487,7 @@ def evaluar_etiquetas(
     abstencion = Prediccion(SIN_TEMA, None, None, None)     # lo que el filtro de ruido ya decidió
     resultado: dict[str, Any] = {
         "estado": "EVALUADO",
+        **oe.marcar({}, origenes),
         "conteo": conteo,
         "nota": "Sin ponderar y ponderado (peso_muestreo) se reportan juntos; los IC de precisión y recall son sin ponderar.",
         "configuraciones": {},
@@ -491,10 +504,14 @@ def evaluar_etiquetas(
             completas = [preds[lugar[i]] if i in lugar else abstencion for i in validos]
             resultado["pipeline"]["configuraciones"][etiqueta] = {
                 "sin_ponderar": evaluar_configuracion(validos, validos, todos_reales, [None] * len(validos), completas, clases, cfg, z),
-                "ponderado": {
-                    "exactitud_principal": metricas.exactitud_ponderada(todos_reales, [p.principal for p in completas], todos_pesos),
-                    "macro_f1": metricas.macro_f1_con_ic(todos_reales, [p.principal for p in completas], clases, cfg.criterio_ab, todos_pesos),
-                },
+                "ponderado": (
+                    {"estado": "NO_APLICA", "motivo": "las etiquetas provisionales (D-101) no tienen peso_muestreo: no se mezclan con los pesos de las humanas"}
+                    if provisional
+                    else {
+                        "exactitud_principal": metricas.exactitud_ponderada(todos_reales, [p.principal for p in completas], todos_pesos),
+                        "macro_f1": metricas.macro_f1_con_ic(todos_reales, [p.principal for p in completas], clases, cfg.criterio_ab, todos_pesos),
+                    }
+                ),
             }
         resultado["comparaciones"][nombre] = comparar(reales, pred, clases, cfg)
     return resultado
@@ -517,7 +534,9 @@ def _m(d: dict[str, Any]) -> str:
 
 def imprimir(titulo: str, bloque: dict[str, Any], clases: list[str]) -> list[str]:
     """Líneas legibles de un bloque de evaluación (casos difíciles o datos reales)."""
-    lineas = [f"== {titulo} =="]
+    lineas = [f"== {titulo}{' · PROVISIONAL (D-101)' if bloque.get('usa_etiquetas_provisionales') else ''} =="]
+    if bloque.get("usa_etiquetas_provisionales"):
+        lineas.append(bloque["aviso"])
     for nombre, c in bloque["configuraciones"].items():
         lineas.append(f"\n[{nombre}]")
         lineas.append(f"  exactitud del tema principal: {_p(c['exactitud_principal'])}")
@@ -547,7 +566,10 @@ def imprimir(titulo: str, bloque: dict[str, Any], clases: list[str]) -> list[str
         for nombre, c in bloque["pipeline"]["configuraciones"].items():
             sp, pd = c["sin_ponderar"], c["ponderado"]
             lineas.append(f"[{nombre}] sin ponderar: exactitud {_p(sp['exactitud_principal'])}; macro-F1 {_m(sp['macro_f1'])}")
-            lineas.append(f"    ponderado: exactitud {pd['exactitud_principal']['proporcion']}; macro-F1 {_m(pd['macro_f1'])}")
+            if pd.get("estado") == "NO_APLICA":
+                lineas.append(f"    ponderado: no aplica ({pd['motivo']})")
+            else:
+                lineas.append(f"    ponderado: exactitud {pd['exactitud_principal']['proporcion']}; macro-F1 {_m(pd['macro_f1'])}")
     return lineas
 
 

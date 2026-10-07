@@ -523,8 +523,11 @@ def evaluar_ranking(ruta_base: Path, sensibilidad: Path = RAIZ / "outputs" / "se
     """Hechos descriptivos del ranking frente a «más reciente primero». No mide utilidad: eso exige la selección de un editor (E1-19)."""
     from src import db
 
+    from src.prioridad import MODALIDAD_POR_DEFECTO
+
     con = db.conectar(ruta_base, solo_lectura=True)
     try:
+        db.exigir_modalidad_de_la_base(con, MODALIDAD_POR_DEFECTO)      # X48: estas métricas son del ranking editorial
         puntajes = {
             r[0]: r for r in con.execute(
                 "SELECT id_grupo, posicion, puntaje, rango, relevancia, impacto, urgencia, novedad, evidencia, componentes, vacios "

@@ -72,6 +72,7 @@ vacios:                           # textos de los vacíos de verificación (plan
   evento_sin_revisar: "el evento oficial vinculado ({ids}) tiene estado automático: puede cambiar al ser revisado"
   noticia_recirculada: "noticia recirculada: publicada originalmente el {fecha}; no se trata como nueva"
   subtema_desconocido: "subtema no determinado: se usó el alcance neutro de impacto"
+  sector_desconocido: "sector no determinado: el tema del grupo no tiene sector y se usó el alcance neutro de impacto"
   motivo_sin_dato_oficial_por_defecto: "no hay un vínculo definido para este tema en la tabla de contexto"
   motivos_sin_vinculo:            # `vinculos.motivo_sin_vinculo` dicho en palabras: ningún código interno llega a la ficha
     tema_sin_indicador: "el tema no tiene un indicador oficial asignado"
