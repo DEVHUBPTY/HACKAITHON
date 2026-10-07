@@ -21,7 +21,7 @@ def _git(*args: str) -> subprocess.CompletedProcess[str]:
 
 def test_la_configuracion_declara_las_fuentes_restringidas() -> None:
     assert {"rss_tvn", "gdelt", "sbp"} <= set(cargar_fuentes().redistribucion_restringida)
-    assert "data/processed/sbp_series.csv" in cargar_fuentes().redistribucion_restringida["sbp"]
+    assert cargar_fuentes().redistribucion_restringida["sbp"] == ["data/raw/sbp/"]   # el CSV agregado se versiona por D-116
 
 
 @pytest.mark.parametrize(("fuente", "ruta"), RUTAS)
@@ -57,3 +57,4 @@ def test_reproducir_omite_lo_que_depende_de_un_archivo_local_ausente() -> None:
     omitidas = {"archivo:data/processed/sbp_series.csv", "tabla:vinculos", "fichas"}
     assert reproducir.comparar(registrado, actual, omitidas) == []
     assert [d.clave for d in reproducir.comparar(registrado, {**actual, "tabla:grupos": "x"}, omitidas)] == ["tabla:grupos"]
+

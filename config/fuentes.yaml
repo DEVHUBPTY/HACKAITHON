@@ -206,7 +206,7 @@ gdelt:
 redistribucion_restringida:
   rss_tvn: ["data/raw/rss_tvn/"]
   gdelt: ["data/raw/gdelt/"]
-  sbp: ["data/raw/sbp/", "data/processed/sbp_series.csv"]
+  sbp: ["data/raw/sbp/"]   # solo los .xlsx crudos; el CSV agregado se versiona por D-116
 
 paises_es:
   Afghanistan: "Afganistán"
@@ -375,7 +375,7 @@ sbp:
   periodos_por_serie: 12
   aviso_legal_url: "https://www.superbancos.gob.pa/documentos/aviso_legal/aviso_legal.pdf"
   # Texto fijo de la columna `condiciones` (aviso legal de la SBP, verificado el 2026-10-07). La autorización escrita que el aviso
-  # exige para reproducir o redistribuir NO se ha pedido: queda «Pendiente de verificar» (Pregunta abierta de la spec E3-02).
+  # exige para reproducir o redistribuir NO se ha pedido: queda «Pendiente de verificar» (Pregunta abierta de la spec E3-02). Versionado por decisión del dueño (D-116), con el riesgo aceptado: el aviso legal de la SBP restringe la reproducción y redistribución sin autorización escrita; el repositorio es privado; si el repositorio o el paquete de entrega se hacen públicos, hay que pedir la autorización o retirar los valores.
   condiciones: >-
     Aviso legal de la SBP: reproducción y redistribución restringidas sin autorización previa por escrito; información solo
     informativa y sujeta a cambios; la SBP no responde por análisis de terceros. Autorización de reutilización: Pendiente de verificar.

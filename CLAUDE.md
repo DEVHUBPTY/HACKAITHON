@@ -30,7 +30,7 @@ poetry install                                       # instala todo desde poetry
 poetry run pytest -v                                 # todas las pruebas (hoy T01 y T03; las demás T llegan con su spec)
 poetry run python -m scripts.extraer --todo          # RSS + GDELT + Banco Mundial + USGS → data/raw/ y data/processed/ (E0-04)
 poetry run python -m scripts.extraer --rss           # solo el RSS de TVN (correr a diario)
-poetry run python -m scripts.extraer --sbp            # fuente D: informes agregados de la SBP → data/raw/sbp/ y data/processed/sbp_series.csv, ambos SOLO locales, nunca en git (E3-02, D-72)
+poetry run python -m scripts.extraer --sbp            # fuente D: informes agregados de la SBP → data/raw/sbp/ y data/processed/sbp_series.csv, el CSV se versiona (D-116, riesgo aceptado) y los .xlsx de raw/sbp/ quedan solo locales (E3-02)
 poetry run python -m scripts.manifest                # data/manifest.json + data/CHANGELOG.md
 poetry run python -m scripts.validar_snapshot        # snapshot contra la receta → outputs/validacion_snapshot.json
 poetry run python -m src.config --validar            # valida todo config/*.yaml (D-79)
@@ -89,7 +89,7 @@ config/      reglas_v1.3.yaml · temas.yaml · ejemplos_excluidos.txt · vinculo
 templates/   ficha.md.j2 (E1-10b) · caso.md.j2 (E1-16: ficha + versión + historial + leyenda, para Notion)
 prompts/     afirmaciones_citadas.txt (E0-07) · comparar_contradicciones.txt (E1-10) · afirmaciones_ficha.txt · paquete_editorial.txt (E1-12) · boletin_banca.txt (E2-02: los dos pasos del boletín), versionados
 data/        raw/ (inmutable) · processed/ (validos/ fuera de git) · registro_extraccion/ · manifest.json · CHANGELOG.md · diccionario.md · README.md
-             processed/sbp_series.csv (E3-02: fuente D, 3 series agregadas × 12 meses de 2024; ni el CSV ni los .xlsx de raw/sbp/ se versionan: aviso legal de la SBP, D-72; se regeneran con `scripts.extraer --sbp`; las rutas restringidas están en `redistribucion_restringida` de config/fuentes.yaml y un test las vigila) · senales.duckdb (generado, fuera de git) · revision.duckdb (E1-16: casos, versiones y `revisiones` de solo agregar; fuera de git, NO se regenera con el pipeline) · cache_llm/ (E1-14: borradores generados, SÍ versionada; docs/fallback.md)
+             processed/sbp_series.csv (E3-02: fuente D, 3 series agregadas × 12 meses de 2024; el CSV se versiona por D-116 (riesgo aceptado: aviso legal de la SBP) y los .xlsx de raw/sbp/ no (D-72); se regeneran con `scripts.extraer --sbp`; las rutas restringidas están en `redistribucion_restringida` de config/fuentes.yaml y un test las vigila) · senales.duckdb (generado, fuera de git) · revision.duckdb (E1-16: casos, versiones y `revisiones` de solo agregar; fuera de git, NO se regenera con el pipeline) · cache_llm/ (E1-14: borradores generados, SÍ versionada; docs/fallback.md)
 src/         carga · contexto (E1-09) · contexto_sbp (E3-02: series agregadas de la SBP como vínculo del subtema de banca) · normalizacion · limpieza · embeddings · clasificacion · baseline · consulta · db · registro (D-75) · configuracion (D-79; config = alias de su CLI) · consultas_gdelt · esquemas (`Ficha` de E1-10b; paso 1 y paquetes de E1-12)
              agrupacion · procedencias · puntaje · evidencia · contradicciones · prioridad (E1-10: `python -m src.puntaje`) · ficha (E1-10b) · interfaz (E1-15: lógica de presentación de app.py, sin Streamlit)
              generacion (E1-12: dos pasos) · validador (E1-13: reglas deterministas; la generación y la corrección de la revisión solo lo llaman)
@@ -178,7 +178,7 @@ El `tema` de `noticias.csv` es el **tema de origen** (consulta de GDELT o catego
 - Secretos y configuración local solo en `local.env` (ignorado por git; D-77). En el repo, solo `.env.example` con nombres de variables vacíos.
 - No imprimir ni registrar claves, tokens ni prompts con secretos en logs, tests o capturas.
 - `data/demo.duckdb` (snapshot + casos sintéticos marcados) **nunca** se usa para calcular métricas.
-- **Nada con redistribución restringida entra al repositorio ni al paquete de entrega** (descripciones del RSS, `socialimage`, extractos): de esas fuentes solo metadatos y la receta (D-72).
+- **Nada con redistribución restringida entra al repositorio ni al paquete de entrega** (descripciones del RSS, `socialimage`, extractos): de esas fuentes solo metadatos y la receta (D-72) (salvo la SBP, versionada por D-116 con riesgo aceptado).
 - **Nunca leer, abrir ni buscar el benchmark reservado** (vive fuera del repo). Solo existe `benchmark/benchmark_dev.jsonl`.
 - No crear perfiles de personas ni agrupar por persona. Las acusaciones se atribuyen como declaraciones; **nunca** como hecho, inferencia ni hipótesis (D-68).
 - Causalidad solo si está literal en la fuente o en una hipótesis condicional (D-68).

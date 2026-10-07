@@ -34,7 +34,7 @@ salidas:
     - data/processed/indicadores.csv
     - data/processed/noticias.csv
     - data/processed/validos/*
-  # Salidas que NO se versionan (redistribución restringida, D-72/X84): se hashean solo si existen en esta máquina. Si faltan, la verificación
+  # Salidas que pueden faltar en una máquina (p. ej. un CSV que se reconstruye solo donde están los crudos locales): se hashean solo si existen. Si faltan, la verificación
   # lo declara y omite las huellas que dependen de ellas (`afecta`); no las da por buenas ni por malas.
   archivos_locales:
     - archivo: data/processed/sbp_series.csv      # fuente D (E3-02); se reconstruye desde raw/sbp/ solo donde están los .xlsx

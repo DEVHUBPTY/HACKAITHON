@@ -24,7 +24,8 @@ El snapshot versionado es la v1.3 (v1.2 más la fuente D, E3-02). Sus noticias d
 |---|---|---|
 | `raw/rss_tvn/` | **No** (`.gitignore`) | El RSS trae la descripción de cada nota: extracto con redistribución restringida |
 | `raw/gdelt/` | **No** (`.gitignore`) | GDELT trae `socialimage` (derechos de imagen) |
-| `raw/sbp/` y `processed/sbp_series.csv` | **No** (`.gitignore`) | Los .xlsx de la SBP y los 36 valores que salen de ellos: su aviso legal prohíbe reproducir o redistribuir sin autorización escrita (pendiente de pedir, X84). En git queda la receta (`scripts/sbp.py`, `config/fuentes.yaml`, `registro_extraccion/sbp_*.json` con URL, SHA-256 y fecha, sin valores) y el SHA-256 y el conteo de filas del CSV local en el manifest. Se regeneran con `scripts.extraer --sbp` |
+| `raw/sbp/` | **No** (`.gitignore`) | Los .xlsx de la SBP: su aviso legal prohíbe reproducir o redistribuir sin autorización escrita (pendiente de pedir). Se regeneran con `scripts.extraer --sbp` |
+| `processed/sbp_series.csv` | **Sí** (D-116) | Los 36 valores agregados. Versionado por decisión del dueño (D-116), con el riesgo aceptado: el aviso legal de la SBP restringe la reproducción y redistribución sin autorización escrita; el repositorio es privado; si el repositorio o el paquete de entrega se hacen públicos, hay que pedir la autorización o retirar los valores. |
 | `raw/banco_mundial/`, `raw/usgs/` | Sí | Datos abiertos (CC BY 4.0 · dominio público de USGS) |
 | `registro_extraccion/` | Sí | Fallos y notas de extracción (rangos, motivos, origen); sin contenido restringido. **No son respuestas de la API** |
 | `processed/` | Sí | Solo metadatos: no contiene `descripcion` ni `socialimage` |

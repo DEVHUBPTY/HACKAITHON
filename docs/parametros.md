@@ -339,7 +339,7 @@ independiente del mismo despacho cuenta como otra procedencia porque ninguna reg
 
 | Parámetro | Valor | Origen | Cómo se valida |
 |---|---|---|---|
-| Subtema que se vincula a la SBP (`vinculos.banca_calificaciones`) y su relación | `banca_calificaciones` · `directa` (**provisional**, pregunta abierta 4 de `specs/E3-02.md`) | Supuesto del asistente (D-101, D-112) | `test_el_subtema_de_banca_vincula_el_ultimo_periodo_de_cada_serie`, `test_el_dato_directo_de_la_sbp_cuenta_como_dato_oficial_en_el_puntaje` |
+| Subtema que se vincula a la SBP (`vinculos.banca_calificaciones`) y su relación | `banca_calificaciones` · `indirecta` (contexto: no suma a E ni al estado de evidencia, pero la ficha lo muestra; X89, pregunta abierta 4 de `specs/E3-02.md`) | Definición de `vinculos.yaml` (`directa` = «mide lo mismo que el subtema») y revisión del PR #43 | `test_el_subtema_de_banca_vincula_el_ultimo_periodo_de_cada_serie`, `test_el_dato_indirecto_de_la_sbp_no_sube_la_evidencia_ni_el_puntaje` |
 | Qué período se muestra | El último período con valor de cada serie dentro de 2024 (hoy 2024-12); una serie sin valores no aporta y un vacío no es 0 | Supuesto | `test_un_valor_nulo_no_se_vincula_ni_se_rellena_con_cero` |
 | Otros subtemas | Nunca se vinculan a la SBP | Spec E3-02 (solo banca) | `test_otros_subtemas_nunca_se_vinculan_a_la_sbp` |
 | Texto de la nota de período (`sbp.nota_periodo`) y de la regla (`sbp.plantilla_regla`) | «Dato mensual de {periodo} (series de 2024), no del mes de la noticia.» | Spec E3-02 (limitación visible) | `test_la_configuracion_de_vinculos_pide_los_textos_del_periodo` |

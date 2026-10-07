@@ -92,7 +92,7 @@ Causa probable: variabilidad entre corridas de DeepSeek. Las dos cifras de recha
 
 ## Limitaciones
 
-- **`data/processed/sbp_series.csv` tampoco se versiona** (SBP, D-72, X84): se hashea solo si existe en la máquina (`salidas.archivos_locales` de `config/reproducibilidad.yaml`). Si falta, `scripts.reproducir --verificar` lo declara como limitación y omite su hash y las huellas que dependen de él (`tabla:vinculos`, `fichas`, los informes de vínculos y de validación); se regenera con `scripts.extraer --sbp`.
+- **`data/processed/sbp_series.csv`** se versiona por D-116 (riesgo aceptado), pero los .xlsx de `raw/sbp/` no: el CSV se hashea siempre que existe (`salidas.archivos_locales` de `config/reproducibilidad.yaml` conserva la ruta de degradación). Si falta, `scripts.reproducir --verificar` lo declara como limitación y omite su hash y las huellas que dependen de él (`tabla:vinculos`, `fichas`, los informes de vínculos y de validación); se regenera con `scripts.extraer --sbp`.
 - **RSS y GDELT no se versionan** (redistribución restringida, D-72). En un clon sin esos crudos `scripts.reproducir` no puede reconstruir `processed/`: lo declara como limitación, omite los hashes `reconstruido:*` y sigue desde el `processed/` versionado. Para reconstruirlos, `scripts.extraer` (receta en `data/README.md`). Si un crudo presente no coincide con el SHA-256 del manifest, se detiene: `raw/` es inmutable.
 - El texto del LLM solo se reproduce desde la caché; sin ella puede variar.
 - La nota del LLM sobre un par de contradicciones no se reproduce: el paso `puntaje` corre con `--sin-llm`. Hoy no hay pares candidatos, así que no cambia nada.
