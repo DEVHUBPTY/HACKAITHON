@@ -1,0 +1,11 @@
+{
+ "clave": "05e4745af16b7681c5c4a3625ce884cfacc719bde7c7afe0f0855ec93daaea49",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1900,
+ "tokens_salida": 287,
+ "creado_utc": "2026-10-07T03:45:21Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta que el Minsa adelanta la vacunación contra el VSR en embarazadas\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La evidencia estima una sola procedencia independiente para este tema, por debajo de las dos que se consideran suficientes.\", \"afirmaciones\": [\"A3\"]}, {\"texto\": \"El grupo de registros sobre este tema reúne un titular de un medio, según la estimación de la evidencia.\", \"afirmaciones\": [\"A2\"]}], \"preguntas\": [{\"texto\": \"¿Existe un dato oficial anual del Minsa u otra entidad que permita vincular el tema a un indicador?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras coberturas independientes sobre la vacunación contra el VSR en embarazadas pueden sumar procedencias?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Qué subtema específico dentro de la vacunación contra el VSR en embarazadas permite acotar el alcance neutro de impacto?\", \"vacio\": \"subtema_desconocido\"}]}"
+}

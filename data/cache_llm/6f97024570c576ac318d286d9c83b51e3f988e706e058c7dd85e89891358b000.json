@@ -1,0 +1,11 @@
+{
+ "clave": "6f97024570c576ac318d286d9c83b51e3f988e706e058c7dd85e89891358b000",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1890,
+ "tokens_salida": 273,
+ "creado_utc": "2026-10-07T03:45:15Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"Veinte titulares de dieciocho medios reportan este tema, según el grupo de registros\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La ficha estima una sola procedencia independiente, por debajo del umbral de dos que exige para evidencia suficiente.\", \"afirmaciones\": [\"A2\"]}, {\"texto\": \"Si no aparecen procedencias adicionales, el tema podría quedar sin dato oficial vinculado y sin subtema determinado.\", \"afirmaciones\": [\"A2\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún dato oficial vinculado a este tema que permita contrastar los titulares reportados?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué procedencias independientes adicionales podrían identificarse para alcanzar el umbral de dos que exige la ficha?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Qué medio y qué fecha de publicación corresponden a cada uno de los veinte titulares del grupo de registros?\", \"vacio\": \"medios_o_fechas_desconocidos\"}]}"
+}

@@ -1,0 +1,11 @@
+{
+ "clave": "b6789f3b146f5c5eccf06ea546a61c973d3fd8bcac7e1787e010109d3c7dbdd5",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1771,
+ "tokens_salida": 220,
+ "creado_utc": "2026-10-07T03:45:35Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta que el MOP solicita $43.1 millones para obras\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La cobertura se apoyaría en una sola procedencia independiente estimada, por debajo del umbral de evidencia suficiente.\", \"afirmaciones\": [\"A2\"]}], \"preguntas\": [{\"texto\": \"¿Existe un dato oficial vinculado a las cifras que aparecen en los titulares sobre la solicitud del MOP?\", \"vacio\": \"cifras_sin_dato_oficial\"}, {\"texto\": \"¿Qué indicador oficial permitiría vincular este tema con una fuente institucional?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué procedencias independientes adicionales podrían sumarse a la cobertura de este tema?\", \"vacio\": \"procedencias_insuficientes\"}]}"
+}

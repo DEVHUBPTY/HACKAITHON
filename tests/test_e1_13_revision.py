@@ -201,3 +201,16 @@ def test_una_transicion_no_lleva_juicios_evaluativos(t: str) -> None:
     ctx = ctx_con_base()
     asi = [o(" ".join(["tema"] * 10) + ".", "A3") for _ in range(5)]
     assert TRANSICION_NO_PERMITIDA in reglas(validar_seccion("brief", [*asi, o(t)], ctx))
+
+
+# ============================================================================================ falsos positivos de la corrida real (re-calentamiento)
+
+
+def test_latam_es_america_latina_en_un_titular_traducido() -> None:
+    f = ficha_ext()
+    f.registros.append(RegistroEvidencia(id="NOT-5555555555", idioma="en", campos={"titulo": "Intensifying El Nino deepens economic risks across LatAm"}, contexto={"medio": "english.news.cn"}))
+    acepta(afirmacion("A1", "declaración", "english.news.cn reporta que El Niño profundiza los riesgos económicos en América Latina", (("NOT-5555555555", "titulo"))), f=f)
+
+
+def test_el_id_de_un_registro_citado_no_es_un_nombre_nuevo() -> None:
+    acepta(afirmacion("A1", "hecho", f"El grupo {ID_GRP} reúne 5 titulares", (ID_GRP, "n_titulares")))

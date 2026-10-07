@@ -1,0 +1,11 @@
+{
+ "clave": "b50e9c51169fc29c5468eefbaa47fe82d218850c76a9b5d1bf1b3b5313105d39",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1735,
+ "tokens_salida": 264,
+ "creado_utc": "2026-10-07T03:45:13Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"18 medios reportan un tema con una sola procedencia independiente estimada\", \"afirmaciones\": [\"A1\", \"A2\"]}, \"enfoque\": [{\"texto\": \"La evidencia disponible se apoya en una única procedencia independiente estimada, por debajo del umbral de dos que la ficha exige para considerarla suficiente.\", \"afirmaciones\": [\"A2\"]}, {\"texto\": \"Si no aparecen procedencias adicionales, el tema podría quedar sin dato oficial vinculado y sin subtema determinado.\", \"afirmaciones\": [\"A2\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún dato oficial vinculado a este tema y qué organismo lo publica?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué procedencias independientes adicionales pueden identificarse más allá de la estimada?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Cuál es el medio y la fecha de publicación de cada uno de los 20 titulares del grupo?\", \"vacio\": \"medios_o_fechas_desconocidos\"}]}"
+}

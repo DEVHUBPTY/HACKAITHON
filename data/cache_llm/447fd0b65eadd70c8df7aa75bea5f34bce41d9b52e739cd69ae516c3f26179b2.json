@@ -1,0 +1,11 @@
+{
+ "clave": "447fd0b65eadd70c8df7aa75bea5f34bce41d9b52e739cd69ae516c3f26179b2",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1550,
+ "tokens_salida": 303,
+ "creado_utc": "2026-10-07T03:45:01Z",
+ "respuesta": "{\"guion\":[{\"texto\":\"Tres medios reportan que el presidente de Panamá visitará Singapur y Vietnam.\",\"afirmaciones\":[\"A1\",\"A2\",\"A3\"],\"parte\":\"entrada\"},{\"texto\":\"Según prensa-latina.cu, el presidente panameño visitará Singapur y Vietnam.\",\"afirmaciones\":[\"A1\"],\"parte\":\"desarrollo\"},{\"texto\":\"Laestrella.com.pa reporta que Mulino viajará a Asia y suscribirá convenios bilaterales con Singapur y Vietnam.\",\"afirmaciones\":[\"A2\"],\"parte\":\"desarrollo\"},{\"texto\":\"Revistaeyn.com reporta que el presidente de Panamá visita Singapur y Vietnam en busca de inversiones.\",\"afirmaciones\":[\"A3\"],\"parte\":\"desarrollo\"},{\"texto\":\"[VISUAL: a definir por producción]\",\"afirmaciones\":[],\"parte\":\"desarrollo\"},{\"texto\":\"El grupo de registros reúne 3 titulares de 3 medios que reportan este tema.\",\"afirmaciones\":[\"A4\"],\"parte\":\"desarrollo\"},{\"texto\":\"Se estiman 3 procedencias independientes, contando los titulares que replican a una misma fuente como una sola.\",\"afirmaciones\":[\"A5\"],\"parte\":\"cierre\"}]}"
+}
