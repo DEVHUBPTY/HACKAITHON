@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import re
 import sys
+from collections import Counter
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
@@ -110,6 +111,7 @@ class Puntaje:
     vacios: tuple[Vacio, ...]
     recirculada: bool
     es_nueva: bool
+    empate_con: int = 0      # D-105: cuántos OTROS grupos tienen el mismo P tal como se muestra (``comparacion.decimales_empate``)
 
     @property
     def habilita_publicacion(self) -> bool:
@@ -129,6 +131,7 @@ class Puntaje:
             "vacios": [{"codigo": v.codigo, "texto": v.texto} for v in self.vacios],
             "recirculada": self.recirculada,
             "es_nueva": self.es_nueva,
+            "empate_con": self.empate_con,
             "habilita_publicacion": self.habilita_publicacion,
         }
 
@@ -394,20 +397,47 @@ def evidencia_e(entrada: EntradaGrupo, reglas: ReglasV13, cfg: ConfigPrioridad) 
 # ------------------------------------------------------------------ ranking
 
 
-def ordenar(puntajes: Sequence[Puntaje], reglas: ReglasV13, cfg: ConfigPrioridad) -> list[Puntaje]:
-    """Ordena por P descendente y desempata con ``reglas.desempate`` (mayor U, luego menor ID); asigna ``posicion`` desde 1.
+def p_para_empate(p: float, cfg: ConfigPrioridad) -> float:
+    """P tal como se muestra (``comparacion.decimales_empate``, D-105): dos grupos con el mismo valor están empatados."""
+    return round(p, cfg.comparacion.decimales_empate)
 
-    P y U se comparan redondeados a ``comparacion.decimales_p`` para que el ruido de coma flotante no decida un empate.
+
+def ordenar(puntajes: Sequence[Puntaje], reglas: ReglasV13, cfg: ConfigPrioridad) -> list[Puntaje]:
+    """Ordena por P descendente y desempata con ``reglas.desempate`` (PDF sección 4: mayor U, luego ID); asigna ``posicion`` desde 1.
+
+    D-105: P se compara tal como se muestra (``comparacion.decimales_empate``), así un empate visible siempre lo decide la regla
+    del reto; U se compara a ``comparacion.decimales_p`` para que el ruido de coma flotante no decida. Cada puntaje lleva
+    ``empate_con``: cuántos otros grupos tienen su mismo P.
     """
     d = cfg.comparacion.decimales_p
 
     def clave(p: Puntaje) -> tuple[Any, ...]:
-        partes: list[Any] = [-round(p.puntaje, d)]
+        partes: list[Any] = [-p_para_empate(p.puntaje, cfg)]
         for criterio in reglas.desempate:
             partes.append(-round(p.componentes["U"].valor, d) if criterio == "u_desc" else p.id_grupo)
         return tuple(partes)
 
-    return [replace(p, posicion=i) for i, p in enumerate(sorted(puntajes, key=clave), start=1)]
+    cuantos = Counter(p_para_empate(p.puntaje, cfg) for p in puntajes)
+    return [
+        replace(p, posicion=i, empate_con=cuantos[p_para_empate(p.puntaje, cfg)] - 1)
+        for i, p in enumerate(sorted(puntajes, key=clave), start=1)
+    ]
+
+
+def empate_en_el_corte(claves: Sequence[Any], k: int) -> dict[str, Any] | None:
+    """Empate en el corte de un top ``k`` (D-105). ``claves`` va en el orden del ranking, ya comparable (P mostrado, fecha…).
+
+    Devuelve el valor empatado en el puesto ``k``, cuántos grupos lo comparten y cuántos quedaron dentro y fuera del top;
+    ``None`` si el corte no parte un empate (o hay ``k`` grupos o menos).
+    """
+    if len(claves) <= k:
+        return None
+    valor = claves[k - 1]
+    if claves[k] != valor:
+        return None
+    empatados = [i for i, c in enumerate(claves) if c == valor]
+    dentro = sum(1 for i in empatados if i < k)
+    return {"valor": valor, "empatados": len(empatados), "dentro_del_top": dentro, "fuera_del_top": len(empatados) - dentro}
 
 
 def calcular_puntajes(

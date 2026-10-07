@@ -1787,6 +1787,7 @@ def cargar_consulta(carpeta: Path | None = None) -> ConfigConsulta:
 
 class ComparacionPrioridad(ModeloConfig):
     decimales_p: int = Field(ge=0, le=15)
+    decimales_empate: int = Field(ge=0, le=15)   # D-105: P se compara como se muestra (bandeja.decimales_puntaje)
 
 
 class ImpactoPrioridad(ModeloConfig):
@@ -2263,7 +2264,21 @@ class RevisionInterfaz(ModeloConfig):
     estado_inicial: str
 
 
+class TextosEmpate(ModeloConfig):
+    """D-105: cómo se muestra el empate en P de un grupo (bandeja, ficha y CLI)."""
+
+    uno: str = Field(min_length=1)
+    varios: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _con_n(self) -> TextosEmpate:
+        if "{n}" not in self.varios:
+            raise ValueError("textos.empate.varios debe llevar {n}")
+        return self
+
+
 class TextosInterfaz(ModeloConfig):
+    empate: TextosEmpate
     alerta: str
     sintetico: str
     sintetico_ayuda: str
@@ -2306,7 +2321,8 @@ class ConfigInterfaz(ModeloConfig):
             raise ValueError("pantalla_inicial: debe ser una de las pantallas")
         if self.revision.estado_inicial not in self.revision.estados:
             raise ValueError("revision.estado_inicial: debe estar en revision.estados")
-        textos = [self.titulo_app, *self.consulta.ejemplos, *self.revision.estados, *self.textos.model_dump().values()]
+        propios = [t for v in self.textos.model_dump().values() for t in (v.values() if isinstance(v, dict) else [v])]
+        textos = [self.titulo_app, *self.consulta.ejemplos, *self.revision.estados, *propios]
         if any(FORMAS_DE_PUBLICAR.search(t) for t in textos):
             raise ValueError("ningún texto de la interfaz puede hablar de publicar")
         return self
@@ -2572,6 +2588,7 @@ class TextosPrecision(ModeloConfig):
     motivo_pocos_cortes: str = Field(min_length=1)
     motivo_sin_especialista: str = Field(min_length=1)
     sin_especialista: str = Field(min_length=1)
+    criterio_de_empate: str = Field(min_length=1)   # D-105: cómo se resuelven y se informan los empates en el corte del top k
 
 
 class ConfigPrecision(ModeloConfig):

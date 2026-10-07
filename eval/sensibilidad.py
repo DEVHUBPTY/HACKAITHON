@@ -55,7 +55,7 @@ from src.configuracion import (
     cargar_vinculos,
 )
 from src.embeddings import Embeddings, crear
-from src.puntaje import COMPONENTES, EntradaGrupo, calcular_puntajes
+from src.puntaje import COMPONENTES, EntradaGrupo, calcular_puntajes, empate_en_el_corte, p_para_empate
 
 logger = logging.getLogger(__name__)
 
@@ -302,6 +302,8 @@ def evaluar(ruta_base: Path, reglas: ReglasV13, cfg: ConfigPrioridad, ahora: dat
     insumos = leer_insumos(ruta_base, reglas, emb)
     n = cfg.sensibilidad.tamano_ranking
     base = top(insumos.entradas, reglas, cfg, ahora, n)
+    ranking_base = calcular_puntajes(insumos.entradas, reglas, cfg, ahora)
+    empate_base = empate_en_el_corte([p_para_empate(p.puntaje, cfg) for p in ranking_base], n)
     reproduce = sorted(e.id_grupo for e in entradas_reagrupadas(insumos, reglas)) == sorted(e.id_grupo for e in insumos.entradas)
     reagrupadas: dict[tuple[int, float], list[EntradaGrupo]] = {}
     filas: list[dict[str, Any]] = []
@@ -331,6 +333,9 @@ def evaluar(ruta_base: Path, reglas: ReglasV13, cfg: ConfigPrioridad, ahora: dat
         "variacion_peso_puntos": cfg.sensibilidad.variacion_peso,
         "variacion_supuesto": cfg.sensibilidad.variacion_supuesto,
         "top_base": base,
+        # D-105: si el corte del top parte un empate en P, el top base lo completa la regla del reto (mayor U, luego ID) y la
+        # estabilidad de esos puestos dice poco: se informa el empate en el corte.
+        "empate_en_el_corte_base": empate_base,
         "reagrupar_con_las_reglas_actuales_reproduce_la_base": reproduce,
         "variantes": len(filas),
         "variantes_con_efecto": total,
@@ -370,6 +375,9 @@ def imprimir(r: Mapping[str, Any]) -> None:
     print("\n== Top 5 base ==")
     for i, g in enumerate(r["top_base"], start=1):
         print(f"  {i}. {g}")
+    if r.get("empate_en_el_corte_base"):
+        e = r["empate_en_el_corte_base"]
+        print(f"  empate en el corte (D-105): P = {e['valor']} lo comparten {e['empatados']} grupos; {e['dentro_del_top']} entran y {e['fuera_del_top']} quedan fuera por la regla del reto (mayor U, luego ID)")
     print("\n== Variantes que cambian algún tema (de mayor a menor) ==")
     for m in r["mas_sensibles"][:15]:
         print(f"  {m['cambian']} · {m['parametro']} · salen {m['salen']} · entran {m['entran']}")

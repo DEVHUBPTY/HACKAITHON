@@ -210,6 +210,7 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("vacios", "VARCHAR NOT NULL"),        # JSON: vacíos que nacen del puntaje (urgencia estimada, recirculada, subtema)
         ("recirculada", "BOOLEAN NOT NULL"),
         ("es_nueva", "BOOLEAN NOT NULL"),
+        ("empate_con", "INTEGER"),             # D-105: cuántos OTROS grupos tienen el mismo P tal como se muestra (0 = sin empate)
     ],
     "evidencia": [  # E1-10: estado de evidencia (independiente de P), vacíos y acción recomendada de la modalidad
         ("id_grupo", "VARCHAR PRIMARY KEY"),

@@ -4,7 +4,10 @@
 version: 1
 
 comparacion:
-  decimales_p: 9                  # P se compara redondeado a estos decimales antes del desempate (evita empates rotos por ruido de coma flotante)
+  decimales_p: 9                  # U se compara redondeado a estos decimales en el desempate (evita empates rotos por ruido de coma flotante)
+  # D-105: P se compara con los decimales que MUESTRA la bandeja (interfaz.yaml: bandeja.decimales_puntaje). Dos grupos que se
+  # ven con el mismo P están empatados y los ordena la regla del reto (mayor U, luego ID), no un decimal oculto.
+  decimales_empate: 1
 
 impacto:
   alcance_subtema_desconocido: 0.5   # grupo sin subtema (tema `sin_tema`): alcance neutro, igual que `alcance_geografico.desconocido`

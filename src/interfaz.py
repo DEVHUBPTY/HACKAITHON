@@ -51,7 +51,7 @@ from src.configuracion import (
     cargar_verificacion,
 )
 from src.esquemas import Cita, Ficha
-from src.ficha import Linea, Seccion, Vista
+from src.ficha import Linea, Seccion, Vista, texto_empate
 from src.puntaje import COMPONENTES
 from src.sectores import horizonte_de_grupo, sector_de_tema
 
@@ -138,6 +138,7 @@ class FilaBandeja:
     sintetico: bool = False
     sector: str | None = None       # E2-01: sector del tema según la modalidad (``None``: la modalidad no puntúa por sector o el tema no tiene sector)
     horizonte: str | None = None    # E2-01: inmediato · corto plazo · estructural (``None``: la modalidad no tiene escala)
+    empate_con: int = 0             # D-105: cuántos otros grupos tienen el mismo P tal como se muestra
 
 
 def leer_bandeja(con: Any, modalidad: str, nombres_de_tema: Mapping[str, str] | None = None) -> list[FilaBandeja]:
@@ -149,6 +150,7 @@ def leer_bandeja(con: Any, modalidad: str, nombres_de_tema: Mapping[str, str] | 
     cfg_modalidad = cargar_modalidad(modalidad)
     cur = con.execute(
         "SELECT p.id_grupo, p.posicion, p.puntaje, p.rango, p.relevancia, p.impacto, p.urgencia, p.novedad, p.evidencia AS e_valor, "
+        "COALESCE(p.empate_con, 0) AS empate_con, "
         "p.fecha_referencia, g.titular_central, g.tema_clasificado, e.estado, e.accion, "
         "EXISTS (SELECT 1 FROM noticias n WHERE n.id_grupo = p.id_grupo AND n.origen = ?) AS sintetico "
         "FROM puntajes p JOIN grupos g USING (id_grupo) JOIN evidencia e USING (id_grupo) "
@@ -171,6 +173,7 @@ def leer_bandeja(con: Any, modalidad: str, nombres_de_tema: Mapping[str, str] | 
                 estado_evidencia=f["estado"], accion=f["accion"], sintetico=bool(f["sintetico"]),
                 sector=sector_de_tema(tema, cfg_modalidad),
                 horizonte=horizonte_de_grupo(miembros.get(f["id_grupo"], []), referencia, cfg_modalidad, reglas),
+                empate_con=int(f["empate_con"]),
             )
         )
     return filas
@@ -203,7 +206,7 @@ def agrupar_por_sector(filas: Sequence[FilaBandeja], modalidad: ConfigModalidad,
     """
     if modalidad.bandeja is None:
         return None
-    d = (cfg or cargar_prioridad()).comparacion.decimales_p
+    d = (cfg or cargar_prioridad()).comparacion.decimales_empate      # D-105: P tal como se muestra
     declarados = {s: i for i, s in enumerate(cargar_temas().sectores_validos)}
     por_sector: dict[str | None, list[FilaBandeja]] = {}
     for f in filas:
@@ -241,18 +244,20 @@ def lineas_de_bandeja(filas: Sequence[FilaBandeja], modalidad: ConfigModalidad, 
         lineas.append(f"{b.etiqueta} ({len(b.filas)})")
         lineas += [
             f"  {f.posicion}. {f.id_grupo} · P={f.puntaje:.1f} ({f.rango}) · {etiqueta_de_horizonte(f.horizonte, modalidad) or '-'} · {f.accion} · {f.titular[:ancho]}"
+            + (f" · {texto_empate(f.empate_con)}" if f.empate_con else "")
             for f in b.filas
         ]
     return lineas
 
 
 def ordenar_bandeja(filas: Sequence[FilaBandeja], reglas: ReglasV13 | None = None, cfg: ConfigPrioridad | None = None) -> list[FilaBandeja]:
-    """Reordena con la regla de E1-10: P descendente (a ``decimales_p``) y desempate de ``reglas.desempate`` (mayor U, menor ID)."""
+    """Reordena con la regla del reto (E1-10, D-105): P tal como se muestra descendente y desempate de ``reglas.desempate`` (mayor U, luego ID)."""
     reglas = reglas or cargar_reglas()
-    d = (cfg or cargar_prioridad()).comparacion.decimales_p
+    cfg = cfg or cargar_prioridad()
+    d = cfg.comparacion.decimales_p
 
     def clave(f: FilaBandeja) -> tuple[Any, ...]:
-        partes: list[Any] = [-round(f.puntaje, d)]
+        partes: list[Any] = [-round(f.puntaje, cfg.comparacion.decimales_empate)]
         for criterio in reglas.desempate:
             partes.append(-round(f.componentes["U"], d) if criterio == "u_desc" else f.id_grupo)
         return tuple(partes)

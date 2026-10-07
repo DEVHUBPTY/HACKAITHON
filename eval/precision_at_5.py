@@ -5,6 +5,11 @@ baseline «ranking por fecha» (PDF sección 8: solo la fecha de **publicación*
 lleva su numerador, su n y su intervalo de Wilson del 95 % (z de ``config/carga.yaml``). Un tema es un grupo ``GRP-`` de la base
 (sin los sintéticos de la demo). No infiere audiencia, rentabilidad ni reducción de riesgo.
 
+**Empates en el corte (D-105).** El top ``k`` del sistema es el ranking de E1-10: P tal como se muestra, luego mayor urgencia, luego
+ID (regla del reto). Si el puesto ``k`` comparte P con grupos que quedan fuera, el ID decide quién entra: no se oculta. Cada corte
+informa ``empate_en_el_corte`` (valor empatado, cuántos grupos lo comparten, cuántos entraron y cuántos quedaron fuera) para el
+sistema y para el baseline (empate de fecha, resuelto por ID), y ``criterio_de_empate`` con el texto de ``config/precision.yaml``.
+
 **Hoja ciega.** ``--hoja`` escribe ``eval/hoja_editor_ciega.csv``: los mismos candidatos, **sin P, posición, rango, componentes,
 estado de evidencia ni acción**, y en un orden que no depende de nada de eso. El orden es SHA-256 de ``semilla|id_grupo``
 (``config/precision.yaml``): es reproducible, no es alfabético (el ID es un hash, pero un orden por ID se vería ordenado) y no
@@ -38,8 +43,9 @@ from typing import Any
 
 from src import db
 from src.carga import intervalo_wilson
-from src.configuracion import RAIZ, ConfigPrecision, cargar_carga, cargar_precision, cargar_temas
+from src.configuracion import RAIZ, ConfigPrecision, cargar_carga, cargar_precision, cargar_prioridad, cargar_temas
 from src.prioridad import MODALIDAD_POR_DEFECTO
+from src.puntaje import empate_en_el_corte, p_para_empate
 
 ORIGEN_SINTETICO = "sintetico"
 DECIMALES = 4          # solo presentación
@@ -63,6 +69,7 @@ class Candidato:
     titular: str
     fecha_reciente: str
     posicion: int
+    puntaje: float | None = None    # P guardado por E1-10 (solo para declarar el empate en el corte, D-105; nunca va a la hoja)
 
     @property
     def sin_fecha_publicacion(self) -> bool:
@@ -91,15 +98,15 @@ def candidatos(con: Any) -> list[Candidato]:
     nombres = {k: t.nombre for k, t in cargar_temas().temas.items()}
     filas = con.execute(
         "SELECT g.id_grupo, g.tema_clasificado, g.titular_central, "
-        "(SELECT MAX(n.fecha_publicacion) FROM noticias n WHERE n.id_grupo = g.id_grupo) AS fecha_publicacion, p.posicion "
+        "(SELECT MAX(n.fecha_publicacion) FROM noticias n WHERE n.id_grupo = g.id_grupo) AS fecha_publicacion, p.posicion, p.puntaje "
         "FROM grupos g JOIN puntajes p USING (id_grupo) "
         "WHERE NOT EXISTS (SELECT 1 FROM noticias n WHERE n.id_grupo = g.id_grupo AND n.origen = ?) "
         "ORDER BY p.posicion",
         [ORIGEN_SINTETICO],
     ).fetchall()
     return [
-        Candidato(i, nombres.get(t, (t or "").replace("_", " ")), titular, fecha or "", int(pos))
-        for i, t, titular, fecha, pos in filas
+        Candidato(i, nombres.get(t, (t or "").replace("_", " ")), titular, fecha or "", int(pos), None if p is None else float(p))
+        for i, t, titular, fecha, pos, p in filas
     ]
 
 
@@ -136,11 +143,22 @@ def _proporcion(k: int, n: int, z: float) -> dict[str, Any]:
 
 
 def evaluar_corte(cands: Sequence[Candidato], elegidos: set[str], corte: str, k: int, z: float) -> dict[str, Any]:
-    """P@k del sistema y del baseline en un corte, con los IDs del top que el editor no eligió."""
-    resultado: dict[str, Any] = {"corte": corte, "candidatos": len(cands), "elegidos": sorted(elegidos)}
+    """P@k del sistema y del baseline en un corte, con los IDs del top que el editor no eligió.
+
+    D-105: si el corte del top ``k`` parte un empate (P mostrado en el sistema, fecha en el baseline), el top lo completa la regla de
+    desempate y ``empate_en_el_corte`` dice cuántos grupos empatan y cuántos quedaron fuera; ``None`` si no hay empate en el corte.
+    """
+    cfg_p = cargar_prioridad()
+    resultado: dict[str, Any] = {"corte": corte, "candidatos": len(cands), "elegidos": sorted(elegidos), "criterio_de_empate": cargar_precision().textos.criterio_de_empate}
+    claves = {
+        "sistema": [None if c.puntaje is None else p_para_empate(c.puntaje, cfg_p) for c in top_sistema(cands, len(cands))],
+        "baseline": [c.fecha_reciente for c in top_baseline(cands, len(cands))],
+    }
     for nombre, top in (("sistema", top_sistema(cands, k)), ("baseline", top_baseline(cands, k))):
         ids = [c.id_grupo for c in top]
-        resultado[nombre] = _proporcion(aciertos(ids, elegidos), k, z) | {"top": ids, "ids_fallidos": [i for i in ids if i not in elegidos]}
+        resultado[nombre] = _proporcion(aciertos(ids, elegidos), k, z) | {
+            "top": ids, "ids_fallidos": [i for i in ids if i not in elegidos], "empate_en_el_corte": empate_en_el_corte(claves[nombre], k),
+        }
     resultado["baseline_sin_fecha_publicacion"] = sum(1 for c in cands if c.sin_fecha_publicacion)
     return resultado
 

@@ -32,7 +32,7 @@ def test_d105_la_regla_de_desempate_es_la_del_reto() -> None:
 
 def test_d105_el_empate_se_decide_con_p_tal_como_se_muestra() -> None:
     # 87.44 y 87.41 se muestran los dos como 87.4: es un empate y lo decide la urgencia, no el decimal oculto
-    orden = _orden([_con("GRP-a", 87.44, 0.5), _con("GRP-b", 87.41, 0.9), _con("GRP-c", 87.46, 0.1)])
+    orden = _orden([_con("GRP-a", 87.44, 0.5), _con("GRP-b", 87.41, 0.9), _con("GRP-c", 87.43, 0.1)])
     assert [p.id_grupo for p in orden] == ["GRP-b", "GRP-a", "GRP-c"]
 
 
@@ -44,7 +44,7 @@ def test_d105_la_bandeja_de_la_app_usa_la_misma_regla() -> None:
     def fila(g: str, p: float, u: float) -> ui.FilaBandeja:
         return ui.FilaBandeja(1, g, "tema", "titular", p, "alto", {"R": 1, "I": 1, "U": u, "N": 1, "E": 1}, "parcial", "Vigilar")
 
-    filas = [fila("GRP-a", 87.44, 0.5), fila("GRP-b", 87.41, 0.9), fila("GRP-c", 87.46, 0.1)]
+    filas = [fila("GRP-a", 87.44, 0.5), fila("GRP-b", 87.41, 0.9), fila("GRP-c", 87.43, 0.1)]
     assert [f.id_grupo for f in ui.ordenar_bandeja(filas)] == ["GRP-b", "GRP-a", "GRP-c"]
 
 
