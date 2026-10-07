@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "fecha_utc": "2026-10-07T13:16:17Z",
+  "fecha_utc": "2026-10-07T13:25:23Z",
   "benchmark": {
     "archivo": "benchmark_dev.jsonl",
     "sha256": "27c791a86055322eece5c45570b35ae4fe0f06bb89a4bed67c8d861c809f11cc",
@@ -413,23 +413,23 @@
       "unidad": "s",
       "p50": {
         "n": 40,
-        "valor": 0.0064,
+        "valor": 0.0078,
         "ic95": [
           0.0003,
-          0.0066
+          0.0093
         ],
         "remuestreos": 2000
       },
       "p95": {
         "n": 40,
-        "valor": 0.0073,
+        "valor": 0.0115,
         "ic95": [
-          0.007,
-          0.0076
+          0.0102,
+          0.0132
         ],
         "remuestreos": 2000
       },
-      "arranque_modelo_s": 4.168,
+      "arranque_modelo_s": 4.245,
       "nota": "consulta de punta a punta en frío (el vector de la consulta se codifica de verdad, sin caché) con el modelo de embeddings local ya cargado; sin red. arranque_modelo_s es el arranque en frío del proceso (armar el consultor y cargar el modelo hasta el primer vector) y no entra en la latencia"
     },
     "paquete_completo": {
@@ -632,12 +632,12 @@
       "GRP-21ad932d54",
       "GRP-ef3acec21e",
       "GRP-038c4f0643",
-      "GRP-1c2f1d950d",
       "GRP-1df3ab1e22",
       "GRP-276c88e7f3",
       "GRP-29baaf270e",
-      "GRP-5e6531917f",
-      "GRP-6e737ecad5"
+      "GRP-6e737ecad5",
+      "GRP-1c2f1d950d",
+      "GRP-f4a44182b1"
     ]
   },
   "rechazos_previos": {
