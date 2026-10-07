@@ -178,8 +178,8 @@ def test_i_toma_el_alcance_de_obras_publicas_del_yaml_y_no_es_el_neutro() -> Non
     assert not [v for v in vacios if v.codigo == "subtema_desconocido"]
 
 
-def test_provisional_el_alcance_es_el_de_transporte_publico() -> None:
-    # Decisión pendiente del dueño (spec E1-07c, pregunta 1): 0.8 provisional, igual que transporte público.
+def test_el_alcance_es_el_de_transporte_publico() -> None:
+    # Decisión del dueño (D-113): 0.8, igual que transporte público.
     a = REGLAS.impacto.alcance_subtema
     assert a["obras_publicas"] == a["transporte_publico"] == 0.8
 

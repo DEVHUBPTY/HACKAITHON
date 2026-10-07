@@ -474,7 +474,7 @@ Lectura honesta:
 - CD-12 («Paro docente…») pasó de fallar a acertar: **efecto lateral** de reescribir la descripción de Servicios públicos, no un
   objetivo del cambio. Se actualizó la lista de limitaciones de `tests/test_casos_dificiles.py`.
 - **Mide el tema, no el subtema.** `eval/etiquetas.csv` no etiqueta subtemas ni tiene un titular de obras públicas con tema
-  `servicios_publicos` (el único del snapshot, un pedido de fondos del MOP, está etiquetado `economia`): la precisión del subtema
+  `servicios_publicos` (el único del snapshot, un pedido de fondos del MOP, está etiquetado `economia` por el asistente provisional (D-101), sin confirmar por una persona): la precisión del subtema
   `obras_publicas` no se puede medir (n = 0 etiquetados). Se medirá con etiquetas humanas de subtema (C-09).
 
 ## Pendiente
