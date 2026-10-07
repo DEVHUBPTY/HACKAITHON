@@ -103,7 +103,7 @@ temas:
         prototipo: "Autoridad de Turismo promociona Bocas del Toro en feria internacional"
   servicios_publicos:
     nombre: "Servicios públicos"
-    descripcion: "Agua potable, electricidad, telecomunicaciones e internet, transporte público, recolección de basura, salud pública, educación pública y seguridad ciudadana. Una ley o reforma nueva sobre el servicio va a Regulación."
+    descripcion: "Agua potable, electricidad, telecomunicaciones e internet, transporte público, recolección de basura, salud pública, educación pública, seguridad ciudadana y obras públicas (carreteras, puentes, acueductos, licitaciones y contratos de obra, sobrecostos de obra). Una ley o reforma nueva sobre el servicio va a Regulación."
     ejemplos:
       - {titulo: "Déficit de personal limita la capacidad operativa de los bomberos en el país", id_noticia: NOT-0d7f10257c, real: true}
       - {titulo: "Minsa: Adelantan vacunación contra VSR en embarazadas", id_noticia: NOT-3175aafec0, real: true}
@@ -115,6 +115,8 @@ temas:
       - {titulo: "Gremios del magisterio piden revisar el plan de estudios de secundaria", real: false}
       - {titulo: "Cortes de luz sorprenden a clientes de la capital", real: false}
       - {titulo: "Aumentan los robos a comercios en el centro de la ciudad", real: false}
+      - {titulo: "Retrasos en la rehabilitación de la carretera dejan incomunicadas a varias comunidades", real: false}
+      - {titulo: "Contraloría detecta sobrecostos en la construcción de un puente en el interior", real: false}
     subtemas:
       agua_potable:
         nombre: "Agua potable"
@@ -140,6 +142,9 @@ temas:
       seguridad_ciudadana:
         nombre: "Seguridad ciudadana (policía, operativos, cárceles, delitos)"
         prototipo: "Operativo conjunto desarticula una banda dedicada al robo de vehículos"
+      obras_publicas:
+        nombre: "Obras públicas (carreteras, puentes, acueductos, licitaciones y contratos de obra, sobrecostos de obra)"
+        prototipo: "El Ministerio de Obras Públicas avanza la construcción de una carretera y un puente"
   eventos_naturales:
     nombre: "Eventos naturales"
     descripcion: "Sismos, inundaciones y lluvias, deslizamientos, sequía y El Niño, incendios forestales y alertas de protección civil. La interrupción de un servicio causada por el fenómeno va a Servicios públicos."

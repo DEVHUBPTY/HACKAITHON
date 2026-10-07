@@ -12,7 +12,7 @@ La salida del clasificador son **solo los 6 temas del reto** (sección 3, etapa 
 | **Economía** | Crecimiento y PIB · inflación y precios (canasta básica, combustibles) · empleo · finanzas públicas (deuda, presupuesto, recaudación) · inversión · comercio exterior · banca y calificaciones de riesgo | Ingresos o peajes del Canal → Logística/Canal · una ley o impuesto nuevo → Regulación |
 | **Logística/Canal** | Operación del Canal (tránsitos, calado, reservas, niveles del lago Gatún) · puertos · Zona Libre de Colón · **carga aérea** · transporte de carga · cadenas de suministro | Vuelos de pasajeros → Turismo · reglas nuevas de la ACP → Regulación |
 | **Turismo** | Llegada de visitantes · cruceros · hotelería y ocupación · **aviación de pasajeros** y conectividad · destinos y promoción | Carga aérea → Logística/Canal |
-| **Servicios públicos** | Agua potable · electricidad · telecomunicaciones e internet · transporte público · recolección de basura · **salud pública** (hospitales, CSS, MINSA, medicamentos) · **educación pública** (escuelas, clases, docentes) · **seguridad ciudadana** (policía, operativos, cárceles, delitos) | Una ley o reforma nueva sobre el servicio → Regulación (secundario Servicios públicos) |
+| **Servicios públicos** | Agua potable · electricidad · telecomunicaciones e internet · transporte público · recolección de basura · **salud pública** (hospitales, CSS, MINSA, medicamentos) · **educación pública** (escuelas, clases, docentes) · **seguridad ciudadana** (policía, operativos, cárceles, delitos) · **obras públicas** (carreteras, puentes, acueductos, licitaciones y contratos de obra, sobrecostos de obra; D-111) | Una ley o reforma nueva sobre el servicio → Regulación (secundario Servicios públicos) |
 | **Eventos naturales** | Sismos · inundaciones y lluvias · deslizamientos · sequía y El Niño · incendios forestales · alertas de protección civil | Interrupción de un servicio causada por el fenómeno → Servicios públicos |
 | **Regulación** | Leyes y decretos · resoluciones de entes reguladores · reformas · listas internacionales (listas grises, GAFI) · **contratos y concesiones públicas** · sanciones | — |
 
@@ -40,6 +40,22 @@ Se aplica la **primera** regla que corresponda:
 5. **Fenómeno físico en sí → Eventos naturales.**
 6. **Pasajeros → Turismo; carga → Logística/Canal.**
 7. **Cifras macroeconómicas generales → Economía.**
+
+## Obras públicas: frontera (D-111)
+
+`obras_publicas` es un **subtema** de Servicios públicos, no un tema nuevo: la salida sigue siendo de 6 temas. Se aplica después
+de las reglas de arriba, y cada una puede cambiar el tema y no solo el subtema:
+
+- **El acto de contratar es Regulación** (regla 2): una licitación, un contrato o una adjudicación de obra va a Regulación con
+  Servicios públicos como secundario. **La obra en sí** (construcción, avance, retraso, inauguración, estado de una carretera o
+  de un puente, sobrecosto reportado o auditado) es Servicios públicos · obras públicas.
+- **Acueducto:** construir o ampliar el acueducto es obras públicas; el servicio (corte, suministro, Idaan) es agua potable.
+- **Fenómeno y obra:** si el hecho central es el derrumbe o la crecida que daña una carretera o un puente, es Eventos naturales
+  (regla 5); si es la interrupción del servicio o la obra de reparación, es Servicios públicos.
+- **Puertos, esclusas y carga** siguen en Logística/Canal aunque sean obras (regla 3 y 6).
+- **Justicia y elecciones no son subtemas.** Una investigación o un proceso judicial por corrupción en una obra, o la política
+  electoral, es `fuera_de_temas`, salvo que el hecho central toque uno de los 6 temas (el sobrecosto de la obra sí es obras públicas;
+  el proceso judicial que lo investiga no).
 
 ## Casos difíciles (también son tests de E1-07)
 

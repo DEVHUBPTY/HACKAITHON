@@ -91,9 +91,9 @@ baseline:
     servicios_publicos:
       guia: [agua potable, electricidad, telecomunicaciones, internet, transporte publico, recoleccion de basura, basura,
              salud publica, hospital, css, minsa, medicamento, educacion publica, escuela, clase, docente, seguridad ciudadana,
-             policia, operativo, carcel, delito]
+             policia, operativo, carcel, delito, obras publicas, carretera, puente]
       extension: [agua, idaan, acueducto, potabilizadora, energia electrica, apagon, luz, distribuidora electrica, telefonia,
-                  senal, metro, mibus, autobus, bus, desechos, recoleccion, relleno sanitario, paciente, vacuna, vacunacion,
+                  senal, metro, mibus, autobus, bus, desechos, recoleccion, relleno sanitario, mop, autopista, obra vial, infraestructura vial, paciente, vacuna, vacunacion,
                   salud, educacion, colegio, maestro, estudiante, meduca, homicidio, robo, seguridad]
     eventos_naturales:
       guia: [sismo, inundacion, lluvia, deslizamiento, sequia, el nino, incendios forestales, alerta, proteccion civil]

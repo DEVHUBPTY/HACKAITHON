@@ -55,6 +55,7 @@ impacto:                    # I = peso_subtema × alcance(subtema) + peso_geogra
     salud_publica: 1.0
     educacion_publica: 1.0
     seguridad_ciudadana: 0.8
+    obras_publicas: 0.8       # E1-07c (D-111): PROVISIONAL (D-101), igual que transporte público; el dueño confirma
     sismos: 1.0
     inundaciones_lluvias: 0.8
     deslizamientos: 0.6

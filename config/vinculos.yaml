@@ -73,6 +73,14 @@ subtema:                            # D-92 (enmienda a E1-09) y E1-10c (X41): el
                           delincuentes, homicidio, homicidios, asesinato, asesinatos, asesinan, asesinado, asesinada,
                           robo, robos, asalto, asaltos, asaltan, hurto, aprehension, aprehenden, aprehendido, aprehendida,
                           aprehendidos, detenido, detenida, detenidos, droga, drogas, narcotrafico]
+    # E1-07c (D-111): «obra(s)» suelta no (obra de teatro, obra social) y «sobrecosto» suelto no (puede ser de una compra):
+    # solo las frases que nombran la obra pública. «acueducto» solo, o con Idaan, sigue siendo agua potable (el servicio);
+    # la obra de construcción del acueducto es obras públicas (la coincidencia más larga manda, X53).
+    obras_publicas: [obra publica, obras publicas, ministerio de obras publicas, mop, obra vial, obras viales, infraestructura vial,
+                     carretera, carreteras, autopista, autopistas, puente, puentes, sobrecosto de obra, sobrecostos de obra,
+                     sobrecosto en obra, sobrecostos en obras, sobrecostos en obra, sobrecosto en obras, sobrecosto de obras,
+                     sobrecostos de obras, licitacion de obra, licitacion de obras, contrato de obra, contratos de obra,
+                     obra de acueducto, obras de acueducto, construccion de acueducto, construccion de acueductos]
     inundaciones_lluvias: [inundacion, inundaciones, inundado, inundados, lluvia, lluvias, aguacero, aguaceros, crecida,
                            desbordamiento]
     deslizamientos: [deslizamiento, deslizamientos, derrumbe, derrumbes, alud]
