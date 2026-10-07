@@ -315,15 +315,13 @@ def test_x102_ia_vs_baseline_sin_origen_declarado_hace_fallar(raiz: Path):
         _pagina(raiz)
 
 
-def test_x102_rotular_humano_a_la_clasificacion_a_mano_no_pasa(raiz: Path, monkeypatch):
-    """Si el generador rotulara «humano» sin leer la declaración, las filas dejarían de ser PROVISIONAL y este test lo detecta."""
+def test_x102_el_origen_lo_declara_ia_vs_baseline_y_no_clasificacion_json(raiz: Path):
+    """Al revés: clasificacion.json declara provisionales pero ia_vs_baseline.json (la fuente de la cifra) declara humanos: salen «humano»."""
     def provisional(d):
-        d["clasificacion"].update(origenes=["humano", "asistente_provisional"], usa_etiquetas_provisionales=True)
-    _editar(raiz, "outputs/ia_vs_baseline.json", provisional)
-    monkeypatch.setattr(pm, "origen_clasificacion", lambda bloque, csv: pm.Origen(pm.HUMANO, True))
+        d["datos_reales"].update(origenes=["humano", "asistente_provisional"], usa_etiquetas_provisionales=True)
+    _editar(raiz, "outputs/clasificacion.json", provisional)
     filas = _filas_de_clasificacion(_pagina(raiz))
-    with pytest.raises(AssertionError):
-        assert all("**PROVISIONAL**" in f for f in filas)
+    assert filas and all("| humano |" in f and "**PROVISIONAL**" not in f for f in filas)
 
 
 def test_x102_ia_vs_baseline_declara_el_origen_de_sus_etiquetas():
@@ -358,9 +356,106 @@ def test_x100_la_configuracion_puede_hacer_fallar_la_pagina(raiz: Path):
         pm.generar(pm.cargar_contexto(raiz, cfg), ahora=AHORA)
 
 
+def _con_coherencia(raiz: Path, **cambios):
+    cfg = cargar_pagina_metricas()
+    return pm.generar(pm.cargar_contexto(raiz, cfg.model_copy(update={"coherencia": cfg.coherencia.model_copy(update=cambios)})), ahora=AHORA)
+
+
+def _seccion_coherencia(texto: str) -> str:
+    return texto.split("## Coherencia entre fuentes")[1].split("## Fuentes")[0]
+
+
 def test_x100_la_tolerancia_viene_de_la_configuracion(raiz: Path):
-    _editar(raiz, "outputs/ia_vs_baseline.json", lambda d: d["clasificacion"]["vista_pipeline"]["macro_f1_ia"].update(macro_f1=0.5453))
-    assert "La clasificación" not in _pagina(raiz).split("## Coherencia entre fuentes")[1].split("## Fuentes")[0]
+    """Una diferencia de 0.0002 avisa con tolerancia 0 y no avisa con la vigente; una de 0.005 avisa con la vigente y no con 0.01."""
+    def difiere(delta):
+        def f(d):
+            m = d["clasificacion"]["vista_pipeline"]["macro_f1_ia"]
+            m["macro_f1"] = round(m["macro_f1"] + delta, 6)
+        _editar(raiz, "outputs/ia_vs_baseline.json", f)
+    difiere(0.0002)
+    assert "La clasificación" not in _seccion_coherencia(_pagina(raiz))
+    assert "macro-F1 de la IA" in _seccion_coherencia(_con_coherencia(raiz, tolerancia_macro_f1=0.0))
+    difiere(0.005)                                      # ahora 0.0052 de diferencia
+    assert "macro-F1 de la IA" in _seccion_coherencia(_pagina(raiz))
+    assert "La clasificación" not in _seccion_coherencia(_con_coherencia(raiz, tolerancia_macro_f1=0.01))
+
+
+def test_x103_las_filas_de_clasificacion_dicen_que_modelo_y_metodo_midieron(raiz: Path):
+    iv = json.loads((raiz / "outputs" / "ia_vs_baseline.json").read_text(encoding="utf-8"))["clasificacion"]
+    rotulo = f"({iv['modelo']}/{iv['metodo']})"
+    filas = [f for f in _filas_de_clasificacion(_pagina(raiz)) if "· IA" in f]
+    assert len(set(filas)) == 2 and all(rotulo in f for f in filas)
+
+
+def _activar(monkeypatch, **cambios):
+    from src.configuracion import cargar_clasificacion
+    monkeypatch.setattr(pm, "cargar_clasificacion", lambda: cargar_clasificacion().model_copy(update=cambios))
+
+
+def test_x103_la_coherencia_compara_con_el_modelo_activo_de_la_configuracion(raiz: Path, monkeypatch):
+    from src.configuracion import cargar_clasificacion
+    cfg = cargar_clasificacion()
+    otro = next(m for m in cfg.modelos if m != cfg.modelo_activo)
+    _activar(monkeypatch, modelo_activo=otro)
+    coh = _seccion_coherencia(_pagina(raiz))
+    assert f"midió {cfg.modelo_activo}/{cfg.metodo_activo} pero config/clasificacion.yaml activa {otro}/{cfg.metodo_activo}" in coh
+
+
+def test_x103_otro_metodo_activo_tambien_avisa_y_la_configuracion_puede_hacer_fallar(raiz: Path, monkeypatch):
+    from src.configuracion import METODOS_CLASIFICACION, cargar_clasificacion
+    cfg = cargar_clasificacion()
+    otro = next(m for m in METODOS_CLASIFICACION if m != cfg.metodo_activo)
+    _activar(monkeypatch, metodo_activo=otro)
+    assert "config/clasificacion.yaml activa" in _seccion_coherencia(_pagina(raiz))
+    with pytest.raises(pm.ErrorPagina, match="config/clasificacion.yaml activa"):
+        _con_coherencia(raiz, ante_discrepancia_clasificacion="falla")
+
+
+def test_x103_con_el_modelo_activo_correcto_no_avisa(raiz: Path):
+    assert "activa" not in _seccion_coherencia(_pagina(raiz))
+
+
+def _git_en(raiz: Path, *args: str) -> None:
+    import subprocess
+    subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", *args], cwd=raiz, check=True, capture_output=True)
+
+
+def _linea_commit(texto: str) -> str:
+    return next(x for x in texto.splitlines() if "Commit desde el que se generó" in x)
+
+
+def test_x103_el_commit_se_rotula_desde_el_que_se_genero_y_marca_el_arbol_sucio(raiz: Path):
+    _git_en(raiz, "init", "-q")
+    _git_en(raiz, "add", "-A")
+    _git_en(raiz, "commit", "-q", "-m", "base")
+    limpio = _pagina(raiz)
+    assert "Commit actual" not in limpio and "sin commitear" not in _linea_commit(limpio)
+    _editar(raiz, "outputs/puntaje.json", lambda d: d.update(grupos=d.get("grupos", 0) + 1))
+    assert "(árbol con cambios sin commitear)" in _linea_commit(_pagina(raiz))
+
+
+def test_x103_un_archivo_ajeno_a_las_fuentes_no_ensucia_el_arbol(raiz: Path):
+    _git_en(raiz, "init", "-q")
+    _git_en(raiz, "add", "-A")
+    _git_en(raiz, "commit", "-q", "-m", "base")
+    (raiz / "ajeno.txt").write_text("x", encoding="utf-8")
+    assert "sin commitear" not in _linea_commit(_pagina(raiz))
+
+
+def test_x104_el_origen_de_la_agrupacion_sale_del_mismo_archivo_que_la_cifra(raiz: Path):
+    """ia_vs_baseline.json:agrupacion declara provisionales: las filas de pares salen PROVISIONAL y la clasificación sigue humana."""
+    def provisional(d):
+        d["agrupacion"].update(origenes=["humano", "asistente_provisional"], usa_etiquetas_provisionales=True)
+    _editar(raiz, "outputs/ia_vs_baseline.json", provisional)
+    texto = _pagina(raiz)
+    pares = [f for f in texto.splitlines() if f.startswith("| Precisión de pares") or f.startswith("| Recall de pares")]
+    assert len(pares) == 4 and all("**PROVISIONAL**" in f and "| humano |" not in f for f in pares)
+    assert all("| humano |" in f for f in _filas_de_clasificacion(texto))
+
+
+def test_x104_las_filas_de_pares_son_humanas_si_la_fuente_las_declara_humanas(raiz: Path):
+    pares = [f for f in _pagina(raiz).splitlines() if f.startswith("| Precisión de pares") or f.startswith("| Recall de pares")]
+    assert len(pares) == 4 and all("| humano |" in f for f in pares)
 
 
 def test_decimales_de_tokens_usd_y_latencia_salen_de_la_configuracion(raiz: Path):
@@ -377,3 +472,39 @@ def test_la_latencia_de_la_consulta_conserva_resolucion(raiz: Path):
     """Revisión, info 7: 0.0068 s no puede mostrarse como 0.007 con un IC «0.000 – 0.007»."""
     consulta = next(f for f in _pagina(raiz).splitlines() if f.startswith("| Latencia p50 · Consulta"))
     assert "0.000 –" not in consulta and "0.0068" in consulta
+
+
+def _latencias(raiz: Path, cfg=None) -> dict[str, str]:
+    texto = pm.generar(pm.cargar_contexto(raiz, cfg), ahora=AHORA)
+    return {f.split("|")[1].strip(): f.split("|")[2].strip() for f in texto.splitlines() if f.startswith("| Latencia")}
+
+
+def _decimales(valor: str) -> int:
+    return len(valor.split()[0].split(".")[1])
+
+
+def test_x104_los_decimales_de_la_latencia_dependen_de_su_magnitud_segun_la_configuracion(raiz: Path):
+    """Bajo el umbral, decimales_latencia; desde el umbral, decimales_latencia_segundos. Nada fijo en el código."""
+    cfg = cargar_pagina_metricas()
+    pres = cfg.presentacion
+    for fila, valor in _latencias(raiz).items():
+        v = float(valor.split()[0])
+        assert _decimales(valor) == (pres.decimales_latencia_segundos if v >= pres.umbral_latencia_s else pres.decimales_latencia), fila
+    cambiada = pres.model_copy(update={"decimales_latencia": 5, "decimales_latencia_segundos": 1})
+    filas = _latencias(raiz, cfg.model_copy(update={"presentacion": cambiada}))
+    assert {_decimales(v) for k, v in filas.items() if float(v.split()[0]) >= pres.umbral_latencia_s} == {1}
+    assert {_decimales(v) for k, v in filas.items() if float(v.split()[0]) < pres.umbral_latencia_s} == {5}
+
+
+def test_x104_hay_latencias_de_segundos_y_de_milesimas_y_cada_una_con_su_precision(raiz: Path):
+    filas = _latencias(raiz)
+    valores = {k: float(v.split()[0]) for k, v in filas.items()}
+    assert any(v >= 1 for v in valores.values()) and any(v < 1 for v in valores.values())
+    assert all(_decimales(filas[k]) == 2 for k, v in valores.items() if v >= 1)
+    assert all(_decimales(filas[k]) == 4 for k, v in valores.items() if v < 1)
+
+
+def test_x104_el_umbral_de_la_latencia_sale_de_la_configuracion(raiz: Path):
+    cfg = cargar_pagina_metricas()
+    alto = cfg.presentacion.model_copy(update={"umbral_latencia_s": 1000.0, "decimales_latencia": 3})
+    assert {_decimales(v) for v in _latencias(raiz, cfg.model_copy(update={"presentacion": alto})).values()} == {3}

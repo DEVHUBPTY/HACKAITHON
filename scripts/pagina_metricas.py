@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import Any
 
 from eval import origen_etiquetas
-from src.configuracion import RAIZ, ConfigPaginaMetricas, cargar_origen_juicio, cargar_pagina_metricas
+from src.configuracion import RAIZ, ConfigPaginaMetricas, cargar_clasificacion, cargar_origen_juicio, cargar_pagina_metricas
 
 HUMANO = "humano"
 PROVISIONAL = "asistente_provisional"
@@ -246,6 +246,11 @@ class Contexto:
     def dv(self) -> int:
         return self.cfg.presentacion.decimales_valor
 
+    def dec_latencia(self, segundos: float) -> int:
+        """Decimales de una latencia según su magnitud: pocos desde el umbral de la configuración, más por debajo (X104)."""
+        pres = self.cfg.presentacion
+        return pres.decimales_latencia_segundos if segundos >= pres.umbral_latencia_s else pres.decimales_latencia
+
     def ruta(self, clave: str) -> str:
         return self.cfg.fuentes.get(clave) or self.cfg.opcionales[clave].ruta
 
@@ -361,8 +366,9 @@ def seccion_baseline(c: Contexto) -> tuple[list[Metrica], list[str]]:
     org = origen_clasificacion(iv["clasificacion"], c.datos["origenes_etiquetas"])
     org_ag = origen_agrupacion(iv["agrupacion"], c.datos["origenes_etiquetas"])
     cl = iv["clasificacion"]["vista_pipeline"]
+    medido = f"({iv['clasificacion']['modelo']}/{iv['clasificacion']['metodo']})"   # modelo/método que midió ia_vs_baseline.json
     o = [
-        c.est(s, "Macro-F1 de clasificación · IA", cl["macro_f1_ia"], "macro_f1", "ia_vs_baseline", "clasificacion.vista_pipeline.macro_f1_ia",
+        c.est(s, f"Macro-F1 de clasificación · IA {medido}", cl["macro_f1_ia"], "macro_f1", "ia_vs_baseline", "clasificacion.vista_pipeline.macro_f1_ia",
               origen=org, destacada=True),
         c.est(s, "Macro-F1 de clasificación · baseline", cl["macro_f1_baseline"], "macro_f1", "ia_vs_baseline",
               "clasificacion.vista_pipeline.macro_f1_baseline", origen=org, destacada=True),
@@ -370,7 +376,7 @@ def seccion_baseline(c: Contexto) -> tuple[list[Metrica], list[str]]:
               "clasificacion.vista_pipeline.diferencia_macro_f1", origen=org),
     ]
     vc = iv["clasificacion"]["vista_clasificador"]
-    o += [c.prop(s, "Exactitud del clasificador · IA", vc["exactitud_ia"], "ia_vs_baseline", "clasificacion.vista_clasificador.exactitud_ia", org),
+    o += [c.prop(s, f"Exactitud del clasificador · IA {medido}", vc["exactitud_ia"], "ia_vs_baseline", "clasificacion.vista_clasificador.exactitud_ia", org),
           c.prop(s, "Exactitud del clasificador · baseline", vc["exactitud_baseline"], "ia_vs_baseline",
                  "clasificacion.vista_clasificador.exactitud_baseline", org)]
     cv = iv["agrupacion"]["validacion_cruzada_agrupada"]
@@ -426,6 +432,14 @@ def seccion_ranking(c: Contexto) -> tuple[list[Metrica], list[str]]:
     return o, lineas
 
 
+def _valor_de(est: Any, donde: str) -> float:
+    """El ``valor`` de una estimación, para decidir cuántos decimales lleva; la validación completa la hace ``leer_estimacion``."""
+    v = est.get("valor") if isinstance(est, dict) else None
+    if not isinstance(v, (int, float)) or isinstance(v, bool):
+        raise ProporcionIncompleta(f"metricas.json:{donde}: falta 'valor'")
+    return float(v)
+
+
 def seccion_eficiencia(c: Contexto) -> tuple[list[Metrica], list[str]]:
     m, s = c.datos["metricas"], "Eficiencia, tokens y costo"
     lat = m["latencia"]
@@ -434,10 +448,11 @@ def seccion_eficiencia(c: Contexto) -> tuple[list[Metrica], list[str]]:
                           ("paquete_completo", "Paquete completo de borrador"), ("llamada_llm", "Llamada al LLM")):
         for pct in ("p50", "p95"):
             o.append(c.est(s, f"Latencia {pct} · {rotulo}", lat[clave][pct], "valor", "metricas", f"latencia.{clave}.{pct}", "s",
-                           destacada=(pct == "p50" and clave in ("consulta", "paquete_completo")), dec=c.cfg.presentacion.decimales_latencia))
+                           destacada=(pct == "p50" and clave in ("consulta", "paquete_completo")),
+                           dec=c.dec_latencia(_valor_de(lat[clave][pct], f"latencia.{clave}.{pct}"))))
     for tipo, d in lat["paquete_por_tipo"].items():
         o.append(c.est(s, f"Latencia p50 del paquete {tipo} (n pequeño)", d["p50"], "valor", "metricas", f"latencia.paquete_por_tipo.{tipo}.p50", "s",
-                       dec=c.cfg.presentacion.decimales_latencia))
+                       dec=c.dec_latencia(_valor_de(d["p50"], f"latencia.paquete_por_tipo.{tipo}.p50"))))
     b = m["tokens_y_costo"]["borradores"]
     if b.get("estado") != "medido":
         raise ErrorPagina("metricas.json:tokens_y_costo.borradores no está medido")
@@ -530,8 +545,9 @@ def seccion_reproducibilidad(c: Contexto, head: str) -> list[str]:
     reg = e["commit"][:7]
     out = [f"- Registro del manifest: commit `{reg}`, árbol con cambios al registrar: **{'sí' if e['arbol_con_cambios'] else 'no'}**; "
            f"corte del snapshot {c.datos['manifest']['fecha_corte_UTC']}; hash del snapshot `{c.datos['manifest']['hash_snapshot'][:12]}`.",
-           f"- Commit actual del repo: `{head}`. " + ("El registro corresponde al commit actual." if head.startswith(reg) or reg.startswith(head)
-                                                       else "El registro es de otro commit: confirmar con `--verificar` antes de afirmar que se reproduce."),
+           f"- Commit desde el que se generó: `{head}`" + (" (árbol con cambios sin commitear)" if _arbol_con_cambios(c) else "") + ". "
+           + ("El registro corresponde a ese commit." if head.startswith(reg) or reg.startswith(head)
+              else "El registro es de otro commit: confirmar con `--verificar` antes de afirmar que se reproduce."),
            f"- LLM: {e['llm']['proveedor']}/{e['llm']['modelo']}, temperatura {e['llm']['temperatura']}, semilla {e['llm']['semilla']}; "
            f"embeddings {e['embeddings']['clave']} y {e['embeddings_clasificacion']['clave']} con revisión fijada.",
            f"- Salidas deterministas con hash: {len(r['salidas_deterministas'])}. Borradores en caché: "
@@ -539,6 +555,12 @@ def seccion_reproducibilidad(c: Contexto, head: str) -> list[str]:
            "- Comprobación: `HF_HUB_OFFLINE=1 poetry run python -m scripts.reproducir --verificar` (sale con 1 si algo difiere)."]
     out += [f"- Limitación declarada: {x}" for x in r.get("limitaciones", [])]
     return out
+
+
+def _arbol_con_cambios(c: Contexto) -> bool:
+    """¿Alguna fuente de la página (obligatoria u opcional) tiene cambios sin commitear? Mismo criterio que ``arbol_con_cambios`` del manifest."""
+    rutas = [c.ruta(k) for k in c.cfg.fuentes] + [o.ruta for o in c.cfg.opcionales.values()]
+    return bool(_git(c.raiz, "status", "--porcelain", "--", *rutas))
 
 
 def _contar(it: Any) -> dict[str, int]:
@@ -568,12 +590,15 @@ def coherencia(c: Contexto) -> list[str]:
 
 
 def _coherencia_clasificacion(c: Contexto) -> list[str]:
-    """La clasificación de ``ia_vs_baseline.json`` contra la de ``clasificacion.json`` para el modelo y método que midió.
+    """La clasificación de ``ia_vs_baseline.json`` contra la de ``clasificacion.json`` para el modelo y método que midió,
+    y que ese modelo y método sean los activos de ``config/clasificacion.yaml`` (X103).
 
     Si difieren, una de las dos salidas es de otro clasificador o de otra base. Según la configuración avisa o hace fallar.
     """
     iv_c, cl = c.datos["ia_vs_baseline"]["clasificacion"], c.datos["clasificacion"]["datos_reales"]
     clave = f"{iv_c['modelo']}/{iv_c['metodo']}"
+    activa = cargar_clasificacion()
+    activo = f"{activa.modelo_activo}/{activa.metodo_activo}"
     tol = c.cfg.coherencia.tolerancia_macro_f1
     try:
         pipe = cl["pipeline"]["configuraciones"]
@@ -587,6 +612,8 @@ def _coherencia_clasificacion(c: Contexto) -> list[str]:
     except KeyError as e:
         raise ErrorPagina(f"coherencia de la clasificación: falta {e} en ia_vs_baseline.json o clasificacion.json (configuración {clave})") from e
     difieren = [f"{n}: ia_vs_baseline.json {a} contra clasificacion.json {b}" for n, a, b, t in pares if abs(a - b) > t]
+    if clave != activo:
+        difieren.insert(0, f"ia_vs_baseline.json midió {clave} pero config/clasificacion.yaml activa {activo}")
     if not difieren:
         return []
     msg = (f"La clasificación ({clave}) difiere entre salidas — " + "; ".join(difieren)

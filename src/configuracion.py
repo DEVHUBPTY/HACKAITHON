@@ -3035,7 +3035,9 @@ class PresentacionMetricas(ModeloConfig):
     decimales_valor: int = Field(ge=0, le=6)
     decimales_tokens: int = Field(ge=0, le=6)      # tokens por paquete (mediana)
     decimales_usd: int = Field(ge=0, le=8)         # costo por paquete en USD
-    decimales_latencia: int = Field(ge=0, le=8)    # latencias en segundos (la consulta local dura milésimas)
+    decimales_latencia: int = Field(ge=0, le=8)    # latencias menores que el umbral (la consulta local dura milésimas)
+    decimales_latencia_segundos: int = Field(ge=0, le=8)   # latencias desde el umbral (un paquete dura segundos: más decimales serían falsa precisión)
+    umbral_latencia_s: float = Field(gt=0)         # desde cuántos segundos una latencia usa decimales_latencia_segundos
 
 
 class CoherenciaMetricas(ModeloConfig):
