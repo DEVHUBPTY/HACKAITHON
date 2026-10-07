@@ -38,7 +38,8 @@ motivos_descarte:
 motivos_con_comentario: ["Otro"]      # estos motivos exigen además un comentario que explique
 
 # D-49: la persona se elige de esta lista con su rol. No hay autenticación (fuera de alcance del reto): es una limitación declarada.
-# El revisor editorial es la editora; en banca, el analista. Se reemplazan por la lista real del equipo antes del evento.
+# El revisor editorial es la editora; en banca, el analista. Es el equipo real (D-101): David Fen, Javier Acosta y Juan Zhou,
+# los tres con los dos roles, porque no hay una asignación de roles por persona.
 revisores:
   - {nombre: "David Fen",     rol: "Revisión editorial", modalidad: editorial}
   - {nombre: "Javier Acosta",  rol: "Revisión editorial", modalidad: editorial}
