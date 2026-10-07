@@ -243,7 +243,7 @@ def test_cargar_config_rechaza_un_yaml_roto(tmp_path: Path) -> None:
 
 
 COLUMNAS_MUESTRA = ["id_muestra", "origen", "id_unidad", "id_afirmacion", "tipo", "texto", "citas", "evidencia_citada", "veredicto", "comentario", "revisor"]
-HUMANAS = ["veredicto", "comentario", "revisor"]
+HUMANAS = ["veredicto", "comentario", "revisor", "origen_juicio"]   # origen_juicio: quién juzgó (D-101)
 
 
 def _muestra(ruta: Path, filas: list[dict[str, str]]) -> Path:
@@ -265,7 +265,7 @@ def test_una_muestra_distinta_con_los_mismos_conteos_se_detecta(tmp_path: Path) 
 def test_los_veredictos_humanos_no_cambian_el_hash_de_la_muestra(tmp_path: Path) -> None:
     fila = {"id_muestra": "S01", "id_unidad": "GRP-1", "id_afirmacion": "A1", "texto": "uno"}
     sin = _muestra(tmp_path / "sin.csv", [fila])
-    con = _muestra(tmp_path / "con.csv", [fila | {"veredicto": "sustentada", "comentario": "ok", "revisor": "Ana"}])
+    con = _muestra(tmp_path / "con.csv", [fila | {"veredicto": "sustentada", "comentario": "ok", "revisor": "Ana", "origen_juicio": "asistente_provisional"}])
     assert rep.huella_muestra(sin, HUMANAS) == rep.huella_muestra(con, HUMANAS)
 
 
