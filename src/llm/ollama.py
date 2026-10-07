@@ -8,12 +8,13 @@ inyecta para poder simularlo en las pruebas.
 from __future__ import annotations
 
 import logging
+import time
 from typing import Any, Protocol
 
 import requests
 
 from src.configuracion import ConfigLlm
-from src.llm.proveedor import ErrorProveedor
+from src.llm.proveedor import ErrorProveedor, UsoLlm, registrar_uso
 
 log = logging.getLogger(__name__)
 
@@ -117,14 +118,20 @@ class ProveedorOllama:
         self.modelo = modelo
         self.cfg = cfg
         self.cliente = ClienteOllama(host, cfg.ollama.timeout_segundos, sesion)
+        self.ultimo_uso: UsoLlm | None = None
 
     def generar_json(self, system: str, usuario: str, esquema: dict[str, Any]) -> str:
         g = self.cfg.generacion
         opciones = {"temperature": g.temperatura, "seed": g.semilla, "num_ctx": g.num_ctx, "num_predict": g.num_predict}
+        inicio = time.perf_counter()
         try:
             resp = self.cliente.chat(self.modelo, system, usuario, esquema, opciones, g.pensar, self.cfg.ollama.keep_alive_durante_prueba)
         except ErrorOllama as exc:
             raise ErrorProveedor(str(exc)) from exc
+        self.ultimo_uso = UsoLlm(
+            self.nombre, self.modelo, int(resp.get("prompt_eval_count") or 0), int(resp.get("eval_count") or 0), time.perf_counter() - inicio
+        )
+        registrar_uso(self.ultimo_uso)
         contenido = resp.get("message", {}).get("content")
         if not isinstance(contenido, str) or not contenido.strip():
             raise ErrorProveedor("Ollama devolvió una respuesta vacía")

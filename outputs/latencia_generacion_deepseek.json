@@ -1,0 +1,70 @@
+{
+  "proveedor": "deepseek",
+  "modelo": "deepseek-flash",
+  "ficha": "tests/fixtures/ficha_generacion.json",
+  "repeticiones": 5,
+  "calentamiento": 0,
+  "primera_respuesta": {
+    "n": 5,
+    "mediana_s": 7.84,
+    "p95_s": 8.24,
+    "min_s": 7.41,
+    "max_s": 8.24
+  },
+  "paquete_completo": {
+    "n": 5,
+    "mediana_s": 16.64,
+    "p95_s": 17.2,
+    "min_s": 15.6,
+    "max_s": 17.2
+  },
+  "tokens_por_paquete": {
+    "entrada": 11817,
+    "salida": 3355
+  },
+  "llamadas_por_paquete": [
+    7,
+    7,
+    7,
+    7,
+    7
+  ],
+  "secciones_vacias_por_repeticion": [
+    [],
+    [],
+    [],
+    [],
+    []
+  ],
+  "secciones_recortadas_por_repeticion": [
+    [
+      "copy_digital",
+      "resumen_web"
+    ],
+    [
+      "copy_digital"
+    ],
+    [
+      "copy_digital",
+      "resumen_web"
+    ],
+    [
+      "copy_digital",
+      "resumen_web"
+    ],
+    [
+      "copy_digital"
+    ]
+  ],
+  "afirmaciones_validas_por_repeticion": [
+    7,
+    6,
+    7,
+    7,
+    6
+  ],
+  "costo_acumulado": {
+    "tokens": 501282,
+    "usd": 0.252057
+  }
+}

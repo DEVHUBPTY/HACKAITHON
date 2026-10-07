@@ -1,0 +1,87 @@
+# E1-12 · Generación del paquete editorial (D-41 a D-45, D-67). Todo número y toda lista viven aquí (D-79).
+# Origen y validación de cada valor: docs/parametros.md, sección "Generación del borrador (E1-12)".
+version: "1.0"
+
+prompts:
+  afirmaciones: afirmaciones_ficha     # paso 1 (prompts/afirmaciones_ficha.txt)
+  redaccion: paquete_editorial         # paso 2, un bloque por grupo (prompts/paquete_editorial.txt)
+
+# Un reintento ante salida inválida (JSON que no cumple el esquema o sección que no pasa la validación). Si el reintento
+# tampoco sirve, la sección se entrega vacía con el motivo en `vacios`; nunca se rellena.
+reintentos: 1
+
+afirmaciones:
+  minimas_validas: 1       # sin al menos una afirmación válida no se redacta nada
+  maximas: 8               # el LLM puede proponer más; se conservan las primeras
+
+# Qué se genera según la acción de la ficha (D-42). Acción fuera de estas listas: no se genera nada y se avisa.
+acciones:
+  completo: ["Producir borrador", "Borrador opcional"]
+  completo_con_vacios: ["Completar evidencia y producir"]
+  investigacion: ["Investigar ya", "Vigilar"]
+  nada: ["Archivar", "Archivar como contexto"]
+
+# Qué prefijo de ID respalda un hecho (dato oficial o conteo)  y cuál es lo que reporta un medio (CLAUDE.md, D-63). `SYN-` son casos sintéticos.
+prefijos:
+  hecho_oficial: ["IND-", "SIS-", "SBP-"]   # un hecho puede citar solo datos oficiales…
+  hecho_conteo: ["GRP-"]                    # …o el conteo del grupo (campos de `campos_conteo`); nunca un titular (D-18, D-68, X28)
+  reportes: ["NOT-", "SYN-"]                # lo que reporta un medio: declaración
+
+campos_conteo: [n_titulares, n_medios, n_procedencias]
+
+# Un dato oficial anual no se describe con estas palabras (CLAUDE.md: «actual», «hoy»), comparadas sin tildes y como palabra completa.
+volatiles: [actual, actualmente, hoy]
+# Cada dato de una línea de la ficha viene como «PAÍS AAAA: valor unidad»; se toma el valor de cada uno (separados por «;»).
+patron_valor_por_anio: '[A-Z]{3} \d{4}: ([^;]+)'
+# El año de un ID anual (IND-PAN-FP.CPI.TOTL.ZG-2024) es el último grupo de dígitos tras el guion; se exige en el texto.
+patron_anio_en_id: '-(\d{4})$'
+
+# Un título o titular basado en una declaración lleva atribución: el nombre del medio o alguno de estos verbos (palabra completa).
+atribucion:
+  marcadores: [reporta, reportan, reportó, reportaron, reportado, informa, informan, informó, informaron, según, señala, señalan,
+               señaló, indica, indican, publica, publican, publicó, afirma, afirman]
+
+traducido:                 # D-45: la cita de un titular que no está en este idioma lleva la marca
+  idioma_base: es
+  marca: "(traducido)"
+
+# El texto de salida no puede repetir fragmentos del system prompt (T07): n palabras consecutivas iguales lo delatan.
+fuga_prompt:
+  palabras_por_fragmento: 6
+
+objetivo_fraccion_limite: 0.8   # el aviso del reintento pide quedar en esta fracción del máximo de palabras (supuesto)
+
+# Si tras el reintento una de estas secciones solo falla por superar el máximo de palabras, se quitan oraciones del final
+# (nunca se reescribe ni se agrega nada) hasta que cabe, y se deja constancia en `vacios`. Es un supuesto nuestro:
+# los máximos de brief (250) y copy (80) son del PDF y no se relajan.
+recortables: [brief, resumen_web, copy_digital]
+
+texto:                     # recortes de los mensajes de error y de descarte (no de la salida)
+  motivo_max_caracteres: 600
+  vista_previa_caracteres: 60
+
+# Modalidades con generación implementada; E2-02 agrega banca. Una modalidad fuera de la lista no genera nada.
+modalidades: [editorial]
+
+grupos:                    # D-44: 1 llamada de afirmaciones + 4 de redacción, cada una bajo demanda
+  editorial: [titulos, brief, guion, resumen]
+  investigacion: [investigacion]
+
+deepseek:                  # respaldo provisional de pago (D-80); la clave sale de local.env (DEEPSEEK_API_KEY)
+  base_url: "https://api.deepseek.com"
+  modelo: "deepseek-flash"      # modelo documentado en api-docs.deepseek.com (2026-10-06); DEEPSEEK_MODEL de local.env lo sobrescribe
+  timeout_segundos: 120
+  max_tokens: 1536
+  precio_usd_por_millon_tokens:
+    entrada: 0.30     # USD por millón, deepseek-flash, entrada sin caché, tarifa PICO (la off-peak es 0.15); conservador
+    salida: 1.20      # tarifa pico (off-peak 0.60)
+
+tope_costo:                # D-67, D-95: al alcanzarlo la generación se detiene con TopeDeCostoAlcanzado (sin respaldo local)
+  tokens: 10000000
+  usd: 5.00
+  registro: outputs/costo_llm.json   # acumulado entre ejecuciones (fuera de git)
+
+medicion:                  # scripts/medir_generacion.py: latencia de la primera respuesta y del paquete completo
+  repeticiones: 5
+  calentamiento: 1         # llamadas previas que NO entran en las estadísticas (carga del modelo en frío)
+  percentil: 95

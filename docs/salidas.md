@@ -62,6 +62,20 @@ Internamente se usan los 4 tipos (D-41). En el boletín se muestran: hecho y dec
 
 ---
 
+## Metadatos de la generación (no son campos de contenido)
+
+Todo paquete (`PaqueteEditorial`, `PaqueteInvestigacion`, `BoletinBanca`) lleva además estos campos de metadatos. No son parte del texto que lee la persona ni cuentan para los límites de palabras; sirven para trazabilidad y revisión:
+
+| Campo | Qué es | Origen |
+|---|---|---|
+| `marca` | «BORRADOR · requiere revisión» (`config/restricciones.yaml`) | Regla |
+| `id_caso`, `version` | ID del caso (hoy el `GRP-` hasta que E1-16 asigne `CASO-`) y versión | Ficha |
+| `leyenda_alcance` | Leyenda de alcance (D-51), según `uso_descripcion` de la ficha | Regla |
+| `accion` | Acción recomendada de la ficha que decidió qué se generó (D-42) | Ficha |
+| `forzado` | `true` si la persona forzó el paquete completo (queda registrado) | Regla |
+| `vacios` | Vacíos de la ficha (si la acción es «Completar evidencia y producir»), secciones que no se pudieron redactar con su motivo y secciones recortadas por exceso de palabras (D-96) | Regla |
+| `afirmaciones` | Las afirmaciones validadas del paso 1, con sus citas (ID + campo, `traducido` si el titular no está en español) | LLM validado |
+
 ## Cómo se mide
 
 | Medición | Cómo |

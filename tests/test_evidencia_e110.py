@@ -201,8 +201,8 @@ def test_sin_llm_provider_en_la_configuracion_no_hay_proveedor() -> None:
 def test_un_proveedor_desconocido_o_sin_adaptador_falla_con_un_mensaje_claro() -> None:
     with pytest.raises(ErrorProveedor, match="desconocido"):
         crear_proveedor({"LLM_PROVIDER": "otro"})
-    with pytest.raises(ErrorProveedor, match="DeepSeek"):
-        crear_proveedor({"LLM_PROVIDER": "deepseek", "DEEPSEEK_API_KEY": "x" * 20})
+    with pytest.raises(ErrorProveedor, match="DEEPSEEK_API_KEY"):
+        crear_proveedor({"LLM_PROVIDER": "deepseek"})
     with pytest.raises(ErrorProveedor, match="OLLAMA_MODEL"):
         crear_proveedor({"LLM_PROVIDER": "ollama"})
 

@@ -1,0 +1,65 @@
+{
+  "id_caso": "CASO-0001",
+  "version": 1,
+  "modalidad": "editorial",
+  "accion": "Producir borrador",
+  "uso_descripcion": false,
+  "registros": [
+    {
+      "id": "NOT-1fce9a0925",
+      "idioma": "es",
+      "campos": {
+        "titulo": "Ejecutivo sanciona la Ley 552 del Presupuesto del Canal de Panamá por $5 , 555 millones",
+        "medio": "panamaamerica.com.pa",
+        "fecha_deteccion": "2026-10-01T22:30:00Z"
+      }
+    },
+    {
+      "id": "NOT-5a4863366a",
+      "idioma": "es",
+      "campos": {
+        "titulo": "Canal de Panamá manejará presupuesto de B /. 5 , 555 millones para 2027",
+        "medio": "critica.com.pa",
+        "fecha_deteccion": "2026-10-02T03:45:00Z"
+      }
+    },
+    {
+      "id": "NOT-052735cae3",
+      "idioma": "en",
+      "campos": {
+        "titulo": "Inland navigation workers stand with Panama Canal workers after death of tug captain",
+        "medio": "itfglobal.org",
+        "fecha_deteccion": "2026-10-02T09:00:00Z"
+      }
+    },
+    {
+      "id": "IND-PAN-NY.GDP.MKTP.KD.ZG-2024",
+      "campos": {
+        "nombre": "Crecimiento anual del PIB real de Panamá",
+        "valor": "2.747841",
+        "anio": "2024",
+        "unidad": "% anual"
+      }
+    }
+  ],
+  "vacios": [
+    {
+      "id": "V1",
+      "descripcion": "El monto del presupuesto no está confirmado en la Gaceta Oficial ni por la Autoridad del Canal"
+    },
+    {
+      "id": "V2",
+      "descripcion": "Falta saber cómo se compara el presupuesto de 2027 con el de 2026"
+    },
+    {
+      "id": "V3",
+      "descripcion": "Solo dos medios reportan el monto; falta una tercera procedencia independiente"
+    }
+  ],
+  "fuentes_verificaciones": [
+    "Autoridad del Canal de Panamá: confirmar el monto del presupuesto de 2027",
+    "Gaceta Oficial: verificar la Ley 552",
+    "Ministerio de Economía y Finanzas: comparar con el presupuesto de 2026"
+  ],
+  "contradicciones": []
+}

@@ -979,6 +979,8 @@ class SalidasEditorial(ModeloConfig):
     titulares_min: int
     titulares_max: int
     titular_max_palabras: int
+    enfoque_oraciones_min: int
+    enfoque_oraciones_max: int
     brief_max_palabras: int
     preguntas: int
     guion_segundos_min: int
@@ -992,7 +994,11 @@ class SalidasEditorial(ModeloConfig):
 
     @model_validator(mode="after")
     def _rangos(self) -> SalidasEditorial:
-        if self.guion_palabras_min > self.guion_palabras_max or self.titulares_min > self.titulares_max:
+        if (
+            self.guion_palabras_min > self.guion_palabras_max
+            or self.titulares_min > self.titulares_max
+            or self.enfoque_oraciones_min > self.enfoque_oraciones_max
+        ):
             raise ValueError("un mínimo supera a su máximo")
         return self
 
@@ -1822,6 +1828,124 @@ def cargar_prioridad(carpeta: Path | None = None) -> ConfigPrioridad:
     return cargar_config("prioridad", ConfigPrioridad, carpeta)
 
 
+# ------------------------------------------------------------------ generacion.yaml (E1-12)
+
+
+class PromptsGeneracion(ModeloConfig):
+    afirmaciones: str
+    redaccion: str
+
+
+class AfirmacionesGeneracion(ModeloConfig):
+    minimas_validas: int = Field(ge=1)
+    maximas: int = Field(ge=1)
+
+
+class AccionesGeneracion(ModeloConfig):
+    completo: list[str]
+    completo_con_vacios: list[str]
+    investigacion: list[str]
+    nada: list[str]
+
+    @model_validator(mode="after")
+    def _sin_repetidas(self) -> AccionesGeneracion:
+        todas = [*self.completo, *self.completo_con_vacios, *self.investigacion, *self.nada]
+        if len(todas) != len(set(todas)):
+            raise ValueError("una acción aparece en más de una lista")
+        return self
+
+
+class PrefijosGeneracion(ModeloConfig):
+    hecho_oficial: list[str] = Field(min_length=1)
+    hecho_conteo: list[str] = Field(min_length=1)
+    reportes: list[str] = Field(min_length=1)
+
+
+class AtribucionGeneracion(ModeloConfig):
+    marcadores: list[str] = Field(min_length=1)
+
+
+class TextoGeneracion(ModeloConfig):
+    motivo_max_caracteres: int = Field(gt=0)
+    vista_previa_caracteres: int = Field(gt=0)
+
+
+class TraducidoGeneracion(ModeloConfig):
+    idioma_base: str
+    marca: str
+
+
+class FugaPromptGeneracion(ModeloConfig):
+    palabras_por_fragmento: int = Field(ge=2)
+
+
+class GruposGeneracion(ModeloConfig):
+    editorial: list[str]
+    investigacion: list[str]
+
+
+class PreciosDeepSeek(ModeloConfig):
+    entrada: float = Field(ge=0)
+    salida: float = Field(ge=0)
+
+
+class DeepSeekConfig(ModeloConfig):
+    base_url: str
+    modelo: str
+    timeout_segundos: int = Field(gt=0)
+    max_tokens: int = Field(gt=0)
+    precio_usd_por_millon_tokens: PreciosDeepSeek
+
+
+class TopeCostoConfig(ModeloConfig):
+    tokens: int = Field(gt=0)
+    usd: float = Field(gt=0)
+    registro: str
+
+
+class MedicionGeneracion(ModeloConfig):
+    repeticiones: int = Field(ge=1)
+    calentamiento: int = Field(ge=0)
+    percentil: int = Field(ge=1, le=100)
+
+
+class ConfigGeneracionBorrador(ModeloConfig):
+    """Modelo de ``config/generacion.yaml``."""
+
+    version: str
+    prompts: PromptsGeneracion
+    reintentos: int = Field(ge=0)
+    afirmaciones: AfirmacionesGeneracion
+    modalidades: list[str] = Field(min_length=1)
+    acciones: AccionesGeneracion
+    prefijos: PrefijosGeneracion
+    campos_conteo: list[str] = Field(min_length=1)
+    volatiles: list[str] = Field(min_length=1)
+    patron_anio_en_id: str
+    patron_valor_por_anio: str
+    atribucion: AtribucionGeneracion
+    traducido: TraducidoGeneracion
+    texto: TextoGeneracion
+    recortables: list[str]
+    objetivo_fraccion_limite: float = Field(gt=0, le=1)
+    fuga_prompt: FugaPromptGeneracion
+    grupos: GruposGeneracion
+    deepseek: DeepSeekConfig
+    tope_costo: TopeCostoConfig
+    medicion: MedicionGeneracion
+
+    @field_validator("patron_anio_en_id", "patron_valor_por_anio")
+    @classmethod
+    def _regex_valida(cls, v: str) -> str:
+        _compilar_todas([v], "patron_anio_en_id")
+        return v
+
+
+def cargar_generacion(carpeta: Path | None = None) -> ConfigGeneracionBorrador:
+    """Atajo para ``config/generacion.yaml``."""
+    return cargar_config("generacion", ConfigGeneracionBorrador, carpeta)
+
+
 # ------------------------------------------------------------------ verificacion.yaml (E1-10b)
 
 
@@ -2063,6 +2187,7 @@ CARGADORES = {
     "procedencias": cargar_procedencias,
     "consulta": cargar_consulta,
     "prioridad": cargar_prioridad,
+    "generacion": cargar_generacion,
     "verificacion": cargar_verificacion,
     "interfaz": cargar_interfaz,
 }

@@ -6,6 +6,8 @@ editorial:
   titulares_min: 2
   titulares_max: 3
   titular_max_palabras: 14
+  enfoque_oraciones_min: 1
+  enfoque_oraciones_max: 2
   brief_max_palabras: 250
   preguntas: 3
   guion_segundos_min: 45
