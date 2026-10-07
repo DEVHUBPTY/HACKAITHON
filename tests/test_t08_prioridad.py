@@ -196,7 +196,7 @@ def test_un_grupo_con_un_titular_sobre_panama_tiene_foco_pleno_aunque_otros_sean
         ("Cierran escuela en David", "local"),
         ("Corte de agua en Arraiján", "local"),
         ("Se reúne el comité técnico", "desconocido"),
-        ("Presidente de Panamá visita Singapur", "desconocido"),   # «Panamá» es el país, no la provincia
+        ("Presidente de Panamá visita Singapur", "nacional"),   # «Panamá» es el país, no la provincia (E1-10c, X42: el país da alcance nacional)
         ("Corte de agua en la provincia de Panamá", "provincial"),
     ],
 )

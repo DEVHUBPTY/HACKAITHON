@@ -636,6 +636,7 @@ class Agrupacion(ModeloConfig):
 
 class Geografia(ModeloConfig):
     nacional_terminos: list[str]
+    nacional_implicito_terminos: list[str]   # E1-10c (X42): el país o una institución nacional; solo si no hay un lugar concreto
     provincias: list[str]
     comarcas: list[str]
     distritos: list[str]
@@ -1767,6 +1768,7 @@ class DatoOficialPrioridad(ModeloConfig):
 
 class GeografiaPrioridad(ModeloConfig):
     prefijos_obligatorios: dict[str, list[str]]
+    prefijos_excluidos: dict[str, list[str]]   # E1-10c (X42): el término implícito no cuenta precedido de estos
 
 
 class MediosPrioridad(ModeloConfig):

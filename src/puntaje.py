@@ -8,7 +8,8 @@ y **no habilita publicación** (``Puntaje.habilita_publicacion`` es siempre fals
   Panamá como sujeto; 0.5 si todos son notas regionales o de otro país que afectan a Panamá (``alcance_regional``, D-84).
   La similitud temática de un grupo es la media de ``tema_similitud`` de sus titulares.
 * **I** = ``peso_subtema × alcance(subtema) + peso_geografico × alcance geográfico``. Ni el dato oficial ni las
-  procedencias suman aquí (D-15, D-35). El alcance geográfico es el más amplio que nombren los titulares.
+  procedencias suman aquí (D-15, D-35). El alcance geográfico es el más amplio que nombren los titulares; sin término
+  explícito ni lugar concreto, el país nombrado o una institución nacional lo hacen nacional (E1-10c, X42).
 * **U**: lineal entre ``horas_pleno`` (U = 1) y ``dias_nulo`` (U = 0) desde la publicación ORIGINAL más reciente del grupo,
   medida contra la fecha de referencia (el corte del snapshot). Si ningún titular trae ``fecha_publicacion`` se usa la
   detección como cota y se agrega el vacío «urgencia estimada: fecha de publicación desconocida»; nunca se sustituye en silencio.
@@ -45,6 +46,7 @@ from src.procedencias import fraccion_de_procedencias
 
 COMPONENTES = ("R", "I", "U", "N", "E")
 NIVELES_GEOGRAFICOS = ("nacional", "provincial", "local")   # de más a menos amplio; sin términos = desconocido
+NIVEL_NACIONAL = NIVELES_GEOGRAFICOS[0]
 NIVEL_DESCONOCIDO = "desconocido"
 PERCENTIL_NEUTRO = 0.5          # rango medio de [0, 1]: lo que vale un percentil con un solo valor (definición, no parámetro)
 SEGUNDOS_POR_HORA = 3600
@@ -203,19 +205,41 @@ def terminos_presentes(texto: str, terminos: Sequence[str], prefijos: Mapping[st
     return [t for t in terminos if _patron_termino(t, tuple(prefijos.get(t, ()))).search(plano_texto)]
 
 
+def terminos_sin_prefijo_excluido(texto: str, terminos: Sequence[str], excluidos: Mapping[str, Sequence[str]]) -> list[str]:
+    """Términos de ``terminos`` que aparecen en ``texto`` al menos una vez **sin** uno de sus prefijos excluidos delante."""
+    plano_texto = normalizar_geografia(texto)
+    presentes = []
+    for t in terminos:
+        prefijos = [normalizar_geografia(p) for p in excluidos.get(t, ())]
+        for m in _patron_termino(t, ()).finditer(plano_texto):
+            antes = plano_texto[: m.start()].rstrip()
+            if not any(antes == p or antes.endswith(" " + p) for p in prefijos):
+                presentes.append(t)
+                break
+    return presentes
+
+
 def alcance_geografico(miembros: Sequence[Mapping[str, Any]], reglas: ReglasV13, cfg: ConfigPrioridad) -> Alcance:
-    """Alcance más amplio que nombran los titulares: nacional, provincial (provincias y comarcas) o local (distritos)."""
+    """Alcance más amplio que nombran los titulares: nacional, provincial (provincias y comarcas) o local (distritos).
+
+    Si ningún titular nombra un término explícito ni un lugar concreto, el país nombrado o una institución nacional
+    (``nacional_implicito_terminos``) dan alcance nacional (E1-10c, X42); si tampoco, el alcance es desconocido.
+    """
     g = reglas.geografia
     listas = {"nacional": g.nacional_terminos, "provincial": [*g.provincias, *g.comarcas], "local": g.distritos}
     prefijos = cfg.geografia.prefijos_obligatorios
     hallados: dict[str, list[str]] = {nivel: [] for nivel in NIVELES_GEOGRAFICOS}
+    implicitos: list[str] = []
     for m in miembros:
         titular = str(m.get("titulo_limpio") or "")
         for nivel in NIVELES_GEOGRAFICOS:
             hallados[nivel].extend(terminos_presentes(titular, listas[nivel], prefijos))
+        implicitos.extend(terminos_sin_prefijo_excluido(titular, g.nacional_implicito_terminos, cfg.geografia.prefijos_excluidos))
     for nivel in NIVELES_GEOGRAFICOS:
         if hallados[nivel]:
             return Alcance(nivel, getattr(reglas.impacto.alcance_geografico, nivel), tuple(sorted(set(hallados[nivel]))))
+    if implicitos:
+        return Alcance(NIVEL_NACIONAL, reglas.impacto.alcance_geografico.nacional, tuple(sorted(set(implicitos))))
     return Alcance(NIVEL_DESCONOCIDO, reglas.impacto.alcance_geografico.desconocido)
 
 

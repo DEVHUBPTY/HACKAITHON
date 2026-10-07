@@ -115,6 +115,14 @@ agencias: [EFE, AFP, AP, Reuters, Europa Press, DPA, ANSA, Xinhua, Prensa Latina
 
 geografia:                  # alcance geográfico (comparación sin tildes ni mayúsculas, E1-10)
   nacional_terminos: [a nivel nacional, todo el país, en todo el país, nacional, asamblea nacional, gobierno nacional]
+  # E1-10c (X42): mención implícita del país. El país nombrado («en Panamá», «panameños», «en el país») o una institución
+  # de alcance nacional (Ejecutivo, ministerios, CSS, ACP…) da alcance nacional SOLO si ningún titular del grupo nombra un
+  # lugar concreto (provincia, comarca o distrito): el lugar nombrado ubica el hecho. Los términos explícitos de arriba
+  # mandan siempre. «Panamá» precedido de «ciudad de» o «provincia de» no es el país (prioridad.yaml: prefijos_excluidos).
+  nacional_implicito_terminos: [Panamá, panameño, panameña, panameños, panameñas, en el país, del país, Ejecutivo,
+                                Órgano Ejecutivo, Órgano Judicial, Corte Suprema, Ministerio Público, Contraloría,
+                                Tribunal Electoral, Defensoría del Pueblo, Caja de Seguro Social, CSS, Minsa, Meduca, MEF,
+                                MOP, Mides, Mivi, MiAmbiente, Mitradel, Minseg, Ifarhu, Idaan, ACP, AMP, ASEP, ATTT, Sinaproc]
   provincias: [Bocas del Toro, Chiriquí, Coclé, Colón, Darién, Herrera, Los Santos, Panamá, Panamá Oeste, Veraguas]
   comarcas: [Guna Yala, Emberá-Wounaan, Ngäbe-Buglé, Madugandí, Wargandí, Naso Tjër Di]
   distritos:

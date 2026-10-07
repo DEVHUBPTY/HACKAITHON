@@ -17,6 +17,9 @@ geografia:                        # alcance geográfico de I: se buscan los tér
   # Términos que nombran al país y a una provincia a la vez: solo cuentan como la provincia si los precede alguno de estos prefijos.
   prefijos_obligatorios:
     Panamá: ["provincia de"]
+  # E1-10c (X42): un término de `nacional_implicito_terminos` no cuenta si lo precede alguno de estos prefijos.
+  prefijos_excluidos:
+    Panamá: ["ciudad de", "provincia de", "distrito de"]
 
 medios:
   desconocidos: ["", "desconocido", "unknown", "n/a"]   # valores de `medio` que no identifican un medio (componente identificable de E)
