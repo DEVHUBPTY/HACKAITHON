@@ -40,6 +40,7 @@ poetry run python -m src.clasificacion               # embeddings locales y tema
 poetry run python -m eval.clasificacion              # métricas de clasificación (casos difíciles y etiquetas)
 poetry run python -m src.agrupacion                  # grupos GRP- y procedencias independientes (estimadas)
 poetry run python -m eval.agrupacion                 # calibra el umbral y mide precisión/recall de pares con etiquetas
+poetry run python -m src.contexto                    # vínculos con el Banco Mundial por subtema → tabla vinculos y outputs/reporte_vinculos.json (E1-09)
 poetry run python -m src.consulta "pregunta"         # consulta en español con abstención (--metodo semantica|bm25)
 poetry run python -m eval.recuperacion               # Recall@5 y abstención, semántica vs. BM25, con n e IC
 poetry run streamlit run app.py                      # interfaz
@@ -76,15 +77,15 @@ templates/   (vacía)
 prompts/     afirmaciones_citadas.txt
 data/        raw/ (inmutable) · processed/ (validos/ fuera de git) · registro_extraccion/ · manifest.json · CHANGELOG.md · diccionario.md · README.md
              senales.duckdb (generado, fuera de git)
-src/         carga · normalizacion · limpieza · embeddings · clasificacion · baseline · consulta · db · registro (D-75) · configuracion (D-79; config = alias de su CLI) · consultas_gdelt · esquemas (borrador)
-             solo docstring o esqueleto: agrupacion · procedencias · contexto · puntaje · evidencia
+src/         carga · contexto (E1-09) · normalizacion · limpieza · embeddings · clasificacion · baseline · consulta · db · registro (D-75) · configuracion (D-79; config = alias de su CLI) · consultas_gdelt · esquemas (borrador)
+             solo docstring o esqueleto: agrupacion · procedencias · puntaje · evidencia
              ficha · generacion · validador · cache · revision · exportar
 src/llm/     proveedor.py (interfaz) · ollama.py · deepseek.py (solo docstring)
 scripts/     extraer.py · conversion.py · manifest.py · validar_snapshot.py · catalogo.py · explorar.py · estimar_consultas_gdelt.py · probar_llm.py
 eval/        etiquetar.py · etiquetas/ (una hoja por persona) · etiquetas.csv · ruido.py · validar_benchmark.py · clasificacion.py · calibrar_clasificacion.py · metricas.py · recuperacion.py
 benchmark/   benchmark_dev.jsonl (solo desarrollo) · sinteticos.csv · README.md
 tests/       fixtures/ · test_t01_carga.py · test_t03_recirculada.py · test_casos_dificiles.py · test_*.py
-outputs/     catalogo.csv · clasificacion.json · recuperacion.json · validacion_snapshot.json · probar_llm_<modelo>.json
+outputs/     catalogo.csv · reporte_vinculos.json · clasificacion.json · recuperacion.json · validacion_snapshot.json · probar_llm_<modelo>.json
 notion/      exportación inicial para importar en Notion (la versión vigente está en Notion)
 specs/  docs/
 ```
