@@ -4,6 +4,8 @@ Mide cuánto tarda una persona en la misma tarea de forma **manual** y **asistid
 
 **Estado: protocolo listo, pruebas pendientes.** Pruebas realizadas hasta hoy: **0**. Ningún tiempo de esta página es una medición: los campos de resultados están vacíos a propósito y solo se llenan con tiempos cronometrados de personas reales. No se estiman ni se simulan.
 
+**D-101:** esta prueba mide a una persona, así que el asistente **no** la hace ni la sustituye con juicios provisionales; queda pendiente para C-09.
+
 ## Tarea equivalente
 
 A partir del mismo snapshot: **elegir 5 temas para la agenda** y, **para uno de ellos, preparar un brief con sus fuentes y 3 preguntas de investigación**.
