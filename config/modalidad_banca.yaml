@@ -36,7 +36,7 @@ fuentes_sugeridas_extra:
   - "Ministerio de Economía y Finanzas"
   - "Contraloría General de la República (INEC)"
 
-# Mapeo tema → sector (D-11): un sector por tema; servicios públicos y eventos naturales → continuidad operativa.
+# Mapeo tema → sector (D-11, aceptada): un sector por tema; servicios públicos y eventos naturales → continuidad operativa.
 # Los sectores son los de `sectores_validos` de config/temas.yaml.
 sectores_por_tema:
   economia: economía
@@ -46,22 +46,23 @@ sectores_por_tema:
   servicios_publicos: continuidad operativa
   eventos_naturales: continuidad operativa
 
-# Alcance por sector para I (0 a 1): sustituye al alcance del subtema de reglas_v1.3.yaml (parametros.md; supuesto, X02).
+# Alcance por sector para I (0 a 1): sustituye al alcance del subtema de reglas_v1.3.yaml. D-102: el mismo valor (1.0) para todos los
+# sectores, así que el sector agrupa la bandeja pero no cambia I ni el orden. El mecanismo sigue siendo configurable.
 alcance_por_sector:
   economía: 1.0
-  logística: 0.8
-  turismo: 0.6
-  regulación: 0.8
-  continuidad operativa: 0.8
+  logística: 1.0
+  turismo: 1.0
+  regulación: 1.0
+  continuidad operativa: 1.0
 
-# Horizonte temporal (D-11) según la edad de la publicación más reciente del grupo frente al corte del snapshot:
-# inmediato = días (hasta 7), corto plazo = semanas (hasta 56 = 8 semanas), estructural = más allá o sin fechas de noticia.
+# Horizonte temporal (D-11, D-102) según la edad de la publicación más reciente del grupo frente al corte del snapshot:
+# inmediato = días (hasta 7), corto plazo = semanas (hasta 56 = 8 semanas), estructural = más allá de 56 días o sin fechas de noticia (D-102).
 horizonte:
   inmediato_hasta_dias: 7
   corto_plazo_hasta_dias: 56
   etiquetas: {inmediato: "Inmediato", corto plazo: "Corto plazo", estructural: "Estructural"}
 
-# Bandeja agrupada por sector: los sectores se ordenan por el mayor P de sus grupos; los grupos sin sector van al final.
+# Bandeja agrupada por sector (D-102): los sectores se ordenan por el mayor P de sus grupos; los grupos sin sector van al final.
 bandeja:
   sin_sector: "Sin sector asignado"
   etiquetas_sector:
