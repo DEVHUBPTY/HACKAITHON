@@ -1,0 +1,11 @@
+{
+ "clave": "fe986808014e27d4fa6a5691cb09c7761fc5ef67417e1254f291273fda12bb35",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1901,
+ "tokens_salida": 251,
+ "creado_utc": "2026-10-07T03:48:01Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta que Coclé se seca el campo\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La evidencia estima una sola procedencia independiente para este tema, lo que podría indicar cobertura insuficiente para un seguimiento.\", \"afirmaciones\": [\"A3\"]}, {\"texto\": \"El grupo de registros reúne un titular de un medio, de modo que el tema podría requerir más fuentes antes de un desarrollo informativo.\", \"afirmaciones\": [\"A2\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún dato oficial vinculado al tema que permita contrastar lo reportado?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras procedencias independientes podrían aportar evidencia sobre el tema?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Qué indicador oficial podría asociarse al tema para darle sustento documental?\", \"vacio\": \"sin_dato_oficial\"}]}"
+}

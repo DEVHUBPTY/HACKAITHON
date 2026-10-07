@@ -1,0 +1,11 @@
+{
+ "clave": "fd2602096670068cd7c3ca9b5be05c397b8f466d086d7e069d3f10b05082dbe3",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1801,
+ "tokens_salida": 248,
+ "creado_utc": "2026-10-07T03:47:32Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta que César Caicedo está recluido en el Hospital Santo Tomás\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La información disponible sobre el estado y la ubicación de personas bajo custodia estatal podría interesar a la población, aunque la cobertura se apoya en una sola procedencia estimada.\", \"afirmaciones\": [\"A4\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún dato oficial que confirme la ubicación y el estado de César Caicedo?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras procedencias independientes han reportado sobre el traslado y la reclusión de César Caicedo?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Qué documentos o registros oficiales respaldan el traslado a Coiba y la reclusión en el Hospital Santo Tomás?\", \"vacio\": \"sin_dato_oficial\"}]}"
+}

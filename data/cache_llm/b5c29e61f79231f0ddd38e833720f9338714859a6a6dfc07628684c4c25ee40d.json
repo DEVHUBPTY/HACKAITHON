@@ -5,7 +5,7 @@
  "version_prompt": "1.2",
  "version_cache": "1",
  "tokens_entrada": 1690,
- "tokens_salida": 253,
- "creado_utc": "2026-10-07T03:45:43Z",
- "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta aprehensión de Enrique Lau por supuesto enriquecimiento injustificado\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La cobertura se apoya en un solo titular de un único medio, por lo que la evidencia disponible es limitada.\", \"afirmaciones\": [\"A2\"]}, {\"texto\": \"Si no aparecen más procedencias independientes, el caso podría quedar sin confirmación adicional.\", \"afirmaciones\": [\"A2\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún dato oficial vinculado al caso que permita contrastar lo reportado por TVN Panamá?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras procedencias independientes han reportado la aprehensión de Enrique Lau?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Qué documentos o registros oficiales respaldan la causa por supuesto enriquecimiento injustificado?\", \"vacio\": \"sin_dato_oficial\"}]}"
+ "tokens_salida": 264,
+ "creado_utc": "2026-10-07T03:47:47Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta aprehensión de Enrique Lau por supuesto enriquecimiento injustificado\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La cobertura se sostiene por ahora en un solo titular de un único medio, según el grupo de registros.\", \"afirmaciones\": [\"A2\"]}, {\"texto\": \"Si no aparecen más procedencias independientes, la verificación del caso quedaría limitada a lo que reporta TVN Panamá.\", \"afirmaciones\": [\"A2\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún dato oficial vinculado al caso que permita contrastar lo reportado por TVN Panamá?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras procedencias independientes han reportado la aprehensión de Enrique Lau?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Qué documentos o registros oficiales respaldan la imputación por supuesto enriquecimiento injustificado?\", \"vacio\": \"sin_dato_oficial\"}]}"
 }

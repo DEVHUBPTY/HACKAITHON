@@ -95,3 +95,31 @@ def test_la_cache_registra_lo_usado_y_poda_lo_demas(tmp_path: Path) -> None:
     c.guardar("b" * 64, json.dumps({"x": 2}), meta)
     assert c.obtener("a" * 64) and "a" * 64 in c.usadas and "b" * 64 not in c.usadas
     assert c.podar() == 1 and len(c) == 1 and c.obtener("a" * 64) and c.obtener("b" * 64) is None
+
+
+# ============================================================================================ rendimiento: reintento si no sobrevive ninguna inferencia
+
+
+def _sin_inferencia_valida() -> dict[str, Any]:
+    from tests.generacion_ayuda import BUENAS, modificada
+
+    return modificada(BUENAS["afirmaciones"], lambda d: d["afirmaciones"][3].update(texto="El plan interesa a la población porque sube los precios"))
+
+
+def test_si_ninguna_inferencia_sobrevive_el_paso_1_se_reintenta_con_el_motivo() -> None:
+    from src.generacion import generar
+    from tests.generacion_ayuda import BUENAS
+
+    prov = ProveedorGuionado(afirmaciones=(_sin_inferencia_valida(), BUENAS["afirmaciones"]))
+    p = generar(ficha(), prov).paquete
+    assert prov.claves.count("afirmaciones") == 2 and "causalidad" in prov.llamadas[1][2]  # el aviso del reintento dice qué falló
+    assert any(a.tipo == "inferencia" for a in p.afirmaciones) and p.enfoque  # type: ignore[union-attr]
+
+
+def test_si_el_reintento_tampoco_trae_inferencia_se_conservan_las_afirmaciones_validas() -> None:
+    from src.generacion import generar
+
+    prov = ProveedorGuionado(afirmaciones=_sin_inferencia_valida())
+    p = generar(ficha(), prov).paquete
+    assert prov.claves.count("afirmaciones") == 2 and p.afirmaciones and p.brief  # type: ignore[union-attr]
+    assert not any(v.referencia == "afirmaciones" for v in p.vacios)  # type: ignore[union-attr]

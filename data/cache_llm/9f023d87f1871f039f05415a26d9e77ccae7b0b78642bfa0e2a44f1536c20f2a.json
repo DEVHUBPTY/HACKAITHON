@@ -1,0 +1,11 @@
+{
+ "clave": "9f023d87f1871f039f05415a26d9e77ccae7b0b78642bfa0e2a44f1536c20f2a",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1912,
+ "tokens_salida": 307,
+ "creado_utc": "2026-10-07T03:47:25Z",
+ "respuesta": "{\n  \"titulo_trabajo\": {\n    \"texto\": \"TVN Panamá reporta adelanto de vacunación contra el VSR en embarazadas\",\n    \"afirmaciones\": [\"A1\"]\n  },\n  \"enfoque\": [\n    {\n      \"texto\": \"La evidencia estima una sola procedencia independiente para este tema, lo que sugeriría una cobertura limitada.\",\n      \"afirmaciones\": [\"A3\"]\n    },\n    {\n      \"texto\": \"El grupo de registros reúne un titular de un medio, de modo que el alcance del tema aún no estaría determinado.\",\n      \"afirmaciones\": [\"A2\"]\n    }\n  ],\n  \"preguntas\": [\n    {\n      \"texto\": \"¿Existe algún dato oficial anual que permita contextualizar la vacunación contra el VSR en embarazadas?\",\n      \"vacio\": \"sin_dato_oficial\"\n    },\n    {\n      \"texto\": \"¿Qué otras procedencias independientes podrían aportar evidencia sobre este tema?\",\n      \"vacio\": \"procedencias_insuficientes\"\n    },\n    {\n      \"texto\": \"¿Qué subtema específico dentro de la vacunación contra el VSR en embarazadas se puede determinar con la información disponible?\",\n      \"vacio\": \"subtema_desconocido\"\n    }\n  ]\n}"
+}

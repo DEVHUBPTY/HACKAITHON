@@ -5,7 +5,7 @@
  "version_prompt": "1.3",
  "version_cache": "1",
  "tokens_entrada": 1760,
- "tokens_salida": 271,
- "creado_utc": "2026-10-07T03:45:51Z",
- "respuesta": "{\"afirmaciones\":[{\"id\":\"A1\",\"tipo\":\"declaración\",\"texto\":\"TVN Panamá reporta que en Coclé se seca el campo.\",\"citas\":[{\"id\":\"NOT-f2f4a261fd\",\"campo\":\"titulo_limpio\"}]},{\"id\":\"A2\",\"tipo\":\"hecho\",\"texto\":\"El grupo de registros reúne 1 titular de 1 medio que reporta este tema.\",\"citas\":[{\"id\":\"GRP-45aebb27b2\",\"campo\":\"n_titulares\"},{\"id\":\"GRP-45aebb27b2\",\"campo\":\"n_medios\"}]},{\"id\":\"A3\",\"tipo\":\"hecho\",\"texto\":\"Se estima 1 procedencia independiente para este tema.\",\"citas\":[{\"id\":\"GRP-45aebb27b2\",\"campo\":\"n_procedencias\"}]},{\"id\":\"A4\",\"tipo\":\"inferencia\",\"texto\":\"La disponibilidad de agua y la situación del campo en Coclé importan a la población de esa zona, y la evidencia disponible sobre el tema es limitada.\",\"base\":[\"A1\",\"A2\",\"A3\"],\"citas\":[]}]}"
+ "tokens_salida": 303,
+ "creado_utc": "2026-10-07T03:47:57Z",
+ "respuesta": "{\"afirmaciones\":[{\"id\":\"A1\",\"tipo\":\"declaración\",\"texto\":\"TVN Panamá reporta que Coclé se seca el campo, bajo el rótulo \\\"Contenido Exclusivo\\\".\",\"citas\":[{\"id\":\"NOT-f2f4a261fd\",\"campo\":\"titulo_limpio\"}]},{\"id\":\"A2\",\"tipo\":\"hecho\",\"texto\":\"El grupo de registros sobre este tema reúne 1 titular de 1 medio.\",\"citas\":[{\"id\":\"GRP-45aebb27b2\",\"campo\":\"n_titulares\"},{\"id\":\"GRP-45aebb27b2\",\"campo\":\"n_medios\"}]},{\"id\":\"A3\",\"tipo\":\"hecho\",\"texto\":\"La evidencia estima 1 procedencia independiente para este tema.\",\"citas\":[{\"id\":\"GRP-45aebb27b2\",\"campo\":\"n_procedencias\"}]},{\"id\":\"A4\",\"tipo\":\"inferencia\",\"texto\":\"La cobertura disponible sobre este tema es limitada, con un solo titular y una sola procedencia estimada, por lo que la población interesada en lo que ocurre en Coclé cuenta con pocas fuentes independientes para contrastar lo reportado.\",\"base\":[\"A1\",\"A2\",\"A3\"],\"citas\":[]}]}"
 }

@@ -1,0 +1,11 @@
+{
+ "clave": "89b7fe9818d55a1877013c753eb0581f2461ddf02c7d6de83672f62de66ef70a",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 2045,
+ "tokens_salida": 549,
+ "creado_utc": "2026-10-07T03:47:04Z",
+ "respuesta": "{\n  \"brief\": [\n    {\n      \"texto\": \"El medio prensa-latina.cu reporta que el presidente panameño visitará Singapur y Vietnam.\",\n      \"afirmaciones\": [\"A1\"]\n    },\n    {\n      \"texto\": \"El medio laestrella.com.pa reporta que Mulino viajará a Asia y suscribirá convenios bilaterales con Singapur y Vietnam.\",\n      \"afirmaciones\": [\"A2\"]\n    },\n    {\n      \"texto\": \"El medio revistaeyn.com reporta que el presidente de Panamá visita Singapur y Vietnam en busca de inversiones.\",\n      \"afirmaciones\": [\"A3\"]\n    },\n    {\n      \"texto\": \"El grupo de registros reúne 3 titulares de 3 medios que reportan este tema.\",\n      \"afirmaciones\": [\"A4\"]\n    },\n    {\n      \"texto\": \"Se estiman 3 procedencias independientes, contando los titulares que replican a una misma fuente como una sola.\",\n      \"afirmaciones\": [\"A5\"]\n    },\n    {\n      \"texto\": \"La ficha no tiene dato oficial vinculado ni fecha de publicación conocida en los 3 titulares.\",\n      \"afirmaciones\": [\"A4\"]\n    }\n  ],\n  \"enfoque\": [\n    {\n      \"texto\": \"Si se confirman los convenios bilaterales que reporta laestrella.com.pa, la gira podría traducirse en inversiones para el país.\",\n      \"afirmaciones\": [\"A2\"]\n    },\n    {\n      \"texto\": \"La ausencia de dato oficial y de fecha de publicación deja abierta la verificación de la agenda y de sus resultados.\",\n      \"afirmaciones\": [\"A5\"]\n    }\n  ],\n  \"preguntas\": [\n    {\n      \"texto\": \"¿Qué dependencia oficial de Panamá puede confirmar la agenda del presidente en Singapur y Vietnam?\",\n      \"vacio\": \"sin_dato_oficial\"\n    },\n    {\n      \"texto\": \"¿Cuáles son los medios y las fechas de publicación de los 3 titulares que reportan el tema?\",\n      \"vacio\": \"medios_o_fechas_desconocidos\"\n    },\n    {\n      \"texto\": \"¿Qué subtema específico, más allá del alcance neutro de impacto, define esta gira presidencial?\",\n      \"vacio\": \"subtema_desconocido\"\n    }\n  ]\n}"
+}
