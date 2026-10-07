@@ -397,8 +397,19 @@ Las listas de frases prohibidas siguen en `config/restricciones.yaml` y los lím
 | Semillas aleatorias | Fijas en `config/` (etiquetado, bootstrap, clustering si aplica) | Práctica (reproducibilidad) | `scripts.reproducir` (D-65) |
 | Benchmark del equipo (si la organización no lo entrega) | 40 de desarrollo: 20 · 7 · 7 · 6 | PDF (proporciones de la sección 7) | `eval.validar_benchmark` |
 | Sensibilidad X02 | Pesos ± 5; parámetros supuestos ± 20 % | Supuesto (spec E1-10) | `python -m eval.sensibilidad` (E1-10): top 5 de cada variante, con n e IC de Wilson de las variantes que no lo cambian |
-| Precision@5 | 3 fechas de corte si hay editor; si no, n = 1 y exploratoria | PDF (exploratoria sin especialista) | — |
+| Precision@5 | 3 fechas de corte si hay editor; si no, n = 1 y exploratoria | PDF (exploratoria sin especialista) | `python -m eval.precision_at_5` (E1-19; ver sección siguiente) |
 | Duración de la demo | 4 min | PDF | Ensayo cronometrado |
+
+## Precision@5 y prueba de tiempo (E1-19 · `config/precision.yaml`)
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| `k` | 5 | PDF 9.1 (Precision@5: el editor elige 5 temas) | `eval/precision_at_5.py` exige exactamente `k` marcas por corte |
+| `cortes_minimos` | 3 | Spec E1-19 y D-57 (3 fechas de corte distintas si hay editor) | Con menos cortes el resultado se declara exploratorio; con 1, n = 1. Sin `--especialista` es exploratorio siempre (D-74) |
+| `hoja_ciega.semilla` | `e1-19-hoja-ciega` | Práctica (orden reproducible que no depende de P, posición ni fecha) | `tests/test_e1_19_precision.py`: el orden no cambia si cambian P y fechas |
+| `hoja_ciega.marca` | `x` | Convención de la hoja | Lectura de `eval/seleccion_editor.csv` |
+| Baseline «ranking por fecha» | Máximo de `fecha_publicacion` de las noticias del grupo, descendente; sin fecha de publicación al final; empate por ID. Nunca la fecha de detección | PDF sección 8 y reglas de datos (publicación ≠ detección) | Test del baseline con un grupo solo-GDELT; el reporte y el JSON cuentan los grupos sin fecha de publicación |
+| Pruebas de tiempo por condición | ≥ 3 (6 en total, orden alternado) | `docs/protocolo_evaluacion.md` sección 6 (D-71) | `docs/prueba_tiempo.md`: se reporta n; con pocas pruebas, exploratorio |
 
 ## Etiquetado humano (E1-06, `config/etiquetado.yaml`)
 
@@ -518,3 +529,28 @@ Ninguno decide un puntaje, una acción ni un vacío: solo gobiernan quién puede
 | Ficha guardada por revisión (`fichas_revisadas`) | La `Ficha` se guarda al abrir, regenerar, rechazar o restaurar un vínculo y aprobar; se exporta desde ahí y un caso huérfano no rompe a los demás | Revisión del PR #30 (X32, B2 y M2) | `test_un_caso_huerfano_no_tumba_la_exportacion_de_los_demas` |
 | Numeración de `CASO-` | Máximo conocido (base, `data/revision.casos.csv` y lo exportado) + 1: no se reutiliza si se borra la base | Revisión del PR #30 (X32, M1) | `test_borrar_la_base_de_revisiones_no_reutiliza_los_id` |
 | «Pedir evidencia» | Exige enlazar al menos un vacío o, si la ficha no tiene ninguno, un motivo escrito | Spec E1-16 y revisión del PR #30 (L3) | `test_pedir_evidencia_exige_al_menos_un_vacio` |
+
+## Benchmark y métricas (E1-18, `config/benchmark.yaml`, `eval/ia_vs_baseline.py`)
+
+Ninguno de estos valores decide un puntaje, una acción ni qué se responde: solo gobiernan cómo se mide. Las metas de abstención, cobertura y latencia son las de `docs/protocolo_evaluacion.md`.
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| Remuestreos · confianza · semilla del bootstrap (`intervalos`) | 2.000 · 0.95 · 42 | Práctica estadística (D-57; más remuestreos que los 1.000 de clasificación, porque aquí hay pocas consultas y el IC de un percentil es más ruidoso) | `test_la_configuracion_del_benchmark_trae_intervalos_y_muestra`; mismo resultado en dos corridas |
+| Wilson junto al bootstrap | z = 1.96 | Práctica estadística: el bootstrap de una proporción 0/n o n/n se degenera en [p, p] (se marca `bootstrap_degenerado`) y Wilson sí informa | `test_el_bootstrap_degenerado_se_avisa_y_wilson_no_lo_es` |
+| Muestra de validez de sustento (`sustento.muestra`) | 30 afirmaciones | PDF 9.1 («al menos 30, si se producen tantas»); si hay menos, se usan todas | `outputs/revision_sustento.csv` tiene 30 filas (pool de 108) |
+| Semilla de la muestra (`sustento.semilla`) | 42 | Práctica (reproducibilidad: la misma muestra para las mismas salidas) | Re-correr no cambia el archivo (`estado_del_archivo: reescrita_sin_cambios`) |
+| Meta de validez de sustento (`sustento.meta_validez`) | 0.9 | PDF 9.1 (≥ 90 %; solo cuenta «sustentada») | `eval.sustento` (pendiente de la revisión humana) |
+| Veredictos (`sustento.veredictos`) | sustentada · parcial · no sustentada · tipo incorrecto | Spec E1-18 | `eval.sustento` rechaza cualquier otro valor |
+| Curva del umbral (`analisis_umbral`) | de 0.82 a 0.90, paso 0.01 | Supuesto: rodea el umbral configurado (0.874); es **descriptiva**, nunca elige ni cambia el umbral | Tabla de sensibilidad en `outputs/metricas.json` y `docs/ia_vs_baseline.md`, sección 5 |
+| Modalidad de la medición del LLM (`llm.modalidad`) | editorial | Modalidad principal del reto | `--medir-llm`, `outputs/benchmark/medicion_llm.json` |
+| Meta de latencia | mediana ≤ 15 s | PDF 9.1 | `latencia.meta_sugerida` en `outputs/metricas.json`; se reporta por tipo de paquete |
+| Soporte mínimo por tema en la comparación IA-vs-base (`SOPORTE_MINIMO_TEMA`) | 5 titulares humanos | Supuesto: con n = 1 un IC bootstrap se degenera; por debajo no se da veredicto por tema («soporte insuficiente») | `test_discordantes_*` y los de `docs/ia_vs_baseline.md` (el soporte lo aplica `eval/ia_vs_baseline.py`) |
+| Ejemplos por caso (`EJEMPLOS_POR_CASO`) | 5 | Spec E1-18 (3 a 5 ejemplos de cada caso) | `docs/ia_vs_baseline.md` |
+| Tamaño del top que se compara en el ranking (`TAMANO_TOP`) | 5 | El del Precision@5 de E1-19 | `ranking.solapamiento` en `outputs/ia_vs_baseline.json` |
+| Regla de veredicto de IA vs. base | «gana»/«pierde» solo si el IC 95 % de la diferencia pareada excluye el cero (límites sin redondear) | D-21 y D-57 (fijada antes de medir) | `test_veredicto_solo_si_el_ic_excluye_el_cero` |
+| Unidad de remuestreo en agrupación | El titular, no el par | Los pares comparten titulares y no son independientes; remuestrear pares daría IC demasiado estrechos | `test_bootstrap_por_titular_es_reproducible_y_pareado` |
+| Medición de embeddings (`scripts/medir_embeddings.py`) | Hasta 200 titulares (`--n`; la base aportó 94), un proceso por modelo, RSS máximo del proceso | Supuesto (el tamaño de la muestra es solo de cómputo, no afecta ninguna métrica); cifras de `docs/modelos.md` (D-67) | `test_medir_embeddings_con_un_motor_falso_reporta_cifras_sin_costo` |
+
+| Metas reportadas (`metas`) | abstención correcta ≥ 0.8 · latencia mediana ≤ 15 s | PDF 9.1 (antes escritas en `eval/run_benchmark.py`, ahora en `config/benchmark.yaml`) | `test_las_metas_de_abstencion_y_latencia_viven_en_la_configuracion` |
+| Medición del LLM versionada | `outputs/benchmark/medicion_llm.json` (excepción en `.gitignore`); si falta, el runner avisa en consola y en `avisos` y deja `no_corrido` | X38 (revisión del PR #33) | `test_sin_medicion_del_llm_se_advierte_en_consola_y_en_las_metricas` · `test_la_medicion_del_llm_del_benchmark_de_desarrollo_se_versiona` |

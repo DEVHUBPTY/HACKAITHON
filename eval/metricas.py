@@ -22,6 +22,7 @@ from typing import Any
 
 import numpy as np
 
+from src.carga import intervalo_wilson
 from src.clasificacion import proporcion
 from src.configuracion import CriterioAB
 
@@ -232,3 +233,85 @@ def aplicar_criterio(
     else:
         motivo = f"B mejora, pero empeoran significativamente: {', '.join(empeoran)}; se usa A"
     return {**d, "excluye_cero": excluye_cero, "temas_que_empeoran": empeoran, "decision": "B" if elige_b else "A", "motivo": motivo}
+
+
+# ============================================================================================ E1-18: proporciones, percentiles y recall
+# Toda proporción del benchmark se reporta con numerador, denominador, IC95 de bootstrap percentil (D-57, semilla fija) y, aparte, el
+# IC de Wilson: con proporciones en 0 o en 1 el bootstrap se degenera ([1, 1]) y el de Wilson no, así que se muestran los dos.
+
+
+def _ic_wilson(k: int, n: int, criterio: CriterioAB) -> list[float] | None:
+    from statistics import NormalDist
+
+    z = NormalDist().inv_cdf(1 - (1 - criterio.confianza) / 2)
+    ic = intervalo_wilson(k, n, z)
+    return None if ic is None else [round(ic[0], DECIMALES_PRESENTACION), round(ic[1], DECIMALES_PRESENTACION)]
+
+
+def proporcion_con_ic(k: int, n: int, criterio: CriterioAB) -> dict[str, Any]:
+    """``k`` de ``n`` con IC95 de bootstrap percentil (``ic95``) y de Wilson (``ic95_wilson``). ``None`` si ``n`` es 0."""
+    if n == 0:
+        return {"n": 0, "de": 0, "proporcion": None, "ic95": None, "ic95_wilson": None, "remuestreos": criterio.remuestreos}
+    rng = np.random.default_rng(criterio.semilla)
+    valores = rng.binomial(n, k / n, size=criterio.remuestreos) / n
+    ic = _percentiles_exactos(valores, criterio)
+    assert ic is not None
+    return {
+        "n": k, "de": n, "proporcion": round(k / n, DECIMALES_PRESENTACION), "ic95": _redondear(ic),
+        "ic95_wilson": _ic_wilson(k, n, criterio), "remuestreos": criterio.remuestreos,
+        **({"bootstrap_degenerado": True} if ic[0] == ic[1] else {}),
+    }
+
+
+def percentil_con_ic(valores: Sequence[float], q: float, criterio: CriterioAB) -> dict[str, Any]:
+    """Percentil ``q`` (0-100, interpolación lineal) de ``valores`` con IC95 de bootstrap percentil y el ``n`` de la muestra."""
+    v = np.asarray(list(valores), dtype=float)
+    if len(v) == 0:
+        return {"n": 0, "valor": None, "ic95": None, "remuestreos": criterio.remuestreos}
+    rng = np.random.default_rng(criterio.semilla)
+    remuestras = np.percentile(v[rng.integers(0, len(v), size=(criterio.remuestreos, len(v)))], q, axis=1)
+    ic = _percentiles_exactos(remuestras, criterio)
+    return {
+        "n": len(v), "valor": round(float(np.percentile(v, q)), DECIMALES_PRESENTACION),
+        "ic95": _redondear(ic), "remuestreos": criterio.remuestreos,
+        **({"bootstrap_degenerado": True} if ic is not None and ic[0] == ic[1] else {}),   # n = 1 (o valores iguales): el IC no informa
+    }
+
+
+def _aciertos_por_consulta(esperados: dict[str, list[str]], hallados: dict[str, list[str]]) -> tuple[list[str], np.ndarray, np.ndarray]:
+    ids = list(esperados)
+    k = np.array([len(set(esperados[c]) & set(hallados.get(c, []))) for c in ids], dtype=float)
+    n = np.array([len(set(esperados[c])) for c in ids], dtype=float)
+    return ids, k, n
+
+
+def recall_con_ic(esperados: dict[str, list[str]], hallados: dict[str, list[str]], criterio: CriterioAB) -> dict[str, Any]:
+    """Recall por IDs (micro) con IC de bootstrap sobre consultas, consultas completas y los IDs que faltaron por consulta."""
+    ids, k, n = _aciertos_por_consulta(esperados, hallados)
+    fallos = {c: sorted(set(esperados[c]) - set(hallados.get(c, []))) for c in ids if set(esperados[c]) - set(hallados.get(c, []))}
+    por_ids: dict[str, Any] = {
+        "n": int(k.sum()), "de": int(n.sum()), "proporcion": None, "ic95": None,
+        "remuestreos": criterio.remuestreos, "unidad_de_remuestreo": "consulta",   # los IDs de una consulta no son independientes
+    }
+    if ids:
+        idx = _remuestras(len(ids), criterio)
+        remuestreado = k[idx].sum(axis=1) / n[idx].sum(axis=1)
+        por_ids |= {"proporcion": round(float(k.sum() / n.sum()), DECIMALES_PRESENTACION), "ic95": _redondear(_percentiles_exactos(remuestreado, criterio))}
+    return {"por_ids": por_ids, "consultas_completas": proporcion_con_ic(len(ids) - len(fallos), len(ids), criterio), "fallos": fallos}
+
+
+def diferencia_recall(
+    esperados: dict[str, list[str]], hallados_a: dict[str, list[str]], hallados_b: dict[str, list[str]], criterio: CriterioAB
+) -> dict[str, Any]:
+    """Recall micro de B − A con IC de bootstrap **pareado** (las mismas consultas remuestreadas para los dos)."""
+    ids, ka, n = _aciertos_por_consulta(esperados, hallados_a)
+    _, kb, _ = _aciertos_por_consulta(esperados, hallados_b)
+    if not ids:
+        return {"n_consultas": 0, "diferencia": None, "ic95": None}
+    idx = _remuestras(len(ids), criterio)
+    dif = (kb[idx].sum(axis=1) - ka[idx].sum(axis=1)) / n[idx].sum(axis=1)
+    exacto = _percentiles_exactos(dif, criterio)
+    return {
+        "n_consultas": len(ids), "diferencia": round(float((kb.sum() - ka.sum()) / n.sum()), DECIMALES_PRESENTACION),
+        "ic95": _redondear(exacto), "ic95_exacto": exacto, "remuestreos": criterio.remuestreos,
+    }

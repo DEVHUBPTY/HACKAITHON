@@ -1,0 +1,44 @@
+{
+  "entorno": {
+    "sistema": "macOS-26.6.2-arm64-arm-64bit",
+    "procesador": "arm",
+    "python": "3.11.14"
+  },
+  "modelos": [
+    {
+      "modelo": "e5",
+      "id": "intfloat/multilingual-e5-small",
+      "revision": "614241f622f53c4eeff9890bdc4f31cfecc418b3",
+      "dimension": 384,
+      "parametros": 117653760,
+      "max_seq_length": 512,
+      "carga_s": 3.36,
+      "n_textos": 94,
+      "codificar_s": 0.119,
+      "textos_por_s": 788.5,
+      "rss_maximo_bytes": 1146830848,
+      "tamano_en_disco_bytes": 493292828,
+      "dispositivo": "cpu",
+      "lote": 32,
+      "costo_usd": 0.0
+    },
+    {
+      "modelo": "minilm",
+      "id": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+      "dimension": 384,
+      "parametros": 117653760,
+      "max_seq_length": 128,
+      "carga_s": 3.17,
+      "n_textos": 94,
+      "codificar_s": 0.123,
+      "textos_por_s": 762.8,
+      "rss_maximo_bytes": 1311490048,
+      "tamano_en_disco_bytes": 479729010,
+      "dispositivo": "cpu",
+      "lote": 32,
+      "costo_usd": 0.0
+    }
+  ],
+  "nota": "Tiempos de pared en una sola máquina, un proceso por modelo; RSS máximo del proceso. Costo USD 0 (local, sin API)."
+}

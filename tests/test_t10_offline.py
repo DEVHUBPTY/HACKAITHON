@@ -15,6 +15,8 @@ from typing import Any
 
 import pytest
 
+pytestmark = pytest.mark.t10
+
 from src import cache as c
 from src import db, interfaz as ui
 from src import generacion as g
@@ -147,3 +149,18 @@ def test_la_clave_de_la_peticion_no_depende_del_orden_de_hash_del_proceso() -> N
 
 def test_la_configuracion_de_la_interfaz_pide_solo_cache() -> None:
     assert cargar_interfaz().generacion.solo_cache is True
+
+
+def test_t10_aceptacion_sin_red_el_recorrido_funciona_con_snapshot_y_cache_y_el_fallback_esta_documentado(base: Path, emb: Any, cache_poblada: CacheLlm, sin_red: list[str]) -> None:
+    """PDF T10 (parte automatizada): funcionar con snapshot y fallback documentado.
+
+    El ensayo humano C-04 y la evidencia en Notion no se automatizan: quedan pendientes en el reporte.
+    """
+    con = db.conectar(base, solo_lectura=True)
+    try:
+        bandeja = ui.leer_bandeja(con, "editorial")
+        paquete = g.generar_paquete(bandeja[0].id_grupo, "editorial", solo_cache=True, base=base)
+    finally:
+        con.close()
+    assert bandeja and paquete.brief and paquete.guion and sin_red == []
+    assert (RAIZ / "docs" / "fallback.md").is_file()                              # el fallback está documentado

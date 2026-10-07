@@ -11,7 +11,9 @@ __pycache__/
 # Generated data (never versioned; see specs E0-03 and C-07)
 data/senales.duckdb
 data/demo.duckdb
-outputs/benchmark/
+outputs/benchmark/*
+# La medición real del LLM (latencia, tokens, costo) se versiona: sin ella un clon limpio no puede reproducir metricas.json (X38).
+!outputs/benchmark/medicion_llm.json
 
 # Crudos con redistribución restringida (D-72): RSS de TVN (trae descripciones) y GDELT (trae socialimage).
 # Se regeneran con `python -m scripts.extraer` (ver data/README.md). Banco Mundial y USGS sí se versionan.

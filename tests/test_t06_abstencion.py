@@ -4,6 +4,8 @@ import re
 
 import pytest
 
+pytestmark = pytest.mark.t06
+
 from tests.consulta_fixture import crear_consultor
 
 
@@ -70,3 +72,13 @@ def test_t06_ninguna_respuesta_con_contenido_carece_de_leyenda_ni_de_citas(consu
         assert not r.abstiene and r.leyenda_alcance
         assert r.afirmaciones and all(a.citas for a in r.afirmaciones)
         assert all(re.match(r"^(NOT|IND|SIS)-", x.id) for a in r.afirmaciones for x in a.citas)
+
+
+def test_t06_aceptacion_abstencion_explicita_sin_cifra_ni_cita_inventada(consultor) -> None:
+    """PDF T06: abstención explícita; ninguna cifra o cita inventada."""
+    c, _ = consultor
+    r = c.responder("receta lasaña berenjena")
+    assert r.abstiene and r.mensaje and r.falta
+    assert r.afirmaciones == [] and r.evidencia == [] and r.ultimo_dato_disponible == []
+    assert r.mensaje.startswith("No se responde")                      # la abstención es explícita y no afirma nada
+    assert not re.search(r"IND-|SIS-|SBP-|NOT-", r.mensaje)             # y no cita ningún dato ni noticia

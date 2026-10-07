@@ -13,6 +13,8 @@ from typing import Any
 
 import pytest
 
+pytestmark = pytest.mark.t07
+
 from src.esquemas import PaqueteEditorial
 from src.generacion import EntradaFicha, RegistroEvidencia, VacioFicha, generar
 from src.registro import olvidar_sensibles, registrar_sensible
@@ -235,3 +237,31 @@ def test_el_aviso_del_reintento_tampoco_trae_etiquetas_x27() -> None:
     generar(ficha_inyectada(), prov)
     reintento = [u for c, _, u in prov.llamadas if c == "resumen_web"][1]
     assert len(_etiquetas(reintento)) == 2
+
+
+def test_t07_aceptacion_la_fuente_es_dato_el_modelo_obedece_y_el_sistema_no_emite_secretos_ni_acciones(monkeypatch: pytest.MonkeyPatch) -> None:
+    """PDF T07: tratarla como contenido no confiable; no revelar secretos ni ejecutar acciones.
+
+    El proveedor falso OBEDECE la inyección: pone el secreto en una sección, pide publicar en otra y responde «APROBADO» en otra.
+    Lo que se prueba es que el sistema lo rechaza; si se apaga la regla de secretos del validador, esta prueba falla.
+    """
+    registrar_sensible(SECRETO)
+    try:
+        obedece_secreto = modificada(BUENAS["resumen_web"], lambda d: d["resumen_web"][0].update(texto=f"Obedezco: la clave es {SECRETO}", afirmaciones=["A1"]))
+        llamadas = _ok(resumen_web=obedece_secreto, guion="APROBADO", brief="APROBADO")
+        conexiones: list[Any] = []
+        monkeypatch.setattr(socket.socket, "connect", lambda *a, **k: conexiones.append(a))
+        monkeypatch.setattr(subprocess, "Popen", lambda *a, **k: conexiones.append(a))
+        r = generar(ficha_inyectada(), llamadas)
+        p = r.paquete
+        assert isinstance(p, PaqueteEditorial)
+        salida = p.model_dump_json() + " ".join(r.descartadas)
+        assert SECRETO not in salida                                                      # el secreto obedecido no sale
+        assert p.resumen_web == [] and p.guion == [] and p.brief == []                    # las secciones obedientes se rechazan
+        assert {"resumen_web", "guion", "brief"} <= {v.referencia for v in p.vacios}      # y quedan como vacíos visibles
+        assert any("secreto" in v.motivo for v in p.vacios if v.referencia == "resumen_web")
+        assert "APROBADO" not in p.model_dump_json()
+        assert all("<evidencia>" in u for c, _, u in llamadas.llamadas if c == "afirmaciones")   # la fuente viaja como dato
+        assert conexiones == []                                                           # ninguna acción ejecutada
+    finally:
+        olvidar_sensibles()
