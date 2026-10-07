@@ -5,6 +5,10 @@ version: "1.0"
 prompts:
   afirmaciones: afirmaciones_ficha     # paso 1 (prompts/afirmaciones_ficha.txt)
   redaccion: paquete_editorial         # paso 2, un bloque por grupo (prompts/paquete_editorial.txt)
+  # Paquetes con prompt propio (E2-02): un solo archivo versionado con los dos pasos, en bloques `## afirmaciones` (paso 1),
+  # `## comunes` y `## grupo <nombre>` (paso 2). Los paquetes que no están aquí usan los dos de arriba.
+  paquetes:
+    boletin: boletin_banca             # prompts/boletin_banca.txt
 
 # Un reintento ante salida inválida (JSON que no cumple el esquema o sección que no pasa la validación). Si el reintento
 # tampoco sirve, la sección se entrega vacía con el motivo en `vacios`; nunca se rellena.
@@ -16,11 +20,15 @@ afirmaciones:
   exigir_inferencia: true  # el enfoque se apoya en una inferencia o hipótesis (D-41): si ninguna sobrevive a la validación se reintenta una vez con el motivo (E1-13)
 
 # Qué se genera según la acción de la ficha (D-42). Acción fuera de estas listas: no se genera nada y se avisa.
+# `completo` es el paquete completo de la modalidad (tabla `modalidades`): el editorial o el boletín de entorno. Las acciones son las
+# de la tabla 3×3 de cada modalidad (modalidad_<m>.yaml). Banca (E2-02): «Incluir…» genera el boletín; «Incluir como señal a confirmar»
+# lo genera con los vacíos de la ficha a la vista; «Seguimiento» y «Seguimiento prioritario» no generan boletín: Decisión D-104 (del
+# dueño; la persona puede forzarlo y queda registrado).
 acciones:
-  completo: ["Producir borrador", "Borrador opcional"]
-  completo_con_vacios: ["Completar evidencia y producir"]
+  completo: ["Producir borrador", "Borrador opcional", "Incluir en el boletín como observación", "Incluir como contexto"]
+  completo_con_vacios: ["Completar evidencia y producir", "Incluir como señal a confirmar"]
   investigacion: ["Investigar ya", "Vigilar"]
-  nada: ["Archivar", "Archivar como contexto"]
+  nada: ["Archivar", "Archivar como contexto", "Seguimiento prioritario", "Seguimiento"]
 
 # Qué prefijo de ID respalda un hecho (dato oficial o conteo)  y cuál es lo que reporta un medio (CLAUDE.md, D-63). `SYN-` son casos sintéticos.
 prefijos:
@@ -61,12 +69,23 @@ texto:                     # recortes de los mensajes de error y de descarte (no
   motivo_max_caracteres: 600
   vista_previa_caracteres: 60
 
-# Modalidades con generación implementada; E2-02 agrega banca. Una modalidad fuera de la lista no genera nada.
-modalidades: [editorial]
+# Modalidades con generación implementada y su paquete completo (docs/salidas.md): editorial (§1) o boletín de entorno (§2, E2-02).
+# Una modalidad fuera de esta tabla no genera nada. No hay ningún `if modalidad` en el código: la diferencia está aquí.
+modalidades:
+  editorial: editorial
+  banca: boletin
 
 grupos:                    # D-44: 1 llamada de afirmaciones + 4 de redacción, cada una bajo demanda
   editorial: [titulos, brief, guion, resumen]
   investigacion: [investigacion]
+  boletin: [boletin]       # E2-02: 1 llamada de afirmaciones + 1 de redacción (observaciones, hipótesis de impacto y preguntas)
+
+# E2-02 · Boletín de entorno (docs/salidas.md §2). Los campos de origen «Regla» se arman con estos textos, sin LLM.
+boletin:
+  motivo_sector:           # {tema}: nombre del tema (temas.yaml); {sector}: sector del mapeo tema → sector (modalidad_banca.yaml, D-11)
+    principal: "Tema principal del grupo, {tema}: se relaciona con el sector {sector} según el mapeo tema → sector (D-11)."
+    secundario: "Tema secundario del grupo, {tema}: se relaciona con el sector {sector} según el mapeo tema → sector (D-11)."
+  sin_sector: "El grupo no tiene un tema con sector en el mapeo tema → sector: no se asigna ningún sector (nunca se inventa uno)."
 
 deepseek:                  # respaldo provisional de pago (D-80); la clave sale de local.env (DEEPSEEK_API_KEY)
   base_url: "https://api.deepseek.com"

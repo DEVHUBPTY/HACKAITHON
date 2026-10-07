@@ -1,0 +1,12 @@
+{
+ "clave": "f96ce3bf787f8ecce40853746eef6ec936e7be65a3cfc7e6ebe951ad442a0ac9",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "boletin_banca",
+ "version_cache": "1",
+ "tokens_entrada": 2019,
+ "tokens_salida": 422,
+ "creado_utc": "2026-10-07T13:09:05Z",
+ "respuesta": "{\"observaciones\": [{\"texto\": \"El medio prensa-latina.cu reporta que el Presidente panameño visitará Singapur y Vietnam.\", \"afirmaciones\": [\"A1\"]}, {\"texto\": \"Según el medio laestrella.com.pa, Mulino viajará a Asia y suscribirá convenios bilaterales con Singapur y Vietnam.\", \"afirmaciones\": [\"A2\"]}, {\"texto\": \"El medio revistaeyn.com reporta que el Presidente de Panamá visita Singapur y Vietnam en busca de inversiones.\", \"afirmaciones\": [\"A3\"]}, {\"texto\": \"El grupo de registros reúne 3 titulares de 3 medios que reportan este tema.\", \"afirmaciones\": [\"A4\"]}, {\"texto\": \"Se estiman 3 procedencias independientes, contando los titulares que replican a una misma fuente como una.\", \"afirmaciones\": [\"A5\"]}], \"hipotesis_impacto\": [{\"texto\": \"Es posible que la cobertura de una gira presidencial por Asia resulte relevante para el entorno de sectores ligados al comercio exterior y a la atracción de inversiones, a verificar con fuentes adicionales.\", \"afirmaciones\": [\"A6\"]}], \"preguntas\": [{\"texto\": \"¿Qué dato oficial puede vincularse directamente con esta gira, más allá del vínculo indirecto registrado?\", \"vacio\": \"solo_vinculo_indirecto\"}, {\"texto\": \"¿Cuáles son los medios y las fechas de publicación de los 3 titulares que aún figuran sin ese dato?\", \"vacio\": \"medios_o_fechas_desconocidos\"}, {\"texto\": \"¿Cómo se estimó la urgencia si la fecha de publicación es desconocida?\", \"vacio\": \"urgencia_sin_publicacion\"}]}"
+}

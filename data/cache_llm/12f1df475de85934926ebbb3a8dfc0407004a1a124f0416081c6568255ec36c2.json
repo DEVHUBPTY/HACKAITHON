@@ -3,6 +3,7 @@
  "proveedor": "deepseek",
  "modelo": "deepseek-flash",
  "version_prompt": "1.2",
+ "prompt": "paquete_editorial",
  "version_cache": "1",
  "tokens_entrada": 1538,
  "tokens_salida": 261,

@@ -85,6 +85,7 @@ from src.esquemas import (
 )
 from src.evidencia import accion_recomendada
 from src.puntaje import CAMPO_PUBLICACION, COMPONENTES
+from src.sectores import tema_secundario_de_grupo
 
 MODALIDAD_POR_DEFECTO = "editorial"
 FORMATOS = ("markdown", "jsonl")
@@ -343,6 +344,7 @@ def _que_se_reporta(datos: Datos, titulares: list[TitularReportado], emb: Embedd
         advertencias.append(cfg.presentacion.advertencia_recirculada)
     return QueSeReporta(
         tema=g.get("tema_clasificado"),
+        tema_secundario=tema_secundario_de_grupo(miembros, g.get("tema_clasificado"), cargar_temas().temas),
         subtema=subtema,
         criterio_subtema=next((str(v["criterio_subtema"]) for v in datos.vinculos if subtema and v.get("criterio_subtema")), None),
         titular_central=TitularCentral(id_noticia=central.id_noticia, titular=central.titular, medio=central.medio, url=central.url),
@@ -565,6 +567,17 @@ def _etiqueta_de(codigos: Mapping[str, str], clave: str | None) -> str:
     return codigos.get(str(clave), str(clave)) if clave else ""
 
 
+def texto_respaldo(linea: LineaRespaldo, cfg: ConfigVerificacion | None = None) -> str:
+    """Una línea de «qué está respaldado» como la ve la persona: tipo, texto, hora (si es un evento), limitación y citas. La vista de la
+    ficha y la evidencia del boletín bancario (E2-02, copiada de la ficha) usan esta misma línea."""
+    cfg = cfg or cargar_verificacion()
+    etiqueta = "Hecho" if linea.tipo == "hecho" else "Declaración"
+    citas = SEPARADOR_FUENTES.join(x.formato() for x in linea.citas)
+    extra = f" · Limitación: {linea.limitacion}" if linea.limitacion else ""
+    cuando = f" · Hora: {_hora_panama(linea.fecha, cfg)}" if linea.fecha else ""
+    return f"{etiqueta}: {linea.texto}{cuando}{extra} · Cita: {citas}"
+
+
 def vista(ficha: Ficha, cfg: ConfigVerificacion | None = None) -> Vista:
     """Las cinco secciones de la ficha como líneas de texto (hora de Panamá, citas visibles). La app y el Markdown usan esta misma vista."""
     cfg = cfg or cargar_verificacion()
@@ -584,6 +597,8 @@ def vista(ficha: Ficha, cfg: ConfigVerificacion | None = None) -> Vista:
         Linea(f"Titular central: «{q.titular_central.titular}» — {q.titular_central.medio}"),
         Linea(f"Cobertura: {_plural(c.n_titulares, 'titular', 'titulares')} · {_plural(c.n_medios, 'medio', 'medios')} · {fechas}"),
         Linea(f"Tema: {nombre_tema} · Subtema: {nombre_subtema}" + (f" (criterio: {q.criterio_subtema})" if q.criterio_subtema else "")),
+        # E2-02: una ficha revisada antes de existir el campo, o un grupo sin otro tema, lo dice en vez de omitirlo
+        Linea(f"Tema secundario: {temas[q.tema_secundario].nombre if q.tema_secundario in temas else (q.tema_secundario or SIN_DATO)}"),
         Linea(f"Alcance: {ficha.alcance}"),
     ]
     for x in q.contradicciones:
@@ -609,11 +624,7 @@ def vista(ficha: Ficha, cfg: ConfigVerificacion | None = None) -> Vista:
         s2.append(Linea(f"¿{r.medio_referencia.nombre} ya lo cubrió? {r.medio_referencia.texto}"))
 
     def respaldo(linea: LineaRespaldo) -> Linea:
-        etiqueta = "Hecho" if linea.tipo == "hecho" else "Declaración"
-        citas = SEPARADOR_FUENTES.join(x.formato() for x in linea.citas)
-        extra = f" · Limitación: {linea.limitacion}" if linea.limitacion else ""
-        cuando = f" · Hora: {_hora_panama(linea.fecha, cfg)}" if linea.fecha else ""
-        return Linea(f"{etiqueta}: {linea.texto}{cuando}{extra} · Cita: {citas}", 1)
+        return Linea(texto_respaldo(linea, cfg), 1)
 
     s3: list[Linea] = [Linea("Conteos de reportes")] + [respaldo(x) for x in ra.reportes]
     s3 += [Linea("Datos oficiales")] + ([respaldo(x) for x in ra.datos_oficiales] or [Linea("Sin dato oficial que mida el hecho (ver «Qué falta comprobar»)", 1)])

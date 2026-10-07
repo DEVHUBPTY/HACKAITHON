@@ -3,6 +3,12 @@
     poetry run python -m scripts.calentar_cache                       # top de la bandeja + los grupos del guion de la demo (con red)
     poetry run python -m scripts.calentar_cache --grupos GRP-… GRP-…  # solo esos
     poetry run python -m scripts.calentar_cache --verificar           # sin red: qué grupos tienen su borrador completo en la caché
+    poetry run python -m scripts.calentar_cache --modalidad banca     # la base debe tener los puntajes de banca (src.puntaje --modalidad banca)
+    poetry run python -m scripts.calentar_cache --etiquetar-prompt    # X64: etiqueta con su prompt las entradas anteriores a X56 (sin LLM ni red)
+
+La base guarda una sola modalidad a la vez (la última corrida de ``src.puntaje``). Una modalidad pedida que la base no tiene se informa
+con ``ERROR:`` y el comando que la prepara, sin traceback ni proveedor; con varias (``--modalidad editorial banca``) se procesa cada una
+que la base tiene y se sale con 1 si alguna no se pudo (X55).
 
 Genera con el proveedor de ``local.env`` (``LLM_PROVIDER=deepseek``, D-94/D-95), guarda cada respuesta en ``data/cache_llm/`` y muestra el
 costo estimado (cota superior, D-97). Con ``--verificar`` nunca se crea un proveedor ni se abre una conexión. Se detiene con un mensaje
@@ -20,6 +26,7 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
+from src import db
 from src.cache import CacheLlm, SinBorrador, red_disponible
 from src.configuracion import RAIZ, MODALIDADES, cargar_cache, cargar_generacion, cargar_normalizacion
 from src.llm.costo import RegistroCosto, TopeDeCostoAlcanzado
@@ -52,6 +59,8 @@ def estado_de(id_grupo: str, modalidad: str, base: Path, cache: CacheLlm) -> str
         p = generar_paquete(id_grupo, modalidad, solo_cache=True, base=base, cache=cache)
     except SinBorrador as exc:
         return f"no genera: {exc}" if exc.por_accion else f"sin borrador: {exc}"
+    except db.ModalidadDistinta as exc:  # X55: la base tiene los puntajes de otra modalidad
+        return f"modalidad distinta: {exc}"
     faltan = [v.referencia for v in p.vacios if v.motivo == cache.cfg.textos.sin_cache_grupo]
     if faltan:
         return f"parcial (faltan: {', '.join(faltan)})"
@@ -59,34 +68,88 @@ def estado_de(id_grupo: str, modalidad: str, base: Path, cache: CacheLlm) -> str
     return "completo" if not vacias else f"con vacíos ({', '.join(vacias)})"
 
 
+def modalidades_de_la_base(base: Path) -> list[str]:
+    """Modalidad de la corrida de ``src.puntaje`` guardada en la base (tabla ``evidencia``). Vacía si no hay corrida (X55)."""
+    import duckdb
+
+    try:
+        con = duckdb.connect(str(base), read_only=True)
+    except duckdb.Error:
+        return []
+    try:
+        return sorted(r[0] for r in con.execute("SELECT DISTINCT modalidad FROM evidencia").fetchall() if r[0])
+    except duckdb.Error:
+        return []
+    finally:
+        con.close()
+
+
+def error_de_modalidad(base: Path, guardadas: Sequence[str], pedida: str) -> str:
+    """X55: qué modalidad tiene la base y qué comando la cambia (``src.puntaje`` guarda una sola modalidad a la vez)."""
+    tiene = ", ".join(repr(m) for m in guardadas)
+    return (
+        f"ERROR: la base {base.name} tiene los puntajes de la modalidad {tiene}, no los de {pedida!r}. "
+        f"Ejecute `poetry run python -m src.puntaje --modalidad {pedida}` y vuelva a correr este comando con --modalidad {pedida}."
+    )
+
+
 def principal(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Calienta o verifica la caché de borradores (E1-14)")
     parser.add_argument("--grupos", nargs="*", help="GRP-… a generar; por defecto el top de la bandeja y los grupos del guion de la demo")
-    parser.add_argument("--modalidad", choices=MODALIDADES, default="editorial")
+    parser.add_argument("--modalidad", nargs="+", choices=MODALIDADES, default=["editorial"],
+                        help="una o varias; cada una solo se procesa si la base tiene sus puntajes (src.puntaje --modalidad …)")
     parser.add_argument("--base", type=Path, default=RAIZ / "data" / cargar_normalizacion().salida.base_de_datos)
     parser.add_argument("--verificar", action="store_true", help="solo lee la caché (sin red, sin proveedor); sale con 1 si algo falta")
     parser.add_argument("--podar", action="store_true", help="con --verificar: borra las respuestas que ningún grupo verificado usa (prompts o validadores anteriores)")
+    parser.add_argument("--etiquetar-prompt", action="store_true",
+                        help="X64: pone el campo `prompt` a las entradas anteriores a X56, deducido sin ambigüedad (sin LLM, sin red, sin base); no hace nada más")
     parser.add_argument("--refrescar", action="store_true", help="vuelve a llamar al proveedor aunque haya respuesta guardada")
     args = parser.parse_args(argv)
     from src.registro import configurar_logging
 
     configurar_logging()
+    if args.etiquetar_prompt:  # X64: solo lee y reescribe archivos de la caché; no usa la base, el proveedor ni la red
+        cache = CacheLlm()
+        r = cache.etiquetar_prompts()
+        for prompt, n in sorted(r.etiquetadas.items()):
+            print(f"etiquetadas {n:>3}  prompt={prompt}")
+        print(f"{sum(r.etiquetadas.values())} etiquetadas · {r.ya_tenian} ya tenían prompt · {len(r.sin_etiquetar)} sin etiquetar (ambiguas o ilegibles; se conservan tal cual)")
+        for clave in r.sin_etiquetar:
+            print(f"sin etiquetar  {clave}")
+        return 0
     if not args.base.exists():
         print(f"ERROR: no existe {args.base}", file=sys.stderr)
         return 1
-    grupos = args.grupos or grupos_por_defecto(args.base, args.modalidad)
+    pedidas = list(dict.fromkeys(args.modalidad))
+    guardadas = modalidades_de_la_base(args.base)
+    # X55: la base guarda una sola modalidad (la última corrida de src.puntaje); las demás se informan sin traceback y sin proveedor
+    utiles = [m for m in pedidas if not guardadas or m in guardadas]
+    fallidas = [m for m in pedidas if m not in utiles]
+    for m in fallidas:
+        print(error_de_modalidad(args.base, guardadas, m), file=sys.stderr)
+    if not utiles:
+        return 1
+    varias = len(pedidas) > 1
     cache = CacheLlm()
     if args.verificar:
-        estados = {g: estado_de(g, args.modalidad, args.base, cache) for g in grupos}
-        for g, e in estados.items():
-            print(f"{g}  {e}")
-        faltan = [g for g, e in estados.items() if not e.startswith(("completo", "con vacíos", "no genera"))]
-        con_vacios = [g for g, e in estados.items() if e.startswith("con vacíos")]
-        if args.podar and not faltan:
-            print(f"\n{cache.podar()} respuestas sin uso borradas de la caché")
-        resumen = f" ({len(con_vacios)} con secciones vacías por la validación)" if con_vacios else ""
-        print(f"\n{len(grupos) - len(faltan)} de {len(grupos)} grupos listos{resumen} · {len(cache)} respuestas en {cache.carpeta.relative_to(RAIZ)}")
-        return 1 if faltan else 0
+        faltan_total = 0
+        for m in utiles:
+            if varias:
+                print(f"== modalidad {m} ==")
+            grupos = args.grupos or grupos_por_defecto(args.base, m)
+            estados = {g: estado_de(g, m, args.base, cache) for g in grupos}
+            for g, e in estados.items():
+                print(f"{g}  {e}")
+            faltan = [g for g, e in estados.items() if not e.startswith(("completo", "con vacíos", "no genera"))]
+            con_vacios = [g for g, e in estados.items() if e.startswith("con vacíos")]
+            resumen = f" ({len(con_vacios)} con secciones vacías por la validación)" if con_vacios else ""
+            print(f"\n{len(grupos) - len(faltan)} de {len(grupos)} grupos listos{resumen} ({m}) · {len(cache)} respuestas en {cache.carpeta.relative_to(RAIZ) if cache.carpeta.is_relative_to(RAIZ) else cache.carpeta}")
+            faltan_total += len(faltan)
+        if args.podar and not faltan_total and not fallidas:  # solo con todo lo pedido verificado
+            # X56: solo se poda lo de los prompts que esta verificación leyó; los boletines de banca no se tocan al podar editorial (ni al revés)
+            borradas = cache.podar(prompts=cache.prompts_usados)
+            print(f"\n{borradas} respuestas sin uso borradas de la caché (solo de los prompts verificados: {', '.join(sorted(cache.prompts_usados)) or 'ninguno'})")
+        return 1 if faltan_total or fallidas else 0
 
     from src.cache import modo_offline
     from src.generacion import generar_paquete
@@ -103,24 +166,31 @@ def principal(argv: Sequence[str] | None = None) -> int:
     gen = cargar_generacion()
     registro = RegistroCosto(RAIZ / gen.tope_costo.registro)
     antes_usd, antes_tokens, antes_n = registro.usd, registro.tokens, len(cache)
-    for g in grupos:
-        try:
-            p = generar_paquete(g, args.modalidad, solo_cache=False, base=args.base, proveedor=proveedor, cache=cache, refrescar=args.refrescar)
-            motivos = [f"{v.referencia}: {v.motivo[:80]}" for v in p.vacios if v.origen == "seccion"]
-            print(f"{g}  {p.accion}  {'sin vacíos' if not motivos else 'vacíos: ' + '; '.join(motivos)}")
-        except SinBorrador as exc:
-            print(f"{g}  sin borrador: {exc}")
-        except TopeDeCostoAlcanzado as exc:
-            print(f"\nDETENIDO en {g}: {exc}", file=sys.stderr)
-            return 3
-        except ErrorProveedor as exc:
-            print(f"{g}  ERROR del proveedor: {exc}", file=sys.stderr)
+    for m in utiles:
+        if varias:
+            print(f"== modalidad {m} ==")
+        for g in args.grupos or grupos_por_defecto(args.base, m):
+            try:
+                p = generar_paquete(g, m, solo_cache=False, base=args.base, proveedor=proveedor, cache=cache, refrescar=args.refrescar)
+                motivos = [f"{v.referencia}: {v.motivo[:80]}" for v in p.vacios if v.origen == "seccion"]
+                print(f"{g}  {p.accion}  {'sin vacíos' if not motivos else 'vacíos: ' + '; '.join(motivos)}")
+            except SinBorrador as exc:
+                print(f"{g}  sin borrador: {exc}")
+            except db.ModalidadDistinta as exc:  # X55: la base cambió de modalidad a mitad de camino (otra corrida de src.puntaje)
+                print(f"ERROR: {exc}", file=sys.stderr)
+                fallidas.append(m)
+                break
+            except TopeDeCostoAlcanzado as exc:
+                print(f"\nDETENIDO en {g}: {exc}", file=sys.stderr)
+                return 3
+            except ErrorProveedor as exc:
+                print(f"{g}  ERROR del proveedor: {exc}", file=sys.stderr)
     despues = RegistroCosto(RAIZ / gen.tope_costo.registro)
     print(
         f"\n{len(cache) - antes_n} respuestas nuevas · {len(cache)} en la caché · costo de esta corrida (estimado, cota superior): "
         f"USD {despues.usd - antes_usd:.4f} · {despues.tokens - antes_tokens} tokens · acumulado USD {despues.usd:.4f}"
     )
-    return 0
+    return 1 if fallidas else 0
 
 
 if __name__ == "__main__":

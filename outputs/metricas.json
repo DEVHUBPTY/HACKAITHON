@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "fecha_utc": "2026-10-07T17:12:10Z",
+  "fecha_utc": "2026-10-07T17:31:45Z",
   "benchmark": {
     "archivo": "benchmark_dev.jsonl",
     "sha256": "27c791a86055322eece5c45570b35ae4fe0f06bb89a4bed67c8d861c809f11cc",
@@ -413,23 +413,23 @@
       "unidad": "s",
       "p50": {
         "n": 40,
-        "valor": 0.0065,
+        "valor": 0.0071,
         "ic95": [
           0.0003,
-          0.007
+          0.0073
         ],
         "remuestreos": 2000
       },
       "p95": {
         "n": 40,
-        "valor": 0.0084,
+        "valor": 0.0083,
         "ic95": [
-          0.0078,
-          0.0178
+          0.0076,
+          0.0087
         ],
         "remuestreos": 2000
       },
-      "arranque_modelo_s": 4.242,
+      "arranque_modelo_s": 4.072,
       "nota": "consulta de punta a punta en frío (el vector de la consulta se codifica de verdad, sin caché) con el modelo de embeddings local ya cargado; sin red. arranque_modelo_s es el arranque en frío del proceso (armar el consultor y cargar el modelo hasta el primer vector) y no entra en la latencia"
     },
     "paquete_completo": {

@@ -452,9 +452,10 @@ def test_el_paquete_investigacion_no_incluye_guion_ni_copy_en_su_esquema() -> No
 
 
 def test_una_modalidad_sin_generacion_implementada_no_genera_nada() -> None:
+    """E2-02 implementó la banca (tests/test_e2_02_boletin.py): una modalidad fuera de ``generacion.yaml`` · ``modalidades`` sigue sin generar."""
     prov = ProveedorGuionado()
-    r = generar(ficha(modalidad="banca"), prov)
-    assert r.tipo == "nada" and prov.llamadas == [] and "E2-02" in (r.motivo or "")
+    r = generar(ficha(modalidad="sin_generacion"), prov)
+    assert r.tipo == "nada" and prov.llamadas == [] and "sin_generacion" in (r.motivo or "") and "modalidades" in (r.motivo or "")
 
 
 def test_al_alcanzar_el_tope_de_costo_la_generacion_se_detiene_y_no_deja_un_paquete_a_medias() -> None:

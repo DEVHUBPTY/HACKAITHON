@@ -3,6 +3,7 @@
  "proveedor": "deepseek",
  "modelo": "deepseek-flash",
  "version_prompt": "1.3",
+ "prompt": "afirmaciones_ficha",
  "version_cache": "1",
  "tokens_entrada": 1848,
  "tokens_salida": 374,

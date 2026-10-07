@@ -18,6 +18,10 @@ from tests.validador_ayuda import (
 )
 
 
+ID_LLUVIAS_B = "NOT-1111111111"   # titulares de la ficha bancaria de tests/generacion_ayuda.py
+ID_BANANO_B = "NOT-2222222222"
+
+
 def valida(*afirmaciones: Afirmacion, ctx=None):  # type: ignore[no-untyped-def]
     return validar_afirmaciones(list(afirmaciones), ctx or contexto())
 
@@ -509,6 +513,258 @@ def test_las_reglas_de_banca_vienen_del_yaml() -> None:
     assert "certeza" in reglas(valida(base, hip, ctx=ctx).rechazos)
 
 
+# ============================================================================================ banca: el boletín de entorno (E2-02, D-54)
+
+
+def _ctx_boletin():  # type: ignore[no-untyped-def]
+    """Contexto bancario con las afirmaciones del boletín ya validadas (A1 declaración con «pérdidas» literal, A2 hecho, A3 hipótesis, A4 inferencia)."""
+    from tests.generacion_ayuda import AFIRMACIONES_BANCA, ficha_banca
+    from tests.validador_ayuda import con_afirmaciones, salida
+
+    ctx = contexto(ficha_banca(), grupos=("comunes", "banca"))
+    afirmaciones = [
+        salida(a["id"], a["tipo"], a["texto"], *[(c["id"], c["campo"]) for c in a["citas"]], base=tuple(a["base"]))
+        for a in AFIRMACIONES_BANCA["afirmaciones"]
+    ]
+    return con_afirmaciones(ctx, *afirmaciones)
+
+
+def test_una_observacion_basada_en_una_hipotesis_se_rechaza_y_la_de_un_hecho_o_declaracion_no() -> None:
+    from src.validador import OBSERVACION_CON_HIPOTESIS
+
+    ctx = _ctx_boletin()
+    assert OBSERVACION_CON_HIPOTESIS in reglas(validar_seccion("observaciones", [o("Las lluvias en Chiriquí podrían afectar la actividad agrícola, a verificar.", "A3")], ctx))
+    assert OBSERVACION_CON_HIPOTESIS in reglas(validar_seccion("observaciones", [o("La actividad agrícola podría ser un tema a seguir en el entorno económico.", "A4")], ctx))
+    assert not validar_seccion("observaciones", [o("Según La Prensa, las lluvias causaron pérdidas en cultivos de Chiriquí.", "A1"), o("En 2023 la inflación anual de Panamá fue de 2.9 %.", "A2")], ctx)
+
+
+def test_una_hipotesis_de_impacto_sin_condicional_se_rechaza() -> None:
+    from src.validador import IMPACTO_SIN_CONDICIONAL
+
+    ctx = _ctx_boletin()
+    assert IMPACTO_SIN_CONDICIONAL in reglas(validar_seccion("hipotesis_impacto", [o("La actividad agrícola es un tema a seguir en el entorno económico.", "A4")], ctx))
+    assert not validar_seccion("hipotesis_impacto", [o("La actividad agrícola podría ser un tema a seguir en el entorno económico.", "A4")], ctx)
+    rechazada(afirmacion("A3", "hipótesis", "Las lluvias afectan la actividad agrícola", base=("A1",)), HIPOTESIS_SIN_CONDICIONAL, ctx=_ctx_boletin())
+
+
+def test_una_hipotesis_de_impacto_basada_en_un_hecho_o_una_declaracion_se_rechaza() -> None:
+    from src.validador import IMPACTO_COMO_HECHO
+
+    ctx = _ctx_boletin()
+    assert IMPACTO_COMO_HECHO in reglas(validar_seccion("hipotesis_impacto", [o("Según La Prensa, las lluvias podrían haber causado pérdidas.", "A1")], ctx))
+
+
+def test_recomendamos_reducir_exposicion_se_rechaza_en_cualquier_tipo_y_bloque() -> None:
+    ctx = _ctx_boletin()
+    r_hip = reglas(validar_seccion("hipotesis_impacto", [o("Recomendamos reducir exposición si las lluvias podrían afectar la actividad agrícola.", "A3")], ctx))
+    r_obs = reglas(validar_seccion("observaciones", [o("Según La Prensa, recomendamos reducir exposición en Chiriquí.", "A1")], ctx))
+    assert "recomendacion" in r_hip and "recomendacion" in r_obs
+    base = afirmacion("A1", "declaración", "La Prensa reporta que las lluvias causaron pérdidas en cultivos de Chiriquí", (ID_LLUVIAS_B, "titulo"))
+    inf = afirmacion("A2", "inferencia", "Recomendamos reducir exposición al sector", base=("A1",))
+    assert "recomendacion" in reglas(valida(base, inf, ctx=_ctx_boletin()).rechazos)
+
+
+def test_podria_generar_perdidas_en_una_hipotesis_se_rechaza_aunque_el_titular_lo_diga() -> None:
+    ctx = _ctx_boletin()
+    assert "perdidas_en_inferencias" in reglas(validar_seccion("hipotesis_impacto", [o("Las lluvias podrían generar pérdidas en Chiriquí.", "A3")], ctx))
+    base = afirmacion("A1", "declaración", "La Prensa reporta que las lluvias causaron pérdidas en cultivos de Chiriquí", (ID_LLUVIAS_B, "titulo"))
+    hip = afirmacion("A2", "hipótesis", "Las lluvias podrían generar pérdidas en Chiriquí", base=("A1",))
+    r = valida(base, hip, ctx=_ctx_boletin())
+    assert [a.id for a in r.validas] == ["A1"] and "perdidas_en_inferencias" in reglas(r.rechazos)
+
+
+def test_una_declaracion_literal_de_perdidas_se_permite_y_una_que_el_titular_no_trae_no() -> None:
+    ctx = _ctx_boletin()
+    assert not validar_seccion("observaciones", [o("Según La Prensa, las lluvias causaron pérdidas en cultivos de Chiriquí.", "A1")], ctx)
+    aceptada(afirmacion("A1", "declaración", "Según La Prensa, las lluvias causaron pérdidas en cultivos de Chiriquí", (ID_LLUVIAS_B, "titulo")), ctx=_ctx_boletin())
+    rechazada(afirmacion("A1", "declaración", "TVN Panamá reporta impagos en las exportaciones de banano", (ID_BANANO_B, "titulo")), "perdidas_en_inferencias", ctx=_ctx_boletin())
+    assert "perdidas_en_inferencias" in reglas(validar_seccion("observaciones", [o("En 2023 la inflación anual de Panamá fue de 2.9 % y hubo morosidad.", "A2")], ctx))
+
+
+def test_el_lenguaje_de_certeza_se_rechaza_en_las_hipotesis_de_impacto() -> None:
+    ctx = _ctx_boletin()
+    assert "certeza" in reglas(validar_seccion("hipotesis_impacto", [o("La actividad agrícola podría, sin duda, ser un tema a seguir en el entorno económico.", "A4")], ctx))
+    rechazada(afirmacion("A3", "inferencia", "La actividad agrícola será inevitable tema del entorno", base=("A1",)), "certeza", ctx=_ctx_boletin())
+
+
+def test_el_resumen_del_boletin_suma_ambos_bloques_contra_su_limite() -> None:
+    from src.validador import validar_conjunto
+
+    ctx = _ctx_boletin()
+    maximo = ctx.salidas.banca.resumen_max_palabras
+    obs = [o("Según La Prensa, las lluvias causaron pérdidas en " + " ".join(["cultivos"] * (maximo // 2)) + ".", "A1")]
+    hip = [o("Las lluvias podrían afectar la actividad " + " ".join(["agrícola"] * (maximo // 2)) + ", a verificar.", "A3")]
+    rechazos = validar_conjunto({"observaciones": obs, "hipotesis_impacto": hip}, ctx)
+    assert {r.regla for r in rechazos} == {LIMITE_PALABRAS} and {r.seccion for r in rechazos} == {"observaciones", "hipotesis_impacto"}
+    assert not validar_conjunto({"observaciones": obs}, ctx) and not validar_conjunto({"brief": obs}, ctx)
+
+
+def test_las_preguntas_del_boletin_son_exactamente_las_de_salidas_yaml_con_su_vacio() -> None:
+    from src.esquemas import PreguntaInvestigacion
+    from src.validador import CANTIDAD, PREGUNTA_SIN_VACIO
+
+    ctx = _ctx_boletin()
+    tres = [PreguntaInvestigacion(texto=f"¿Pregunta {n}?", vacio=f"V{n}") for n in (1, 2, 3)]
+    assert not validar_seccion("preguntas", tres, ctx)
+    assert CANTIDAD in reglas(validar_seccion("preguntas", tres[:2], ctx))
+    assert PREGUNTA_SIN_VACIO in reglas(validar_seccion("preguntas", [*tres[:2], PreguntaInvestigacion(texto="¿Otra?", vacio="V9")], ctx))
+
+
+# ---- revisión independiente del PR #38 (X49, X50)
+
+
+def test_x49_la_excepcion_del_titular_exige_el_fragmento_literal_y_no_solo_la_palabra() -> None:
+    """Titular «Lluvias causaron pérdidas en cultivos de Chiriquí»: la palabra sola no basta; el fragmento que la rodea debe ser literal."""
+    ctx = _ctx_boletin()
+    inventadas = ["Según La Prensa, la banca podría sufrir pérdidas por las lluvias.", "Según La Prensa, los bancos registraron pérdidas por las lluvias."]
+    for texto in inventadas:
+        assert "perdidas_en_inferencias" in reglas(validar_seccion("observaciones", [o(texto, "A1")], ctx)), texto
+        rechazada(afirmacion("A1", "declaración", texto.rstrip("."), (ID_LLUVIAS_B, "titulo")), "perdidas_en_inferencias", ctx=_ctx_boletin())
+    literales = ["Según La Prensa, las lluvias causaron pérdidas en cultivos de Chiriquí.", "La Prensa reporta: «Lluvias causaron pérdidas en cultivos de Chiriquí»."]
+    for texto in literales:
+        assert not validar_seccion("observaciones", [o(texto, "A1")], ctx), texto
+
+
+def test_x49_la_ventana_literal_viene_del_yaml() -> None:
+    from src.configuracion import cargar_validador
+
+    assert cargar_validador().listas["perdidas_en_inferencias"].ventana_literal >= 2
+
+
+def test_x49_una_observacion_no_se_redacta_en_condicional() -> None:
+    from src.validador import OBSERVACION_CONDICIONAL
+
+    ctx = _ctx_boletin()
+    assert OBSERVACION_CONDICIONAL in reglas(validar_seccion("observaciones", [o("Según La Prensa, las lluvias podrían haber afectado cultivos de Chiriquí.", "A1")], ctx))
+    assert OBSERVACION_CONDICIONAL in reglas(validar_seccion("observaciones", [o("En 2023 la inflación anual de Panamá fue de 2.9 %, a verificar.", "A2")], ctx))
+    assert not validar_seccion("observaciones", [o("En 2023 la inflación anual de Panamá fue de 2.9 %.", "A2")], ctx)
+
+X63_MARCADORES = ["Probablemente las lluvias afectaron cultivos de Chiriquí.", "Se espera que las lluvias hayan afectado cultivos de Chiriquí.",
+                  "Se prevé que las lluvias hayan afectado cultivos de Chiriquí.", "Previsiblemente las lluvias afectaron cultivos de Chiriquí.",
+                  "Es probable que las lluvias afectaran cultivos de Chiriquí.", "En 2023 la inflación anual de Panamá fue probablemente de 2.9 %."]
+
+
+@pytest.mark.parametrize("texto", X63_MARCADORES)
+def test_x63_una_observacion_no_lleva_marcadores_de_probabilidad_ni_expectativa(texto: str) -> None:
+    from src.validador import OBSERVACION_CONDICIONAL
+
+    ctx = _ctx_boletin()
+    assert OBSERVACION_CONDICIONAL in reglas(validar_seccion("observaciones", [o(texto, "A2" if "inflación" in texto else "A1")], ctx)), texto
+
+
+@pytest.mark.parametrize("texto", ["Probablemente las lluvias en Chiriquí afecten la actividad agrícola, a verificar.",
+                                   "Se espera que las lluvias en Chiriquí afecten la actividad agrícola, a verificar con más fuentes.",
+                                   "Es probable que la actividad agrícola resulte relevante para el entorno económico, a verificar."])
+def test_x63_una_hipotesis_con_probabilidad_o_expectativa_sigue_valida(texto: str) -> None:
+    ctx = _ctx_boletin()
+    assert not validar_seccion("hipotesis_impacto", [o(texto, "A3")], ctx), texto
+
+
+def test_x63_una_hipotesis_sin_ningun_marcador_sigue_rechazada() -> None:
+    from src.validador import IMPACTO_SIN_CONDICIONAL
+
+    ctx = _ctx_boletin()
+    assert IMPACTO_SIN_CONDICIONAL in reglas(validar_seccion("hipotesis_impacto", [o("Las lluvias en Chiriquí afectan la actividad agrícola.", "A3")], ctx))
+
+
+def test_x63_la_observacion_que_trae_el_marcador_literal_del_titular_sigue_valida() -> None:
+    from tests.validador_ayuda import con_afirmaciones, salida
+
+    titular = "Se espera que las lluvias causaron pérdidas en cultivos de Chiriquí, según La Prensa"
+    ctx = con_afirmaciones(_ctx_boletin_con_titular(titular), salida("A1", "declaración", titular, (ID_LLUVIAS_B, "titulo")))
+    assert not validar_seccion("observaciones", [o(f"{titular}.", "A1")], ctx)
+
+
+X50_LEXICO = ["riesgo crediticio", "riesgos crediticios", "riesgo de crédito", "solvencia", "insolvencia", "mora", "morosos", "morosas", "morosidad",
+              "incumplimiento", "incumplimientos", "deterioro crediticio"]
+
+
+@pytest.mark.parametrize("termino", X50_LEXICO)
+def test_x50_lexico_crediticio_rechazado_en_hipotesis(termino: str) -> None:
+    ctx = _ctx_boletin()
+    texto = f"Las lluvias en Chiriquí podrían elevar la {termino} del sector agrícola, a verificar."
+    assert "perdidas_en_inferencias" in reglas(validar_seccion("hipotesis_impacto", [o(texto, "A3")], ctx)), termino
+
+
+X50_RECOMENDACION = ["Sugerimos reducir créditos al agro", "La entidad sugiere reducir créditos al agro", "Los analistas sugieren reducir créditos al agro",
+                     "Los bancos deberían limitar préstamos al agro", "Las entidades deberían reducir créditos al agro", "Deberían aumentar las garantías del agro",
+                     "Es aconsejable recortar el crédito al agro", "Conviene recortar el crédito al agro", "Se recomienda recortar el crédito al agro"]
+
+
+@pytest.mark.parametrize("texto", X50_RECOMENDACION)
+def test_x50_formas_de_recomendacion_rechazadas(texto: str) -> None:
+    ctx = _ctx_boletin()
+    assert "recomendacion" in reglas(validar_seccion("hipotesis_impacto", [o(f"{texto} si las lluvias podrían afectar la actividad agrícola.", "A3")], ctx)), texto
+
+
+X50_CERTEZA = ["A verificar: la actividad agrícola caerá con seguridad.", "Es seguro que la actividad agrícola caerá, a verificar.",
+               "Sin lugar a dudas la actividad agrícola podría caer.", "De seguro la actividad agrícola podría caer.",
+               "La actividad agrícola podría caer, y caerá.", "Es posible que la actividad agrícola bajará."]
+
+
+@pytest.mark.parametrize("texto", X50_CERTEZA)
+def test_x50_la_certeza_y_el_futuro_asertivo_se_rechazan_aunque_haya_un_marcador_condicional(texto: str) -> None:
+    ctx = _ctx_boletin()
+    r = reglas(validar_seccion("hipotesis_impacto", [o(texto, "A3")], ctx))
+    assert r & {"certeza", "futuro_asertivo"}, (texto, r)
+
+
+def test_x50_la_hipotesis_condicional_sin_certeza_sigue_valida() -> None:
+    ctx = _ctx_boletin()
+    assert not validar_seccion("hipotesis_impacto", [o("Las lluvias en Chiriquí podrían afectar la actividad agrícola, a verificar.", "A3")], ctx)
+
+
+X62_RECOMENDACION = ["Habría que reducir créditos al agro", "Convendría recortar el crédito al agro", "Lo prudente sería restringir el crédito al agro",
+                     "Podría ser oportuno restringir el crédito al agro", "Sería conveniente limitar los préstamos al agro", "Lo mejor sería esperar y no prestar al agro",
+                     "Resultaría recomendable endurecer las condiciones del crédito agrícola"]
+
+
+@pytest.mark.parametrize("texto", X62_RECOMENDACION)
+def test_x62_formas_condicionales_de_recomendacion_rechazadas(texto: str) -> None:
+    ctx = _ctx_boletin()
+    for seccion in ("hipotesis_impacto", "observaciones"):
+        assert "recomendacion" in reglas(validar_seccion(seccion, [o(f"{texto}; las lluvias podrían afectar la actividad agrícola, a verificar.", "A3")], ctx)), (seccion, texto)
+
+
+X62_CERTEZA = ["Es evidente que la actividad agrícola podría caer, a verificar.", "Es un hecho que las lluvias podrían afectar la actividad agrícola.",
+               "Está claro que las lluvias podrían afectar la actividad agrícola, a verificar.", "No cabe duda de que la actividad agrícola podría caer."]
+
+
+@pytest.mark.parametrize("texto", X62_CERTEZA)
+def test_x62_la_certeza_evidente_se_rechaza_en_las_hipotesis(texto: str) -> None:
+    ctx = _ctx_boletin()
+    assert "certeza" in reglas(validar_seccion("hipotesis_impacto", [o(texto, "A3")], ctx)), texto
+
+
+X62_FUTURO = ["La actividad agrícola va a caer, a verificar.", "Las exportaciones van a reducirse en el corto plazo, a verificar.",
+              "La actividad agrícola se desplomará, a verificar.", "El sector sufrirá un golpe, a verificar.",
+              "El sector agrícola perderá dinamismo, a verificar.", "La actividad portuaria se contraerá, a verificar.",
+              "Habrá menos exportaciones agrícolas, a verificar.", "Las lluvias podrían afectar el agro y el sector se resentirá, a verificar."]
+
+
+@pytest.mark.parametrize("texto", X62_FUTURO)
+def test_x62_el_futuro_asertivo_general_se_rechaza_en_las_hipotesis(texto: str) -> None:
+    ctx = _ctx_boletin()
+    assert "futuro_asertivo" in reglas(validar_seccion("hipotesis_impacto", [o(texto, "A3")], ctx)), texto
+
+
+X62_LEGITIMAS = ["Es posible que la cobertura de una gira presidencial resulte relevante para el comercio exterior, a verificar con fuentes adicionales.",
+                 "Podría ser que el peso de las exportaciones se relacione con actividades exportadoras, extremo que requeriría confirmación.",
+                 "Las lluvias en Chiriquí podrían afectar la actividad agrícola, a verificar.",
+                 "Sería posible que la demanda cambie si se confirma el dato; a verificar."]
+
+
+@pytest.mark.parametrize("texto", X62_LEGITIMAS)
+def test_x62_el_lexico_nuevo_no_rechaza_hipotesis_condicionales_legitimas(texto: str) -> None:
+    ctx = _ctx_boletin()
+    assert not validar_seccion("hipotesis_impacto", [o(texto, "A3")], ctx), texto
+
+
+def test_x62_el_patron_de_futuro_no_toca_la_modalidad_editorial() -> None:
+    ctx = ctx_con_base()
+    assert "futuro_asertivo" not in reglas(validar_seccion("copy_digital", [o("TVN Panamá reporta que Mulino viajará a Asia.", "A1")], ctx))
+
+
 def test_cada_lista_de_restricciones_tiene_su_regla_en_el_yaml_del_validador() -> None:
     from src.configuracion import cargar_restricciones, cargar_validador
 
@@ -538,3 +794,142 @@ def test_una_oracion_que_resume_varios_anios_lleva_al_menos_uno() -> None:
     )
     assert not validar_seccion("brief", [o("La inflación fue de 2.9 % anual en 2023.", "A1")], ctx)
     assert IND_SIN_ANIO in reglas(validar_seccion("brief", [o("La inflación fue de 2.9 % anual.", "A1")], ctx))
+
+
+# ---- X57 (D-107): la excepción del titular literal no cubre términos del sector financiero que el titular no trae
+
+
+def _ctx_boletin_con_titular(titular: str):  # type: ignore[no-untyped-def]
+    from src.generacion import RegistroEvidencia
+    from tests.generacion_ayuda import ficha_banca
+
+    base = ficha_banca()
+    registros = [RegistroEvidencia(id=r.id, idioma=r.idioma, campos={"titulo": titular} if r.id == ID_LLUVIAS_B else r.campos, contexto=r.contexto) for r in base.registros]
+    return contexto(ficha_banca(registros=registros), grupos=("comunes", "banca"))
+
+
+SECTOR_FINANCIERO_AJENO = "sector_financiero_ajeno"
+CASOS_X57 = [  # los tres que la segunda revisión del PR #38 mostró que pasaban
+    "Según La Prensa, las lluvias causaron pérdidas en cultivos y en la banca",
+    "Según La Prensa, para la banca las lluvias causaron pérdidas en cultivos de Chiriquí",
+    "La Prensa reporta que bancos temen que lluvias causaron pérdidas en cultivos",
+]
+
+
+@pytest.mark.parametrize("texto", CASOS_X57)
+def test_x57_un_termino_financiero_fuera_del_titular_invalida_la_excepcion_literal(texto: str) -> None:
+    rechazada(afirmacion("A1", "declaración", texto, (ID_LLUVIAS_B, "titulo")), SECTOR_FINANCIERO_AJENO, ctx=_ctx_boletin())
+
+
+@pytest.mark.parametrize("texto", CASOS_X57)
+def test_x57_las_observaciones_del_boletin_tambien_lo_rechazan(texto: str) -> None:
+    assert SECTOR_FINANCIERO_AJENO in reglas(validar_seccion("observaciones", [o(texto + ".", "A1")], _ctx_boletin()))
+
+
+def test_x57_el_rechazo_es_tipado_con_regla_motivo_y_fragmento() -> None:
+    r = valida(afirmacion("A1", "declaración", CASOS_X57[0], (ID_LLUVIAS_B, "titulo")), ctx=_ctx_boletin())
+    (x,) = [x for x in r.rechazos if x.regla == SECTOR_FINANCIERO_AJENO]
+    assert x.fragmento == "banca" and "banca" in x.motivo
+
+
+def test_x57_si_el_termino_financiero_esta_en_el_titular_la_excepcion_sigue_valiendo() -> None:
+    titular = "Bancos de Chiriquí reportan pérdidas en créditos agrícolas por lluvias"
+    ctx = _ctx_boletin_con_titular(titular)
+    aceptada(afirmacion("A1", "declaración", "Según La Prensa, bancos de Chiriquí reportan pérdidas en créditos agrícolas por lluvias", (ID_LLUVIAS_B, "titulo")), ctx=ctx)
+    # y solo los términos que el titular trae: «cartera» no está
+    rechazada(
+        afirmacion("A1", "declaración", "Según La Prensa, bancos de Chiriquí reportan pérdidas en créditos agrícolas por lluvias y en la cartera", (ID_LLUVIAS_B, "titulo")),
+        SECTOR_FINANCIERO_AJENO, ctx=ctx,
+    )
+
+
+def test_x57_la_comparacion_no_distingue_mayusculas_ni_tildes() -> None:
+    from src.validador import plano, terminos_financieros_ajenos
+
+    lista = ["crédito", "créditos", "banca", "entidades financieras"]
+    citado = plano("Lluvias dejan pérdidas en CRÉDITOS agrícolas de Chiriquí")
+    assert terminos_financieros_ajenos(plano("Según La Prensa, los creditos agrícolas sufrieron pérdidas"), citado, lista) == []
+    assert terminos_financieros_ajenos(plano("Según La Prensa, los CRÉDITOS y la BANCA sufrieron pérdidas"), citado, lista) == ["banca"]
+    assert terminos_financieros_ajenos(plano("las Entidades Financieras sufrieron pérdidas"), citado, lista) == ["entidades financieras"]
+    assert terminos_financieros_ajenos(plano("el bancal sufrió pérdidas"), citado, lista) == []  # palabra completa
+
+
+def test_x57_la_lista_y_la_marca_viven_en_el_yaml() -> None:
+    from src.configuracion import cargar_validador
+
+    v = cargar_validador()
+    assert {"banca", "banco", "bancos", "bancario", "crédito", "cartera", "entidades financieras", "sistema financiero"} <= set(v.sector_financiero)
+    assert v.listas["perdidas_en_inferencias"].rechaza_sector_financiero_ajeno
+
+
+# ============================================================================================ X67 · hipótesis prudentes que solo remiten a verificar
+
+X67_PRUDENTES = [
+    "De confirmarse, la producción de Chiriquí podría verse afectada, lo que habría que verificar con más fuentes.",
+    "Las lluvias podrían afectar la actividad agrícola; habrá que verificarlo.",
+    "Las lluvias podrían afectar la actividad agrícola; habrá que revisar las cifras y habría que confirmarlas.",
+    "Las lluvias podrían afectar la actividad agrícola, algo que se confirmará con datos oficiales.",
+    "Las lluvias podrían afectar la actividad agrícola, lo que se sabrá con nuevos datos.",
+    "La actividad agrícola podría resentirse, según la información que se publicará más adelante, a verificar.",
+    "Las lluvias podrían afectar la actividad agrícola; el MEF informará las cifras y se conocerá el alcance.",
+]
+
+
+@pytest.mark.parametrize("texto", X67_PRUDENTES)
+def test_x67_una_hipotesis_prudente_que_remite_a_verificar_no_se_rechaza(texto: str) -> None:
+    r = reglas(validar_seccion("hipotesis_impacto", [o(texto, "A3")], _ctx_boletin()))
+    assert not r & {"futuro_asertivo", "recomendacion"}, (texto, r)
+
+
+X67_AFIRMAN = [
+    ("La actividad agrícola caerá, a verificar.", "futuro_asertivo"),
+    ("El sector sufrirá un golpe, a verificar.", "futuro_asertivo"),
+    ("La actividad agrícola se desplomará, a verificar.", "futuro_asertivo"),
+    ("Habrá pérdidas en el agro, a verificar.", "futuro_asertivo"),
+    ("El impacto será grave, a verificar.", "futuro_asertivo"),
+    ("Las lluvias podrían afectar el agro; habrá que reducir el crédito, a verificar.", "futuro_asertivo"),
+    ("Las lluvias podrían afectar el agro; habría que reducir el crédito.", "recomendacion"),
+    ("Las lluvias podrían afectar el agro; habría que verificar y habría que reducir el crédito.", "recomendacion"),
+    ("Se confirmará con datos oficiales que la actividad agrícola caerá, a verificar.", "futuro_asertivo"),
+]
+
+
+@pytest.mark.parametrize(("texto", "regla"), X67_AFIRMAN)
+def test_x67_la_excepcion_de_verificar_no_deja_pasar_una_afirmacion_de_resultado(texto: str, regla: str) -> None:
+    assert regla in reglas(validar_seccion("hipotesis_impacto", [o(texto, "A3")], _ctx_boletin())), texto
+
+
+def test_x67_habria_que_ya_no_es_una_frase_de_la_lista_sino_un_patron() -> None:
+    from src.configuracion import cargar_restricciones, cargar_validador
+
+    assert "habría que" not in cargar_restricciones().grupos["banca"]["recomendacion"]
+    assert any("habria que" in p for p in cargar_validador().patrones["recomendacion"])
+
+
+# ============================================================================================ X68 · formas cortas de la perífrasis de futuro
+
+X68_CORTAS = ["La actividad agrícola irá a caer, a verificar.", "La actividad agrícola va a ser golpeada, a verificar.",
+              "Las lluvias van a dar un golpe al agro, a verificar.", "El agro va a ir a menos, a verificar.",
+              "La actividad agrícola se va a ver afectada, a verificar.", "Las exportaciones irán a la baja y la actividad se resentirá, a verificar."]
+
+
+@pytest.mark.parametrize("texto", X68_CORTAS)
+def test_x68_las_formas_cortas_del_futuro_se_rechazan(texto: str) -> None:
+    assert "futuro_asertivo" in reglas(validar_seccion("hipotesis_impacto", [o(texto, "A3")], _ctx_boletin())), texto
+
+
+def test_x68_iran_el_pais_no_es_un_futuro() -> None:
+    texto = "Las lluvias podrían afectar la logística hacia Irán, a verificar."
+    assert "futuro_asertivo" not in reglas(validar_seccion("hipotesis_impacto", [o(texto, "A3")], _ctx_boletin()))
+
+
+# ============================================================================================ X69 · sector financiero más ancho
+
+X69_TERMINOS = ["los prestamistas", "los acreedores", "los deudores agrícolas", "las hipotecas", "las hipotecarias", "los financiamientos",
+                "las cooperativas de ahorro", "las aseguradoras", "el prestamista", "el deudor", "la cooperativa", "la aseguradora"]
+
+
+@pytest.mark.parametrize("termino", X69_TERMINOS)
+def test_x69_un_actor_del_credito_fuera_del_titular_invalida_la_excepcion_literal(termino: str) -> None:
+    texto = f"Según La Prensa, las lluvias causaron pérdidas en cultivos y en {termino}"
+    assert SECTOR_FINANCIERO_AJENO in reglas(validar_seccion("observaciones", [o(texto + ".", "A1")], _ctx_boletin())), termino

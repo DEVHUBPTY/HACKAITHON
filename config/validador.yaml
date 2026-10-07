@@ -16,7 +16,9 @@ numeros:
 # D-41: una hipótesis y una redacción condicional llevan alguno de estos marcadores.
 condicionales: [podría, podrían, pudiera, pudieran, es posible, sería, serían, habría, quizá, quizás, tal vez, posiblemente,
                 a verificar, por verificar, por confirmar, a confirmar, no se descarta, de confirmarse, de ser cierto, eventualmente,
-                si se confirma, en caso de]
+                si se confirma, en caso de,
+                # X63: expectativa y probabilidad también hacen condicional una redacción: una observación no puede traerlas (y una hipótesis sí)
+                probablemente, es probable que, previsiblemente, es previsible que, se espera que, se prevé que, se anticipa que]
 
 # D-68: conectores causales. Solo se aceptan si están literalmente en el titular citado (declaración atribuida) o en una hipótesis condicional.
 causales: [causó, causaron, provocó, provocaron, ocasionó, ocasionaron, originó, originaron, desencadenó, generó, debido a, por culpa de,
@@ -39,6 +41,19 @@ detalle_sin_cita: [fuentes confirmaron, fuentes oficiales confirmaron, fuentes o
 
 # Patrones (regex sobre texto sin tildes ni mayúsculas) que se suman a las frases de cada lista de restricciones.yaml (M1).
 patrones:
+  # X50: recomendaciones de acción sobre el crédito sin «comprar» ni «vender»; y certeza al abrir la oración («De seguro…»)
+  recomendacion: ['\bdeberia(n|mos)? (limitar|reducir|aumentar|recortar|evitar|suspender|restringir|ampliar|vender|comprar|invertir|retirar|disminuir|incrementar|frenar|congelar|endurecer|flexibilizar)\b',
+                  # X62: «sería / podría ser / resultaría + oportuno…» recomienda sin usar «recomendar»
+                  '\b(seria|podria ser|resultaria|podria resultar) (mas )?(oportuno|conveniente|prudente|recomendable|aconsejable|razonable)\b',
+                  # X67: «habría que» recomienda una acción, salvo que la acción sea verificar («habría que verificar», «habría que reducir» sí se rechaza)
+                  '\bhabria que (?!(?:verificar|confirmar|comprobar|corroborar|contrastar|validar|revisar|precisar|aclarar|investigar)(?:se|lo|la|los|las)?\b)']
+  certeza: ['(^|[.;:!?¿¡]\s*)de seguro\b']
+  # X67: el patrón general de -rá/-rán NO rechaza los verbos que solo informan o verifican («se confirmará con datos oficiales», «se sabrá», «se publicará»,
+  # «habrá que verificar»): una hipótesis prudente remite a verificar y no afirma un resultado. Es un lookahead negativo con lista cerrada de verbos
+  # (supuesto); «caerá», «sufrirá», «habrá pérdidas», «será grave» siguen rechazándose. X68: «va a ser», «van a dar», «va a ir» (raíz de 0+ letras) e «irá» (no «irán»: país).
+  # X62: futuro asertivo general, sobre el texto CON tildes (lista `con_tildes`): «va a + infinitivo» y el futuro simple en -rá/-rán
+  # («se desplomará», «sufrirá», «habrá»). Una hipótesis de impacto se redacta en condicional, nunca en futuro indicativo.
+  futuro_asertivo: ['\bvan? a \w*(ar|er|ir)(se)?\b', '\b(?!(?:confirmar|verificar|comprobar|corroborar|contrastar|validar|revisar|precisar|aclarar|investigar|conocer|publicar|informar|actualizar|anunciar|comunicar|divulgar|detallar|difundir|esclarecer|determinar|evaluar|analizar|saber)(?:á|án)\b)(?!sabr(?:á|án)\b)(?!habr(?:á|án) que (?:verificar|confirmar|comprobar|corroborar|contrastar|validar|revisar|precisar|aclarar|investigar)(?:se|lo|la|los|las)?\b)\w{2,}r(á|án)\b', '\birá\b']
   lectura_simulada: ['\b(articulo|nota|reportaje|texto|noticia|cronica|informe)\s+(explica|detalla|senala|indica|revela|cuenta|menciona|describe|asegura|precisa|advierte)\b', '\bsegun (el|la) (articulo|nota|reportaje|texto|noticia|cronica)\b']
   entrevistas: ['\b(dijo|declaro|aseguro|conto|afirmo|explico|revelo) a (tvn|la prensa|los medios|los periodistas|este medio|nuestro medio|la estrella|telemetro|critica)\b']
 
@@ -86,14 +101,69 @@ frases_sin_cifra: [las dos versiones, ambas versiones, las dos partes, las dos p
 #  tipos: solo se aplica a oraciones o afirmaciones de estos tipos (vacío = a todo)
 #  excepcion_literal: se permite si la frase está literalmente en un titular citado
 #  sin_excepcion_en: secciones donde la excepción no vale
+#  excepcion_tipos: la excepción solo vale si lo que se cita es de estos tipos (vacío = cualquiera)
+#  ventana_literal: además de la frase, estas palabras a cada lado (las que haya en el texto) deben ser literales del titular citado (X49)
+#  rechaza_sector_financiero_ajeno: una oración que usa la excepción literal se rechaza si trae un término de `sector_financiero` que el campo citado no trae (X57, D-107)
+#  con_tildes: se compara conservando tildes («bajará» no es «bajara»)
 listas:
   lectura_simulada: {excepcion_literal: false}
   sensacionalistas: {excepcion_literal: true, sin_excepcion_en: [titulo, titulo_trabajo, titulares, copy_digital]}
   entrevistas: {excepcion_literal: true}
   imagenes: {excepcion_literal: false}
   recomendacion: {excepcion_literal: false}
-  certeza: {excepcion_literal: false, tipos: [hipótesis]}
-  perdidas_en_inferencias: {excepcion_literal: true, tipos: [inferencia, hipótesis]}
+  # E2-02 (D-54): la certeza se rechaza en todo lo que el boletín muestra como hipótesis de impacto (inferencia e hipótesis); el léxico
+  # de pérdidas, impagos o exposición se rechaza en todo tipo salvo en una declaración que lo trae literal en su titular.
+  certeza: {excepcion_literal: false, tipos: [inferencia, hipótesis]}
+  futuro_asertivo: {excepcion_literal: false, tipos: [inferencia, hipótesis], con_tildes: true}   # X50: un futuro indicativo afirma, no condiciona
+  # X49: la palabra sola no basta; el fragmento que la rodea (2 palabras a cada lado) debe estar literal en el titular citado.
+  perdidas_en_inferencias: {excepcion_literal: true, excepcion_tipos: [declaración], ventana_literal: 2, rechaza_sector_financiero_ajeno: true}
+
+# X57 (D-107): términos del sector financiero (palabras completas, sin distinguir mayúsculas ni tildes). Una oración que se apoya en la excepción
+# del titular literal (`perdidas_en_inferencias`) no puede traer ninguno que el campo citado no tenga: la ventana de 2 palabras no alcanza para
+# impedir «…causaron pérdidas en cultivos y en la banca».
+sector_financiero:
+  - banca
+  - banco
+  - bancos
+  - bancario
+  - bancaria
+  - bancarios
+  - bancarias
+  - crédito
+  - créditos
+  - cartera
+  - carteras
+  - préstamo
+  - préstamos
+  - entidad financiera
+  - entidades financieras
+  - institución financiera
+  - instituciones financieras
+  - sistema financiero
+  - sector financiero
+  - financiera
+  - financieras
+  - financiero
+  - financieros
+  # X69: actores y productos del crédito que la ventana de 2 palabras no frenaba (singular y plural: la comparación es por palabra completa)
+  - prestamista
+  - prestamistas
+  - acreedor
+  - acreedores
+  - deudor
+  - deudores
+  - hipoteca
+  - hipotecas
+  - hipotecario
+  - hipotecaria
+  - hipotecarios
+  - hipotecarias
+  - financiamiento
+  - financiamientos
+  - cooperativa
+  - cooperativas
+  - aseguradora
+  - aseguradoras
 
 # D-41: oraciones sin cita (transiciones). Sin cifras, fechas, nombres ni entidades; el máximo por sección está en salidas.yaml.
 transiciones:
@@ -112,3 +182,10 @@ nombre_min_caracteres: 2
 
 # D-45: campos de la evidencia que son fechas (clave que contiene alguna de estas cadenas, comparada sin tildes) y el campo del año.
 campos_fecha: [fecha, anio, año]
+
+# E2-02 · Boletín de entorno (docs/salidas.md §2): qué tipos de afirmación puede citar cada bloque del resumen. Una observación nunca se
+# apoya en una inferencia o hipótesis; una hipótesis de impacto solo en ellas y siempre en condicional (marcadores de `condicionales`).
+bloques_boletin:
+  observaciones: [hecho, declaración]
+  hipotesis_impacto: [inferencia, hipótesis]
+  ventana_literal_condicional: 2   # X49: una observación no va en condicional, salvo que el marcador y 2 palabras a cada lado sean literales del titular

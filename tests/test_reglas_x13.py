@@ -127,7 +127,7 @@ def test_restricciones_separan_comunes_editorial_y_banca() -> None:
     assert set(g) == {"comunes", "editorial", "banca"}
     assert set(g["comunes"]) == {"lectura_simulada", "sensacionalistas"}
     assert set(g["editorial"]) == {"entrevistas", "imagenes"}
-    assert set(g["banca"]) == {"recomendacion", "certeza", "perdidas_en_inferencias"}
+    assert set(g["banca"]) == {"recomendacion", "certeza", "perdidas_en_inferencias", "futuro_asertivo"}  # X50 (E2-02) agrega el futuro asertivo
 
 
 def test_la_modalidad_declara_que_grupos_de_restricciones_aplican(tmp_path: Path) -> None:

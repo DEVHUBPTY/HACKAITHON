@@ -33,7 +33,7 @@ import os
 import re
 import unicodedata
 from collections import Counter, defaultdict
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from decimal import ROUND_HALF_UP, Decimal
@@ -106,6 +106,15 @@ LEYENDA = "leyenda_alcance"
 MARCA = "marca_borrador"
 SECCION_DESCONOCIDA = "seccion_desconocida"
 ATRIBUCION_INCORRECTA = "atribucion_incorrecta"
+OBSERVACION_CON_HIPOTESIS = "observacion_con_hipotesis"   # E2-02: una observación del boletín se apoya en una inferencia o hipótesis
+IMPACTO_COMO_HECHO = "impacto_como_hecho"                 # E2-02: una hipótesis de impacto se apoya en un hecho o una declaración
+IMPACTO_SIN_CONDICIONAL = "impacto_sin_condicional"       # E2-02: una hipótesis de impacto no está en condicional
+AVISO = "aviso_banca"                                     # E2-02: el boletín lleva el aviso fijo de restricciones.yaml
+SECTOR_FINANCIERO_AJENO = "sector_financiero_ajeno"       # X57 (D-107): la excepción literal no cubre un término financiero que el titular no trae
+OBSERVACION_CONDICIONAL = "observacion_condicional"       # X49: una observación no se redacta en condicional
+
+# E2-02 · Los dos bloques del resumen del boletín (docs/salidas.md §2): su límite de palabras es conjunto.
+BLOQUES_RESUMEN = ("observaciones", "hipotesis_impacto")
 
 
 # ============================================================================================ el rechazo
@@ -363,12 +372,17 @@ class Contexto:
         self.vacios = {v.id for v in ficha.vacios}
         self.atribucion = [plano(m) for m in self.cfg.atribucion.marcadores]
         self.listas: dict[str, list[str]] = {}
+        self.listas_originales: dict[str, list[str]] = {}  # con tildes, para las listas que se comparan así (X50)
         for g in grupos_restricciones:
             for nombre, lista in self.restricciones.grupos[g].items():
                 self.listas.setdefault(nombre, []).extend(plano(f) for f in lista)
+                self.listas_originales.setdefault(nombre, []).extend(lista)
         self.afirmaciones: dict[str, Any] = {}
         self.system = ""
         self._condicionales = [plano(c) for c in self.val.condicionales]
+        # Límites de la modalidad de la ficha (bloque homónimo de salidas.yaml); sin bloque propio, los de la editorial.
+        bloque = getattr(self.salidas, str(getattr(ficha, "modalidad", "")), None)
+        self.n_preguntas: int = getattr(bloque, "preguntas", self.salidas.editorial.preguntas)
 
     # ---- evidencia
 
@@ -485,6 +499,37 @@ def _literal_en(ctx: Contexto, frase: str, citas: Iterable[tuple[str, str]]) -> 
     return contiene(plano(ctx.texto_citado(citas)), frase)
 
 
+def _tokens(texto_plano: str) -> list[str]:
+    return re.findall(r"\w+", texto_plano)
+
+
+def _sublista(parte: Sequence[str], todo: Sequence[str]) -> bool:
+    n = len(parte)
+    return any(list(todo[i : i + n]) == list(parte) for i in range(len(todo) - n + 1))
+
+
+def fragmento_literal(texto_plano: str, frase: str, citado_plano: str, ventana: int) -> bool:
+    """X49: cada aparición de la frase en el texto, con ``ventana`` palabras a cada lado (las que haya), está literal en el texto citado.
+    Comparación por palabras, sin tildes ni mayúsculas ni puntuación. Sin ninguna aparición devuelve ``False``."""
+    t, f, c = _tokens(texto_plano), _tokens(plano(frase)), _tokens(citado_plano)
+    apariciones = [i for i in range(len(t) - len(f) + 1) if f and t[i : i + len(f)] == f]
+    return bool(apariciones) and all(_sublista(t[max(0, i - ventana) : i + len(f) + ventana], c) for i in apariciones)
+
+
+def _excepcion_literal(ctx: Contexto, texto_plano: str, frase: str, citas: Iterable[tuple[str, str]], ventana: int) -> bool:
+    """La frase prohibida se admite si está literal en el campo citado: con ``ventana`` > 0, también el fragmento que la rodea (X49)."""
+    citas = list(citas)
+    if not ventana:
+        return _literal_en(ctx, frase, citas)
+    return fragmento_literal(texto_plano, frase, plano(ctx.texto_citado(citas)), ventana)
+
+
+def terminos_financieros_ajenos(texto_plano: str, citado_plano: str, terminos: Iterable[str]) -> list[str]:
+    """X57 (D-107): los términos del sector financiero que el texto trae y el campo citado no. Palabras completas, sin distinguir mayúsculas
+    ni tildes. Son los que una oración apoyada en la excepción del titular literal no puede agregar fuera de la ventana."""
+    return [t for t in dict.fromkeys(terminos) if contiene(texto_plano, t) and not contiene(citado_plano, t)]
+
+
 def _acento(texto: str) -> str:
     return unicodedata.normalize("NFC", texto).casefold()
 
@@ -511,10 +556,21 @@ def _reglas_de_texto(
         conf = ctx.val.listas.get(nombre)
         if conf and conf.tipos and not tipos & set(conf.tipos):
             continue
-        encontradas = [f for f in frases if contiene(p, f)]
-        encontradas += [m.group(0) for pat in ctx.val.patrones.get(nombre, []) if (m := re.search(pat, p))]
+        if conf and conf.con_tildes:  # X50: «bajará» (futuro) no es «bajara» (subjuntivo)
+            encontradas = [f for f in ctx.listas_originales.get(nombre, []) if _contiene_acento(texto, f)]
+        else:
+            encontradas = [f for f in frases if contiene(p, f)]
+        base = _acento(texto) if conf and conf.con_tildes else p  # X62: los patrones de una lista `con_tildes` ven las tildes (futuro en -rá)
+        encontradas += [m.group(0).strip(" .;:!?¿¡") for pat in ctx.val.patrones.get(nombre, []) if (m := re.search(pat, base))]
         for f in dict.fromkeys(encontradas):
-            if conf and conf.excepcion_literal and seccion not in conf.sin_excepcion_en and _literal_en(ctx, f, s.citas):
+            tipos_ok = not conf or not conf.excepcion_tipos or (bool(tipos) and tipos <= set(conf.excepcion_tipos))
+            if conf and conf.excepcion_literal and tipos_ok and seccion not in conf.sin_excepcion_en and _excepcion_literal(ctx, p, f, s.citas, conf.ventana_literal):
+                if conf.rechaza_sector_financiero_ajeno:  # X57 (D-107): la excepción no cubre un término financiero que el titular no trae
+                    citado = plano(ctx.texto_citado(s.citas))
+                    for t in terminos_financieros_ajenos(p, citado, ctx.val.sector_financiero):
+                        rechazo = Rechazo(SECTOR_FINANCIERO_AJENO, f"la excepción del titular literal no cubre un término financiero que el titular no trae: «{t}»", t)
+                        if rechazo not in out:
+                            out.append(rechazo)
                 continue
             out.append(Rechazo(nombre, f"frase prohibida ({nombre}): «{f}»", f))
     for f in ctx.val.detalle_sin_cita:
@@ -931,6 +987,70 @@ def _contradicciones_cubiertas(valor: Sequence[Any], ctx: Contexto) -> list[Rech
     ]
 
 
+def _tipos_citados(o: Any, ctx: Contexto) -> set[str]:
+    return {a.tipo for a in _citadas(o, ctx)}
+
+
+def _observacion_con_hipotesis(valor: Sequence[Any], ctx: Contexto) -> list[Rechazo]:
+    """E2-02: una observación del boletín solo se apoya en hechos y declaraciones (``bloques_boletin.observaciones``)."""
+    permitidos = set(ctx.val.bloques_boletin.observaciones)
+    return [
+        Rechazo(OBSERVACION_CON_HIPOTESIS, f"una observación solo cita {', '.join(sorted(permitidos))}; esta se apoya en {', '.join(sorted(otros))}", o.texto)
+        for o in valor
+        if (otros := _tipos_citados(o, ctx) - permitidos)
+    ]
+
+
+def _observacion_condicional(valor: Sequence[Any], ctx: Contexto) -> list[Rechazo]:
+    """X49: una observación es un hecho o una declaración atribuida, nunca hipotética. Un marcador condicional solo se admite si él y
+    ``ventana_literal_condicional`` palabras a cada lado son literales del titular citado (el medio lo dijo así)."""
+    ventana = ctx.val.bloques_boletin.ventana_literal_condicional
+    out: list[Rechazo] = []
+    for o in valor:
+        p = plano(o.texto)
+        citado = plano(ctx.texto_citado(_soporte(_citadas(o, ctx), ctx.afirmaciones).citas))
+        for c in ctx.val.condicionales:
+            if contiene(p, c) and not fragmento_literal(p, c, citado, ventana):
+                out.append(Rechazo(OBSERVACION_CONDICIONAL, f"una observación no se redacta en condicional: «{c}» (va en las hipótesis de impacto)", c))
+    return out
+
+
+def _impacto_como_hecho(valor: Sequence[Any], ctx: Contexto) -> list[Rechazo]:
+    """E2-02: una hipótesis de impacto solo se apoya en inferencias e hipótesis (``bloques_boletin.hipotesis_impacto``), nunca en un hecho."""
+    permitidos = set(ctx.val.bloques_boletin.hipotesis_impacto)
+    return [
+        Rechazo(IMPACTO_COMO_HECHO, f"una hipótesis de impacto solo cita {', '.join(sorted(permitidos))}; esta se apoya en {', '.join(sorted(otros))}", o.texto)
+        for o in valor
+        if (otros := _tipos_citados(o, ctx) - permitidos)
+    ]
+
+
+def _impacto_sin_condicional(valor: Sequence[Any], ctx: Contexto) -> list[Rechazo]:
+    """E2-02: toda hipótesis de impacto se redacta en condicional (marcadores de ``condicionales``), también si cita una inferencia."""
+    vista = ctx.cfg.texto.vista_previa_caracteres
+    return [
+        Rechazo(IMPACTO_SIN_CONDICIONAL, f"una hipótesis de impacto se redacta en condicional («podría», «a verificar»…): «{o.texto[:vista]}»", o.texto)
+        for o in valor
+        if not ctx.condicional(o.texto)
+    ]
+
+
+def validar_conjunto(secciones: Mapping[str, Sequence[Any]], ctx: Contexto) -> list[Rechazo]:
+    """Reglas que cruzan secciones (E2-02): observaciones e hipótesis de impacto forman el resumen del boletín y su límite de palabras
+    (``salidas.yaml`` · ``banca.resumen_max_palabras``) es la suma de ambos. Cada rechazo lleva la sección a la que toca. Con un solo
+    bloque presente no hay nada que cruzar: su límite ya lo revisa ``validar_seccion``."""
+    presentes = [s for s in BLOQUES_RESUMEN if secciones.get(s)]
+    if len(presentes) < len(BLOQUES_RESUMEN):
+        return []
+    maximo = ctx.salidas.banca.resumen_max_palabras
+    n = sum(contar_palabras(o.texto, ctx) for s in presentes for o in secciones[s])
+    if n <= maximo:
+        return []
+    objetivo = int(maximo * ctx.cfg.objetivo_fraccion_limite)
+    motivo = f"el resumen (observaciones e hipótesis de impacto) tiene {n} palabras y {MARCA_EXCESO} ({maximo}): recórtalo a unas {objetivo} palabras en total"
+    return [Rechazo(LIMITE_PALABRAS, motivo, seccion=s) for s in presentes]
+
+
 def _uno_o_lista(valor: Any) -> list[Any]:
     return [valor] if hasattr(valor, "texto") else list(valor)
 
@@ -975,10 +1095,15 @@ def validar_seccion(seccion: str, valor: Any, ctx: Contexto) -> list[Rechazo]:
         if set(partes) != set(orden) or partes != sorted(partes, key=orden.index):
             out.append(Rechazo(GUION_ESTRUCTURA, "el guion tiene entrada, desarrollo y cierre, en ese orden"))
         return out
+    if seccion in BLOQUES_RESUMEN:
+        out = _oraciones(seccion, valor, ctx) + _limite(seccion, valor, ctx, ctx.salidas.banca.resumen_max_palabras)
+        if seccion == BLOQUES_RESUMEN[0]:
+            return out + _observacion_con_hipotesis(valor, ctx) + _observacion_condicional(valor, ctx) + _contradicciones_cubiertas(valor, ctx)
+        return out + _impacto_como_hecho(valor, ctx) + _impacto_sin_condicional(valor, ctx)
     if seccion == "preguntas":
         out = []
-        if len(valor) != e.preguntas:
-            out.append(Rechazo(CANTIDAD, f"se esperaban exactamente {e.preguntas} preguntas y hay {len(valor)}"))
+        if len(valor) != ctx.n_preguntas:
+            out.append(Rechazo(CANTIDAD, f"se esperaban exactamente {ctx.n_preguntas} preguntas y hay {len(valor)}"))
         for q in valor:
             if q.vacio not in ctx.vacios:
                 out.append(Rechazo(PREGUNTA_SIN_VACIO, f"la pregunta referencia un vacío que no existe en la ficha: {q.vacio}", q.vacio))
@@ -1014,7 +1139,7 @@ def validar_leyenda(texto: str, ctx: Contexto) -> list[Rechazo]:
     return validar_leyenda_texto(texto, bool(ctx.ficha.uso_descripcion), ctx.restricciones)
 
 
-_SECCIONES_PAQUETE = ("titulo", "titulo_trabajo", "titulares", "enfoque", "brief", "guion", "resumen_web", "copy_digital", "preguntas")
+_SECCIONES_PAQUETE = ("titulo", "titulo_trabajo", "titulares", "enfoque", "brief", "guion", "resumen_web", "copy_digital", *BLOQUES_RESUMEN, "preguntas")
 
 
 def validar_paquete(paquete: Any, ctx: Contexto) -> list[Rechazo]:
@@ -1023,6 +1148,8 @@ def validar_paquete(paquete: Any, ctx: Contexto) -> list[Rechazo]:
     if paquete.marca != ctx.restricciones.marca_borrador:
         out.append(Rechazo(MARCA, f"el paquete lleva la marca «{ctx.restricciones.marca_borrador}»", paquete.marca))
     out += validar_leyenda(paquete.leyenda_alcance, ctx)
+    if "aviso" in type(paquete).model_fields and paquete.aviso != ctx.restricciones.aviso_banca:  # E2-02: el boletín y su aviso fijo
+        out.append(Rechazo(AVISO, f"el boletín lleva el aviso fijo «{ctx.restricciones.aviso_banca}»", paquete.aviso))
     ctx.afirmaciones = {a.id: a for a in paquete.afirmaciones}
     system, ctx.system = ctx.system, ""  # la fuga del system prompt ya se revisó al generar cada sección, con el prompt que le tocaba
     try:
@@ -1031,6 +1158,7 @@ def validar_paquete(paquete: Any, ctx: Contexto) -> list[Rechazo]:
             if valor in (None, [], ""):
                 continue
             out += [replace(r, seccion=s) for r in validar_seccion(s, valor, ctx)]
+        out += validar_conjunto({s: getattr(paquete, s, None) or [] for s in BLOQUES_RESUMEN}, ctx)
     finally:
         ctx.system = system
     return out

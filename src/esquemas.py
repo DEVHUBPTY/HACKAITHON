@@ -1,8 +1,7 @@
 """Esquemas pydantic de las salidas del LLM y de los paquetes (editorial, investigación, boletín).
 
-Por ahora solo existe el BORRADOR del paso 1 de la generación (afirmaciones citadas, E0-07).
-Se completa en E1-12: citas por campo validadas contra la ficha, reglas por tipo (D-41) y los
-límites de ``docs/salidas.md``.
+Paso 1 de la generación (afirmaciones citadas, E0-07/E1-12), salidas del paso 2 por grupo, paquetes de ``docs/salidas.md``
+(editorial, investigación y boletín de entorno, E2-02), la ficha de evidencia (E1-10b) y la línea de ``fichas.jsonl`` (E1-16).
 """
 
 from __future__ import annotations
@@ -190,6 +189,16 @@ class SalidaInvestigacion(BaseModel):
     preguntas: list[PreguntaLlm]
 
 
+class SalidaBoletin(BaseModel):
+    """Boletín de entorno (E2-02, docs/salidas.md §2): el resumen en sus dos bloques y las preguntas para el analista, en una llamada."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    observaciones: list[OracionLlm]
+    hipotesis_impacto: list[OracionLlm]
+    preguntas: list[PreguntaLlm]
+
+
 class Oracion(BaseModel):
     """Oración de un paquete, ya validada: cita al menos una afirmación (salvo un marcador ``[VISUAL: …]``)."""
 
@@ -289,7 +298,8 @@ class SectorRelacionado(BaseModel):
 
 
 class BoletinBanca(PaqueteBase):
-    """Boletín de entorno (banca), docs/salidas.md §2. Solo el esquema: la generación es de E2-02."""
+    """Boletín de entorno (banca), docs/salidas.md §2. Lo genera ``src/generacion.py`` (E2-02): el resumen en dos bloques y las preguntas
+    con el LLM; sectores, horizonte y aviso por regla; la evidencia, copiada de la ficha."""
 
     observaciones: list[Oracion] = Field(default_factory=list)  # LLM: hecho o declaración
     hipotesis_impacto: list[Oracion] = Field(default_factory=list)  # LLM: inferencia o hipótesis
@@ -351,6 +361,7 @@ class Cobertura(ModeloFicha):
 
 class QueSeReporta(ModeloFicha):
     tema: str | None = None
+    tema_secundario: str | None = None       # E2-02: el boletín bancario muestra el sector del tema principal y del secundario
     subtema: str | None = None
     criterio_subtema: str | None = None      # D-92: por qué se aceptó el subtema (`margen` o `lexico`); nulo si no hay subtema
     titular_central: TitularCentral
