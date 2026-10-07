@@ -17,6 +17,9 @@ pais_por_defecto: PAN
 sismos:                             # E1-09b: presentación y textos fijos del vínculo con eventos USGS
   zona_horaria: America/Panama      # solo para mostrar; los datos siguen en UTC
   formato_hora: "%Y-%m-%d %H:%M"
+  formato_hora_utc: "%Y-%m-%dT%H:%M:%SZ"   # ISO 8601 UTC de los datos
+  decimales_horas: 2                # precisión de la diferencia en horas entre noticia y evento
+  unidad_magnitud: "magnitud"       # unidad de la columna `valor` en `vinculos` (USGS no la fija en nuestro contrato)
   plantilla_regla: "Evento USGS a ± {dias} días de la noticia y magnitud mínima {magnitud_minima}."
   nota_fecha_deteccion: "Alguna noticia del grupo no tiene fecha de publicación: se usó su fecha de detección."
   limitaciones:

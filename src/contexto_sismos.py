@@ -14,15 +14,14 @@ Un evento de USGS es **contexto** de la noticia, nunca prueba de daños ni de ca
 * **Cobertura:** de ``usgs.starttime`` a ``usgs.endtime`` de ``fuentes.yaml`` (UTC). Las noticias fuera del periodo no se
   comparan; si todas están fuera, el motivo es ``fuera_de_cobertura``.
 
-Las horas se guardan en UTC; ``hora_panama`` convierte solo para mostrar. Este módulo es puro: no escribe la tabla
-``vinculos``; ``a_filas_vinculo`` deja el resultado listo para ella.
+Las horas se guardan en UTC; ``hora_panama`` convierte solo para mostrar. Este módulo es puro: ``src.contexto`` (E1-09)
+deriva el subtema del grupo y escribe en ``vinculos`` las filas de ``a_filas_vinculo`` (``fuente = 'usgs'``).
 """
 
 from __future__ import annotations
 
 import json
 import logging
-from collections import Counter
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -30,7 +29,6 @@ from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from src import db
 from src.agrupacion import fecha_de, origen_de_fecha
 from src.configuracion import ConfigFuentes, ConfigVinculos
 
@@ -38,9 +36,9 @@ logger = logging.getLogger(__name__)
 
 FUENTE_USGS = "usgs"            # valor de ``fuente`` en vinculos.yaml
 TIPO_EVENTO = "evento"          # clave de ``tipos_relacion`` y valor de ``vinculos.tipo``
-SEPARADOR_LISTA = ","           # listas dentro de una columna de texto (ids_noticia), igual que E1-08
+FUENTE_VINCULO = "usgs"         # valor de ``vinculos.fuente`` de las filas que escribe este módulo
+ROL_EVENTO = "evento"
 SEGUNDOS_POR_HORA = 3_600
-HORAS_POR_DIA = 24
 ORIGEN_DETECCION = "deteccion"  # nombre de campo sin el prefijo ``fecha_`` (ver ``agrupacion.origen_de_fecha``)
 
 VINCULADO = "vinculado"
@@ -48,7 +46,6 @@ CANDIDATOS_AMBIGUOS = "candidatos_ambiguos"
 SIN_EVENTO = "sin_evento_coincidente"
 FUERA_DE_COBERTURA = "fuera_de_cobertura"
 SIN_DATO_EN_PERIODO = "sin_dato_en_periodo"
-MOTIVOS_DEL_MODULO = (CANDIDATOS_AMBIGUOS, SIN_EVENTO, FUERA_DE_COBERTURA, SIN_DATO_EN_PERIODO)
 
 
 # ------------------------------------------------------------------ datos
@@ -59,7 +56,7 @@ class EventoUsgs:
     """Un evento de ``eventos.geojson``: ``place`` es el texto original de USGS, sin traducir ni recortar."""
 
     id: str                         # ``SIS-<id USGS>``
-    magnitud: float
+    magnitud: float | None          # nulo en la fuente: no coincide con nada (se cuenta aparte)
     profundidad_km: float | None
     place: str | None
     hora_utc: datetime
@@ -85,6 +82,7 @@ class ResultadoSismos:
     """Lo que se sabe de un grupo de sismos frente a USGS; ``estado`` es ``vinculado`` o un motivo sin vínculo."""
 
     id_grupo: str
+    subtema: str
     estado: str
     candidatos: tuple[Candidato, ...]       # vacío salvo ``vinculado`` (uno) y ``candidatos_ambiguos`` (todos)
     origenes_fecha: tuple[str, ...]         # de qué campo salió cada fecha usada: ``publicacion`` o ``deteccion``
@@ -109,7 +107,7 @@ def cargar_eventos(ruta: Path) -> list[EventoUsgs]:
         eventos.append(
             EventoUsgs(
                 id=p["id"],
-                magnitud=float(p["magnitude"]),
+                magnitud=None if p.get("magnitude") is None else float(p["magnitude"]),
                 profundidad_km=None if p.get("depth") is None else float(p["depth"]),  # un nulo es nulo, nunca 0
                 place=p.get("place"),
                 hora_utc=hora if hora.tzinfo else hora.replace(tzinfo=UTC),
@@ -130,13 +128,12 @@ def cobertura(fuentes: ConfigFuentes) -> tuple[datetime, datetime]:
     return _utc(fuentes.usgs.starttime), _utc(fuentes.usgs.endtime)
 
 
-def subtema_dominante(noticias: Sequence[Mapping[str, Any]]) -> str | None:
-    """Subtema más frecuente entre las noticias del grupo; en empate, el primero por orden alfabético."""
-    cuentas = Counter(n["subtema_clasificado"] for n in noticias if n.get("subtema_clasificado"))
-    if not cuentas:
-        return None
-    mayor = max(cuentas.values())
-    return sorted(s for s, c in cuentas.items() if c == mayor)[0]
+def contar_sin_magnitud(eventos: Sequence[EventoUsgs]) -> int:
+    """Eventos sin magnitud: no se pueden comparar con el mínimo, así que no coinciden con ninguna noticia."""
+    n = sum(1 for e in eventos if e.magnitud is None)
+    if n:
+        logger.warning("%d eventos de USGS sin magnitud: se excluyen de la coincidencia", n)
+    return n
 
 
 # ------------------------------------------------------------------ vínculo
@@ -187,7 +184,7 @@ def vincular_grupo(
     limitacion = limitacion_fija(vinculos)
 
     def resultado(estado: str, candidatos: Sequence[Candidato] = ()) -> ResultadoSismos:
-        return ResultadoSismos(id_grupo, estado, tuple(candidatos), origenes, _regla(vinculos, fuentes, origenes), limitacion)
+        return ResultadoSismos(id_grupo, subtema, estado, tuple(candidatos), origenes, _regla(vinculos, fuentes, origenes), limitacion)
 
     if not fechas:
         return resultado(SIN_DATO_EN_PERIODO)
@@ -197,11 +194,11 @@ def vincular_grupo(
     ventana = timedelta(days=vinculos.ventana_coincidencia_dias)
     candidatos = []
     for evento in eventos:
-        if evento.magnitud < fuentes.usgs.minmagnitude:
+        if evento.magnitud is None or evento.magnitud < fuentes.usgs.minmagnitude:
             continue
         distancia = min(abs(evento.hora_utc - f) for f, _ in dentro)
         if distancia <= ventana:
-            candidatos.append(Candidato(evento, round(distancia.total_seconds() / SEGUNDOS_POR_HORA, 2)))
+            candidatos.append(Candidato(evento, round(distancia.total_seconds() / SEGUNDOS_POR_HORA, vinculos.sismos.decimales_horas)))
     candidatos.sort(key=lambda c: (c.diferencia_horas, c.evento.id))
 
     if not candidatos:
@@ -212,24 +209,50 @@ def vincular_grupo(
 # ------------------------------------------------------------------ salida para la tabla ``vinculos``
 
 
-def a_filas_vinculo(resultado: ResultadoSismos) -> list[dict[str, Any]]:
-    """Filas con las columnas ``id_grupo, id_evidencia, tipo, regla, limitacion, motivo_sin_vinculo``.
-
-    * ``vinculado``: una fila con el ``SIS-`` y ``motivo_sin_vinculo`` nulo.
-    * ``candidatos_ambiguos``: una fila por candidato, todas con ``motivo_sin_vinculo = candidatos_ambiguos``
-      (ninguno está elegido; el motivo avisa que no son un vínculo firme).
-    * Sin vínculo: una fila con ``id_evidencia`` nulo y el motivo.
-    """
-    base = {
+def _fila_base(resultado: ResultadoSismos, tipo: str | None) -> dict[str, Any]:
+    return {
         "id_grupo": resultado.id_grupo,
-        "tipo": TIPO_EVENTO,
+        "id_evidencia": None,
+        "tipo": tipo,
         "regla": resultado.regla,
         "limitacion": resultado.limitacion,
         "motivo_sin_vinculo": resultado.motivo_sin_vinculo,
+        "fuente": FUENTE_VINCULO,
+        "rol": ROL_EVENTO,
+        "subtema": resultado.subtema,
     }
+
+
+def a_filas_vinculo(resultado: ResultadoSismos, vinculos: ConfigVinculos) -> list[dict[str, Any]]:
+    """Filas de la tabla ``vinculos`` (``fuente = 'usgs'``, ``rol = 'evento'``).
+
+    * ``vinculado``: una fila con el ``SIS-``, ``tipo = 'evento'`` y ``motivo_sin_vinculo`` nulo.
+    * ``candidatos_ambiguos``: una fila por candidato, con ``tipo = 'evento'`` y ``motivo_sin_vinculo =
+      candidatos_ambiguos`` (ninguno está elegido; el motivo avisa que no son un vínculo firme).
+    * Sin vínculo: una fila con ``id_evidencia`` y ``tipo`` nulos y el motivo.
+
+    La magnitud va en ``valor``/``unidad``; ``place``, profundidad, hora UTC, estado y URL en sus columnas.
+    """
     if not resultado.candidatos:
-        return [{**base, "id_evidencia": None}]
-    return [{**base, "id_evidencia": c.evento.id} for c in resultado.candidatos]
+        return [_fila_base(resultado, None)]
+    filas = []
+    for c in resultado.candidatos:
+        e = c.evento
+        filas.append(
+            {
+                **_fila_base(resultado, TIPO_EVENTO),
+                "id_evidencia": e.id,
+                "valor": e.magnitud,
+                "unidad": vinculos.sismos.unidad_magnitud,
+                "place": e.place,
+                "profundidad_km": e.profundidad_km,
+                "hora_utc": e.hora_utc.strftime(vinculos.sismos.formato_hora_utc),
+                "estado_evento": e.estado,
+                "url_evento": e.url,
+                "diferencia_horas": c.diferencia_horas,
+            }
+        )
+    return filas
 
 
 def ficha_de_evento(candidato: Candidato, vinculos: ConfigVinculos) -> dict[str, Any]:
@@ -240,7 +263,7 @@ def ficha_de_evento(candidato: Candidato, vinculos: ConfigVinculos) -> dict[str,
         "place": e.place,
         "magnitud": e.magnitud,
         "profundidad_km": e.profundidad_km,
-        "hora_utc": e.hora_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "hora_utc": e.hora_utc.strftime(vinculos.sismos.formato_hora_utc),
         "hora_panama": e.hora_panama(vinculos),
         "estado": e.estado,
         "url": e.url,
@@ -251,25 +274,11 @@ def ficha_de_evento(candidato: Candidato, vinculos: ConfigVinculos) -> dict[str,
 # ------------------------------------------------------------------ sobre la base
 
 
-def vincular_base(
-    ruta_base: Path,
-    eventos: Sequence[EventoUsgs],
-    vinculos: ConfigVinculos,
-    fuentes: ConfigFuentes,
-    campos_fecha: Sequence[str],
-) -> list[ResultadoSismos]:
-    """Resultado de cada grupo de ``senales.duckdb`` cuyo subtema dominante se vincula a USGS (solo lectura)."""
-    con = db.conectar(ruta_base, solo_lectura=True)
-    try:
-        grupos = db.leer_tabla(con, "grupos", "id_grupo")
-        por_id = {n["id_noticia"]: n for n in db.leer_tabla(con, "noticias")}
-    finally:
-        con.close()
-    resultados = []
-    for g in grupos:
-        filas = [por_id[i] for i in str(g["ids_noticia"]).split(SEPARADOR_LISTA) if i in por_id]
-        r = vincular_grupo(g["id_grupo"], subtema_dominante(filas), filas, eventos, vinculos, fuentes, campos_fecha)
-        if r is not None:
-            resultados.append(r)
-    logger.info("grupos vinculables a USGS: %d", len(resultados))
-    return resultados
+def leer_noticias_por_grupo(con: Any) -> dict[str, list[dict[str, Any]]]:
+    """Fechas de las noticias de cada grupo (``fecha_publicacion`` y ``fecha_deteccion`` por separado)."""
+    por_grupo: dict[str, list[dict[str, Any]]] = {}
+    for id_grupo, publicacion, deteccion in con.execute(
+        "SELECT id_grupo, fecha_publicacion, fecha_deteccion FROM noticias WHERE id_grupo IS NOT NULL ORDER BY id_noticia"
+    ).fetchall():
+        por_grupo.setdefault(id_grupo, []).append({"fecha_publicacion": publicacion, "fecha_deteccion": deteccion})
+    return por_grupo

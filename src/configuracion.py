@@ -749,6 +749,9 @@ class SismosVinculo(ModeloConfig):
 
     zona_horaria: str
     formato_hora: str
+    formato_hora_utc: str
+    decimales_horas: int = Field(ge=0)
+    unidad_magnitud: str
     plantilla_regla: str
     nota_fecha_deteccion: str
     limitaciones: list[str] = Field(min_length=1)
