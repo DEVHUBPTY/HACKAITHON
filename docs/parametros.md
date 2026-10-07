@@ -342,3 +342,21 @@ Valores en `config/exploracion.yaml`. Todo lo que marcan es **candidato**; las m
 | Bins de magnitud USGS | < 3 · 3 · 4 · 5 · 6 | Práctica (escala de magnitud) | — |
 | Año final esperado de la cuadrícula del Banco Mundial | 2024 | Supuesto (config de `fuentes.yaml`) | Sección 8 de `docs/exploracion.md` |
 | Listas de palabras (deportes, farándula, falso Panamá, menciones de Panamá, temas) | En YAML | Supuesto (exploratorias; no clasifican) | Se descartan al medir E1-03b / E1-07 |
+
+## Generación del borrador (E1-12 · `config/generacion.yaml`)
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| Reintentos por llamada | 1 | Spec E1-12 (un reintento ante salida inválida). Cubre JSON que no cumple el esquema y sección que no pasa la validación; un fallo de transporte no se reintenta | `test_json_invalido_se_reintenta_una_vez`, `test_json_invalido_dos_veces_deja_la_seccion_vacia_con_el_motivo` |
+| Afirmaciones: mínimo válidas / máximo | 1 / 8 | Supuesto (sin al menos una no hay nada que redactar; 8 acota el contexto de `num_ctx`) | `test_sin_ninguna_afirmacion_valida_no_se_redacta_nada_y_se_dice_por_que` |
+| Acciones → qué se genera | completo: Producir borrador, Borrador opcional · completo con vacíos: Completar evidencia y producir · investigación: Investigar ya, Vigilar · nada: Archivar, Archivar como contexto | D-42 (docs/salidas.md). «Borrador opcional» (atención media, evidencia suficiente) se trata como completo porque la persona lo pidió; «Archivar como contexto» como nada: **supuesto** | `test_producir_borrador_*`, `test_investigar_ya_y_vigilar_*`, `test_archivar_*` |
+| Prefijos de dato oficial / de reporte | IND-, SIS-, SBP- / NOT-, SYN- | CLAUDE.md (IDs estables, D-63); `SYN-` = casos sintéticos | `test_un_hecho_que_cita_solo_un_titular_*`, `test_un_conteo_de_reportes_si_puede_ser_hecho` |
+| Verbos de atribución | reporta/n, reportó, informa/n, según, señala/n, indica/n, publica/n, afirma/n… | Supuesto (verbos de reporte de docs/salidas.md; amplía los de `llm.yaml`) | `test_un_titulo_que_es_declaracion_lleva_atribucion` |
+| Marca de traducción | `(traducido)`; idioma base `es` | D-45 | `test_una_cita_de_un_titular_en_ingles_se_marca_como_traducida` |
+| Fuga del system prompt | 6 palabras consecutivas iguales | Supuesto (T07; una frase corta legítima no coincide con 6 palabras seguidas del prompt) | `tests/test_t07_inyeccion.py` |
+| Llamadas por paquete | 1 de afirmaciones + 4 de redacción (título · brief · guion · resumen); investigación: 1 + 1 | D-44 / spec E1-12 | `test_producir_borrador_da_el_paquete_completo_*`, `test_cada_grupo_se_genera_solo_cuando_se_pide` |
+| DeepSeek: modelo, `max_tokens`, timeout | `deepseek-chat`, 1536, 120 s | Supuesto (respaldo provisional, D-80; `max_tokens` ≈ 3× la salida medida del modelo local) | `scripts.medir_generacion --proveedor deepseek` |
+| DeepSeek: precio USD por millón de tokens | entrada 0.28 · salida 0.42 | Supuesto: precio público de `deepseek-chat` al 2026-10; **verificar contra la factura** (el tope se calcula con estos valores) | `test_bajo_el_tope_se_usa_deepseek_y_se_acumula_el_costo` |
+| Tope de costo (D-67) | 300 000 tokens y USD 0.50 acumulados; registro en `outputs/costo_llm.json` | Supuesto (alcanza para ≈ 40 paquetes completos de ≈ 7 500 tokens; D-67 no fija la cifra) | `test_al_superar_el_tope_de_tokens_*`, `test_al_superar_el_tope_de_usd_*`, `test_el_acumulado_persiste_entre_ejecuciones` |
+| Medición de latencia | 5 repeticiones, 1 de calentamiento, percentil 95 | Supuesto (n pequeño: el p95 con n = 5 es el máximo; se reporta con su n) | `scripts.medir_generacion` |
+| Límites de palabras y cantidades de cada sección | En `config/salidas.yaml` | docs/salidas.md | `test_limites_*`, `test_el_guion_respeta_el_rango_*` |

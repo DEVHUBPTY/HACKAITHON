@@ -44,6 +44,8 @@ poetry run python -m src.contexto                    # vínculos por subtema con
 poetry run python -m src.puntaje                     # R I U N E y P, estado de evidencia, vacíos, contradicciones y acción → tablas puntajes, evidencia, contradicciones y outputs/prioridad.json (E1-10; --sin-llm no compara con el LLM)
 poetry run python -m eval.puntaje                    # distribución de P y de cada componente; tabla rango × estado de evidencia → outputs/puntaje.json (E1-10)
 poetry run python -m eval.sensibilidad               # top 5 ante cada peso ±5 y cada supuesto ±20 % → outputs/sensibilidad.json (E1-10, X02)
+poetry run python -m src.generacion --ficha-json tests/fixtures/ficha_generacion.json  # borrador desde una ficha (E1-12); --grupo GRP-… llega con E1-10b
+poetry run python -m scripts.medir_generacion --proveedor ollama  # latencia: primera respuesta y paquete completo (E1-12)
 poetry run python -m src.consulta "pregunta"         # consulta en español con abstención (--metodo semantica|bm25)
 poetry run python -m eval.recuperacion               # Recall@5 y abstención, semántica vs. BM25, con n e IC
 poetry run streamlit run app.py                      # interfaz
@@ -75,16 +77,17 @@ Lo que existe hoy:
 ```
 CLAUDE.md  README.md  pyproject.toml  poetry.lock  .env.example  .github/pull_request_template.md
 config/      reglas_v1.3.yaml · temas.yaml · ejemplos_excluidos.txt · vinculos.yaml · modalidad_editorial.yaml · salidas.yaml · restricciones.yaml
-             ruido.yaml · fuentes.yaml · contrato.yaml · carga.yaml · normalizacion.yaml · clasificacion.yaml · etiquetado.yaml · exploracion.yaml · llm.yaml · benchmark.yaml · consulta.yaml · prioridad.yaml (E1-10)
+             ruido.yaml · fuentes.yaml · contrato.yaml · carga.yaml · normalizacion.yaml · clasificacion.yaml · etiquetado.yaml · exploracion.yaml · llm.yaml · benchmark.yaml · consulta.yaml · prioridad.yaml (E1-10) · generacion.yaml (E1-12)
 templates/   (vacía)
-prompts/     afirmaciones_citadas.txt · comparar_contradicciones.txt (E1-10)
+prompts/     afirmaciones_citadas.txt (E0-07) · comparar_contradicciones.txt (E1-10) · afirmaciones_ficha.txt · paquete_editorial.txt (E1-12, versionados)
 data/        raw/ (inmutable) · processed/ (validos/ fuera de git) · registro_extraccion/ · manifest.json · CHANGELOG.md · diccionario.md · README.md
              senales.duckdb (generado, fuera de git)
-src/         carga · contexto (E1-09) · normalizacion · limpieza · embeddings · clasificacion · baseline · consulta · db · registro (D-75) · configuracion (D-79; config = alias de su CLI) · consultas_gdelt · esquemas (borrador)
+src/         carga · contexto (E1-09) · normalizacion · limpieza · embeddings · clasificacion · baseline · consulta · db · registro (D-75) · configuracion (D-79; config = alias de su CLI) · consultas_gdelt · esquemas (paso 1 y paquetes de E1-12; la Ficha llega con E1-10b)
              agrupacion · procedencias · puntaje · evidencia · contradicciones · prioridad (E1-10: `python -m src.puntaje`)
-             solo docstring o esqueleto: ficha · generacion · validador · cache · revision · exportar
-src/llm/     proveedor.py (interfaz y `crear_proveedor`, por LLM_PROVIDER) · ollama.py (cliente y ProveedorOllama) · deepseek.py (solo docstring)
-scripts/     extraer.py · conversion.py · manifest.py · validar_snapshot.py · catalogo.py · explorar.py · estimar_consultas_gdelt.py · probar_llm.py
+             generacion (E1-12: dos pasos, validación mínima que E1-13 reemplaza)
+             solo docstring o esqueleto: ficha · validador · cache · revision · exportar
+src/llm/     proveedor.py (interfaz, `UsoLlm` y `crear_proveedor`, por LLM_PROVIDER) · ollama.py · deepseek.py · costo.py (tope de costo D-67 y respaldo local)
+scripts/     extraer.py · conversion.py · manifest.py · validar_snapshot.py · catalogo.py · explorar.py · estimar_consultas_gdelt.py · probar_llm.py · medir_generacion.py (E1-12)
 eval/        etiquetar.py · etiquetas/ (una hoja por persona) · etiquetas.csv · ruido.py · validar_benchmark.py · clasificacion.py · calibrar_clasificacion.py · metricas.py · recuperacion.py · puntaje.py · sensibilidad.py
 benchmark/   benchmark_dev.jsonl (solo desarrollo) · sinteticos.csv · README.md
 tests/       fixtures/ · test_t01_carga.py · test_t03_recirculada.py · test_casos_dificiles.py · test_*.py
@@ -99,7 +102,7 @@ Previsto (lo crea la spec indicada):
 app.py (E1-15) · data/demo.duckdb (C-06)
 config/      verificacion.yaml (E1-10b) · revision.yaml (E1-16) · modalidad_banca.yaml (E2-01)
 templates/   ficha.md.j2 (E1-10b)
-prompts/     comparar_contradicciones.txt (E1-10) · respuesta_consulta.txt (E1-11) · paquete_editorial.txt (E1-12) · boletin_banca.txt (E2-02)
+prompts/     comparar_contradicciones.txt (E1-10) · respuesta_consulta.txt (E1-11) · boletin_banca.txt (E2-02)
 scripts/     buscar_casos.py · preparar_demo.py · calentar_cache.py · capturas_demo.py · verificar_offline.py (C-06) · reproducir.py (E1-20)
              empaquetar_datos.py · auditoria_final.py (C-07)
 eval/        run_benchmark.py (E1-18) · precision_at_5.py (E1-19) · y los módulos de métricas que pide cada spec
