@@ -1,0 +1,48 @@
+# Sincronización de fichas con la API de Notion (E3-03). Solo valores no secretos: el token vive en local.env (NOTION_TOKEN).
+version: "1.0"
+api:
+  base_url: "https://api.notion.com/v1"
+  version: "2022-06-28"               # encabezado Notion-Version
+  timeout_segundos: 20
+  reintentos: 3                        # ante HTTP 429/5xx; respeta Retry-After
+  espera_base_segundos: 1.0            # sin Retry-After: espera_base × 2^intento
+  espera_maxima_segundos: 30.0
+base_de_datos:
+  nombre: "Casos y evidencias"
+  id: "c67a0b58ac8b40b6bc11338395231378"   # la base (no es secreta); la integración debe estar compartida con ella
+variable_token: "NOTION_TOKEN"
+# Tipo de cada propiedad de la base (esquema leído de Notion); deben cubrir exactamente exportacion.columnas de revision.yaml.
+# P y Rango son fórmulas de Notion y no se escriben.
+propiedades:
+  "ID caso": titulo
+  "Modalidad": seleccion
+  "Tema": seleccion
+  "Caso de uso": seleccion
+  "Estado de revisión": seleccion
+  "Estado de evidencia": seleccion
+  "Acción recomendada": texto
+  "R": numero
+  "I": numero
+  "U": numero
+  "N": numero
+  "E": numero
+  "Versión de reglas": texto
+  "Versión del borrador": texto
+  "Alcance del texto": texto
+  "Qué se reporta": texto
+  "Quién lo reporta": texto
+  "Qué está respaldado": texto
+  "Qué falta comprobar": texto
+  "IDs de fuente": texto
+  "Revisor": texto
+  "Comentario del revisor": texto
+  "Fecha de revisión": fecha
+  "Última exportación": fecha
+cuerpo:
+  max_caracteres_bloque: 2000          # límite de un texto enriquecido de Notion
+  max_bloques_por_llamada: 100         # límite de children por llamada
+textos:
+  sin_token: "No se sincronizó con Notion: falta {variable} en local.env. La exportación local (Markdown y CSV) sí se escribió; impórtela a mano (docs/notion.md)."
+  sin_red: "No se sincronizó con Notion: no hay conexión con la API. La exportación local (Markdown y CSV) sí se escribió; vuelva a correr con --notion cuando haya red."
+  sincronizado_nuevo: "creada en Notion"
+  sincronizado_existente: "actualizada en Notion"
