@@ -169,6 +169,11 @@ def _gdelt(titulo: str) -> limpieza.Resultado:
         "Container shipping rates from China to US west coast jump",
         "Container rates on the Asia\u2013US route climb",                          # X59: ruta explícita
         "Shipping lines cut Asia-US capacity",
+        # X65: «U.S.» seguido de un espacio no hacía match (el \\b final no existe tras el punto)
+        "Korea LNG imports rise as U.S. supply grows",
+        "Container shipping rates from the U.S. to China fall",
+        "Container freight rates from China to U.S. ports fall",
+        "Navieras suben fletes entre China y U.S. ports",
     ],
 )
 def test_x44_el_comercio_maritimo_y_de_combustibles_es_regional_no_ruido(titulo: str) -> None:
@@ -185,6 +190,7 @@ def test_x44_el_comercio_maritimo_y_de_combustibles_es_regional_no_ruido(titulo:
         "Carnival to Deploy Adventure, Legend, Spirit to West Coast in 2028",
         "Sin combustible y con menos vuelos, pero a Cuba aún llegan aviones",   # escasez local en otro país, no un flujo comercial
         "El Niño hits Australian wheat",
+        "Let us talk: China container shipping booms",   # X65: «us» minúscula suelta no es «U.S.»
     ],
 )
 def test_x44_lo_que_no_es_comercio_maritimo_ni_de_combustibles_sigue_siendo_ruido(titulo: str) -> None:
