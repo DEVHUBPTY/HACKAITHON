@@ -482,7 +482,8 @@ def test_la_accion_cambia_entre_modalidades_para_el_mismo_rango_y_estado(con, em
 
 
 def test_no_hay_if_modalidad_en_el_codigo_de_la_ficha() -> None:
-    for ruta in (Path("src/ficha.py"), Path("src/esquemas.py")):
+    raiz = Path(__file__).resolve().parent.parent
+    for ruta in (raiz / "src" / "ficha.py", raiz / "src" / "esquemas.py"):
         assert not re.search(r"if\s+[^\n]*modalidad\s*(==|!=|in)\s*[\"'(\[]", ruta.read_text(encoding="utf-8")), ruta
 
 
@@ -599,7 +600,7 @@ def test_verificacion_rechaza_claves_desconocidas_y_un_orden_que_no_coincide_con
 
     from src.configuracion import cargar_verificacion as cargar
 
-    datos = yaml.safe_load(Path("config/verificacion.yaml").read_text(encoding="utf-8"))
+    datos = yaml.safe_load(Path(__file__).resolve().parent.parent / "config" / "verificacion.yaml".read_text(encoding="utf-8"))
 
     def con(cambio) -> Path:
         d = json.loads(json.dumps(datos))
