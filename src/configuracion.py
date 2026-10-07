@@ -2338,11 +2338,17 @@ class PasoReproduccion(ModeloConfig):
         return self
 
 
+class MuestraSustentoReproduccion(ModeloConfig):
+    archivo: str = Field(min_length=1)
+    columnas_humanas: list[str] = Field(min_length=1)
+
+
 class SalidasReproduccion(ModeloConfig):
     archivos: list[str] = Field(min_length=1)
     informes: dict[str, list[str]]
     tablas: list[str] = Field(min_length=1)
     fichas: str = Field(min_length=1)
+    muestra_sustento: MuestraSustentoReproduccion
     metricas: str = Field(min_length=1)
     excluir_de_metricas: list[str]
 

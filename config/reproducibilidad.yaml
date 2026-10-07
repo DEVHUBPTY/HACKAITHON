@@ -44,6 +44,11 @@ salidas:
   # Tablas de data/senales.duckdb (un archivo DuckDB no es idéntico byte a byte entre corridas: se comparan sus filas ordenadas).
   tablas: [noticias, grupos, procedencias, vinculos, puntajes, evidencia, contradicciones, sismos, fuentes, indicadores]
   fichas: outputs/reproduccion/fichas.jsonl
+  # La muestra de afirmaciones de la validez de sustento (X46): se hashean sus columnas de muestra y NO las que completa una persona
+  # (veredicto, comentario y revisor cambian a propósito en C-09).
+  muestra_sustento:
+    archivo: outputs/revision_sustento.csv
+    columnas_humanas: [veredicto, comentario, revisor]
   metricas: outputs/metricas.json
   # Claves de metricas.json que NO entran en el hash y por qué (docs/reproducibilidad.md). Ruta con puntos.
   excluir_de_metricas:
@@ -51,7 +56,6 @@ salidas:
     - entorno                                    # versión de Python y sistema operativo: no son un resultado, se registran aparte
     - latencia.consulta                          # tiempo de pared de la consulta en esta máquina
     - latencia.meta_sugerida.consulta_cumple     # se deriva del tiempo de pared anterior
-    - validez_sustento.muestra.estado_del_archivo  # estado del archivo de revisión humana (reescrita / conservada), no un cálculo
 
 registro:
   # Entradas que se registran en cada ejecución (versión de modelos, reglas y prompts) y de dónde salen.

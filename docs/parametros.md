@@ -552,6 +552,7 @@ Ninguno de estos valores decide un puntaje ni una respuesta: solo gobiernan cóm
 | Orden del pipeline (`pasos`) | validación, normalización, limpieza, clasificación, agrupación, contexto, puntaje, fichas, benchmark | Spec E1-20 | `test_los_pasos_siguen_el_orden_de_la_spec` |
 | Puntaje sin LLM (`--sin-llm`) | siempre | Práctica (reproducibilidad): la nota del LLM es texto del LLM | Hoy no hay pares candidatos; `docs/reproducibilidad.md` |
 | Salidas comparadas (`salidas`) | 30 hashes: `processed/`, tablas, informes, fichas y `metricas.json` | Spec E1-20 | `scripts.reproducir --verificar` |
+| Muestra de sustento (`muestra_sustento`) | Se hashean las columnas de muestra de `revision_sustento.csv`, no `veredicto`, `comentario` ni `revisor` | X46: un conteo igual no prueba la misma muestra; las columnas humanas cambian en C-09 | `test_una_muestra_distinta_con_los_mismos_conteos_se_detecta` · `test_los_veredictos_humanos_no_cambian_el_hash_de_la_muestra` |
 | Claves excluidas del hash | marcas de reloj, entorno y latencia de la consulta (`excluir_de_metricas`, `informes`) | Solo lo que cambia por el reloj o la máquina | `docs/reproducibilidad.md`, sección «Lo que se excluye del hash» |
 | Borradores del LLM | solo desde `data/cache_llm/` (`solo_cache=True`); nunca se llama al proveedor | Spec E1-20; D-94, D-95 | `test_el_borrador_registrado_completo_que_ya_no_sale_de_la_cache_es_una_diferencia` |
 | Modalidad de las fichas y los borradores (`modalidad`) | editorial | Modalidad principal del reto | `config/benchmark.yaml:llm.modalidad` (misma) |

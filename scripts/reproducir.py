@@ -54,7 +54,7 @@ logger = logging.getLogger(__name__)
 
 RUTA_MANIFEST = RAIZ / "data" / "manifest.json"
 CLAVE_MANIFEST = "reproducibilidad"
-ENTRADAS_QUE_NO_SE_COMPARAN = frozenset({"commit"})  # cambia en cada ejecución: se registra para saber de dónde salió, no se compara
+ENTRADAS_QUE_NO_SE_COMPARAN = frozenset({"commit", "arbol_con_cambios"})  # cambia en cada ejecución: se registra para saber de dónde salió, no se compara
 ESTADO_SIN_CACHE = "sin_cache"
 ESTADO_NO_GENERA = "no_genera"
 LARGO_HASH_EN_PANTALLA = 12
@@ -90,6 +90,8 @@ class Contexto:
     reconstruidos: dict[str, str] = field(default_factory=dict)  # processed/ rehecho desde raw/: «reconstruido:<ruta>» -> sha256
     omitidas: set[str] = field(default_factory=set)               # claves que esta máquina no puede calcular (se declaran, no se ignoran)
     limitaciones: list[str] = field(default_factory=list)
+    crudos_ausentes: set[str] | None = None  # lo que ``comprobar_crudos`` halló al empezar
+    arbol_con_cambios: bool | None = None    # si el árbol de trabajo tenía cambios sin commitear al empezar (antes de que el pipeline escriba)
 
 
 # ============================================================================================ hash canónico
@@ -136,6 +138,18 @@ def quitar_rutas(obj: Mapping[str, Any], rutas: Sequence[str]) -> dict[str, Any]
         if isinstance(nodo, dict):
             nodo.pop(ultima, None)
     return copia
+
+
+def huella_muestra(ruta: Path, columnas_humanas: Sequence[str], decimales: int = 0) -> str:
+    """Hash de las columnas de **muestra** de ``revision_sustento.csv`` (id, origen, afirmación, citas, evidencia…), sin las que completa una persona.
+
+    Sin esto, otra muestra con los mismos conteos pasaría inadvertida (X46).
+    """
+    import csv
+
+    with ruta.open(encoding="utf-8", newline="") as f:
+        filas = [{k: v for k, v in fila.items() if k not in columnas_humanas} for fila in csv.DictReader(f)]
+    return huella_canonica(filas, decimales)
 
 
 def huella_de_archivo(ruta: Path) -> str:
@@ -188,6 +202,8 @@ def calcular_huellas(ctx: Contexto) -> dict[str, str]:
     huellas.update(huellas_de_tablas(raiz / "data" / "senales.duckdb", salidas.tablas, decimales))
     fichas = [json.loads(linea) for linea in (raiz / salidas.fichas).read_text(encoding="utf-8").splitlines() if linea.strip()]
     huellas["fichas"] = huella_canonica(fichas, decimales)
+    muestra = salidas.muestra_sustento
+    huellas["muestra_sustento"] = huella_muestra(raiz / muestra.archivo, muestra.columnas_humanas, decimales)
     metricas = quitar_rutas(_leer_json(raiz / salidas.metricas), salidas.excluir_de_metricas)
     huellas["metricas"] = huella_canonica(metricas, decimales)
     huellas.update(ctx.reconstruidos)
@@ -251,7 +267,16 @@ def _commit(raiz: Path) -> str:
     return salida.stdout.strip()
 
 
-def registrar_entradas(raiz: Path, cfg: ConfigReproducibilidad) -> dict[str, Any]:
+def arbol_con_cambios(raiz: Path) -> bool:
+    """``True`` si el árbol de git tiene cambios sin commitear (el commit registrado no describiría entonces lo que se ejecutó)."""
+    try:
+        salida = subprocess.run(["git", "status", "--porcelain"], cwd=raiz, capture_output=True, text=True, check=True)  # noqa: S603, S607
+    except (OSError, subprocess.CalledProcessError):
+        return False
+    return bool(salida.stdout.strip())
+
+
+def registrar_entradas(raiz: Path, cfg: ConfigReproducibilidad, con_cambios: bool | None = None) -> dict[str, Any]:
     """Versiones con las que se corre: modelos de embeddings y LLM, reglas, prompts, semillas, commit y entorno."""
     from src.cache import identidad_de
 
@@ -267,6 +292,7 @@ def registrar_entradas(raiz: Path, cfg: ConfigReproducibilidad) -> dict[str, Any
 
     return {
         "commit": _commit(raiz),
+        "arbol_con_cambios": arbol_con_cambios(raiz) if con_cambios is None else con_cambios,
         "python": platform.python_version(),
         "sistema": platform.system(),
         "embeddings": modelo(reglas.agrupacion.modelo),
@@ -332,6 +358,20 @@ def comparar_entradas(registrado: Mapping[str, Any], actual: Mapping[str, Any]) 
 # ============================================================================================ pasos internos
 
 
+def comprobar_crudos(raiz: Path) -> set[str]:
+    """Compara cada crudo de ``data/raw/`` con el SHA-256 del manifest. Devuelve los ausentes; si alguno presente difiere, lanza el error.
+
+    Se llama **antes** de tocar nada (la caché de embeddings, los pasos): un ``raw/`` alterado no debe dejar el estado a medias.
+    """
+    data = raiz / "data"
+    crudos = _leer_json(data / "manifest.json")["crudos"]
+    ausentes = {ruta for ruta in crudos if not (data / ruta).exists()}
+    alterados = [ruta for ruta, v in crudos.items() if ruta not in ausentes and huella_de_archivo(data / ruta) != v["sha256"]]
+    if alterados:
+        raise ErrorDeReproduccion(f"data/raw/ es inmutable y estos crudos no coinciden con el manifest: {', '.join(alterados[:5])}")
+    return ausentes
+
+
 def paso_conversion(ctx: Contexto) -> int:
     """Reconstruye ``processed/`` desde ``raw/`` en una carpeta temporal y guarda el hash de cada archivo (no pisa el ``processed/`` versionado).
 
@@ -339,11 +379,7 @@ def paso_conversion(ctx: Contexto) -> int:
     restringida, D-72): sin ellos no se puede reconstruir y se declara; el pipeline sigue desde el ``processed/`` versionado.
     """
     data = ctx.raiz / "data"
-    manifest = _leer_json(data / "manifest.json")
-    ausentes = [ruta for ruta in manifest["crudos"] if not (data / ruta).exists()]
-    alterados = [ruta for ruta, v in manifest["crudos"].items() if (data / ruta).exists() and huella_de_archivo(data / ruta) != v["sha256"]]
-    if alterados:
-        raise ErrorDeReproduccion(f"data/raw/ es inmutable y estos crudos no coinciden con el manifest: {', '.join(alterados[:5])}")
+    ausentes = ctx.crudos_ausentes if ctx.crudos_ausentes is not None else comprobar_crudos(ctx.raiz)
     prefijo = "reconstruido:"
     esperadas = claves_reconstruidas()
     if ausentes:
@@ -437,7 +473,7 @@ def reiniciar_cache_de_embeddings(raiz: Path) -> None:
 def estado_actual(ctx: Contexto) -> dict[str, Any]:
     """Lo que esta ejecución produjo: entradas, hashes de las salidas deterministas y borradores de la caché."""
     return {
-        "ejecucion": registrar_entradas(ctx.raiz, ctx.cfg),
+        "ejecucion": registrar_entradas(ctx.raiz, ctx.cfg, ctx.arbol_con_cambios),
         "salidas_deterministas": calcular_huellas(ctx),
         "borradores_cache": borradores_de_cache(ctx.raiz, ctx.cfg),
         "decimales_del_hash": ctx.cfg.decimales,
@@ -451,8 +487,9 @@ def estado_actual(ctx: Contexto) -> dict[str, Any]:
 
 def reconstruir(raiz: Path, cfg: ConfigReproducibilidad, ejecutar: bool = True) -> tuple[dict[str, Any], Contexto]:
     """Corre el pipeline (salvo ``ejecutar=False``) y devuelve el estado resultante."""
-    ctx = Contexto(raiz, cfg)
+    ctx = Contexto(raiz, cfg, arbol_con_cambios=arbol_con_cambios(raiz))
     if ejecutar:
+        ctx.crudos_ausentes = comprobar_crudos(raiz)   # primero: si falla, no se borró ni se escribió nada
         if cfg.reiniciar_cache_embeddings:
             reiniciar_cache_de_embeddings(raiz)
         ejecutar_pasos(cfg.pasos, _ejecutor_real(ctx))
