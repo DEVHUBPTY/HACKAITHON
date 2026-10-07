@@ -54,6 +54,11 @@ poetry run python -m scripts.calentar_cache --verificar   # no crea proveedor ni
 poetry run pytest tests/test_t10_offline.py               # recorrido carga → bandeja → ficha → paquete con la red simulada caída
 ```
 
+**En la máquina de la demo, antes de nada:** `local.env` con `LLM_PROVIDER=deepseek` (la clave no hace falta para leer la caché) y, si
+se calentó con otro, el mismo `DEEPSEEK_MODEL`. La clave de la caché incluye proveedor y modelo. Si `LLM_PROVIDER` está vacío se usa
+`proveedor_por_defecto` de `config/cache.yaml` (deepseek, D-94/D-95); si pide otro proveedor o modelo, `--verificar` y la pantalla *Paquete* dicen
+«la caché se calentó con deepseek/… y local.env pide …» en vez de «no hay borrador». Correr `--verificar` **en esa máquina** (debe dar 12/12).
+
 `HACKIATHON_OFFLINE=true` en `local.env` ensaya el modo offline con la red encendida: aunque haya red, no se llama al proveedor.
 
 ## Qué muestra la interfaz
@@ -62,6 +67,8 @@ poetry run pytest tests/test_t10_offline.py               # recorrido carga → 
 |---|---|
 | Borrador completo en caché | El paquete con la marca BORRADOR, la leyenda de alcance, cada oración con las afirmaciones en que se apoya y los vacíos |
 | Solo algunos grupos de secciones en caché | Lo guardado, y las demás secciones vacías con el motivo «no hay borrador en caché para este grupo de secciones» |
+| Borrador guardado que ya no pasa la validación vigente | Secciones vacías (o aviso) con «el borrador guardado ya no pasa la validación vigente: hay que volver a calentar la caché» |
+| `local.env` pide otro proveedor o modelo que el de la caché | Aviso con el desajuste («se calentó con deepseek/… y local.env pide …») |
 | Nada en caché | Aviso: «no hay borrador en caché para este grupo: la interfaz no espera al modelo ni usa la red.» |
 | La acción no genera borrador (p. ej. «Archivar») | Aviso con el motivo de D-42 |
 | Saldo agotado o tope de costo (solo al generar) | Mensaje del error; la caché sigue disponible |

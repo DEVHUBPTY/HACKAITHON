@@ -23,6 +23,7 @@ import json
 import logging
 import os
 import socket
+import tempfile
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -42,7 +43,12 @@ class SinCache(ErrorProveedor):
 
 
 class SinBorrador(Exception):
-    """No hay borrador que mostrar para un grupo: sin caché, o la acción de la ficha no genera borrador. El mensaje es para la persona."""
+    """No hay borrador que mostrar para un grupo: sin caché, desajuste de proveedor o una acción de la ficha que no genera borrador.
+    El mensaje es para la persona; ``por_accion`` distingue el último caso (no es un fallo de la caché)."""
+
+    def __init__(self, mensaje: str, *, por_accion: bool = False) -> None:
+        super().__init__(mensaje)
+        self.por_accion = por_accion
 
 
 def clave_de(
@@ -90,10 +96,27 @@ class CacheLlm:
         entrada = {"clave": clave, **meta, "creado_utc": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"), "respuesta": respuesta}
         self.carpeta.mkdir(parents=True, exist_ok=True)
         destino = self._ruta(clave)
-        temporal = destino.with_suffix(".tmp")
-        temporal.write_text(json.dumps(entrada, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-        temporal.replace(destino)
+        # nombre único en la misma carpeta: dos procesos que escriben la misma clave no se pisan el temporal
+        descriptor, nombre = tempfile.mkstemp(dir=self.carpeta, prefix=f"{clave}.", suffix=".tmp")
+        try:
+            with os.fdopen(descriptor, "w", encoding="utf-8") as f:
+                f.write(json.dumps(entrada, ensure_ascii=False, indent=1) + "\n")
+            os.replace(nombre, destino)
+        except BaseException:
+            Path(nombre).unlink(missing_ok=True)
+            raise
         return True
+
+    def identidades(self) -> set[tuple[str, str]]:
+        """``(proveedor, modelo)`` con que se calentaron las entradas legibles de la caché."""
+        salida: set[tuple[str, str]] = set()
+        for archivo in self.carpeta.glob("*.json") if self.carpeta.exists() else []:
+            try:
+                datos = json.loads(archivo.read_text(encoding="utf-8"))
+                salida.add((str(datos["proveedor"]), str(datos["modelo"])))
+            except (OSError, ValueError, KeyError, TypeError):
+                continue
+        return salida
 
     def __len__(self) -> int:
         return sum(1 for _ in self.carpeta.glob("*.json")) if self.carpeta.exists() else 0
@@ -107,17 +130,18 @@ class Identidad:
     modelo: str
 
 
-def identidad_de(env: Mapping[str, str] | None = None) -> Identidad:
-    """Proveedor y modelo que dice ``local.env``. Lanza ``ErrorProveedor`` si no hay proveedor o modelo definido."""
+def identidad_de(env: Mapping[str, str] | None = None, cfg: ConfigCache | None = None) -> Identidad:
+    """Proveedor y modelo con que se lee la caché: ``LLM_PROVIDER`` de ``local.env`` o, si está vacío, ``proveedor_por_defecto`` de
+    ``config/cache.yaml`` (D-94, D-95). Lanza ``ErrorProveedor`` si el proveedor elegido no tiene modelo definido."""
     env = leer_local_env() if env is None else env
-    nombre = (env.get("LLM_PROVIDER") or "").strip().lower()
+    nombre = (env.get("LLM_PROVIDER") or "").strip().lower() or (cfg or cargar_cache()).proveedor_por_defecto
     if nombre == "deepseek":
         return Identidad(nombre, (env.get("DEEPSEEK_MODEL") or "").strip() or cargar_generacion().deepseek.modelo)
     if nombre == "ollama":
         modelo = (env.get("OLLAMA_MODEL") or "").strip()
         if modelo:
             return Identidad(nombre, modelo)
-    raise ErrorProveedor("LLM_PROVIDER (y su modelo) no están definidos en local.env")
+    raise ErrorProveedor(f"el proveedor {nombre!r} no tiene modelo definido en local.env")
 
 
 class _ConClave:

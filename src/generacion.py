@@ -1007,24 +1007,32 @@ def generar_paquete(
         prov = ProveedorConCache(proveedor or crear_proveedor(), cache, refrescar)
     g = Generador(entrada, prov, forzar_completo)
     if g.plan.tipo == "nada":
-        raise SinBorrador(g.plan.motivo or cfg_cache.textos.sin_cache)
+        raise SinBorrador(g.plan.motivo or cfg_cache.textos.sin_cache, por_accion=True)
     pedidos = [x for x in (grupos or g.grupos) if x in g.grupos]
-    faltan: list[str] = []
+    faltan: dict[str, str] = {}  # grupo -> motivo
+    aciertos = lambda: getattr(prov, "aciertos", 0)  # noqa: E731
+    motivo_falta = lambda antes: cfg_cache.textos.borrador_invalido if aciertos() > antes else cfg_cache.textos.sin_cache_grupo  # noqa: E731
+    antes = aciertos()
     try:
         g.generar_afirmaciones()
     except SinCache:
-        faltan = list(pedidos)
+        faltan = dict.fromkeys(pedidos, motivo_falta(antes))  # un acierto seguido de un fallo: lo guardado ya no pasa la validación
     for grupo in [] if faltan else pedidos:
+        antes = aciertos()
         try:
             g.generar_grupo(grupo)
         except SinCache:
-            faltan.append(grupo)
-    for grupo in faltan:
+            faltan[grupo] = motivo_falta(antes)
+    for grupo, motivo in faltan.items():
         for seccion in GRUPOS[grupo].secciones:
             if seccion not in g._secciones:
-                g._vacios.append(Vacio(origen="seccion", referencia=seccion, motivo=cfg_cache.textos.sin_cache_grupo))
+                g._vacios.append(Vacio(origen="seccion", referencia=seccion, motivo=motivo))
     if len(faltan) == len(pedidos):
-        raise SinBorrador(cfg_cache.textos.sin_cache)
+        if solo_cache and (calentadas := cache.identidades()) and (prov.nombre, prov.modelo) not in calentadas:
+            raise SinBorrador(cfg_cache.textos.desajuste_proveedor.format(
+                calentado=" · ".join(f"{p}/{m}" for p, m in sorted(calentadas)), actual=f"{prov.nombre}/{prov.modelo}"))
+        invalido = cfg_cache.textos.borrador_invalido in faltan.values()
+        raise SinBorrador(cfg_cache.textos.borrador_invalido if invalido else cfg_cache.textos.sin_cache)
     paquete = g.paquete()
     assert paquete is not None
     return paquete

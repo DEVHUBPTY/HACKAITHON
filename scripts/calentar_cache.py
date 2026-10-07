@@ -44,13 +44,13 @@ def grupos_por_defecto(base: Path, modalidad: str) -> list[str]:
 
 
 def estado_de(id_grupo: str, modalidad: str, base: Path, cache: CacheLlm) -> str:
-    """``completo``, ``parcial``, ``sin caché`` o el motivo de que no genere borrador. Solo lee la caché."""
+    """``completo``, ``parcial (…)``, ``sin borrador: <por qué>`` (sin caché, desajuste de proveedor o validación) o ``no genera: …``."""
     from src.generacion import generar_paquete
 
     try:
         p = generar_paquete(id_grupo, modalidad, solo_cache=True, base=base, cache=cache)
     except SinBorrador as exc:
-        return "sin caché" if "caché" in str(exc) else f"no genera: {exc}"
+        return f"no genera: {exc}" if exc.por_accion else f"sin borrador: {exc}"
     faltan = [v.referencia for v in p.vacios if v.motivo == cache.cfg.textos.sin_cache_grupo]
     return "completo" if not faltan else f"parcial (faltan: {', '.join(faltan)})"
 
@@ -75,7 +75,7 @@ def principal(argv: Sequence[str] | None = None) -> int:
         estados = {g: estado_de(g, args.modalidad, args.base, cache) for g in grupos}
         for g, e in estados.items():
             print(f"{g}  {e}")
-        faltan = [g for g, e in estados.items() if e == "sin caché" or e.startswith("parcial")]
+        faltan = [g for g, e in estados.items() if e != "completo" and not e.startswith("no genera")]
         print(f"\n{len(grupos) - len(faltan)} de {len(grupos)} grupos listos · {len(cache)} respuestas en {cache.carpeta.relative_to(RAIZ)}")
         return 1 if faltan else 0
 

@@ -2103,6 +2103,12 @@ class GeneracionInterfaz(ModeloConfig):
     solo_cache: bool
 
 
+class PaqueteInterfaz(ModeloConfig):
+    """Etiquetas legibles de los campos del paquete en la pantalla Paquete; un campo sin etiqueta usa su nombre capitalizado."""
+
+    etiquetas: dict[str, str]
+
+
 class RevisionInterfaz(ModeloConfig):
     estados: list[str] = Field(min_length=1)
     estado_inicial: str
@@ -2138,6 +2144,7 @@ class ConfigInterfaz(ModeloConfig):
     demo: DemoInterfaz
     citas: CitasInterfaz
     generacion: GeneracionInterfaz
+    paquete: PaqueteInterfaz
     revision: RevisionInterfaz
     textos: TextosInterfaz
 
@@ -2184,6 +2191,8 @@ class CalentamientoCache(ModeloConfig):
 class TextosCache(ModeloConfig):
     sin_cache: str = Field(min_length=1)
     sin_cache_grupo: str = Field(min_length=1)
+    borrador_invalido: str = Field(min_length=1)
+    desajuste_proveedor: str = Field(min_length=1)
     sin_red: str = Field(min_length=1)
 
 
@@ -2192,6 +2201,7 @@ class ConfigCache(ModeloConfig):
 
     version: str
     version_cache: str = Field(min_length=1)
+    proveedor_por_defecto: Literal["deepseek", "ollama"]
     ruta: str = Field(min_length=1)
     sondeo_red: SondeoRed
     variable_offline: str = Field(min_length=1)

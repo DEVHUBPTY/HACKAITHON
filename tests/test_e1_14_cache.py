@@ -13,7 +13,7 @@ from src import cache as c
 from src import generacion as g
 from src import interfaz as ui
 from src.cache import CacheLlm, Identidad, ProveedorConCache, ProveedorSoloCache, SinBorrador, SinCache, clave_de
-from src.configuracion import cargar_cache, cargar_interfaz
+from src.configuracion import cargar_cache, cargar_generacion, cargar_interfaz
 from src.llm.costo import SaldoAgotado, TopeDeCostoAlcanzado
 from src.llm.proveedor import ErrorProveedor
 from tests import generacion_ayuda as ga
@@ -342,3 +342,71 @@ def test_con_saldo_agotado_la_generacion_se_detiene_sin_reintentar_y_deja_una_ca
     assert sesion.posts == 1 and len(cache) == 0
     with pytest.raises(SinBorrador):  # lo que muestra la interfaz: la caché (vacía) y el mensaje honesto
         g.generar_paquete("GRP-x", "editorial", solo_cache=True, proveedor=real, cache=cache)
+
+
+# ------------------------------------------------------------------ revisión del PR #28
+
+
+def test_con_llm_provider_vacio_se_lee_la_cache_con_el_proveedor_por_defecto(entrada, cache: CacheLlm, monkeypatch: pytest.MonkeyPatch) -> None:
+    from src.cache import identidad_de
+
+    assert identidad_de({}).proveedor == cargar_cache().proveedor_por_defecto == "deepseek"
+    assert identidad_de({"LLM_PROVIDER": "  "}).proveedor == "deepseek"
+    assert identidad_de({"DEEPSEEK_MODEL": "otro"}).modelo == "otro"
+    caliente = ga.ProveedorGuionado()
+    caliente.nombre, caliente.modelo = "deepseek", cargar_generacion().deepseek.modelo
+    _generar(cache, caliente)
+    monkeypatch.setattr(c, "leer_local_env", lambda *a, **k: {})  # local.env sin completar
+    p = g.generar_paquete("GRP-x", "editorial", solo_cache=True, cache=cache)  # sin proveedor inyectado: identidad de local.env o del YAML
+    assert p.titulo is not None
+
+
+def test_con_otro_proveedor_o_modelo_se_explica_el_desajuste_en_vez_de_decir_que_no_hay_borrador(entrada, cache: CacheLlm, monkeypatch: pytest.MonkeyPatch) -> None:
+    caliente = ga.ProveedorGuionado()
+    caliente.nombre, caliente.modelo = "deepseek", "deepseek-flash"
+    _generar(cache, caliente)
+    monkeypatch.setattr(g, "identidad_de", lambda: Identidad("ollama", "qwen"))
+    with pytest.raises(SinBorrador, match=r"se calentó con deepseek/deepseek-flash y local\.env pide ollama/qwen") as e:
+        g.generar_paquete("GRP-x", "editorial", solo_cache=True, cache=cache)
+    assert not e.value.por_accion
+
+
+def test_verificar_dice_por_que_falla_y_sale_con_error(entrada, cache: CacheLlm, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    from scripts import calentar_cache as cc
+
+    caliente = ga.ProveedorGuionado()
+    caliente.nombre, caliente.modelo = "deepseek", "deepseek-flash"
+    _generar(cache, caliente)
+    monkeypatch.setattr(g, "identidad_de", lambda: Identidad("ollama", "qwen"))
+    estado = cc.estado_de("GRP-x", "editorial", Path("x.duckdb"), cache)
+    assert estado.startswith("sin borrador: la caché se calentó con deepseek/deepseek-flash")
+
+
+def test_un_borrador_guardado_que_ya_no_pasa_la_validacion_se_distingue_de_uno_inexistente(entrada, cache: CacheLlm) -> None:
+    mala = {"brief": [{"texto": "Frase sin cita.", "afirmaciones": []}], "enfoque": [], "preguntas": []}
+    _generar(cache, ga.ProveedorGuionado(brief=(mala, ga.BUENAS["brief"])), grupos=["brief"])
+    buena = json.dumps(ga.BUENAS["brief"], ensure_ascii=False)
+    (reintento,) = [a for a in cache.carpeta.glob("*.json") if json.loads(a.read_text(encoding="utf-8"))["respuesta"] == buena]
+    reintento.unlink()  # queda guardado el intento que no valida, pero no el que lo corrigió
+    textos_ = cargar_cache().textos
+    with pytest.raises(SinBorrador) as e:
+        g.generar_paquete("GRP-x", "editorial", solo_cache=True, proveedor=ga.ProveedorGuionado(), cache=cache, grupos=["brief"])
+    assert str(e.value) == textos_.borrador_invalido != textos_.sin_cache
+
+
+def test_los_temporales_de_escritura_son_unicos_y_no_quedan_restos(cache: CacheLlm) -> None:
+    for i in range(5):
+        cache.guardar(f"k{i}", "{}", {"proveedor": "p", "modelo": "m"})
+    cache.guardar("k0", '{"a": 1}', {"proveedor": "p", "modelo": "m"})
+    assert sorted(a.suffix for a in cache.carpeta.iterdir()) == [".json"] * 5 and cache.identidades() == {("p", "m")}
+
+
+def test_la_pantalla_paquete_usa_las_etiquetas_del_yaml(entrada, cache: CacheLlm) -> None:
+    _generar(cache, grupos=["titulos"])
+    p = g.generar_paquete("GRP-x", "editorial", solo_cache=True, proveedor=ga.ProveedorGuionado(), cache=cache)
+    etiquetas = cargar_interfaz().paquete.etiquetas
+    titulos = [t for t, _ in ui.secciones_de_paquete(p, etiquetas)]
+    assert {"Caso", "Alcance", "Paquete completo forzado por una persona", "Vacíos y secciones sin redactar"} <= set(titulos)
+    assert not {"Id caso", "Version", "Forzado"} & set(titulos)
+    campos = set(p.model_dump())
+    assert campos <= set(etiquetas)  # todo campo de un paquete editorial tiene su etiqueta

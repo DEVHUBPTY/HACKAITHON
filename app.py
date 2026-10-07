@@ -329,7 +329,7 @@ def pantalla_paquete(ctx: ui.Contexto) -> None:
     estado = ui.obtener_paquete(id_grupo, ctx.modalidad, ctx.cfg, ruta_base=ctx.ruta_base)
     if estado.estado == "disponible":
         st.markdown(f"**{ETIQUETA_BORRADOR}**")
-        for titulo, parrafos in ui.secciones_de_paquete(estado.paquete):
+        for titulo, parrafos in ui.secciones_de_paquete(estado.paquete, ctx.cfg.paquete.etiquetas):
             with st.expander(titulo, expanded=True):
                 for p in parrafos:
                     st.markdown(escapar_markdown(p))

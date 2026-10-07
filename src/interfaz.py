@@ -498,7 +498,7 @@ def _texto_de_elemento(x: Any) -> str:
     return json.dumps(x, ensure_ascii=False)
 
 
-def secciones_de_paquete(paquete: Any) -> list[tuple[str, list[str]]]:
+def secciones_de_paquete(paquete: Any, etiquetas: Mapping[str, str] | None = None) -> list[tuple[str, list[str]]]:
     """Aplana un paquete (mapa o modelo pydantic) en ``(título, párrafos)``: oraciones con sus afirmaciones, vacíos con su motivo."""
     datos = paquete.model_dump(mode="json") if hasattr(paquete, "model_dump") else dict(paquete)
     salida: list[tuple[str, list[str]]] = []
@@ -518,7 +518,7 @@ def secciones_de_paquete(paquete: Any) -> list[tuple[str, list[str]]]:
         else:
             parrafos = [str(valor)]
         if parrafos:
-            salida.append((clave.replace("_", " ").capitalize(), parrafos))
+            salida.append(((etiquetas or {}).get(clave) or clave.replace("_", " ").capitalize(), parrafos))
     return salida
 
 
