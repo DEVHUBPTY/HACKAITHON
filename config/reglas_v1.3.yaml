@@ -116,7 +116,8 @@ agrupacion:                 # E1-08 · AgglomerativeClustering(metric='cosine', 
 agencias: [EFE, AFP, AP, Reuters, Europa Press, DPA, ANSA, Xinhua, Prensa Latina, Bloomberg]
 
 geografia:                  # alcance geográfico (comparación sin tildes ni mayúsculas, E1-10)
-  nacional_terminos: [a nivel nacional, todo el país, en todo el país, nacional, asamblea nacional, gobierno nacional]
+  # X85 (E1-10d): «nacional» suelto ya no da alcance nacional («Policía Nacional», «Guardia Nacional de Texas», «Banco Nacional»): solo las frases.
+  nacional_terminos: [a nivel nacional, todo el país, en todo el país, en todo el territorio, territorio nacional, asamblea nacional, gobierno nacional]
   # E1-10c (X42, D-108): mención implícita del país. El país nombrado («en Panamá», «en el país», «del país») o su gentilicio
   # («panameño/a/s») da alcance nacional SOLO si ningún titular del grupo nombra un lugar concreto (provincia, comarca o
   # distrito): el lugar nombrado ubica el hecho. Los términos explícitos de arriba mandan siempre. «Panamá» precedido de «ciudad
@@ -129,6 +130,9 @@ geografia:                  # alcance geográfico (comparación sin tildes ni ma
     # X52: la capital es un lugar concreto (local), no el país: «MOP inaugura obra en Ciudad de Panamá» no es nacional.
     - Ciudad de Panamá
     - distrito de Panamá
+    # X86 (E1-10d): zonas de la capital, no el país; la coincidencia más larga manda sobre «Panamá» suelto.
+    - Panamá Norte
+    - Panamá Pacífico
     - San Miguelito
     - Arraiján
     - La Chorrera
