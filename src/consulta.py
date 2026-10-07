@@ -12,10 +12,11 @@ Qué hace y qué no:
   4. similitud máxima bajo el umbral del método.
 * **Redacta sin LLM.** La respuesta con contenido es extractiva y determinista: cada oración es una ``Afirmacion``
   (``src/esquemas.py``) con su cita ID + campo. Un titular es una *declaración* atribuida al medio; solo los datos
-  oficiales son *hechos*. Ningún LLM interviene en esta tarea: la redacción con modelo y el validador completo son de
-  E1-12 y E1-13. Aquí queda la interfaz: ``responder(..., validador=...)`` recibe cualquier ``Validador`` y, si
+  oficiales son *hechos*. Ningún LLM interviene en esta tarea. ``responder(..., validador=...)`` recibe cualquier ``Validador`` y, si
   devuelve problemas, **la respuesta no se emite** (se abstiene). El validador por defecto (``validar_citas``) solo
-  comprueba que cada cita exista en el corpus, que el campo sea citable y que el tipo sea coherente con el registro.
+  comprueba que cada cita exista en el corpus, que el campo sea citable y que el tipo sea coherente con el registro. Como la respuesta
+  es extractiva (no la redacta un modelo), no pasa por las reglas de redacción de ``src/validador.py``; sí pasa por su regla de leyenda (D-51):
+  ``Consultor`` no se construye con una leyenda que ``validar_leyenda_texto`` rechace frente a la de ``config/restricciones.yaml``.
 * Toda salida lleva la leyenda de alcance de D-51 y es un BORRADOR.
 
 Uso: ``poetry run python -m src.consulta "¿Qué medios reportaron …?" [--metodo semantica|bm25] [--json]``.
@@ -49,6 +50,7 @@ from src.configuracion import (
 from src.embeddings import Embeddings, crear
 from src.esquemas import Afirmacion, Cita
 from src.limpieza import plano
+from src.validador import validar_leyenda_texto
 
 logger = logging.getLogger(__name__)
 
@@ -518,6 +520,8 @@ class Consultor:
         self.restricciones = restricciones or cargar_restricciones()
         self.validador = validador
         self.leyenda = self.restricciones.leyendas_alcance.titular_metadatos
+        if problemas := validar_leyenda_texto(self.leyenda, uso_descripcion=False):
+            raise ValueError("leyenda de alcance inválida para la consulta: " + "; ".join(r.mensaje for r in problemas))
 
     # -- abstención ------------------------------------------------------------------------------------
 

@@ -1,0 +1,11 @@
+{
+ "clave": "25b98d8d386fa4242d1032f7541e8b890a62a2ecdcef7cc5c142565efd56940e",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1617,
+ "tokens_salida": 401,
+ "creado_utc": "2026-10-07T03:59:37Z",
+ "respuesta": "{\"guion\": [{\"texto\": \"Según reportan medios como prensa-latina.cu, laestrella.com.pa y revistaeyn.com, el presidente panameño visitará Singapur y Vietnam.\", \"afirmaciones\": [\"A1\", \"A2\", \"A3\"], \"parte\": \"entrada\"}, {\"texto\": \"El medio prensa-latina.cu reporta que el presidente panameño visitará Singapur y Vietnam.\", \"afirmaciones\": [\"A1\"], \"parte\": \"desarrollo\"}, {\"texto\": \"El medio laestrella.com.pa reporta que Mulino viajará a Asia y suscribirá convenios bilaterales con Singapur y Vietnam.\", \"afirmaciones\": [\"A2\"], \"parte\": \"desarrollo\"}, {\"texto\": \"El medio revistaeyn.com reporta que el presidente de Panamá visita Singapur y Vietnam en busca de inversiones.\", \"afirmaciones\": [\"A3\"], \"parte\": \"desarrollo\"}, {\"texto\": \"El grupo de registros reúne 3 titulares de 3 medios que reportan este tema.\", \"afirmaciones\": [\"A4\"], \"parte\": \"desarrollo\"}, {\"texto\": \"El grupo de registros estima 3 procedencias independientes.\", \"afirmaciones\": [\"A5\"], \"parte\": \"desarrollo\"}, {\"texto\": \"[VISUAL: a definir por producción]\", \"afirmaciones\": [], \"parte\": \"desarrollo\"}, {\"texto\": \"Si la población panameña sigue de cerca los viajes presidenciales y los convenios bilaterales, el tema podría resultar relevante para quienes se interesan por la política exterior y la inversión en el país.\", \"afirmaciones\": [\"A6\"], \"parte\": \"cierre\"}]}"
+}

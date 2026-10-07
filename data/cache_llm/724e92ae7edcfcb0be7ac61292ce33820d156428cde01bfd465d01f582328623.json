@@ -1,0 +1,11 @@
+{
+ "clave": "724e92ae7edcfcb0be7ac61292ce33820d156428cde01bfd465d01f582328623",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.3",
+ "version_cache": "1",
+ "tokens_entrada": 1793,
+ "tokens_salida": 427,
+ "creado_utc": "2026-10-07T03:51:26Z",
+ "respuesta": "{\"afirmaciones\": [{\"id\": \"A1\", \"tipo\": \"declaración\", \"texto\": \"TVN Panamá reporta que el MOP solicita $43.1 millones para pagar compromisos y continuar obras en ejecución.\", \"citas\": [{\"id\": \"NOT-cf4a8b6560\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A2\", \"tipo\": \"hecho\", \"texto\": \"El grupo de registros reúne 1 titular de 1 medio que reporta este tema.\", \"citas\": [{\"id\": \"GRP-6e737ecad5\", \"campo\": \"n_titulares\"}, {\"id\": \"GRP-6e737ecad5\", \"campo\": \"n_medios\"}]}, {\"id\": \"A3\", \"tipo\": \"hecho\", \"texto\": \"Se estima 1 procedencia independiente, ya que los titulares que replican a una misma fuente cuentan como una.\", \"citas\": [{\"id\": \"GRP-6e737ecad5\", \"campo\": \"n_procedencias\"}]}, {\"id\": \"A4\", \"tipo\": \"inferencia\", \"texto\": \"La solicitud de fondos para compromisos y obras en ejecución importa a la población porque alude a recursos públicos y a la continuidad de obras, aspectos que inciden en la vida cotidiana de los ciudadanos.\", \"base\": [\"A1\"], \"citas\": []}, {\"id\": \"A5\", \"tipo\": \"hipótesis\", \"texto\": \"Si la cobertura se ampliara a más medios independientes, el tema podría alcanzar mayor relevancia pública y permitir una discusión más informada sobre el uso de los recursos.\", \"base\": [\"A2\", \"A3\"], \"citas\": []}]}"
+}

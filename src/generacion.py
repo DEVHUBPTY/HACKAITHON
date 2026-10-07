@@ -16,10 +16,8 @@ resumen web— se redacta con solo las afirmaciones válidas. Cada oración debe
 pasa tras el reintento se entrega **vacía** con el motivo en ``vacios``: nunca se rellena. Fuentes y verificaciones se copian de
 la ficha sin LLM (D-43).
 
-**VALIDACIÓN MÍNIMA.** Las funciones de la sección «Validación mínima» cubren solo lo que esta spec necesita (citas existentes,
-tipos de afirmación, límites de ``config/salidas.yaml``, frases de ``config/restricciones.yaml``, comillas literales, fuga del
-system prompt). ``src/validador.py`` (E1-13) las reemplaza y amplía; la interfaz que usa el resto del módulo son ``validar_afirmaciones``
-y ``validar_seccion``.
+**VALIDACIÓN (E1-13).** Todo pasa por ``src/validador.py``: las afirmaciones del paso 1 (``validar_afirmaciones``) y cada sección del
+paso 2 (``validar_seccion``). Lo que no valida no se emite; cada rechazo lleva su regla y queda en ``outputs/rechazos.jsonl``.
 
 CLI: ``python -m src.generacion --ficha-json ruta.json`` (la forma ``--grupo GRP-001`` llega con la integración de E1-10b).
 """
@@ -32,7 +30,6 @@ import logging
 import re
 import sys
 import time
-import unicodedata
 from collections.abc import Callable, Sequence
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -81,21 +78,15 @@ from src.cache import (
     modo_offline,
     red_disponible,
 )
-from src.limpieza import plano
 from src.llm.costo import TopeDeCostoAlcanzado
 from src.llm.proveedor import ErrorProveedor, Proveedor
-from src.registro import MARCA_REDACCION, valores_sensibles
+from src.validador import LIMITE_PALABRAS, Contexto, RegistroRechazos, Rechazo, mensajes, validar_afirmaciones, validar_paquete, validar_seccion
 
 logger = logging.getLogger(__name__)
 
 CARPETA_PROMPTS = RAIZ / "prompts"
-ESPACIOS = re.compile(r"\s+")
-COMILLAS = re.compile(r"[\"“«](.+?)[\"”»]")
-HASHTAG = re.compile(r"#\w+")
-NUMERO = re.compile(r"\d+(?:[.,]\d+)?")
 
 Tipo = Literal["editorial", "investigacion", "nada"]
-MARCA_EXCESO = "supera el máximo"
 
 
 # ============================================================================================ entrada: la ficha (forma mínima)
@@ -246,303 +237,25 @@ GRUPOS: dict[str, GrupoRedaccion] = {
 }
 
 
-# ============================================================================================ validación mínima (E1-13 la reemplaza)
+# ============================================================================================ validación (E1-13)
+# Toda la validación vive en ``src/validador.py``; aquí solo se conecta (``Contexto``, ``validar_afirmaciones``, ``validar_seccion``).
 
 
-def _palabras(texto: str, marcador: str) -> int:
-    return len(re.findall(r"\S+", texto.replace(marcador, " ")))
-
-
-def _ids_con_prefijo(citas: Sequence[Any], prefijos: tuple[str, ...]) -> set[str]:
-    return {c.id for c in citas if c.id.startswith(prefijos)}
-
-
-class _Contexto:
-    """Lo que necesitan las validaciones: la ficha indexada, las afirmaciones válidas, la configuración y el system prompt."""
-
-    def __init__(
-        self,
-        ficha: EntradaFicha,
-        cfg: ConfigGeneracionBorrador,
-        salidas: ConfigSalidas,
-        restricciones: ConfigRestricciones,
-        atribucion: Sequence[str],
-        grupos_restricciones: Sequence[str],
-    ) -> None:
-        self.ficha, self.cfg, self.salidas, self.restricciones = ficha, cfg, salidas, restricciones
-        self.registros = {r.id: r for r in ficha.registros}
-        self.vacios = {v.id for v in ficha.vacios}
-        self.atribucion = [plano(m) for m in atribucion]
-        frases: list[str] = []
-        for g in grupos_restricciones:
-            for lista in restricciones.grupos[g].values():
-                frases.extend(lista)
-        self.frases_prohibidas = [plano(f) for f in frases]
-        self.afirmaciones: dict[str, AfirmacionSalida] = {}
-        self.system = ""
-
-    # ---- texto
-
-    def texto_registro(self, id_: str) -> str:
-        r = self.registros.get(id_)
-        return " ".join(r.campos.values()) if r else ""
-
-    def frase_prohibida(self, texto: str, ids_citados: Sequence[str]) -> str | None:
-        """Primera frase prohibida del texto que no esté literalmente en un registro citado (D-25, D-51)."""
-        p = plano(texto)
-        permitido = plano(" ".join(self.texto_registro(i) for i in ids_citados))
-        for f in self.frases_prohibidas:
-            if re.search(rf"(?<!\w){re.escape(f)}(?!\w)", p) and f not in permitido:
-                return f
-        return None
-
-    def comilla_inventada(self, texto: str, ids_citados: Sequence[str]) -> str | None:
-        fuente = ESPACIOS.sub(" ", plano(" ".join(self.texto_registro(i) for i in ids_citados)))
-        for m in COMILLAS.finditer(texto):
-            if ESPACIOS.sub(" ", plano(m.group(1))).strip() not in fuente:
-                return m.group(1)
-        return None
-
-    def revela_system(self, texto: str) -> bool:
-        """El texto repite ``n`` palabras consecutivas del system prompt (T07: no revelar las instrucciones)."""
-        n = self.cfg.fuga_prompt.palabras_por_fragmento
-        base = re.findall(r"\w+", plano(self.system))
-        huella = {tuple(base[i : i + n]) for i in range(len(base) - n + 1)}
-        dicho = re.findall(r"\w+", plano(texto))
-        return any(tuple(dicho[i : i + n]) in huella for i in range(len(dicho) - n + 1))
-
-    def revela_secreto(self, texto: str) -> bool:
-        return any(v in texto for v in valores_sensibles()) or MARCA_REDACCION in texto
-
-    def revisar(self, texto: str, ids_citados: Sequence[str]) -> list[str]:
-        """Problemas de un texto libre del LLM, comunes a afirmaciones y oraciones."""
-        errores: list[str] = []
-        if self.revela_secreto(texto):
-            errores.append("el texto contiene un secreto o un valor redactado")
-        if self.revela_system(texto):
-            errores.append("el texto repite fragmentos del system prompt")
-        if f := self.frase_prohibida(texto, ids_citados):
-            errores.append(f"frase prohibida: «{f}»")
-        if c := self.comilla_inventada(texto, ids_citados):
-            errores.append(f"comillas que no son literales del titular citado: «{c}»")
-        return errores
-
-
-def _anio_del_id(id_: str, ctx: _Contexto) -> str | None:
-    """Año de un ID anual (``IND-PAN-…-2024`` → ``2024``); ``None`` si el ID no es anual."""
-    m = re.search(ctx.cfg.patron_anio_en_id, id_) if id_.startswith(tuple(ctx.cfg.prefijos.hecho_oficial)) else None
-    return m.group(1) if m else None
-
-
-def _cita_ok(ctx: _Contexto, id_: str, campo: str) -> bool:
-    r = ctx.registros.get(id_)
-    return r is not None and campo in r.campos
-
-
-def _errores_de_afirmacion(a: Afirmacion, ctx: _Contexto) -> list[str]:
-    """Reglas propias de una afirmación (sin mirar su base)."""
-    errores: list[str] = []
-    for c in a.citas:
-        if not _cita_ok(ctx, c.id, c.campo):
-            errores.append(f"cita inexistente en la ficha: {c.id} · {c.campo}")
-    if errores:
-        return errores
-    ids = [c.id for c in a.citas]
-    if a.tipo == "hecho":
-        p = ctx.cfg.prefijos
-        for c in a.citas:
-            oficial = c.id.startswith(tuple(p.hecho_oficial))
-            conteo = c.id.startswith(tuple(p.hecho_conteo)) and c.campo in ctx.cfg.campos_conteo
-            if not (oficial or conteo):
-                errores.append(
-                    f"un hecho solo cita datos oficiales ({', '.join(p.hecho_oficial)}) o el conteo del grupo ({', '.join(p.hecho_conteo)}); "
-                    f"{c.id} es lo que reporta un medio: una declaración"
-                )
-                break
-    if a.tipo == "declaración" and not _ids_con_prefijo(a.citas, tuple(ctx.cfg.prefijos.reportes)):
-        errores.append("una declaración cita lo que reporta un medio (un titular)")
-    for id_ in ids:
-        r = ctx.registros[id_]
-        if anio := _anio_del_id(id_, ctx):
-            if anio not in a.texto:
-                errores.append(f"un dato oficial anual incluye su año ({anio}) en el texto")
-            if any(re.search(rf"\b{re.escape(p)}\b", plano(a.texto)) for p in ctx.cfg.volatiles):
-                errores.append("un dato oficial anual no se describe como actual ni de hoy")
-    errores += ctx.revisar(a.texto, ids)
-    return errores
-
-
-def validar_afirmaciones(
-    crudas: Sequence[Afirmacion], ctx: _Contexto, maximo: int
-) -> tuple[list[AfirmacionSalida], list[str]]:
-    """Conserva las afirmaciones válidas (con su base también válida), las renumera A1, A2… y devuelve lo descartado y por qué.
-
-    Una inferencia o hipótesis no puede traer cifras que no estén en las afirmaciones en que se apoya.
-    """
-    descartadas: list[str] = []
-    propias: dict[str, Afirmacion] = {}
-    for a in crudas:
-        if a.id in propias:
-            descartadas.append(f"{a.id}: id repetido")
-            continue
-        errores = _errores_de_afirmacion(a, ctx)
-        if errores:
-            descartadas.append(f"{a.id}: " + "; ".join(errores))
-        else:
-            propias[a.id] = a
-    cambio = True
-    while cambio:  # una inferencia cae si cae su base
-        cambio = False
-        for id_, a in list(propias.items()):
-            if a.base and (id_ in a.base or any(b not in propias for b in a.base)):
-                descartadas.append(f"{id_}: su base no existe o no es válida")
-                del propias[id_]
-                cambio = True
-    for id_, a in list(propias.items()):
-        if a.base:
-            permitidas = {n for b in a.base for n in NUMERO.findall(propias[b].texto)}
-            if any(n not in permitidas for n in NUMERO.findall(a.texto)):
-                descartadas.append(f"{id_}: una {a.tipo} no puede traer cifras nuevas")
-                del propias[id_]
-    for id_ in list(propias):  # de nuevo: la caída de una puede arrastrar a otra
-        if any(b not in propias for b in propias[id_].base):
-            descartadas.append(f"{id_}: su base no existe o no es válida")
-            del propias[id_]
-    elegidas = list(propias.values())[:maximo]
-    nuevo = {a.id: f"A{n}" for n, a in enumerate(elegidas, start=1)}
-    validas = [
-        AfirmacionSalida(
-            id=nuevo[a.id],
-            tipo=a.tipo,
-            texto=a.texto,
-            citas=[_cita_salida(c.id, c.campo, ctx) for c in a.citas],
-            base=[nuevo[b] for b in a.base],
-        )
-        for a in elegidas
-    ]
-    return validas, descartadas
-
-
-def _cita_salida(id_: str, campo: str, ctx: _Contexto) -> CitaSalida:
+def _cita_salida(id_: str, campo: str, ctx: Contexto) -> CitaSalida:
     """Marca como traducida la cita de un titular que no está en el idioma base (D-45); lo decide el código, no el LLM."""
     idioma = ctx.registros[id_].idioma
     return CitaSalida(id=id_, campo=campo, traducido=bool(idioma) and idioma != ctx.cfg.traducido.idioma_base)
 
 
-def _citadas(oracion: OracionLlm, ctx: _Contexto) -> list[AfirmacionSalida]:
-    return [ctx.afirmaciones[i] for i in oracion.afirmaciones if i in ctx.afirmaciones]
-
-
-def _errores_de_oracion(o: OracionLlm, ctx: _Contexto, permite_marcador: bool = False) -> list[str]:
-    marcador = ctx.restricciones.marcador_visual
-    if o.texto.strip() == marcador:
-        if not permite_marcador:
-            return [f"el marcador {marcador} solo se permite en el guion"]
-        return [] if not o.afirmaciones else ["un marcador visual no lleva afirmaciones"]
-    errores: list[str] = []
-    if "[VISUAL" in o.texto:
-        errores.append(f"el único marcador visual permitido es {marcador}, como oración propia")
-    if not o.afirmaciones:
-        errores.append(f"oración sin afirmaciones: «{o.texto[: ctx.cfg.texto.vista_previa_caracteres]}»")
-    desconocidas = [i for i in o.afirmaciones if i not in ctx.afirmaciones]
-    if desconocidas:
-        errores.append(f"cita afirmaciones que no existen o no se validaron: {', '.join(desconocidas)}")
-    ids = [c.id for a in _citadas(o, ctx) for c in a.citas]
-    errores += ctx.revisar(o.texto, ids)
-    return errores
-
-
-def _atribuido(o: OracionLlm, ctx: _Contexto) -> bool:
-    """Una oración basada solo en declaraciones lleva atribución: verbo de reporte o nombre del medio."""
-    citadas = _citadas(o, ctx)
-    if not citadas or any(a.tipo != "declaración" for a in citadas):
-        return True
-    p = plano(o.texto)
-    medios = [plano(ctx.registros[c.id].contexto.get("medio", "")) for a in citadas for c in a.citas if c.id in ctx.registros]
-    return any(re.search(rf"\b{re.escape(m)}\b", p) for m in ctx.atribucion) or any(m and m in p for m in medios)
-
-
-def _oraciones(
-    seccion: str, valor: Sequence[OracionLlm], ctx: _Contexto, *, minimo: int = 1, maximo: int | None = None, permite_marcador: bool = False
-) -> list[str]:
-    errores: list[str] = []
-    if len(valor) < minimo or (maximo is not None and len(valor) > maximo):
-        rango = f"{minimo}" if maximo == minimo else f"{minimo} a {maximo}" if maximo else f"al menos {minimo}"
-        errores.append(f"se esperaban {rango} oraciones y hay {len(valor)}")
-    for o in valor:
-        errores += _errores_de_oracion(o, ctx, permite_marcador)
-    return errores
-
-
-def _limite(seccion: str, valor: Sequence[OracionLlm], ctx: _Contexto, maximo: int) -> list[str]:
-    n = sum(_palabras(o.texto, ctx.restricciones.marcador_visual) for o in valor)
-    if n <= maximo:
-        return []
-    objetivo = int(maximo * ctx.cfg.objetivo_fraccion_limite)
-    return [f"{seccion} tiene {n} palabras y {MARCA_EXCESO} ({maximo}): recórtala a unas {objetivo} palabras (quita {n - objetivo})"]
-
-
-def _contradicciones_cubiertas(valor: Sequence[OracionLlm], ctx: _Contexto) -> list[str]:
-    """Con una contradicción abierta, el texto debe apoyarse en ambas versiones (cada una citada por alguna afirmación)."""
-    errores: list[str] = []
-    citados = {c.id for o in valor for a in _citadas(o, ctx) for c in a.citas}
-    for c in ctx.ficha.contradicciones:
-        if c.abierta and not {c.id_a, c.id_b} <= citados:
-            errores.append(f"hay una contradicción abierta entre {c.id_a} y {c.id_b}: presenta ambas versiones")
-    return errores
-
-
-def validar_seccion(seccion: str, valor: Any, ctx: _Contexto) -> list[str]:
-    """Problemas de una sección redactada por el LLM (lista vacía = válida)."""
-    e = ctx.salidas.editorial
-    marcador = ctx.restricciones.marcador_visual
-    if seccion in ("titulo", "titulo_trabajo"):
-        oraciones = [valor]
-        errores = _oraciones(seccion, oraciones, ctx, maximo=1) + _limite(seccion, oraciones, ctx, e.titulo_max_palabras)
-        return errores + ([] if _atribuido(valor, ctx) else [f"una declaración se titula con atribución o verbo de reporte: «{valor.texto}»"])
-    if seccion == "titulares":
-        errores = _oraciones(seccion, valor, ctx, minimo=e.titulares_min, maximo=e.titulares_max)
-        for o in valor:
-            errores += _limite(seccion, [o], ctx, e.titular_max_palabras)
-            errores += [] if _atribuido(o, ctx) else [f"un titular basado en una declaración lleva atribución o verbo de reporte: «{o.texto}»"]
-        return errores
-    if seccion == "enfoque":
-        errores = _oraciones(seccion, valor, ctx, minimo=e.enfoque_oraciones_min, maximo=e.enfoque_oraciones_max)
-        for o in valor:
-            if not any(a.tipo in ("inferencia", "hipótesis") for a in _citadas(o, ctx)):
-                errores.append("el enfoque se apoya en una inferencia o hipótesis, nunca se presenta como hecho")
-        return errores
-    if seccion == "brief":
-        return _oraciones(seccion, valor, ctx) + _limite(seccion, valor, ctx, e.brief_max_palabras) + _contradicciones_cubiertas(valor, ctx)
-    if seccion == "resumen_web":
-        return _oraciones(seccion, valor, ctx) + _limite(seccion, valor, ctx, e.resumen_web_max_palabras)
-    if seccion == "copy_digital":
-        errores = _oraciones(seccion, valor, ctx) + _limite(seccion, valor, ctx, e.copy_max_palabras)
-        texto = " ".join(o.texto for o in valor)
-        if len(HASHTAG.findall(texto)) > e.copy_max_hashtags:
-            errores.append(f"el copy tiene más de {e.copy_max_hashtags} hashtags")
-        if any(unicodedata.category(c) == "So" for c in texto):
-            errores.append("el copy no lleva emojis")
-        return errores
-    if seccion == "guion":
-        errores = _oraciones(seccion, valor, ctx, permite_marcador=True)
-        n = sum(_palabras(o.texto, marcador) for o in valor)
-        if not e.guion_palabras_min <= n <= e.guion_palabras_max:
-            errores.append(f"el guion tiene {n} palabras y debe tener entre {e.guion_palabras_min} y {e.guion_palabras_max}")
-        partes = [o.parte for o in valor]
-        if set(partes) != {"entrada", "desarrollo", "cierre"} or partes != sorted(partes, key=("entrada", "desarrollo", "cierre").index):
-            errores.append("el guion tiene entrada, desarrollo y cierre, en ese orden")
-        return errores
-    if seccion == "preguntas":
-        errores = []
-        if len(valor) != e.preguntas:
-            errores.append(f"se esperaban exactamente {e.preguntas} preguntas y hay {len(valor)}")
-        for q in valor:
-            if q.vacio not in ctx.vacios:
-                errores.append(f"la pregunta referencia un vacío que no existe en la ficha: {q.vacio}")
-            errores += ctx.revisar(q.texto, [])
-        return errores
-    raise ValueError(f"sección desconocida: {seccion}")
+def _afirmaciones_salida(validas: Sequence[Afirmacion], ctx: Contexto) -> list[AfirmacionSalida]:
+    """Renumera las afirmaciones válidas (A1, A2…) y marca como traducidas las citas de titulares en otro idioma."""
+    nuevo = {a.id: f"A{n}" for n, a in enumerate(validas, start=1)}
+    return [
+        AfirmacionSalida(
+            id=nuevo[a.id], tipo=a.tipo, texto=a.texto, citas=[_cita_salida(c.id, c.campo, ctx) for c in a.citas], base=[nuevo[b] for b in a.base]
+        )
+        for a in validas
+    ]
 
 
 # ============================================================================================ el generador
@@ -569,7 +282,10 @@ class Generador:
         self.restricciones, self.salidas = cargar_restricciones(), cargar_salidas()
         self.plan = planificar(ficha, forzar_completo, self.cfg)
         grupos_restr = cargar_modalidad(ficha.modalidad).grupos_restricciones if self.plan.tipo != "nada" else []
-        self.ctx = _Contexto(ficha, self.cfg, self.salidas, self.restricciones, self.cfg.atribucion.marcadores, grupos_restr)
+        self.ctx = Contexto(ficha, grupos_restr, cfg=self.cfg, salidas=self.salidas, restricciones=self.restricciones)
+        self.registro_rechazos = RegistroRechazos(
+            proveedor=getattr(proveedor, "nombre", ""), modelo=getattr(proveedor, "modelo", ""), id_caso=ficha.id_caso
+        )
         self.llamadas: list[RegistroLlamada] = []
         self.descartadas: list[str] = []
         self._afirmaciones: list[AfirmacionSalida] | None = None
@@ -651,6 +367,7 @@ class Generador:
         base_usuario = self._mensaje_ficha()
         motivo = "no hubo afirmaciones válidas"
         validas: list[AfirmacionSalida] = []
+        mejor: list[AfirmacionSalida] = []
         for intento in range(1 + self.cfg.reintentos):
             usuario = base_usuario + ("" if intento == 0 else _retroalimentacion([motivo]))
             try:
@@ -665,20 +382,34 @@ class Generador:
             except ValueError:
                 motivo = "salida inválida: no cumple el esquema de afirmaciones"
                 continue
-            validas, descartadas = validar_afirmaciones(crudas, self.ctx, self.cfg.afirmaciones.maximas)
-            descartadas = mal_formadas + descartadas
+            resultado = validar_afirmaciones(crudas, self.ctx, self.cfg.afirmaciones.maximas)
+            validas = _afirmaciones_salida(resultado.validas, self.ctx)
+            self._registrar_afirmaciones(crudas, resultado.rechazos, intento)
+            descartadas = mal_formadas + resultado.descartadas
             self.descartadas += descartadas
             if len(validas) >= self.cfg.afirmaciones.minimas_validas:
                 registro.valida = True
-                break
+                con_inferencia = any(a.tipo in ("inferencia", "hipótesis") for a in validas)
+                if con_inferencia or not self.cfg.afirmaciones.exigir_inferencia or intento == self.cfg.reintentos:
+                    break
+                # sin ninguna inferencia o hipótesis válida el enfoque quedaría vacío: se reintenta, y si no mejora se conservan estas
+                mejor = validas
+                motivo = "ninguna inferencia o hipótesis pasó la validación: " + "; ".join(descartadas)[: self.cfg.texto.motivo_max_caracteres]
+                continue
             motivo = "no hubo afirmaciones válidas: " + "; ".join(descartadas)[: self.cfg.texto.motivo_max_caracteres]
             validas = []
+        validas = validas or mejor
         if validas:
             self._afirmaciones = self._con_contradicciones(validas)
             self.ctx.afirmaciones = {a.id: a for a in self._afirmaciones}
         else:
             self._vacios.append(Vacio(origen="seccion", referencia="afirmaciones", motivo=motivo))
         return self._afirmaciones
+
+    def _registrar_afirmaciones(self, crudas: Sequence[Afirmacion], rechazos: Sequence[Rechazo], intento: int) -> None:
+        """Una unidad evaluada por afirmación del LLM (con sus rechazos) en ``outputs/rechazos.jsonl`` (E1-13)."""
+        for a in crudas:
+            self.registro_rechazos.evaluacion("afirmacion", "afirmaciones", a.id, [r for r in rechazos if r.item == a.id], intento)
 
     def _con_contradicciones(self, validas: list[AfirmacionSalida]) -> list[AfirmacionSalida]:
         extra = self._afirmaciones_de_contradicciones()
@@ -740,29 +471,30 @@ class Generador:
         self.ctx.system = system
         base_usuario = self._mensaje_redaccion(grupo)
         pendientes = list(g.secciones)
-        errores: dict[str, list[str]] = {}
+        errores: dict[str, list[Rechazo]] = {}
         ultimos: dict[str, Any] = {}
         for intento in range(1 + self.cfg.reintentos):
-            usuario = base_usuario if intento == 0 else base_usuario + _retroalimentacion(sum(errores.values(), []))
+            usuario = base_usuario if intento == 0 else base_usuario + _retroalimentacion(mensajes(sum(errores.values(), [])))
             try:
                 crudo, registro = self._llamar(grupo, intento, self._v_red, system, usuario, g.modelo.model_json_schema())
             except (TopeDeCostoAlcanzado, SinCache):
                 raise
             except ErrorProveedor as exc:
-                errores = {s: [f"proveedor no disponible: {exc}"] for s in pendientes}
+                errores = {s: [Rechazo("proveedor", f"proveedor no disponible: {exc}")] for s in pendientes}
                 break
             try:
                 salida = g.modelo.model_validate_json(crudo)
             except (ValidationError, ValueError):
-                errores = {s: ["salida inválida: no cumple el esquema de la sección"] for s in pendientes}
+                errores = {s: [Rechazo("salida_invalida", "salida inválida: no cumple el esquema de la sección")] for s in pendientes}
                 continue
             errores = {}
             for s in list(pendientes):
                 valor = getattr(salida, s)
                 ultimos[s] = valor
-                problemas = validar_seccion(s, valor, self.ctx)
-                if problemas:
-                    errores[s] = problemas
+                rechazos = validar_seccion(s, valor, self.ctx)
+                self.registro_rechazos.evaluacion("seccion", s, s, rechazos, intento)
+                if rechazos:
+                    errores[s] = rechazos
                 else:
                     self._secciones[s] = valor
                     pendientes.remove(s)
@@ -775,13 +507,13 @@ class Generador:
                 self._vacios.append(Vacio(origen="seccion", referencia=s, motivo=f"recortada: se quitaron {quitadas} oraciones del final por superar el máximo de palabras"))
                 pendientes.remove(s)
         for s in pendientes:
-            self._vacios.append(Vacio(origen="seccion", referencia=s, motivo="; ".join(errores.get(s, ["sin respuesta"]))[: self.cfg.texto.motivo_max_caracteres]))
+            self._vacios.append(Vacio(origen="seccion", referencia=s, motivo="; ".join(mensajes(errores.get(s, [Rechazo("sin_respuesta", "sin respuesta")])))[: self.cfg.texto.motivo_max_caracteres]))
 
-    def _recortar(self, seccion: str, valor: Any, errores: Sequence[str]) -> tuple[list[OracionLlm], int] | None:
+    def _recortar(self, seccion: str, valor: Any, errores: Sequence[Rechazo]) -> tuple[list[OracionLlm], int] | None:
         """Quita oraciones del final hasta que la sección cabe. Solo si el único problema es el exceso de palabras."""
         if seccion not in self.cfg.recortables or not isinstance(valor, list) or not errores:
             return None
-        if any(MARCA_EXCESO not in e for e in errores):
+        if any(e.regla != LIMITE_PALABRAS for e in errores):
             return None
         for n in range(1, len(valor)):
             candidata = valor[: len(valor) - n]
@@ -810,7 +542,26 @@ class Generador:
         return [PreguntaInvestigacion(texto=q.texto.strip(), vacio=q.vacio) for q in self._secciones.get("preguntas", [])]
 
     def paquete(self) -> PaqueteEditorial | PaqueteInvestigacion | None:
-        """El paquete con lo generado hasta ahora (lo que no se generó queda vacío, sin motivo: está pendiente)."""
+        """El paquete con lo generado hasta ahora (lo que no se generó queda vacío, sin motivo: está pendiente).
+
+        Compuerta final (E1-13): el paquete armado pasa por ``validar_paquete``. Una sección que no valida **no sale**: se vacía con su
+        motivo en ``vacios``. Si falla la marca o la leyenda (las pone el código) es un error de configuración y se lanza ``ValueError``."""
+        p = self._armar()
+        if p is None:
+            return None
+        rechazos = validar_paquete(p, self.ctx)
+        if not rechazos:
+            return p
+        if any(not r.seccion for r in rechazos):
+            raise ValueError("el paquete no pasa el validador: " + "; ".join(mensajes([r for r in rechazos if not r.seccion])))
+        for seccion in dict.fromkeys(r.seccion for r in rechazos):
+            propios = [r for r in rechazos if r.seccion == seccion]
+            self.registro_rechazos.evaluacion("seccion", seccion, seccion, propios, intento=0)
+            self._secciones.pop(seccion, None)
+            self._vacios.append(Vacio(origen="seccion", referencia=seccion, motivo="; ".join(mensajes(propios))[: self.cfg.texto.motivo_max_caracteres]))
+        return self._armar()
+
+    def _armar(self) -> PaqueteEditorial | PaqueteInvestigacion | None:
         if self.plan.tipo == "nada":
             return None
         vacios = list(self._vacios)

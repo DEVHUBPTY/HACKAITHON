@@ -166,3 +166,9 @@ def escribir_manifest(data: Path, config: dict) -> dict:
     m = manifest.construir_manifest(data, config)
     conversion.escribir_json(data / "manifest.json", m)
     return m
+
+
+@pytest.fixture(autouse=True)
+def _registro_de_rechazos_aislado(tmp_path_factory: pytest.TempPathFactory, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Ninguna prueba escribe en ``outputs/rechazos.jsonl`` (E1-13): el registro va a una carpeta temporal."""
+    monkeypatch.setenv("RECHAZOS_JSONL", str(tmp_path_factory.mktemp("rechazos") / "rechazos.jsonl"))

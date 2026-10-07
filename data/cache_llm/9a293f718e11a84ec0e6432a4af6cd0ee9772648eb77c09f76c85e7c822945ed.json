@@ -1,0 +1,11 @@
+{
+ "clave": "9a293f718e11a84ec0e6432a4af6cd0ee9772648eb77c09f76c85e7c822945ed",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.3",
+ "version_cache": "1",
+ "tokens_entrada": 1760,
+ "tokens_salida": 288,
+ "creado_utc": "2026-10-07T03:51:43Z",
+ "respuesta": "{\"afirmaciones\":[{\"id\":\"A1\",\"tipo\":\"declaración\",\"texto\":\"TVN Panamá reporta que Coclé se seca el campo, bajo el rótulo de contenido exclusivo.\",\"citas\":[{\"id\":\"NOT-f2f4a261fd\",\"campo\":\"titulo_limpio\"}]},{\"id\":\"A2\",\"tipo\":\"hecho\",\"texto\":\"El grupo de registros sobre este tema reúne 1 titular de 1 medio.\",\"citas\":[{\"id\":\"GRP-45aebb27b2\",\"campo\":\"n_titulares\"},{\"id\":\"GRP-45aebb27b2\",\"campo\":\"n_medios\"}]},{\"id\":\"A3\",\"tipo\":\"hecho\",\"texto\":\"La estimación de procedencias independientes para este tema es de 1.\",\"citas\":[{\"id\":\"GRP-45aebb27b2\",\"campo\":\"n_procedencias\"}]},{\"id\":\"A4\",\"tipo\":\"inferencia\",\"texto\":\"La cobertura disponible sobre este tema es limitada, de modo que la población interesada en lo que ocurre en Coclé cuenta con pocas versiones independientes para contrastar lo reportado.\",\"base\":[\"A1\",\"A2\",\"A3\"],\"citas\":[]}]}"
+}

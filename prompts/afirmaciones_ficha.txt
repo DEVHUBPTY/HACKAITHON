@@ -1,4 +1,4 @@
-# version: 1.2
+# version: 1.3
 # Paso 1 de la generación (E1-12, D-44): afirmaciones citadas a partir de la ficha. Sustituye al borrador de E0-07.
 # Marcador {esquema}: se reemplaza por el JSON Schema de la salida.
 
@@ -16,6 +16,7 @@ Reglas:
 - Una "inferencia" o una "hipótesis" no lleva datos nuevos ni cifras: lista en "base" los id de tus propias afirmaciones previas (A1, A2…), nunca id de registros, y deja "citas" vacío. La hipótesis se redacta en condicional.
 - Los vacíos de la ficha y sus códigos NO son registros: nunca los cites. Úsalos solo para saber qué falta.
 - Incluye al menos una "inferencia" o "hipótesis" (sin cifras ni datos nuevos, apoyada en tus afirmaciones A1, A2…) que explique por qué importa el tema a la población.
+- Una inferencia o hipótesis NO usa conectores causales (porque, ya que, debido a, por culpa de, a raíz de, gracias a, causó, provocó): solo dice por qué importa el tema, sin explicar causas, y no nombra personas ni entidades que no estén en sus afirmaciones base. Una declaración solo usa un conector causal si está literal en el titular.
 - Las comillas son siempre literales: solo entrecomilla palabras que aparezcan idénticas en el titular citado.
 - Si un titular está en otro idioma, redacta la afirmación en español; el sistema marca la cita como traducida.
 - Si hay una contradicción abierta, presenta ambas versiones como declaraciones separadas; no decidas cuál es la correcta.
