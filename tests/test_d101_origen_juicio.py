@@ -205,3 +205,24 @@ def test_sustento_cli_origen_desconocido_falla(tmp_path: Path) -> None:
     _revision(ruta, ["robot"] * 3)
     assert sustento.principal(["--archivo", str(ruta), "--salida", str(salida)]) == 1
     assert not salida.exists()
+
+
+# ------------------------------------------------------------------ resumen de consola de eval.run_benchmark
+
+
+def test_run_benchmark_resumen_de_sustento_provisional_lo_dice(tmp_path: Path) -> None:
+    from eval import run_benchmark
+
+    ruta = tmp_path / "r.csv"
+    _revision(ruta, [PROVISIONAL] * 3)
+    linea = run_benchmark.linea_sustento(sustento.validez(sustento.leer_revision(ruta), CRITERIO))
+    assert CFG.origenes[PROVISIONAL] in linea and CFG.aviso_provisional in linea
+
+
+def test_run_benchmark_resumen_de_sustento_humano_no_lleva_aviso(tmp_path: Path) -> None:
+    from eval import run_benchmark
+
+    ruta = tmp_path / "r.csv"
+    _revision(ruta, ["humano"] * 3)
+    linea = run_benchmark.linea_sustento(sustento.validez(sustento.leer_revision(ruta), CRITERIO))
+    assert CFG.aviso_provisional not in linea and "3/3" in linea
