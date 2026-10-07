@@ -405,3 +405,24 @@ Valores en `config/exploracion.yaml`. Todo lo que marcan es **candidato**; las m
 | Forzar el paquete completo | Permitido para cualquier acción conocida (D-42: «la persona puede forzar el paquete completo y queda registrado»), incluida «Archivar»; una acción desconocida nunca genera | D-42 | `test_forzar_el_paquete_completo_no_genera_para_una_accion_desconocida` |
 | El contador de costo es una estimación | `outputs/costo_llm.json` acumula los tokens que devuelve la API (`usage`) × el precio **pico** configurado: es una **estimación**, no la factura del proveedor. Se reinició una vez al cambiar de `deepseek-chat` a `deepseek-flash` (el total real en ese momento era ≈ USD 0.29); desde entonces acumula sin reinicios | Decisión de diseño (E1-12) | Comparar con la factura de DeepSeek |
 | Calibración del estimador de costo (D-97) | El 2026-10-06 la consola de DeepSeek marcaba un gasto real de **USD 0.11** frente a ≈ **USD 0.29** estimados por el contador (0.267 acumulado más lo gastado antes del reinicio): el estimador sobreestima ≈ 2.6×. Se mantiene el precio pico sin descuento por caché: un tope que sobreestima es seguro, y el contador es una **cota superior conservadora**, no la factura | Medición real (consola de DeepSeek) y decisión D-97 | Comparar periódicamente con la consola |
+
+## Interfaz Streamlit (E1-15, `config/interfaz.yaml`)
+
+Constantes de presentación: ninguna decide un puntaje, una acción ni un vacío (eso lo calculan E1-10 y E1-10b).
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| Filas de la bandeja al abrir (`bandeja.filas_iniciales`) | 10 (el resto, con «Mostrar las N filas») | Supuesto (legibilidad; la demo señala las 5 primeras) | `test_la_bandeja_trae_reglas_corte_y_el_ranking_con_las_columnas_de_la_spec` |
+| Alto de cada fila de la tabla (`bandeja.alto_filas_px`) | 36 px | Supuesto (solo presentación) | — |
+| Decimales de P y de las barras al mostrar (`bandeja.decimales_puntaje`) | 1 (barras: 2) | Supuesto (solo presentación; el dato no se redondea) | — |
+| Largo del titular en los selectores (`bandeja.largo_titular_selector`) | 80 caracteres | Supuesto (solo presentación) | — |
+| Recuadros de cita por fila (`ficha.citas_por_fila`) | 3 | Supuesto (solo presentación) | — |
+| Decimales del valor de un indicador en el recuadro de cita (`citas.decimales_valor`) | 2 | Supuesto (legibilidad; el dato no se redondea) | `test_la_precision_del_valor_sale_del_yaml` |
+| Medios mostrados en Calidad (`calidad.top_medios`) | 5 | Supuesto (legibilidad) | `test_calidad_muestra_el_ruido_con_su_n_y_el_reporte_de_carga` |
+| Método de consulta inicial (`consulta.metodo_inicial`) | `semantica` | E1-11 (método elegido sobre BM25) | `test_la_consulta_responde_con_citas_y_se_abstiene_diciendo_que_falta` |
+| Largo máximo de la pregunta (`consulta.largo_maximo_caracteres`) | 500 | Supuesto (una pregunta, no un documento) | — |
+| Campos que nunca se muestran (`ficha.campos_ocultos`) | `descripcion` | CLAUDE.md (D-31: la descripción del RSS es solo interna) | `test_la_descripcion_del_rss_nunca_se_muestra_ni_aunque_la_cita_la_pida` |
+| Solo caché al pedir el borrador (`generacion.solo_cache`) | `true` | Spec E1-15 (funciona sin red; la interfaz no espera al modelo) | `test_con_generador_se_pide_solo_cache_y_se_aplanan_las_secciones` |
+| Estados de revisión (`revision.estados`) | nuevo · en revisión · requiere evidencia · aprobado como borrador · descartado | PDF sección 8 (control humano) | `test_la_revision_solo_se_consulta_hasta_e1_16` |
+| Zona horaria y formato al mostrar | Los de `verificacion.yaml:presentacion` (`America/Panama`) | PDF (hora de Panamá solo en la interfaz) | `test_la_hora_se_muestra_en_panama_y_el_dato_no_cambia` |
+| Intervalo de las proporciones de Calidad | Wilson, z = 1.96 (el de `carga.yaml`) | Práctica estadística | `test_el_resumen_de_calidad_cuenta_el_ruido_con_n_e_intervalo` |

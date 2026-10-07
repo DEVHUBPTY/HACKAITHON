@@ -49,8 +49,8 @@ poetry run python -m src.generacion --ficha-json tests/fixtures/ficha_generacion
 poetry run python -m scripts.medir_generacion --proveedor ollama  # latencia: primera respuesta y paquete completo (E1-12)
 poetry run python -m src.consulta "pregunta"         # consulta en español con abstención (--metodo semantica|bm25)
 poetry run python -m eval.recuperacion               # Recall@5 y abstención, semántica vs. BM25, con n e IC
-poetry run streamlit run app.py                      # interfaz
-poetry run streamlit run app.py -- --demo            # modo demo (data/demo.duckdb)
+poetry run streamlit run app.py                      # interfaz: 6 pantallas (E1-15); ?caso=GRP-… abre la ficha
+poetry run streamlit run app.py -- --demo            # modo demo (data/demo.duckdb, C-06) con los pasos de docs/demo.md
 poetry run python -m scripts.verificar_offline       # chequeo antes del pitch
 poetry run python -m scripts.catalogo                # outputs/catalogo.csv (E1-04)
 poetry run python -m scripts.explorar                # docs/exploracion.md (E0-09)
@@ -63,8 +63,6 @@ poetry run python -m eval.validar_benchmark          # valida benchmark/benchmar
 Previstos (existirán cuando se implemente su spec):
 
 ```bash
-poetry run streamlit run app.py                      # interfaz (E1-15)
-poetry run streamlit run app.py -- --demo            # modo demo con data/demo.duckdb (C-06)
 poetry run python -m scripts.verificar_offline       # chequeo antes del pitch (C-06)
 poetry run python -m eval.run_benchmark --split dev  # benchmark → outputs/metricas.json (E1-18)
 poetry run python -m scripts.reproducir --verificar  # reproduce todo y compara con el manifest (E1-20)
@@ -76,16 +74,16 @@ poetry run python -m scripts.auditoria_final         # condiciones previas de la
 Lo que existe hoy:
 
 ```
-CLAUDE.md  README.md  pyproject.toml  poetry.lock  .env.example  .github/pull_request_template.md
+CLAUDE.md  README.md  pyproject.toml  poetry.lock  .env.example  .github/pull_request_template.md  app.py (E1-15)  .streamlit/config.toml
 config/      reglas_v1.3.yaml · temas.yaml · ejemplos_excluidos.txt · vinculos.yaml · modalidad_editorial.yaml · salidas.yaml · restricciones.yaml
              ruido.yaml · fuentes.yaml · contrato.yaml · carga.yaml · normalizacion.yaml · clasificacion.yaml · etiquetado.yaml · exploracion.yaml · llm.yaml · benchmark.yaml · consulta.yaml · prioridad.yaml (E1-10) · generacion.yaml (E1-12)
-             verificacion.yaml (E1-10b) · modalidad_banca.yaml (E1-10b, PARCIAL: solo tabla de acciones y fuentes extra; E2-01 la completa, D-90)
+             verificacion.yaml (E1-10b) · interfaz.yaml (E1-15) · modalidad_banca.yaml (E1-10b, PARCIAL: solo tabla de acciones y fuentes extra; E2-01 la completa, D-90)
 templates/   ficha.md.j2 (E1-10b)
 prompts/     afirmaciones_citadas.txt (E0-07) · comparar_contradicciones.txt (E1-10) · afirmaciones_ficha.txt · paquete_editorial.txt (E1-12, versionados)
 data/        raw/ (inmutable) · processed/ (validos/ fuera de git) · registro_extraccion/ · manifest.json · CHANGELOG.md · diccionario.md · README.md
              senales.duckdb (generado, fuera de git)
 src/         carga · contexto (E1-09) · normalizacion · limpieza · embeddings · clasificacion · baseline · consulta · db · registro (D-75) · configuracion (D-79; config = alias de su CLI) · consultas_gdelt · esquemas (`Ficha` de E1-10b; paso 1 y paquetes de E1-12)
-             agrupacion · procedencias · puntaje · evidencia · contradicciones · prioridad (E1-10: `python -m src.puntaje`) · ficha (E1-10b)
+             agrupacion · procedencias · puntaje · evidencia · contradicciones · prioridad (E1-10: `python -m src.puntaje`) · ficha (E1-10b) · interfaz (E1-15: lógica de presentación de app.py, sin Streamlit)
              generacion (E1-12: dos pasos, validación mínima que E1-13 reemplaza)
              solo docstring o esqueleto: validador · cache · revision · exportar
 src/llm/     proveedor.py (interfaz, `UsoLlm` y `crear_proveedor`, por LLM_PROVIDER) · ollama.py · deepseek.py · costo.py (tope de costo D-67; al alcanzarlo lanza `TopeDeCostoAlcanzado`, D-95)
@@ -101,7 +99,7 @@ specs/  docs/
 Previsto (lo crea la spec indicada):
 
 ```
-app.py (E1-15) · data/demo.duckdb (C-06)
+data/demo.duckdb (C-06)
 config/      revision.yaml (E1-16) · modalidad_banca.yaml completa (E2-01: sectores, horizonte, bandeja)
 prompts/     comparar_contradicciones.txt (E1-10) · respuesta_consulta.txt (E1-11) · boletin_banca.txt (E2-02)
 scripts/     buscar_casos.py · preparar_demo.py · calentar_cache.py · capturas_demo.py · verificar_offline.py (C-06) · reproducir.py (E1-20)
