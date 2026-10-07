@@ -125,6 +125,9 @@ geografia:                  # alcance geográfico (comparación sin tildes ni ma
   provincias: [Bocas del Toro, Chiriquí, Coclé, Colón, Darién, Herrera, Los Santos, Panamá, Panamá Oeste, Veraguas]
   comarcas: [Guna Yala, Emberá-Wounaan, Ngäbe-Buglé, Madugandí, Wargandí, Naso Tjër Di]
   distritos:
+    # X52: la capital es un lugar concreto (local), no el país: «MOP inaugura obra en Ciudad de Panamá» no es nacional.
+    - Ciudad de Panamá
+    - distrito de Panamá
     - San Miguelito
     - Arraiján
     - La Chorrera
