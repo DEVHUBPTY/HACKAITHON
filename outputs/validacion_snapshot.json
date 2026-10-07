@@ -1,5 +1,5 @@
 {
-  "advertencias": 4,
+  "advertencias": 3,
   "aprobado": true,
   "comprobaciones": [
     {
@@ -19,12 +19,12 @@
     },
     {
       "comprobacion": "volumen:total",
-      "detalle": "186 noticias únicas: sobre el mínimo 100, bajo la meta 200",
-      "estado": "advertencia"
+      "detalle": "221 noticias únicas (meta 200)",
+      "estado": "ok"
     },
     {
       "comprobacion": "volumen:tvn",
-      "detalle": "53 noticias de TVN (mínimo 20)",
+      "detalle": "88 noticias de TVN (mínimo 20)",
       "estado": "ok"
     },
     {
@@ -39,7 +39,7 @@
     },
     {
       "comprobacion": "cobertura:efectiva",
-      "detalle": "2026-09-29T01:23:06Z a 2026-10-06T15:45:50Z (7.6 días, máximo 90)",
+      "detalle": "2026-09-29T01:23:06Z a 2026-10-07T00:30:57Z (8.0 días, máximo 90)",
       "estado": "ok"
     },
     {
@@ -99,7 +99,7 @@
     },
     {
       "comprobacion": "manifest:historial",
-      "detalle": "2 versión(es) con cambios, revisiones y excluidos",
+      "detalle": "3 versión(es) con cambios, revisiones y excluidos",
       "estado": "ok"
     },
     {
@@ -109,7 +109,7 @@
     },
     {
       "comprobacion": "gdelt:rangos_sin_resolver",
-      "detalle": "8 rango(s) de GDELT sin resolver, por tema: {'economia': 2, 'eventos_naturales': 2, 'logistica': 2, 'turismo': 2}; días cubiertos/esperados: {'economia': '4/30', 'eventos_naturales': '0/30', 'logistica': '4/30', 'turismo': '4/30'}. La cobertura de GDELT es incompleta",
+      "detalle": "4 rango(s) de GDELT sin resolver, por tema: {'economia': 1, 'eventos_naturales': 1, 'logistica': 1, 'turismo': 1}; días cubiertos/esperados (consultas vigentes): {'economia': '0/30', 'eventos_naturales': '0/30', 'logistica': '0/30', 'turismo': '0/30'}. La cobertura de GDELT es incompleta. Consultas históricas (D-89, aparte): {'economia': '4/30', 'eventos_naturales': '0/30', 'logistica': '4/30', 'turismo': '4/30'}.",
       "estado": "advertencia"
     },
     {
@@ -121,8 +121,8 @@
   "errores": 0,
   "resumen": {
     "cobertura_efectiva": {
-      "dias": 7.6,
-      "fecha_final": "2026-10-06T15:45:50Z",
+      "dias": 7.96,
+      "fecha_final": "2026-10-07T00:30:57Z",
       "fecha_inicial": "2026-09-29T01:23:06Z"
     },
     "cobertura_por_tema": {
@@ -146,8 +146,8 @@
     "fuentes": 110,
     "indicadores": 540,
     "indicadores_nulos": 0,
-    "manifest_version": "1.1",
-    "noticias": 186,
+    "manifest_version": "1.2",
+    "noticias": 221,
     "noticias_gdelt": 133,
     "noticias_por_tema_de_consulta": {
       "economia": 55,
@@ -155,6 +155,6 @@
       "logistica": 95,
       "turismo": 30
     },
-    "noticias_tvn": 53
+    "noticias_tvn": 88
   }
 }

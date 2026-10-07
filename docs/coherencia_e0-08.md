@@ -33,7 +33,7 @@ Las líneas citadas son las de `main` antes de este cambio (commit `9e09231`).
 | 21 | `docs/parametros.md:205-206` | Dobles y kappa mínimo como si se hubieran aplicado | Nota: no aplicados en las etiquetas actuales (D-85); `--consolidar` con `--forzar` |
 | 22 | `docs/guia_temas.md:25` | Línea en blanco partía la tabla: la fila `no_es_noticia` no se mostraba como tabla | Se quita la línea en blanco |
 | 23 | `specs/E0-03.md:22` | Solo `.env` en `.gitignore` | `.env` y `local.env` ignorados; `local.env` para configuración y secretos (D-77) |
-| 24 | `specs/E0-04.md:21` | Consultas de GDELT "'Panama' combinado con…" | Dos patas por tema y crudos anteriores excluidos (D-83) |
+| 24 | `specs/E0-04.md:21` | Consultas de GDELT "'Panama' combinado con…" | Dos patas por tema; los crudos anteriores se conservan como consultas históricas (D-83, corregido por D-89: sí alimentan `noticias.csv`) |
 | 25 | `specs/E1-02.md:14` | Puntero a `config/reglas_v1.3.yaml`; la carga usa `config/carga.yaml` y `config/contrato.yaml` | Puntero corregido |
 | 26 | `specs/E1-03b.md:11` | Ventana "[2024-01-01, 2025-10-01) o la que confirmen los organizadores" | Ventana de la sección 6 sobre la detección; el intervalo de la sección 7 no se aplica (D-74) |
 | 27 | `specs/E1-03b.md:21` | Pide similitud con prototipo, pero quedó diferida a E1-07 (`specs/E1-07.md:30`, `similitud_prototipo.activo: false`) | Referencia cruzada a E1-07 |

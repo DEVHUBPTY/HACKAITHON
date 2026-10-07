@@ -1,5 +1,79 @@
 {
-  "duplicados_descartados": 237,
+  "crudos_consulta_historica": [
+    {
+      "archivo": "gdelt_economia_20261001161819_20261006161819_20261006T162308Z.json",
+      "articulos": 55,
+      "consulta_historica": "Panama (economia OR economy OR inflacion OR inflation OR inversion OR exportaciones)",
+      "estado": "consulta histórica vigente (D-89)",
+      "pata": null,
+      "tema": "economia"
+    },
+    {
+      "archivo": "gdelt_economia_20261004000000_20261006000000_20261006T165916Z.json",
+      "articulos": 0,
+      "consulta_historica": "Panama (economia OR economy OR inflacion OR inflation OR inversion OR exportaciones)",
+      "estado": "consulta histórica vigente (D-89)",
+      "pata": null,
+      "tema": "economia"
+    },
+    {
+      "archivo": "gdelt_logistica_20261001155952_20261006155952_20261006T160046Z.json",
+      "articulos": 97,
+      "consulta_historica": "Panama (logistica OR logistics OR puerto OR port OR shipping OR canal OR cargo)",
+      "estado": "consulta histórica vigente (D-89)",
+      "pata": null,
+      "tema": "logistica"
+    },
+    {
+      "archivo": "gdelt_logistica_20261001160624_20261006160624_20261006T160908Z.json",
+      "articulos": 95,
+      "consulta_historica": "Panama (logistica OR logistics OR puerto OR port OR shipping OR canal OR cargo)",
+      "estado": "consulta histórica vigente (D-89)",
+      "pata": null,
+      "tema": "logistica"
+    },
+    {
+      "archivo": "gdelt_logistica_20261001161819_20261006161819_20261006T161836Z.json",
+      "articulos": 93,
+      "consulta_historica": "Panama (logistica OR logistics OR puerto OR port OR shipping OR canal OR cargo)",
+      "estado": "consulta histórica vigente (D-89)",
+      "pata": null,
+      "tema": "logistica"
+    },
+    {
+      "archivo": "gdelt_logistica_20261004000000_20261006000000_20261006T165223Z.json",
+      "articulos": 0,
+      "consulta_historica": "Panama (logistica OR logistics OR puerto OR port OR shipping OR canal OR cargo)",
+      "estado": "consulta histórica vigente (D-89)",
+      "pata": null,
+      "tema": "logistica"
+    },
+    {
+      "archivo": "gdelt_logistica_20261004000000_20261006000000_20261006T170706Z.json",
+      "articulos": 0,
+      "consulta_historica": "Panama (logistica OR logistics OR puerto OR port OR shipping OR canal OR cargo)",
+      "estado": "consulta histórica vigente (D-89)",
+      "pata": null,
+      "tema": "logistica"
+    },
+    {
+      "archivo": "gdelt_turismo_20261001161819_20261006161819_20261006T162016Z.json",
+      "articulos": 30,
+      "consulta_historica": "Panama (turismo OR tourism OR turistas OR tourists OR hotel OR cruceros)",
+      "estado": "consulta histórica vigente (D-89)",
+      "pata": null,
+      "tema": "turismo"
+    },
+    {
+      "archivo": "gdelt_turismo_20261004000000_20261006000000_20261006T165444Z.json",
+      "articulos": 0,
+      "consulta_historica": "Panama (turismo OR tourism OR turistas OR tourists OR hotel OR cruceros)",
+      "estado": "consulta histórica vigente (D-89)",
+      "pata": null,
+      "tema": "turismo"
+    }
+  ],
+  "duplicados_descartados": 352,
   "excluidos": [
     {
       "id_noticia": "NOT-0031e6a574",
@@ -487,9 +561,31 @@
       "url": "https://www.tvn-2.com/nacionales/tvn-media-refuerza-compromiso-social_1_2217708.html"
     }
   ],
+  "gdelt_cobertura_historica_por_tema": {
+    "economia": {
+      "crudos": 2,
+      "dias_cubiertos": 4,
+      "dias_esperados": 30
+    },
+    "eventos_naturales": {
+      "crudos": 0,
+      "dias_cubiertos": 0,
+      "dias_esperados": 30
+    },
+    "logistica": {
+      "crudos": 5,
+      "dias_cubiertos": 4,
+      "dias_esperados": 30
+    },
+    "turismo": {
+      "crudos": 2,
+      "dias_cubiertos": 4,
+      "dias_esperados": 30
+    }
+  },
   "gdelt_cobertura_por_tema": {
     "economia": {
-      "dias_cubiertos": 4,
+      "dias_cubiertos": 0,
       "dias_esperados": 30
     },
     "eventos_naturales": {
@@ -497,88 +593,56 @@
       "dias_esperados": 30
     },
     "logistica": {
-      "dias_cubiertos": 4,
+      "dias_cubiertos": 0,
       "dias_esperados": 30
     },
     "turismo": {
-      "dias_cubiertos": 4,
+      "dias_cubiertos": 0,
       "dias_esperados": 30
     }
   },
   "gdelt_rangos_sin_resolver": [
     {
-      "detalle": "ningún crudo ni intento registrado para este día",
-      "dias": 25,
-      "fin": "20261001000000",
-      "inicio": "20260906000000",
+      "detalle": "[locales] ningún crudo ni intento registrado para este día",
+      "dias": 30,
+      "fin": "20261007000000",
+      "inicio": "20260907000000",
       "motivo": "no_solicitado",
       "tema": "economia"
     },
     {
-      "detalle": "un crudo cubre solo una parte de este día",
-      "dias": 1,
-      "fin": "20261002000000",
-      "inicio": "20261001000000",
-      "motivo": "cobertura_parcial",
-      "tema": "economia"
-    },
-    {
-      "detalle": "ningún crudo ni intento registrado para este día",
-      "dias": 28,
-      "fin": "20261004000000",
-      "inicio": "20260906000000",
+      "detalle": "[locales] ningún crudo ni intento registrado para este día",
+      "dias": 30,
+      "fin": "20261007000000",
+      "inicio": "20260907000000",
       "motivo": "no_solicitado",
       "tema": "eventos_naturales"
     },
     {
-      "detalle": "no obtenido: GDELT bloqueaba las solicitudes (HTTP 429 sostenido) al cerrar el snapshot",
-      "dias": 2,
-      "fin": "20261006000000",
-      "inicio": "20261004000000",
-      "motivo": "bloqueado",
-      "tema": "eventos_naturales"
-    },
-    {
-      "detalle": "ningún crudo ni intento registrado para este día",
-      "dias": 25,
-      "fin": "20261001000000",
-      "inicio": "20260906000000",
+      "detalle": "[locales] ningún crudo ni intento registrado para este día",
+      "dias": 30,
+      "fin": "20261007000000",
+      "inicio": "20260907000000",
       "motivo": "no_solicitado",
       "tema": "logistica"
     },
     {
-      "detalle": "un crudo cubre solo una parte de este día",
-      "dias": 1,
-      "fin": "20261002000000",
-      "inicio": "20261001000000",
-      "motivo": "cobertura_parcial",
-      "tema": "logistica"
-    },
-    {
-      "detalle": "ningún crudo ni intento registrado para este día",
-      "dias": 25,
-      "fin": "20261001000000",
-      "inicio": "20260906000000",
+      "detalle": "[locales] ningún crudo ni intento registrado para este día",
+      "dias": 30,
+      "fin": "20261007000000",
+      "inicio": "20260907000000",
       "motivo": "no_solicitado",
-      "tema": "turismo"
-    },
-    {
-      "detalle": "un crudo cubre solo una parte de este día",
-      "dias": 1,
-      "fin": "20261002000000",
-      "inicio": "20261001000000",
-      "motivo": "cobertura_parcial",
       "tema": "turismo"
     }
   ],
   "idiomas_sin_mapeo": {},
-  "registros_crudos_leidos": 520,
+  "registros_crudos_leidos": 670,
   "ventana": {
     "ampliada": false,
     "dias_aplicados": 30,
     "dias_base": 30,
     "dias_maximo": 90,
-    "fin": "2026-10-06T17:07:06Z",
-    "inicio": "2026-09-06T17:07:06Z"
+    "fin": "2026-10-07T00:41:03Z",
+    "inicio": "2026-09-07T00:41:03Z"
   }
 }

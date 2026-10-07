@@ -384,10 +384,15 @@ def _validar_manifest(inf: Informe, data: Path, resumen: dict) -> None:
         for r in sin_resolver:
             por_tema[r.get("tema", "?")] = por_tema.get(r.get("tema", "?"), 0) + 1
         dias = {t: f"{d.get('dias_cubiertos')}/{d.get('dias_esperados')}" for t, d in (cob.get("gdelt_dias_por_tema") or {}).items()}
+        historica = {
+            t: f"{d.get('dias_cubiertos')}/{d.get('dias_esperados')}"
+            for t, d in (cob.get("gdelt_dias_por_tema_consulta_historica") or {}).items()
+        }
+        aparte = f" Consultas históricas (D-89, aparte): {historica}." if historica else ""
         inf.advertencia(
             "gdelt:rangos_sin_resolver",
             f"{len(sin_resolver)} rango(s) de GDELT sin resolver, por tema: {por_tema}; "
-            f"días cubiertos/esperados: {dias}. La cobertura de GDELT es incompleta",
+            f"días cubiertos/esperados (consultas vigentes): {dias}. La cobertura de GDELT es incompleta.{aparte}",
         )
     else:
         inf.ok("gdelt:rangos_sin_resolver", "todos los días de la ventana tienen un crudo de GDELT por tema")

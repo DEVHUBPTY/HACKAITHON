@@ -14,9 +14,9 @@ poetry run python -m scripts.catalogo             # outputs/catalogo.csv (E1-04)
 
 El catálogo (`outputs/catalogo.csv`) lista las 4 fuentes que define la base *Catálogo de datos* de Notion; las que aún no se usan (hoy D, SBP, pendiente de E3-02 y solo si se activa banca) quedan marcadas como "Fuente no usada todavía".
 
-## Versión del snapshot y receta (D-83)
+## Versión del snapshot y receta (D-83, corregida por D-89)
 
-El snapshot versionado es la v1.1, producido con las consultas antiguas de GDELT, que figuran en `consultas_historicas` de `config/fuentes.yaml` y en el manifest. Las consultas vigentes de `config/fuentes.yaml` son la receta de la próxima extracción. La v1.2 se genera y se versiona solo después de extraer con esas consultas: regenerar `processed/` sobre el `raw/` actual daría solo las noticias de TVN y no debe commitearse.
+El snapshot versionado es la v1.2. Sus noticias de GDELT vienen de los crudos de las consultas antiguas (anteriores a E0-04, sin pata), que D-89 devuelve a `noticias.csv` (D-83 los había excluido, pero las etiquetas humanas y el benchmark de desarrollo apuntan a esas noticias). Esas consultas figuran en `consultas_historicas` de `config/fuentes.yaml` y en el manifest, que declara cada crudo en `crudos_consulta_historica` y reporta su cobertura aparte (`cobertura_efectiva.gdelt_dias_por_tema_consulta_historica`). Las consultas vigentes de `config/fuentes.yaml` (dos patas por tema) son la receta de la próxima extracción; su cobertura sigue en 0 porque GDELT responde HTTP 429 de forma sostenida y la extracción está en pausa. El ruido se marca en `src.limpieza`, no se borra.
 
 ## Qué se versiona y qué no (D-72)
 
