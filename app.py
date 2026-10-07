@@ -326,8 +326,7 @@ def pantalla_paquete(ctx: ui.Contexto) -> None:
     ficha = ficha_de(str(ctx.ruta_base), id_grupo, ctx.modalidad)
     a = ficha.accion_recomendada
     st.markdown(f"**Acción recomendada:** {escapar_markdown(a.accion)} · prioridad {a.rango} · evidencia {a.estado_evidencia}")
-    # TODO(E1-12): al integrar src/generacion.py, fijar el nombre de la función en config/interfaz.yaml:generacion.funcion.
-    estado = ui.obtener_paquete(id_grupo, ctx.modalidad, ctx.cfg)
+    estado = ui.obtener_paquete(id_grupo, ctx.modalidad, ctx.cfg, ruta_base=ctx.ruta_base)
     if estado.estado == "disponible":
         st.markdown(f"**{ETIQUETA_BORRADOR}**")
         for titulo, parrafos in ui.secciones_de_paquete(estado.paquete):

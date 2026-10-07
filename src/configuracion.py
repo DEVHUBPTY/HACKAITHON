@@ -2161,6 +2161,49 @@ def cargar_interfaz(carpeta: Path | None = None) -> ConfigInterfaz:
     return cargar_config("interfaz", ConfigInterfaz, carpeta)
 
 
+# ------------------------------------------------------------------ cache.yaml (E1-14)
+
+
+class SondeoRed(ModeloConfig):
+    timeout_segundos: float = Field(gt=0)
+    puerto: int = Field(gt=0, lt=65536)
+
+
+class CalentamientoCache(ModeloConfig):
+    top_bandeja: int = Field(ge=0)
+    guion_demo: str = Field(min_length=1)
+    patron_id_grupo: str = Field(min_length=1)
+
+    @field_validator("patron_id_grupo")
+    @classmethod
+    def _patron_valido(cls, v: str) -> str:
+        re.compile(v)
+        return v
+
+
+class TextosCache(ModeloConfig):
+    sin_cache: str = Field(min_length=1)
+    sin_cache_grupo: str = Field(min_length=1)
+    sin_red: str = Field(min_length=1)
+
+
+class ConfigCache(ModeloConfig):
+    """Caché de respuestas del LLM (E1-14): dónde vive, qué la invalida y cómo se detecta que no hay red."""
+
+    version: str
+    version_cache: str = Field(min_length=1)
+    ruta: str = Field(min_length=1)
+    sondeo_red: SondeoRed
+    variable_offline: str = Field(min_length=1)
+    calentamiento: CalentamientoCache
+    textos: TextosCache
+
+
+def cargar_cache(carpeta: Path | None = None) -> ConfigCache:
+    """Atajo para ``config/cache.yaml``."""
+    return cargar_config("cache", ConfigCache, carpeta)
+
+
 CODIGO_URGENCIA_SIN_PUBLICACION = "urgencia_sin_publicacion"   # el único vacío de E1-10 cuyo texto vive en reglas_v1.3.yaml
 MODALIDADES = ("editorial", "banca")
 OPCIONALES = {"modalidad_banca"}  # el esquema la admite aunque todavía no exista
@@ -2190,6 +2233,7 @@ CARGADORES = {
     "generacion": cargar_generacion,
     "verificacion": cargar_verificacion,
     "interfaz": cargar_interfaz,
+    "cache": cargar_cache,
 }
 
 
