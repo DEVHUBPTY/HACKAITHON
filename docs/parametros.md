@@ -439,6 +439,27 @@ Constantes de presentación: ninguna decide un puntaje, una acción ni un vacío
 | Largo máximo de la pregunta (`consulta.largo_maximo_caracteres`) | 500 | Supuesto (una pregunta, no un documento) | — |
 | Campos que nunca se muestran (`ficha.campos_ocultos`) | `descripcion` | CLAUDE.md (D-31: la descripción del RSS es solo interna) | `test_la_descripcion_del_rss_nunca_se_muestra_ni_aunque_la_cita_la_pida` |
 | Solo caché al pedir el borrador (`generacion.solo_cache`) | `true` | Spec E1-15 (funciona sin red; la interfaz no espera al modelo) | `test_con_generador_se_pide_solo_cache_y_se_aplanan_las_secciones` |
-| Estados de revisión (`revision.estados`) | nuevo · en revisión · requiere evidencia · aprobado como borrador · descartado | PDF sección 8 (control humano) | `test_la_revision_solo_se_consulta_hasta_e1_16` |
+| Estados de revisión (`revision.estados`) | nuevo · en revisión · requiere evidencia · aprobado como borrador · descartado | PDF sección 8 (control humano) | `test_un_grupo_sin_caso_esta_en_el_estado_inicial` |
 | Zona horaria y formato al mostrar | Los de `verificacion.yaml:presentacion` (`America/Panama`) | PDF (hora de Panamá solo en la interfaz) | `test_la_hora_se_muestra_en_panama_y_el_dato_no_cambia` |
 | Intervalo de las proporciones de Calidad | Wilson, z = 1.96 (el de `carga.yaml`) | Práctica estadística | `test_el_resumen_de_calidad_cuenta_el_ruido_con_n_e_intervalo` |
+
+## Revisión humana y exportación (E1-16, `config/revision.yaml`)
+
+Ninguno decide un puntaje, una acción ni un vacío: solo gobiernan quién puede hacer qué y cómo se exporta.
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| Estados (`estados`) | nuevo · en revisión · requiere evidencia · aprobado como borrador · descartado; ninguno va después de «aprobado como borrador» | PDF sección 8 (control humano) | `test_la_configuracion_define_los_cinco_estados_y_ninguno_despues_de_aprobar` |
+| Acciones y transiciones (`acciones`) | abrir · aceptar · corregir · regenerar · pedir_evidencia · descartar · reabrir · rechazar/restaurar_vinculo, con sus estados de origen y destino | D-46 | `test_las_transiciones_que_no_estan_en_el_yaml_se_rechazan_sin_escribir_nada` y `test_cada_accion_produce_el_estado_correcto` |
+| Botón de la aprobación | «Aprobar como borrador»; la ficha aprobada conserva la marca BORRADOR | Spec E1-16 (nunca «publicar») | `test_aprobar_como_borrador_conserva_la_marca_y_ya_no_se_puede_repetir` |
+| Motivos de descarte (`motivos_descarte`) | 7 motivos; «Otro» exige además un comentario | Supuesto (criterios de `docs/guia_temas.md` y de la revisión editorial) | `test_descartar_sin_motivo_de_la_lista_se_rechaza` |
+| Revisores (`revisores`) | David Fen, Javier Acosta y Juan Zhou; rol «Revisión editorial» en editorial y «Analista» en banca. **Sin autenticación**: el registro confía en la elección (limitación declarada) | D-49; se reemplaza por la lista real antes del evento | `test_el_revisor_se_elige_de_la_lista_con_su_rol_y_la_limitacion_se_declara` |
+| ID de caso (`casos`) | `CASO-` + correlativo de 3 dígitos; el mismo grupo abre siempre el mismo caso | D-63 | `test_abrir_un_grupo_crea_un_caso_correlativo_y_estable_que_persiste_entre_corridas` |
+| Base de las revisiones (`almacen`) | `data/revision.duckdb` (demo: `data/revision_demo.duckdb`), aparte de `senales.duckdb`: el pipeline regenera esa base y borraría las revisiones | Decisión de E1-16 | `test_la_base_de_senales_no_cambia_al_revisar` |
+| Registro de solo agregar | `casos`, `versiones` y `revisiones` solo reciben `INSERT`; ninguna fila se actualiza ni se borra | D-47 | `test_la_tabla_revisiones_solo_crece_y_ninguna_fila_se_modifica` y `test_la_api_no_tiene_ni_una_sentencia_de_modificar_o_borrar` |
+| Revalidación de una corrección | Cada texto corregido pasa por `revalidar_correccion` (reglas de `generacion.yaml` y `restricciones.yaml` más «cifras sin cita»); toda advertencia se confirma o la corrección se rechaza. TODO(E1-13): apuntar al validador | D-48 | `test_una_correccion_con_un_dato_sin_cita_genera_advertencia_y_queda_registrada_si_se_confirma` |
+| Vínculo rechazado | Se excluye de la ficha y del borrador regenerado; la ficha agrega el vacío `vinculo_rechazado`. Puntaje y estado de evidencia **no** se recalculan (los guarda E1-10) | Spec E1-16 | `test_un_vinculo_rechazado_no_aparece_en_el_borrador_regenerado` |
+| Columnas del CSV (`exportacion.columnas`) | Las 24 propiedades editables de la base «Casos y evidencias» de Notion (leídas de Notion el 2026-10-06); `P` y `Rango` son fórmulas de Notion y no se exportan | D-50 | `test_las_columnas_del_csv_son_las_de_la_base_casos_y_evidencias_de_notion` |
+| Largo de una propiedad de texto (`exportacion.max_caracteres_texto`) | 2000 caracteres; lo que sobra queda en el cuerpo (Markdown) | Límite de Notion por bloque de texto | `test_las_propiedades_largas_se_recortan_para_notion` |
+| Intervalo de las tasas de revisión | Wilson, z = 1.96 (el de `carga.yaml`); toda tasa con su n; sin casos decididos, «sin datos» | `docs/protocolo_evaluacion.md` | `test_eval_calcula_tasas_con_n_e_intervalo_y_los_motivos` y `test_eval_sin_datos_lo_dice_y_no_inventa_cifras` |
+| Tiempo de revisión por caso | Minutos entre la fila `abrir` y la última decisión (aprobar o descartar); es reloj, no esfuerzo | Supuesto | `test_eval_calcula_tasas_con_n_e_intervalo_y_los_motivos` |
