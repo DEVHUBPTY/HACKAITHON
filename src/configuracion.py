@@ -745,10 +745,15 @@ class Vinculo(ModeloConfig):
 
 
 class SubtemaVinculo(ModeloConfig):
-    """D-92: el grupo toma el subtema más cercano solo si supera al segundo por este margen o un titular nombra un término."""
+    """D-92 y E1-10c (X41): el grupo toma el subtema más cercano solo si un criterio de ``criterios`` lo respalda.
 
+    ``margen``: supera al segundo por ``margen_minimo``; ``lexico``: un titular nombra un término del subtema. En ambos
+    casos, si un titular nombra un término de OTRO subtema del mismo tema, el subtema es ambiguo y no se afirma.
+    """
+
+    criterios: list[Literal["margen", "lexico"]] = Field(min_length=1)   # en este orden; E1-10c: solo ``lexico``
     margen_minimo: float = Field(ge=0)
-    terminos_por_subtema: dict[str, list[str]]   # apoyo léxico: un término en el titular acepta el subtema aunque el margen no llegue
+    terminos_por_subtema: dict[str, list[str]]   # apoyo léxico: un término en el titular respalda el subtema
 
 
 class SismosVinculo(ModeloConfig):

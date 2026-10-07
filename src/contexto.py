@@ -5,9 +5,10 @@ Cada grupo (``GRP-``) se vincula con el indicador que le corresponde **por subte
 
 * **Subtema:** el subtema más cercano dentro del tema asignado al grupo (método B de ``src/clasificacion.py``, tabla
   ``similitud_tema``), aunque el método activo sea el A. Voto de los titulares del grupo; desempata la suma de similitudes.
-  **Solo si** el margen promedio de los titulares (1.º − 2.º subtema del tema, ``similitud_tema.margen_subtema``) alcanza
-  ``vinculos.subtema.margen_minimo`` (criterio ``margen``) o un titular nombra un término del subtema
-  (``terminos_por_subtema``, criterio ``lexico``); si no, el grupo queda sin subtema (D-92) y recibe el vínculo por tema o ``tema_sin_indicador``.
+  **Solo si** lo respalda un criterio de ``vinculos.subtema.criterios``: un titular nombra un término del subtema
+  (``terminos_por_subtema``, criterio ``lexico``) o, si se activa, el margen promedio de los titulares alcanza
+  ``margen_minimo`` (criterio ``margen``, D-92; desde E1-10c no basta solo). Si un titular nombra otro subtema del mismo
+  tema, el subtema es ambiguo. Sin respaldo, el grupo queda sin subtema y recibe el vínculo por tema o ``tema_sin_indicador``.
 * **Vínculo:** primero ``vinculos`` (por subtema), después ``vinculos_por_tema``; si no hay, ``tema_sin_indicador``.
   Un indicador sin ningún valor no nulo de Panamá es ``sin_dato_en_periodo``.
 * **Panamá:** el último año con valor no nulo, declarado en la limitación junto con los años posteriores sin valor.
@@ -51,6 +52,7 @@ from src.configuracion import (
     cargar_fuentes,
     cargar_normalizacion,
     cargar_reglas,
+    cargar_temas,
     cargar_vinculos,
 )
 from src.registro import configurar_logging
@@ -102,24 +104,36 @@ def menciona_termino(titular: str, terminos: Sequence[str]) -> bool:
 
 
 def decidir_subtema(
-    candidatos: Sequence[tuple[str, float, float | None]], titulares: Sequence[str], cfg: SubtemaVinculo
+    candidatos: Sequence[tuple[str, float, float | None]],
+    titulares: Sequence[str],
+    cfg: SubtemaVinculo,
+    subtemas_del_tema: Sequence[str] = (),
 ) -> tuple[str | None, str | None]:
-    """``(subtema, criterio)`` del grupo, o ``(None, None)`` si el subtema es dudoso (D-92).
+    """``(subtema, criterio)`` del grupo, o ``(None, None)`` si el subtema es dudoso (D-92, E1-10c).
 
-    El subtema es el de ``subtema_del_grupo`` y se acepta por uno de dos criterios, en este orden:
+    El subtema es el de ``subtema_del_grupo``. Si algún titular nombra un término de **otro** subtema de
+    ``subtemas_del_tema`` (el mismo tema), el subtema es ambiguo y no se afirma (X41: «exdirector de la CSS» aprehendido
+    nombra salud y seguridad). Si no, se acepta por el primero de ``cfg.criterios`` que lo respalde:
 
     * ``margen``: el margen promedio de los titulares (1.º − 2.º subtema del tema asignado) alcanza ``margen_minimo``.
       Un titular sin margen guardado (base anterior a D-92) no lo respalda.
     * ``lexico``: algún titular del grupo contiene un término de ``terminos_por_subtema`` de ese subtema.
+
+    E1-10c (X41) deja solo ``lexico`` en la configuración: el margen medía el parecido con palabras sueltas del
+    prototipo («obras», «La Chorrera», «CSS»), no el subtema.
     """
     elegido = subtema_del_grupo([(s, sim) for s, sim, _ in candidatos])
     if elegido is None:
         return None, None
+    rivales = [s for s in subtemas_del_tema if s != elegido]
+    if any(menciona_termino(t, cfg.terminos_por_subtema.get(s, [])) for s in rivales for t in titulares):
+        return None, None
     margenes = [m for _, _, m in candidatos]
-    if all(m is not None for m in margenes) and sum(margenes) / len(margenes) >= cfg.margen_minimo:   # type: ignore[arg-type]
-        return elegido, CRITERIO_MARGEN
-    if any(menciona_termino(t, cfg.terminos_por_subtema.get(elegido, [])) for t in titulares):
-        return elegido, CRITERIO_LEXICO
+    for criterio in cfg.criterios:
+        if criterio == CRITERIO_MARGEN and all(m is not None for m in margenes) and sum(margenes) / len(margenes) >= cfg.margen_minimo:   # type: ignore[arg-type]
+            return elegido, CRITERIO_MARGEN
+        if criterio == CRITERIO_LEXICO and any(menciona_termino(t, cfg.terminos_por_subtema.get(elegido, [])) for t in titulares):
+            return elegido, CRITERIO_LEXICO
     return None, None
 
 
@@ -329,9 +343,10 @@ def _anio_de(fecha: str | None) -> int | None:
 
 
 def leer_grupos(con: Any, cfg: SubtemaVinculo | None = None) -> list[dict[str, Any]]:
-    """Cada grupo con su tema, el subtema más cercano (método B) si lo respalda el margen o un término (D-92), su criterio,
+    """Cada grupo con su tema, el subtema más cercano (método B) si lo respalda un criterio (D-92, E1-10c), su criterio,
     el titular central y el año. Sin ``cfg`` usa ``vinculos.subtema`` de la configuración."""
     cfg = cfg or cargar_vinculos().subtema
+    catalogo = {t: list(d.subtemas) for t, d in cargar_temas().temas.items()}
     titulares: defaultdict[str, list[str]] = defaultdict(list)
     for id_grupo, titulo in con.execute("SELECT id_grupo, COALESCE(titulo_limpio, titulo) FROM noticias WHERE id_grupo IS NOT NULL").fetchall():
         if titulo:
@@ -354,7 +369,7 @@ def leer_grupos(con: Any, cfg: SubtemaVinculo | None = None) -> list[dict[str, A
         """SELECT g.id_grupo, g.tema_clasificado, g.titular_central, n.fecha_publicacion, n.fecha_deteccion
            FROM grupos g LEFT JOIN noticias n ON n.id_noticia = g.id_noticia_central ORDER BY g.id_grupo"""
     ).fetchall():
-        subtema, criterio = decidir_subtema(votos.get(id_grupo, []), titulares.get(id_grupo, []), cfg)
+        subtema, criterio = decidir_subtema(votos.get(id_grupo, []), titulares.get(id_grupo, []), cfg, catalogo.get(tema, []))
         grupos.append(
             {
                 "id_grupo": id_grupo,
