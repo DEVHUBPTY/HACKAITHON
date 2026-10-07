@@ -9,6 +9,8 @@ registro: outputs/rechazos.jsonl     # una línea por rechazo y una por unidad e
 numeros:
   tolerancia_absoluta: 0.0           # diferencia máxima entre la cifra del texto y la del campo citado
   redondeo_permitido: true           # «2.9 %» respalda el valor 2.934: la cifra del texto es el valor redondeado a sus decimales
+  decimales_minimos: 1               # el redondeo y la tolerancia relativa exigen al menos un decimal escrito: «2 %» nunca respalda 1.5
+  tolerancia_relativa: 0.01          # con decimales escritos, «1,49 %» respalda 1.5 (diferencia ≤ 1 % del valor citado)
   decimales_maximos: 6               # más decimales que esto en el texto no se comparan por redondeo
 
 # D-41: una hipótesis y una redacción condicional llevan alguno de estos marcadores.
@@ -18,16 +20,60 @@ condicionales: [podría, podrían, pudiera, pudieran, es posible, sería, sería
 
 # D-68: conectores causales. Solo se aceptan si están literalmente en el titular citado (declaración atribuida) o en una hipótesis condicional.
 causales: [causó, causaron, provocó, provocaron, ocasionó, ocasionaron, originó, originaron, desencadenó, generó, debido a, por culpa de,
-           a raíz de, a causa de, por causa de, como consecuencia de, como resultado de, porque, ya que, gracias a, producto de, motivó]
+           a raíz de, a causa de, por causa de, como consecuencia de, como resultado de, porque, ya que, gracias a, producto de, motivó,
+           por lo que, dado que, por eso, fruto de, derivó en, lo que provocó, lo que llevó a, a consecuencia de, impulsado por,
+           como efecto de, lo que causó, lo que generó, de ahí que, puesto que]
 
 # D-68: verbos y adjetivos de acusación o culpa. Solo como declaración atribuida a un medio y presentes en el titular citado.
-acusaciones: [robó, robaron, roba, roban, asesinó, asesinaron, mató, estafó, estafaron, defraudó, malversó, sobornó, secuestró, violó,
-              es culpable, son culpables, culpable, culpables, corrupto, corrupta, corruptos, corruptas, ladrón, ladrones, criminal,
-              delincuente, mintió, miente, traidor, mafioso]
+# Se comparan CON tildes: «robó» (verbo) y «robo» (sustantivo) son entradas distintas. Incluye participios, infinitivos y sustantivos, para que
+# una hipótesis en condicional («habría malversado», «podría haber robado») o una inferencia nominal («corrupción de X») no escape (X29).
+acusaciones: [robó, robaron, roba, roban, robado, robada, robados, robar, robo, asesinó, asesinaron, asesinado, asesinar, asesinato, mató,
+              estafó, estafaron, estafado, estafar, estafa, defraudó, defraudado, defraudar, fraude, fraudulento, malversó, malversado, malversar,
+              malversación, sobornó, sobornado, sobornar, soborno, peculado, desfalco, desfalcó, secuestró, secuestrado, violó, violado, es culpable,
+              son culpables, culpable, culpables, corrupto, corrupta, corruptos, corruptas, corrupción, ladrón, ladrones, criminal, delincuente,
+              mintió, miente, traidor, mafioso, implicado en, implicada en, implicados en, implicadas en, involucrado en, involucrada en]
 
 # D-51: detalles sin cita (confirmaciones y fuentes que la evidencia no trae). Solo si están literalmente en un titular citado.
 detalle_sin_cita: [fuentes confirmaron, fuentes oficiales confirmaron, fuentes oficiales, fuentes cercanas, fuentes aseguran, confirmaron,
                    se confirmó, testigos, según expertos, los expertos, según analistas, los analistas]
+
+# Patrones (regex sobre texto sin tildes ni mayúsculas) que se suman a las frases de cada lista de restricciones.yaml (M1).
+patrones:
+  lectura_simulada: ['\b(articulo|nota|reportaje|texto|noticia|cronica|informe)\s+(explica|detalla|senala|indica|revela|cuenta|menciona|describe|asegura|precisa|advierte)\b', '\bsegun (el|la) (articulo|nota|reportaje|texto|noticia|cronica)\b']
+  entrevistas: ['\b(dijo|declaro|aseguro|conto|afirmo|explico|revelo) a (tvn|la prensa|los medios|los periodistas|este medio|nuestro medio|la estrella|telemetro|critica)\b']
+
+# Números escritos con palabras (M1): se convierten a cifra y deben coincidir con la evidencia como cualquier cifra.
+palabras_numero: {cero: 0, dos: 2, tres: 3, cuatro: 4, cinco: 5, seis: 6, siete: 7, ocho: 8, nueve: 9, diez: 10, once: 11, doce: 12, trece: 13, catorce: 14,
+                  quince: 15, dieciseis: 16, diecisiete: 17, dieciocho: 18, diecinueve: 19, veinte: 20, veintiuno: 21, veintidos: 22, veintitres: 23,
+                  veinticuatro: 24, veinticinco: 25, veintiseis: 26, veintisiete: 27, veintiocho: 28, veintinueve: 29, treinta: 30, cuarenta: 40,
+                  cincuenta: 50, sesenta: 60, setenta: 70, ochenta: 80, noventa: 90, cien: 100, ciento: 100, doscientos: 200, trescientos: 300,
+                  cuatrocientos: 400, quinientos: 500, seiscientos: 600, setecientos: 700, ochocientos: 800, novecientos: 900}
+numerales_en_compuesto: {un: 1, uno: 1, una: 1}   # «un plan» no es una cifra; «treinta y uno» sí
+multiplicadores: {mil: 1000, millon: 1000000, millones: 1000000}
+# Cantidades sin cifra exacta: solo se admiten si el titular citado (o la afirmación de apoyo) las trae literales.
+cantidades_vagas: [miles de, decenas de, cientos de, centenares de, docenas de, millones de, la mitad, el doble, el triple, un tercio, la tercera parte,
+                   la mayoria de, casi todos]
+
+# M4: juicios de valor que una transición sin cita no puede llevar.
+juicios_transicion: [mala noticia, buena noticia, preocupante, preocupa, preocupan, preocupacion, grave, gravisimo, lamentable, positivo, negativo,
+                     alarma, inquieta, inquietante, peligroso, afortunadamente, desafortunadamente, por desgracia, sin duda, claramente,
+                     evidentemente, obviamente, injusto, escandaloso, importante, relevante, urgente]
+
+# Traducción (D-45): equivalencias que una cita de un titular en otro idioma legitima. Una entidad ausente del titular y de esta tabla se rechaza.
+equivalencias_traduccion:
+  América Latina: [Latin America]
+  Ciudad de Panamá: [Panama City]
+  Canal de Panamá: [Panama Canal]
+  Estados Unidos: [United States, US, USA, U.S.]
+  Reino Unido: [United Kingdom, UK, Britain]
+  Naciones Unidas: [United Nations]
+  Unión Europea: [European Union]
+  Medio Oriente: [Middle East]
+  Banco Mundial: [World Bank]
+  Fondo Monetario Internacional: [International Monetary Fund, IMF]
+  Casa Blanca: [White House]
+  Asamblea Nacional: [National Assembly]
+cognados_prefijo_min: 5     # en un titular traducido, un nombre que comparte este prefijo con una palabra del titular es la misma entidad (Singapur / Singapore)
 
 # Cómo se aplica cada lista de config/restricciones.yaml (la clave es el nombre de la lista; también es el nombre de la regla).
 #  tipos: solo se aplica a oraciones o afirmaciones de estos tipos (vacío = a todo)

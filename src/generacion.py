@@ -80,7 +80,7 @@ from src.cache import (
 )
 from src.llm.costo import TopeDeCostoAlcanzado
 from src.llm.proveedor import ErrorProveedor, Proveedor
-from src.validador import LIMITE_PALABRAS, Contexto, RegistroRechazos, Rechazo, mensajes, validar_afirmaciones, validar_seccion
+from src.validador import LIMITE_PALABRAS, Contexto, RegistroRechazos, Rechazo, mensajes, validar_afirmaciones, validar_paquete, validar_seccion
 
 logger = logging.getLogger(__name__)
 
@@ -534,7 +534,26 @@ class Generador:
         return [PreguntaInvestigacion(texto=q.texto.strip(), vacio=q.vacio) for q in self._secciones.get("preguntas", [])]
 
     def paquete(self) -> PaqueteEditorial | PaqueteInvestigacion | None:
-        """El paquete con lo generado hasta ahora (lo que no se generó queda vacío, sin motivo: está pendiente)."""
+        """El paquete con lo generado hasta ahora (lo que no se generó queda vacío, sin motivo: está pendiente).
+
+        Compuerta final (E1-13): el paquete armado pasa por ``validar_paquete``. Una sección que no valida **no sale**: se vacía con su
+        motivo en ``vacios``. Si falla la marca o la leyenda (las pone el código) es un error de configuración y se lanza ``ValueError``."""
+        p = self._armar()
+        if p is None:
+            return None
+        rechazos = validar_paquete(p, self.ctx)
+        if not rechazos:
+            return p
+        if any(not r.seccion for r in rechazos):
+            raise ValueError("el paquete no pasa el validador: " + "; ".join(mensajes([r for r in rechazos if not r.seccion])))
+        for seccion in dict.fromkeys(r.seccion for r in rechazos):
+            propios = [r for r in rechazos if r.seccion == seccion]
+            self.registro_rechazos.evaluacion("seccion", seccion, seccion, propios, intento=0)
+            self._secciones.pop(seccion, None)
+            self._vacios.append(Vacio(origen="seccion", referencia=seccion, motivo="; ".join(mensajes(propios))[: self.cfg.texto.motivo_max_caracteres]))
+        return self._armar()
+
+    def _armar(self) -> PaqueteEditorial | PaqueteInvestigacion | None:
         if self.plan.tipo == "nada":
             return None
         vacios = list(self._vacios)

@@ -1953,6 +1953,8 @@ def cargar_generacion(carpeta: Path | None = None) -> ConfigGeneracionBorrador:
 class NumerosValidador(ModeloConfig):
     tolerancia_absoluta: float = Field(ge=0)
     redondeo_permitido: bool
+    decimales_minimos: int = Field(ge=0)
+    tolerancia_relativa: float = Field(ge=0, lt=1)
     decimales_maximos: int = Field(ge=0)
 
 
@@ -1982,10 +1984,25 @@ class ConfigValidador(ModeloConfig):
     detalle_sin_cita: list[str]
     listas: dict[str, ListaValidador]
     transiciones: TransicionesValidador
+    patrones: dict[str, list[str]]
+    palabras_numero: dict[str, int]
+    numerales_en_compuesto: dict[str, int]
+    multiplicadores: dict[str, int]
+    cantidades_vagas: list[str]
+    juicios_transicion: list[str]
+    equivalencias_traduccion: dict[str, list[str]]
+    cognados_prefijo_min: int = Field(ge=2)
     nombres_permitidos: list[str]
     meses: list[str] = Field(min_length=12, max_length=13)
     nombre_min_caracteres: int = Field(ge=1)
     campos_fecha: list[str] = Field(min_length=1)
+
+    @field_validator("patrones")
+    @classmethod
+    def _patrones_validos(cls, v: dict[str, list[str]]) -> dict[str, list[str]]:
+        for lista in v.values():
+            _compilar_todas(lista, "patrones")
+        return v
 
 
 def cargar_validador(carpeta: Path | None = None) -> ConfigValidador:

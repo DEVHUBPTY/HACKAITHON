@@ -70,6 +70,7 @@ class CacheLlm:
     def __init__(self, carpeta: Path | None = None, cfg: ConfigCache | None = None) -> None:
         self.cfg = cfg or cargar_cache()
         self.carpeta = carpeta if carpeta is not None else RAIZ / self.cfg.ruta
+        self.usadas: set[str] = set()  # claves leídas con éxito: lo que una verificación completa necesita (E1-13, ``podar``)
 
     def _ruta(self, clave: str) -> Path:
         return self.carpeta / f"{clave}.json"
@@ -86,7 +87,19 @@ class CacheLlm:
         if not isinstance(datos, dict) or datos.get("clave") != clave or not isinstance(respuesta, str) or not respuesta.strip():
             log.warning("entrada de caché inválida %s…: se ignora", clave[:12])
             return None
+        self.usadas.add(clave)
         return respuesta
+
+    def podar(self, conservar: set[str] | None = None) -> int:
+        """Borra las respuestas que ya nadie usa (de prompts o validadores anteriores): todas las que no estén en ``conservar`` (por defecto,
+        las leídas con éxito en esta ejecución). Devuelve cuántas borró."""
+        conservar = self.usadas if conservar is None else conservar
+        borradas = 0
+        for archivo in self.carpeta.glob("*.json") if self.carpeta.exists() else []:
+            if archivo.stem not in conservar:
+                archivo.unlink()
+                borradas += 1
+        return borradas
 
     def guardar(self, clave: str, respuesta: str, meta: Mapping[str, Any]) -> bool:
         """Guarda la respuesta (escritura atómica), sea o no JSON válido: el reintento de la generación depende de que la primera

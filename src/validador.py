@@ -59,6 +59,7 @@ logger = logging.getLogger(__name__)
 
 ESPACIOS = re.compile(r"\s+")
 COMILLAS = re.compile(r"[\"“«](.+?)[\"”»]")
+COMILLAS_SIMPLES = re.compile(r"(?<!\w)'(.+?)'(?!\w)")  # un apóstrofo («L'Équipe») no abre una cita
 HASHTAG = re.compile(r"#\w+")
 ENV_REGISTRO = "RECHAZOS_JSONL"  # sobrescribe la ruta del registro (las pruebas no escriben en outputs/)
 MARCA_EXCESO = "supera el máximo"
@@ -102,6 +103,7 @@ PREGUNTA_SIN_VACIO = "pregunta_sin_vacio"
 LEYENDA = "leyenda_alcance"
 MARCA = "marca_borrador"
 SECCION_DESCONOCIDA = "seccion_desconocida"
+ATRIBUCION_INCORRECTA = "atribucion_incorrecta"
 
 
 # ============================================================================================ el rechazo
@@ -211,28 +213,92 @@ def _candidatos(token: str) -> set[Decimal]:
     return {Decimal(re.sub(r"[.,]", "", t[:ultimo]) + "." + t[ultimo + 1 :])}
 
 
-def numeros_de(texto: str, meses: Sequence[str]) -> list[tuple[str, set[Decimal]]]:
-    """Cifras del texto (sin las fechas), cada una con sus valores posibles. «1,5 %» y «1.5» dan el mismo valor."""
-    _, resto = extraer_fechas(texto, meses)
-    return [(m.group(0), _candidatos(m.group(0))) for m in _NUM.finditer(resto)]
+def _numero_en_palabras(run: list[str], cfg: ConfigValidador) -> Decimal:
+    """Valor de una secuencia de palabras numéricas («dos mil quinientos», «dos coma nueve»)."""
+    total, actual, decimales = 0, 0, None
+    unidades = {**cfg.palabras_numero, **cfg.numerales_en_compuesto}
+    for w in run:
+        if w == "y":
+            continue
+        if w == "coma":
+            decimales = []
+            continue
+        if decimales is not None:
+            decimales.append(str(unidades[w]))
+        elif w in cfg.multiplicadores:
+            if cfg.multiplicadores[w] >= 1_000_000:
+                total, actual = total + max(actual, 1) * cfg.multiplicadores[w], 0
+            else:
+                actual = max(actual, 1) * cfg.multiplicadores[w]
+        else:
+            actual += unidades[w]
+    valor = Decimal(total + actual)
+    return valor + Decimal("0." + "".join(decimales)) if decimales else valor
+
+
+def _numeros_en_palabras(texto_plano: str, cfg: ConfigValidador) -> list[tuple[str, set[Decimal]]]:
+    """Cifras escritas con palabras: «tres», «mil quinientos», «dos coma nueve». «un»/«una» solos no cuentan."""
+    simples = set(cfg.palabras_numero) | set(cfg.multiplicadores)
+    compuestos = set(cfg.numerales_en_compuesto)
+    tokens = re.findall(r"[a-z]+", re.sub(r"\bpor ciento\b", " ", texto_plano))  # «por ciento» es el %, no la cifra 100
+    salida: list[tuple[str, set[Decimal]]] = []
+    i = 0
+    while i < len(tokens):
+        if tokens[i] not in simples:
+            i += 1
+            continue
+        run = [tokens[i]]
+        j = i + 1
+        while j < len(tokens):
+            t = tokens[j]
+            if t in simples or (t in compuestos and run[-1] in ("y", *cfg.palabras_numero)) :
+                run.append(t)
+            elif t == "y" and j + 1 < len(tokens) and (tokens[j + 1] in simples or tokens[j + 1] in compuestos):
+                run.append(t)
+            elif t == "coma" and j + 1 < len(tokens) and (tokens[j + 1] in cfg.palabras_numero or tokens[j + 1] in compuestos):
+                run.append(t)
+            else:
+                break
+            j += 1
+        try:
+            salida.append((" ".join(run), {_numero_en_palabras(run, cfg)}))
+        except (KeyError, ArithmeticError):
+            pass
+        i = j
+    return salida
+
+
+def numeros_de(texto: str, cfg: ConfigValidador) -> list[tuple[str, set[Decimal]]]:
+    """Cifras del texto (sin las fechas), en dígitos o en palabras, cada una con sus valores posibles. «1,5 %» y «1.5» dan el mismo valor."""
+    _, resto = extraer_fechas(texto, cfg.meses)
+    return [(m.group(0), _candidatos(m.group(0))) for m in _NUM.finditer(resto)] + _numeros_en_palabras(resto, cfg)
+
+
+def cantidades_vagas_de(texto: str, cfg: ConfigValidador) -> list[str]:
+    """«Miles de», «decenas de», «la mitad»…: cantidades que no se pueden comparar con una cifra."""
+    p = plano(texto)
+    return [c for c in cfg.cantidades_vagas if contiene(p, c)]
 
 
 def _coincide(valor: Decimal, otro: Decimal, cfg: ConfigValidador) -> bool:
+    """La cifra del texto respalda el valor citado: igual, o redondeada a los decimales que escribe (al menos ``decimales_minimos``) y
+    dentro de la tolerancia relativa. «2 %» no respalda 1.5; «1,5 %» y «1,49 %» sí."""
     n = cfg.numeros
     if abs(valor - otro) <= Decimal(str(n.tolerancia_absoluta)):
         return True
-    if n.redondeo_permitido:
-        d = max(0, -int(valor.as_tuple().exponent))  # type: ignore[arg-type]
-        if d <= n.decimales_maximos and otro.quantize(Decimal(1).scaleb(-d), rounding=ROUND_HALF_UP) == valor:
-            return True
-    return False
+    d = max(0, -int(valor.as_tuple().exponent))  # type: ignore[arg-type]
+    if d < n.decimales_minimos or d > n.decimales_maximos:
+        return False
+    if n.redondeo_permitido and otro.quantize(Decimal(1).scaleb(-d), rounding=ROUND_HALF_UP) == valor:
+        return True
+    return otro != 0 and abs(valor - otro) / abs(otro) <= Decimal(str(n.tolerancia_relativa))
 
 
 def cifras_sin_respaldo(texto: str, fuentes: Iterable[str], cfg: ConfigValidador) -> list[str]:
-    """Cifras del texto que ninguna fuente trae (normalizadas: coma o punto decimal, %, separador de miles)."""
-    respaldo = [c for f in fuentes for _, c in numeros_de(f, cfg.meses)]
+    """Cifras del texto que ninguna fuente trae (normalizadas: coma o punto decimal, %, separador de miles, palabras)."""
+    respaldo = [c for f in fuentes for _, c in numeros_de(f, cfg)]
     faltan = []
-    for token, candidatos in numeros_de(texto, cfg.meses):
+    for token, candidatos in numeros_de(texto, cfg):
         if not any(_coincide(v, o, cfg) for v in candidatos for conj in respaldo for o in conj):
             faltan.append(token)
     return faltan
@@ -309,6 +375,14 @@ class Contexto:
     def medio(self, id_: str) -> str:
         r = self.registros.get(id_)
         return r.contexto.get("medio", "") if r else ""
+
+    def texto_citado(self, citas: Iterable[tuple[str, str]]) -> str:
+        """Solo los campos citados (la spec dice «el titular citado»), no todo el registro."""
+        return " ".join(self.valor(i, c) for i, c in citas)
+
+    def traducido(self, id_: str) -> bool:
+        r = self.registros.get(id_)
+        return bool(r and r.idioma and r.idioma != self.cfg.traducido.idioma_base)
 
     def texto_registro(self, id_: str) -> str:
         r = self.registros.get(id_)
@@ -402,9 +476,18 @@ def _fragmento_en(p: str, frase: str, original: str) -> str:
     return original[m.start() : m.end()] if m and len(plano(original)) == len(p) else frase
 
 
-def _literal_en(ctx: Contexto, frase: str, ids: Iterable[str]) -> bool:
-    evidencia = plano(" ".join(ctx.texto_registro(i) for i in ids))
-    return contiene(evidencia, frase)
+def _literal_en(ctx: Contexto, frase: str, citas: Iterable[tuple[str, str]]) -> bool:
+    """La frase está literalmente en el campo citado (sin distinguir mayúsculas ni tildes)."""
+    return contiene(plano(ctx.texto_citado(citas)), frase)
+
+
+def _acento(texto: str) -> str:
+    return unicodedata.normalize("NFC", texto).casefold()
+
+
+def _contiene_acento(texto: str, frase: str) -> bool:
+    """Como ``contiene`` pero conservando las tildes: «robó» (verbo) y «robo» (sustantivo) son palabras distintas (L4)."""
+    return re.search(rf"(?<!\w){re.escape(_acento(frase))}(?!\w)", _acento(texto)) is not None
 
 
 def _reglas_de_texto(
@@ -424,17 +507,17 @@ def _reglas_de_texto(
         conf = ctx.val.listas.get(nombre)
         if conf and conf.tipos and not tipos & set(conf.tipos):
             continue
-        for f in frases:
-            if not contiene(p, f):
-                continue
-            if conf and conf.excepcion_literal and seccion not in conf.sin_excepcion_en and _literal_en(ctx, f, ids):
+        encontradas = [f for f in frases if contiene(p, f)]
+        encontradas += [m.group(0) for pat in ctx.val.patrones.get(nombre, []) if (m := re.search(pat, p))]
+        for f in dict.fromkeys(encontradas):
+            if conf and conf.excepcion_literal and seccion not in conf.sin_excepcion_en and _literal_en(ctx, f, s.citas):
                 continue
             out.append(Rechazo(nombre, f"frase prohibida ({nombre}): «{f}»", f))
     for f in ctx.val.detalle_sin_cita:
-        if contiene(p, f) and not _literal_en(ctx, f, ids):
+        if contiene(p, f) and not _literal_en(ctx, f, s.citas):
             out.append(Rechazo(DETALLE_SIN_CITA, f"detalle que la evidencia citada no trae: «{f}»", f))
-    fuente = ESPACIOS.sub(" ", plano(" ".join(ctx.texto_registro(i) for i in ids)))
-    for m in COMILLAS.finditer(texto):
+    fuente = ESPACIOS.sub(" ", plano(ctx.texto_citado(s.citas)))
+    for m in [*COMILLAS.finditer(texto), *COMILLAS_SIMPLES.finditer(texto)]:
         if ESPACIOS.sub(" ", plano(m.group(1))).strip() not in fuente:
             out.append(Rechazo(COMILLAS_NO_LITERALES, f"comillas que no son literales del titular citado: «{m.group(1)}»", m.group(1)))
     out += _causalidad(texto, p, s, ctx)
@@ -465,7 +548,7 @@ def _causal_permitido(c: str, texto: str, s: Soporte, ctx: Contexto) -> bool:
     if s.directas:
         for a in s.directas:
             if a.tipo == "declaración":
-                if not _literal_en(ctx, c, [x.id for x in a.citas]):
+                if not _literal_en(ctx, c, [(x.id, x.campo) for x in a.citas]):
                     return False
             elif a.tipo == "hipótesis":
                 if not ctx.condicional(texto):
@@ -474,7 +557,7 @@ def _causal_permitido(c: str, texto: str, s: Soporte, ctx: Contexto) -> bool:
                 return False
         return True
     if s.tipos == ["declaración"]:  # afirmación suelta: el tipo es el propio
-        return _literal_en(ctx, c, s.ids)
+        return _literal_en(ctx, c, s.citas)
     return s.tipos == ["hipótesis"] and ctx.condicional(texto)
 
 
@@ -488,16 +571,18 @@ def _causalidad(texto: str, p: str, s: Soporte, ctx: Contexto) -> list[Rechazo]:
 
 
 def _acusaciones(texto: str, p: str, s: Soporte, ctx: Contexto) -> list[Rechazo]:
-    """D-68: una acusación es siempre una declaración atribuida a un medio y presente en el titular citado."""
+    """D-68: una acusación (verbo, participio, sustantivo o forma condicional) es siempre una declaración atribuida a un medio y presente
+    literal en el campo citado. Se compara con tildes: «robó» y «robo» son entradas distintas."""
     out: list[Rechazo] = []
+    citado = ctx.texto_citado(s.citas)
     for a in ctx.val.acusaciones:
-        if not contiene(p, a):
+        if not _contiene_acento(texto, a):
             continue
         if s.directas:
             tipos_ok = all(x.tipo == "declaración" for x in s.directas)
         else:
             tipos_ok = bool(s.tipos) and s.tipos[0] == "declaración"
-        if tipos_ok and ctx.atribuido(texto, s.ids) and _literal_en(ctx, a, s.ids):
+        if tipos_ok and ctx.atribuido(texto, s.ids) and _contiene_acento(citado, a):
             continue
         out.append(Rechazo(ACUSACION, f"acusación fuera de una declaración atribuida a un medio y literal del titular: «{a}»", a))
     return out
@@ -509,6 +594,10 @@ def _numerico(texto: str, s: Soporte, ctx: Contexto) -> list[Rechazo]:
     fuentes = [*ctx.fuentes_de(s.citas), *s.textos]
     for c in cifras_sin_respaldo(texto, fuentes, ctx.val):
         out.append(Rechazo(CIFRA_NO_COINCIDE, f"la cifra «{c}» no coincide con el valor de la evidencia citada", c))
+    respaldo = plano(" ".join(fuentes))
+    for q in cantidades_vagas_de(texto, ctx.val):
+        if not contiene(respaldo, q):
+            out.append(Rechazo(CIFRA_NO_COINCIDE, f"una cantidad sin cifra exacta («{q}») que la evidencia citada no trae", q))
     meses = ctx.val.meses
     fechas, _ = extraer_fechas(texto, meses)
     if fechas:
@@ -524,16 +613,47 @@ def _fecha_texto(f: Fecha) -> str:
     return "-".join(str(x).zfill(2) if i else str(x) for i, x in enumerate((y, m, d)) if x is not None) or "?"
 
 
+def _traducciones(texto_fuente: str, ctx: Contexto) -> tuple[set[str], set[str]]:
+    """De un titular en otro idioma: las palabras que una traducción legítima agrega (equivalencias de ``validador.yaml``) y las palabras
+    de la fuente, para reconocer cognados (Singapur / Singapore). Una entidad ausente de ambas sigue rechazándose."""
+    p = plano(texto_fuente)
+    extra: set[str] = set()
+    for es, ingles in ctx.val.equivalencias_traduccion.items():
+        if any(contiene(p, i) for i in ingles):
+            extra |= set(re.findall(r"\w+", plano(es)))
+    return extra, set(re.findall(r"\w+", p))
+
+
 def _nombres_nuevos(texto: str, s: Soporte, ctx: Contexto) -> list[Rechazo]:
-    """Nombres propios que ni las afirmaciones de apoyo ni la evidencia citada traen (D-41)."""
-    permitido = " ".join([*s.textos, *(ctx.texto_registro(i) for i in s.ids), *(ctx.medio(i) for i in s.ids), *ctx.val.nombres_permitidos])
+    """Nombres propios que ni los campos citados, su contexto (medio, indicador), ni las afirmaciones de apoyo traen (D-41, D-51)."""
+    ids = s.ids
+    contexto = [v for i in ids for v in (ctx.registros[i].contexto.values() if i in ctx.registros else [])]
+    permitido = " ".join([*s.textos, ctx.texto_citado(s.citas), *contexto, *ctx.val.nombres_permitidos])
     tokens = set(re.findall(r"\w+", plano(permitido)))
+    traducidos = [i for i in ids if ctx.traducido(i)]
+    palabras_fuente: set[str] = set()
+    if traducidos:
+        extra, palabras_fuente = _traducciones(ctx.texto_citado(c for c in s.citas if c[0] in traducidos), ctx)
+        tokens |= extra
+    k = ctx.val.cognados_prefijo_min
     out: list[Rechazo] = []
     for n in nombres_propios(texto, ctx):
         partes = re.findall(r"\w+", plano(n))
-        if partes and not all(x in tokens for x in partes):
+        conocido = all(x in tokens or (palabras_fuente and len(x) >= k and any(w[:k] == x[:k] for w in palabras_fuente if len(w) >= k)) for x in partes)
+        if partes and not conocido:
             out.append(Rechazo(NOMBRE_NUEVO, f"el nombre «{n}» no está en las afirmaciones ni en la evidencia citadas", n))
     return out
+
+
+def _atribucion_incorrecta(texto: str, s: Soporte, ctx: Contexto) -> list[Rechazo]:
+    """Una declaración no nombra a un medio de la ficha que no es el de sus citas («Reuters reporta» sobre un titular de TVN)."""
+    propios = {plano(ctx.medio(i)) for i in s.ids}
+    p = plano(texto)
+    return [
+        Rechazo(ATRIBUCION_INCORRECTA, f"la declaración se atribuye a «{r.contexto['medio']}», que no es el medio del registro citado", r.contexto["medio"])
+        for r in ctx.registros.values()
+        if r.contexto.get("medio") and plano(r.contexto["medio"]) not in propios and contiene(p, r.contexto["medio"])
+    ]
 
 
 def _anio_y_volatiles(texto: str, directas: Sequence[Any], ctx: Contexto, *, todos_los_anios: bool = True) -> list[Rechazo]:
@@ -611,6 +731,10 @@ def _errores_de_afirmacion(a: Any, ctx: Contexto) -> list[Rechazo]:
         out += _anio_y_volatiles(a.texto, [a], ctx)
     s = Soporte(citas=[(c.id, c.campo) for c in a.citas], textos=[], tipos=[a.tipo])
     out += _reglas_de_texto(a.texto, s, ctx, "afirmaciones", numerico=a.tipo in ("hecho", "declaración"))
+    if a.tipo in ("hecho", "declaración"):
+        out += _nombres_nuevos(a.texto, s, ctx)
+    if a.tipo == "declaración":
+        out += _atribucion_incorrecta(a.texto, s, ctx)
     return _sin_fugas(out)
 
 
@@ -690,8 +814,11 @@ def _es_transicion(texto: str, ctx: Contexto) -> list[str]:
     problemas: list[str] = []
     if contar_palabras(texto, ctx) > t.max_palabras:
         problemas.append(f"más de {t.max_palabras} palabras")
-    if any(c.isdigit() for c in texto):
+    if any(c.isdigit() for c in texto) or numeros_de(texto, ctx.val) or cantidades_vagas_de(texto, ctx.val):
         problemas.append("trae cifras o fechas")
+    p = plano(texto)
+    if juicios := [j for j in ctx.val.juicios_transicion if contiene(p, j)]:
+        problemas.append(f"lleva un juicio de valor sin cita ({', '.join(juicios)})")
     fechas, _ = extraer_fechas(texto, ctx.val.meses)
     if fechas and "trae cifras o fechas" not in problemas:
         problemas.append("trae fechas")
@@ -852,18 +979,22 @@ def leyenda_esperada(ctx: Contexto) -> str:
     return ley.con_descripcion if ctx.ficha.uso_descripcion else ley.titular_metadatos
 
 
-def validar_leyenda(texto: str, ctx: Contexto) -> list[Rechazo]:
+def validar_leyenda_texto(texto: str, uso_descripcion: bool, restricciones: ConfigRestricciones | None = None) -> list[Rechazo]:
     """Toda salida (ficha, sección, consulta, boletín, exportación) lleva la leyenda correcta; la otra la delataría como falsa."""
-    ley = ctx.restricciones.leyendas_alcance
-    esperada = leyenda_esperada(ctx)
-    otra = ley.titular_metadatos if esperada == ley.con_descripcion else ley.con_descripcion
+    ley = (restricciones or cargar_restricciones()).leyendas_alcance
+    esperada = ley.con_descripcion if uso_descripcion else ley.titular_metadatos
+    otra = ley.titular_metadatos if uso_descripcion else ley.con_descripcion
     p = plano(texto)
     out: list[Rechazo] = []
     if plano(esperada) not in p:
         out.append(Rechazo(LEYENDA, f"falta la leyenda de alcance: «{esperada}»", esperada))
     if plano(otra) in p:
-        out.append(Rechazo(LEYENDA, f"la leyenda no corresponde a lo que se usó (descripción del RSS: {'sí' if ctx.ficha.uso_descripcion else 'no'}): «{otra}»", otra))
+        out.append(Rechazo(LEYENDA, f"la leyenda no corresponde a lo que se usó (descripción del RSS: {'sí' if uso_descripcion else 'no'}): «{otra}»", otra))
     return out
+
+
+def validar_leyenda(texto: str, ctx: Contexto) -> list[Rechazo]:
+    return validar_leyenda_texto(texto, bool(ctx.ficha.uso_descripcion), ctx.restricciones)
 
 
 _SECCIONES_PAQUETE = ("titulo", "titulo_trabajo", "titulares", "enfoque", "brief", "guion", "resumen_web", "copy_digital", "preguntas")
@@ -876,11 +1007,15 @@ def validar_paquete(paquete: Any, ctx: Contexto) -> list[Rechazo]:
         out.append(Rechazo(MARCA, f"el paquete lleva la marca «{ctx.restricciones.marca_borrador}»", paquete.marca))
     out += validar_leyenda(paquete.leyenda_alcance, ctx)
     ctx.afirmaciones = {a.id: a for a in paquete.afirmaciones}
-    for s in _SECCIONES_PAQUETE:
-        valor = getattr(paquete, s, None)
-        if valor in (None, [], ""):
-            continue
-        out += [replace(r, seccion=s) for r in validar_seccion(s, valor, ctx)]
+    system, ctx.system = ctx.system, ""  # la fuga del system prompt ya se revisó al generar cada sección, con el prompt que le tocaba
+    try:
+        for s in _SECCIONES_PAQUETE:
+            valor = getattr(paquete, s, None)
+            if valor in (None, [], ""):
+                continue
+            out += [replace(r, seccion=s) for r in validar_seccion(s, valor, ctx)]
+    finally:
+        ctx.system = system
     return out
 
 
@@ -946,33 +1081,55 @@ def _proporcion(k: int, n: int) -> dict[str, Any]:
     return {"k": k, "n": n, "tasa": (k / n) if n else None, "ic95": [round(lo, 4), round(hi, 4)]}
 
 
+def _clave_unidad(x: dict[str, Any]) -> str:
+    """Tipo de unidad: «afirmacion» o «seccion:<nombre>» (cada sección tiene su propio denominador)."""
+    return "afirmacion" if x["unidad"] == "afirmacion" else f"seccion:{x['seccion']}"
+
+
 def calcular_tasas(ruta: Path | None = None) -> dict[str, Any]:
-    """Tasa de rechazo por modelo (unidades rechazadas / evaluadas) y por regla (unidades en que la regla rechazó / evaluadas)."""
+    """Tasas de rechazo, cada una con su n y su IC de Wilson al 95 %:
+
+    - ``por_modelo``: unidades rechazadas / evaluadas del modelo;
+    - ``por_unidad``: lo mismo por tipo de unidad (``afirmacion``, ``seccion:brief``…);
+    - ``por_regla``: unidades en que la regla rechazó (una vez por unidad aunque dispare varias veces) / evaluadas **de ese tipo de unidad**.
+    """
     ruta = ruta or ruta_registro()
     evaluadas: Counter[str] = Counter()
     rechazadas: Counter[str] = Counter()
-    por_regla: Counter[tuple[str, str]] = Counter()
-    unidades: set[tuple[Any, ...]] = set()
+    eval_u: Counter[tuple[str, str]] = Counter()
+    rech_u: Counter[tuple[str, str]] = Counter()
+    por_regla: Counter[tuple[str, str, str]] = Counter()
+    vistos: set[tuple[Any, ...]] = set()
     if ruta.exists():
         for linea in ruta.read_text(encoding="utf-8").splitlines():
             if not linea.strip():
                 continue
             x = json.loads(linea)
-            clave_modelo = f"{x.get('proveedor', '')}/{x.get('modelo', '')}"
+            modelo = f"{x.get('proveedor', '')}/{x.get('modelo', '')}"
+            u = _clave_unidad(x)
             if x["evento"] == "evaluacion":
-                evaluadas[clave_modelo] += 1
-                rechazadas[clave_modelo] += x["resultado"] == "rechazada"
+                evaluadas[modelo] += 1
+                rechazadas[modelo] += x["resultado"] == "rechazada"
+                eval_u[(modelo, u)] += 1
+                rech_u[(modelo, u)] += x["resultado"] == "rechazada"
             elif x["evento"] == "rechazo":
-                clave = (x["ts"], x["id_caso"], x["unidad"], x["seccion"], x["item"], x["intento"], x["regla"], clave_modelo)
-                if clave not in unidades:  # una regla cuenta una vez por unidad aunque dispare varias veces
-                    unidades.add(clave)
-                    por_regla[(x["regla"], clave_modelo)] += 1
-    reglas = sorted({r for r, _ in por_regla})
+                clave = (x["ts"], x["id_caso"], x["unidad"], x["seccion"], x["item"], x["intento"], x["regla"], modelo)
+                if clave not in vistos:
+                    vistos.add(clave)
+                    por_regla[(x["regla"], modelo, u)] += 1
+    reglas = sorted({r for r, _, _ in por_regla})
     return {
         "unidades_evaluadas": sum(evaluadas.values()),
         "por_modelo": {m: _proporcion(rechazadas[m], n) for m, n in sorted(evaluadas.items())},
+        "por_unidad": {
+            m: {u: _proporcion(rech_u[(mm, u)], n) for (mm, u), n in sorted(eval_u.items()) if mm == m} for m in sorted(evaluadas)
+        },
         "por_regla": {
-            r: {m: _proporcion(c, evaluadas[m]) for (rr, m), c in sorted(por_regla.items()) if rr == r} for r in reglas
+            r: {
+                m: {u: _proporcion(c, eval_u[(m, u)]) for (rr, mm, u), c in sorted(por_regla.items()) if rr == r and mm == m}
+                for m in sorted({mm for (rr, mm, _) in por_regla if rr == r})
+            }
+            for r in reglas
         },
     }
 

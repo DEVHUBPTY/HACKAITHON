@@ -30,7 +30,7 @@ prefijos:
 campos_conteo: [n_titulares, n_medios, n_procedencias]
 
 # Un dato oficial anual no se describe con estas palabras (CLAUDE.md: «actual», «hoy»), comparadas sin tildes y como palabra completa.
-volatiles: [actual, actualmente, hoy]
+volatiles: [actual, actualmente, hoy, en la actualidad, a la fecha, en este momento, vigente, este año, recientemente, ayer]
 # Cada dato de una línea de la ficha viene como «PAÍS AAAA: valor unidad»; se toma el valor de cada uno (separados por «;»).
 patron_valor_por_anio: '[A-Z]{3} \d{4}: ([^;]+)'
 # El año de un ID anual (IND-PAN-FP.CPI.TOTL.ZG-2024) es el último grupo de dígitos tras el guion; se exige en el texto.
