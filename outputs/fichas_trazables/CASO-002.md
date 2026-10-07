@@ -1,3 +1,5 @@
+> **Caso de uso CU-01** — ¿Qué cinco temas merecen revisión para la agenda de Panamá y por qué? · elegida por: primero del ranking
+
 # CASO-002 · Ficha de evidencia · GRP-21ad932d54
 **BORRADOR · requiere revisión**
 
@@ -5,7 +7,7 @@
 - Versión del borrador: sin borrador
 - Modalidad: Editorial
 - Alcance: basado únicamente en titular/metadatos
-- Exportado: 2026-10-07 16:47 (hora de Panamá)
+- Exportado: 2026-10-07 16:54 (hora de Panamá)
 
 ## 1 · Qué se reporta
 - Titular central: «Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá» — TVN Panamá

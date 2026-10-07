@@ -1,3 +1,5 @@
+> **Caso de uso CU-02** — Tema económico con serie oficial y brief, sin confundir dato anual con medición de hoy · elegida por: tema=economia, con_dato_oficial=True
+
 # CASO-003 · Ficha de evidencia · GRP-81a11a5998
 **BORRADOR · requiere revisión**
 
@@ -5,7 +7,7 @@
 - Versión del borrador: sin borrador
 - Modalidad: Editorial
 - Alcance: basado únicamente en titular/metadatos
-- Exportado: 2026-10-07 16:47 (hora de Panamá)
+- Exportado: 2026-10-07 16:54 (hora de Panamá)
 
 ## 1 · Qué se reporta
 - Titular central: «¿Cómo se fija el precio del combustible en Panamá? El MEF explica la fórmula quincenal tras aprobarse nuevo subsidio» — panamaamerica.com.pa

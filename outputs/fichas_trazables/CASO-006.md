@@ -1,3 +1,5 @@
+> **Caso de uso CU-03** — Repetición frente a corroboración independiente; una agencia replicada cuenta como una procedencia · elegida por: mas_titulares_que_procedencias=True, procedencias_minimas=2
+
 # CASO-006 · Ficha de evidencia · GRP-0dfdd5a021
 **BORRADOR · requiere revisión**
 
@@ -5,7 +7,7 @@
 - Versión del borrador: sin borrador
 - Modalidad: Editorial
 - Alcance: basado únicamente en titular/metadatos
-- Exportado: 2026-10-07 16:47 (hora de Panamá)
+- Exportado: 2026-10-07 16:54 (hora de Panamá)
 
 ## 1 · Qué se reporta
 - Titular central: «Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika» — tz.de

@@ -2,6 +2,7 @@
   "aviso": "REVISIÓN PROVISIONAL DEL ASISTENTE, NO HUMANA (D-101): la rehace una persona en C-09. Todo es BORRADOR.",
   "borrador": true,
   "con_casos": true,
+  "decision": "D-118",
   "fecha_referencia": "2026-10-07T00:41:03Z",
   "fichas": [
     {
@@ -291,224 +292,6 @@
         {
           "campo": "n_titulares",
           "existe_en_datos": true,
-          "id": "GRP-e78a143f9a",
-          "tipo": "hecho",
-          "url": null,
-          "valor": "2"
-        },
-        {
-          "campo": "n_medios",
-          "existe_en_datos": true,
-          "id": "GRP-e78a143f9a",
-          "tipo": "hecho",
-          "url": null,
-          "valor": "2"
-        },
-        {
-          "campo": "n_procedencias",
-          "existe_en_datos": true,
-          "id": "GRP-e78a143f9a",
-          "tipo": "hecho",
-          "url": null,
-          "valor": "2"
-        },
-        {
-          "campo": "titulo_limpio",
-          "existe_en_datos": true,
-          "id": "NOT-1fce9a0925",
-          "tipo": "declaración",
-          "url": "https://www.panamaamerica.com.pa/economia/ejecutivo-sanciona-la-ley-552-del-presupuesto-del-canal-de-panama-por-5555-millones-1266965",
-          "valor": "Ejecutivo sanciona la Ley 552 del Presupuesto del Canal de Panamá por $5,555 millones"
-        },
-        {
-          "campo": "titulo_limpio",
-          "existe_en_datos": true,
-          "id": "NOT-5a4863366a",
-          "tipo": "declaración",
-          "url": "https://www.critica.com.pa/nacional/canal-de-panama-manejara-presupuesto-de-b5555-millones-para-2027-517398",
-          "valor": "Canal de Panamá manejará presupuesto de B /. 5,555 millones para 2027"
-        }
-      ],
-      "comprobaciones": {
-        "afirmacion_con_cita": {
-          "n": 4,
-          "ok": 4
-        },
-        "cifra_de_conteo_coincide": {
-          "n": 3,
-          "ok": 3
-        },
-        "cinco_partes": {
-          "n": 1,
-          "ok": 1
-        },
-        "cita_con_campo_y_valor": {
-          "n": 5,
-          "ok": 5
-        },
-        "cita_con_id_en_datos": {
-          "n": 5,
-          "ok": 5
-        },
-        "contrato_fichas_jsonl": {
-          "n": 1,
-          "ok": 1
-        },
-        "declaracion_literal": {
-          "n": 2,
-          "ok": 2
-        },
-        "leyenda_de_alcance": {
-          "n": 1,
-          "ok": 1
-        },
-        "marca_borrador": {
-          "n": 1,
-          "ok": 1
-        },
-        "procedencias_y_estado": {
-          "n": 1,
-          "ok": 1
-        },
-        "revision_provisional_visible": {
-          "n": 1,
-          "ok": 1
-        },
-        "sin_descripcion_rss": {
-          "n": 2,
-          "ok": 2
-        },
-        "sin_nombres_de_autor": {
-          "n": 1,
-          "ok": 1
-        },
-        "url_presente": {
-          "n": 4,
-          "ok": 4
-        }
-      },
-      "fallos": [],
-      "id_caso": "CASO-004",
-      "id_grupo": "GRP-e78a143f9a"
-    },
-    {
-      "citas": [
-        {
-          "campo": "n_titulares",
-          "existe_en_datos": true,
-          "id": "GRP-da35c3dead",
-          "tipo": "hecho",
-          "url": null,
-          "valor": "3"
-        },
-        {
-          "campo": "n_medios",
-          "existe_en_datos": true,
-          "id": "GRP-da35c3dead",
-          "tipo": "hecho",
-          "url": null,
-          "valor": "3"
-        },
-        {
-          "campo": "n_procedencias",
-          "existe_en_datos": true,
-          "id": "GRP-da35c3dead",
-          "tipo": "hecho",
-          "url": null,
-          "valor": "3"
-        },
-        {
-          "campo": "titulo_limpio",
-          "existe_en_datos": true,
-          "id": "NOT-1819a7014e",
-          "tipo": "declaración",
-          "url": "https://www.prensa-latina.cu/2026/10/01/presidente-panameno-visitara-singapur-y-vietnam/",
-          "valor": "Presidente panameño visitará Singapur y Vietnam"
-        },
-        {
-          "campo": "titulo_limpio",
-          "existe_en_datos": true,
-          "id": "NOT-33032542b7",
-          "tipo": "declaración",
-          "url": "https://www.laestrella.com.pa/panama/politica/mulino-viajara-a-asia-suscribira-convenios-bilaterales-con-singapur-y-vietnam-HH26129842",
-          "valor": "Mulino viajará a Asia: suscribirá convenios bilaterales con Singapur y Vietnam"
-        },
-        {
-          "campo": "titulo_limpio",
-          "existe_en_datos": true,
-          "id": "NOT-fbc3efaa5d",
-          "tipo": "declaración",
-          "url": "https://www.revistaeyn.com/centroamericaymundo/presidente-de-panama-visita-singapur-y-vietnam-en-busca-de-inversiones-ED32208738",
-          "valor": "Presidente de Panamá visita Singapur y Vietnam en busca de inversiones"
-        }
-      ],
-      "comprobaciones": {
-        "afirmacion_con_cita": {
-          "n": 5,
-          "ok": 5
-        },
-        "cifra_de_conteo_coincide": {
-          "n": 3,
-          "ok": 3
-        },
-        "cinco_partes": {
-          "n": 1,
-          "ok": 1
-        },
-        "cita_con_campo_y_valor": {
-          "n": 6,
-          "ok": 6
-        },
-        "cita_con_id_en_datos": {
-          "n": 6,
-          "ok": 6
-        },
-        "contrato_fichas_jsonl": {
-          "n": 1,
-          "ok": 1
-        },
-        "declaracion_literal": {
-          "n": 3,
-          "ok": 3
-        },
-        "leyenda_de_alcance": {
-          "n": 1,
-          "ok": 1
-        },
-        "marca_borrador": {
-          "n": 1,
-          "ok": 1
-        },
-        "procedencias_y_estado": {
-          "n": 1,
-          "ok": 1
-        },
-        "revision_provisional_visible": {
-          "n": 1,
-          "ok": 1
-        },
-        "sin_descripcion_rss": {
-          "n": 3,
-          "ok": 3
-        },
-        "sin_nombres_de_autor": {
-          "n": 1,
-          "ok": 1
-        },
-        "url_presente": {
-          "n": 6,
-          "ok": 6
-        }
-      },
-      "fallos": [],
-      "id_caso": "CASO-005",
-      "id_grupo": "GRP-da35c3dead"
-    },
-    {
-      "citas": [
-        {
-          "campo": "n_titulares",
-          "existe_en_datos": true,
           "id": "GRP-0dfdd5a021",
           "tipo": "hecho",
           "url": null,
@@ -688,21 +471,231 @@
       "fallos": [],
       "id_caso": "CASO-006",
       "id_grupo": "GRP-0dfdd5a021"
+    },
+    {
+      "citas": [
+        {
+          "campo": "n_titulares",
+          "existe_en_datos": true,
+          "id": "GRP-5e6531917f",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "1"
+        },
+        {
+          "campo": "n_medios",
+          "existe_en_datos": true,
+          "id": "GRP-5e6531917f",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "1"
+        },
+        {
+          "campo": "n_procedencias",
+          "existe_en_datos": true,
+          "id": "GRP-5e6531917f",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "1"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-0d91fa48b0",
+          "tipo": "declaración",
+          "url": "https://www.tvn-2.com/nacionales/30-mujeres-han-muerto-forma_1_2264499.html",
+          "valor": "Más de 30 mujeres han muerto de forma violenta en Panamá este año"
+        }
+      ],
+      "comprobaciones": {
+        "afirmacion_con_cita": {
+          "n": 3,
+          "ok": 3
+        },
+        "cifra_de_conteo_coincide": {
+          "n": 3,
+          "ok": 3
+        },
+        "cinco_partes": {
+          "n": 1,
+          "ok": 1
+        },
+        "cita_con_campo_y_valor": {
+          "n": 4,
+          "ok": 4
+        },
+        "cita_con_id_en_datos": {
+          "n": 4,
+          "ok": 4
+        },
+        "contrato_fichas_jsonl": {
+          "n": 1,
+          "ok": 1
+        },
+        "declaracion_literal": {
+          "n": 1,
+          "ok": 1
+        },
+        "leyenda_de_alcance": {
+          "n": 1,
+          "ok": 1
+        },
+        "marca_borrador": {
+          "n": 1,
+          "ok": 1
+        },
+        "procedencias_y_estado": {
+          "n": 1,
+          "ok": 1
+        },
+        "revision_provisional_visible": {
+          "n": 1,
+          "ok": 1
+        },
+        "sin_descripcion_rss": {
+          "n": 1,
+          "ok": 1
+        },
+        "sin_nombres_de_autor": {
+          "n": 1,
+          "ok": 1
+        },
+        "url_presente": {
+          "n": 2,
+          "ok": 2
+        }
+      },
+      "fallos": [],
+      "id_caso": "CASO-007",
+      "id_grupo": "GRP-5e6531917f"
+    },
+    {
+      "citas": [
+        {
+          "campo": "n_titulares",
+          "existe_en_datos": true,
+          "id": "GRP-da35c3dead",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "3"
+        },
+        {
+          "campo": "n_medios",
+          "existe_en_datos": true,
+          "id": "GRP-da35c3dead",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "3"
+        },
+        {
+          "campo": "n_procedencias",
+          "existe_en_datos": true,
+          "id": "GRP-da35c3dead",
+          "tipo": "hecho",
+          "url": null,
+          "valor": "3"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-1819a7014e",
+          "tipo": "declaración",
+          "url": "https://www.prensa-latina.cu/2026/10/01/presidente-panameno-visitara-singapur-y-vietnam/",
+          "valor": "Presidente panameño visitará Singapur y Vietnam"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-33032542b7",
+          "tipo": "declaración",
+          "url": "https://www.laestrella.com.pa/panama/politica/mulino-viajara-a-asia-suscribira-convenios-bilaterales-con-singapur-y-vietnam-HH26129842",
+          "valor": "Mulino viajará a Asia: suscribirá convenios bilaterales con Singapur y Vietnam"
+        },
+        {
+          "campo": "titulo_limpio",
+          "existe_en_datos": true,
+          "id": "NOT-fbc3efaa5d",
+          "tipo": "declaración",
+          "url": "https://www.revistaeyn.com/centroamericaymundo/presidente-de-panama-visita-singapur-y-vietnam-en-busca-de-inversiones-ED32208738",
+          "valor": "Presidente de Panamá visita Singapur y Vietnam en busca de inversiones"
+        }
+      ],
+      "comprobaciones": {
+        "afirmacion_con_cita": {
+          "n": 5,
+          "ok": 5
+        },
+        "cifra_de_conteo_coincide": {
+          "n": 3,
+          "ok": 3
+        },
+        "cinco_partes": {
+          "n": 1,
+          "ok": 1
+        },
+        "cita_con_campo_y_valor": {
+          "n": 6,
+          "ok": 6
+        },
+        "cita_con_id_en_datos": {
+          "n": 6,
+          "ok": 6
+        },
+        "contrato_fichas_jsonl": {
+          "n": 1,
+          "ok": 1
+        },
+        "declaracion_literal": {
+          "n": 3,
+          "ok": 3
+        },
+        "leyenda_de_alcance": {
+          "n": 1,
+          "ok": 1
+        },
+        "marca_borrador": {
+          "n": 1,
+          "ok": 1
+        },
+        "procedencias_y_estado": {
+          "n": 1,
+          "ok": 1
+        },
+        "revision_provisional_visible": {
+          "n": 1,
+          "ok": 1
+        },
+        "sin_descripcion_rss": {
+          "n": 3,
+          "ok": 3
+        },
+        "sin_nombres_de_autor": {
+          "n": 1,
+          "ok": 1
+        },
+        "url_presente": {
+          "n": 6,
+          "ok": 6
+        }
+      },
+      "fallos": [],
+      "id_caso": "CASO-001",
+      "id_grupo": "GRP-da35c3dead"
     }
   ],
-  "generado_utc": "2026-10-07T21:47:18Z",
+  "generado_utc": "2026-10-07T21:54:33Z",
   "juicio_humano": false,
   "modalidad": "editorial",
   "n_fichas": 5,
   "por_regla": {
     "afirmacion_con_cita": {
       "ic95": [
-        0.8957,
+        0.8928,
         1.0
       ],
       "metodo_ic": "Wilson (z=1.96)",
-      "n": 33,
-      "ok": 33,
+      "n": 32,
+      "ok": 32,
       "proporcion": 1.0
     },
     "cifra_de_conteo_coincide": {
@@ -727,22 +720,22 @@
     },
     "cita_con_campo_y_valor": {
       "ic95": [
-        0.9213,
+        0.9197,
         1.0
       ],
       "metodo_ic": "Wilson (z=1.96)",
-      "n": 45,
-      "ok": 45,
+      "n": 44,
+      "ok": 44,
       "proporcion": 1.0
     },
     "cita_con_id_en_datos": {
       "ic95": [
-        0.9213,
+        0.9197,
         1.0
       ],
       "metodo_ic": "Wilson (z=1.96)",
-      "n": 45,
-      "ok": 45,
+      "n": 44,
+      "ok": 44,
       "proporcion": 1.0
     },
     "contrato_fichas_jsonl": {
@@ -757,12 +750,12 @@
     },
     "declaracion_literal": {
       "ic95": [
-        0.8389,
+        0.8318,
         1.0
       ],
       "metodo_ic": "Wilson (z=1.96)",
-      "n": 20,
-      "ok": 20,
+      "n": 19,
+      "ok": 19,
       "proporcion": 1.0
     },
     "leyenda_de_alcance": {
@@ -807,12 +800,12 @@
     },
     "sin_descripcion_rss": {
       "ic95": [
-        0.8389,
+        0.8318,
         1.0
       ],
       "metodo_ic": "Wilson (z=1.96)",
-      "n": 20,
-      "ok": 20,
+      "n": 19,
+      "ok": 19,
       "proporcion": 1.0
     },
     "sin_nombres_de_autor": {
@@ -827,60 +820,95 @@
     },
     "url_presente": {
       "ic95": [
-        0.9286,
+        0.9259,
         1.0
       ],
       "metodo_ic": "Wilson (z=1.96)",
-      "n": 50,
-      "ok": 50,
+      "n": 48,
+      "ok": 48,
       "proporcion": 1.0
     }
   },
+  "reemplazados": [],
   "seleccion": {
-    "cupos": {
-      "insuficiente": 1,
-      "parcial": 2,
-      "suficiente": 2
-    },
     "elegidas": [
       {
+        "caso_de_uso": "CU-01",
+        "criterio": 0,
+        "elegida_por": "primero del ranking",
         "estado": "insuficiente",
+        "garantia": false,
         "id_caso": "CASO-002",
         "id_grupo": "GRP-21ad932d54",
+        "modalidad": "editorial",
         "posicion": 1,
-        "puntaje": 90.45
+        "puntaje": 90.45,
+        "respaldo": false,
+        "reutilizado": false
       },
       {
+        "caso_de_uso": "CU-02",
+        "criterio": 0,
+        "elegida_por": "tema=economia, con_dato_oficial=True",
         "estado": "parcial",
+        "garantia": false,
         "id_caso": "CASO-003",
         "id_grupo": "GRP-81a11a5998",
+        "modalidad": "editorial",
         "posicion": 13,
-        "puntaje": 81.25
+        "puntaje": 81.25,
+        "respaldo": false,
+        "reutilizado": false
       },
       {
-        "estado": "parcial",
-        "id_caso": "CASO-004",
-        "id_grupo": "GRP-e78a143f9a",
-        "posicion": 36,
-        "puntaje": 73.16
-      },
-      {
+        "caso_de_uso": "CU-03",
+        "criterio": 0,
+        "elegida_por": "mas_titulares_que_procedencias=True, procedencias_minimas=2",
         "estado": "suficiente",
-        "id_caso": "CASO-005",
-        "id_grupo": "GRP-da35c3dead",
-        "posicion": 47,
-        "puntaje": 65.13
-      },
-      {
-        "estado": "suficiente",
+        "garantia": false,
         "id_caso": "CASO-006",
         "id_grupo": "GRP-0dfdd5a021",
+        "modalidad": "editorial",
         "posicion": 54,
-        "puntaje": 50.39
+        "puntaje": 50.39,
+        "respaldo": false,
+        "reutilizado": false
+      },
+      {
+        "caso_de_uso": "CU-04",
+        "criterio": 1,
+        "elegida_por": "estado=insuficiente, vacio=cifras_sin_dato_oficial (respaldo declarado)",
+        "estado": "insuficiente",
+        "garantia": false,
+        "id_caso": "CASO-007",
+        "id_grupo": "GRP-5e6531917f",
+        "modalidad": "editorial",
+        "posicion": 3,
+        "puntaje": 88.41,
+        "respaldo": true,
+        "reutilizado": false
+      },
+      {
+        "caso_de_uso": "CU-05",
+        "criterio": 0,
+        "elegida_por": "grupo fijo GRP-da35c3dead (banca)",
+        "estado": "suficiente",
+        "garantia": false,
+        "id_caso": "CASO-001",
+        "id_grupo": "GRP-da35c3dead",
+        "modalidad": "banca",
+        "posicion": 36,
+        "puntaje": 80.13,
+        "respaldo": false,
+        "reutilizado": true
       }
     ],
     "minimo_insuficiente": 1,
-    "minimo_total": 5
+    "minimo_total": 5,
+    "regla": "una ficha por caso de uso sobre el ranking oficial (config/fichas_trazables.yaml: seleccion)",
+    "respaldos_usados": [
+      "CU-04"
+    ]
   },
   "tarea": "C-01",
   "todo_ok": true,
