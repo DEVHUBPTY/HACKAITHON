@@ -238,6 +238,40 @@ Una fila por procedencia estimada. Nunca guarda el nombre de un autor (D-32): so
 | `medios` | VARCHAR | no | `noticias` | derivado | Dominios, ordenados, separados por coma. |
 | `ids_noticia` | VARCHAR | no | `noticias` | derivado | Los `NOT-` de la procedencia, ordenados, separados por coma. |
 
+### `vinculos`: contexto oficial de cada grupo (E1-09, E1-09b)
+
+Una fila por dato (o una por grupo sin vínculo). Es **contexto, nunca prueba de causa**. Los datos del Banco Mundial son
+**anuales**. `python -m src.contexto` reemplaza solo sus filas (`fuente = 'indicador'`) y, con `eventos.geojson`, las de USGS (`fuente = 'usgs'`, E1-09b); nunca mezcla unas con otras.
+
+| Campo | Tipo | Nullable | Fuente | Clase | Descripción |
+|---|---|---|---|---|---|
+| `id_grupo` | VARCHAR | no | `grupos` | derivado | Grupo contextualizado. |
+| `id_evidencia` | VARCHAR | sí | `indicadores` · `sismos` | derivado | `IND-<pais>-<indicador>-<anio>` o `SIS-<id USGS>`. Nulo si el grupo no tiene vínculo. |
+| `tipo` | VARCHAR | sí | `vinculos.yaml` | derivado | Tipo de relación: `directa`, `indirecta` o `evento`. Nulo si no hay vínculo. |
+| `regla` | VARCHAR | no | contexto | derivado | Regla que generó la fila (`vinculo_por_subtema:<subtema>`, `vinculo_por_tema:<tema>`, `sin_vinculo_en_tabla:<tema>/<subtema>`, `sin_dato_en_periodo:<indicador>`). |
+| `limitacion` | VARCHAR | sí | `vinculos.yaml` | derivado | Limitación del vínculo más la nota del dato anual (año, último año disponible, años sin valor). Nunca dice «actual». |
+| `motivo_sin_vinculo` | VARCHAR | sí | `vinculos.yaml` | derivado | `tema_sin_indicador`, `sin_dato_en_periodo` (y los de sismos de E1-09b). Sin vínculo lleva `id_evidencia` nulo; la excepción es `candidatos_ambiguos` (USGS, E1-09b), que puede traer a la vez el `SIS-` del candidato y el motivo. |
+| `fuente` | VARCHAR | no | contexto | derivado | Quién escribe la fila: `indicador` (`src.contexto`) o `usgs` (`src.contexto_sismos`). |
+| `rol` | VARCHAR | sí | contexto | derivado | `panama` (último año con valor), `comparable` (otros países, mismo año, con dato), `tendencia` (últimos años de Panamá) o `evento` (USGS). |
+| `subtema` | VARCHAR | sí | `similitud_tema` | derivado | Subtema más cercano del grupo dentro de su tema (método B). |
+| `pais_iso3` | VARCHAR | sí | `indicadores` | derivado | País del dato. |
+| `indicador_id` | VARCHAR | sí | `indicadores` | derivado | Indicador del Banco Mundial. |
+| `anio` | INTEGER | sí | `indicadores` | derivado | Año del dato. |
+| `unidad` | VARCHAR | sí | `indicadores` | derivado | Unidad original. |
+| `valor` | DOUBLE | sí | `indicadores` | derivado | Valor; nulo = sin dato, nunca 0. |
+| `fecha_extraccion` | VARCHAR | sí | `indicadores` | derivado | ISO 8601 UTC. |
+| `cifra_titular` | DOUBLE | sí | `grupos` | derivado | Solo en la fila `panama`: cifra (%) del titular central sobre el mismo indicador. |
+| `anio_titular` | INTEGER | sí | `grupos` | derivado | Año que declara el titular; nulo si no declara uno solo. |
+| `comparacion_titular` | VARCHAR | sí | `vinculos.yaml` | derivado | `posible discrepancia, verificar`, `período distinto, no comparable` o `cifra coincidente con la oficial`. Nunca se corrige al medio. |
+| `place` | VARCHAR | sí | `eventos.geojson` | derivado | Solo filas `usgs`: lugar tal como lo da USGS, sin traducir. Puede estar fuera de territorio panameño. |
+| `profundidad_km` | DOUBLE | sí | `eventos.geojson` | derivado | Solo filas `usgs`: profundidad (`depth`); nulo = sin dato, nunca 0. |
+| `hora_utc` | VARCHAR | sí | `eventos.geojson` | derivado | Solo filas `usgs`: hora del evento en ISO 8601 UTC (la hora de Panamá se calcula solo al mostrar). |
+| `estado_evento` | VARCHAR | sí | `eventos.geojson` | derivado | Solo filas `usgs`: `automatic` o `reviewed`; un evento automático puede cambiar. |
+| `url_evento` | VARCHAR | sí | `eventos.geojson` | derivado | Solo filas `usgs`: página del evento en USGS. |
+| `diferencia_horas` | DOUBLE | sí | contexto | derivado | Solo filas `usgs`: horas entre el evento y la noticia más cercana del grupo. |
+
+En las filas `usgs`, `valor` es la magnitud y `unidad` es `magnitud`. `tipo` es `evento` solo con un `SIS-` (vinculado o candidato ambiguo) y nulo si no hay vínculo; `rol` es siempre `evento`.
+
 ### `registro_normalizacion`: valores que no se pudieron normalizar
 
 Una fecha ilegible o sin zona horaria no se adivina: queda nula y se anota aquí; igual un número no numérico (queda nulo, nunca 0).

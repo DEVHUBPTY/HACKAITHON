@@ -50,6 +50,16 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 | Similitud para "mismo texto" en procedencias | 0.95 | Supuesto | `test_el_umbral_de_mismo_texto_*` · T02 · los 20 «Intensifying El Niño…» y los 10 «Trump streicht…» dan una procedencia |
 | Detalle de la agrupación y de las procedencias (E1-08) | Ver «Agrupación y procedencias (E1-08)» más abajo | — | — |
 | Umbrales de ruido | Por definir | Calibrado | X01 (precisión/recall) |
+| Tendencia (`vinculos.tendencia_anios`) | 5 años de Panamá, hasta el último año con valor, nulos incluidos | PDF/spec E1-09 | `test_la_tendencia_son_los_ultimos_cinco_anios_de_panama_y_los_nulos_siguen_nulos` |
+| Comparables | Los demás países de la cuadrícula, en el mismo año que Panamá, solo con dato (no hay número: sale de los datos) | PDF/spec E1-09 | `test_los_comparables_son_del_mismo_anio_que_panama_y_solo_con_dato` |
+| Palabras prohibidas en la salida (`vinculos.palabras_prohibidas`) | `actual`, `actuales`, `actualmente`, `actualidad` | PDF/spec E1-09 (T04: el dato es anual); formas derivadas por la observación del PR #19 | `test_ningun_texto_de_la_configuracion_dice_actual` · `test_la_configuracion_rechaza_la_palabra_actual` · `verificar_texto` en cada corrida |
+| Indicadores solo de contexto (`vinculos.indicadores_solo_contexto`) | `SP.POP.TOTL` (población no se vincula sola) | PDF/spec E1-09 | `test_la_poblacion_no_se_vincula_sola` |
+| Ventana de la cifra del titular (`cifra_titular.ventana_caracteres`) | 40 caracteres entre la palabra clave y la cifra, sin otras cifras ni `%` | Supuesto (conservador: evita ligar «60% del PIB» con la inflación) | `test_la_extraccion_de_la_cifra_es_conservadora` · revisar con titulares reales |
+| Palabras que rodean la cifra del titular (`cifra_titular.palabras_de_baja` · `_de_baja_ambiguas` · `_de_alza` · `_de_nivel` · `_de_cota`) | Verbos de baja y alza; «a»/«hasta» = nivel; «bajo», «menos de», «más de», «cerca de», «alrededor de», «hasta» = cota; «baja» ambigua (listas en `vinculos.yaml`) | Supuesto (X17/X19; principio: ante la duda no se compara). **Nivel:** verbo + «a»/«hasta» («cae a 0,7 %») conserva el signo. **Variación:** verbo sin «a» («cae 2 %») solo se compara en `indicadores_de_variacion` (hoy el PIB, ya es una tasa); contra el nivel oficial de inflación o desempleo no es comparable, y `comparacion_titular` queda nulo. **Cota:** no se compara. «bajo» nunca es verbo | `test_x17_*` · `test_x19_*` |
+| Indicadores de variación (`cifra_titular.indicadores_de_variacion`) | `NY.GDP.MKTP.KD.ZG` | Supuesto (el indicador oficial es una tasa de cambio, así que «cae 2 %» equivale a -2) | `test_x19_la_variacion_del_pib_si_se_compara_con_signo` |
+| Indicadores con comparación de cifra del titular (`cifra_titular.palabras_clave`) | PIB, inflación y desempleo | Supuesto (solo donde el % del titular mide lo mismo que el oficial; exportaciones e internet quedan fuera: un % del titular suele ser variación, no % del PIB o de la población) | `test_la_cifra_de_otro_indicador_no_se_compara_con_este` |
+| Patrones de cifra (`%`) y año (`20xx`) del titular | Ver `vinculos.yaml` | Supuesto | `test_misma_anio_con_cifra_distinta_*` · `test_periodo_distinto_*` · `test_titular_sin_anio_*` |
+| Subtema del grupo | Voto de los titulares (método B, tema del grupo); empate: suma de similitudes, luego nombre | Supuesto | `test_el_subtema_gana_por_votos_luego_por_similitud_y_es_determinista` |
 | Coincidencia de sismos (`vinculos.yaml`) | ± 2 días | Supuesto | Revisión con la exploración (E0-09); datos sintéticos en E1-09 |
 | Magnitud mínima USGS | 3 | PDF (sección 6) | — |
 
@@ -204,6 +214,24 @@ Todo lo marcado como ruido es una **propuesta por titular**, no una etiqueta hum
 
 El conteo de procedencias es una **estimación** (`grupos.estimado = true`, leyenda `etiqueta_estimado`): una traducción
 independiente del mismo despacho cuenta como otra procedencia porque ninguna regla sabe que comparten origen.
+
+## Sismos (E1-09b, `config/vinculos.yaml`, `config/fuentes.yaml`)
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| Ventana de coincidencia (`ventana_coincidencia_dias`) | ± 2 días, medidos en horas entre la hora UTC del evento y la fecha de la noticia (borde inclusivo) | Supuesto (el valor ya figuraba en «Organizar y contextualizar») | `test_el_borde_de_la_ventana_es_inclusivo_en_horas` · `test_sin_evento_dentro_de_la_ventana_o_bajo_la_magnitud_minima` |
+| Magnitud mínima de coincidencia | `usgs.minmagnitude` de `fuentes.yaml` (3) | PDF (sección 6); no se duplica en `vinculos.yaml` | `test_sin_evento_dentro_de_la_ventana_o_bajo_la_magnitud_minima` |
+| Fecha de la noticia | `campos_fecha` de `reglas_v1.3.yaml`: publicación y, solo si falta, detección; el uso de detección queda declarado en `origenes_fecha` y en la `regla` (`sismos.nota_fecha_deteccion`). Con varias noticias en el grupo se usa la más cercana al evento | Decisión de E1-09b (consistente con E1-08; nunca se sustituye en silencio) | `test_fecha_de_deteccion_solo_si_falta_la_de_publicacion_y_queda_declarado` · `test_la_publicacion_no_se_sustituye_por_la_deteccion_cuando_existe` |
+| Cobertura de USGS | De `usgs.starttime` a `usgs.endtime` de `fuentes.yaml` (2024-01-01 a 2024-12-31, UTC); no está fija en el código. Noticias fuera del periodo no se comparan | PDF (sección 6) · Supuesto del fin (ver «Extracción del snapshot») | `test_noticia_de_2025_es_fuera_de_cobertura` · `test_la_cobertura_sale_de_fuentes_y_no_esta_fija_en_2024` |
+| Grupo sin ninguna fecha | Motivo `sin_dato_en_periodo` (ya declarado en `motivos_sin_vinculo`) | Decisión de E1-09b | `test_noticia_sin_fecha_es_sin_dato_en_periodo` |
+| Subtemas que se vinculan a USGS | Los de `vinculos.yaml` con `fuente: usgs` y `relacion: evento` (hoy `sismos`); el resto devuelve «no aplica» | Spec E1-09b | `test_lluvias_inundaciones_y_danos_nunca_se_vinculan_a_usgs` |
+| Subtema de un grupo | El de E1-09 (`contexto.leer_grupos`): voto de los titulares sobre `similitud_tema` método B dentro del tema del grupo, aunque el método activo sea A; no se lee `subtema_clasificado` | Decisión de E1-09, reutilizada (X18) | `test_x18_un_grupo_de_sismos_se_vincula_con_la_base_del_metodo_a` |
+| Precisión de `diferencia_horas` (`sismos.decimales_horas`) y formato de la hora UTC guardada (`sismos.formato_hora_utc`) | 2 decimales · `%Y-%m-%dT%H:%M:%SZ` | Supuesto (presentación; no cambia la coincidencia, que usa el tiempo exacto) | `test_un_evento_coincidente_da_vinculo_sis_con_todos_los_campos` |
+| Unidad de la magnitud en `vinculos.unidad` (`sismos.unidad_magnitud`) | `magnitud` (USGS no fija el tipo en el contrato) | Supuesto | `test_las_filas_de_usgs_entran_en_el_esquema_y_el_reproceso_respeta_las_de_indicador` |
+| Magnitud nula de un evento | Se conserva nula, no coincide con ninguna noticia y se cuenta (`eventos_sin_magnitud` en el reporte) | Decisión de E1-09b (O3): los nulos son nulos | `test_magnitud_nula_no_rompe_la_carga_ni_coincide_y_se_cuenta` |
+| Zona y formato de la hora mostrada (`sismos.zona_horaria`, `sismos.formato_hora`) | `America/Panama`, `%Y-%m-%d %H:%M`; el dato se guarda en UTC | CLAUDE.md (hora de Panamá solo en la interfaz) | `test_un_evento_coincidente_da_vinculo_sis_con_todos_los_campos` |
+| Limitaciones fijas (`sismos.limitaciones`) y plantilla de la regla (`sismos.plantilla_regla`) | Tres frases: lugar posiblemente fuera de Panamá, la fuente no informa daños, un evento automático puede cambiar | Spec E1-09b | mismo test; `test_el_bloque_sismos_prohibe_claves_desconocidas_y_zonas_invalidas` |
+| Borde de la cobertura | Una noticia de los primeros días de 2024 puede tener un evento de finales de 2023 dentro de su ventana, que la extracción no pidió: puede dar `sin_evento_coincidente` en vez de `fuera_de_cobertura` | Límite conocido (no se amplía la cobertura) | — |
 
 ## Consulta y generación
 

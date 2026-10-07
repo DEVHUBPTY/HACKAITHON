@@ -14,12 +14,56 @@ motivo_por_defecto: tema_sin_indicador
 ventana_coincidencia_dias: 2        # sismos: ± días entre evento USGS y noticia (supuesto)
 pais_por_defecto: PAN
 
+sismos:                             # E1-09b: presentación y textos fijos del vínculo con eventos USGS
+  zona_horaria: America/Panama      # solo para mostrar; los datos siguen en UTC
+  formato_hora: "%Y-%m-%d %H:%M"
+  formato_hora_utc: "%Y-%m-%dT%H:%M:%SZ"   # ISO 8601 UTC de los datos
+  decimales_horas: 2                # precisión de la diferencia en horas entre noticia y evento
+  unidad_magnitud: "magnitud"       # unidad de la columna `valor` en `vinculos` (USGS no la fija en nuestro contrato)
+  plantilla_regla: "Evento USGS a ± {dias} días de la noticia y magnitud mínima {magnitud_minima}."
+  nota_fecha_deteccion: "Alguna noticia del grupo no tiene fecha de publicación: se usó su fecha de detección."
+  limitaciones:
+    - "El lugar puede estar fuera de territorio panameño: se muestra tal como lo da USGS."
+    - "La fuente solo describe el evento sísmico; no informa daños ni pérdidas."
+    - "Un evento con estado automático puede cambiar al ser revisado."
+
+# E1-09 · contextualización con el Banco Mundial (src/contexto.py). Todo dato del Banco Mundial es ANUAL.
+tendencia_anios: 5                  # PDF/spec E1-09: tendencia = últimos 5 años de Panamá (nulos siguen nulos)
+indicadores_solo_contexto: [SP.POP.TOTL]   # la población nunca se vincula sola (spec E1-09)
+palabras_prohibidas: [actual, actuales, actualmente, actualidad]       # ningún texto de salida puede decir "actual" (T04): el dato es anual
+notas:                              # se agregan a la limitación de cada dato
+  ultimo_anio: "Dato anual de {anio}; último año disponible con valor de Panamá; puede revisarse."
+  serie: "Dato anual de {anio}, parte de la tendencia de {n} años de Panamá; puede revisarse."
+  anios_sin_valor: "Sin valor en la fuente para: {anios}."
+
+# Cifra propia del titular frente a la oficial (spec E1-09). Conservador: solo %, solo indicadores cuyo
+# porcentaje del titular mide lo mismo que el oficial, y la cifra debe seguir de cerca a la palabra clave.
+cifra_titular:
+  patron_numero: '([-−]?\d+(?:[.,]\d+)?)\s?%'
+  patron_anio: '(?<!\d)(20\d{2})(?!\d)'
+  # Palabras que rodean la cifra (todas en minúsculas; se buscan entre la palabra clave y la cifra, sin distinguir mayúsculas).
+  palabras_de_baja: [cae, cayó, cayo, caída, caida, retrocede, retrocedió, contrae, contrajo, contracción, contraccion, disminuye, disminuyó, desciende, descendió, decrece, decreció, reduce, redujo, se hunde, bajó]   # verbos de baja inequívocos: sin «a», la cifra es una variación negativa
+  palabras_de_baja_ambiguas: [baja]   # «baja» es verbo o adjetivo: solo vale como cambio si le sigue «a»/«hasta»; si no, no se compara
+  palabras_de_alza: [sube, subió, aumenta, aumentó, crece, creció, avanza, avanzó, repunta, repuntó, se eleva, se elevó]
+  palabras_de_nivel: [a, hasta]       # verbo de cambio + una de estas = nivel alcanzado: la cifra conserva su signo
+  palabras_de_cota: [bajo, sobre, menos de, más de, mas de, cerca de, alrededor de, hasta]   # aproximación o cota: no se compara
+  indicadores_de_variacion: [NY.GDP.MKTP.KD.ZG]   # el indicador oficial ya es una tasa de cambio: «cae 2 %» = -2; en los demás, una variación no se compara con el nivel oficial
+  ventana_caracteres: 40            # máximo de caracteres (sin cifras ni %) entre la palabra clave y la cifra (supuesto)
+  palabras_clave:
+    NY.GDP.MKTP.KD.ZG: [pib, producto interno bruto, crecimiento económico]
+    FP.CPI.TOTL.ZG: [inflación, inflacion]
+    SL.UEM.TOTL.ZS: [desempleo, desocupación]
+  etiquetas:
+    discrepancia: "posible discrepancia, verificar"
+    periodo_distinto: "período distinto, no comparable"
+    coincide: "cifra coincidente con la oficial"
+
 vinculos:                           # por subtema
   crecimiento_pib:
     fuente: indicador
     id: NY.GDP.MKTP.KD.ZG
     relacion: directa
-    limitacion: "Dato anual; no describe el estado actual ni el último trimestre."
+    limitacion: "Dato anual; no describe un trimestre ni un mes concreto."
   inflacion_precios:
     fuente: indicador
     id: FP.CPI.TOTL.ZG

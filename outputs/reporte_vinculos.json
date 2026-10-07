@@ -1,0 +1,59 @@
+{
+  "nota": "Contexto anual del Banco Mundial; un vínculo no prueba causa. Sismos (USGS) los resuelve E1-09b.",
+  "grupos_en_base": 45,
+  "grupos_del_banco_mundial": 45,
+  "grupos_delegados_a_otra_fuente": 0,
+  "con_vinculo": {
+    "n": 9,
+    "de": 45,
+    "proporcion": 0.2,
+    "ic95": [
+      0.109,
+      0.3382
+    ]
+  },
+  "sin_vinculo": {
+    "n": 36,
+    "de": 45,
+    "proporcion": 0.8,
+    "ic95": [
+      0.6618,
+      0.891
+    ]
+  },
+  "sin_vinculo_por_motivo": {
+    "tema_sin_indicador": 36
+  },
+  "con_vinculo_por_relacion": {
+    "directa": 4,
+    "indirecta": 5
+  },
+  "con_vinculo_por_subtema": {
+    "comercio_exterior": 2,
+    "crecimiento_pib": 1,
+    "inflacion_precios": 1,
+    "operacion_canal": 2,
+    "transporte_carga": 1,
+    "zona_libre": 2
+  },
+  "con_vinculo_por_indicador": {
+    "FP.CPI.TOTL.ZG": 1,
+    "NE.EXP.GNFS.ZS": 7,
+    "NY.GDP.MKTP.KD.ZG": 1
+  },
+  "comparacion_con_cifra_del_titular": {},
+  "filas_en_vinculos": 135,
+  "usgs": {
+    "nota": "Eventos de USGS como contexto; no informan daños ni pérdidas. Solo cubre el periodo extraído de USGS (fuentes.yaml).",
+    "grupos_de_sismos": 0,
+    "vinculados": {
+      "n": 0,
+      "de": 0,
+      "proporcion": null,
+      "ic95": null
+    },
+    "por_resultado": {},
+    "filas_en_vinculos": 0,
+    "eventos_sin_magnitud": 0
+  }
+}

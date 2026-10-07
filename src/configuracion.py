@@ -12,6 +12,7 @@ import re
 import sys
 from pathlib import Path
 from typing import Literal, TypeVar, get_args
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
@@ -743,6 +744,86 @@ class Vinculo(ModeloConfig):
         return self
 
 
+class SismosVinculo(ModeloConfig):
+    """Presentación y textos fijos del vínculo con eventos de USGS (E1-09b)."""
+
+    zona_horaria: str
+    formato_hora: str
+    formato_hora_utc: str
+    decimales_horas: int = Field(ge=0)
+    unidad_magnitud: str
+    plantilla_regla: str
+    nota_fecha_deteccion: str
+    limitaciones: list[str] = Field(min_length=1)
+
+    @field_validator("zona_horaria")
+    @classmethod
+    def _zona_existe(cls, v: str) -> str:
+        try:
+            ZoneInfo(v)
+        except (ZoneInfoNotFoundError, ValueError) as exc:
+            raise ValueError(f"zona horaria desconocida: {v}") from exc
+        return v
+
+
+class NotasDato(ModeloConfig):
+    """Plantillas de la nota de limitación que acompaña a cada dato anual (E1-09)."""
+
+    ultimo_anio: str
+    serie: str
+    anios_sin_valor: str
+
+
+class EtiquetasCifra(ModeloConfig):
+    discrepancia: str
+    periodo_distinto: str
+    coincide: str
+
+
+class CifraTitular(ModeloConfig):
+    """Cómo se detecta la cifra propia de un titular (conservador, todo en configuración)."""
+
+    patron_numero: str
+    patron_anio: str
+    ventana_caracteres: int = Field(ge=0)
+    palabras_de_baja: list[str]  # verbos de baja inequívocos
+    palabras_de_baja_ambiguas: list[str]  # «baja»: solo cuenta como cambio si le sigue una palabra de nivel
+    palabras_de_alza: list[str]
+    palabras_de_nivel: list[str]  # «a», «hasta»: tras un verbo de cambio, la cifra es el nivel alcanzado
+    palabras_de_cota: list[str]  # «bajo», «menos de»…: la cifra es una cota o aproximación
+    indicadores_de_variacion: list[str]  # indicadores oficiales que ya son una tasa de cambio
+    palabras_clave: dict[str, list[str]]  # indicador -> palabras que ligan la cifra del titular a ese indicador
+    etiquetas: EtiquetasCifra
+
+    @field_validator("patron_numero", "patron_anio")
+    @classmethod
+    def _patron_valido(cls, v: str) -> str:
+        try:
+            re.compile(v)
+        except re.error as exc:
+            raise ValueError(f"expresión regular inválida: {exc}") from exc
+        return v
+
+    @model_validator(mode="after")
+    def _listas_coherentes(self) -> CifraTitular:
+        for nombre in ("palabras_de_baja", "palabras_de_baja_ambiguas", "palabras_de_alza", "palabras_de_nivel", "palabras_de_cota"):
+            if any(not p.strip() for p in getattr(self, nombre)):
+                raise ValueError(f"{nombre}: palabras no vacías")
+        if "bajo" in self.palabras_de_baja:
+            raise ValueError("«bajo» es una cota, no un verbo de baja")
+        malos = set(self.indicadores_de_variacion) - set(self.palabras_clave)
+        if malos:
+            raise ValueError(f"indicadores_de_variacion sin palabras_clave: {sorted(malos)}")
+        return self
+
+    @field_validator("palabras_clave")
+    @classmethod
+    def _sin_palabras_vacias(cls, v: dict[str, list[str]]) -> dict[str, list[str]]:
+        if any(not palabras or any(not p.strip() for p in palabras) for palabras in v.values()):
+            raise ValueError("cada indicador necesita palabras clave no vacías")
+        return v
+
+
 class ConfigVinculos(ModeloConfig):
     """Modelo de ``config/vinculos.yaml``."""
 
@@ -752,8 +833,14 @@ class ConfigVinculos(ModeloConfig):
     motivo_por_defecto: str
     ventana_coincidencia_dias: int = Field(ge=0)
     pais_por_defecto: str
+    sismos: SismosVinculo
     vinculos: dict[str, Vinculo]  # por subtema
     vinculos_por_tema: dict[str, Vinculo]  # cualquier subtema del tema
+    tendencia_anios: int = Field(ge=1)
+    indicadores_solo_contexto: list[str]
+    palabras_prohibidas: list[str]
+    notas: NotasDato
+    cifra_titular: CifraTitular
 
     @model_validator(mode="after")
     def _relaciones_declaradas(self) -> ConfigVinculos:
@@ -762,6 +849,25 @@ class ConfigVinculos(ModeloConfig):
         malas = {v.relacion for v in (*self.vinculos.values(), *self.vinculos_por_tema.values())} - set(self.tipos_relacion)
         if malas:
             raise ValueError(f"relaciones no declaradas en tipos_relacion: {sorted(malas)}")
+        return self
+
+    @model_validator(mode="after")
+    def _poblacion_no_va_sola(self) -> ConfigVinculos:
+        todos = (*self.vinculos.values(), *self.vinculos_por_tema.values())
+        solos = {v.id for v in todos} & set(self.indicadores_solo_contexto)
+        if solos:
+            raise ValueError(f"indicadores solo de contexto no pueden vincularse solos: {sorted(solos)}")
+        return self
+
+    @model_validator(mode="after")
+    def _textos_sin_palabras_prohibidas(self) -> ConfigVinculos:
+        textos = [v.limitacion for v in (*self.vinculos.values(), *self.vinculos_por_tema.values())]
+        textos += [*self.notas.model_dump().values(), *self.cifra_titular.etiquetas.model_dump().values()]
+        for palabra in self.palabras_prohibidas:
+            patron = re.compile(rf"\b{re.escape(palabra)}\b", re.IGNORECASE)
+            malos = [t for t in textos if patron.search(t)]
+            if malos:
+                raise ValueError(f"texto con la palabra prohibida {palabra!r}: {malos[0]!r}")
         return self
 
 
