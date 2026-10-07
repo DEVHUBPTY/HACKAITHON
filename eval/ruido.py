@@ -13,9 +13,11 @@ from __future__ import annotations
 import argparse
 import csv
 import sys
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
+from eval import origen_etiquetas as oe
 from src import db
 from src.carga import intervalo_wilson
 from src.configuracion import RAIZ, cargar_carga, cargar_normalizacion
@@ -26,6 +28,18 @@ SIN_RUIDO = {"", "ninguno", "ninguna", "no", "false", "0", "none"}
 CODIGO_SIN_ETIQUETAS = 2
 
 
+class ConProcedencia(dict):  # type: ignore[type-arg]
+    """Un ``dict`` de etiquetas que lleva consigo de qué procedencia son (``origenes``), para que el informe se marque solo."""
+
+    origenes: tuple[str, ...] = oe.SOLO_HUMANOS
+
+
+def _con_procedencia(datos: dict[Any, Any], filas: list[dict[str, str]]) -> ConProcedencia:
+    d = ConProcedencia(datos)
+    d.origenes = tuple(o for o in oe.ORIGENES if any(f[oe.COLUMNA_ORIGEN] == o for f in filas))
+    return d
+
+
 def _texto_proporcion(k: int, n: int, z: float) -> str:
     ic = intervalo_wilson(k, n, z)
     if n == 0 or ic is None:
@@ -33,24 +47,41 @@ def _texto_proporcion(k: int, n: int, z: float) -> str:
     return f"{k}/{n} = {100 * k / n:.1f} % [IC 95 %: {100 * ic[0]:.1f}–{100 * ic[1]:.1f} %]"
 
 
-def leer_etiquetas(ruta: Path, columna: str) -> dict[str, str | None]:
-    """``id_noticia -> motivo humano`` (``None`` si la persona no marcó ruido). Falla si falta la columna."""
+def leer_etiquetas(ruta: Path, columna: str, origenes: Iterable[str] = oe.SOLO_HUMANOS) -> dict[str, str | None]:
+    """``id_noticia -> motivo humano`` (``None`` si la persona no marcó ruido). Falla si falta la columna.
+
+    Solo lee las filas de ``origenes`` (por defecto las humanas; las provisionales de D-101 hay que pedirlas).
+    """
     with ruta.open(encoding="utf-8", newline="") as f:
-        lector = csv.DictReader(f)
-        campos = lector.fieldnames or []
-        if "id_noticia" not in campos or columna not in campos:
-            raise KeyError(f"{ruta.name} no tiene las columnas id_noticia y {columna!r} (tiene: {campos})")
-        etiquetas: dict[str, str | None] = {}
-        for fila in lector:
-            valor = (fila[columna] or "").strip()
-            etiquetas[fila["id_noticia"].strip()] = None if valor.casefold() in SIN_RUIDO else valor
-        return etiquetas
+        campos = csv.DictReader(f).fieldnames or []
+    if "id_noticia" not in campos or columna not in campos:
+        raise KeyError(f"{ruta.name} no tiene las columnas id_noticia y {columna!r} (tiene: {campos})")
+    etiquetas: dict[str, str | None] = {}
+    filas = oe.leer_filas(ruta, origenes)
+    for fila in filas:
+        valor = (fila[columna] or "").strip()
+        etiquetas[fila["id_noticia"].strip()] = None if valor.casefold() in SIN_RUIDO else valor
+    return _con_procedencia(etiquetas, filas)
 
 
-def medir(etiquetas: dict[str, str | None], predichas: dict[str, str | None], z: float) -> list[str]:
-    """Líneas de reporte: precisión y recall del filtro (ruido sí/no) y por motivo, solo sobre IDs en ambos lados."""
+def _marca(datos: Any, origenes: Iterable[str] | str = oe.SOLO_HUMANOS) -> list[str]:
+    """La línea PROVISIONAL (D-101) que abre un informe con etiquetas provisionales; vacía si son solo humanas.
+
+    Se decide por la procedencia que **traen los datos** (``ConProcedencia``) o por ``origenes`` si el llamador los declara.
+    """
+    declarados = (origenes,) if isinstance(origenes, str) else tuple(origenes)
+    return [oe.AVISO_PROVISIONAL] if oe.usa_provisionales((*declarados, *getattr(datos, "origenes", ()))) else []
+
+
+def medir(
+    etiquetas: dict[str, str | None], predichas: dict[str, str | None], z: float, origenes: Iterable[str] | str = oe.SOLO_HUMANOS
+) -> list[str]:
+    """Líneas de reporte: precisión y recall del filtro (ruido sí/no) y por motivo, solo sobre IDs en ambos lados.
+
+    ``origenes`` declara de dónde salen las etiquetas: con provisionales (D-101) el informe abre con la marca PROVISIONAL.
+    """
     comunes = sorted(set(etiquetas) & set(predichas))
-    lineas = [f"Titulares etiquetados presentes en la base: {len(comunes)} de {len(etiquetas)} etiquetados"]
+    lineas = [*_marca(etiquetas, origenes), f"Titulares etiquetados presentes en la base: {len(comunes)} de {len(etiquetas)} etiquetados"]
     humanos = {i: etiquetas[i] is not None for i in comunes}
     modelo = {i: predichas[i] is not None for i in comunes}
     tp = sum(1 for i in comunes if humanos[i] and modelo[i])
@@ -65,20 +96,25 @@ def medir(etiquetas: dict[str, str | None], predichas: dict[str, str | None], z:
     return lineas
 
 
-def leer_regional(ruta: Path, columna: str = "alcance_regional") -> dict[str, bool] | None:
+def leer_regional(
+    ruta: Path, columna: str = "alcance_regional", origenes: Iterable[str] = oe.SOLO_HUMANOS
+) -> dict[str, bool] | None:
     """``id_noticia -> alcance regional marcado por la persona`` (D-84). ``None`` si el CSV no trae la columna."""
     with ruta.open(encoding="utf-8", newline="") as f:
-        lector = csv.DictReader(f)
-        if columna not in (lector.fieldnames or []):
+        if columna not in (csv.DictReader(f).fieldnames or []):
             return None
-        return {fila["id_noticia"].strip(): (fila[columna] or "").strip().casefold() in SI_REGIONAL for fila in lector}
+    filas = oe.leer_filas(ruta, origenes)
+    return _con_procedencia({fila["id_noticia"].strip(): (fila[columna] or "").strip().casefold() in SI_REGIONAL for fila in filas}, filas)
 
 
-def medir_regional(humanos: dict[str, bool], predichas: dict[str, bool], z: float) -> list[str]:
+def medir_regional(
+    humanos: dict[str, bool], predichas: dict[str, bool], z: float, origenes: Iterable[str] | str = oe.SOLO_HUMANOS
+) -> list[str]:
     """Subconjunto regional (D-84), aparte del ruido: precisión y recall de ``alcance_regional`` del filtro."""
     comunes = sorted(set(humanos) & set(predichas))
     tp = sum(1 for i in comunes if humanos[i] and predichas[i])
     return [
+        *_marca(humanos, origenes),
         f"Alcance regional (D-84), aparte del ruido; titulares comparados: {len(comunes)}",
         "  Precisión (marcados regionales que la persona confirma): " + _texto_proporcion(tp, sum(predichas[i] for i in comunes), z),
         "  Recall (regionales según la persona que el filtro marcó): " + _texto_proporcion(tp, sum(humanos[i] for i in comunes), z),

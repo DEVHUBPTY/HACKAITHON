@@ -31,13 +31,14 @@ import csv
 import hashlib
 import json
 import sys
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from itertools import combinations
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 
+from eval import origen_etiquetas as oe
 from src import db
 from src.agrupacion import agrupar_indices, codificar_titulares, fecha_de
 from src.clasificacion import proporcion
@@ -66,10 +67,9 @@ LARGO_HASH_PLIEGUE = 8      # caracteres hexadecimales del SHA-1 del ID que deci
 # ------------------------------------------------------------------ etiquetas y pares
 
 
-def leer_grupos_humanos(ruta: Path = ETIQUETAS) -> dict[str, str | None]:
-    """``id_noticia`` -> grupo humano (``None`` = suelto) de todos los titulares etiquetados."""
-    with ruta.open(encoding="utf-8", newline="") as f:
-        return {fila["id_noticia"]: (fila.get("grupo") or "").strip() or None for fila in csv.DictReader(f)}
+def leer_grupos_humanos(ruta: Path = ETIQUETAS, origenes: Iterable[str] = oe.SOLO_HUMANOS) -> dict[str, str | None]:
+    """``id_noticia`` -> grupo humano (``None`` = suelto) de los titulares etiquetados por ``origenes`` (por defecto, personas)."""
+    return {fila["id_noticia"]: (fila.get("grupo") or "").strip() or None for fila in oe.leer_filas(ruta, origenes)}
 
 
 def pares_positivos(etiquetas: Sequence[str | None]) -> np.ndarray:
@@ -235,9 +235,21 @@ def linea_base_identicos(filas_etiquetadas: Sequence[dict[str, Any] | None], rea
     return _presentar(*conteo_de_pares(real, m), z)
 
 
-def evaluar(ruta_base: Path, ruta_etiquetas: Path, cfg: ConfigClasificacion, reglas: ReglasV13, z: float) -> dict[str, Any]:
-    """Calibra y mide la agrupación con el modelo de ``cfg.modelo_activo``. Devuelve el informe completo."""
-    humanos = leer_grupos_humanos(ruta_etiquetas)
+def evaluar(
+    ruta_base: Path,
+    ruta_etiquetas: Path,
+    cfg: ConfigClasificacion,
+    reglas: ReglasV13,
+    z: float,
+    origenes: Iterable[str] = oe.SOLO_HUMANOS,
+) -> dict[str, Any]:
+    """Calibra y mide la agrupación con el modelo de ``cfg.modelo_activo``. Devuelve el informe completo.
+
+    ``origenes``: por defecto solo los grupos de las personas. Con las ``asistente_provisional`` (D-101) el informe lo
+    declara (``usa_etiquetas_provisionales``, ``aviso``).
+    """
+    origenes = oe.validar_origenes(origenes)
+    humanos = leer_grupos_humanos(ruta_etiquetas, origenes)
     con = db.conectar(ruta_base, solo_lectura=True)
     try:
         todas = db.leer_tabla(con, "noticias", "id_noticia")
@@ -267,6 +279,7 @@ def evaluar(ruta_base: Path, ruta_etiquetas: Path, cfg: ConfigClasificacion, reg
     pares_total = n * (n - 1) // 2
     positivos = int(np.triu(barrido.real, k=1).sum())
     return {
+        **oe.marcar({}, origenes),
         "modelo": cfg.modelo_activo,
         "titulares_etiquetados": n,
         "titulares_utiles_agrupados": len(utiles),
