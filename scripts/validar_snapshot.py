@@ -374,7 +374,7 @@ def _validar_sbp(inf: Informe, processed: Path, config: dict[str, Any], resumen:
         inf.ok("sbp:unidad_pagina_condiciones", "todas las filas llevan unidad, página, informe y condiciones")
 
 
-def _validar_manifest(inf: Informe, data: Path, resumen: dict) -> None:
+def _validar_manifest(inf: Informe, data: Path, resumen: dict, config: dict[str, Any] | None = None) -> None:
     ruta = data / "manifest.json"
     if not ruta.exists():
         inf.error("archivo:manifest.json", "no existe")
@@ -396,10 +396,15 @@ def _validar_manifest(inf: Informe, data: Path, resumen: dict) -> None:
             inf.ok("manifest:historial", f"{len(historial)} versión(es) con cambios, revisiones y excluidos")
     if m.get("fecha_corte_UTC") and desde_iso(m["fecha_corte_UTC"]) is None:
         inf.error("manifest:fecha_corte", "fecha_corte_UTC no es ISO 8601 UTC")
+    # D-72 / X84: lo que no se versiona (redistribución restringida) puede faltar en esta máquina: se avisa, no es un error.
+    restringidas = {r for rutas in ((config or {}).get("redistribucion_restringida") or {}).values() for r in rutas}
+    locales_ausentes = [n for n in (m.get("sha256") or {}) if f"data/{n}" in restringidas and not (data / n).exists()]
+    for nombre in locales_ausentes:
+        inf.advertencia(f"manifest:sha256:{nombre}", "no está en esta máquina (no se versiona, D-72): su huella no se verificó; se regenera con scripts.extraer")
     diferentes = [
         nombre
         for nombre, huella in (m.get("sha256") or {}).items()
-        if not (data / nombre).exists() or sha256_archivo(data / nombre) != huella
+        if nombre not in locales_ausentes and (not (data / nombre).exists() or sha256_archivo(data / nombre) != huella)
     ]
     if diferentes:
         inf.error("manifest:sha256", f"huellas que no coinciden con los archivos: {diferentes}")
@@ -438,7 +443,7 @@ def validar(data: Path, config: dict[str, Any]) -> dict[str, Any]:
     _validar_indicadores(inf, processed, config, resumen)
     _validar_eventos(inf, processed, config, resumen)
     _validar_sbp(inf, processed, config, resumen)
-    _validar_manifest(inf, data, resumen)
+    _validar_manifest(inf, data, resumen, config)
     _validar_cobertura_contra_extraccion(inf, data, config, resumen)
     return inf.como_dict(resumen)
 

@@ -201,6 +201,13 @@ gdelt:
 
 # País de la fuente (campo sourcecountry de GDELT, en inglés) -> nombre en español. Si no está aquí,
 # el país de la fuente queda nulo en fuentes.json (no se inventa).
+# D-72 / X84: rutas que NUNCA se versionan porque su fuente restringe la redistribución. Las ignora .gitignore y un test
+# (tests/test_d72_redistribucion.py) falla si `git ls-files` lista alguna. En git queda solo la receta (script, configuración, registro sin valores).
+redistribucion_restringida:
+  rss_tvn: ["data/raw/rss_tvn/"]
+  gdelt: ["data/raw/gdelt/"]
+  sbp: ["data/raw/sbp/", "data/processed/sbp_series.csv"]
+
 paises_es:
   Afghanistan: "Afganistán"
   Albania: "Albania"

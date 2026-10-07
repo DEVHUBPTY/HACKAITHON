@@ -33,8 +33,12 @@ salidas:
     - data/processed/fuentes.json
     - data/processed/indicadores.csv
     - data/processed/noticias.csv
-    - data/processed/sbp_series.csv      # E3-02: fuente D; la reconstrucción desde raw/sbp/ solo corre donde están los .xlsx (no se versionan)
     - data/processed/validos/*
+  # Salidas que NO se versionan (redistribución restringida, D-72/X84): se hashean solo si existen en esta máquina. Si faltan, la verificación
+  # lo declara y omite las huellas que dependen de ellas (`afecta`); no las da por buenas ni por malas.
+  archivos_locales:
+    - archivo: data/processed/sbp_series.csv      # fuente D (E3-02); se reconstruye desde raw/sbp/ solo donde están los .xlsx
+      afecta: ["tabla:vinculos", "informe:outputs/reporte_vinculos.json", "informe:outputs/validacion_snapshot.json", "fichas"]
   # Informes JSON de los pasos: se comparan por contenido (flotantes redondeados), no por bytes. A cada uno, las claves que NO entran en el
   # hash y por qué (docs/reproducibilidad.md). Ruta con puntos.
   informes:

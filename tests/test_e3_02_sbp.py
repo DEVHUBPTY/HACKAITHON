@@ -128,6 +128,9 @@ def test_validar_snapshot_solo_advierte_si_no_hay_fuente_d(data_sintetica: Path,
     informe = validar_snapshot.validar(data_sintetica, config)
     assert _estados(informe)["archivo:sbp_series.csv"] == "advertencia"
     assert not [c for c in informe["comprobaciones"] if c["comprobacion"].startswith("sbp:") and c["estado"] == "error"]
+    # D-72 / X84: el CSV no se versiona; su huella en el manifest no verificable es una advertencia, no un error
+    assert _estados(informe)["manifest:sha256:processed/sbp_series.csv"] == "advertencia"
+    assert "manifest:sha256" not in _estados(informe) or _estados(informe)["manifest:sha256"] != "error"
 
 
 def test_el_manifest_incluye_la_fuente_d_con_su_hash_y_sus_condiciones(data_sintetica: Path) -> None:

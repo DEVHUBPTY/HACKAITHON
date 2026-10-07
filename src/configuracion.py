@@ -245,6 +245,7 @@ class ConfigFuentes(ModeloConfig):
     banco_mundial: BancoMundial
     usgs: Usgs
     sbp: Sbp
+    redistribucion_restringida: dict[str, list[str]]   # fuente -> rutas (relativas a la raíz) que nunca se versionan (D-72)
     paises_es: dict[str, str]
 
 
@@ -2563,8 +2564,16 @@ class MuestraSustentoReproduccion(ModeloConfig):
     columnas_humanas: list[str] = Field(min_length=1)
 
 
+class ArchivoLocalReproduccion(ModeloConfig):
+    """Salida que no se versiona (redistribución restringida, D-72) y se hashea solo si existe en esta máquina."""
+
+    archivo: str = Field(min_length=1)
+    afecta: list[str]   # claves de huella que cambian si el archivo falta (se declaran como omitidas, no se ignoran en silencio)
+
+
 class SalidasReproduccion(ModeloConfig):
     archivos: list[str] = Field(min_length=1)
+    archivos_locales: list[ArchivoLocalReproduccion] = Field(default_factory=list)
     informes: dict[str, list[str]]
     tablas: list[str] = Field(min_length=1)
     fichas: str = Field(min_length=1)

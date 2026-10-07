@@ -24,7 +24,7 @@ El snapshot versionado es la v1.3 (v1.2 más la fuente D, E3-02). Sus noticias d
 |---|---|---|
 | `raw/rss_tvn/` | **No** (`.gitignore`) | El RSS trae la descripción de cada nota: extracto con redistribución restringida |
 | `raw/gdelt/` | **No** (`.gitignore`) | GDELT trae `socialimage` (derechos de imagen) |
-| `raw/sbp/` | **No** (`.gitignore`) | Los .xlsx de la SBP: su aviso legal prohíbe reproducir o redistribuir sin autorización escrita (pendiente de pedir). Se regeneran con `scripts.extraer --sbp` |
+| `raw/sbp/` y `processed/sbp_series.csv` | **No** (`.gitignore`) | Los .xlsx de la SBP y los 36 valores que salen de ellos: su aviso legal prohíbe reproducir o redistribuir sin autorización escrita (pendiente de pedir, X84). En git queda la receta (`scripts/sbp.py`, `config/fuentes.yaml`, `registro_extraccion/sbp_*.json` con URL, SHA-256 y fecha, sin valores) y el SHA-256 y el conteo de filas del CSV local en el manifest. Se regeneran con `scripts.extraer --sbp` |
 | `raw/banco_mundial/`, `raw/usgs/` | Sí | Datos abiertos (CC BY 4.0 · dominio público de USGS) |
 | `registro_extraccion/` | Sí | Fallos y notas de extracción (rangos, motivos, origen); sin contenido restringido. **No son respuestas de la API** |
 | `processed/` | Sí | Solo metadatos: no contiene `descripcion` ni `socialimage` |
@@ -49,7 +49,7 @@ por eso se descarga a diario).
   no se aplica (inconsistencia documentada en el manifest).
 - `indicadores.csv`: cuadrícula completa de 6 países × 6 indicadores × 15 años = **540** filas (el PDF
   dice 1.350, pero su propia aritmética da 540; se documenta en el manifest). Lo faltante queda vacío, nunca 0.
-- `sbp_series.csv` (fuente D, E3-02): 3 series agregadas del sistema bancario × 12 meses de 2024 = 36 filas; una fila de cada informe .xlsx (la del «Sistema Bancario», verificada por su etiqueta); celda vacía = nulo; unidad original; `pagina` = hoja y celda. Es opcional: sin `raw/sbp/` la conversión no lo toca.
+- `sbp_series.csv` (fuente D, E3-02): 3 series agregadas del sistema bancario × 12 meses de 2024 = 36 filas; una fila de cada informe .xlsx (la del «Sistema Bancario», verificada por su etiqueta); celda vacía = nulo; unidad original; `pagina` = hoja y celda. Es opcional y **local**: no está en git; sin `raw/sbp/` la conversión no lo toca.
 - `processed/conversion.json`: ventana aplicada, registros excluidos con motivo y cobertura de GDELT por tema.
 - Campos de cada archivo: `diccionario.md`.
 - `fecha_corte_UTC` del manifest sale de los crudos, no del reloj: mismo `raw/`, mismo manifest.

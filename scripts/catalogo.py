@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from scripts.conversion import RAIZ, sha256_archivo
+from scripts.sbp import COLUMNAS_SBP
 from src import configuracion
 
 logger = logging.getLogger(__name__)
@@ -211,9 +212,12 @@ def _fila_sbp(
     """Fuente D (E3-02): las series agregadas de la SBP, con la huella del CSV y la de cada .xlsx descargado."""
     sb = q["sbp"]
     series = "; ".join(f"{k} ({v['nombre']}, {v['unidad']})" for k, v in sb["series"].items())
-    with (processed / "sbp_series.csv").open(encoding="utf-8", newline="") as f:
-        filas = list(csv.DictReader(f))
-    nulos = sum(1 for x in filas if x["valor"] == "")
+    ruta = processed / "sbp_series.csv"   # no se versiona (D-72, X84): sin el CSV local, los nulos se declaran no verificables
+    filas = []
+    if ruta.exists():
+        with ruta.open(encoding="utf-8", newline="") as f:
+            filas = list(csv.DictReader(f))
+    nulos = sum(1 for x in filas if x["valor"] == "") if filas else "no verificables aquí (el CSV es local)"
     crudos = "; ".join(f"{k.split('/')[-1]}: {v['sha256']}" for k, v in sorted(manifest["crudos"].items()) if k.startswith("raw/sbp/"))
     return {
         "Fuente": "D · SBP (Superintendencia de Bancos de Panamá)",
@@ -225,7 +229,7 @@ def _fila_sbp(
         "Cobertura": f"{len(sb['series'])} series agregadas del sistema bancario, {sb['periodos']}: {series}. "
         f"{cantidad['sbp_series.csv']} filas, {nulos} valores nulos (se conservan como nulos, nunca como 0). "
         "Solo agregados del sistema: nunca información de clientes ni de bancos individuales. Datos mensuales de 2024, no actuales.",
-        "Campos": ", ".join(filas[0].keys()) if filas else "",
+        "Campos": ", ".join(filas[0].keys() if filas else COLUMNAS_SBP),
         "Licencia / condiciones": f"{lic['sbp']}. Solo informativo y sujeto a cambios; la SBP no responde por análisis de terceros; "
         "el análisis es del equipo y no una opinión oficial de la SBP.",
         "Transformaciones": _transformaciones(manifest, ("SBP",)),
