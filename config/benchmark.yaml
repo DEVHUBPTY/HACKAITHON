@@ -6,3 +6,20 @@ tipos:
   contradiccion_ambiguedad: 7
   sin_respuesta: 7
   adversarial: 6
+
+# E1-18 · Ejecución del benchmark y métricas (PDF 9.1, D-57, D-71). Origen y validación: docs/parametros.md, «Benchmark y métricas (E1-18)».
+intervalos:                 # bootstrap percentil de toda proporción y percentil reportado (D-57); el mismo criterio que clasificación
+  remuestreos: 2000
+  confianza: 0.95
+  semilla: 42
+sustento:                   # revisión humana de la validez de sustento (docs/protocolo_evaluacion.md, sección 4)
+  muestra: 30               # PDF 9.1: «al menos 30 afirmaciones, si se producen tantas»
+  semilla: 42               # fija: la misma muestra para el mismo conjunto de salidas
+  meta_validez: 0.9         # PDF 9.1: ≥ 90 % (solo cuenta «sustentada»)
+  veredictos: [sustentada, parcial, no sustentada, tipo incorrecto]
+analisis_umbral:            # curva DESCRIPTIVA de la abstención por umbral (no se usa para elegir el umbral)
+  desde: 0.82
+  hasta: 0.90
+  paso: 0.01
+llm:                        # medición con el proveedor real (solo con --medir-llm)
+  modalidad: editorial

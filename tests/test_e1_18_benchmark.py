@@ -60,7 +60,7 @@ def test_recall_con_ic_cuenta_ids_y_lista_los_fallos() -> None:
     esperados = {"Q1": ["A", "B"], "Q2": ["C"], "Q3": ["D", "E", "F"]}
     hallados = {"Q1": ["A", "B", "X"], "Q2": ["Y"], "Q3": ["D", "F"]}
     r = metricas.recall_con_ic(esperados, hallados, CRITERIO)
-    assert (r["por_ids"]["n"], r["por_ids"]["de"]) == (5, 6)
+    assert (r["por_ids"]["n"], r["por_ids"]["de"]) == (4, 6)
     assert (r["consultas_completas"]["n"], r["consultas_completas"]["de"]) == (1, 3)
     assert r["fallos"] == {"Q2": ["C"], "Q3": ["E"]}
 
@@ -274,7 +274,7 @@ def test_el_comando_del_jurado_corre_sin_red_y_escribe_solo_en_la_carpeta_pedida
     assert (salida / "consultas.jsonl").exists() and len((salida / "consultas.jsonl").read_text().splitlines()) == 6
     assert m["validez_sustento"]["estado"] == "pendiente_revision_humana"
     assert m["tokens_y_costo"]["borradores"]["estado"] == "no_corrido"
-    assert not any(p.is_relative_to(Path(run_benchmark.RAIZ)) for p in salida.rglob("*") if False)   # la carpeta es la elegida
+    assert {p.name for p in salida.iterdir()} == {"consultas.jsonl", "metricas.json", "revision_sustento.csv"}   # solo la carpeta pedida, sin copiar el archivo
 
 
 def test_archivo_exige_salida_y_split_dev_no_la_necesita(capsys: pytest.CaptureFixture[str]) -> None:
