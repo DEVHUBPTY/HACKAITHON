@@ -417,3 +417,51 @@ def test_dos_hojas_para_el_mismo_corte_se_rechazan(tmp_path: Path) -> None:
     salida = tmp_path / "out.json"
     codigo = pa5.principal(["--seleccion", str(a), "--seleccion", str(b), "--base", str(base), "--salida", str(salida)])
     assert codigo != 0 and not salida.exists()
+
+
+# ------------------------------------------------------------------ mensaje exploratorio: solo los motivos que aplican
+
+
+def _resultado(pruebas: int, especialista: bool) -> dict[str, Any]:
+    cortes = [
+        {"corte": f"c{i}", "candidatos": 10, "baseline_sin_fecha_publicacion": 0,
+         "sistema": {"k": 3, "n": 5, "proporcion": 0.6, "ic95": [0.23, 0.88], "ids_fallidos": []},
+         "baseline": {"k": 1, "n": 5, "proporcion": 0.2, "ic95": [0.04, 0.62], "ids_fallidos": []}}
+        for i in range(pruebas)
+    ]
+    return {"cortes": cortes, "nota": "", **pa5.resumir(cortes, CFG, Z, especialista)}
+
+
+def _linea_exploratoria(texto: str) -> str:
+    return next(x for x in texto.splitlines() if "exploratoria" in x.lower())
+
+
+def test_mensaje_solo_pocos_cortes_si_hay_especialista() -> None:
+    linea = _linea_exploratoria(pa5.formatear(_resultado(1, True), CFG))
+    assert "fecha(s) de corte" in linea and "especialista" not in linea
+
+
+def test_mensaje_solo_sin_especialista_si_hay_cortes_suficientes() -> None:
+    linea = _linea_exploratoria(pa5.formatear(_resultado(3, False), CFG))
+    assert "especialista" in linea and "fecha(s) de corte" not in linea
+
+
+def test_mensaje_ambos_motivos() -> None:
+    linea = _linea_exploratoria(pa5.formatear(_resultado(1, False), CFG))
+    assert "fecha(s) de corte" in linea and "especialista" in linea
+
+
+def test_sin_exploratoria_no_hay_mensaje() -> None:
+    assert "exploratoria" not in pa5.formatear(_resultado(3, True), CFG).lower()
+
+
+def test_tema_sin_clave_en_temas_se_muestra_legible(tmp_path: Path) -> None:
+    ruta = _base(tmp_path / "t.duckdb", POS, FECHAS)
+    w = db.conectar(ruta)
+    w.execute("UPDATE grupos SET tema_clasificado = 'sin_tema' WHERE id_grupo = 'GRP-01'")
+    w.close()
+    c = db.conectar(ruta, solo_lectura=True)
+    try:
+        assert next(x for x in pa5.candidatos(c) if x.id_grupo == "GRP-01").tema == "sin tema"
+    finally:
+        c.close()
