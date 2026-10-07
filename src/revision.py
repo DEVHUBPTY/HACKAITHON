@@ -59,7 +59,9 @@ from src.esquemas import PATRON_ID_REGISTRO, Afirmacion, AfirmacionSalida, Cita,
 logger = logging.getLogger(__name__)
 
 PREFIJOS_OFICIALES = ("IND-", "SIS-", "SBP-")
-SECCIONES_DE_LISTA = ("titulares", "enfoque", "brief", "guion", "resumen_web", "copy_digital", "preguntas")
+# Las secciones de texto de un paquete que la persona puede corregir. ``observaciones`` e ``hipotesis_impacto`` son los dos bloques del
+# boletín de banca (E2-04); qué es válido en cada una lo decide el validador, no esta lista.
+SECCIONES_DE_LISTA = ("titulares", "enfoque", "brief", "guion", "resumen_web", "copy_digital", "preguntas", "observaciones", "hipotesis_impacto")
 SECCIONES_UNICAS = ("titulo", "titulo_trabajo")
 ORIGEN_GENERADA, ORIGEN_CORREGIDA = "generada", "corregida"
 FORMATO_FECHA = "%Y-%m-%dT%H:%M:%SZ"
@@ -241,8 +243,8 @@ def huellas_de_exportacion(demo: bool, cfg: ConfigRevision | None = None, raiz: 
 def elementos_editables(contenido: Mapping[str, Any]) -> dict[str, Elemento]:
     """Los textos de un borrador que una persona puede corregir, por clave estable.
 
-    ``afirmaciones.A1`` (cita registros) · ``titulo`` / ``titulo_trabajo`` · ``titulares.0`` … ``copy_digital.2`` (citan afirmaciones)
-    · ``preguntas.0``. Los marcadores ``[VISUAL: …]`` del guion no se editan: los pone el código (CLAUDE.md).
+    ``afirmaciones.A1`` (cita registros) · ``titulo`` / ``titulo_trabajo`` · ``titulares.0`` … ``copy_digital.2`` · ``observaciones.0`` ·
+    ``hipotesis_impacto.0`` (citan afirmaciones) · ``preguntas.0``. Los marcadores ``[VISUAL: …]`` del guion no se editan: los pone el código (CLAUDE.md).
     """
     editables: dict[str, Elemento] = {}
     marcador = cargar_restricciones().marcador_visual
@@ -301,6 +303,8 @@ def _rechazos_del_borrador(entrada: Any, contenido: Mapping[str, Any], secciones
     for nombre in secciones_a_revisar:
         if nombre in secciones:
             salida += [(nombre, r) for r in v.validar_seccion(nombre, secciones[nombre], ctx)]
+    if set(secciones_a_revisar) & set(v.BLOQUES_RESUMEN):          # E2-04: el límite del resumen es la suma de los dos bloques del boletín
+        salida += [(r.seccion, r) for r in v.validar_conjunto({s: secciones[s] for s in v.BLOQUES_RESUMEN if s in secciones}, ctx)]
     return salida
 
 

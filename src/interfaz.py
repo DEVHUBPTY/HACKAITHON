@@ -528,9 +528,16 @@ def vinculos_oficiales_de(ficha: Ficha) -> list[str]:
     return list(dict.fromkeys(ids))
 
 
-def etiqueta_de_elemento(clave: str, texto: str, largo: int) -> str:
-    """Etiqueta del selector de corrección: la clave y el principio del texto."""
-    return f"{clave} · {texto[:largo]}" + ("…" if len(texto) > largo else "")
+def etiqueta_de_elemento(clave: str, texto: str, largo: int, etiquetas: Mapping[str, str] | None = None) -> str:
+    """Etiqueta del selector de corrección: el rótulo de su sección y el principio del texto.
+
+    Con ``etiquetas`` (``config/interfaz.yaml`` · ``paquete.etiquetas``) ``observaciones.0`` se ve «Resumen · Observaciones · 1» (las
+    posiciones se cuentan desde 1) y ``afirmaciones.A1`` «Afirmaciones validadas · A1»; una sección sin rótulo conserva su clave.
+    """
+    seccion, _, resto = clave.partition(".")
+    rotulo = (etiquetas or {}).get(seccion)
+    nombre = clave if rotulo is None else " · ".join(p for p in (rotulo, str(int(resto) + 1) if resto.isdigit() else resto) if p)
+    return f"{nombre} · {texto[:largo]}" + ("…" if len(texto) > largo else "")
 
 
 # ------------------------------------------------------------------ modo demo: pasos del guion
@@ -657,8 +664,15 @@ def _texto_de_elemento(x: Any) -> str:
 
 
 def secciones_de_paquete(paquete: Any, etiquetas: Mapping[str, str] | None = None) -> list[tuple[str, list[str]]]:
-    """Aplana un paquete (mapa o modelo pydantic) en ``(título, párrafos)``: oraciones con sus afirmaciones, vacíos con su motivo."""
+    """Aplana un paquete (mapa o modelo pydantic) en ``(título, párrafos)``: oraciones con sus afirmaciones, vacíos con su motivo.
+
+    Con ``etiquetas`` las secciones salen en el orden en que ``config/interfaz.yaml`` las declara (E2-04): una versión guardada ordena sus
+    claves alfabéticamente y el boletín mostraría la hipótesis de impacto antes que las observaciones. Las claves sin rótulo van al final.
+    """
     datos = paquete.model_dump(mode="json") if hasattr(paquete, "model_dump") else dict(paquete)
+    if etiquetas:
+        orden = {k: i for i, k in enumerate(etiquetas)}
+        datos = dict(sorted(datos.items(), key=lambda kv: orden.get(kv[0], len(orden))))
     salida: list[tuple[str, list[str]]] = []
     for clave, valor in datos.items():
         if isinstance(valor, bool):
