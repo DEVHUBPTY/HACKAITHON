@@ -335,6 +335,39 @@ independiente del mismo despacho cuenta como otra procedencia porque ninguna reg
 | Transiciones sin cita por sección | 1 (`salidas.yaml`) | Supuesto | Revisión editorial |
 | Palabras sensacionalistas y frases prohibidas | Grupos `comunes`, `editorial` y `banca` en `restricciones.yaml` | PDF (prohibiciones) · diseño (validador, D-25, D-51); las listas de frases, Supuesto | Un test por frase (E1-13) |
 
+## Validador de citas (E1-13 · `config/validador.yaml`)
+
+Las listas de frases prohibidas siguen en `config/restricciones.yaml` y los límites de palabras y cantidades en `config/salidas.yaml`; aquí están los valores propios del validador. Toda lista de palabras es un **supuesto** nuestro (el reto fija las prohibiciones, no el léxico) y se calibra con la tasa de rechazo real.
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| Normalización de cifras | «1,5 %» = «1.5»; «1.234,5» = «1,234.5»; «1.234» vale 1.234 o 1234 (se acepta si cualquiera de los dos respalda la cifra) | Spec E1-13 (normalizar antes de comparar) | `test_coma_o_punto_decimal_*`, `test_el_separador_de_miles_se_normaliza` |
+| Tolerancia absoluta de cifras (`numeros.tolerancia_absoluta`) | 0.0 | Supuesto (una cifra distinta es otra cifra) | `test_una_cifra_que_no_coincide_*` |
+| Redondeo permitido (`numeros.redondeo_permitido`, `decimales_maximos`) | sí, hasta 6 decimales: «2.9 %» respalda 2.934; «3.0 %» no | Supuesto (un texto periodístico redondea; nunca cambia el valor) | `test_la_cifra_redondeada_se_acepta_y_la_distinta_no` |
+| Marcadores condicionales | podría, es posible, sería, habría, quizá, a verificar, no se descarta, de confirmarse… | Spec E1-13 (D-41); lista ampliada: supuesto | `test_una_hipotesis_sin_marcador_condicional_se_rechaza` |
+| Conectores causales | causó, provocó, debido a, por culpa de, a raíz de, porque, ya que, gracias a… | Spec E1-13 (D-68); lista ampliada: supuesto | `test_causalidad_*` |
+| Acusaciones | robó, asesinó, estafó, es culpable, corrupto, ladrón, criminal… (verbos y adjetivos; los sustantivos como «robo» o «corrupción» no, porque una nota sobre un robo no acusa a nadie) | Spec E1-13 (D-68); léxico conservador: supuesto | `test_una_acusacion_*` |
+| Detalle sin cita | fuentes oficiales, fuentes confirmaron, confirmaron, testigos, según expertos… | Spec E1-13 (D-51, «cualquier detalle sin cita») y PR #26; lista: supuesto | `test_un_detalle_sin_cita_se_rechaza` |
+| Excepción del titular literal | `entrevistas`, `sensacionalistas` (salvo título, titulares y copy) y `perdidas_en_inferencias` admiten la frase si está literal en un titular citado; `lectura_simulada`, `imagenes`, `recomendacion` y `certeza` no | Spec E1-13 (D-53, banca de `docs/salidas.md`) | `test_una_frase_de_entrevista_inventada_*`, `test_las_reglas_de_banca_vienen_del_yaml` |
+| Transiciones sin cita | máximo 1 por sección (`salidas.yaml`), de a lo más 15 palabras, solo en brief, resumen web y guion, sin cifras, fechas, nombres ni entidades | Spec E1-13 (D-41); 15 palabras y secciones: supuesto | `test_una_transicion_*`, `test_mas_transiciones_que_el_maximo_*` |
+| Nombre nuevo | una palabra con mayúscula que no abre la oración (o dos que la abren) y que ni las afirmaciones citadas ni su evidencia traen; «Panamá» siempre se admite | Spec E1-13 (D-41: «nombres nuevos») y PR #26; heurística conservadora | `test_una_inferencia_con_un_nombre_nuevo_*`, `test_un_nombre_que_las_afirmaciones_no_traen_*` |
+| Fecha | ISO, «5 de octubre [de 2026]», «octubre de 2026», un año o un mes del texto deben coincidir con un campo de fecha de la evidencia citada (`campos_fecha`), el año del ID o una fecha que diga el propio titular | Spec E1-13 (D-45) | `test_una_fecha_que_no_coincide_*` |
+| Año de un dato anual | Una afirmación lleva el año de cada ID `IND-` que cita; una oración que resume varios, al menos uno | CLAUDE.md; la segunda parte es supuesto (m1 del PR #26) | `test_una_oracion_que_resume_varios_anios_*` |
+| Contradicción abierta | ambas versiones en brief, resumen web y guion; no se exige en título, titulares ni copy | Spec E1-13; el alcance es supuesto (m4 del PR #26) | `test_con_una_contradiccion_abierta_*` |
+| Atribución | toda oración basada en una declaración nombra al medio o usa un verbo de reporte (`generacion.yaml`); una línea solo de hashtags no | Spec E1-13 (D-41); la excepción de hashtags nació de la prueba real | `test_una_declaracion_en_el_cuerpo_sin_atribucion_*`, `test_una_oracion_solo_de_hashtags_*` |
+| Registro de rechazos (`registro`) | `outputs/rechazos.jsonl`, una línea `rechazo` por cada rechazo y una `evaluacion` por unidad evaluada (afirmación o sección) con `proveedor`, `modelo`, `id_caso`, `seccion`, `item`, `intento`, `ts` UTC. Nunca el valor de un secreto ni el system prompt. Ignorado por git | Spec E1-13 | `test_cada_rechazo_queda_registrado_*`, `test_el_registro_nunca_copia_un_secreto_*` |
+| Tasa de rechazo | Por modelo: unidades rechazadas / evaluadas. Por regla: unidades en que la regla rechazó (una vez por unidad) / evaluadas. Siempre con n e IC de Wilson al 95 % (`python -m src.validador --tasas`). Un reintento cuenta como otra unidad; la caída por base descartada (`base_invalida`) cuenta aparte | CLAUDE.md (proporciones con n e IC) | `test_el_registro_permite_calcular_la_tasa_*` |
+
+### Tasa de rechazo medida con DeepSeek (E1-13, 2026-10-06)
+
+`deepseek-flash`, 11 paquetes reales (`python -m src.generacion --grupo …`: 1 «Borrador opcional», 6 completos forzados y 4 de investigación, de la bandeja), con los prompts `afirmaciones_ficha` 1.3 y `paquete_editorial` 1.2.
+
+- **Unidades rechazadas: 34 de 136 (25 %, IC 95 % 18–33 %)**, contando cada intento (afirmaciones del paso 1 y secciones del paso 2). La mayoría se corrige en el reintento; las secciones que no, quedan vacías con su motivo.
+- Por regla (unidades de 136): `enfoque_como_hecho` 10 · `limite_palabras` 8 (guion corto: con un solo titular no hay 110 palabras sin inventar) · `causalidad` 6 · `sin_atribucion` 5 · `nombre_nuevo` 4 · `base_invalida` 2 · `cifra_no_coincide` 2 · `hipotesis_sin_condicional` 1.
+- Primera medición, con los prompts de E1-12 (1.2 y 1.1) sobre los 10 grupos de «Investigar ya»: la causalidad y el enfoque como hecho eran los motivos dominantes; los prompts 1.3 y 1.2 piden explícitamente lo que el validador exige (no es relajar reglas).
+- Falsos positivos hallados y corregidos con prueba: línea solo de hashtags pedía atribución; «Según TVN…» al abrir una oración contaba como nombre; una oración que resumía 3 años exigía los 3.
+- El costo del contador de `outputs/costo_llm.json` por las 3 rondas (≈ 32 paquetes): ≈ USD 0.14 (estimación a tarifa pico, cota superior).
+
 ## Evaluación
 
 | Parámetro | Valor | Origen | Cómo se valida |

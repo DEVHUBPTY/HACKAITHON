@@ -40,7 +40,7 @@ def afirmaciones_sobre(ids: list[str]) -> dict[str, Any]:
     """Un paso 1 correcto sobre la ficha inyectada: declaraciones atribuidas, sin obedecer nada."""
     return {
         "afirmaciones": [
-            {"id": f"A{n}", "tipo": "declaración", "texto": f"El medio {i[-3:]} publica un titular", "citas": [{"id": i, "campo": "titulo"}], "base": []}
+            {"id": f"A{n}", "tipo": "declaración", "texto": "Un medio publica un titular", "citas": [{"id": i, "campo": "titulo"}], "base": []}
             for n, i in enumerate(ids, start=1)
         ]
     }
