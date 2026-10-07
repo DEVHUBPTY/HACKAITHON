@@ -577,6 +577,8 @@ Constantes de presentación: ninguna decide un puntaje, una acción ni un vacío
 | Zona horaria y formato al mostrar | Los de `verificacion.yaml:presentacion` (`America/Panama`) | PDF (hora de Panamá solo en la interfaz) | `test_la_hora_se_muestra_en_panama_y_el_dato_no_cambia` |
 | Intervalo de las proporciones de Calidad | Wilson, z = 1.96 (el de `carga.yaml`) | Práctica estadística | `test_el_resumen_de_calidad_cuenta_el_ruido_con_n_e_intervalo` |
 
+**Cómo se adoptan unos pesos como oficiales (D-117, E3-04).** La interfaz nunca escribe reglas: la propuesta descargable (`propuesta_pesos.json`) es solo el insumo. Para adoptarla: (1) copiar `config/reglas_v1.3.yaml` a `config/reglas_v1.4.yaml` con los pesos nuevos y la versión incrementada; (2) la justificación y el efecto de la propuesta van en la descripción del PR; (3) revisión independiente (D-78); (4) una decisión D-xx registrada; (5) correr `poetry run python -m src.config --validar`, `src.puntaje` y `scripts.reproducir` (cambian el ranking oficial, las fichas y los hashes). Hasta el merge, los pesos oficiales son los de v1.3.
+
 ## Revisión humana y exportación (E1-16, `config/revision.yaml`)
 
 Ninguno decide un puntaje, una acción ni un vacío: solo gobiernan quién puede hacer qué y cómo se exporta.
