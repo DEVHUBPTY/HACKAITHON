@@ -641,7 +641,8 @@ def _texto_de_elemento(x: Any) -> str:
     if isinstance(x, Mapping):
         if "tipo" in x and "texto" in x and "id" in x:  # afirmación validada
             citas = ", ".join(f"{c.get('id')} · {c.get('campo')}" for c in x.get("citas", []))
-            return f"{x['id']} [{x['tipo']}] {x['texto']}" + (f" ({citas})" if citas else "")
+            base = ", ".join(x.get("base") or [])  # una inferencia o hipótesis cita sus afirmaciones base (CLAUDE.md)
+            return f"{x['id']} [{x['tipo']}] {x['texto']}" + (f" (base: {base})" if base else "") + (f" ({citas})" if citas else "")
         if "texto" in x and "vacio" in x:  # pregunta de investigación
             return f"{x['texto']} (vacío: {x['vacio']})"
         if "texto" in x:  # oración: se muestran las afirmaciones en que se apoya

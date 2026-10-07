@@ -148,3 +148,17 @@ def test_una_aprobacion_humana_posterior_es_la_vigente_y_la_exportacion_ya_no_di
 def test_sin_nombres_fijos_en_src() -> None:
     for modulo in ("revision", "exportar", "interfaz", "configuracion"):
         assert "Asistente" not in (RAIZ / "src" / f"{modulo}.py").read_text(encoding="utf-8")
+
+
+# ============================================================================================ X73 (E1-16): la inferencia cita sus bases
+
+
+def test_x73_la_inferencia_y_la_hipotesis_muestran_las_afirmaciones_base_en_el_borrador() -> None:
+    """CLAUDE.md: una inferencia cita sus afirmaciones base; el texto del borrador (pantalla y exportación) las imprime."""
+    afirmaciones = [
+        {"id": "A1", "tipo": "hecho", "texto": "Dato oficial.", "citas": [{"id": "IND-X", "campo": "valor"}], "base": []},
+        {"id": "A6", "tipo": "inferencia", "texto": "Es posible que importe.", "citas": [], "base": ["A1", "A2"]},
+    ]
+    textos = ui.secciones_de_paquete({"observaciones": afirmaciones}, {"observaciones": "Observaciones"})[0][1]
+    assert "(IND-X · valor)" in textos[0] and "base:" not in textos[0]
+    assert textos[1] == "A6 [inferencia] Es posible que importe. (base: A1, A2)"
