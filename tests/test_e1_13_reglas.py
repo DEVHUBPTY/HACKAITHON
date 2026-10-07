@@ -860,3 +860,64 @@ def test_x57_la_lista_y_la_marca_viven_en_el_yaml() -> None:
     v = cargar_validador()
     assert {"banca", "banco", "bancos", "bancario", "crédito", "cartera", "entidades financieras", "sistema financiero"} <= set(v.sector_financiero)
     assert v.listas["perdidas_en_inferencias"].rechaza_sector_financiero_ajeno
+
+
+# ============================================================================================ X67 · hipótesis prudentes que solo remiten a verificar
+
+X67_PRUDENTES = [
+    "De confirmarse, la producción de Chiriquí podría verse afectada, lo que habría que verificar con más fuentes.",
+    "Las lluvias podrían afectar la actividad agrícola; habrá que verificarlo.",
+    "Las lluvias podrían afectar la actividad agrícola; habrá que revisar las cifras y habría que confirmarlas.",
+    "Las lluvias podrían afectar la actividad agrícola, algo que se confirmará con datos oficiales.",
+    "Las lluvias podrían afectar la actividad agrícola, lo que se sabrá con nuevos datos.",
+    "La actividad agrícola podría resentirse, según la información que se publicará más adelante, a verificar.",
+    "Las lluvias podrían afectar la actividad agrícola; el MEF informará las cifras y se conocerá el alcance.",
+]
+
+
+@pytest.mark.parametrize("texto", X67_PRUDENTES)
+def test_x67_una_hipotesis_prudente_que_remite_a_verificar_no_se_rechaza(texto: str) -> None:
+    r = reglas(validar_seccion("hipotesis_impacto", [o(texto, "A3")], _ctx_boletin()))
+    assert not r & {"futuro_asertivo", "recomendacion"}, (texto, r)
+
+
+X67_AFIRMAN = [
+    ("La actividad agrícola caerá, a verificar.", "futuro_asertivo"),
+    ("El sector sufrirá un golpe, a verificar.", "futuro_asertivo"),
+    ("La actividad agrícola se desplomará, a verificar.", "futuro_asertivo"),
+    ("Habrá pérdidas en el agro, a verificar.", "futuro_asertivo"),
+    ("El impacto será grave, a verificar.", "futuro_asertivo"),
+    ("Las lluvias podrían afectar el agro; habrá que reducir el crédito, a verificar.", "futuro_asertivo"),
+    ("Las lluvias podrían afectar el agro; habría que reducir el crédito.", "recomendacion"),
+    ("Las lluvias podrían afectar el agro; habría que verificar y habría que reducir el crédito.", "recomendacion"),
+    ("Se confirmará con datos oficiales que la actividad agrícola caerá, a verificar.", "futuro_asertivo"),
+]
+
+
+@pytest.mark.parametrize(("texto", "regla"), X67_AFIRMAN)
+def test_x67_la_excepcion_de_verificar_no_deja_pasar_una_afirmacion_de_resultado(texto: str, regla: str) -> None:
+    assert regla in reglas(validar_seccion("hipotesis_impacto", [o(texto, "A3")], _ctx_boletin())), texto
+
+
+def test_x67_habria_que_ya_no_es_una_frase_de_la_lista_sino_un_patron() -> None:
+    from src.configuracion import cargar_restricciones, cargar_validador
+
+    assert "habría que" not in cargar_restricciones().grupos["banca"]["recomendacion"]
+    assert any("habria que" in p for p in cargar_validador().patrones["recomendacion"])
+
+
+# ============================================================================================ X68 · formas cortas de la perífrasis de futuro
+
+X68_CORTAS = ["La actividad agrícola irá a caer, a verificar.", "La actividad agrícola va a ser golpeada, a verificar.",
+              "Las lluvias van a dar un golpe al agro, a verificar.", "El agro va a ir a menos, a verificar.",
+              "La actividad agrícola se va a ver afectada, a verificar.", "Las exportaciones irán a la baja y la actividad se resentirá, a verificar."]
+
+
+@pytest.mark.parametrize("texto", X68_CORTAS)
+def test_x68_las_formas_cortas_del_futuro_se_rechazan(texto: str) -> None:
+    assert "futuro_asertivo" in reglas(validar_seccion("hipotesis_impacto", [o(texto, "A3")], _ctx_boletin())), texto
+
+
+def test_x68_iran_el_pais_no_es_un_futuro() -> None:
+    texto = "Las lluvias podrían afectar la logística hacia Irán, a verificar."
+    assert "futuro_asertivo" not in reglas(validar_seccion("hipotesis_impacto", [o(texto, "A3")], _ctx_boletin()))

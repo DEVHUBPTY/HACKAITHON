@@ -24,8 +24,8 @@ grupos:
   banca:                            # docs/salidas.md §2: PDF prohíbe recomendar, inferir pérdidas y alertas definitivas
     recomendacion: ["comprar", "vender", "invertir", "recomendamos", "conviene", "se recomienda", "recomendable", "aconsejamos", "aconsejable",
                     "es aconsejable", "sugerimos", "sugiere", "sugieren", "se sugiere",
-                    # X62: formas condicionales e impersonales de recomendar; «sería/podría ser oportuno…» va como patrón en validador.yaml
-                    "habría que", "convendría", "lo prudente sería", "lo oportuno sería", "lo recomendable sería", "lo aconsejable sería",
+                    # X62: formas condicionales e impersonales de recomendar («habría que + verbo» es un patrón de validador.yaml, X67); «sería/podría ser oportuno…» va como patrón en validador.yaml
+                    "convendría", "lo prudente sería", "lo oportuno sería", "lo recomendable sería", "lo aconsejable sería",
                     "lo mejor sería", "es conveniente", "es oportuno", "es prudente"]   # X50; «deberían reducir…» va como patrón en validador.yaml
     certeza: ["ocurrirá", "sin duda", "inevitable", "con certeza", "con seguridad", "con toda seguridad", "es seguro que", "sin lugar a dudas",
               "seguramente", "definitivamente", "indudablemente",                    # X50

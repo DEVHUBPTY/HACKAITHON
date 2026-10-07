@@ -44,11 +44,16 @@ patrones:
   # X50: recomendaciones de acción sobre el crédito sin «comprar» ni «vender»; y certeza al abrir la oración («De seguro…»)
   recomendacion: ['\bdeberia(n|mos)? (limitar|reducir|aumentar|recortar|evitar|suspender|restringir|ampliar|vender|comprar|invertir|retirar|disminuir|incrementar|frenar|congelar|endurecer|flexibilizar)\b',
                   # X62: «sería / podría ser / resultaría + oportuno…» recomienda sin usar «recomendar»
-                  '\b(seria|podria ser|resultaria|podria resultar) (mas )?(oportuno|conveniente|prudente|recomendable|aconsejable|razonable)\b']
+                  '\b(seria|podria ser|resultaria|podria resultar) (mas )?(oportuno|conveniente|prudente|recomendable|aconsejable|razonable)\b',
+                  # X67: «habría que» recomienda una acción, salvo que la acción sea verificar («habría que verificar», «habría que reducir» sí se rechaza)
+                  '\bhabria que (?!(?:verificar|confirmar|comprobar|corroborar|contrastar|validar|revisar|precisar|aclarar|investigar)(?:se|lo|la|los|las)?\b)']
   certeza: ['(^|[.;:!?¿¡]\s*)de seguro\b']
+  # X67: el patrón general de -rá/-rán NO rechaza los verbos que solo informan o verifican («se confirmará con datos oficiales», «se sabrá», «se publicará»,
+  # «habrá que verificar»): una hipótesis prudente remite a verificar y no afirma un resultado. Es un lookahead negativo con lista cerrada de verbos
+  # (supuesto); «caerá», «sufrirá», «habrá pérdidas», «será grave» siguen rechazándose. X68: «va a ser», «van a dar», «va a ir» (raíz de 0+ letras) e «irá» (no «irán»: país).
   # X62: futuro asertivo general, sobre el texto CON tildes (lista `con_tildes`): «va a + infinitivo» y el futuro simple en -rá/-rán
   # («se desplomará», «sufrirá», «habrá»). Una hipótesis de impacto se redacta en condicional, nunca en futuro indicativo.
-  futuro_asertivo: ['\bvan? a \w{2,}(ar|er|ir)(se)?\b', '\b\w{2,}r(á|án)\b']
+  futuro_asertivo: ['\bvan? a \w*(ar|er|ir)(se)?\b', '\b(?!(?:confirmar|verificar|comprobar|corroborar|contrastar|validar|revisar|precisar|aclarar|investigar|conocer|publicar|informar|actualizar|anunciar|comunicar|divulgar|detallar|difundir|esclarecer|determinar|evaluar|analizar|saber)(?:á|án)\b)(?!sabr(?:á|án)\b)(?!habr(?:á|án) que (?:verificar|confirmar|comprobar|corroborar|contrastar|validar|revisar|precisar|aclarar|investigar)(?:se|lo|la|los|las)?\b)\w{2,}r(á|án)\b', '\birá\b']
   lectura_simulada: ['\b(articulo|nota|reportaje|texto|noticia|cronica|informe)\s+(explica|detalla|senala|indica|revela|cuenta|menciona|describe|asegura|precisa|advierte)\b', '\bsegun (el|la) (articulo|nota|reportaje|texto|noticia|cronica)\b']
   entrevistas: ['\b(dijo|declaro|aseguro|conto|afirmo|explico|revelo) a (tvn|la prensa|los medios|los periodistas|este medio|nuestro medio|la estrella|telemetro|critica)\b']
 
