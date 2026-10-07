@@ -12,6 +12,8 @@ lleva cifra ni intervalo. La demo (``data/revision_demo.duckdb``) y las bases de
 * **% de afirmaciones editadas:** afirmaciones distintas corregidas / afirmaciones del primer borrador de los casos decididos con
   borrador. Las afirmaciones de un mismo caso no son independientes: el intervalo es orientativo y se declara así.
 * **Motivos de descarte:** conteo por motivo de la lista de ``config/revision.yaml``.
+* **Descartes administrativos (X107):** los de ``motivos_administrativos`` (el reemplazo de D-118) no son un juicio editorial: no entran a
+  ninguna tasa ni a los casos decididos y se cuentan aparte en ``descartes_administrativos``.
 
 Uso: ``poetry run python -m eval.revision [--revision data/revision.duckdb] [--salida outputs/revision.json]``.
 """
@@ -100,9 +102,13 @@ def calcular(rev: Revisiones) -> dict[str, Any]:
     casos = rev.casos()
     humanos: list[str] = []
     provisionales: list[str] = []
+    administrativos: Counter[str] = Counter()
     for caso in casos:
         historial = rev.historial(caso.id_caso)
         if not historial or historial[-1].estado_nuevo not in ESTADOS_FINALES:
+            continue
+        if historial[-1].estado_nuevo == "descartado" and historial[-1].motivo in rev.cfg.motivos_administrativos:
+            administrativos[historial[-1].motivo] += 1       # X107: no es un juicio editorial: se cuenta aparte y no entra a ninguna tasa
             continue
         (provisionales if rev.es_provisional(historial[-1].revisor, caso.modalidad) else humanos).append(caso.id_caso)
     resultado: dict[str, Any] = {
@@ -110,6 +116,7 @@ def calcular(rev: Revisiones) -> dict[str, Any]:
         **origen_juicio.describir(cfg_origen.humano, cfg_origen),
         **_metricas(rev, humanos, z),
         "casos_decididos_provisionales": len(provisionales),
+        "descartes_administrativos": {"n": sum(administrativos.values()), "motivos": dict(administrativos.most_common()), "nota": "Descartes administrativos (no son un juicio editorial): fuera de todas las tasas."},
         "nota": "Las afirmaciones de un caso no son independientes: el intervalo de afirmaciones editadas es orientativo.",
     }
     if provisionales:
@@ -147,6 +154,9 @@ def formatear(r: dict[str, Any], sin_datos: str | None = None) -> str:
     sd = sin_datos or cargar_revision().textos.sin_datos
     lineas = _bloque(r, sd, f"Revisión humana · casos abiertos: {r['casos_abiertos']} · decididos por una persona: {r['casos_decididos']}")
     lineas.append(f"  {r['nota']}")
+    adm = r.get("descartes_administrativos")
+    if adm and adm["n"]:
+        lineas.append(f"  Descartes administrativos (fuera de las tasas): {adm['n']} · " + " · ".join(f"{m} ({n})" for m, n in adm["motivos"].items()))
     if r.get("provisionales"):
         p = r["provisionales"]
         lineas += ["", *_bloque(p, sd, f"Revisión PROVISIONAL del asistente (no es juicio humano) · decididos: {p['casos_decididos']}"), f"  {p['aviso_origen']}"]

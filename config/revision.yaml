@@ -36,6 +36,9 @@ motivos_descarte:
   - "Ya cubierto por el medio de referencia"
   - "Reemplazado por la selección por caso de uso (D-118)"
   - "Otro"
+# X107: descartes ADMINISTRATIVOS (un reemplazo de la selección de C-01), no un juicio editorial: `eval.revision` los excluye de las tasas
+# de aceptación, corrección y descarte y los cuenta aparte en `descartes_administrativos`.
+motivos_administrativos: ["Reemplazado por la selección por caso de uso (D-118)"]
 motivos_con_comentario: ["Otro"]      # estos motivos exigen además un comentario que explique
 
 # D-49: la persona se elige de esta lista con su rol. No hay autenticación (fuera de alcance del reto): es una limitación declarada.

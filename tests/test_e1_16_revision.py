@@ -721,6 +721,26 @@ def test_eval_calcula_tasas_con_n_e_intervalo_y_los_motivos(rev) -> None:
     assert t["n"] == 4 and t["mediana"] > 0 and t["media"] > 0
 
 
+def test_x107_los_descartes_administrativos_no_entran_a_las_tasas_y_se_cuentan_aparte(rev) -> None:
+    motivo = CFG.motivos_administrativos[0]
+    assert motivo in CFG.motivos_descarte
+    _historia(rev)
+    extra = rev.caso_de_grupo(h.G_PERIODO, "editorial").id_caso      # el quinto caso de la historia, sin decidir
+    antes = eval_revision.calcular(rev)
+    rev.descartar(extra, EDITORIAL, motivo)
+    r = eval_revision.calcular(rev)
+    assert r["descartes_administrativos"] == {**r["descartes_administrativos"], "n": 1, "motivos": {motivo: 1}}
+    assert r["casos_decididos"] == antes["casos_decididos"] == 4 and r["tasas"] == antes["tasas"] and motivo not in r["motivos_descarte"]
+    assert r["casos_abiertos"] == 5 and "Descartes administrativos" in eval_revision.formatear(r)
+
+
+def test_la_configuracion_rechaza_un_motivo_administrativo_que_no_es_un_motivo_de_descarte() -> None:
+    datos = CFG.model_dump()
+    datos["motivos_administrativos"] = ["Inventado"]
+    with pytest.raises(ValueError, match="motivos_administrativos"):
+        type(CFG).model_validate(datos)
+
+
 def test_eval_la_cli_escribe_el_json_y_la_tabla(rev, tmp_path, capsys) -> None:
     _historia(rev)
     salida = tmp_path / "revision.json"

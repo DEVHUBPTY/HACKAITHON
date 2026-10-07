@@ -2,11 +2,12 @@
 
 Uso::
 
-    poetry run python -m scripts.fichas_trazables            # selecciona, arma, comprueba y escribe outputs/fichas_trazables/ (solo lectura de la base)
-    poetry run python -m scripts.fichas_trazables --casos    # además abre cada ficha como CASO- (revisión provisional del asistente, D-112) y la exporta
+    poetry run python -m scripts.fichas_trazables            # vista previa: selecciona, arma y comprueba; escribe SOLO en outputs/fichas_trazables/vista_previa/ (fuera de git)
+    poetry run python -m scripts.fichas_trazables --casos    # además abre cada ficha como CASO- (revisión provisional del asistente, D-112) y la exporta a outputs/fichas_trazables/
 
 La regla de selección y la resolución de citas viven en ``config/fichas_trazables.yaml``. Todo es BORRADOR. El comando termina con código
-1 si alguna comprobación falla. Para llevar los casos a Notion: ``poetry run python -m src.exportar --caso CASO-00N --notion`` (lo hace una persona con token).
+1 si alguna comprobación falla. Para llevar los casos a Notion: ``poetry run python -m scripts.fichas_trazables --casos --notion`` (lo hace una persona con
+token; así «Caso de uso» sale de la selección). ``src.exportar --caso … --notion`` no trae ese valor y, aunque ya no lo borra en Notion, no lo rellena.
 """
 
 from __future__ import annotations
@@ -127,7 +128,7 @@ def indice_markdown(cfg: ConfigFichasTrazables, filas: list[dict[str, Any]], inf
     for regla in REGLAS:
         r = inf["por_regla"][regla]
         if not r["n"]:
-            L.append(f"| `{regla}` | 0 / 0 | no aplica | — |")
+            L.append(f"| `{regla}` | 0 / 0 | {r['nota']} | — |")
             continue
         L.append(f"| `{regla}` | {r['ok']} / {r['n']} | {r['proporcion']:.0%} | [{r['ic95'][0]:.0%}, {r['ic95'][1]:.0%}] |")
     L += ["", f"Resultado: **{'todas las comprobaciones pasan' if inf['todo_ok'] else 'HAY FALLOS (ver trazabilidad.json)'}** · detalle por cita en `{cfg.archivos.informe}`.", ""]
@@ -153,7 +154,7 @@ def principal(argv: list[str] | None = None) -> int:
     if not args.base.exists():
         print(f"ERROR: no existe {args.base}: ejecute primero el pipeline (`poetry run python -m src.puntaje`)", file=sys.stderr)
         return 1
-    carpeta = args.salida or RAIZ / cfg.archivos.carpeta
+    carpeta = args.salida or RAIZ / (cfg.archivos.carpeta if args.casos else cfg.archivos.vista_previa)   # X107: sin --casos nunca se toca lo versionado
     carpeta.mkdir(parents=True, exist_ok=True)
     cfg_rev = cargar_revision()
     for viejo in (*carpeta.glob("GRP-*.md"), *carpeta.glob("CASO-*.md"), carpeta / cfg_rev.exportacion.csv):   # esta corrida reemplaza a la anterior
@@ -244,8 +245,9 @@ def principal(argv: list[str] | None = None) -> int:
         "reemplazados": reemplazados,
         "con_casos": args.casos, **inf,
     }
-    (RAIZ / cfg.archivos.informe if args.salida is None else carpeta / "trazabilidad.json").write_text(json.dumps(inf, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    (RAIZ / cfg.archivos.indice if args.salida is None else carpeta / "indice.md").write_text(indice_markdown(cfg, filas, inf, marca, reemplazados), encoding="utf-8")
+    en_oficial = args.salida is None and args.casos
+    (RAIZ / cfg.archivos.informe if en_oficial else carpeta / "trazabilidad.json").write_text(json.dumps(inf, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    (RAIZ / cfg.archivos.indice if en_oficial else carpeta / "indice.md").write_text(indice_markdown(cfg, filas, inf, marca, reemplazados), encoding="utf-8")
     for f in filas:
         print(f"{f['caso_de_uso']} {f['id_caso'] or '-':9} {f['id_grupo']} pos {f['posicion']:>2} P {f['puntaje']:6.2f} {f['estado']:12} comprobaciones {f['ok']}/{f['n']} fallos {f['fallos']}{' · respaldo' if f['respaldo'] else ''}")
     if reemplazados:

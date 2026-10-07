@@ -83,7 +83,11 @@ def propiedades_de_fila(fila: dict[str, str], cfg: ConfigNotion) -> dict[str, An
     faltan = sorted(set(cfg.propiedades) - set(fila))
     if faltan:
         raise ErrorNotion(f"la fila no trae las propiedades: {faltan}")
-    return {n: propiedad(t, fila[n], cfg.cuerpo.max_caracteres_bloque) for n, t in cfg.propiedades.items()}
+    return {
+        n: propiedad(t, fila[n], cfg.cuerpo.max_caracteres_bloque)
+        for n, t in cfg.propiedades.items()
+        if fila[n].strip() or n not in cfg.sin_valor_no_se_envia      # X107: sin valor, la propiedad no se toca (no se envía null)
+    }
 
 
 _ENCABEZADO = re.compile(r"^(#{1,3})\s+(.*)$")
