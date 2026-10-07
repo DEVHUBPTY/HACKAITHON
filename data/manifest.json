@@ -516,6 +516,9 @@
       "fecha": "2026-10-07T00:41:03Z",
       "hash_snapshot": "ecc81c41ed6441436d5496a2efb5467fcb0ccdd8bf92eca81f435ab4610a4ff8",
       "nota_fecha": "fecha de corte de los datos (último crudo real), no la fecha en que se generó la versión",
+      "notas": [
+        "Brecha conocida: las noticias útiles (sin ruido) son 94 (57 de GDELT y 37 de TVN), por debajo del objetivo interno más estricto de 100 útiles. El mínimo del PDF (100 registros únicos, al menos 20 de TVN) sí se cumple: 221 únicos y 88 de TVN. Cerrarla requiere nuevas capturas del RSS o una extracción de GDELT, hoy en pausa por HTTP 429."
+      ],
       "registros_excluidos": {
         "por_motivo": {
           "fuera_de_ventana": 97
