@@ -1,0 +1,11 @@
+{
+ "clave": "71c01ab13d0aa8066ed19bbe207d1f455a6f3689ff2cf0bc3972335510904fc8",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.3",
+ "version_cache": "1",
+ "tokens_entrada": 1769,
+ "tokens_salida": 383,
+ "creado_utc": "2026-10-07T03:51:35Z",
+ "respuesta": "{\"afirmaciones\": [{\"id\": \"A1\", \"tipo\": \"declaración\", \"texto\": \"TVN Panamá reporta que aprehendieron a Enrique Lau, exdirector de la CSS, por supuesto enriquecimiento injustificado.\", \"citas\": [{\"id\": \"NOT-a76fe48ec6\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A2\", \"tipo\": \"hecho\", \"texto\": \"El grupo de registros sobre este tema reúne 1 titular de 1 medio.\", \"citas\": [{\"id\": \"GRP-fcdfc2a3cc\", \"campo\": \"n_titulares\"}, {\"id\": \"GRP-fcdfc2a3cc\", \"campo\": \"n_medios\"}]}, {\"id\": \"A3\", \"tipo\": \"hecho\", \"texto\": \"La evidencia disponible corresponde a 1 procedencia independiente estimada.\", \"citas\": [{\"id\": \"GRP-fcdfc2a3cc\", \"campo\": \"n_procedencias\"}]}, {\"id\": \"A4\", \"tipo\": \"inferencia\", \"texto\": \"La población interesada en la gestión de la seguridad social y en la rendición de cuentas de sus autoridades podría seguir con atención este tema.\", \"citas\": [], \"base\": [\"A1\", \"A2\", \"A3\"]}, {\"id\": \"A5\", \"tipo\": \"hipótesis\", \"texto\": \"Si el número de procedencias independientes aumentara, la cobertura del tema podría considerarse más sólida.\", \"citas\": [], \"base\": [\"A3\"]}]}"
+}

@@ -44,7 +44,8 @@ def grupos_por_defecto(base: Path, modalidad: str) -> list[str]:
 
 
 def estado_de(id_grupo: str, modalidad: str, base: Path, cache: CacheLlm) -> str:
-    """``completo``, ``parcial (…)``, ``sin borrador: <por qué>`` (sin caché, desajuste de proveedor o validación) o ``no genera: …``."""
+    """``completo``, ``con vacíos (…)`` (secciones que la validación dejó vacías, con razón: el borrador existe pero está incompleto), ``parcial (…)``
+    (faltan grupos en la caché), ``sin borrador: <por qué>`` o ``no genera: …``."""
     from src.generacion import generar_paquete
 
     try:
@@ -52,7 +53,10 @@ def estado_de(id_grupo: str, modalidad: str, base: Path, cache: CacheLlm) -> str
     except SinBorrador as exc:
         return f"no genera: {exc}" if exc.por_accion else f"sin borrador: {exc}"
     faltan = [v.referencia for v in p.vacios if v.motivo == cache.cfg.textos.sin_cache_grupo]
-    return "completo" if not faltan else f"parcial (faltan: {', '.join(faltan)})"
+    if faltan:
+        return f"parcial (faltan: {', '.join(faltan)})"
+    vacias = [v.referencia for v in p.vacios if v.origen == "seccion"]
+    return "completo" if not vacias else f"con vacíos ({', '.join(vacias)})"
 
 
 def principal(argv: Sequence[str] | None = None) -> int:
@@ -61,6 +65,7 @@ def principal(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--modalidad", choices=MODALIDADES, default="editorial")
     parser.add_argument("--base", type=Path, default=RAIZ / "data" / cargar_normalizacion().salida.base_de_datos)
     parser.add_argument("--verificar", action="store_true", help="solo lee la caché (sin red, sin proveedor); sale con 1 si algo falta")
+    parser.add_argument("--podar", action="store_true", help="con --verificar: borra las respuestas que ningún grupo verificado usa (prompts o validadores anteriores)")
     parser.add_argument("--refrescar", action="store_true", help="vuelve a llamar al proveedor aunque haya respuesta guardada")
     args = parser.parse_args(argv)
     from src.registro import configurar_logging
@@ -75,8 +80,12 @@ def principal(argv: Sequence[str] | None = None) -> int:
         estados = {g: estado_de(g, args.modalidad, args.base, cache) for g in grupos}
         for g, e in estados.items():
             print(f"{g}  {e}")
-        faltan = [g for g, e in estados.items() if e != "completo" and not e.startswith("no genera")]
-        print(f"\n{len(grupos) - len(faltan)} de {len(grupos)} grupos listos · {len(cache)} respuestas en {cache.carpeta.relative_to(RAIZ)}")
+        faltan = [g for g, e in estados.items() if not e.startswith(("completo", "con vacíos", "no genera"))]
+        con_vacios = [g for g, e in estados.items() if e.startswith("con vacíos")]
+        if args.podar and not faltan:
+            print(f"\n{cache.podar()} respuestas sin uso borradas de la caché")
+        resumen = f" ({len(con_vacios)} con secciones vacías por la validación)" if con_vacios else ""
+        print(f"\n{len(grupos) - len(faltan)} de {len(grupos)} grupos listos{resumen} · {len(cache)} respuestas en {cache.carpeta.relative_to(RAIZ)}")
         return 1 if faltan else 0
 
     from src.cache import modo_offline

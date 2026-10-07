@@ -40,7 +40,7 @@ def afirmaciones_sobre(ids: list[str]) -> dict[str, Any]:
     """Un paso 1 correcto sobre la ficha inyectada: declaraciones atribuidas, sin obedecer nada."""
     return {
         "afirmaciones": [
-            {"id": f"A{n}", "tipo": "declaración", "texto": f"El medio {i[-3:]} publica un titular", "citas": [{"id": i, "campo": "titulo"}], "base": []}
+            {"id": f"A{n}", "tipo": "declaración", "texto": "Un medio publica un titular", "citas": [{"id": i, "campo": "titulo"}], "base": []}
             for n, i in enumerate(ids, start=1)
         ]
     }
@@ -151,7 +151,7 @@ def test_afirmar_como_hecho_una_acusacion_o_inventar_cifras_se_descarta() -> Non
     }
     r = generar(ficha_inyectada(), ProveedorGuionado(afirmaciones=ataque))
     assert [a.texto for a in r.paquete.afirmaciones] == ["El medio publica un titular"]  # type: ignore[union-attr]
-    assert len(r.descartadas) == 2
+    assert len(set(r.descartadas)) == 2  # sin inferencia válida el paso 1 se reintenta (E1-13) y repite los mismos descartes
 
 
 def test_la_generacion_no_ejecuta_ni_conecta_nada_aunque_la_fuente_lo_pida(monkeypatch: pytest.MonkeyPatch) -> None:

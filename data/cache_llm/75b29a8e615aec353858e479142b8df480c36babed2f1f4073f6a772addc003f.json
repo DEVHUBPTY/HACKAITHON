@@ -1,0 +1,11 @@
+{
+ "clave": "75b29a8e615aec353858e479142b8df480c36babed2f1f4073f6a772addc003f",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.3",
+ "version_cache": "1",
+ "tokens_entrada": 1790,
+ "tokens_salida": 384,
+ "creado_utc": "2026-10-07T03:51:31Z",
+ "respuesta": "{\"afirmaciones\": [{\"id\": \"A1\", \"tipo\": \"declaración\", \"texto\": \"TVN Panamá reporta que un árbol cayó sobre dos vehículos en estacionamientos del hospital San Miguel Arcángel.\", \"citas\": [{\"id\": \"NOT-ca6fae4efb\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A2\", \"tipo\": \"hecho\", \"texto\": \"El grupo de registros sobre este tema reúne 1 titular de 1 medio.\", \"citas\": [{\"id\": \"GRP-39773bed5a\", \"campo\": \"n_titulares\"}, {\"id\": \"GRP-39773bed5a\", \"campo\": \"n_medios\"}]}, {\"id\": \"A3\", \"tipo\": \"hecho\", \"texto\": \"Se estima 1 procedencia independiente para este tema.\", \"citas\": [{\"id\": \"GRP-39773bed5a\", \"campo\": \"n_procedencias\"}]}, {\"id\": \"A4\", \"tipo\": \"inferencia\", \"texto\": \"La caída de un árbol sobre vehículos en un hospital puede importar a la población porque afecta un espacio de atención de salud y bienes de quienes acuden a él.\", \"base\": [\"A1\"], \"citas\": []}, {\"id\": \"A5\", \"tipo\": \"hipótesis\", \"texto\": \"Si la cobertura se ampliara con más procedencias independientes, el tema podría adquirir mayor relevancia informativa para la población.\", \"base\": [\"A2\", \"A3\"], \"citas\": []}]}"
+}

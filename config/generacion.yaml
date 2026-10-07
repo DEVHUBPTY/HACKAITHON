@@ -13,6 +13,7 @@ reintentos: 1
 afirmaciones:
   minimas_validas: 1       # sin al menos una afirmación válida no se redacta nada
   maximas: 8               # el LLM puede proponer más; se conservan las primeras
+  exigir_inferencia: true  # el enfoque se apoya en una inferencia o hipótesis (D-41): si ninguna sobrevive a la validación se reintenta una vez con el motivo (E1-13)
 
 # Qué se genera según la acción de la ficha (D-42). Acción fuera de estas listas: no se genera nada y se avisa.
 acciones:
@@ -30,7 +31,7 @@ prefijos:
 campos_conteo: [n_titulares, n_medios, n_procedencias]
 
 # Un dato oficial anual no se describe con estas palabras (CLAUDE.md: «actual», «hoy»), comparadas sin tildes y como palabra completa.
-volatiles: [actual, actualmente, hoy]
+volatiles: [actual, actualmente, hoy, en la actualidad, a la fecha, en este momento, vigente, este año, recientemente, ayer]
 # Cada dato de una línea de la ficha viene como «PAÍS AAAA: valor unidad»; se toma el valor de cada uno (separados por «;»).
 patron_valor_por_anio: '[A-Z]{3} \d{4}: ([^;]+)'
 # El año de un ID anual (IND-PAN-FP.CPI.TOTL.ZG-2024) es el último grupo de dígitos tras el guion; se exige en el texto.
