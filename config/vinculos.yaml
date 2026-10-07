@@ -14,6 +14,16 @@ motivo_por_defecto: tema_sin_indicador
 ventana_coincidencia_dias: 2        # sismos: ± días entre evento USGS y noticia (supuesto)
 pais_por_defecto: PAN
 
+sismos:                             # E1-09b: presentación y textos fijos del vínculo con eventos USGS
+  zona_horaria: America/Panama      # solo para mostrar; los datos siguen en UTC
+  formato_hora: "%Y-%m-%d %H:%M"
+  plantilla_regla: "Evento USGS a ± {dias} días de la noticia y magnitud mínima {magnitud_minima}."
+  nota_fecha_deteccion: "Alguna noticia del grupo no tiene fecha de publicación: se usó su fecha de detección."
+  limitaciones:
+    - "El lugar puede estar fuera de territorio panameño: se muestra tal como lo da USGS."
+    - "La fuente solo describe el evento sísmico; no informa daños ni pérdidas."
+    - "Un evento con estado automático puede cambiar al ser revisado."
+
 vinculos:                           # por subtema
   crecimiento_pib:
     fuente: indicador

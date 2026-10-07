@@ -205,6 +205,21 @@ Todo lo marcado como ruido es una **propuesta por titular**, no una etiqueta hum
 El conteo de procedencias es una **estimación** (`grupos.estimado = true`, leyenda `etiqueta_estimado`): una traducción
 independiente del mismo despacho cuenta como otra procedencia porque ninguna regla sabe que comparten origen.
 
+## Sismos (E1-09b, `config/vinculos.yaml`, `config/fuentes.yaml`)
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| Ventana de coincidencia (`ventana_coincidencia_dias`) | ± 2 días, medidos en horas entre la hora UTC del evento y la fecha de la noticia (borde inclusivo) | Supuesto (el valor ya figuraba en «Organizar y contextualizar») | `test_el_borde_de_la_ventana_es_inclusivo_en_horas` · `test_sin_evento_dentro_de_la_ventana_o_bajo_la_magnitud_minima` |
+| Magnitud mínima de coincidencia | `usgs.minmagnitude` de `fuentes.yaml` (3) | PDF (sección 6); no se duplica en `vinculos.yaml` | `test_sin_evento_dentro_de_la_ventana_o_bajo_la_magnitud_minima` |
+| Fecha de la noticia | `campos_fecha` de `reglas_v1.3.yaml`: publicación y, solo si falta, detección; el uso de detección queda declarado en `origenes_fecha` y en la `regla` (`sismos.nota_fecha_deteccion`). Con varias noticias en el grupo se usa la más cercana al evento | Decisión de E1-09b (consistente con E1-08; nunca se sustituye en silencio) | `test_fecha_de_deteccion_solo_si_falta_la_de_publicacion_y_queda_declarado` · `test_la_publicacion_no_se_sustituye_por_la_deteccion_cuando_existe` |
+| Cobertura de USGS | De `usgs.starttime` a `usgs.endtime` de `fuentes.yaml` (2024-01-01 a 2024-12-31, UTC); no está fija en el código. Noticias fuera del periodo no se comparan | PDF (sección 6) · Supuesto del fin (ver «Extracción del snapshot») | `test_noticia_de_2025_es_fuera_de_cobertura` · `test_la_cobertura_sale_de_fuentes_y_no_esta_fija_en_2024` |
+| Grupo sin ninguna fecha | Motivo `sin_dato_en_periodo` (ya declarado en `motivos_sin_vinculo`) | Decisión de E1-09b | `test_noticia_sin_fecha_es_sin_dato_en_periodo` |
+| Subtemas que se vinculan a USGS | Los de `vinculos.yaml` con `fuente: usgs` y `relacion: evento` (hoy `sismos`); el resto devuelve «no aplica» | Spec E1-09b | `test_lluvias_inundaciones_y_danos_nunca_se_vinculan_a_usgs` |
+| Subtema de un grupo | El más frecuente entre sus noticias; en empate, el primero por orden alfabético | Supuesto (mismo criterio que `_tema_dominante` de E1-08) | `test_subtema_dominante_y_vincular_base` |
+| Zona y formato de la hora mostrada (`sismos.zona_horaria`, `sismos.formato_hora`) | `America/Panama`, `%Y-%m-%d %H:%M`; el dato se guarda en UTC | CLAUDE.md (hora de Panamá solo en la interfaz) | `test_un_evento_coincidente_da_vinculo_sis_con_todos_los_campos` |
+| Limitaciones fijas (`sismos.limitaciones`) y plantilla de la regla (`sismos.plantilla_regla`) | Tres frases: lugar posiblemente fuera de Panamá, la fuente no informa daños, un evento automático puede cambiar | Spec E1-09b | mismo test; `test_el_bloque_sismos_prohibe_claves_desconocidas_y_zonas_invalidas` |
+| Borde de la cobertura | Una noticia de los primeros días de 2024 puede tener un evento de finales de 2023 dentro de su ventana, que la extracción no pidió: puede dar `sin_evento_coincidente` en vez de `fuera_de_cobertura` | Límite conocido (no se amplía la cobertura) | — |
+
 ## Consulta y generación
 
 ## Consulta y generación (E1-11 · `config/consulta.yaml`; la generación es E1-12)
