@@ -24,6 +24,10 @@ class TopeDeCostoAlcanzado(ErrorProveedor):
     """Se alcanzó el tope de costo (D-67): no se hacen más llamadas al proveedor de pago hasta que una persona lo suba."""
 
 
+class SaldoAgotado(TopeDeCostoAlcanzado):
+    """DeepSeek respondió «Insufficient Balance» (HTTP 402, D-98): no queda saldo en la cuenta. No se reintenta; la generación se detiene."""
+
+
 class RegistroCosto:
     """Tokens y USD acumulados del proveedor de pago, con persistencia opcional en JSON."""
 
