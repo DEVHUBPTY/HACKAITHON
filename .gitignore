@@ -51,3 +51,6 @@ outputs/notion/
 data/revision_demo.casos.csv
 # Registro de rechazos del validador (E1-13): artefacto de ejecución; las tasas se resumen con `python -m src.validador --tasas`.
 outputs/rechazos.jsonl
+
+# E1-20: fichas que reconstruye scripts.reproducir; su hash queda en data/manifest.json (reproducibilidad).
+outputs/reproduccion/

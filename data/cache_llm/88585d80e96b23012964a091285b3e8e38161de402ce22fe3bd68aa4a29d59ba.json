@@ -1,0 +1,11 @@
+{
+ "clave": "88585d80e96b23012964a091285b3e8e38161de402ce22fe3bd68aa4a29d59ba",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1962,
+ "tokens_salida": 341,
+ "creado_utc": "2026-10-07T11:59:19Z",
+ "respuesta": "{\n  \"titulo_trabajo\": {\n    \"texto\": \"TVN Panamá reporta que colegios particulares atribuyen el aumento de matrícula a la migración\",\n    \"afirmaciones\": [\"A1\"]\n  },\n  \"enfoque\": [\n    {\n      \"texto\": \"Según TVN Panamá, colegios particulares atribuyen el aumento de matrícula a la migración al sector oficial y a los altos costos de operación.\",\n      \"afirmaciones\": [\"A1\"]\n    },\n    {\n      \"texto\": \"Sería posible que el tema de la matrícula en colegios particulares y su relación con el sector oficial y los costos de operación resulte relevante para las familias que eligen centro educativo.\",\n      \"afirmaciones\": [\"A5\"]\n    }\n  ],\n  \"preguntas\": [\n    {\n      \"texto\": \"¿Qué indicador oficial podría vincularse al tema de la matrícula en colegios particulares?\",\n      \"vacio\": \"sin_dato_oficial\"\n    },\n    {\n      \"texto\": \"¿Existen otras procedencias independientes que reporten el tema de la matrícula en colegios particulares?\",\n      \"vacio\": \"procedencias_insuficientes\"\n    },\n    {\n      \"texto\": \"¿Qué datos oficiales permitirían contrastar lo que TVN Panamá reporta sobre la matrícula en colegios particulares?\",\n      \"vacio\": \"sin_dato_oficial\"\n    }\n  ]\n}"
+}
