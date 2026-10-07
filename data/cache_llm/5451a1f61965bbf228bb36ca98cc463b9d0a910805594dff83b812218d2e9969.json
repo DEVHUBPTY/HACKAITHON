@@ -1,0 +1,11 @@
+{
+ "clave": "5451a1f61965bbf228bb36ca98cc463b9d0a910805594dff83b812218d2e9969",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 2280,
+ "tokens_salida": 342,
+ "creado_utc": "2026-10-07T11:59:29Z",
+ "respuesta": "{\n  \"titulo_trabajo\": {\n    \"texto\": \"Medios reportan que El Niño agrava riesgos económicos en América Latina\",\n    \"afirmaciones\": [\"A1\", \"A2\", \"A3\", \"A4\", \"A5\", \"A6\"]\n  },\n  \"enfoque\": [\n    {\n      \"texto\": \"Si los reportes sobre la intensificación de El Niño se sostienen, los riesgos económicos en América Latina podrían agravarse.\",\n      \"afirmaciones\": [\"A1\", \"A2\", \"A3\", \"A4\", \"A5\", \"A6\"]\n    },\n    {\n      \"texto\": \"El grupo reúne 20 titulares de 18 medios, aunque la procedencia independiente estimada es de 1.\",\n      \"afirmaciones\": [\"A7\"]\n    }\n  ],\n  \"preguntas\": [\n    {\n      \"texto\": \"¿Qué indicador oficial podría vincularse al tema para verificar los riesgos económicos reportados?\",\n      \"vacio\": \"sin_dato_oficial\"\n    },\n    {\n      \"texto\": \"¿Qué procedencias adicionales permitirían alcanzar al menos 2 fuentes independientes?\",\n      \"vacio\": \"procedencias_insuficientes\"\n    },\n    {\n      \"texto\": \"¿Cuáles son los medios y las fechas de publicación de los 20 titulares?\",\n      \"vacio\": \"medios_o_fechas_desconocidos\"\n    }\n  ]\n}"
+}

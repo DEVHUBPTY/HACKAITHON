@@ -1,0 +1,11 @@
+{
+ "clave": "cff5f688cd7592678dccf6be5ecbecb4f7c8e3e2ddaba42e6acf4a4ad4d2da6a",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1779,
+ "tokens_salida": 258,
+ "creado_utc": "2026-10-07T11:59:56Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta que el MOP solicita $43.1 millones para obras\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La solicitud de fondos para compromisos y obras en ejecución puede ser relevante para la población, pues alude a la continuidad de obras públicas y al uso de recursos.\", \"afirmaciones\": [\"A3\"]}], \"preguntas\": [{\"texto\": \"¿Qué cifras oficiales del MOP o de otra entidad permiten contrastar los $43.1 millones reportados por TVN Panamá?\", \"vacio\": \"cifras_sin_dato_oficial\"}, {\"texto\": \"¿Existe un indicador oficial asignado al tema de la solicitud de fondos del MOP para compromisos y obras en ejecución?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras procedencias independientes reportan la solicitud de fondos del MOP, además de TVN Panamá?\", \"vacio\": \"procedencias_insuficientes\"}]}"
+}
