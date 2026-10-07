@@ -1,0 +1,143 @@
+# E1-10b · Ficha de evidencia: vacíos de verificación (orden y qué verificar), fuentes sugeridas y presentación.
+# Todo es COMÚN a ambas modalidades (D-90): lo que cambia por modalidad (tabla de acciones, medio de referencia,
+# fuentes sugeridas extra) vive en modalidad_<modalidad>.yaml. Cada número está en docs/parametros.md.
+# Las fuentes sugeridas son una SUGERENCIA para quien verifica (D-37): nunca son evidencia ni llevan formato de cita.
+version: "1.0"
+
+vacios:
+  principales: 3                  # cuántos vacíos van arriba; el resto, en un desplegable (spec E1-10b)
+  # De más a menos importante. Un vacío con un código que no esté aquí queda al final (con la verificación por defecto).
+  orden_importancia:
+    - contradiccion_abierta
+    - cifra_discrepante
+    - cifras_sin_dato_oficial
+    - sin_dato_oficial
+    - solo_vinculo_indirecto
+    - procedencias_insuficientes
+    - noticia_recirculada
+    - evento_sin_revisar
+    - cifra_periodo_distinto
+    - medios_o_fechas_desconocidos
+    - urgencia_sin_publicacion
+    - subtema_desconocido
+  verificacion_por_defecto: "Revisar el vacío con la fuente primaria antes de usar el tema."
+  # Qué hacer para cerrar cada vacío. Los vacíos y sus textos los calcula E1-10 (`prioridad.yaml`, tabla `evidencia`): la
+  # ficha solo los lee, los ordena y les agrega esta verificación.
+  catalogo:
+    contradiccion_abierta:
+      verificacion: "Comparar ambas versiones con su fuente primaria y decidir cuál se sostiene; ningún par se cierra solo."
+    cifra_discrepante:
+      verificacion: "Revisar si el titular y el dato oficial miden lo mismo y en el mismo período antes de citar cualquiera de los dos."
+    cifras_sin_dato_oficial:
+      verificacion: "Buscar la cifra en la institución oficial que la publica antes de repetirla."
+    sin_dato_oficial:
+      verificacion: "Consultar a la institución oficial responsable del tema por un dato que mida el hecho."
+    solo_vinculo_indirecto:
+      verificacion: "El indicador vinculado es contexto lejano: buscar un dato oficial que mida el hecho directamente."
+    procedencias_insuficientes:
+      verificacion: "Buscar el mismo hecho en un medio con fuente propia; una réplica de la misma agencia no cuenta."
+    noticia_recirculada:
+      verificacion: "Confirmar si hay un hecho nuevo o si es una nota antigua que volvió a circular."
+    evento_sin_revisar:
+      verificacion: "Volver a consultar el evento en la fuente oficial antes de citar su magnitud o su lugar."
+    cifra_periodo_distinto:
+      verificacion: "No comparar ambas cifras; buscar el dato oficial del mismo período que el titular."
+    medios_o_fechas_desconocidos:
+      verificacion: "Abrir el enlace de cada titular para identificar el medio y la fecha de publicación original."
+    urgencia_sin_publicacion:
+      verificacion: "Abrir el enlace de cada titular para identificar el medio y la fecha de publicación original."
+    subtema_desconocido:
+      verificacion: "Confirmar de qué asunto trata el grupo; sin subtema no hay fuentes sugeridas específicas."
+
+fuentes:
+  subtema_desconocido: sin_subtema   # valor de subtema que equivale a «no determinado» (D-92); también cuenta el nulo
+  nota: "sugerencias para quien verifica; no son evidencia del sistema ni se citan como tal"
+  por_subtema:
+    crecimiento_pib: ["Contraloría General de la República (INEC)", "Ministerio de Economía y Finanzas"]
+    inflacion_precios: ["Contraloría General de la República (INEC)", "Autoridad de Protección al Consumidor y Defensa de la Competencia"]
+    empleo: ["Contraloría General de la República (INEC)", "Ministerio de Trabajo y Desarrollo Laboral"]
+    finanzas_publicas: ["Ministerio de Economía y Finanzas", "Contraloría General de la República"]
+    inversion: ["Ministerio de Comercio e Industrias", "Ministerio de Economía y Finanzas"]
+    comercio_exterior: ["Contraloría General de la República (INEC)", "Ministerio de Comercio e Industrias"]
+    banca_calificaciones: ["Superintendencia de Bancos de Panamá", "Ministerio de Economía y Finanzas"]
+    operacion_canal: ["Autoridad del Canal de Panamá"]
+    puertos: ["Autoridad Marítima de Panamá", "Autoridad del Canal de Panamá"]
+    zona_libre: ["Zona Libre de Colón", "Ministerio de Comercio e Industrias"]
+    carga_aerea: ["Autoridad de Aeronáutica Civil", "Aeropuerto Internacional de Tocumen"]
+    transporte_carga: ["Autoridad del Tránsito y Transporte Terrestre", "Autoridad Marítima de Panamá"]
+    cadenas_suministro: ["Autoridad del Canal de Panamá", "Ministerio de Comercio e Industrias"]
+    llegada_visitantes: ["Autoridad de Turismo de Panamá", "Contraloría General de la República (INEC)"]
+    cruceros: ["Autoridad de Turismo de Panamá", "Autoridad Marítima de Panamá"]
+    hoteleria: ["Autoridad de Turismo de Panamá"]
+    aviacion_pasajeros: ["Autoridad de Aeronáutica Civil", "Aeropuerto Internacional de Tocumen"]
+    destinos_promocion: ["Autoridad de Turismo de Panamá"]
+    agua_potable: ["Instituto de Acueductos y Alcantarillados Nacionales", "Ministerio de Salud"]
+    electricidad: ["Autoridad Nacional de los Servicios Públicos", "Empresa de Transmisión Eléctrica"]
+    telecomunicaciones: ["Autoridad Nacional de los Servicios Públicos"]
+    transporte_publico: ["Autoridad del Tránsito y Transporte Terrestre", "Metro de Panamá"]
+    recoleccion_basura: ["Autoridad de Aseo Urbano y Domiciliario", "Ministerio de Ambiente"]
+    salud_publica: ["Ministerio de Salud", "Caja de Seguro Social"]
+    educacion_publica: ["Ministerio de Educación"]
+    seguridad_ciudadana: ["Ministerio de Seguridad Pública", "Ministerio Público"]
+    sismos: ["Instituto de Geociencias de la Universidad de Panamá", "Servicio Geológico de los Estados Unidos (USGS)", "Sistema Nacional de Protección Civil"]
+    inundaciones_lluvias: ["Empresa de Transmisión Eléctrica (Hidrometeorología)", "Sistema Nacional de Protección Civil"]
+    deslizamientos: ["Sistema Nacional de Protección Civil", "Ministerio de Obras Públicas"]
+    sequia_nino: ["Empresa de Transmisión Eléctrica (Hidrometeorología)", "Autoridad del Canal de Panamá"]
+    incendios_forestales: ["Ministerio de Ambiente", "Cuerpo de Bomberos de Panamá"]
+    alertas_proteccion_civil: ["Sistema Nacional de Protección Civil"]
+    leyes_decretos: ["Gaceta Oficial Digital", "Asamblea Nacional"]
+    resoluciones_entes: ["Gaceta Oficial Digital"]
+    reformas: ["Asamblea Nacional", "Gaceta Oficial Digital"]
+    listas_internacionales: ["Ministerio de Economía y Finanzas", "Superintendencia de Bancos de Panamá"]
+    contratos_concesiones: ["Autoridad Nacional de Contrataciones Públicas (PanamaCompra)", "Contraloría General de la República"]
+    sanciones: ["Gaceta Oficial Digital", "Ministerio Público"]
+  # Si el grupo no tiene subtema (D-92) o su subtema no está arriba, solo se sugiere lo del tema.
+  por_tema:
+    economia: ["Ministerio de Economía y Finanzas", "Contraloría General de la República (INEC)"]
+    logistica: ["Autoridad del Canal de Panamá", "Autoridad Marítima de Panamá"]
+    turismo: ["Autoridad de Turismo de Panamá"]
+    servicios_publicos: ["Autoridad Nacional de los Servicios Públicos", "Ministerio de Salud"]
+    eventos_naturales: ["Sistema Nacional de Protección Civil", "Empresa de Transmisión Eléctrica (Hidrometeorología)"]
+    regulacion: ["Gaceta Oficial Digital", "Asamblea Nacional"]
+
+titular_central:                  # titular más cercano al centroide del grupo con los embeddings cacheados
+  candidatos: 3                   # cuántos de los más centrales compiten por la preferencia
+  idioma_preferido: es
+  pais_medio_preferido: "Panamá"  # coincide con `noticias.pais_medio`
+
+procedencias:
+  explicacion: "{procedencias} entre {titulares}: los titulares que replican a un mismo medio, agencia o red cuentan como una sola procedencia."
+  reglas:                         # qué significa cada regla que unió titulares
+    mismo_medio: "mismo medio"
+    agencia_campo: "misma agencia (campo de agencia)"
+    agencia_dominio: "medio de una agencia que ya está en el grupo"
+    agencia_mencionada: "el titular nombra a la misma agencia"
+    misma_red: "misma red de sindicación"
+    texto_casi_identico: "texto casi idéntico"
+
+medio_referencia:                 # «¿el medio de referencia ya lo cubrió?» (solo si la modalidad define uno)
+  cubrio: "{nombre} aparece en este grupo con {titulares} del snapshot."
+  sin_titular: "No hay titulares de {nombre} en este grupo del snapshot; no se afirma que no lo haya cubierto fuera de él."
+
+presentacion:
+  zona_horaria: America/Panama    # solo para mostrar; los datos siguen en UTC (ISO 8601)
+  formato_fecha: "%Y-%m-%d %H:%M"
+  sufijo_zona: "hora de Panamá"
+  fecha_desconocida: "desconocida"
+  decimales_valor: 2              # decimales al mostrar el valor de un dato oficial
+  origen_fecha:                   # de dónde sale la fecha de inicio y fin de la cobertura
+    publicacion: "publicación"
+    deteccion: "detección"
+  fuentes_oficiales:              # quién publica cada tipo de dato oficial (`vinculos.fuente`)
+    indicador: "Banco Mundial"
+    usgs: "USGS"
+  roles:                          # `vinculos.rol`
+    panama: "dato de Panamá"
+    comparable: "país comparable"
+    tendencia: "serie de Panamá"
+    evento: "evento sísmico"
+  advertencia_inyeccion: "Un titular de este grupo contiene un patrón de instrucción (posible inyección): se muestra como texto, nunca se obedece; revisar antes de usarlo."
+  advertencia_recirculada: "Noticia recirculada: no se presenta como nueva."
+
+siguientes_pasos:
+  maximo: 3                       # cuántos pasos se derivan de los vacíos (los más importantes)

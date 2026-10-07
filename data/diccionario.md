@@ -310,7 +310,7 @@ Los reemplaza `python -m src.puntaje`.
 | `tiene_oficial` | BOOLEAN | no | `vinculos` | derivado | Hay un dato oficial `directa` o un evento `evento` (USGS) vinculado con valor. Un vínculo `indirecta` no cuenta (X22): no mide el hecho. |
 | `hay_cifras` | BOOLEAN | no | `noticias` | derivado | Algún titular trae una cifra (sin contar fechas, años ni identificadores). |
 | `contradicciones_abiertas` | INTEGER | no | `contradicciones` | derivado | Pares detectados por reglas: todos cuentan, diga lo que diga el LLM (solo una persona puede cerrarlos). |
-| `vacios` | VARCHAR | no | evidencia | derivado | JSON: vacíos de verificación de la evidencia (procedencias, dato oficial, contradicciones, titulares sin medio o fecha). |
+| `vacios` | VARCHAR | no | evidencia | derivado | JSON: vacíos de verificación de la evidencia (procedencias, dato oficial o solo vínculo indirecto, contradicciones, cifra del titular discrepante o de otro período, evento oficial sin revisar, titulares sin medio o fecha). Es la única fuente de vacíos de la ficha. Una cifra discrepante abierta impide `suficiente`. |
 | `modalidad` | VARCHAR | no | `modalidad_<modalidad>.yaml` | derivado | Modalidad cuya tabla de acciones se aplicó (`editorial`). |
 | `rango` | VARCHAR | no | `puntajes` | derivado | Rango de P usado para elegir la celda. |
 | `accion` | VARCHAR | no | `modalidad_<modalidad>.yaml` | derivado | Acción recomendada de la celda (rango × estado). Nunca «publicar». |
@@ -337,8 +337,8 @@ El LLM solo agrega una nota (`nota_llm`); **nunca cierra un par** (X21): si no e
 | `estado` | VARCHAR | no | contradicciones | derivado | Siempre `verificar`: abierta hasta que una persona la cierre en la revisión (E1-16). |
 | `nota_llm` | VARCHAR | no | LLM | derivado | Anotación para la persona: `posible_contradiccion`, `compatible` o `pendiente` (sin LLM, falló o respondió algo inválido). No cambia el estado de evidencia ni oculta el par. |
 | `etiqueta` | VARCHAR | no | `prioridad.yaml` | derivado | «posible contradicción, verificar». |
-| `fragmento_a` | VARCHAR | sí | LLM | derivado | Fragmento literal del titular A que cita el LLM (validado como subcadena); solo con `verificar`. |
-| `fragmento_b` | VARCHAR | sí | LLM | derivado | Fragmento literal del titular B; solo con `verificar`. |
+| `fragmento_a` | VARCHAR | sí | LLM | derivado | Fragmento literal del titular A que cita el LLM (validado como subcadena); solo con `nota_llm = posible_contradiccion`. |
+| `fragmento_b` | VARCHAR | sí | LLM | derivado | Fragmento literal del titular B; solo con `nota_llm = posible_contradiccion`. |
 | `proveedor` | VARCHAR | sí | `local.env` | derivado | Proveedor del LLM (`ollama`); nulo si no hubo. |
 | `modelo` | VARCHAR | sí | `local.env` | derivado | Modelo del proveedor. |
 | `motivo_pendiente` | VARCHAR | sí | contradicciones | derivado | Solo con `nota_llm = pendiente`: por qué no se comparó (sin proveedor, proveedor caído, salida inválida, sobre el tope). |

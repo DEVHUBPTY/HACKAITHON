@@ -92,8 +92,8 @@
       "estado_de_evidencia": "insuficiente",
       "accion": "Investigar ya",
       "vacios": [
-        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (tema_sin_indicador)"
+        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
       ],
       "contradicciones": []
     },
@@ -114,8 +114,8 @@
       "accion": "Investigar ya",
       "vacios": [
         "subtema no determinado: se usó el alcance neutro de impacto",
-        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (tema_sin_indicador)"
+        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
       ],
       "contradicciones": []
     },
@@ -135,8 +135,8 @@
       "estado_de_evidencia": "insuficiente",
       "accion": "Investigar ya",
       "vacios": [
-        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (tema_sin_indicador)"
+        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
       ],
       "contradicciones": []
     },
@@ -156,8 +156,8 @@
       "estado_de_evidencia": "insuficiente",
       "accion": "Investigar ya",
       "vacios": [
-        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (tema_sin_indicador)"
+        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
       ],
       "contradicciones": []
     },
@@ -177,9 +177,9 @@
       "estado_de_evidencia": "insuficiente",
       "accion": "Investigar ya",
       "vacios": [
-        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
+        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
         "los titulares traen cifras y no hay dato oficial vinculado",
-        "sin dato oficial vinculado (tema_sin_indicador)"
+        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
       ],
       "contradicciones": []
     },
@@ -200,8 +200,8 @@
       "accion": "Investigar ya",
       "vacios": [
         "subtema no determinado: se usó el alcance neutro de impacto",
-        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (tema_sin_indicador)"
+        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
       ],
       "contradicciones": []
     },
@@ -221,8 +221,8 @@
       "estado_de_evidencia": "insuficiente",
       "accion": "Investigar ya",
       "vacios": [
-        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (tema_sin_indicador)"
+        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
       ],
       "contradicciones": []
     },
@@ -242,8 +242,8 @@
       "estado_de_evidencia": "insuficiente",
       "accion": "Investigar ya",
       "vacios": [
-        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (tema_sin_indicador)"
+        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
       ],
       "contradicciones": []
     },
@@ -263,8 +263,8 @@
       "estado_de_evidencia": "insuficiente",
       "accion": "Investigar ya",
       "vacios": [
-        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (tema_sin_indicador)"
+        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
       ],
       "contradicciones": []
     },
@@ -284,8 +284,8 @@
       "estado_de_evidencia": "insuficiente",
       "accion": "Investigar ya",
       "vacios": [
-        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (sin vínculo en la tabla de contexto)"
+        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (solo vínculo indirecto: no mide el hecho)"
       ],
       "contradicciones": []
     }

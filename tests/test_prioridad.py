@@ -74,7 +74,7 @@ def test_el_dato_oficial_ambiguo_no_cuenta_y_el_vinculado_si(base, tmp_path, emb
     e = {x["id_grupo"]: x for x in _tabla(base, "evidencia", "id_grupo")}
     assert e["GRP-b"]["tiene_oficial"] is True
     assert e["GRP-a"]["tiene_oficial"] is False     # el candidato ambiguo de USGS no es evidencia
-    assert "tema_sin_indicador" in e["GRP-c"]["vacios"]
+    assert "el tema no tiene un indicador oficial asignado" in e["GRP-c"]["vacios"]
 
 
 def test_dos_corridas_producen_las_mismas_filas_y_el_mismo_ranking(base, tmp_path, emb) -> None:

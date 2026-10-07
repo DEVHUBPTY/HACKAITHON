@@ -64,7 +64,7 @@ def test_los_vacios_explican_el_estado_y_nombran_el_motivo() -> None:
     assert codigos == ["procedencias_insuficientes", "cifras_sin_dato_oficial", "sin_dato_oficial", "contradiccion_abierta", "medios_o_fechas_desconocidos"]
     textos = {v.codigo: v.texto for v in e.vacios}
     assert "1 procedencia" in textos["procedencias_insuficientes"] and "al menos 2" in textos["procedencias_insuficientes"]
-    assert "tema_sin_indicador" in textos["sin_dato_oficial"]
+    assert "tema_sin_indicador" not in textos["sin_dato_oficial"] and "el tema no tiene un indicador oficial asignado" in textos["sin_dato_oficial"]   # m4: sin códigos internos
     assert textos["contradiccion_abierta"].startswith("posible contradicción, verificar") and "2 par" in textos["contradiccion_abierta"]
     assert "1 de 2 titulares" in textos["medios_o_fechas_desconocidos"]
     assert e.hay_cifras is True and e.estado == ESTADO_INSUFICIENTE
@@ -263,3 +263,33 @@ def test_ollama_vacio_o_caido_es_un_error_de_proveedor() -> None:
 
     with pytest.raises(ErrorProveedor, match="sin conexión"):
         ProveedorOllama("h", "m", cfg, Caida({})).generar_json("s", "u", {})
+
+
+# ------------------------------------------------------------------ X23/M2 · vacíos de la ficha dentro de E1-10
+
+
+def test_una_cifra_discrepante_abierta_impide_suficiente_como_una_contradiccion() -> None:
+    assert evidencia.estado_de(2, True, True, 0, REGLAS, discrepancias_abiertas=0) == ESTADO_SUFICIENTE
+    assert evidencia.estado_de(2, True, True, 0, REGLAS, discrepancias_abiertas=1) == ESTADO_PARCIAL
+    assert evidencia.estado_de(1, False, True, 0, REGLAS, discrepancias_abiertas=1) == ESTADO_INSUFICIENTE
+
+
+def test_los_vacios_de_vinculos_salen_de_evaluar_evidencia_con_su_texto() -> None:
+    e = evidencia.evaluar_evidencia(
+        n_procedencias=2, tiene_oficial=True, titulares=["La inflación sube a 9 %"], contradicciones_abiertas=0, n_identificables=1, motivo_sin_oficial=None,
+        reglas=REGLAS, cfg=CFG, discrepancias=("IND-PAN-FP.CPI.TOTL.ZG-2024",), periodos_distintos=("IND-PAN-X-2024",), eventos_sin_revisar=("SIS-us1",),
+    )
+    assert {v.codigo for v in e.vacios} == {"cifra_discrepante", "cifra_periodo_distinto", "evento_sin_revisar"}
+    assert e.estado == ESTADO_PARCIAL
+    assert all("{" not in v.texto for v in e.vacios)
+
+
+def test_solo_vinculo_indirecto_reemplaza_a_sin_dato_oficial_y_el_motivo_se_dice_en_palabras() -> None:
+    e = evidencia.evaluar_evidencia(
+        n_procedencias=2, tiene_oficial=False, titulares=["x"], contradicciones_abiertas=0, n_identificables=1, motivo_sin_oficial=None, reglas=REGLAS, cfg=CFG, solo_indirecto=True,
+    )
+    assert [v.codigo for v in e.vacios] == ["solo_vinculo_indirecto"] and "no mide el hecho" in e.vacios[0].texto
+    sin = evidencia.evaluar_evidencia(
+        n_procedencias=2, tiene_oficial=False, titulares=["x"], contradicciones_abiertas=0, n_identificables=1, motivo_sin_oficial="tema_sin_indicador", reglas=REGLAS, cfg=CFG,
+    )
+    assert "tema_sin_indicador" not in sin.vacios[0].texto and "indicador oficial" in sin.vacios[0].texto

@@ -1064,7 +1064,7 @@
     "cifra_titular.* (ventana, palabras, patrones)": "solo cambia la etiqueta de comparación del contexto, no P ni el estado",
     "subtema del grupo (voto)": "método de contexto; I usa el subtema ya elegido",
     "coincidencia de sismos (± 2 días)": "el snapshot no tiene grupos de sismos con vínculo de USGS que dependan de ella",
-    "alcance por sector (banca)": "la modalidad de banca todavía no existe",
+    "alcance por sector (banca)": "modalidad_banca.yaml es parcial (D-90): no define el alcance por sector hasta E2-01",
     "contradicciones.* (tope, verbos, solo_entre_procedencias)": "cambian el estado de evidencia y la acción, no P ni el ranking",
     "umbral de agrupación (calibrado, no supuesto)": "se calibra con etiquetas humanas (python -m eval.agrupacion)"
   }
