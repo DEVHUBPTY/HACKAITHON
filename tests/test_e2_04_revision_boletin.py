@@ -312,3 +312,83 @@ def test_el_borrador_muestra_las_observaciones_antes_que_la_hipotesis_de_impacto
     assert titulos.index("Horizonte temporal") < titulos.index("Evidencia") < titulos.index("Aviso")
     sin = [t for t, _ in ui.secciones_de_paquete(guardado)]
     assert sin.index("Hipotesis impacto") < sin.index("Observaciones")                           # sin rótulos, el orden de entrada
+
+
+# ============================================================================================ X74 · una advertencia ya confirmada no cubre otra oración
+
+OBS_CONDICIONAL_1 = "Según laestrella.com.pa, Mulino podría viajar a Asia y suscribir convenios con Singapur y Vietnam."
+OBS_CONDICIONAL_2 = "El medio revistaeyn.com reporta que el Presidente de Panamá podría visitar Singapur y Vietnam en busca de inversiones."
+HIP_PERDIDAS_1 = "La gira podría generar pérdidas en el comercio exterior, a verificar."
+HIP_PERDIDAS_2 = "La gira podría generar pérdidas en la banca, a verificar."
+
+
+def _con_dos_hipotesis(contenido: dict[str, Any]) -> dict[str, Any]:
+    nuevo = copy.deepcopy(contenido)
+    nuevo[HIP].append(copy.deepcopy(nuevo[HIP][0]))
+    return nuevo
+
+
+def test_la_misma_regla_en_otra_observacion_pide_confirmacion_otra_vez() -> None:
+    previo = aplicar_ediciones(boletin(), {f"{OBS}.1": OBS_CONDICIONAL_1})          # la persona ya confirmó el «podría» de la observación 2
+    assert "observacion_condicional" in reglas(avisos({f"{OBS}.2": OBS_CONDICIONAL_2}, previo))
+
+
+def test_la_misma_regla_en_otra_hipotesis_pide_confirmacion_otra_vez() -> None:
+    previo = _con_dos_hipotesis(aplicar_ediciones(boletin(), {f"{HIP}.0": HIP_PERDIDAS_1}))
+    assert "perdidas_en_inferencias" in reglas(avisos({f"{HIP}.1": HIP_PERDIDAS_2}, previo))
+
+
+def test_reescribir_la_misma_oracion_con_otro_texto_y_la_misma_marca_pide_confirmacion() -> None:
+    previo = aplicar_ediciones(boletin(), {f"{OBS}.1": OBS_CONDICIONAL_1})
+    assert "observacion_condicional" in reglas(avisos({f"{OBS}.1": "Según laestrella.com.pa, Mulino podría firmar convenios con Vietnam."}, previo))
+    previo_h = aplicar_ediciones(boletin(), {f"{HIP}.0": HIP_PERDIDAS_1})
+    assert "perdidas_en_inferencias" in reglas(avisos({f"{HIP}.0": HIP_PERDIDAS_2}, previo_h))
+
+
+def test_una_advertencia_previa_de_una_oracion_que_no_se_toca_no_vuelve_a_aparecer() -> None:
+    previo = aplicar_ediciones(boletin(), {f"{OBS}.1": OBS_CONDICIONAL_1})
+    assert avisos({f"{HIP}.0": HIP_VALIDA}, previo) == []                              # la observación 2 conserva su «podría» y no se toca
+    assert avisos({f"{OBS}.3": boletin()[OBS][3]["texto"] + " "}, previo) == []
+
+
+def test_corregir_otra_oracion_con_la_misma_regla_no_se_guarda_sin_confirmar(rev) -> None:
+    c = _caso(rev)
+    e = entrada()
+    t1 = {f"{OBS}.1": OBS_CONDICIONAL_1}
+    rev.corregir(c, ANALISTA, t1, confirmadas=[a.id for a in rev.revisar_correccion(c, t1, e)], comentario="confirmo", entrada=e)
+    t2 = {f"{OBS}.2": OBS_CONDICIONAL_2}
+    assert rev.revisar_correccion(c, t2, e)
+    antes = _filas(rev, c)
+    with pytest.raises(AdvertenciasSinConfirmar):
+        rev.corregir(c, ANALISTA, t2, confirmadas=(), entrada=e)
+    assert _filas(rev, c) == antes and len(rev.versiones(c)) == 2
+    t3 = {f"{OBS}.1": "Según laestrella.com.pa, Mulino podría firmar convenios con Vietnam."}   # la misma oración, otro texto
+    with pytest.raises(AdvertenciasSinConfirmar):
+        rev.corregir(c, ANALISTA, t3, confirmadas=(), entrada=e)
+
+
+# ============================================================================================ X75 · el límite del resumen se avisa una vez
+
+
+def test_el_limite_del_resumen_se_avisa_una_sola_vez_y_en_la_oracion_editada() -> None:
+    relleno = " ".join(["palabra"] * 170)
+    lista = avisos({f"{OBS}.0": f"El medio prensa-latina.cu reporta que el Presidente panameño visitará Singapur y Vietnam. {relleno}"})
+    limites = [a for a in lista if a.mensaje.startswith("[limite_palabras]")]
+    assert len(limites) == 1, limites
+    assert limites[0].clave == f"{OBS}.0"
+    lista = avisos({f"{HIP}.0": f"{HIP_VALIDA} {relleno}"})
+    limites = [a for a in lista if a.mensaje.startswith("[limite_palabras]")]
+    assert [a.clave for a in limites] == [f"{HIP}.0"]
+
+
+# ============================================================================================ el historial muestra el rótulo de la sección
+
+
+def test_el_historial_exportado_rotula_el_texto_corregido_como_el_selector(rev) -> None:
+    c = _caso(rev)
+    rev.corregir(c, ANALISTA, {f"{HIP}.0": HIP_VALIDA}, entrada=entrada())
+    md = exportar.a_markdown(rev, c, rev.ficha_del_caso(rev.caso(c)))
+    rotulo = ui.rotulo_de_elemento(f"{HIP}.0", cargar_interfaz().paquete.etiquetas)
+    assert rotulo == "Resumen · Hipótesis de impacto · 1"
+    assert f"Versión 2 · {rotulo}" in md
+    assert "hipotesis\\_impacto.0" not in md and "hipotesis_impacto.0" not in md

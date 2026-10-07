@@ -528,16 +528,20 @@ def vinculos_oficiales_de(ficha: Ficha) -> list[str]:
     return list(dict.fromkeys(ids))
 
 
-def etiqueta_de_elemento(clave: str, texto: str, largo: int, etiquetas: Mapping[str, str] | None = None) -> str:
-    """Etiqueta del selector de corrección: el rótulo de su sección y el principio del texto.
+def rotulo_de_elemento(clave: str, etiquetas: Mapping[str, str] | None = None) -> str:
+    """Cómo se nombra un texto corregible para una persona: el rótulo de su sección y su posición (desde 1).
 
-    Con ``etiquetas`` (``config/interfaz.yaml`` · ``paquete.etiquetas``) ``observaciones.0`` se ve «Resumen · Observaciones · 1» (las
-    posiciones se cuentan desde 1) y ``afirmaciones.A1`` «Afirmaciones validadas · A1»; una sección sin rótulo conserva su clave.
+    Con ``etiquetas`` (``config/interfaz.yaml`` · ``paquete.etiquetas``) ``observaciones.0`` se ve «Resumen · Observaciones · 1» y
+    ``afirmaciones.A1`` «Afirmaciones validadas · A1»; una sección sin rótulo conserva su clave.
     """
     seccion, _, resto = clave.partition(".")
     rotulo = (etiquetas or {}).get(seccion)
-    nombre = clave if rotulo is None else " · ".join(p for p in (rotulo, str(int(resto) + 1) if resto.isdigit() else resto) if p)
-    return f"{nombre} · {texto[:largo]}" + ("…" if len(texto) > largo else "")
+    return clave if rotulo is None else " · ".join(p for p in (rotulo, str(int(resto) + 1) if resto.isdigit() else resto) if p)
+
+
+def etiqueta_de_elemento(clave: str, texto: str, largo: int, etiquetas: Mapping[str, str] | None = None) -> str:
+    """Etiqueta del selector de corrección: el rótulo del elemento (``rotulo_de_elemento``) y el principio del texto."""
+    return f"{rotulo_de_elemento(clave, etiquetas)} · {texto[:largo]}" + ("…" if len(texto) > largo else "")
 
 
 # ------------------------------------------------------------------ modo demo: pasos del guion
