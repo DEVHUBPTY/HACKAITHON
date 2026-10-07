@@ -27,6 +27,25 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 | Listas de provincias, comarcas y distritos | 10 · 6 · 60 | Práctica (división político-administrativa; lista parcial de distritos) | Titulares reales de TVN; `validar_coherencia` |
 | Agencias de noticias para el tipo de firma | 10 nombres | Práctica (el RSS de TVN no trae firma, no se derivan de datos) | Se usa solo si un titular de GDELT la nombra |
 
+### Cómo se calcula cada componente y qué parámetros agrega E1-10 (`config/prioridad.yaml`)
+
+Las reglas v1.3 fijan las fórmulas; estas filas fijan lo que dejan abierto. Todas son **supuestos** salvo donde se indica, y `python -m eval.sensibilidad` mide cuánto mueven el top 5.
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| Fecha de referencia de U | `fecha_corte_UTC` del manifest (opción `--ahora`) | Diseño (reproducibilidad: U no depende del reloj) | `test_la_fecha_de_referencia_se_registra_en_utc` · `test_dos_ejecuciones_producen_el_mismo_ranking` |
+| Percentil | `(rango medio) / (n − 1)`: 0 el menor, 1 el mayor, empates comparten el rango medio; un solo valor = 0.5 | Práctica (rango percentil) | `test_los_percentiles_ocupan_el_rango_completo_*` |
+| Similitud temática de un grupo (R) | Media de `tema_similitud` de sus titulares | Supuesto | X02 · `eval.puntaje` (R no casi constante) |
+| Foco de un grupo (R) | 1 si algún titular trata a Panamá como sujeto; 0.5 si todos son notas regionales o de otro país que afectan a Panamá (`alcance_regional`, D-84) | Supuesto | `test_noticia_de_otro_pais_*` · revisión editorial |
+| Alcance geográfico de un grupo (I) | El más amplio que nombran sus titulares (nacional > provincial > local); sin términos, `desconocido` | Supuesto | `test_alcance_geografico_*` |
+| Prefijos obligatorios de términos ambiguos (`geografia.prefijos_obligatorios`) | «Panamá» solo es la provincia si lo precede «provincia de» (el país no es la provincia) | Supuesto | `test_alcance_geografico_nacional_provincial_local_*` |
+| Alcance de I sin subtema (`impacto.alcance_subtema_desconocido`) | 0.5 (igual que el alcance geográfico desconocido) | Supuesto | X02 · vacío «subtema no determinado» |
+| N: con quién se compara | Máxima similitud entre un titular del grupo y un titular de un grupo que **empezó antes** (`fecha_publicacion`, si falta `fecha_deteccion`); empate de fecha: menor ID | Supuesto | `test_n_compara_solo_con_grupos_anteriores_*` |
+| Medios que no identifican (`medios.desconocidos`) | `""`, `desconocido`, `unknown`, `n/a` | Supuesto | `test_un_medio_desconocido_no_cuenta_como_identificable` |
+| Decimales para comparar P y U al desempatar (`comparacion.decimales_p`) | 9 | Práctica (evita que el ruido de coma flotante rompa un empate) | `test_un_empate_por_ruido_de_coma_flotante_no_decide_el_orden` |
+| Dato oficial en E y en el estado de evidencia (`dato_oficial.relaciones_aceptadas`) | Hay al menos un vínculo en `vinculos` con `id_evidencia`, valor no nulo, sin motivo de «sin vínculo» y de relación `directa` o `evento`. **`indirecta` no cuenta**: el indicador es contexto lejano y no mide el hecho (X22) | Diseño (E1-09, E1-09b; revisión del PR #22) | `test_x22_*` · `test_dos_grupos_identicos_salvo_por_tener_dato_oficial_*` |
+| Cifras de un titular (`cifras.*`) | Un número que no es fecha («2 de octubre»), año (1900–2100 sin `%`) ni identificador (ley, decreto, resolución…); `84.000` = 84 mil, `3,2` = decimal; la unidad es `%` o la raíz de 5 letras de la palabra siguiente | Supuesto (conservador: ante la duda no cuenta como cifra) | `test_extraccion_de_cifras_*` · `test_valores_numericos_con_separadores` |
+
 ## Estado de evidencia
 
 | Parámetro | Valor | Origen | Cómo se valida |
@@ -40,6 +59,22 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 | Sectores de banca (5) y su mapeo desde los temas | `temas.yaml` y `modalidad_banca.yaml` | Diseño (D-11, propuesta) | Validación del esquema |
 | Alcance por sector (banca, sustituye al del subtema) | Por definir al crear `modalidad_banca.yaml` | Supuesto | X02 |
 | Cantidad de temas | 6 | PDF (sección 3, etapa 2) | `cantidad_temas` en `temas.yaml`, validada |
+
+### Contradicciones, vacíos y sensibilidad (E1-10, `config/prioridad.yaml`)
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| Candidatos a contradicción (D-23) | Dos titulares del mismo grupo con **cifras distintas** de la misma unidad, o con **verbos opuestos** (7 pares: sube/baja, aprueba/rechaza, confirma/niega, abre/cierra, suspende/reanuda, gana/pierde, condena/absuelve) | Supuesto (lista corta y conservadora; el LLM solo compara esos pares) | `test_t05_*` · revisar con titulares reales |
+| `contradicciones.solo_entre_procedencias` | `false`: dos versiones distintas de un mismo origen (p. ej. un medio que actualiza una cifra) también se muestran | Supuesto | `test_dos_versiones_de_un_mismo_origen_*` |
+| `contradicciones.maximo_candidatos_por_grupo` | 6 pares por grupo van al LLM; el resto queda «pendiente» (sigue abierto) | Supuesto (costo y contexto de `num_ctx`) | `test_un_par_sobre_el_tope_queda_pendiente_*` |
+| Papel del LLM en una contradicción (X21) | Solo una nota (`nota_llm`: posible_contradiccion · compatible · pendiente) y fragmentos literales; **nunca cierra un par**: todo par detectado por reglas cuenta como abierto para el estado de evidencia. Solo una persona podrá cerrarlo (revisión, E1-16) | Diseño (D-23, revisión del PR #22) | `test_x21_*` |
+| Etiqueta de la contradicción | «posible contradicción, verificar»; nunca un veredicto | PDF (CU-04) · D-23 | `test_el_resultado_es_una_posible_contradiccion_a_verificar_nunca_un_veredicto` |
+| Raíz de la unidad de una cifra (`cifras.raiz_unidad_caracteres`) | 5 caracteres («escuela» = «escuelas») | Supuesto | `test_la_extraccion_de_cifras_*` |
+| Variación de pesos en la sensibilidad | ±5 puntos de cada peso (los demás se reescalan para sumar 100) | PDF (permitir justificar cambios de pesos) · spec E1-10 | `eval.sensibilidad` |
+| Variación de supuestos en la sensibilidad | ±20 % de cada parámetro supuesto que cambia P | spec E1-10 | `eval.sensibilidad` |
+| Tamaño del ranking comparado | 5 | PDF (CU-01) | `eval.sensibilidad` |
+| Componente «casi constante» (`puntaje_eval.casi_constante_desviacion`) | Desviación estándar < 0.05 en [0, 1] | Supuesto | `eval.puntaje` |
+| Filas del ranking en `outputs/prioridad.json` (`puntaje_eval.top_en_reporte`) | 10 | Presentación | — |
 
 ## Organizar y contextualizar
 
@@ -279,7 +314,7 @@ independiente del mismo despacho cuenta como otra procedencia porque ninguna reg
 | Intervalos de confianza | 95 %, bootstrap de 1.000 remuestreos | Práctica estadística | — |
 | Semillas aleatorias | Fijas en `config/` (etiquetado, bootstrap, clustering si aplica) | Práctica (reproducibilidad) | `scripts.reproducir` (D-65) |
 | Benchmark del equipo (si la organización no lo entrega) | 40 de desarrollo: 20 · 7 · 7 · 6 | PDF (proporciones de la sección 7) | `eval.validar_benchmark` |
-| Sensibilidad X02 | Pesos ± 5; parámetros supuestos ± 20 % | Supuesto | — |
+| Sensibilidad X02 | Pesos ± 5; parámetros supuestos ± 20 % | Supuesto (spec E1-10) | `python -m eval.sensibilidad` (E1-10): top 5 de cada variante, con n e IC de Wilson de las variantes que no lo cambian |
 | Precision@5 | 3 fechas de corte si hay editor; si no, n = 1 y exploratoria | PDF (exploratoria sin especialista) | — |
 | Duración de la demo | 4 min | PDF | Ensayo cronometrado |
 

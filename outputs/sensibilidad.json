@@ -1,0 +1,1183 @@
+{
+  "nota": "Un tema cambia si estaba en el top 5 de las reglas v1.3 y ya no está. Las variantes que dejan la regla igual (valor recortado a 1) no cuentan como estabilidad: van en `sin_efecto`. P es de ordenamiento; no habilita publicación.",
+  "version_reglas": "1.3",
+  "fecha_referencia": "2026-10-07T00:41:03Z",
+  "tamano_ranking": 5,
+  "variacion_peso_puntos": 5.0,
+  "variacion_supuesto": 0.2,
+  "top_base": [
+    "GRP-ef3acec21e",
+    "GRP-84a6b3a04b",
+    "GRP-65d565abd0",
+    "GRP-39773bed5a",
+    "GRP-87e128925b"
+  ],
+  "reagrupar_con_las_reglas_actuales_reproduce_la_base": true,
+  "variantes": 48,
+  "variantes_con_efecto": 45,
+  "sin_efecto": [
+    "Foco: Panamá sujeto +",
+    "Alcance geográfico nacional +",
+    "N del primer grupo +"
+  ],
+  "top_sin_cambio": {
+    "n": 35,
+    "de": 45,
+    "proporcion": 0.7778,
+    "ic95": [
+      0.6373,
+      0.8746
+    ]
+  },
+  "con_algun_cambio": {
+    "n": 10,
+    "de": 45,
+    "proporcion": 0.2222,
+    "ic95": [
+      0.1254,
+      0.3627
+    ]
+  },
+  "mismo_orden": {
+    "n": 33,
+    "de": 45,
+    "proporcion": 0.7333,
+    "ic95": [
+      0.5896,
+      0.8404
+    ]
+  },
+  "maximo_de_temas_que_cambian": 1,
+  "temas_retenidos": {
+    "n": 215,
+    "de": 225,
+    "proporcion": 0.9556,
+    "ic95": [
+      0.9201,
+      0.9757
+    ],
+    "nota": "puestos del top 5 que se conservan en las variantes con efecto; los puestos de una misma variante no son independientes, el IC es orientativo"
+  },
+  "por_grupo": {
+    "peso": {
+      "variantes": 10,
+      "con_cambio": 4
+    },
+    "supuesto": {
+      "variantes": 38,
+      "con_cambio": 6
+    }
+  },
+  "detalle": [
+    {
+      "grupo": "peso",
+      "parametro": "Peso R",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Peso R +"
+    },
+    {
+      "grupo": "peso",
+      "parametro": "Peso R",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-39773bed5a",
+        "GRP-65d565abd0",
+        "GRP-8af4196527"
+      ],
+      "cambian": 1,
+      "salen": [
+        "GRP-87e128925b"
+      ],
+      "entran": [
+        "GRP-8af4196527"
+      ],
+      "mismo_conjunto": false,
+      "mismo_orden": false,
+      "parametro_con_direccion": "Peso R -"
+    },
+    {
+      "grupo": "peso",
+      "parametro": "Peso I",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-39773bed5a",
+        "GRP-65d565abd0",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": false,
+      "parametro_con_direccion": "Peso I +"
+    },
+    {
+      "grupo": "peso",
+      "parametro": "Peso I",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-8af4196527"
+      ],
+      "cambian": 1,
+      "salen": [
+        "GRP-87e128925b"
+      ],
+      "entran": [
+        "GRP-8af4196527"
+      ],
+      "mismo_conjunto": false,
+      "mismo_orden": false,
+      "parametro_con_direccion": "Peso I -"
+    },
+    {
+      "grupo": "peso",
+      "parametro": "Peso U",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Peso U +"
+    },
+    {
+      "grupo": "peso",
+      "parametro": "Peso U",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-45aebb27b2"
+      ],
+      "cambian": 1,
+      "salen": [
+        "GRP-87e128925b"
+      ],
+      "entran": [
+        "GRP-45aebb27b2"
+      ],
+      "mismo_conjunto": false,
+      "mismo_orden": false,
+      "parametro_con_direccion": "Peso U -"
+    },
+    {
+      "grupo": "peso",
+      "parametro": "Peso N",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-39773bed5a",
+        "GRP-65d565abd0",
+        "GRP-8af4196527"
+      ],
+      "cambian": 1,
+      "salen": [
+        "GRP-87e128925b"
+      ],
+      "entran": [
+        "GRP-8af4196527"
+      ],
+      "mismo_conjunto": false,
+      "mismo_orden": false,
+      "parametro_con_direccion": "Peso N +"
+    },
+    {
+      "grupo": "peso",
+      "parametro": "Peso N",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Peso N -"
+    },
+    {
+      "grupo": "peso",
+      "parametro": "Peso E",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Peso E +"
+    },
+    {
+      "grupo": "peso",
+      "parametro": "Peso E",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Peso E -"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Partes de R (foco · temática)",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-39773bed5a",
+        "GRP-65d565abd0",
+        "GRP-8af4196527"
+      ],
+      "cambian": 1,
+      "salen": [
+        "GRP-87e128925b"
+      ],
+      "entran": [
+        "GRP-8af4196527"
+      ],
+      "mismo_conjunto": false,
+      "mismo_orden": false,
+      "parametro_con_direccion": "Partes de R (foco · temática) +"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Partes de R (foco · temática)",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Partes de R (foco · temática) -"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Foco: otro país que afecta a Panamá",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Foco: otro país que afecta a Panamá +"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Foco: otro país que afecta a Panamá",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Foco: otro país que afecta a Panamá -"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Foco: Panamá sujeto",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": false,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Foco: Panamá sujeto +"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Foco: Panamá sujeto",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Foco: Panamá sujeto -"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Partes de I (subtema · geográfico)",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-8af4196527"
+      ],
+      "cambian": 1,
+      "salen": [
+        "GRP-87e128925b"
+      ],
+      "entran": [
+        "GRP-8af4196527"
+      ],
+      "mismo_conjunto": false,
+      "mismo_orden": false,
+      "parametro_con_direccion": "Partes de I (subtema · geográfico) +"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Partes de I (subtema · geográfico)",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Partes de I (subtema · geográfico) -"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Alcance geográfico nacional",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": false,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Alcance geográfico nacional +"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Alcance geográfico nacional",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Alcance geográfico nacional -"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Alcance geográfico provincial",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Alcance geográfico provincial +"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Alcance geográfico provincial",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-8af4196527"
+      ],
+      "cambian": 1,
+      "salen": [
+        "GRP-87e128925b"
+      ],
+      "entran": [
+        "GRP-8af4196527"
+      ],
+      "mismo_conjunto": false,
+      "mismo_orden": false,
+      "parametro_con_direccion": "Alcance geográfico provincial -"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Alcance geográfico local",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Alcance geográfico local +"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Alcance geográfico local",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Alcance geográfico local -"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Alcance geográfico desconocido",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-8af4196527"
+      ],
+      "cambian": 1,
+      "salen": [
+        "GRP-87e128925b"
+      ],
+      "entran": [
+        "GRP-8af4196527"
+      ],
+      "mismo_conjunto": false,
+      "mismo_orden": false,
+      "parametro_con_direccion": "Alcance geográfico desconocido +"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Alcance geográfico desconocido",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Alcance geográfico desconocido -"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Alcance por subtema (la tabla entera)",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-65d565abd0",
+        "GRP-84a6b3a04b",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": false,
+      "parametro_con_direccion": "Alcance por subtema (la tabla entera) +"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Alcance por subtema (la tabla entera)",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Alcance por subtema (la tabla entera) -"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Alcance de I sin subtema",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Alcance de I sin subtema +"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Alcance de I sin subtema",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Alcance de I sin subtema -"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "U: horas con U = 1",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-8af4196527"
+      ],
+      "cambian": 1,
+      "salen": [
+        "GRP-87e128925b"
+      ],
+      "entran": [
+        "GRP-8af4196527"
+      ],
+      "mismo_conjunto": false,
+      "mismo_orden": false,
+      "parametro_con_direccion": "U: horas con U = 1 +"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "U: horas con U = 1",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "U: horas con U = 1 -"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "U: días con U = 0",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-8af4196527"
+      ],
+      "cambian": 1,
+      "salen": [
+        "GRP-87e128925b"
+      ],
+      "entran": [
+        "GRP-8af4196527"
+      ],
+      "mismo_conjunto": false,
+      "mismo_orden": false,
+      "parametro_con_direccion": "U: días con U = 0 +"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "U: días con U = 0",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "U: días con U = 0 -"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Partes de E: procedencias",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Partes de E: procedencias +"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Partes de E: procedencias",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Partes de E: procedencias -"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Partes de E: oficial",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Partes de E: oficial +"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Partes de E: oficial",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Partes de E: oficial -"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Partes de E: identificable",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Partes de E: identificable +"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Partes de E: identificable",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Partes de E: identificable -"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Tope de procedencias en E",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Tope de procedencias en E +"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Tope de procedencias en E",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Tope de procedencias en E -"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "N del primer grupo",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": false,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "N del primer grupo +"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "N del primer grupo",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "N del primer grupo -"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Ventana de agrupación (días)",
+      "direccion": "+",
+      "reagrupa": true,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Ventana de agrupación (días) +"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Ventana de agrupación (días)",
+      "direccion": "-",
+      "reagrupa": true,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Ventana de agrupación (días) -"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Umbral de «mismo texto» (procedencias)",
+      "direccion": "+",
+      "reagrupa": true,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Umbral de «mismo texto» (procedencias) +"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Umbral de «mismo texto» (procedencias)",
+      "direccion": "-",
+      "reagrupa": true,
+      "con_efecto": true,
+      "top": [
+        "GRP-ef3acec21e",
+        "GRP-84a6b3a04b",
+        "GRP-65d565abd0",
+        "GRP-39773bed5a",
+        "GRP-87e128925b"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Umbral de «mismo texto» (procedencias) -"
+    }
+  ],
+  "mas_sensibles": [
+    {
+      "parametro": "Alcance geográfico desconocido +",
+      "cambian": 1,
+      "salen": [
+        "GRP-87e128925b"
+      ],
+      "entran": [
+        "GRP-8af4196527"
+      ]
+    },
+    {
+      "parametro": "Alcance geográfico provincial -",
+      "cambian": 1,
+      "salen": [
+        "GRP-87e128925b"
+      ],
+      "entran": [
+        "GRP-8af4196527"
+      ]
+    },
+    {
+      "parametro": "Partes de I (subtema · geográfico) +",
+      "cambian": 1,
+      "salen": [
+        "GRP-87e128925b"
+      ],
+      "entran": [
+        "GRP-8af4196527"
+      ]
+    },
+    {
+      "parametro": "Partes de R (foco · temática) +",
+      "cambian": 1,
+      "salen": [
+        "GRP-87e128925b"
+      ],
+      "entran": [
+        "GRP-8af4196527"
+      ]
+    },
+    {
+      "parametro": "Peso I -",
+      "cambian": 1,
+      "salen": [
+        "GRP-87e128925b"
+      ],
+      "entran": [
+        "GRP-8af4196527"
+      ]
+    },
+    {
+      "parametro": "Peso N +",
+      "cambian": 1,
+      "salen": [
+        "GRP-87e128925b"
+      ],
+      "entran": [
+        "GRP-8af4196527"
+      ]
+    },
+    {
+      "parametro": "Peso R -",
+      "cambian": 1,
+      "salen": [
+        "GRP-87e128925b"
+      ],
+      "entran": [
+        "GRP-8af4196527"
+      ]
+    },
+    {
+      "parametro": "Peso U -",
+      "cambian": 1,
+      "salen": [
+        "GRP-87e128925b"
+      ],
+      "entran": [
+        "GRP-45aebb27b2"
+      ]
+    },
+    {
+      "parametro": "U: días con U = 0 +",
+      "cambian": 1,
+      "salen": [
+        "GRP-87e128925b"
+      ],
+      "entran": [
+        "GRP-8af4196527"
+      ]
+    },
+    {
+      "parametro": "U: horas con U = 1 +",
+      "cambian": 1,
+      "salen": [
+        "GRP-87e128925b"
+      ],
+      "entran": [
+        "GRP-8af4196527"
+      ]
+    }
+  ],
+  "fuera_del_alcance": {
+    "cifra_titular.* (ventana, palabras, patrones)": "solo cambia la etiqueta de comparación del contexto, no P ni el estado",
+    "subtema del grupo (voto)": "método de contexto; I usa el subtema ya elegido",
+    "coincidencia de sismos (± 2 días)": "el snapshot no tiene grupos de sismos con vínculo de USGS que dependan de ella",
+    "alcance por sector (banca)": "la modalidad de banca todavía no existe",
+    "contradicciones.* (tope, verbos, solo_entre_procedencias)": "cambian el estado de evidencia y la acción, no P ni el ranking",
+    "umbral de agrupación (calibrado, no supuesto)": "se calibra con etiquetas humanas (python -m eval.agrupacion)"
+  }
+}

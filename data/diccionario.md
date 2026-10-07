@@ -272,6 +272,75 @@ Una fila por dato (o una por grupo sin vínculo). Es **contexto, nunca prueba de
 
 En las filas `usgs`, `valor` es la magnitud y `unidad` es `magnitud`. `tipo` es `evento` solo con un `SIS-` (vinculado o candidato ambiguo) y nulo si no hay vínculo; `rol` es siempre `evento`.
 
+### `puntajes`: puntaje de atención de cada grupo (E1-10)
+
+R, I, U, N, E y P con las reglas v1.3 (PDF sección 4). Es una herramienta de **ordenamiento**: no es una probabilidad de verdad ni de pérdida, y **no habilita publicación**.
+Los reemplaza `python -m src.puntaje`. Cada componente guarda de qué valores sale (`componentes`, JSON) para la ficha.
+
+| Campo | Tipo | Nullable | Fuente | Clase | Descripción |
+|---|---|---|---|---|---|
+| `id_grupo` | VARCHAR | no | `grupos` | derivado | Grupo puntuado. Clave primaria. |
+| `posicion` | INTEGER | no | puntaje | derivado | 1 = el más prioritario: mayor P, luego mayor U, luego menor ID. |
+| `version_reglas` | VARCHAR | no | `reglas_v1.3.yaml` | derivado | Versión de las reglas con que se calculó (`1.3`). |
+| `fecha_referencia` | VARCHAR | no | `manifest.json` | derivado | ISO 8601 UTC contra la que se midió U: el corte del snapshot, no el reloj. |
+| `relevancia` | DOUBLE | no | puntaje | derivado | R en [0, 1]: foco y percentil de la similitud temática. |
+| `impacto` | DOUBLE | no | puntaje | derivado | I en [0, 1]: alcance del subtema y alcance geográfico. Ni el dato oficial ni las procedencias suman (D-15, D-35). |
+| `urgencia` | DOUBLE | no | puntaje | derivado | U en [0, 1] sobre la publicación original más reciente del grupo (o la detección más reciente, con el vacío correspondiente). |
+| `novedad` | DOUBLE | no | puntaje | derivado | N en [0, 1]: 1 − percentil de la similitud máxima con grupos anteriores. |
+| `evidencia` | DOUBLE | no | puntaje | derivado | E en [0, 1]: procedencias independientes (no titulares), dato oficial y titulares identificables (D-56). |
+| `puntaje` | DOUBLE | no | puntaje | derivado | P = 30R + 25I + 20U + 15N + 10E, de 0 a 100. |
+| `rango` | VARCHAR | no | `reglas_v1.3.yaml` | derivado | `bajo` [0, 40) · `medio` [40, 70) · `alto` [70, 100]. |
+| `componentes` | VARCHAR | no | puntaje | derivado | JSON: por componente, su valor y la explicación (los valores de los que sale). |
+| `vacios` | VARCHAR | no | puntaje | derivado | JSON: vacíos que nacen del puntaje («urgencia estimada: fecha de publicación desconocida», noticia recirculada, subtema no determinado). |
+| `recirculada` | BOOLEAN | no | `noticias` | derivado | Verdadero si todos los titulares del grupo son noticias recirculadas (publicación muy anterior a la detección). |
+| `es_nueva` | BOOLEAN | no | `noticias` | derivado | Falso si el grupo es una noticia recirculada: no se presenta como nueva. |
+
+### `evidencia`: estado de evidencia y acción recomendada (E1-10)
+
+El **estado de evidencia es independiente del puntaje** (PDF sección 4). La acción sale de la tabla 3×3 (rango × estado) de la modalidad; ninguna celda habilita publicar.
+Los reemplaza `python -m src.puntaje`.
+
+| Campo | Tipo | Nullable | Fuente | Clase | Descripción |
+|---|---|---|---|---|---|
+| `id_grupo` | VARCHAR | no | `grupos` | derivado | Grupo evaluado. Clave primaria. |
+| `estado` | VARCHAR | no | `reglas_v1.3.yaml` | derivado | `insuficiente`, `parcial` o `suficiente` (para el borrador). |
+| `n_procedencias` | INTEGER | no | `procedencias` | derivado | Procedencias independientes, **estimadas** (E1-08). |
+| `tiene_oficial` | BOOLEAN | no | `vinculos` | derivado | Hay un dato oficial `directa` o un evento `evento` (USGS) vinculado con valor. Un vínculo `indirecta` no cuenta (X22): no mide el hecho. |
+| `hay_cifras` | BOOLEAN | no | `noticias` | derivado | Algún titular trae una cifra (sin contar fechas, años ni identificadores). |
+| `contradicciones_abiertas` | INTEGER | no | `contradicciones` | derivado | Pares detectados por reglas: todos cuentan, diga lo que diga el LLM (solo una persona puede cerrarlos). |
+| `vacios` | VARCHAR | no | evidencia | derivado | JSON: vacíos de verificación de la evidencia (procedencias, dato oficial, contradicciones, titulares sin medio o fecha). |
+| `modalidad` | VARCHAR | no | `modalidad_<modalidad>.yaml` | derivado | Modalidad cuya tabla de acciones se aplicó (`editorial`). |
+| `rango` | VARCHAR | no | `puntajes` | derivado | Rango de P usado para elegir la celda. |
+| `accion` | VARCHAR | no | `modalidad_<modalidad>.yaml` | derivado | Acción recomendada de la celda (rango × estado). Nunca «publicar». |
+| `motivo_accion` | VARCHAR | no | `modalidad_<modalidad>.yaml` | derivado | Motivo de la celda. |
+
+### `contradicciones`: pares de titulares con versiones distintas (E1-10, D-23)
+
+Candidatos por reglas (cifras distintas de la misma unidad, verbos opuestos); el LLM solo los compara y nunca emite un veredicto: lo que se muestra es «posible contradicción, verificar» con ambas versiones y su fuente.
+El LLM solo agrega una nota (`nota_llm`); **nunca cierra un par** (X21): si no está disponible la nota es `pendiente` y el par sigue abierto. Los reemplaza `python -m src.puntaje`.
+
+| Campo | Tipo | Nullable | Fuente | Clase | Descripción |
+|---|---|---|---|---|---|
+| `id_grupo` | VARCHAR | no | `grupos` | derivado | Grupo al que pertenece el par. |
+| `id_noticia_a` | VARCHAR | no | `noticias` | derivado | Primera noticia del par (menor ID). |
+| `id_noticia_b` | VARCHAR | no | `noticias` | derivado | Segunda noticia del par. |
+| `medio_a` | VARCHAR | sí | `noticias` | derivado | Medio de la versión A. |
+| `medio_b` | VARCHAR | sí | `noticias` | derivado | Medio de la versión B. |
+| `titular_a` | VARCHAR | no | `noticias` | derivado | `titulo_limpio` de la versión A. |
+| `titular_b` | VARCHAR | no | `noticias` | derivado | `titulo_limpio` de la versión B. |
+| `fecha_publicacion_a` | VARCHAR | sí | `noticias` | derivado | Publicación de A (ISO UTC); nulo si se desconoce. |
+| `fecha_publicacion_b` | VARCHAR | sí | `noticias` | derivado | Publicación de B. |
+| `reglas` | VARCHAR | no | contradicciones | derivado | Reglas que lo hicieron candidato: `cifras_distintas`, `verbos_opuestos` (separadas por coma). |
+| `detalle` | VARCHAR | no | contradicciones | derivado | Qué cifras o verbos chocan. |
+| `estado` | VARCHAR | no | contradicciones | derivado | Siempre `verificar`: abierta hasta que una persona la cierre en la revisión (E1-16). |
+| `nota_llm` | VARCHAR | no | LLM | derivado | Anotación para la persona: `posible_contradiccion`, `compatible` o `pendiente` (sin LLM, falló o respondió algo inválido). No cambia el estado de evidencia ni oculta el par. |
+| `etiqueta` | VARCHAR | no | `prioridad.yaml` | derivado | «posible contradicción, verificar». |
+| `fragmento_a` | VARCHAR | sí | LLM | derivado | Fragmento literal del titular A que cita el LLM (validado como subcadena); solo con `verificar`. |
+| `fragmento_b` | VARCHAR | sí | LLM | derivado | Fragmento literal del titular B; solo con `verificar`. |
+| `proveedor` | VARCHAR | sí | `local.env` | derivado | Proveedor del LLM (`ollama`); nulo si no hubo. |
+| `modelo` | VARCHAR | sí | `local.env` | derivado | Modelo del proveedor. |
+| `motivo_pendiente` | VARCHAR | sí | contradicciones | derivado | Solo con `nota_llm = pendiente`: por qué no se comparó (sin proveedor, proveedor caído, salida inválida, sobre el tope). |
+
 ### `registro_normalizacion`: valores que no se pudieron normalizar
 
 Una fecha ilegible o sin zona horaria no se adivina: queda nula y se anota aquí; igual un número no numérico (queda nulo, nunca 0).

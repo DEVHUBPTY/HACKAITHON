@@ -159,6 +159,57 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("url_evento", "VARCHAR"),
         ("diferencia_horas", "DOUBLE"),        # distancia a la noticia más cercana del grupo
     ],
+    "puntajes": [  # E1-10: R, I, U, N, E y P de cada grupo, con la explicación de cada componente (reglas v1.3)
+        ("id_grupo", "VARCHAR PRIMARY KEY"),
+        ("posicion", "INTEGER NOT NULL"),      # 1 = el más prioritario (P, luego mayor U, luego menor ID)
+        ("version_reglas", "VARCHAR NOT NULL"),
+        ("fecha_referencia", "VARCHAR NOT NULL"),   # ISO UTC contra la que se midió U (corte del snapshot)
+        ("relevancia", "DOUBLE NOT NULL"),
+        ("impacto", "DOUBLE NOT NULL"),
+        ("urgencia", "DOUBLE NOT NULL"),
+        ("novedad", "DOUBLE NOT NULL"),
+        ("evidencia", "DOUBLE NOT NULL"),
+        ("puntaje", "DOUBLE NOT NULL"),
+        ("rango", "VARCHAR NOT NULL"),
+        ("componentes", "VARCHAR NOT NULL"),   # JSON: por componente, su valor y de qué valores sale
+        ("vacios", "VARCHAR NOT NULL"),        # JSON: vacíos que nacen del puntaje (urgencia estimada, recirculada, subtema)
+        ("recirculada", "BOOLEAN NOT NULL"),
+        ("es_nueva", "BOOLEAN NOT NULL"),
+    ],
+    "evidencia": [  # E1-10: estado de evidencia (independiente de P), vacíos y acción recomendada de la modalidad
+        ("id_grupo", "VARCHAR PRIMARY KEY"),
+        ("estado", "VARCHAR NOT NULL"),        # insuficiente · parcial · suficiente
+        ("n_procedencias", "INTEGER NOT NULL"),
+        ("tiene_oficial", "BOOLEAN NOT NULL"),
+        ("hay_cifras", "BOOLEAN NOT NULL"),
+        ("contradicciones_abiertas", "INTEGER NOT NULL"),
+        ("vacios", "VARCHAR NOT NULL"),        # JSON: vacíos de verificación de la evidencia
+        ("modalidad", "VARCHAR NOT NULL"),
+        ("rango", "VARCHAR NOT NULL"),
+        ("accion", "VARCHAR NOT NULL"),        # celda (rango × estado) de la tabla de la modalidad; nunca «publicar»
+        ("motivo_accion", "VARCHAR NOT NULL"),
+    ],
+    "contradicciones": [  # E1-10: pares candidatos por reglas y la nota del LLM (solo anota; nunca cierra ni decide)
+        ("id_grupo", "VARCHAR NOT NULL"),
+        ("id_noticia_a", "VARCHAR NOT NULL"),
+        ("id_noticia_b", "VARCHAR NOT NULL"),
+        ("medio_a", "VARCHAR"),
+        ("medio_b", "VARCHAR"),
+        ("titular_a", "VARCHAR NOT NULL"),
+        ("titular_b", "VARCHAR NOT NULL"),
+        ("fecha_publicacion_a", "VARCHAR"),
+        ("fecha_publicacion_b", "VARCHAR"),
+        ("reglas", "VARCHAR NOT NULL"),        # cifras_distintas · verbos_opuestos (separadas por coma)
+        ("detalle", "VARCHAR NOT NULL"),
+        ("estado", "VARCHAR NOT NULL"),        # siempre `verificar`: abierta hasta que una persona la cierre (el LLM no la cierra)
+        ("nota_llm", "VARCHAR NOT NULL"),      # posible_contradiccion · compatible · pendiente: solo una nota para la persona
+        ("etiqueta", "VARCHAR NOT NULL"),      # «posible contradicción, verificar»
+        ("fragmento_a", "VARCHAR"),            # fragmento literal del titular A que cita el LLM
+        ("fragmento_b", "VARCHAR"),
+        ("proveedor", "VARCHAR"),
+        ("modelo", "VARCHAR"),
+        ("motivo_pendiente", "VARCHAR"),       # solo con nota_llm = pendiente
+    ],
     "registro_normalizacion": [
         ("tabla", "VARCHAR NOT NULL"),
         ("clave", "VARCHAR NOT NULL"),

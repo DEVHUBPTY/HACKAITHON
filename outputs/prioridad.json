@@ -1,0 +1,291 @@
+{
+  "nota": "Puntaje de ordenamiento, no una probabilidad de verdad ni de pérdida. Todo es borrador para una decisión humana; ninguna acción habilita publicar.",
+  "version_reglas": "1.3",
+  "modalidad": "editorial",
+  "fecha_referencia": "2026-10-07T00:41:03Z",
+  "grupos": 58,
+  "por_rango": {
+    "alto": {
+      "n": 15,
+      "de": 58,
+      "proporcion": 0.2586,
+      "ic95": [
+        0.1635,
+        0.3838
+      ]
+    },
+    "medio": {
+      "n": 42,
+      "de": 58,
+      "proporcion": 0.7241,
+      "ic95": [
+        0.598,
+        0.8225
+      ]
+    },
+    "bajo": {
+      "n": 1,
+      "de": 58,
+      "proporcion": 0.0172,
+      "ic95": [
+        0.003,
+        0.0914
+      ]
+    }
+  },
+  "por_estado_de_evidencia": {
+    "suficiente": {
+      "n": 2,
+      "de": 58,
+      "proporcion": 0.0345,
+      "ic95": [
+        0.0095,
+        0.1173
+      ]
+    },
+    "parcial": {
+      "n": 5,
+      "de": 58,
+      "proporcion": 0.0862,
+      "ic95": [
+        0.0374,
+        0.1864
+      ]
+    },
+    "insuficiente": {
+      "n": 51,
+      "de": 58,
+      "proporcion": 0.8793,
+      "ic95": [
+        0.7712,
+        0.9403
+      ]
+    }
+  },
+  "contradicciones": {
+    "candidatos": 0,
+    "abiertas": 0,
+    "por_nota_llm": {},
+    "grupos_con_candidatos": 0,
+    "pares": []
+  },
+  "llm": {
+    "estado": "sin_candidatos",
+    "proveedor": "ollama",
+    "modelo": "qwen3.5:9b",
+    "motivos_pendientes": {}
+  },
+  "ranking": [
+    {
+      "posicion": 1,
+      "id_grupo": "GRP-ef3acec21e",
+      "titular_central": "Minsa: Adelantan vacunación contra VSR en embarazadas",
+      "puntaje": 86.21,
+      "rango": "alto",
+      "componentes": {
+        "R": 0.9912,
+        "I": 0.75,
+        "U": 0.966,
+        "N": 0.9821,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (tema_sin_indicador)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 2,
+      "id_grupo": "GRP-84a6b3a04b",
+      "titular_central": "Colegios particulares atribuyen aumento de matrícula a migración al sector oficial y altos costos de operación",
+      "puntaje": 81.31,
+      "rango": "alto",
+      "componentes": {
+        "R": 0.9035,
+        "I": 0.75,
+        "U": 1.0,
+        "N": 0.7857,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (tema_sin_indicador)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 3,
+      "id_grupo": "GRP-65d565abd0",
+      "titular_central": "MiBus responde por filtraciones: lamenta incomodidad de usuarios; afirma que realiza correctivos",
+      "puntaje": 79.71,
+      "rango": "alto",
+      "componentes": {
+        "R": 0.9561,
+        "I": 0.65,
+        "U": 0.9929,
+        "N": 0.75,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (tema_sin_indicador)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 4,
+      "id_grupo": "GRP-39773bed5a",
+      "titular_central": "Árbol cae sobre dos vehículos en estacionamientos del hospital San Miguel Arcángel",
+      "puntaje": 79.16,
+      "rango": "alto",
+      "componentes": {
+        "R": 0.7632,
+        "I": 0.75,
+        "U": 0.9826,
+        "N": 0.9464,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (tema_sin_indicador)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 5,
+      "id_grupo": "GRP-87e128925b",
+      "titular_central": "Veraguas: Preocupación por aumento de muertes por enfermedades transmisibles y respiratorias",
+      "puntaje": 76.18,
+      "rango": "alto",
+      "componentes": {
+        "R": 0.8158,
+        "I": 0.8,
+        "U": 1.0,
+        "N": 0.5357,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (tema_sin_indicador)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 6,
+      "id_grupo": "GRP-8af4196527",
+      "titular_central": "César Caicedo ahora está recluido en el Hospital Santo Tomás; había sido trasladado a Coiba",
+      "puntaje": 76.09,
+      "rango": "alto",
+      "componentes": {
+        "R": 0.693,
+        "I": 0.75,
+        "U": 0.9609,
+        "N": 0.9107,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (tema_sin_indicador)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 7,
+      "id_grupo": "GRP-6e737ecad5",
+      "titular_central": "MOP solicita $43.1 millones para pagar compromisos y continuar obras en ejecución",
+      "puntaje": 75.25,
+      "rango": "alto",
+      "componentes": {
+        "R": 0.7105,
+        "I": 0.75,
+        "U": 1.0,
+        "N": 0.7679,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
+        "los titulares traen cifras y no hay dato oficial vinculado",
+        "sin dato oficial vinculado (tema_sin_indicador)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 8,
+      "id_grupo": "GRP-1e2c34f6bf",
+      "titular_central": "Pase-U: Largas filas en Changuinola en el segundo día de entrega de tarjetas Punch del Ifarhu",
+      "puntaje": 73.73,
+      "rango": "alto",
+      "componentes": {
+        "R": 0.886,
+        "I": 0.65,
+        "U": 1.0,
+        "N": 0.4821,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (tema_sin_indicador)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 9,
+      "id_grupo": "GRP-21ad932d54",
+      "titular_central": "Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá",
+      "puntaje": 73.67,
+      "rango": "alto",
+      "componentes": {
+        "R": 0.8684,
+        "I": 0.75,
+        "U": 0.9789,
+        "N": 0.375,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (tema_sin_indicador)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 10,
+      "id_grupo": "GRP-fcdfc2a3cc",
+      "titular_central": "Aprehenden a Enrique Lau, exdirector de la CSS, por supuesto enriquecimiento injustificado",
+      "puntaje": 71.82,
+      "rango": "alto",
+      "componentes": {
+        "R": 0.6228,
+        "I": 0.75,
+        "U": 1.0,
+        "N": 0.7143,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (tema_sin_indicador)"
+      ],
+      "contradicciones": []
+    }
+  ]
+}
