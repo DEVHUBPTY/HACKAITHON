@@ -9,58 +9,53 @@
     "GRP-21ad932d54",
     "GRP-ef3acec21e",
     "GRP-038c4f0643",
-    "GRP-1c2f1d950d",
-    "GRP-1df3ab1e22"
+    "GRP-1df3ab1e22",
+    "GRP-276c88e7f3"
   ],
-  "empate_en_el_corte_base": {
-    "valor": 87.4,
-    "empatados": 9,
-    "dentro_del_top": 2,
-    "fuera_del_top": 7
-  },
+  "empate_en_el_corte_base": null,
   "reagrupar_con_las_reglas_actuales_reproduce_la_base": true,
-  "variantes": 46,
-  "variantes_con_efecto": 43,
+  "variantes": 44,
+  "variantes_con_efecto": 41,
   "sin_efecto": [
     "Foco: Panamá sujeto +",
     "Alcance geográfico nacional +",
     "N del primer grupo +"
   ],
   "top_sin_cambio": {
-    "n": 35,
-    "de": 43,
-    "proporcion": 0.814,
+    "n": 33,
+    "de": 41,
+    "proporcion": 0.8049,
     "ic95": [
-      0.6738,
-      0.9026
+      0.6599,
+      0.8977
     ]
   },
   "con_algun_cambio": {
     "n": 8,
-    "de": 43,
-    "proporcion": 0.186,
+    "de": 41,
+    "proporcion": 0.1951,
     "ic95": [
-      0.0974,
-      0.3262
+      0.1023,
+      0.3401
     ]
   },
   "mismo_orden": {
-    "n": 34,
-    "de": 43,
-    "proporcion": 0.7907,
+    "n": 30,
+    "de": 41,
+    "proporcion": 0.7317,
     "ic95": [
-      0.6479,
-      0.8858
+      0.5807,
+      0.8431
     ]
   },
-  "maximo_de_temas_que_cambian": 2,
+  "maximo_de_temas_que_cambian": 3,
   "temas_retenidos": {
-    "n": 203,
-    "de": 215,
-    "proporcion": 0.9442,
+    "n": 189,
+    "de": 205,
+    "proporcion": 0.922,
     "ic95": [
-      0.905,
-      0.9678
+      0.877,
+      0.9514
     ],
     "nota": "puestos del top 5 que se conservan en las variantes con efecto; los puestos de una misma variante no son independientes, el IC es orientativo"
   },
@@ -70,7 +65,7 @@
       "con_cambio": 0
     },
     "supuesto": {
-      "variantes": 36,
+      "variantes": 34,
       "con_cambio": 8
     }
   },
@@ -85,8 +80,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -105,8 +100,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -125,8 +120,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -143,16 +138,16 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-ef3acec21e",
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
       "entran": [],
       "mismo_conjunto": true,
-      "mismo_orden": true,
+      "mismo_orden": false,
       "parametro_con_direccion": "Peso I -"
     },
     {
@@ -163,16 +158,16 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-ef3acec21e",
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
       "entran": [],
       "mismo_conjunto": true,
-      "mismo_orden": true,
+      "mismo_orden": false,
       "parametro_con_direccion": "Peso U +"
     },
     {
@@ -185,8 +180,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -205,8 +200,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -225,8 +220,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -245,8 +240,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -265,8 +260,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -285,8 +280,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -305,8 +300,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -325,8 +320,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -345,8 +340,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -366,11 +361,11 @@
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
         "GRP-84a6b3a04b",
-        "GRP-1c2f1d950d"
+        "GRP-1df3ab1e22"
       ],
       "cambian": 1,
       "salen": [
-        "GRP-1df3ab1e22"
+        "GRP-276c88e7f3"
       ],
       "entran": [
         "GRP-84a6b3a04b"
@@ -389,8 +384,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -409,8 +404,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -430,11 +425,11 @@
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
         "GRP-84a6b3a04b",
-        "GRP-1c2f1d950d"
+        "GRP-1df3ab1e22"
       ],
       "cambian": 1,
       "salen": [
-        "GRP-1df3ab1e22"
+        "GRP-276c88e7f3"
       ],
       "entran": [
         "GRP-84a6b3a04b"
@@ -453,8 +448,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -473,8 +468,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -493,8 +488,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -513,8 +508,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -533,12 +528,12 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-84a6b3a04b",
-        "GRP-1c2f1d950d"
+        "GRP-1df3ab1e22",
+        "GRP-84a6b3a04b"
       ],
       "cambian": 1,
       "salen": [
-        "GRP-1df3ab1e22"
+        "GRP-276c88e7f3"
       ],
       "entran": [
         "GRP-84a6b3a04b"
@@ -557,8 +552,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -577,8 +572,8 @@
         "GRP-038c4f0643",
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -597,8 +592,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -617,8 +612,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -637,12 +632,12 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-84a6b3a04b",
-        "GRP-1c2f1d950d"
+        "GRP-1df3ab1e22",
+        "GRP-84a6b3a04b"
       ],
       "cambian": 1,
       "salen": [
-        "GRP-1df3ab1e22"
+        "GRP-276c88e7f3"
       ],
       "entran": [
         "GRP-84a6b3a04b"
@@ -650,46 +645,6 @@
       "mismo_conjunto": false,
       "mismo_orden": false,
       "parametro_con_direccion": "Alcance de I sin subtema -"
-    },
-    {
-      "grupo": "supuesto",
-      "parametro": "U: horas con U = 1",
-      "direccion": "+",
-      "reagrupa": false,
-      "con_efecto": true,
-      "top": [
-        "GRP-21ad932d54",
-        "GRP-ef3acec21e",
-        "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
-      ],
-      "cambian": 0,
-      "salen": [],
-      "entran": [],
-      "mismo_conjunto": true,
-      "mismo_orden": true,
-      "parametro_con_direccion": "U: horas con U = 1 +"
-    },
-    {
-      "grupo": "supuesto",
-      "parametro": "U: horas con U = 1",
-      "direccion": "-",
-      "reagrupa": false,
-      "con_efecto": true,
-      "top": [
-        "GRP-21ad932d54",
-        "GRP-ef3acec21e",
-        "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
-      ],
-      "cambian": 0,
-      "salen": [],
-      "entran": [],
-      "mismo_conjunto": true,
-      "mismo_orden": true,
-      "parametro_con_direccion": "U: horas con U = 1 -"
     },
     {
       "grupo": "supuesto",
@@ -701,8 +656,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -721,8 +676,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -741,8 +696,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -761,8 +716,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -781,8 +736,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -801,8 +756,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -821,8 +776,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -841,8 +796,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -861,8 +816,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -881,8 +836,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -901,8 +856,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -921,8 +876,8 @@
         "GRP-21ad932d54",
         "GRP-ef3acec21e",
         "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
-        "GRP-1df3ab1e22"
+        "GRP-1df3ab1e22",
+        "GRP-276c88e7f3"
       ],
       "cambian": 0,
       "salen": [],
@@ -939,19 +894,21 @@
       "con_efecto": true,
       "top": [
         "GRP-fcdfc2a3cc",
-        "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
         "GRP-1df3ab1e22",
-        "GRP-276c88e7f3"
+        "GRP-276c88e7f3",
+        "GRP-29baaf270e",
+        "GRP-6e737ecad5"
       ],
-      "cambian": 2,
+      "cambian": 3,
       "salen": [
         "GRP-21ad932d54",
-        "GRP-ef3acec21e"
+        "GRP-ef3acec21e",
+        "GRP-038c4f0643"
       ],
       "entran": [
         "GRP-fcdfc2a3cc",
-        "GRP-276c88e7f3"
+        "GRP-29baaf270e",
+        "GRP-6e737ecad5"
       ],
       "mismo_conjunto": false,
       "mismo_orden": false,
@@ -965,19 +922,21 @@
       "con_efecto": true,
       "top": [
         "GRP-fcdfc2a3cc",
-        "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
         "GRP-1df3ab1e22",
-        "GRP-276c88e7f3"
+        "GRP-276c88e7f3",
+        "GRP-29baaf270e",
+        "GRP-6e737ecad5"
       ],
-      "cambian": 2,
+      "cambian": 3,
       "salen": [
         "GRP-21ad932d54",
-        "GRP-ef3acec21e"
+        "GRP-ef3acec21e",
+        "GRP-038c4f0643"
       ],
       "entran": [
         "GRP-fcdfc2a3cc",
-        "GRP-276c88e7f3"
+        "GRP-29baaf270e",
+        "GRP-6e737ecad5"
       ],
       "mismo_conjunto": false,
       "mismo_orden": false,
@@ -991,19 +950,21 @@
       "con_efecto": true,
       "top": [
         "GRP-fcdfc2a3cc",
-        "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
         "GRP-1df3ab1e22",
-        "GRP-276c88e7f3"
+        "GRP-276c88e7f3",
+        "GRP-29baaf270e",
+        "GRP-6e737ecad5"
       ],
-      "cambian": 2,
+      "cambian": 3,
       "salen": [
         "GRP-21ad932d54",
-        "GRP-ef3acec21e"
+        "GRP-ef3acec21e",
+        "GRP-038c4f0643"
       ],
       "entran": [
         "GRP-fcdfc2a3cc",
-        "GRP-276c88e7f3"
+        "GRP-29baaf270e",
+        "GRP-6e737ecad5"
       ],
       "mismo_conjunto": false,
       "mismo_orden": false,
@@ -1017,19 +978,21 @@
       "con_efecto": true,
       "top": [
         "GRP-fcdfc2a3cc",
-        "GRP-038c4f0643",
-        "GRP-1c2f1d950d",
         "GRP-1df3ab1e22",
-        "GRP-276c88e7f3"
+        "GRP-276c88e7f3",
+        "GRP-29baaf270e",
+        "GRP-6e737ecad5"
       ],
-      "cambian": 2,
+      "cambian": 3,
       "salen": [
         "GRP-21ad932d54",
-        "GRP-ef3acec21e"
+        "GRP-ef3acec21e",
+        "GRP-038c4f0643"
       ],
       "entran": [
         "GRP-fcdfc2a3cc",
-        "GRP-276c88e7f3"
+        "GRP-29baaf270e",
+        "GRP-6e737ecad5"
       ],
       "mismo_conjunto": false,
       "mismo_orden": false,
@@ -1039,57 +1002,65 @@
   "mas_sensibles": [
     {
       "parametro": "Umbral de «mismo texto» (procedencias) +",
-      "cambian": 2,
+      "cambian": 3,
       "salen": [
         "GRP-21ad932d54",
-        "GRP-ef3acec21e"
+        "GRP-ef3acec21e",
+        "GRP-038c4f0643"
       ],
       "entran": [
         "GRP-fcdfc2a3cc",
-        "GRP-276c88e7f3"
+        "GRP-29baaf270e",
+        "GRP-6e737ecad5"
       ]
     },
     {
       "parametro": "Umbral de «mismo texto» (procedencias) -",
-      "cambian": 2,
+      "cambian": 3,
       "salen": [
         "GRP-21ad932d54",
-        "GRP-ef3acec21e"
+        "GRP-ef3acec21e",
+        "GRP-038c4f0643"
       ],
       "entran": [
         "GRP-fcdfc2a3cc",
-        "GRP-276c88e7f3"
+        "GRP-29baaf270e",
+        "GRP-6e737ecad5"
       ]
     },
     {
       "parametro": "Ventana de agrupación (días) +",
-      "cambian": 2,
+      "cambian": 3,
       "salen": [
         "GRP-21ad932d54",
-        "GRP-ef3acec21e"
+        "GRP-ef3acec21e",
+        "GRP-038c4f0643"
       ],
       "entran": [
         "GRP-fcdfc2a3cc",
-        "GRP-276c88e7f3"
+        "GRP-29baaf270e",
+        "GRP-6e737ecad5"
       ]
     },
     {
       "parametro": "Ventana de agrupación (días) -",
-      "cambian": 2,
+      "cambian": 3,
       "salen": [
         "GRP-21ad932d54",
-        "GRP-ef3acec21e"
+        "GRP-ef3acec21e",
+        "GRP-038c4f0643"
       ],
       "entran": [
         "GRP-fcdfc2a3cc",
-        "GRP-276c88e7f3"
+        "GRP-29baaf270e",
+        "GRP-6e737ecad5"
       ]
     },
     {
       "parametro": "Alcance de I sin subtema -",
       "cambian": 1,
       "salen": [
-        "GRP-1df3ab1e22"
+        "GRP-276c88e7f3"
       ],
       "entran": [
         "GRP-84a6b3a04b"
@@ -1099,7 +1070,7 @@
       "parametro": "Alcance geográfico desconocido +",
       "cambian": 1,
       "salen": [
-        "GRP-1df3ab1e22"
+        "GRP-276c88e7f3"
       ],
       "entran": [
         "GRP-84a6b3a04b"
@@ -1109,7 +1080,7 @@
       "parametro": "Alcance geográfico nacional -",
       "cambian": 1,
       "salen": [
-        "GRP-1df3ab1e22"
+        "GRP-276c88e7f3"
       ],
       "entran": [
         "GRP-84a6b3a04b"
@@ -1119,7 +1090,7 @@
       "parametro": "Partes de I (subtema · geográfico) +",
       "cambian": 1,
       "salen": [
-        "GRP-1df3ab1e22"
+        "GRP-276c88e7f3"
       ],
       "entran": [
         "GRP-84a6b3a04b"
