@@ -10,7 +10,7 @@ y **no habilita publicación** (``Puntaje.habilita_publicacion`` es siempre fals
 * **I** = ``peso_subtema × alcance(subtema) + peso_geografico × alcance geográfico``. Ni el dato oficial ni las
   procedencias suman aquí (D-15, D-35). El alcance geográfico es el más amplio que nombren los titulares; sin término
   explícito ni lugar concreto, el país nombrado o una institución nacional lo hacen nacional (E1-10c, X42).
-* **U**: lineal entre ``horas_pleno`` (U = 1) y ``dias_nulo`` (U = 0) desde la publicación ORIGINAL más reciente del grupo,
+* **U**: lineal entre ``horas_pleno`` (U = 1; D-106: 0 h, sin meseta) y ``dias_nulo`` (U = 0) desde la publicación ORIGINAL más reciente del grupo,
   medida contra la fecha de referencia (el corte del snapshot). Si ningún titular trae ``fecha_publicacion`` se usa la
   detección como cota y se agrega el vacío «urgencia estimada: fecha de publicación desconocida»; nunca se sustituye en silencio.
 * **N** (D-103): ``s`` = similitud máxima entre un titular del grupo y uno de un grupo anterior (empezó antes:

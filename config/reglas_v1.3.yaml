@@ -69,7 +69,9 @@ impacto:                    # I = peso_subtema × alcance(subtema) + peso_geogra
     sanciones: 0.6
 
 urgencia:                   # U usa la publicación original MÁS RECIENTE del grupo
-  horas_pleno: 24           # publicada hace menos de estas horas -> U = 1
+  # D-106: U = fracción de la ventana de revisión que queda («tiempo disponible para revisar», PDF sección 4): lineal de 1 al
+  # publicarse a 0 al cerrarse la ventana. Antes (v1.3) U valía 1 durante las primeras 24 h y se saturaba (2 h = 30 h).
+  horas_pleno: 0            # D-106: sin meseta (antes 24); publicada hace estas horas o menos -> U = 1
   dias_nulo: 7              # hace estos días o más -> U = 0; lineal entre ambos
   # Sin fecha_publicacion en ningún titular (todo GDELT): se usa fecha_deteccion como cota y se agrega este vacío.
   fecha_sin_publicacion: fecha_deteccion

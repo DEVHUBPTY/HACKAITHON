@@ -296,6 +296,7 @@ Los reemplaza `python -m src.puntaje`. Cada componente guarda de qué valores sa
 | `vacios` | VARCHAR | no | puntaje | derivado | JSON: vacíos que nacen del puntaje («urgencia estimada: fecha de publicación desconocida», noticia recirculada, subtema no determinado). |
 | `recirculada` | BOOLEAN | no | `noticias` | derivado | Verdadero si todos los titulares del grupo son noticias recirculadas (publicación muy anterior a la detección). |
 | `es_nueva` | BOOLEAN | no | `noticias` | derivado | Falso si el grupo es una noticia recirculada: no se presenta como nueva. |
+| `empate_con` | INTEGER | sí | puntaje | derivado | D-105: cuántos otros grupos tienen el mismo P tal como se muestra (`comparacion.decimales_empate`); 0 = sin empate. Nulo en una base anterior a D-105. |
 
 ### `evidencia`: estado de evidencia y acción recomendada (E1-10)
 

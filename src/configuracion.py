@@ -565,7 +565,7 @@ class Impacto(ModeloConfig):
 
 
 class Urgencia(ModeloConfig):
-    horas_pleno: float = Field(gt=0)
+    horas_pleno: float = Field(ge=0)   # D-106: 0 = sin meseta, U decrece desde la publicación
     dias_nulo: float = Field(gt=0)
     fecha_sin_publicacion: Literal["fecha_deteccion"]
     vacio_sin_publicacion: str

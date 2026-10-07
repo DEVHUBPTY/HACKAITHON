@@ -153,7 +153,7 @@ def ajustes(reglas: ReglasV13) -> list[Ajuste]:
         "Alcance de I sin subtema",
         lambda r, c, f: (r, c.model_copy(update={"impacto": c.impacto.model_copy(update={"alcance_subtema_desconocido": _recortar(c.impacto.alcance_subtema_desconocido * f)})})),
     )
-    agregar("U: horas con U = 1", lambda r, c, f: (r.model_copy(update={"urgencia": r.urgencia.model_copy(update={"horas_pleno": urg.horas_pleno * f})}), c))
+    # D-106: «horas con U = 1» es 0 por decisión (sin meseta), no un supuesto: no se varía.
     agregar("U: días con U = 0", lambda r, c, f: (r.model_copy(update={"urgencia": r.urgencia.model_copy(update={"dias_nulo": urg.dias_nulo * f})}), c))
     partes_e = {"peso_procedencias": evi.peso_procedencias, "peso_oficial": evi.peso_oficial, "peso_identificables": evi.peso_identificables}
     for clave, nombre in (("peso_procedencias", "procedencias"), ("peso_oficial", "oficial"), ("peso_identificables", "identificable")):

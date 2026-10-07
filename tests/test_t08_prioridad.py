@@ -234,7 +234,7 @@ def test_u_es_lineal_entre_los_dos_extremos() -> None:
 
 def test_u_usa_la_publicacion_original_mas_reciente_del_grupo() -> None:
     c = _u(miembro("NOT-1", publicado_hace=24 * 30), miembro("NOT-2", publicado_hace=3), miembro("NOT-3", publicado_hace=24 * 3))
-    assert c.valor == 1.0
+    assert c.valor == pytest.approx(1 - 3 / (REGLAS.urgencia.dias_nulo * 24))   # D-106: la de 3 h, sin meseta
     assert c.explicacion["fecha_origen"] == "publicacion"
     assert c.explicacion["fecha"] == iso(3)
 
@@ -248,7 +248,7 @@ def test_sin_fecha_de_publicacion_u_usa_la_deteccion_y_agrega_el_vacio() -> None
     c = p.componentes["U"]
     assert c.explicacion["fecha_origen"] == "deteccion"
     assert c.explicacion["fecha"] == iso(10)            # la más reciente
-    assert c.valor == 1.0
+    assert c.valor == pytest.approx(1 - 10 / (REGLAS.urgencia.dias_nulo * 24))   # D-106: la de 10 h, sin meseta
     assert [v.texto for v in p.vacios if v.codigo == "urgencia_sin_publicacion"] == [REGLAS.urgencia.vacio_sin_publicacion]
 
 
