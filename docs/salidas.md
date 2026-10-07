@@ -69,7 +69,7 @@ Todo paquete (`PaqueteEditorial`, `PaqueteInvestigacion`, `BoletinBanca`) lleva 
 | Campo | Qué es | Origen |
 |---|---|---|
 | `marca` | «BORRADOR · requiere revisión» (`config/restricciones.yaml`) | Regla |
-| `id_caso`, `version` | ID del caso (hoy el `GRP-` hasta que E1-16 asigne `CASO-`) y versión | Ficha |
+| `id_caso`, `version` | ID del caso (`CASO-001`…, asignado al abrir el grupo para revisar, E1-16) y versión del borrador (cada corrección o regeneración crea otra) | Ficha |
 | `leyenda_alcance` | Leyenda de alcance (D-51), según `uso_descripcion` de la ficha | Regla |
 | `accion` | Acción recomendada de la ficha que decidió qué se generó (D-42) | Ficha |
 | `forzado` | `true` si la persona forzó el paquete completo (queda registrado) | Regla |

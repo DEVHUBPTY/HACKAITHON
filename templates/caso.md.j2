@@ -1,0 +1,51 @@
+# {{ d.id_caso }} · Ficha de evidencia · {{ d.id_grupo }}
+**{{ d.marca }}**
+
+- Estado de revisión: {{ d.estado }}
+- Versión del borrador: {{ d.version_texto }}
+- Modalidad: {{ d.modalidad }}
+- Alcance: {{ d.alcance }}
+- Exportado: {{ d.exportado }}
+{% for s in d.secciones %}
+
+## {{ s.titulo }}
+{% for l in s.lineas %}
+{{ "  " * l.nivel }}- {{ l.texto }}
+{% endfor %}
+{% endfor %}
+
+## Borrador · {{ d.version_texto }}
+{% if d.borrador %}
+{% for b in d.borrador %}
+
+### {{ b.titulo }}
+{% for p in b.parrafos %}
+- {{ p }}
+{% endfor %}
+{% endfor %}
+{% else %}
+
+{{ d.sin_borrador }}
+{% endif %}
+
+## Historial de revisión
+
+{{ d.nota_historial }}
+
+| # | Fecha (hora de Panamá) | Acción | Estado anterior | Estado nuevo | Revisor | Versión | Motivo | Comentario |
+|---|---|---|---|---|---|---|---|---|
+{% for f in d.historial %}
+| {{ f.id_revision }} | {{ f.fecha }} | {{ f.accion }} | {{ f.estado_anterior }} | {{ f.estado_nuevo }} | {{ f.revisor }} | {{ f.version }} | {{ f.motivo }} | {{ f.comentario }} |
+{% endfor %}
+{% if d.diferencias %}
+
+### Correcciones (antes y después)
+{% for x in d.diferencias %}
+- Versión {{ x.version }} · {{ x.clave }}
+  - Antes: {{ x.antes }}
+  - Después: {{ x.despues }}
+{% endfor %}
+{% endif %}
+
+---
+**{{ d.marca }}** · Alcance: {{ d.alcance }}

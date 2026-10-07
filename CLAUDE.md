@@ -50,7 +50,10 @@ poetry run python -m scripts.medir_generacion --proveedor ollama  # latencia: pr
 poetry run python -m src.validador --tasas            # tasa de rechazo por modelo y por regla (n e IC 95 %) desde outputs/rechazos.jsonl (E1-13)
 poetry run python -m src.consulta "pregunta"         # consulta en español con abstención (--metodo semantica|bm25)
 poetry run python -m eval.recuperacion               # Recall@5 y abstención, semántica vs. BM25, con n e IC
-poetry run streamlit run app.py                      # interfaz: 6 pantallas (E1-15); ?caso=GRP-… abre la ficha
+poetry run streamlit run app.py                      # interfaz: 6 pantallas (E1-15); ?caso=GRP-… o ?caso=CASO-… abre la ficha; la pantalla Revisión es el flujo de la etapa 7 (E1-16)
+poetry run python -m src.revision --abrir GRP-… --revisor "Nombre"   # abre el grupo como CASO-… (también --estado GRP-…, --historial CASO-…); las acciones se hacen en la app (E1-16)
+poetry run python -m src.exportar --caso CASO-001    # (--demo: rutas de la demo) Markdown + fila CSV de «Casos y evidencias» (Notion) en outputs/notion/, y outputs/fichas.jsonl; volver a exportar actualiza (E1-16)
+poetry run python -m eval.revision                   # tasas de aceptación, corrección y descarte con n e IC, motivos, tiempo por caso y % de afirmaciones editadas → outputs/revision.json (E1-16)
 poetry run streamlit run app.py -- --demo            # modo demo (data/demo.duckdb, C-06) con los pasos de docs/demo.md
 poetry run python -m scripts.verificar_offline       # chequeo antes del pitch
 poetry run python -m scripts.calentar_cache          # borradores en data/cache_llm (con red; --verificar sin red) · docs/fallback.md
@@ -79,22 +82,22 @@ Lo que existe hoy:
 CLAUDE.md  README.md  pyproject.toml  poetry.lock  .env.example  .github/pull_request_template.md  app.py (E1-15)  .streamlit/config.toml
 config/      reglas_v1.3.yaml · temas.yaml · ejemplos_excluidos.txt · vinculos.yaml · modalidad_editorial.yaml · salidas.yaml · restricciones.yaml · validador.yaml (E1-13)
              cache.yaml (E1-14) · ruido.yaml · fuentes.yaml · contrato.yaml · carga.yaml · normalizacion.yaml · clasificacion.yaml · etiquetado.yaml · exploracion.yaml · llm.yaml · benchmark.yaml · consulta.yaml · prioridad.yaml (E1-10) · generacion.yaml (E1-12)
-             verificacion.yaml (E1-10b) · interfaz.yaml (E1-15) · modalidad_banca.yaml (E1-10b, PARCIAL: solo tabla de acciones y fuentes extra; E2-01 la completa, D-90)
-templates/   ficha.md.j2 (E1-10b)
+             verificacion.yaml (E1-10b) · interfaz.yaml (E1-15) · revision.yaml (E1-16: estados, transiciones, motivos de descarte, revisores y roles, columnas de Notion) · modalidad_banca.yaml (E1-10b, PARCIAL: solo tabla de acciones y fuentes extra; E2-01 la completa, D-90)
+templates/   ficha.md.j2 (E1-10b) · caso.md.j2 (E1-16: ficha + versión + historial + leyenda, para Notion)
 prompts/     afirmaciones_citadas.txt (E0-07) · comparar_contradicciones.txt (E1-10) · afirmaciones_ficha.txt · paquete_editorial.txt (E1-12, versionados)
 data/        raw/ (inmutable) · processed/ (validos/ fuera de git) · registro_extraccion/ · manifest.json · CHANGELOG.md · diccionario.md · README.md
-             senales.duckdb (generado, fuera de git) · cache_llm/ (E1-14: borradores generados, SÍ versionada; docs/fallback.md)
+             senales.duckdb (generado, fuera de git) · revision.duckdb (E1-16: casos, versiones y `revisiones` de solo agregar; fuera de git, NO se regenera con el pipeline) · cache_llm/ (E1-14: borradores generados, SÍ versionada; docs/fallback.md)
 src/         carga · contexto (E1-09) · normalizacion · limpieza · embeddings · clasificacion · baseline · consulta · db · registro (D-75) · configuracion (D-79; config = alias de su CLI) · consultas_gdelt · esquemas (`Ficha` de E1-10b; paso 1 y paquetes de E1-12)
              agrupacion · procedencias · puntaje · evidencia · contradicciones · prioridad (E1-10: `python -m src.puntaje`) · ficha (E1-10b) · interfaz (E1-15: lógica de presentación de app.py, sin Streamlit)
-             generacion (E1-12: dos pasos) · validador (E1-13: reglas deterministas; la generación solo lo llama)
-             solo docstring o esqueleto: revision · exportar
+             generacion (E1-12: dos pasos) · validador (E1-13: reglas deterministas; la generación y la corrección de la revisión solo lo llaman)
+             revision (E1-16: casos CASO-, acciones y transiciones, versiones, registro de solo agregar en `data/revision.duckdb`) · exportar (E1-16: Markdown, CSV de Notion, fichas.jsonl)
              cache (E1-14: caché de respuestas del LLM, `data/cache_llm/` versionada, solo cache para la interfaz) · llm/costo (tope D-98: USD 100 / 200 M tokens; `SaldoAgotado` ante HTTP 402)
 src/llm/     proveedor.py (interfaz, `UsoLlm` y `crear_proveedor`, por LLM_PROVIDER) · ollama.py · deepseek.py · costo.py (tope de costo D-67; al alcanzarlo lanza `TopeDeCostoAlcanzado`, D-95)
 scripts/     extraer.py · conversion.py · manifest.py · validar_snapshot.py · catalogo.py · explorar.py · estimar_consultas_gdelt.py · probar_llm.py · medir_generacion.py (E1-12) · calentar_cache.py (E1-14: calienta y `--verificar` la caché de borradores)
-eval/        etiquetar.py · etiquetas/ (una hoja por persona) · etiquetas.csv · ruido.py · validar_benchmark.py · clasificacion.py · calibrar_clasificacion.py · metricas.py · recuperacion.py · puntaje.py · sensibilidad.py
+eval/        revision.py (E1-16) · etiquetar.py · etiquetas/ (una hoja por persona) · etiquetas.csv · ruido.py · validar_benchmark.py · clasificacion.py · calibrar_clasificacion.py · metricas.py · recuperacion.py · puntaje.py · sensibilidad.py
 benchmark/   benchmark_dev.jsonl (solo desarrollo) · sinteticos.csv · README.md
 tests/       fixtures/ · test_t01_carga.py · test_t03_recirculada.py · test_casos_dificiles.py · test_*.py
-outputs/     catalogo.csv · reporte_vinculos.json · clasificacion.json · recuperacion.json · prioridad.json · puntaje.json · sensibilidad.json · validacion_snapshot.json · probar_llm_<modelo>.json
+outputs/     fichas.jsonl · revision.json · notion/ (E1-16, se generan al exportar) · catalogo.csv · reporte_vinculos.json · clasificacion.json · recuperacion.json · prioridad.json · puntaje.json · sensibilidad.json · validacion_snapshot.json · probar_llm_<modelo>.json
 notion/      exportación inicial para importar en Notion (la versión vigente está en Notion)
 specs/  docs/
 ```
@@ -103,13 +106,13 @@ Previsto (lo crea la spec indicada):
 
 ```
 data/demo.duckdb (C-06)
-config/      revision.yaml (E1-16) · modalidad_banca.yaml completa (E2-01: sectores, horizonte, bandeja)
+config/      modalidad_banca.yaml completa (E2-01: sectores, horizonte, bandeja)
 prompts/     comparar_contradicciones.txt (E1-10) · respuesta_consulta.txt (E1-11) · boletin_banca.txt (E2-02)
 scripts/     buscar_casos.py · preparar_demo.py · capturas_demo.py · verificar_offline.py (C-06) · reproducir.py (E1-20)
              empaquetar_datos.py · auditoria_final.py (C-07)
 eval/        run_benchmark.py (E1-18) · precision_at_5.py (E1-19) · y los módulos de métricas que pide cada spec
 tests/       test_t02_*.py, test_t04_*.py … test_t10_*.py (ver docs/protocolo_evaluacion.md)
-outputs/     fichas.jsonl (E1-16) · pruebas.csv (E1-17) · metricas.json (E1-18)
+outputs/     pruebas.csv (E1-17) · metricas.json (E1-18)
 ```
 
 ## Contrato de datos (sección 7 del reto)
@@ -165,6 +168,7 @@ El `tema` de `noticias.csv` es el **tema de origen** (consulta de GDELT o catego
 - **Ningún número mágico en `src/`**: pesos, umbrales y ventanas viven en `config/*.yaml`.
 - Todo YAML de `config/` se carga con `src.configuracion` y se valida con un modelo pydantic que prohíbe claves desconocidas (D-79).
 - Ningún `if modalidad == ...` en `src/`: las diferencias entre modalidades van en YAML, plantillas y reglas del validador.
+- **Revisión humana (E1-16, D-46 a D-50):** las acciones, transiciones, motivos de descarte y revisores viven en `config/revision.yaml`. El botón se llama **«Aprobar como borrador»** y la ficha aprobada conserva la marca BORRADOR. `casos`, `versiones` y `revisiones` (en `data/revision.duckdb`) son de **solo agregar**: no hay `UPDATE` ni `DELETE`, y el estado actual es la última fila. Regenerar nunca sobrescribe una versión corregida. La ficha que se revisó queda guardada (`fichas_revisadas`) y se **exporta desde ahí**, no desde `senales.duckdb`; la demo exporta a `outputs/demo/`; un `CASO-` nunca se reutiliza (ver `docs/notion.md`). Todo texto corregido pasa por `src/validador.py` (vía `revalidar_correccion`) y la persona confirma cada advertencia. **No hay autenticación** (el revisor se elige de la lista): limitación declarada, no un control de seguridad. Lo que el reto exige a una persona (la revisión editorial) lo sigue haciendo una persona.
 
 ## Seguridad
 
