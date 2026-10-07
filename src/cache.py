@@ -71,11 +71,12 @@ class CacheLlm:
         self.cfg = cfg or cargar_cache()
         self.carpeta = carpeta if carpeta is not None else RAIZ / self.cfg.ruta
         self.usadas: set[str] = set()  # claves leídas con éxito: lo que una verificación completa necesita (E1-13, ``podar``)
+        self.prompts_usados: set[str] = set()  # X56: nombres de prompt de las lecturas con éxito: el alcance de una poda por modalidad
 
     def _ruta(self, clave: str) -> Path:
         return self.carpeta / f"{clave}.json"
 
-    def obtener(self, clave: str) -> str | None:
+    def obtener(self, clave: str, prompt: str = "") -> str | None:
         try:
             datos = json.loads(self._ruta(clave).read_text(encoding="utf-8"))
         except FileNotFoundError:
@@ -88,17 +89,30 @@ class CacheLlm:
             log.warning("entrada de caché inválida %s…: se ignora", clave[:12])
             return None
         self.usadas.add(clave)
+        if prompt:
+            self.prompts_usados.add(prompt)
         return respuesta
 
-    def podar(self, conservar: set[str] | None = None) -> int:
+    def podar(self, conservar: set[str] | None = None, prompts: set[str] | None = None) -> int:
         """Borra las respuestas que ya nadie usa (de prompts o validadores anteriores): todas las que no estén en ``conservar`` (por defecto,
-        las leídas con éxito en esta ejecución). Devuelve cuántas borró."""
+        las leídas con éxito en esta ejecución). Devuelve cuántas borró.
+
+        X56: con ``prompts`` solo se consideran las entradas cuyo ``prompt`` guardado esté en ese conjunto; las de otros prompts (otra modalidad)
+        y las que no registran su prompt (anteriores a X56, no se sabe de quién son) se conservan."""
         conservar = self.usadas if conservar is None else conservar
         borradas = 0
         for archivo in self.carpeta.glob("*.json") if self.carpeta.exists() else []:
-            if archivo.stem not in conservar:
-                archivo.unlink()
-                borradas += 1
+            if archivo.stem in conservar:
+                continue
+            if prompts is not None:
+                try:
+                    propio = json.loads(archivo.read_text(encoding="utf-8")).get("prompt")
+                except (OSError, ValueError, AttributeError):
+                    propio = None
+                if propio not in prompts:
+                    continue
+            archivo.unlink()
+            borradas += 1
         return borradas
 
     def guardar(self, clave: str, respuesta: str, meta: Mapping[str, Any]) -> bool:
@@ -180,8 +194,8 @@ class ProveedorSoloCache(_ConClave):
         self.aciertos = 0
         self.fallos = 0
 
-    def generar_json_versionado(self, version: str, system: str, usuario: str, esquema: dict[str, Any]) -> str:
-        respuesta = self.cache.obtener(self.clave(version, system, usuario, esquema))
+    def generar_json_versionado(self, version: str, system: str, usuario: str, esquema: dict[str, Any], prompt: str = "") -> str:
+        respuesta = self.cache.obtener(self.clave(version, system, usuario, esquema), prompt)
         if respuesta is None:
             self.fallos += 1
             raise SinCache(self.cache.cfg.textos.sin_cache)
@@ -202,9 +216,9 @@ class ProveedorConCache(_ConClave):
         self.aciertos = 0
         self.fallos = 0
 
-    def generar_json_versionado(self, version: str, system: str, usuario: str, esquema: dict[str, Any]) -> str:
+    def generar_json_versionado(self, version: str, system: str, usuario: str, esquema: dict[str, Any], prompt: str = "") -> str:
         clave = self.clave(version, system, usuario, esquema)
-        if not self.refrescar and (respuesta := self.cache.obtener(clave)) is not None:
+        if not self.refrescar and (respuesta := self.cache.obtener(clave, prompt)) is not None:
             self.aciertos += 1
             self.ultimo_uso = None
             return respuesta
@@ -215,7 +229,7 @@ class ProveedorConCache(_ConClave):
         self.cache.guardar(
             clave, respuesta,
             {
-                "proveedor": self.nombre, "modelo": self.modelo, "version_prompt": version, "version_cache": self.cache.cfg.version_cache,
+                "proveedor": self.nombre, "modelo": self.modelo, "version_prompt": version, "prompt": prompt, "version_cache": self.cache.cfg.version_cache,
                 "tokens_entrada": uso.tokens_entrada if uso else 0, "tokens_salida": uso.tokens_salida if uso else 0,
             },
         )

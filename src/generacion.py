@@ -328,9 +328,11 @@ class Generador:
         if propio:  # E2-02: un archivo con los dos pasos (bloque «afirmaciones» para el paso 1; «comunes» y el del grupo para el paso 2)
             self._v_red, self._t_red = cargar_prompt(propio)
             self._v_afirm, self._t_afirm = self._v_red, _bloques(self._t_red)["afirmaciones"]
+            self._n_afirm = self._n_red = propio
         else:
             self._v_afirm, self._t_afirm = cargar_prompt(self.cfg.prompts.afirmaciones)
             self._v_red, self._t_red = cargar_prompt(self.cfg.prompts.redaccion)
+            self._n_afirm, self._n_red = self.cfg.prompts.afirmaciones, self.cfg.prompts.redaccion  # X56: el nombre entra en la caché
 
     # ---- grupos de este paquete
 
@@ -341,11 +343,13 @@ class Generador:
 
     # ---- una llamada al LLM
 
-    def _llamar(self, paso: str, intento: int, version: str, system: str, usuario: str, esquema: dict[str, Any]) -> tuple[str, RegistroLlamada]:
+    def _llamar(
+        self, paso: str, intento: int, version: str, system: str, usuario: str, esquema: dict[str, Any], prompt: str = ""
+    ) -> tuple[str, RegistroLlamada]:
         assert self.proveedor is not None
         inicio = time.perf_counter()
         versionado = getattr(self.proveedor, "generar_json_versionado", None)  # proveedores con caché (E1-14): la versión entra en la clave
-        crudo = versionado(version, system, usuario, esquema) if versionado else self.proveedor.generar_json(system, usuario, esquema)
+        crudo = versionado(version, system, usuario, esquema, prompt=prompt) if versionado else self.proveedor.generar_json(system, usuario, esquema)
         transcurrido = time.perf_counter() - inicio
         uso = getattr(self.proveedor, "ultimo_uso", None)
         registro = RegistroLlamada(
@@ -406,7 +410,7 @@ class Generador:
         for intento in range(1 + self.cfg.reintentos):
             usuario = base_usuario + ("" if intento == 0 else _retroalimentacion([motivo]))
             try:
-                crudo, registro = self._llamar("afirmaciones", intento, self._v_afirm, system, usuario, esquema_json_afirmaciones())
+                crudo, registro = self._llamar("afirmaciones", intento, self._v_afirm, system, usuario, esquema_json_afirmaciones(), self._n_afirm)
             except (TopeDeCostoAlcanzado, SinCache):
                 raise  # D-95: la generación se detiene; quien llama muestra el mensaje
             except ErrorProveedor as exc:
@@ -518,7 +522,7 @@ class Generador:
         for intento in range(1 + self.cfg.reintentos):
             usuario = base_usuario if intento == 0 else base_usuario + _retroalimentacion(mensajes(sum(errores.values(), [])))
             try:
-                crudo, registro = self._llamar(grupo, intento, self._v_red, system, usuario, g.modelo.model_json_schema())
+                crudo, registro = self._llamar(grupo, intento, self._v_red, system, usuario, g.modelo.model_json_schema(), self._n_red)
             except (TopeDeCostoAlcanzado, SinCache):
                 raise
             except ErrorProveedor as exc:

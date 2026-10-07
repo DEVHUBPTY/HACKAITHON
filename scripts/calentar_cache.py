@@ -131,10 +131,12 @@ def principal(argv: Sequence[str] | None = None) -> int:
             faltan = [g for g, e in estados.items() if not e.startswith(("completo", "con vacíos", "no genera"))]
             con_vacios = [g for g, e in estados.items() if e.startswith("con vacíos")]
             resumen = f" ({len(con_vacios)} con secciones vacías por la validación)" if con_vacios else ""
-            print(f"\n{len(grupos) - len(faltan)} de {len(grupos)} grupos listos{resumen} ({m}) · {len(cache)} respuestas en {cache.carpeta.relative_to(RAIZ)}")
+            print(f"\n{len(grupos) - len(faltan)} de {len(grupos)} grupos listos{resumen} ({m}) · {len(cache)} respuestas en {cache.carpeta.relative_to(RAIZ) if cache.carpeta.is_relative_to(RAIZ) else cache.carpeta}")
             faltan_total += len(faltan)
-        if args.podar and not faltan_total and not fallidas:  # solo con todo lo pedido verificado: si no, se borraría lo de otra modalidad
-            print(f"\n{cache.podar()} respuestas sin uso borradas de la caché")
+        if args.podar and not faltan_total and not fallidas:  # solo con todo lo pedido verificado
+            # X56: solo se poda lo de los prompts que esta verificación leyó; los boletines de banca no se tocan al podar editorial (ni al revés)
+            borradas = cache.podar(prompts=cache.prompts_usados)
+            print(f"\n{borradas} respuestas sin uso borradas de la caché (solo de los prompts verificados: {', '.join(sorted(cache.prompts_usados)) or 'ninguno'})")
         return 1 if faltan_total or fallidas else 0
 
     from src.cache import modo_offline

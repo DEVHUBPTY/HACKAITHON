@@ -6,6 +6,7 @@ tiene la base, qué comando ejecutar y se sale con error. Un pedido mixto (edito
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import duckdb
@@ -13,6 +14,7 @@ import pytest
 
 from scripts import calentar_cache as cc
 from src import db
+from src.cache import CacheLlm
 
 
 def base_de(tmp_path: Path, modalidad: str) -> Path:
@@ -102,3 +104,54 @@ def test_calentar_atrapa_modalidad_distinta_a_mitad_de_camino(
     codigo = cc.principal(["--modalidad", "banca", "--grupos", "GRP-0000000001", "--base", str(base)])
     salida = capsys.readouterr()
     assert codigo != 0 and "ERROR:" in salida.err and "src.puntaje --modalidad banca" in salida.err and "Traceback" not in salida.err
+
+
+# ------------------------------------------------------------------ X56 · --podar no cruza modalidades
+
+
+def _entrada(carpeta: Path, clave: str, **meta: str) -> None:
+    carpeta.mkdir(parents=True, exist_ok=True)
+    datos = {"clave": clave, "respuesta": "{}", **meta}
+    (carpeta / f"{clave}.json").write_text(json.dumps(datos), encoding="utf-8")
+
+
+def test_podar_editorial_no_borra_los_boletines_de_banca_ni_lo_que_no_registra_su_prompt(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    carpeta = tmp_path / "cache"
+    usada, vieja, banca, antigua = "a" * 64, "b" * 64, "c" * 64, "d" * 64
+    _entrada(carpeta, usada, prompt="paquete_editorial")
+    _entrada(carpeta, vieja, prompt="paquete_editorial")  # sin uso: de un prompt anterior de la misma modalidad
+    _entrada(carpeta, banca, prompt="boletin_banca")  # otra modalidad: no se verifica ahora
+    _entrada(carpeta, antigua)  # anterior a X56: no se sabe de quién es
+    cache = CacheLlm(carpeta)
+
+    def estado(grupo: str, modalidad: str, base: Path, cache_: CacheLlm) -> str:
+        assert cache_.obtener(usada, "paquete_editorial")
+        return "completo"
+
+    monkeypatch.setattr(cc, "CacheLlm", lambda: cache)
+    monkeypatch.setattr(cc, "estado_de", estado)
+    codigo = cc.principal(["--verificar", "--podar", "--grupos", "GRP-0000000001", "--base", str(base_de(tmp_path, "editorial"))])
+    assert codigo == 0
+    assert {f.stem for f in carpeta.glob("*.json")} == {usada, banca, antigua}
+    assert "1 respuestas sin uso borradas" in capsys.readouterr().out
+
+
+def test_podar_banca_no_borra_las_respuestas_editoriales(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    carpeta = tmp_path / "cache"
+    usada, editorial, vieja = "a" * 64, "b" * 64, "c" * 64
+    _entrada(carpeta, usada, prompt="boletin_banca")
+    _entrada(carpeta, vieja, prompt="boletin_banca")
+    _entrada(carpeta, editorial, prompt="paquete_editorial")
+    cache = CacheLlm(carpeta)
+
+    def estado(grupo: str, modalidad: str, base: Path, cache_: CacheLlm) -> str:
+        assert cache_.obtener(usada, "boletin_banca")
+        return "completo"
+
+    monkeypatch.setattr(cc, "CacheLlm", lambda: cache)
+    monkeypatch.setattr(cc, "estado_de", estado)
+    args = ["--verificar", "--podar", "--modalidad", "banca", "--grupos", "GRP-0000000001", "--base", str(base_de(tmp_path, "banca"))]
+    assert cc.principal(args) == 0
+    assert {f.stem for f in carpeta.glob("*.json")} == {usada, editorial}
