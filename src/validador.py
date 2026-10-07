@@ -110,6 +110,7 @@ OBSERVACION_CON_HIPOTESIS = "observacion_con_hipotesis"   # E2-02: una observaci
 IMPACTO_COMO_HECHO = "impacto_como_hecho"                 # E2-02: una hipótesis de impacto se apoya en un hecho o una declaración
 IMPACTO_SIN_CONDICIONAL = "impacto_sin_condicional"       # E2-02: una hipótesis de impacto no está en condicional
 AVISO = "aviso_banca"                                     # E2-02: el boletín lleva el aviso fijo de restricciones.yaml
+OBSERVACION_CONDICIONAL = "observacion_condicional"       # X49: una observación no se redacta en condicional
 
 # E2-02 · Los dos bloques del resumen del boletín (docs/salidas.md §2): su límite de palabras es conjunto.
 BLOQUES_RESUMEN = ("observaciones", "hipotesis_impacto")
@@ -370,9 +371,11 @@ class Contexto:
         self.vacios = {v.id for v in ficha.vacios}
         self.atribucion = [plano(m) for m in self.cfg.atribucion.marcadores]
         self.listas: dict[str, list[str]] = {}
+        self.listas_originales: dict[str, list[str]] = {}  # con tildes, para las listas que se comparan así (X50)
         for g in grupos_restricciones:
             for nombre, lista in self.restricciones.grupos[g].items():
                 self.listas.setdefault(nombre, []).extend(plano(f) for f in lista)
+                self.listas_originales.setdefault(nombre, []).extend(lista)
         self.afirmaciones: dict[str, Any] = {}
         self.system = ""
         self._condicionales = [plano(c) for c in self.val.condicionales]
@@ -495,6 +498,31 @@ def _literal_en(ctx: Contexto, frase: str, citas: Iterable[tuple[str, str]]) -> 
     return contiene(plano(ctx.texto_citado(citas)), frase)
 
 
+def _tokens(texto_plano: str) -> list[str]:
+    return re.findall(r"\w+", texto_plano)
+
+
+def _sublista(parte: Sequence[str], todo: Sequence[str]) -> bool:
+    n = len(parte)
+    return any(list(todo[i : i + n]) == list(parte) for i in range(len(todo) - n + 1))
+
+
+def fragmento_literal(texto_plano: str, frase: str, citado_plano: str, ventana: int) -> bool:
+    """X49: cada aparición de la frase en el texto, con ``ventana`` palabras a cada lado (las que haya), está literal en el texto citado.
+    Comparación por palabras, sin tildes ni mayúsculas ni puntuación. Sin ninguna aparición devuelve ``False``."""
+    t, f, c = _tokens(texto_plano), _tokens(plano(frase)), _tokens(citado_plano)
+    apariciones = [i for i in range(len(t) - len(f) + 1) if f and t[i : i + len(f)] == f]
+    return bool(apariciones) and all(_sublista(t[max(0, i - ventana) : i + len(f) + ventana], c) for i in apariciones)
+
+
+def _excepcion_literal(ctx: Contexto, texto_plano: str, frase: str, citas: Iterable[tuple[str, str]], ventana: int) -> bool:
+    """La frase prohibida se admite si está literal en el campo citado: con ``ventana`` > 0, también el fragmento que la rodea (X49)."""
+    citas = list(citas)
+    if not ventana:
+        return _literal_en(ctx, frase, citas)
+    return fragmento_literal(texto_plano, frase, plano(ctx.texto_citado(citas)), ventana)
+
+
 def _acento(texto: str) -> str:
     return unicodedata.normalize("NFC", texto).casefold()
 
@@ -521,11 +549,14 @@ def _reglas_de_texto(
         conf = ctx.val.listas.get(nombre)
         if conf and conf.tipos and not tipos & set(conf.tipos):
             continue
-        encontradas = [f for f in frases if contiene(p, f)]
-        encontradas += [m.group(0) for pat in ctx.val.patrones.get(nombre, []) if (m := re.search(pat, p))]
+        if conf and conf.con_tildes:  # X50: «bajará» (futuro) no es «bajara» (subjuntivo)
+            encontradas = [f for f in ctx.listas_originales.get(nombre, []) if _contiene_acento(texto, f)]
+        else:
+            encontradas = [f for f in frases if contiene(p, f)]
+        encontradas += [m.group(0).strip(" .;:!?¿¡") for pat in ctx.val.patrones.get(nombre, []) if (m := re.search(pat, p))]
         for f in dict.fromkeys(encontradas):
             tipos_ok = not conf or not conf.excepcion_tipos or (bool(tipos) and tipos <= set(conf.excepcion_tipos))
-            if conf and conf.excepcion_literal and tipos_ok and seccion not in conf.sin_excepcion_en and _literal_en(ctx, f, s.citas):
+            if conf and conf.excepcion_literal and tipos_ok and seccion not in conf.sin_excepcion_en and _excepcion_literal(ctx, p, f, s.citas, conf.ventana_literal):
                 continue
             out.append(Rechazo(nombre, f"frase prohibida ({nombre}): «{f}»", f))
     for f in ctx.val.detalle_sin_cita:
@@ -956,6 +987,20 @@ def _observacion_con_hipotesis(valor: Sequence[Any], ctx: Contexto) -> list[Rech
     ]
 
 
+def _observacion_condicional(valor: Sequence[Any], ctx: Contexto) -> list[Rechazo]:
+    """X49: una observación es un hecho o una declaración atribuida, nunca hipotética. Un marcador condicional solo se admite si él y
+    ``ventana_literal_condicional`` palabras a cada lado son literales del titular citado (el medio lo dijo así)."""
+    ventana = ctx.val.bloques_boletin.ventana_literal_condicional
+    out: list[Rechazo] = []
+    for o in valor:
+        p = plano(o.texto)
+        citado = plano(ctx.texto_citado(_soporte(_citadas(o, ctx), ctx.afirmaciones).citas))
+        for c in ctx.val.condicionales:
+            if contiene(p, c) and not fragmento_literal(p, c, citado, ventana):
+                out.append(Rechazo(OBSERVACION_CONDICIONAL, f"una observación no se redacta en condicional: «{c}» (va en las hipótesis de impacto)", c))
+    return out
+
+
 def _impacto_como_hecho(valor: Sequence[Any], ctx: Contexto) -> list[Rechazo]:
     """E2-02: una hipótesis de impacto solo se apoya en inferencias e hipótesis (``bloques_boletin.hipotesis_impacto``), nunca en un hecho."""
     permitidos = set(ctx.val.bloques_boletin.hipotesis_impacto)
@@ -1039,7 +1084,7 @@ def validar_seccion(seccion: str, valor: Any, ctx: Contexto) -> list[Rechazo]:
     if seccion in BLOQUES_RESUMEN:
         out = _oraciones(seccion, valor, ctx) + _limite(seccion, valor, ctx, ctx.salidas.banca.resumen_max_palabras)
         if seccion == BLOQUES_RESUMEN[0]:
-            return out + _observacion_con_hipotesis(valor, ctx) + _contradicciones_cubiertas(valor, ctx)
+            return out + _observacion_con_hipotesis(valor, ctx) + _observacion_condicional(valor, ctx) + _contradicciones_cubiertas(valor, ctx)
         return out + _impacto_como_hecho(valor, ctx) + _impacto_sin_condicional(valor, ctx)
     if seccion == "preguntas":
         out = []

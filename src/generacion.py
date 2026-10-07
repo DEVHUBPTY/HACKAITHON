@@ -396,7 +396,8 @@ class Generador:
         self._afirmaciones = []
         if self.proveedor is None or self.plan.tipo == "nada":
             return self._afirmaciones
-        system = self._t_afirm.replace("{esquema}", json.dumps(esquema_json_afirmaciones(), ensure_ascii=False))
+        system = self._t_afirm.replace("{afirmaciones_maximas}", str(self.cfg.afirmaciones.maximas))
+        system = system.replace("{esquema}", json.dumps(esquema_json_afirmaciones(), ensure_ascii=False))
         self.ctx.system = system
         base_usuario = self._mensaje_ficha()
         motivo = "no hubo afirmaciones válidas"
@@ -491,6 +492,10 @@ class Generador:
         g = GRUPOS[grupo]
         bloques = _bloques(self._t_red)
         texto = bloques["comunes"] + "\n\n" + bloques[g.bloque]
+        # los límites del bloque de la modalidad en salidas.yaml ({resumen_max_palabras}, {preguntas}…): el prompt no repite números
+        limites = getattr(self.salidas, self.ficha.modalidad, None)
+        for clave, valor in (limites.model_dump() if limites is not None else {}).items():
+            texto = texto.replace("{" + clave + "}", str(valor))
         esquema = json.dumps(g.modelo.model_json_schema(), ensure_ascii=False)
         return texto.replace("{esquema}", esquema).replace("{marcador_visual}", self.restricciones.marcador_visual)
 

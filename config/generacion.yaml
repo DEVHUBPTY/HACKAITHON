@@ -21,9 +21,9 @@ afirmaciones:
 
 # Qué se genera según la acción de la ficha (D-42). Acción fuera de estas listas: no se genera nada y se avisa.
 # `completo` es el paquete completo de la modalidad (tabla `modalidades`): el editorial o el boletín de entorno. Las acciones son las
-# de la tabla 3×3 de cada modalidad (modalidad_<m>.yaml). Banca (E2-02, supuesto D-101): «Incluir…» genera el boletín; «Incluir como
-# señal a confirmar» lo genera con los vacíos de la ficha a la vista; «Seguimiento…» no lo genera, porque su propia acción dice que el
-# tema se sigue y verifica antes de incluirlo (la persona puede forzarlo y queda registrado).
+# de la tabla 3×3 de cada modalidad (modalidad_<m>.yaml). Banca (E2-02): «Incluir…» genera el boletín; «Incluir como señal a confirmar»
+# lo genera con los vacíos de la ficha a la vista; «Seguimiento» y «Seguimiento prioritario» no generan boletín: Decisión D-104 (del
+# dueño; la persona puede forzarlo y queda registrado).
 acciones:
   completo: ["Producir borrador", "Borrador opcional", "Incluir en el boletín como observación", "Incluir como contexto"]
   completo_con_vacios: ["Completar evidencia y producir", "Incluir como señal a confirmar"]

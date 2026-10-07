@@ -22,12 +22,22 @@ grupos:
     entrevistas: ["en entrevista con", "declaró a este medio", "consultado por", "en conversación con", "dijo a este medio", "en declaraciones exclusivas", "habló con este medio"]
     imagenes: ["en estas imágenes", "como vemos", "las imágenes muestran", "en el video se ve", "como se aprecia en la foto"]
   banca:                            # docs/salidas.md §2: PDF prohíbe recomendar, inferir pérdidas y alertas definitivas
-    recomendacion: ["comprar", "vender", "invertir", "recomendamos", "conviene", "se recomienda", "recomendable", "aconsejamos"]
-    certeza: ["ocurrirá", "sin duda", "inevitable", "con certeza"]
+    recomendacion: ["comprar", "vender", "invertir", "recomendamos", "conviene", "se recomienda", "recomendable", "aconsejamos", "aconsejable",
+                    "es aconsejable", "sugerimos", "sugiere", "sugieren", "se sugiere"]   # X50; «deberían reducir…» va como patrón en validador.yaml
+    certeza: ["ocurrirá", "sin duda", "inevitable", "con certeza", "con seguridad", "con toda seguridad", "es seguro que", "sin lugar a dudas",
+              "seguramente", "definitivamente", "indudablemente"]                     # X50
+    # X50: futuro indicativo que afirma un efecto (se compara con tildes: «bajará» sí, «bajara» no). Solo inferencias e hipótesis.
+    futuro_asertivo: ["caerá", "caerán", "subirá", "subirán", "bajará", "bajarán", "aumentará", "aumentarán", "disminuirá", "disminuirán",
+                      "afectará", "afectarán", "generará", "generarán", "reducirá", "reducirán", "crecerá", "crecerán", "empeorará", "empeorarán",
+                      "mejorará", "mejorarán", "provocará", "provocarán", "causará", "causarán", "impactará", "impactarán"]
     # D-54 (E2-02): se compara por palabra completa, así que van el singular y el plural. Rechazado en todo tipo salvo en una declaración
     # que lo trae literal en su titular (validador.yaml · listas).
     perdidas_en_inferencias: ["pérdida", "pérdidas", "impago", "impagos", "morosidad", "exposición", "exposiciones", "cartera", "carteras",
-                              "default", "riesgo de crédito", "riesgos de crédito", "score", "scores"]
+                              "default", "riesgo de crédito", "riesgos de crédito", "score", "scores",
+                              # X50: CLAUDE.md nombra solvencia y riesgo de crédito; paráfrasis directas
+                              "riesgo crediticio", "riesgos crediticios", "solvencia", "insolvencia", "insolvente", "insolventes", "mora",
+                              "moroso", "morosos", "morosa", "morosas", "incumplimiento", "incumplimientos", "deterioro crediticio",
+                              "deterioros crediticios"]
 
 # D-69 · Posible inyección en titulares y descripciones (E1-03b). Patrones de instrucción; regex sobre el texto en
 # minúsculas y sin tildes. Una coincidencia marca `sospechoso_inyeccion = true`: el registro no se borra ni se excluye,

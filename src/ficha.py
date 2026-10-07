@@ -587,6 +587,8 @@ def vista(ficha: Ficha, cfg: ConfigVerificacion | None = None) -> Vista:
         Linea(f"Titular central: «{q.titular_central.titular}» — {q.titular_central.medio}"),
         Linea(f"Cobertura: {_plural(c.n_titulares, 'titular', 'titulares')} · {_plural(c.n_medios, 'medio', 'medios')} · {fechas}"),
         Linea(f"Tema: {nombre_tema} · Subtema: {nombre_subtema}" + (f" (criterio: {q.criterio_subtema})" if q.criterio_subtema else "")),
+        # E2-02: una ficha revisada antes de existir el campo, o un grupo sin otro tema, lo dice en vez de omitirlo
+        Linea(f"Tema secundario: {temas[q.tema_secundario].nombre if q.tema_secundario in temas else (q.tema_secundario or SIN_DATO)}"),
         Linea(f"Alcance: {ficha.alcance}"),
     ]
     for x in q.contradicciones:

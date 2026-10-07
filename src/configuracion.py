@@ -2081,6 +2081,8 @@ class ListaValidador(ModeloConfig):
     tipos: list[str] = Field(default_factory=list)
     sin_excepcion_en: list[str] = Field(default_factory=list)
     excepcion_tipos: list[str] = Field(default_factory=list)  # E2-02: la excepción solo vale si todo lo citado es de estos tipos
+    ventana_literal: int = Field(default=0, ge=0)  # X49: palabras a cada lado de la frase que también deben ser literales del titular (0 = solo la frase)
+    con_tildes: bool = False  # X50: se compara conservando las tildes («bajará», futuro, no es «bajara», subjuntivo)
 
 
 class TransicionesValidador(ModeloConfig):
@@ -2097,6 +2099,7 @@ class BloquesBoletinValidador(ModeloConfig):
 
     observaciones: list[str] = Field(min_length=1)
     hipotesis_impacto: list[str] = Field(min_length=1)
+    ventana_literal_condicional: int = Field(ge=0)  # X49: un marcador condicional en una observación solo vale dentro de un fragmento literal del titular
 
     @model_validator(mode="after")
     def _tipos_conocidos_y_separados(self) -> BloquesBoletinValidador:

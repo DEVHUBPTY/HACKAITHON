@@ -358,3 +358,12 @@ def test_una_ficha_sin_tema_secundario_lo_muestra_como_sin_dato(con_banca) -> No
     vieja = f.model_copy(update={"que_se_reporta": f.que_se_reporta.model_copy(update={"tema_secundario": None})})
     lineas = [l.texto for s in vista(vieja).secciones for l in s.lineas]
     assert any(l.startswith("Tema secundario: sin dato") for l in lineas), lineas[:8]
+
+
+def test_el_paso_1_del_boletin_recibe_el_maximo_de_afirmaciones_de_la_configuracion() -> None:
+    _, texto = cargar_prompt("boletin_banca")
+    assert "{afirmaciones_maximas}" in texto
+    prov = proveedor_banca()
+    generar(ficha_banca(), prov)
+    system = prov.llamadas[0][1]
+    assert "{afirmaciones_maximas}" not in system and f"como máximo {cargar_generacion().afirmaciones.maximas} afirmaciones" in system
