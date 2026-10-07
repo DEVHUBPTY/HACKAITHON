@@ -36,7 +36,7 @@ Antes de empezar borra `.cache/embeddings/` (vectores regenerables): es el estad
 | `informe:outputs/*.json` | Informes de calidad, vínculos, prioridad y validación del snapshot | JSON canónico |
 | `fichas` | Las 12 fichas. **La ficha no contiene el texto del borrador** (`borrador` es solo la marca `true`): ese texto se compara aparte | JSON canónico |
 | `metricas` | `outputs/metricas.json` sin las claves excluidas (abajo) | JSON canónico |
-| `muestra_sustento` | Las columnas de **muestra** de `outputs/revision_sustento.csv` (qué afirmaciones se juzgan). No entran `veredicto`, `comentario` ni `revisor`: los completa una persona y cambian a propósito en C-09 (X46: antes solo se miraban los conteos y otra muestra pasaba inadvertida) | JSON canónico |
+| `muestra_sustento` | Las columnas de **muestra** de `outputs/revision_sustento.csv` (qué afirmaciones se juzgan). No entran `veredicto`, `comentario`, `revisor` ni `origen_juicio` (D-101): los completa quien revisa y cambian a propósito en C-09 (X46: antes solo se miraban los conteos y otra muestra pasaba inadvertida) | JSON canónico |
 
 JSON canónico = claves ordenadas, UTF-8 y flotantes redondeados a 4 decimales (`decimales`). Los nulos no se confunden con cero ni los enteros se tocan.
 

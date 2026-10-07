@@ -48,6 +48,8 @@ El comando para la evaluación reservada acepta **cualquier archivo con el mismo
 | **Eficiencia** | Mediana y p95 de latencia; tokens y costo por consulta | Benchmark | `eval.run_benchmark` | Mediana ≤ 15 s |
 | **Ahorro de tiempo** | Tiempo asistido vs. manual en la misma tarea, con n | `docs/prueba_tiempo.md` | Manual | Se reporta |
 
+> **Valores actuales provisionales (D-101).** La selección del editor (`eval/seleccion_editor.csv`, Precision@5) y los veredictos de sustento (`outputs/revision_sustento.csv`) los hizo **el asistente**, no una persona. Cada archivo lo declara en la columna `origen_juicio` (`asistente_provisional`, `config/origen_juicio.yaml`), y `eval.precision_at_5`, `eval.sustento` y `eval.run_benchmark` lo propagan: su JSON lleva `"origen_juicio": "asistente_provisional (D-101)"` y `"juicio_humano": false`, y la consola imprime el aviso. Basta una fila no humana para que el resultado no sea humano; sin la columna, el juicio es humano. Precision@5 no admite `--especialista` con una selección del asistente. **Estos valores se rehacen a mano en C-09** y no se reportan como juicio de una persona. La prueba de tiempo (sección 6) no se hizo: mide a una persona.
+
 ## 4 · Revisión humana de la validez de sustento
 
 **Quién revisa:** una persona del equipo que **no** escribió el código de generación. No hay persona editorial de la organización, así que las métricas que la requieren se declaran exploratorias (D-74).

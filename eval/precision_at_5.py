@@ -21,6 +21,10 @@ mide cada corte contra su base. El resultado es exploratorio salvo que se declar
 junta los aciertos de todos los cortes (k·n temas); los temas de un mismo corte no son independientes, así que el intervalo es
 orientativo.
 
+**Procedencia (D-101).** La columna opcional ``origen_juicio`` de la selección dice quién eligió (``eval.origen_juicio``). Si alguna
+fila es del asistente, el resultado lleva ``origen_juicio`` provisional, ``juicio_humano: false`` y el aviso en el JSON y en la consola,
+y no se acepta ``--especialista``: el asistente no es una persona editorial. Sin la columna, la selección es humana, como antes.
+
 Uso: ``poetry run python -m eval.precision_at_5 --hoja`` y luego ``--seleccion eval/seleccion_editor.csv``.
 """
 
@@ -36,9 +40,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from eval import origen_juicio
 from src import db
 from src.carga import intervalo_wilson
-from src.configuracion import RAIZ, ConfigPrecision, cargar_carga, cargar_precision, cargar_temas
+from src.configuracion import RAIZ, ConfigOrigenJuicio, ConfigPrecision, cargar_carga, cargar_origen_juicio, cargar_precision, cargar_temas
 from src.prioridad import MODALIDAD_POR_DEFECTO
 
 ORIGEN_SINTETICO = "sintetico"
@@ -211,6 +216,18 @@ def leer_seleccion(ruta: Path, cfg: ConfigPrecision) -> dict[str, set[str]] | No
     return porcorte or None
 
 
+def origen_de_selecciones(rutas: Sequence[Path], cfg_origen: ConfigOrigenJuicio) -> str:
+    """Origen del juicio de todas las hojas leídas (D-101): humano solo si ninguna fila declara otro origen."""
+    filas: list[dict[str, str]] = []
+    for ruta in rutas:
+        with ruta.open(encoding="utf-8", newline="") as f:
+            filas += list(csv.DictReader(f))
+    try:
+        return origen_juicio.origen_de_filas(filas, cfg_origen)
+    except origen_juicio.OrigenInvalido as exc:
+        raise SeleccionInvalida(str(exc)) from exc
+
+
 def validar_seleccion(seleccion: Mapping[str, set[str]] | None, cands: Sequence[Candidato], k: int) -> None:
     """Cada corte debe traer exactamente ``k`` temas y todos deben ser candidatos de la base."""
     conocidos = {c.id_grupo for c in cands}
@@ -232,7 +249,10 @@ def _texto(p: Mapping[str, Any]) -> str:
 
 def formatear(r: Mapping[str, Any], cfg: ConfigPrecision) -> str:
     """El reporte como texto: P@k del sistema y del baseline por corte y en total, siempre con n e IC."""
-    lineas = [f"Precision@{cfg.k} · pruebas (fechas de corte): {r['pruebas']}"]
+    origen = f" · origen del juicio: {r['origen_juicio']}" if "origen_juicio" in r else ""
+    lineas = [f"Precision@{cfg.k} · pruebas (fechas de corte): {r['pruebas']}{origen}"]
+    if "aviso_origen" in r:
+        lineas.append("  " + r["aviso_origen"])
     for c in r["cortes"]:
         lineas += [
             f"  Corte {c['corte']} · {c['candidatos']} candidatos · baseline: {c['baseline_sin_fecha_publicacion']} grupos sin fecha de publicación (van al final)",
@@ -296,11 +316,14 @@ def principal(argv: list[str] | None = None) -> int:
               f"Marcar con '{cfg.hoja_ciega.marca}' la columna 'seleccion' de {cfg.k} temas y guardar como {cfg.archivos.seleccion}.")
         return 0
 
+    cfg_origen = cargar_origen_juicio()
     try:
         marcadas: dict[str, set[str]] = {}
+        leidas: list[Path] = []
         for ruta in selecciones:
             if por_defecto and not ruta.exists():
                 continue          # sin --seleccion y sin el archivo del editor: todavía no hay selección
+            leidas.append(ruta)
             for corte, ids in (leer_seleccion(ruta, cfg) or {}).items():
                 if corte in marcadas:
                     raise SeleccionInvalida(f"el corte {corte} aparece en más de una hoja ({ruta}): una hoja por corte")
@@ -310,6 +333,9 @@ def principal(argv: list[str] | None = None) -> int:
                 _escribir_json(args.salida, {"estado": ESTADO_PENDIENTE, "mensaje": cfg.textos.pendiente})
             print(f"Precision@{cfg.k}: {cfg.textos.pendiente}. Generar la hoja con --hoja; el editor la marca sin ver el ranking.")
             return 0
+        origen = origen_de_selecciones(leidas, cfg_origen)
+        if args.especialista and origen != cfg_origen.humano:
+            raise SeleccionInvalida(f"--especialista no se admite con una selección de origen {cfg_origen.origenes[origen]!r}: no la hizo una persona editorial")
         z = cargar_carga().salida.z_intervalo_confianza
         por_corte: dict[str, tuple[Path, list[Candidato]]] = {}
         for base in bases:
@@ -328,7 +354,10 @@ def principal(argv: list[str] | None = None) -> int:
     except SeleccionInvalida as exc:
         print(f"Selección inválida: {exc}", file=sys.stderr)
         return 2
-    resultado = {"estado": ESTADO_MEDIDO, "k": cfg.k, "cortes": cortes, "nota": NOTA} | resumir(cortes, cfg, z, args.especialista)
+    resultado = {"estado": ESTADO_MEDIDO, "k": cfg.k} | origen_juicio.describir(origen, cfg_origen)
+    if origen != cfg_origen.humano:
+        resultado["aviso_origen"] = cfg_origen.aviso_provisional
+    resultado |= {"cortes": cortes, "nota": NOTA} | resumir(cortes, cfg, z, args.especialista)
     _escribir_json(args.salida, resultado)
     print(formatear(resultado, cfg))
     return 0

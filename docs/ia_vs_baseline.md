@@ -108,7 +108,7 @@ Por tipo de fuente: solo oficiales (7 consultas) IA 10/12 vs BM25 2/12, diferenc
 
 ## 4 · Ranking de la bandeja
 
-El ranking (puntaje P con R, I, U, N, E) es **código determinista de reglas v1.3, no un modelo**; no hay «IA» que comparar. La pregunta útil es si la bandeja prioriza lo que prioriza un editor, que es Precision@5 contra una selección independiente. **Esa selección todavía no existe** (`eval/seleccion_editor.csv`, E1-19, requiere a una persona), así que **no se reporta ninguna utilidad** y no se inventó ninguna.
+El ranking (puntaje P con R, I, U, N, E) es **código determinista de reglas v1.3, no un modelo**; no hay «IA» que comparar. La pregunta útil es si la bandeja prioriza lo que prioriza un editor, que es Precision@5 contra una selección independiente. **La selección existe pero es provisional:** `eval/seleccion_editor.csv` la hizo el asistente a ciegas (D-101), no una persona editorial, y se rehace a mano en C-09. Su Precision@5 está en `outputs/precision_at_5.json`, rotulada `asistente_provisional (D-101)`; aquí **no se reporta como utilidad medida por una persona**.
 
 Lo que sí se puede decir, descriptivo (58 grupos): el top 5 de la bandeja y el top 5 de «más reciente primero» (la línea base del PDF, sección 8) **no comparten ningún grupo** (0/5). Ejemplos de grupos que solo el sistema sube (posición del sistema frente a la de la fecha): `GRP-84a6b3a04b` (colegios particulares y matrícula; 1.º frente a 18.º), `GRP-ef3acec21e` (vacunación contra el VSR; 2.º frente a 34.º), `GRP-65d565abd0` (MiBus y filtraciones; 3.º frente a 29.º), `GRP-8af4196527` (traslado a Coiba; 4.º frente a 35.º).
 

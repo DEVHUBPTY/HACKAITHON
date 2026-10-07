@@ -51,7 +51,7 @@ Nota de medición: el RSS es el del proceso completo (PyTorch incluido), un proc
   - El validador rechazó 13 de 119 unidades evaluadas de la caché (10.9 %, IC 95 % 6.5–17.8 %): 10 de 76 afirmaciones (13.2 %; la regla más frecuente es causalidad, 7) y 2 de 13 enfoques por presentarse como hecho.
   - En el paquete editorial, `copy_digital` y `resumen_web` se recortaron en las 5 repeticiones (copy en las 5, resumen en 3) por el límite de palabras; de 6 a 7 afirmaciones válidas por paquete.
   - Depende de la red; sin red, los borradores salen **solo de la caché** (`data/cache_llm/`, `docs/fallback.md`). Los embeddings no necesitan red.
-  - La validez de sustento de sus afirmaciones **no se midió**: la revisión humana de `outputs/revision_sustento.csv` sigue pendiente (`docs/protocolo_evaluacion.md`, sección 4).
+  - La validez de sustento de sus afirmaciones se midió **solo de forma provisional**: los veredictos de `outputs/revision_sustento.csv` los puso el asistente (D-101), no una persona; el resultado (`outputs/sustento.json`) lleva `origen_juicio: asistente_provisional (D-101)` y la revisión humana se rehace en C-09 (`docs/protocolo_evaluacion.md`, sección 4).
 
 ## 4 · Modelos soportados pero apagados
 
