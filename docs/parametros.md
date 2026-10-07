@@ -50,6 +50,14 @@ Todo número que use el sistema está aquí, con su **origen** y **cómo se vali
 | Similitud para "mismo texto" en procedencias | 0.95 | Supuesto | `test_el_umbral_de_mismo_texto_*` · T02 · los 20 «Intensifying El Niño…» y los 10 «Trump streicht…» dan una procedencia |
 | Detalle de la agrupación y de las procedencias (E1-08) | Ver «Agrupación y procedencias (E1-08)» más abajo | — | — |
 | Umbrales de ruido | Por definir | Calibrado | X01 (precisión/recall) |
+| Tendencia (`vinculos.tendencia_anios`) | 5 años de Panamá, hasta el último año con valor, nulos incluidos | PDF/spec E1-09 | `test_la_tendencia_son_los_ultimos_cinco_anios_de_panama_y_los_nulos_siguen_nulos` |
+| Comparables | Los demás países de la cuadrícula, en el mismo año que Panamá, solo con dato (no hay número: sale de los datos) | PDF/spec E1-09 | `test_los_comparables_son_del_mismo_anio_que_panama_y_solo_con_dato` |
+| Palabras prohibidas en la salida (`vinculos.palabras_prohibidas`) | `actual` | PDF/spec E1-09 (T04: el dato es anual) | `test_ningun_texto_de_la_configuracion_dice_actual` · `test_la_configuracion_rechaza_la_palabra_actual` · `verificar_texto` en cada corrida |
+| Indicadores solo de contexto (`vinculos.indicadores_solo_contexto`) | `SP.POP.TOTL` (población no se vincula sola) | PDF/spec E1-09 | `test_la_poblacion_no_se_vincula_sola` |
+| Ventana de la cifra del titular (`cifra_titular.ventana_caracteres`) | 40 caracteres entre la palabra clave y la cifra, sin otras cifras ni `%` | Supuesto (conservador: evita ligar «60% del PIB» con la inflación) | `test_la_extraccion_de_la_cifra_es_conservadora` · revisar con titulares reales |
+| Indicadores con comparación de cifra del titular (`cifra_titular.palabras_clave`) | PIB, inflación y desempleo | Supuesto (solo donde el % del titular mide lo mismo que el oficial; exportaciones e internet quedan fuera: un % del titular suele ser variación, no % del PIB o de la población) | `test_la_cifra_de_otro_indicador_no_se_compara_con_este` |
+| Patrones de cifra (`%`) y año (`20xx`) del titular | Ver `vinculos.yaml` | Supuesto | `test_misma_anio_con_cifra_distinta_*` · `test_periodo_distinto_*` · `test_titular_sin_anio_*` |
+| Subtema del grupo | Voto de los titulares (método B, tema del grupo); empate: suma de similitudes, luego nombre | Supuesto | `test_el_subtema_gana_por_votos_luego_por_similitud_y_es_determinista` |
 | Coincidencia de sismos (`vinculos.yaml`) | ± 2 días | Supuesto | Revisión con la exploración (E0-09); datos sintéticos en E1-09 |
 | Magnitud mínima USGS | 3 | PDF (sección 6) | — |
 
