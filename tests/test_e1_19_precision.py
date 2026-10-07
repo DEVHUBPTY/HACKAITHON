@@ -11,7 +11,7 @@ import pytest
 
 from eval import precision_at_5 as pa5
 from src import db
-from src.configuracion import ErrorDeConfiguracion, cargar_config, cargar_precision, ConfigPrecision
+from src.configuracion import ConfigPrecision, cargar_precision
 
 CFG = cargar_precision()
 CORTE = "2026-10-07T00:41:03Z"
@@ -38,7 +38,7 @@ def _base(ruta: Path, posiciones: dict[int, int], fechas: dict[int, str], sintet
     grupos = [_grupo(i, fechas[i]) for i in range(1, 11)]
     puntajes = [_puntaje(i, posiciones[i], 100.0 - posiciones[i]) for i in range(1, 11)]
     noticias = [
-        {"id_noticia": f"NOT-{i:02d}", "titulo": f"Titular {i}", "id_grupo": f"GRP-{i:02d}", "origen": "sintetico" if i in sinteticos else "rss"}
+        {"id_noticia": f"NOT-{i:02d}", "titulo": f"Titular {i}", "url": f"https://x.example/{i}", "url_canonica": f"https://x.example/{i}", "medio": "m", "tipo_firma": "sin_firma", "id_grupo": f"GRP-{i:02d}", "origen": "sintetico" if i in sinteticos else "rss"}
         for i in range(1, 11)
     ]
     db.guardar_todo(ruta, {"grupos": grupos, "puntajes": puntajes, "noticias": noticias})
@@ -184,8 +184,7 @@ def _seleccion(ruta: Path, elegidos: list[str], todos: int = 10, corte: str = CO
     with ruta.open("w", encoding="utf-8", newline="") as f:
         w = csv.DictWriter(f, fieldnames=columnas)
         w.writeheader()
-        for i in range(1, todos + 1):
-            gid = f"GRP-{i:02d}"
+        for gid in sorted({f"GRP-{i:02d}" for i in range(1, todos + 1)} | set(elegidos)):
             w.writerow({"corte": corte, "id_grupo": gid, "tema": "", "titular": "", "fecha_reciente": "", "seleccion": CFG.hoja_ciega.marca if gid in elegidos else ""})
 
 
@@ -214,7 +213,7 @@ def test_seleccion_con_menos_de_k_se_rechaza(tmp_path: Path, con) -> None:
 
 def test_seleccion_con_id_desconocido_se_rechaza(tmp_path: Path, con) -> None:
     ruta = tmp_path / "s.csv"
-    _seleccion(ruta, ["GRP-01", "GRP-02", "GRP-03", "GRP-04", "GRP-99"], todos=11)
+    _seleccion(ruta, ["GRP-01", "GRP-02", "GRP-03", "GRP-04", "GRP-99"])
     with pytest.raises(pa5.SeleccionInvalida, match="GRP-99"):
         pa5.validar_seleccion(pa5.leer_seleccion(ruta, CFG), pa5.candidatos(con), CFG.k)
 
