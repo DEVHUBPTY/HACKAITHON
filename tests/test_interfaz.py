@@ -27,6 +27,7 @@ CFG = cargar_interfaz()
 CFG_VER = cargar_verificacion()
 APP = RAIZ / "app.py"
 LEYENDA = "basado únicamente en titular/metadatos"
+LEYENDAS = (LEYENDA, cargar_restricciones().leyendas_alcance.con_descripcion)   # la de la ficha cambia si usó la descripción
 MARCA = "BORRADOR · requiere revisión"
 SECRETO = "DESCRIPCION-INTERNA-NO-REDISTRIBUIBLE"
 PANTALLAS = [p.clave for p in CFG.pantallas]
@@ -57,7 +58,7 @@ def base(tmp_path_factory, emb) -> Path:
         "unidad": "%", "fuente_url": "https://api.worldbank.org/x", "fecha_extraccion": "2026-10-06T12:00:00Z", "licencia": "CC BY 4.0",
     }])
     db.insertar(con, "sismos", [{"id": "SIS-us7000test", "magnitude": 5.1, "time": "2026-10-06T07:30:00Z", "place": "12 km S of Puerto Armuelles, Panama",
-                                 "url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000test"}])
+                                 "status": "reviewed", "url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000test"}])
     con.close()
     return ruta
 
@@ -214,19 +215,46 @@ def test_las_citas_clicables_son_las_de_la_ficha_sin_repetir(con, emb) -> None:
 # ------------------------------------------------------------------ citas
 
 
-def test_una_cita_de_indicador_muestra_id_campo_valor_fecha_y_url(con) -> None:
+def etiquetas(d: ui.DetalleCita) -> dict[str, str]:
+    return dict(d.filas)
+
+
+def test_una_cita_de_indicador_dice_de_que_es_cada_dato_y_no_lo_presenta_como_actual(con) -> None:
     d = ui.detalle_cita(con, "IND-PAN-FP.CPI.TOTL.ZG-2024", "valor", CFG, CFG_VER)
-    assert (d.id, d.campo, d.valor, d.encontrada) == ("IND-PAN-FP.CPI.TOTL.ZG-2024", "valor", "0.69322", True)
-    assert d.fecha == "2026-10-06 07:00 (hora de Panamá)" and d.url.startswith("https://api.worldbank.org")
+    assert (d.id, d.campo, d.encontrada) == ("IND-PAN-FP.CPI.TOTL.ZG-2024", "valor", True)
+    assert d.valor == "0.69 % anual"                                   # precisión de config/interfaz.yaml, con su unidad
+    f = etiquetas(d)
+    assert f["País"] == "PAN" and f["Indicador"] == "FP.CPI.TOTL.ZG" and f["Año del dato"] == "2024"
+    assert f["Fecha de extracción"] == "2026-10-06 07:00 (hora de Panamá)"
+    assert "no describe la situación actual" in f["Aviso"] and d.url.startswith("https://api.worldbank.org")
+    assert "Fecha" not in f and "Publicación" not in f                  # nunca una «Fecha» sin decir de qué es
 
 
-def test_una_cita_de_noticia_de_sismo_y_de_grupo_se_resuelve(con) -> None:
+def test_la_precision_del_valor_sale_del_yaml(con) -> None:
+    cfg = CFG.model_copy(update={"citas": CFG.citas.model_copy(update={"decimales_valor": 4})})
+    assert ui.detalle_cita(con, "IND-PAN-FP.CPI.TOTL.ZG-2024", "valor", cfg, CFG_VER).valor == "0.6932 % anual"
+
+
+def test_una_cita_de_noticia_separa_publicacion_y_deteccion_sin_sustituir_una_por_otra(con) -> None:
     n = ui.detalle_cita(con, "NOT-c000000002", "titulo_limpio", CFG, CFG_VER)
-    assert n.valor == "Panamá reporta inflación estable" and n.url and "hora de Panamá" in n.fecha and n.sintetico
+    f = etiquetas(n)
+    assert n.valor == "Panamá reporta inflación estable" and n.url and n.sintetico
+    assert f["Publicación"] == "2026-10-06 03:00 (hora de Panamá)" and f["Detección"] == "2026-10-06 04:00 (hora de Panamá)"
+    con2 = con.cursor()
+    sin_pub = ui.detalle_cita(con2, "NOT-f000000001", "titulo_limpio", CFG, CFG_VER)
+    assert etiquetas(sin_pub)["Publicación"] == "desconocida" and etiquetas(sin_pub)["Detección"] != "desconocida"
+
+
+def test_una_cita_de_sismo_trae_la_hora_del_evento_en_panama_y_el_estado(con) -> None:
     s = ui.detalle_cita(con, "SIS-us7000test", "magnitude", CFG, CFG_VER)
-    assert s.valor == "5.1" and s.fecha == "2026-10-06 02:30 (hora de Panamá)" and "usgs" in s.url
+    f = etiquetas(s)
+    assert s.valor == "5.1" and f["Hora del evento"] == "2026-10-06 02:30 (hora de Panamá)" and f["Estado"] == "reviewed"
+    assert "Puerto Armuelles" in f["Lugar"] and "usgs" in s.url
+
+
+def test_una_cita_de_grupo_dice_que_la_fecha_es_el_fin_del_grupo(con) -> None:
     g = ui.detalle_cita(con, h.G_COMPLETO, "n_titulares", CFG, CFG_VER)
-    assert g.valor == "3" and g.url is None
+    assert g.valor == "3" and g.url is None and "Fin del grupo" in etiquetas(g)
 
 
 def test_un_nulo_es_un_nulo_nunca_cero(con) -> None:
@@ -359,7 +387,7 @@ def test_las_seis_pantallas_abren_sin_errores_y_cada_una_lleva_marca_y_leyenda(a
         at = ir(at, clave)
         assert not at.exception, (clave, [e.value for e in at.exception])
         texto = "\n".join(textos(at))
-        assert MARCA in texto and LEYENDA in texto, clave
+        assert MARCA in texto and any(x in texto for x in LEYENDAS), clave
 
 
 def test_la_barra_lateral_ofrece_las_seis_pantallas_y_la_modalidad(app) -> None:
@@ -408,7 +436,7 @@ def test_la_ficha_pinta_la_vista_completa_y_citas_clicables(app, con, emb) -> No
         for linea in s.lineas:
             assert any(escapar_markdown(linea.texto) in x for x in valores), linea.texto
     cajas = popovers(at)
-    assert "Valor:** 0.69322" in cajas["IND-PAN-FP.CPI.TOTL.ZG-2024 · valor"] and "hora de Panamá" in cajas["IND-PAN-FP.CPI.TOTL.ZG-2024 · valor"]
+    assert "Valor:** 0.69 % anual" in cajas["IND-PAN-FP.CPI.TOTL.ZG-2024 · valor"] and "hora de Panamá" in cajas["IND-PAN-FP.CPI.TOTL.ZG-2024 · valor"]
     assert [e.label for e in at.expander][0].startswith("Desglose del puntaje")
     assert CFG.textos.sintetico in "\n".join(valores)           # el grupo trae una noticia sintética
 
@@ -464,7 +492,7 @@ def test_el_paquete_con_generador_muestra_el_borrador_con_marca_y_leyenda(app, m
     monkeypatch.setattr(ui, "cargar_generador", lambda cfg=None: (lambda id_grupo, modalidad, *, solo_cache: {"titulo_de_trabajo": "Un enfoque", "preguntas": ["¿Qué falta?"]}))
     at = ir(app.run(), "paquete")
     texto = "\n".join(textos(at))
-    assert not at.exception and "Un enfoque" in texto and "¿Qué falta?" in texto and MARCA in texto and LEYENDA in texto
+    assert not at.exception and "Un enfoque" in texto and "¿Qué falta?" in texto and MARCA in texto and any(x in texto for x in LEYENDAS)
 
 
 def test_la_revision_muestra_los_cinco_estados_sin_ningun_boton_de_accion(app) -> None:
@@ -531,3 +559,89 @@ def test_la_app_no_usa_la_red_al_importar_ni_al_pintar(monkeypatch, app) -> None
 def test_la_leyenda_de_la_interfaz_es_la_de_restricciones() -> None:
     assert ui.leyenda_de_alcance() == cargar_restricciones().leyendas_alcance.titular_metadatos == LEYENDA
 
+
+
+def test_la_cita_de_la_consulta_de_inflacion_muestra_anio_unidad_y_extraccion(app) -> None:
+    at = ir(app.run(), "consulta")
+    at.text_input(key="consulta_texto").input("¿Cuál fue el desempleo de Panamá en 2023?")
+    at = at.button(key="consulta_boton").click().run()
+    caja = popovers(at)["IND-PAN-SL.UEM.TOTL.ZS-2023 · valor"]
+    assert "Año del dato:** 2023" in caja and "Fecha de extracción:**" in caja and "no describe la situación actual" in caja
+    assert "**Fecha:**" not in caja
+
+
+# ------------------------------------------------------------------ X25: el selector de grupo cambia el grupo
+
+
+@pytest.mark.parametrize("pantalla", ["ficha", "paquete", "revision"])
+def test_cambiar_el_selector_de_grupo_cambia_el_grupo_mostrado(app, pantalla) -> None:
+    at = app.run()
+    at.session_state["id_grupo"] = h.G_COMPLETO
+    at = ir(at, pantalla)
+    clave = f"{pantalla}_grupo"
+    assert at.session_state[clave] == h.G_COMPLETO
+    at.selectbox(key=clave).set_value(h.G_SISMO).run()
+    assert not at.exception
+    assert at.session_state[clave] == h.G_SISMO and at.session_state["id_grupo"] == h.G_SISMO
+    if pantalla == "ficha":
+        assert any(h.G_SISMO in str(m.value) for m in at.markdown)
+    elif pantalla == "paquete":
+        assert "Acción recomendada" in "\n".join(textos(at))
+    at = ir(at, "ficha")                                            # y el grupo elegido sobrevive al cambio de pantalla
+    assert at.session_state["ficha_grupo"] == h.G_SISMO
+
+
+# ------------------------------------------------------------------ menores
+
+
+def test_el_enganche_solo_admite_el_modulo_y_la_funcion_de_la_lista() -> None:
+    datos = CFG.model_dump()
+    for campo, valor in (("modulo", "os"), ("funcion", "system")):
+        malo = {**datos, "generacion": {**datos["generacion"], campo: valor}}
+        with pytest.raises(ValidationError):
+            ConfigInterfaz.model_validate(malo)
+
+
+def test_un_error_al_importar_la_generacion_no_se_confunde_con_que_falte(monkeypatch) -> None:
+    import importlib
+
+    def importar(nombre: str) -> Any:
+        raise ModuleNotFoundError("No module named 'dependencia_interna'", name="dependencia_interna")
+
+    monkeypatch.setattr(importlib, "import_module", importar)
+    e = ui.obtener_paquete("GRP-1", "editorial", CFG)
+    assert e.estado == "error_integracion" and "dependencia_interna" in e.motivo and e.motivo != CFG.textos.sin_borrador
+    monkeypatch.setattr(importlib, "import_module", lambda n: (_ for _ in ()).throw(RuntimeError("boom")))
+    assert ui.obtener_paquete("GRP-1", "editorial", CFG).estado == "error_integracion"
+
+
+def test_un_contrato_que_no_coincide_se_dice_y_no_se_toma_por_falta_de_cache() -> None:
+    def viejo(id_grupo: str, modalidad: str) -> None:                # no acepta solo_cache
+        return None
+
+    e = ui.obtener_paquete("GRP-1", "editorial", CFG, generador=viejo)
+    assert e.estado == "error_integracion" and "solo_cache" in e.motivo
+
+
+def test_el_pie_usa_la_leyenda_de_alcance_de_la_propia_ficha(app, monkeypatch) -> None:
+    otra = cargar_restricciones().leyendas_alcance.con_descripcion
+    monkeypatch.setattr("src.ficha._alcance", lambda datos: otra)
+    at = app.run()
+    at.session_state["id_grupo"] = h.G_COMPLETO
+    for pantalla in ("ficha", "paquete", "revision"):
+        at = ir(at, pantalla)
+        pie = [str(c.value) for c in at.caption if MARCA in str(c.value)]
+        assert pie and all(otra in x and LEYENDA not in x for x in pie), pantalla
+
+
+def test_calidad_dice_que_los_titulares_de_la_bandeja_son_titulares_y_en_cuantos_grupos(app, con) -> None:
+    at = ir(app.run(), "calidad")
+    m = {x.label: str(x.value) for x in at.metric}
+    etiqueta = "Titulares que entran en la bandeja"
+    assert etiqueta in m and m[etiqueta].endswith("grupos)") and m[etiqueta].startswith(str(ui.resumen_de_calidad(con)["en_bandeja"]))
+
+
+def test_la_demo_no_depende_de_ollama_y_documenta_el_riesgo_del_umbral() -> None:
+    demo = (RAIZ / "docs" / "demo.md").read_text(encoding="utf-8")
+    assert "Ollama" not in demo.split("## Checklist")[1] and "DeepSeek" in demo
+    assert "## Riesgos" in demo and "0.874" in demo and "E1-18" in demo

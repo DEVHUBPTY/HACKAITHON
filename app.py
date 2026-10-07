@@ -64,10 +64,10 @@ def reporte_de_carga() -> dict[str, Any]:
 # ------------------------------------------------------------------ piezas comunes
 
 
-def pie(ctx: ui.Contexto) -> None:
-    """Toda salida lleva la marca de borrador y la leyenda de alcance (D-51)."""
+def pie(ctx: ui.Contexto, alcance: str | None = None) -> None:
+    """Toda salida lleva la marca de borrador y la leyenda de alcance (D-51): la de su propia ficha si la hay, la común si no."""
     st.divider()
-    st.caption(f"**{ETIQUETA_BORRADOR}** · Alcance: {ui.leyenda_de_alcance()}")
+    st.caption(f"**{ETIQUETA_BORRADOR}** · Alcance: {alcance or ui.leyenda_de_alcance()}")
 
 
 def insignia_sintetico(ctx: ui.Contexto) -> None:
@@ -146,10 +146,10 @@ def pantalla_calidad(ctx: ui.Contexto) -> None:
     ruido: ui.Proporcion = r["ruido"]
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Titulares en la base", r["titulares"])
-    c2.metric("Entran en la bandeja", r["en_bandeja"])
+    c2.metric("Titulares que entran en la bandeja", f"{r['en_bandeja']} (en {r['grupos']} grupos)")
     ic = f"IC 95 %: {ruido.ic95[0]:.1%}–{ruido.ic95[1]:.1%}" if ruido.ic95 else "sin intervalo"
     c3.metric("Ruido marcado", f"{ruido.k} de {ruido.n}", help=ic)
-    c4.metric("Grupos", r["grupos"])
+    c4.metric("Duplicados eliminados", r["duplicados_eliminados"])
     st.caption(f"Ruido: {ruido.proporcion:.1%} de {ruido.n} titulares ({ic})." if ruido.proporcion is not None else "Sin titulares.")
     if r["ruido_por_motivo"]:
         st.subheader("Ruido por motivo")
@@ -157,7 +157,7 @@ def pantalla_calidad(ctx: ui.Contexto) -> None:
     n_ind, n_con_valor = r["indicadores"]
     st.write(
         f"**Datos oficiales:** {n_ind} filas del Banco Mundial ({n_ind - n_con_valor} sin dato: los nulos son nulos, nunca cero) · "
-        f"{r['sismos']} eventos sísmicos de USGS · duplicados eliminados: {r['duplicados_eliminados']}"
+        f"{r['sismos']} eventos sísmicos de USGS"
     )
     if r["sinteticos"]:
         insignia_sintetico(ctx)
@@ -255,7 +255,7 @@ def pantalla_ficha(ctx: ui.Contexto) -> None:
             if s.clave == "respaldado":
                 citas_clicables(ctx, [(c.id, c.campo) for c in ui.citas_de_ficha(ficha)])
     st.caption(ctx.cfg.textos.alerta)
-    pie(ctx)
+    pie(ctx, ficha.alcance)
 
 
 # ------------------------------------------------------------------ 4 · Consulta
@@ -335,10 +335,10 @@ def pantalla_paquete(ctx: ui.Contexto) -> None:
                 for p in parrafos:
                     st.markdown(escapar_markdown(p))
     else:
-        (st.info if estado.estado == "sin_integrar" else st.warning)(estado.motivo)
+        (st.info if estado.estado == "sin_integrar" else st.error if estado.estado == "error_integracion" else st.warning)(estado.motivo)
         if estado.estado == "sin_integrar":
             st.caption(ctx.cfg.textos.sin_borrador_ayuda)
-    pie(ctx)
+    pie(ctx, ficha.alcance)
 
 
 # ------------------------------------------------------------------ 6 · Revisión
@@ -365,7 +365,7 @@ def pantalla_revision(ctx: ui.Contexto) -> None:
         st.write("Las reglas no detectan vacíos; la revisión humana sigue siendo obligatoria.")
     st.info(ctx.cfg.textos.sin_revision)
     st.caption(ctx.cfg.textos.aprobar_aviso)
-    pie(ctx)
+    pie(ctx, ficha.alcance)
 
 
 # ------------------------------------------------------------------ armado
