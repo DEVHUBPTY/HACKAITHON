@@ -28,8 +28,8 @@ import argparse
 import json
 import re
 import sys
-from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from collections.abc import Collection, Mapping, Sequence
+from dataclasses import dataclass, replace
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -503,20 +503,32 @@ def _puntaje(datos: Datos) -> PuntajeFicha:
 
 
 def construir_ficha(
-    id_grupo: str, modalidad: str, con: Any, emb: Embeddings | None = None, cfg: ConfigVerificacion | None = None
+    id_grupo: str,
+    modalidad: str,
+    con: Any,
+    emb: Embeddings | None = None,
+    cfg: ConfigVerificacion | None = None,
+    excluir_vinculos: Collection[str] = (),
+    vacios_extra: Sequence[VacioFicha] = (),
 ) -> Ficha:
     """Ficha de evidencia de ``id_grupo`` para ``modalidad`` leyendo de la conexión DuckDB ``con`` (después de ``src.puntaje``).
 
     ``emb`` son los embeddings cacheados para el titular central (si no se pasan, se abren los del modelo de agrupación; con la
     caché llena no se carga el modelo). Lanza ``LookupError`` si el grupo no existe o no tiene puntaje.
+
+    E1-16: ``excluir_vinculos`` son los ``id_evidencia`` oficiales que una persona rechazó (no entran en «respaldado» ni, por tanto, en
+    el borrador); ``vacios_extra`` se agregan al frente de los vacíos para que la persona vea por qué falta ese dato. El puntaje, el estado
+    de evidencia y los vacíos que guardó E1-10 no se recalculan (la ficha solo lee).
     """
     cfg = cfg or cargar_verificacion()
     mod = cargar_modalidad(modalidad)
     datos = leer_datos(con, id_grupo)
+    if excluir_vinculos:
+        datos = replace(datos, vinculos=[v for v in datos.vinculos if v.get("id_evidencia") not in set(excluir_vinculos)])
     componentes = _json(datos.puntaje["componentes"], {})
     subtema = componentes.get("I", {}).get("explicacion", {}).get("subtema")
     titulares = _titulares(datos)
-    vacios = _vacios(datos, cfg)
+    vacios = [*vacios_extra, *_vacios(datos, cfg)]
     principales = cfg.vacios.principales
     return Ficha(
         id_grupo=id_grupo,
@@ -651,14 +663,14 @@ def a_markdown(ficha: Ficha, cfg: ConfigVerificacion | None = None) -> str:
     return entorno.get_template(PLANTILLA).render(v=seguro)
 
 
-def a_registro(ficha: Ficha) -> dict[str, Any]:
+def a_registro(ficha: Ficha, id_caso: str | None = None, estado_revision: str | None = None) -> dict[str, Any]:
     """Registro de ``fichas.jsonl`` con los campos del contrato (sección 7 del reto) y la ficha completa.
 
-    ``id_caso`` y ``estado_revision`` los asigna la revisión humana (E1-16): aquí son nulos.
+    ``id_caso`` y ``estado_revision`` los asigna la revisión humana (E1-16, ``src/exportar.py``): sin ellos son nulos.
     """
     citas = list(dict.fromkeys((c.id, c.campo) for x in (*ficha.respaldado.reportes, *ficha.respaldado.datos_oficiales, *ficha.respaldado.eventos_oficiales, *ficha.respaldado.declaraciones) for c in x.citas))
     return {
-        "id_caso": None,
+        "id_caso": id_caso,
         "modalidad": ficha.modalidad,
         "id_grupo": ficha.id_grupo,
         "ids_fuente": sorted({i for i, _ in citas if not i.startswith("GRP-")}),
@@ -668,15 +680,15 @@ def a_registro(ficha: Ficha) -> dict[str, Any]:
         "componentes": {k: c.valor for k, c in ficha.puntaje.componentes.items()},
         "estado_evidencia": ficha.accion_recomendada.estado_evidencia,
         "borrador": ficha.borrador,
-        "estado_revision": None,
+        "estado_revision": estado_revision,
         "alcance": ficha.alcance,
         "ficha": ficha.model_dump(mode="json"),
     }
 
 
-def a_linea_jsonl(ficha: Ficha) -> str:
+def a_linea_jsonl(ficha: Ficha, id_caso: str | None = None, estado_revision: str | None = None) -> str:
     """Una línea de ``fichas.jsonl`` (JSON en una sola línea, UTF-8)."""
-    return json.dumps(a_registro(ficha), ensure_ascii=False, sort_keys=True)
+    return json.dumps(a_registro(ficha, id_caso, estado_revision), ensure_ascii=False, sort_keys=True)
 
 
 # ------------------------------------------------------------------ CLI

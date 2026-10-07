@@ -303,7 +303,7 @@ def test_el_modo_demo_sin_base_de_demo_cae_al_snapshot_y_avisa(tmp_path) -> None
     assert ui.elegir_base(False, CFG, base_normal=tmp_path / "senales.duckdb") == (tmp_path / "senales.duckdb", None)
 
 
-def test_la_revision_solo_se_consulta_hasta_e1_16(con) -> None:
+def test_un_grupo_sin_caso_esta_en_el_estado_inicial(con) -> None:
     assert ui.estado_de_revision(con, h.G_COMPLETO, CFG) == "nuevo"
     assert CFG.revision.estados == ["nuevo", "en revisión", "requiere evidencia", "aprobado como borrador", "descartado"]
 
@@ -348,6 +348,7 @@ def app(monkeypatch, base, emb, tmp_path):
     """La app sobre la base de prueba, sin modelo ni red: embeddings y consultor falsos, reporte de carga fijo."""
     consultor, _ = consulta_fixture.crear_consultor(tmp_path / "consulta")
     monkeypatch.setattr(ui, "elegir_base", lambda demo, cfg, base_normal=None: (base, None))
+    monkeypatch.setattr(ui, "ruta_de_revision", lambda demo, cfg=None: tmp_path / "revision.duckdb")      # E1-16: las revisiones nunca tocan la base real
     monkeypatch.setattr("src.ficha._embeddings", lambda: emb)
     monkeypatch.setattr("src.consulta.crear_consultor", lambda ruta, *a, **k: consultor)
     monkeypatch.setattr(ui, "reporte_de_carga", lambda *a, **k: {
@@ -495,11 +496,11 @@ def test_el_paquete_con_generador_muestra_el_borrador_con_marca_y_leyenda(app, m
     assert not at.exception and "Un enfoque" in texto and "¿Qué falta?" in texto and MARCA in texto and any(x in texto for x in LEYENDAS)
 
 
-def test_la_revision_muestra_los_cinco_estados_sin_ningun_boton_de_accion(app) -> None:
+def test_la_revision_de_un_grupo_sin_caso_muestra_los_cinco_estados_y_solo_ofrece_abrirlo(app) -> None:
     at = ir(app.run(), "revision")
     assert not at.exception
     assert "Estado actual:** nuevo" in "\n".join(textos(at))
-    assert not at.button
+    assert [b.label for b in at.button] == ["Abrir para revisar"] and at.button[0].disabled      # hasta elegir quién revisa (D-49)
     assert list(at.dataframe[0].value["Estados del reto"]) == CFG.revision.estados
     assert "aprobado como borrador" in "\n".join(textos(at))
 

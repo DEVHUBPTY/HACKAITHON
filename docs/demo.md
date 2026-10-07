@@ -45,7 +45,7 @@ Pasada ejecutada el 2026-10-06 con el snapshot real (`data/senales.duckdb`), sin
 - **Pendiente de otras tareas (la app ya lo prevé):**
   - **Borrador (E1-12 y E1-14):** ya integrado: la pestaña *Paquete* llama a `src.generacion.generar_paquete(id_grupo, modalidad, solo_cache=True)` y muestra lo guardado en `data/cache_llm/` (ver `docs/fallback.md`). La línea siguiente es histórica:
     (configurable en `config/interfaz.yaml:generacion`). Hasta que exista, dice que la generación se integra con E1-12 y no inventa nada.
-  - **`CASO-00N` y revisión (E1-16):** hoy los grupos son `GRP-…`; `?caso=` acepta un `GRP-…` o la posición en la bandeja. La pantalla *Revisión* solo consulta.
+  - **`CASO-00N` y revisión (E1-16):** ya integrado. Al abrir un grupo en *Revisión* nace su `CASO-00N`; `?caso=` acepta un `GRP-…`, un `CASO-…` o la posición en la bandeja. La revisión de la demo va a `data/revision_demo.duckdb`, aparte de la real.
   - **Base y capturas de demo (C-06):** `data/demo.duckdb`, `preparar_demo`, y `capturas_demo` todavía no existen (`scripts/calentar_cache.py` ya existe, E1-14); `--demo` cae al snapshot y lo avisa.
   - **Banca (E2-01):** la modalidad se puede elegir y se declara parcial (D-90); la bandeja bancaria llega con esa tarea.
 

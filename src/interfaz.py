@@ -36,6 +36,7 @@ from src.configuracion import (
     ConfigInterfaz,
     ConfigPrioridad,
     ConfigRestricciones,
+    ConfigRevision,
     ConfigVerificacion,
     ReglasV13,
     cargar_carga,
@@ -43,6 +44,7 @@ from src.configuracion import (
     cargar_prioridad,
     cargar_reglas,
     cargar_restricciones,
+    cargar_revision,
     cargar_temas,
     cargar_verificacion,
 )
@@ -193,11 +195,13 @@ def encabezado_bandeja(con: Any, ruta_manifest: Path, cfg_ver: ConfigVerificacio
     }
 
 
-def resolver_caso(valor: str | None, filas: Sequence[FilaBandeja]) -> str | None:
-    """Atajo ``?caso=``: acepta un ID ``GRP-…`` o la posición en la bandeja. Un ``CASO-`` aún no existe (lo asigna E1-16)."""
+def resolver_caso(valor: str | None, filas: Sequence[FilaBandeja], casos: Mapping[str, str] | None = None) -> str | None:
+    """Atajo ``?caso=``: acepta un ID ``GRP-…``, la posición en la bandeja o un ``CASO-…`` (``casos``: ``CASO-`` -> ``GRP-``, E1-16)."""
     if not valor:
         return None
     valor = valor.strip()
+    if casos and valor in casos:
+        return casos[valor] if any(f.id_grupo == casos[valor] for f in filas) else None
     for f in filas:
         if f.id_grupo == valor:
             return f.id_grupo
@@ -373,9 +377,64 @@ def ids_sinteticos(con: Any, ids: Sequence[str]) -> set[str]:
     return {f[0] for f in filas} | {i for i in ids if i.startswith("SYN-")}
 
 
-def estado_de_revision(con: Any, id_grupo: str, cfg: ConfigInterfaz | None = None) -> str:
-    """Estado de revisión de un grupo. TODO(E1-16): leer la última fila de la tabla ``revisiones``; hoy todo grupo está en el estado inicial."""
-    return (cfg or cargar_interfaz()).revision.estado_inicial
+def estado_de_revision(con: Any, id_grupo: str, cfg: ConfigInterfaz | None = None, revisiones: Any = None, modalidad: str = "editorial") -> str:
+    """Estado de revisión de un grupo: la última fila de ``revisiones`` de su caso (E1-16); sin caso, el estado inicial ``nuevo``."""
+    if revisiones is None:
+        return (cfg or cargar_interfaz()).revision.estado_inicial
+    return revisiones.estado_de_grupo(id_grupo, modalidad)
+
+
+# ------------------------------------------------------------------ revisión humana (pantalla 6, E1-16)
+
+
+def ruta_de_revision(demo: bool, cfg: ConfigRevision | None = None) -> Path:
+    """Base de las revisiones: la real o, en modo demo, la de la demo (nunca se mezclan)."""
+    from src.revision import ruta_de_revision as ruta
+
+    return ruta(demo, cfg)
+
+
+def revisores_de(modalidad: str, cfg: ConfigRevision | None = None) -> list[str]:
+    """Nombres de los revisores de la modalidad (``config/revision.yaml``; sin autenticación, D-49)."""
+    return [r.nombre for r in (cfg or cargar_revision()).revisores if r.modalidad == modalidad]
+
+
+def rol_de(revisor: str, modalidad: str, cfg: ConfigRevision | None = None) -> str:
+    return next((r.rol for r in (cfg or cargar_revision()).revisores if r.nombre == revisor and r.modalidad == modalidad), "")
+
+
+def acciones_disponibles(estado: str, cfg: ConfigRevision | None = None) -> dict[str, bool]:
+    """Para cada acción, si parte del estado actual (las transiciones de ``config/revision.yaml``): los botones se habilitan con esto."""
+    cfg = cfg or cargar_revision()
+    return {nombre: estado in a.desde for nombre, a in cfg.acciones.items()}
+
+
+def tabla_historial(filas: Sequence[Any], cfg_ver: ConfigVerificacion | None = None) -> list[dict[str, Any]]:
+    """El historial de un caso como filas para mostrar, con la fecha en hora de Panamá (los datos siguen en UTC)."""
+    cfg_ver = cfg_ver or cargar_verificacion()
+    return [
+        {
+            "#": f.id_revision, "Fecha": hora_panama(f.fecha_utc, cfg_ver), "Acción": f.accion, "De": f.estado_anterior, "A": f.estado_nuevo,
+            "Revisor": f"{f.revisor} ({f.rol})", "Versión": f.version, "Motivo": f.motivo or "", "Comentario": f.comentario or "",
+        }
+        for f in filas
+    ]
+
+
+def tabla_versiones(versiones: Sequence[Any], cfg_ver: ConfigVerificacion | None = None) -> list[dict[str, Any]]:
+    cfg_ver = cfg_ver or cargar_verificacion()
+    return [{"Versión": v.version, "Origen": v.origen, "Base": v.version_base, "Fecha": hora_panama(v.fecha_utc, cfg_ver), "Revisor": v.revisor} for v in versiones]
+
+
+def vinculos_oficiales_de(ficha: Ficha) -> list[str]:
+    """Los IDs oficiales (``IND-``, ``SIS-``, ``SBP-``) que respaldan la ficha y que una persona puede rechazar."""
+    ids = [c.id for x in (*ficha.respaldado.datos_oficiales, *ficha.respaldado.eventos_oficiales) for c in x.citas]
+    return list(dict.fromkeys(ids))
+
+
+def etiqueta_de_elemento(clave: str, texto: str, largo: int) -> str:
+    """Etiqueta del selector de corrección: la clave y el principio del texto."""
+    return f"{clave} · {texto[:largo]}" + ("…" if len(texto) > largo else "")
 
 
 # ------------------------------------------------------------------ modo demo: pasos del guion
@@ -534,3 +593,4 @@ class Contexto:
     aviso_base: str | None = None
     filas: list[FilaBandeja] = field(default_factory=list)
     ruta_base: Path = db.RUTA_BASE
+    revisiones: Any = None          # ``src.revision.Revisiones`` (E1-16): la base de revisiones; se abre aparte de la de solo lectura
