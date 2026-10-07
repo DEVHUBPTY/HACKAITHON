@@ -2257,6 +2257,8 @@ class ExportacionRevision(ModeloConfig):
     carpeta: str = Field(min_length=1)
     csv: str = Field(min_length=1)
     fichas_jsonl: str = Field(min_length=1)
+    carpeta_demo: str = Field(min_length=1)
+    fichas_jsonl_demo: str = Field(min_length=1)
     max_caracteres_texto: int = Field(ge=100)
     marca_recorte: str
     columnas: list[str] = Field(min_length=1)
@@ -2316,6 +2318,8 @@ class ConfigRevision(ModeloConfig):
             raise ValueError("revisores: debe haber al menos uno por modalidad")
         if len({(r.nombre, r.modalidad) for r in self.revisores}) != len(self.revisores):
             raise ValueError("revisores: una persona aparece una sola vez por modalidad")
+        if self.exportacion.carpeta_demo == self.exportacion.carpeta or self.exportacion.fichas_jsonl_demo == self.exportacion.fichas_jsonl:
+            raise ValueError("exportacion: la demo exporta a rutas distintas de las reales")
         if len(self.exportacion.columnas) != len(set(self.exportacion.columnas)) or "ID caso" not in self.exportacion.columnas:
             raise ValueError("exportacion.columnas: sin repetidos y con «ID caso»")
         textos = [

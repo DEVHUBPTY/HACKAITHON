@@ -46,3 +46,4 @@ data/revision_demo.duckdb
 data/revision.duckdb.wal
 data/revision_demo.duckdb.wal
 outputs/notion/
+data/revision_demo.casos.csv

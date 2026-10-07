@@ -382,6 +382,7 @@ def pantalla_revision(ctx: ui.Contexto) -> None:
         pie(ctx)
         return
     rev, cfg_rev = ctx.revisiones, ui.cargar_revision()
+    _huerfanos(ctx)
     caso = rev.caso_de_grupo(id_grupo, ctx.modalidad)
     actual = ui.estado_de_revision(ctx.con, id_grupo, ctx.cfg, rev, ctx.modalidad)
     avisar()
@@ -404,7 +405,14 @@ def pantalla_revision(ctx: ui.Contexto) -> None:
         pie(ctx, ficha.alcance)
         return
     rechazados = tuple(sorted(rev.vinculos_rechazados(caso.id_caso)))
-    ficha = ficha_del_caso(str(ctx.ruta_base), str(rev.ruta), caso.id_caso, rechazados)
+    try:
+        ficha = ficha_del_caso(str(ctx.ruta_base), str(rev.ruta), caso.id_caso, rechazados)
+    except rv.ErrorDeRevision as exc:  # el grupo ya no está en la base de hoy: se muestra la última ficha revisada, sin inventar nada
+        st.warning(str(exc))
+        ficha = rev.ficha_revisada(caso.id_caso)
+        if ficha is None:
+            pie(ctx)
+            return
     _que_comprobar(ctx, ficha)
     disponibles = ui.acciones_disponibles(actual, cfg_rev)
     version = rev.version_actual(caso.id_caso)
@@ -418,8 +426,8 @@ def pantalla_revision(ctx: ui.Contexto) -> None:
             actuar("Aprobado como borrador (sigue marcado BORRADOR).", rev.aceptar, caso.id_caso, revisor, comentario)
         st.caption(ctx.cfg.textos.aprobar_aviso)
         vacios = [v.codigo for v in (*ficha.falta_comprobar.principales, *ficha.falta_comprobar.otros)]
-        elegidos = st.multiselect("Vacíos que motivan pedir evidencia", vacios, key="revision_vacios")
-        if st.button(etiqueta("pedir_evidencia"), key="revision_pedir", disabled=sin_revisor or not disponibles["pedir_evidencia"]):
+        elegidos = st.multiselect("Vacíos que motivan pedir evidencia (al menos uno)", vacios, key="revision_vacios")
+        if st.button(etiqueta("pedir_evidencia"), key="revision_pedir", disabled=sin_revisor or not elegidos or not disponibles["pedir_evidencia"]):
             actuar("Pasa a «requiere evidencia».", rev.pedir_evidencia, caso.id_caso, revisor, elegidos, comentario)
     with a2:
         motivo = st.selectbox("Motivo del descarte (obligatorio)", cfg_rev.motivos_descarte, index=None, placeholder="Elija un motivo", key="revision_motivo_descarte")
@@ -437,13 +445,38 @@ def pantalla_revision(ctx: ui.Contexto) -> None:
     st.caption(cfg_rev.textos.limitacion_historial)
     st.dataframe(pd.DataFrame(ui.tabla_historial(rev.historial(caso.id_caso), ctx.cfg_ver)), hide_index=True)
     st.subheader("Exportar")
-    if st.button("Exportar a Notion", key="revision_exportar", help="Genera el Markdown y la fila CSV de «Casos y evidencias»; si el caso ya se exportó, actualiza esa fila."):
-        e = exportar.exportar_caso(rev, caso.id_caso, ficha=ficha)
-        st.session_state["revision_exportacion"] = (e.id_caso, e.markdown, str(e.ruta_markdown), str(e.ruta_csv), e.actualizada)
+    if st.button("Exportar a Notion", key="revision_exportar", help="Genera el Markdown y la fila CSV de «Casos y evidencias» desde la ficha revisada; si el caso ya se exportó, actualiza esa fila del CSV local (en Notion hay que reemplazarla: docs/notion.md)."):
+        _exportar(rev, caso.id_caso)
     if (x := st.session_state.get("revision_exportacion")) and x[0] == caso.id_caso:
         st.success(f"{x[0]}: {'actualizado' if x[4] else 'exportado'} en {x[2]} y {x[3]}.")
         st.download_button("Descargar el Markdown", x[1], file_name=f"{x[0]}.md", key="revision_descarga")
     pie(ctx, ficha.alcance)
+
+
+def _exportar(rev: Any, id_caso: str) -> None:
+    """Exporta un caso desde su ficha revisada; un fallo se dice con claridad, nunca como traceback."""
+    try:
+        e = exportar.exportar_caso(rev, id_caso)
+    except (rv.ErrorDeRevision, LookupError, ValueError, OSError) as exc:
+        st.session_state.pop("revision_exportacion", None)
+        st.error(f"No se pudo exportar {id_caso}: {exc}")
+        return
+    st.session_state["revision_exportacion"] = (e.id_caso, e.markdown, str(e.ruta_markdown), str(e.ruta_csv), e.actualizada)
+
+
+def _huerfanos(ctx: ui.Contexto) -> None:
+    """Casos cuyo grupo ya no está en la base de hoy (el pipeline lo volvió a agrupar): se conservan y se pueden exportar desde su ficha guardada."""
+    vivos = {f.id_grupo for f in ctx.filas}
+    perdidos = [c for c in ctx.revisiones.casos() if c.modalidad == ctx.modalidad and c.id_grupo not in vivos]
+    if not perdidos or not ctx.filas:
+        return
+    st.warning("Casos cuyo grupo ya no está en la base actual: " + ", ".join(f"{c.id_caso} ({c.id_grupo})" for c in perdidos)
+               + ". Se conservan con su última ficha revisada; no se pueden regenerar ni cambiar sus vínculos.")
+    for i, c in enumerate(perdidos):
+        if st.button(f"Exportar {c.id_caso} a Notion", key=f"revision_exportar_huerfano_{i}"):
+            _exportar(ctx.revisiones, c.id_caso)
+            if (x := st.session_state.get("revision_exportacion")) and x[0] == c.id_caso:
+                st.success(f"{x[0]}: {'actualizado' if x[4] else 'exportado'} en {x[2]} y {x[3]}.")
 
 
 def _que_comprobar(ctx: ui.Contexto, ficha: Ficha) -> None:
@@ -573,7 +606,7 @@ def main() -> None:
     con = abrir_base(str(ruta)).cursor()
     nombres = {k: t.nombre for k, t in cargar_temas().temas.items()}
     previa = st.session_state.get("modalidad", cfg.modalidad_inicial)
-    revisiones = rv.Revisiones(ui.ruta_de_revision(demo), ruta)    # se abre aparte: la base de las pantallas es de solo lectura
+    revisiones = rv.Revisiones(ui.ruta_de_revision(demo), ruta, demo=demo, huellas=rv.huellas_de_exportacion(demo))  # aparte: la base de las pantallas es de solo lectura
     aplicar_atajo(cfg, ui.leer_bandeja(con, previa, nombres), revisiones)      # antes de crear los widgets: así puede fijar la pantalla
     modalidad = barra_lateral(cfg, demo)
     ctx = ui.Contexto(cfg, ui.cargar_verificacion(), con, modalidad, demo, aviso, ui.leer_bandeja(con, modalidad, nombres), ruta, revisiones)

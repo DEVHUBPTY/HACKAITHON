@@ -29,8 +29,10 @@ from __future__ import annotations
 
 import argparse
 import copy
+import csv
 import json
 import logging
+import re
 import sys
 from collections.abc import Callable, Collection, Iterator, Mapping, Sequence
 from contextlib import contextmanager
@@ -71,6 +73,9 @@ TABLAS = {
     "versiones": """CREATE TABLE IF NOT EXISTS versiones (
         id_caso VARCHAR NOT NULL, version INTEGER NOT NULL, origen VARCHAR NOT NULL, version_base INTEGER, contenido VARCHAR NOT NULL,
         fecha_utc VARCHAR NOT NULL, revisor VARCHAR NOT NULL, PRIMARY KEY (id_caso, version))""",
+    "fichas_revisadas": """CREATE TABLE IF NOT EXISTS fichas_revisadas (
+        id_instantanea BIGINT PRIMARY KEY, id_caso VARCHAR NOT NULL, id_revision BIGINT NOT NULL, version INTEGER, accion VARCHAR NOT NULL,
+        fecha_utc VARCHAR NOT NULL, ficha VARCHAR NOT NULL)""",
     "revisiones": """CREATE TABLE IF NOT EXISTS revisiones (
         id_revision BIGINT PRIMARY KEY, id_caso VARCHAR NOT NULL, version INTEGER, accion VARCHAR NOT NULL, estado_anterior VARCHAR NOT NULL,
         estado_nuevo VARCHAR NOT NULL, revisor VARCHAR NOT NULL, rol VARCHAR NOT NULL, fecha_utc VARCHAR NOT NULL, comentario VARCHAR,
@@ -87,6 +92,10 @@ COLUMNAS_REVISIONES = (
 
 class ErrorDeRevision(ValueError):
     """Una acción de revisión que no se puede aplicar."""
+
+
+class ConflictoDeConcurrencia(ErrorDeRevision):
+    """Otra sesión escribió en el registro al mismo tiempo: no se guardó nada y hay que recargar (L1)."""
 
 
 class TransicionNoPermitida(ErrorDeRevision):
@@ -137,6 +146,19 @@ class Fila:
     motivo: str | None
     diferencias: list[dict[str, str]]
     detalle: dict[str, Any]
+
+
+@dataclass(frozen=True)
+class Instantanea:
+    """La ``Ficha`` tal como estaba cuando una acción la revisó (M2): lo que se exporta es esto, no lo que diga la base de hoy."""
+
+    id_instantanea: int
+    id_caso: str
+    id_revision: int
+    version: int | None
+    accion: str
+    fecha_utc: str
+    ficha: Ficha
 
 
 @dataclass(frozen=True)
@@ -202,6 +224,17 @@ def ruta_de_revision(demo: bool, cfg: ConfigRevision | None = None) -> Path:
     """Dónde viven las revisiones: la base real, o la de la demo (que nunca se mezcla con la real)."""
     cfg = cfg or cargar_revision()
     return RAIZ / (cfg.almacen.base_demo if demo else cfg.almacen.base)
+
+
+def rutas_de_exportacion(demo: bool, cfg: ConfigRevision | None = None, raiz: Path = RAIZ) -> tuple[Path, Path]:
+    """``(carpeta de Markdown y CSV, fichas.jsonl)`` de la exportación real o de la demo (X31: nunca las mismas)."""
+    e = (cfg or cargar_revision()).exportacion
+    return (raiz / (e.carpeta_demo if demo else e.carpeta), raiz / (e.fichas_jsonl_demo if demo else e.fichas_jsonl))
+
+
+def huellas_de_exportacion(demo: bool, cfg: ConfigRevision | None = None, raiz: Path = RAIZ) -> list[Path]:
+    """Lo ya exportado que recuerda qué ``CASO-`` existieron, aunque se borre la base de revisiones (M1)."""
+    return list(rutas_de_exportacion(demo, cfg, raiz))
 
 
 # ------------------------------------------------------------------ elementos editables y revalidación (D-48)
@@ -319,9 +352,13 @@ class Revisiones:
     """
 
     def __init__(
-        self, ruta: Path | str, base_fichas: Path | str | None = None, cfg: ConfigRevision | None = None, ahora: Callable[[], datetime] | None = None
+        self, ruta: Path | str, base_fichas: Path | str | None = None, cfg: ConfigRevision | None = None, ahora: Callable[[], datetime] | None = None,
+        *, demo: bool = False, huellas: Sequence[Path] = (),
     ) -> None:
         self.ruta = Path(ruta)
+        self.demo = demo                                   # la demo exporta a otras rutas (X31)
+        self.huellas = [Path(p) for p in huellas]          # lo ya exportado: también recuerda qué CASO- existieron (M1)
+        self.registro = self.ruta.with_suffix(".casos.csv")  # registro de casos de solo agregar, aparte de la base (M1)
         self.base_fichas = Path(base_fichas) if base_fichas else RAIZ / "data" / cargar_normalizacion().salida.base_de_datos
         self.cfg = cfg or cargar_revision()
         self.ahora = ahora or ahora_utc
@@ -349,10 +386,20 @@ class Revisiones:
             con.execute("BEGIN TRANSACTION")
             try:
                 yield con
+                con.execute("COMMIT")
+            except (duckdb.TransactionException, duckdb.ConstraintException) as exc:
+                self._deshacer(con)
+                raise ConflictoDeConcurrencia("Otra persona actuó sobre este caso al mismo tiempo: no se guardó nada. Recargue la pantalla y vuelva a intentar.") from exc
             except BaseException:
-                con.execute("ROLLBACK")
+                self._deshacer(con)
                 raise
-            con.execute("COMMIT")
+
+    @staticmethod
+    def _deshacer(con: Any) -> None:
+        try:
+            con.execute("ROLLBACK")
+        except duckdb.Error:  # una transacción abortada puede haberse deshecho sola
+            logger.debug("rollback innecesario")
 
     @staticmethod
     def _filas(con: Any, sql: str, parametros: Sequence[Any] = ()) -> list[dict[str, Any]]:
@@ -445,7 +492,7 @@ class Revisiones:
 
     def _insertar(
         self, con: Any, caso: Caso, accion: str, revisor: str, *, estado: str, hacia: str, version: int | None, comentario: str | None = None,
-        motivo: str | None = None, diferencias: Sequence[Mapping[str, str]] = (), detalle: Mapping[str, Any] | None = None,
+        motivo: str | None = None, diferencias: Sequence[Mapping[str, str]] = (), detalle: Mapping[str, Any] | None = None, ficha: Ficha | None = None,
     ) -> None:
         siguiente = int(con.execute("SELECT coalesce(max(id_revision), 0) + 1 FROM revisiones").fetchone()[0])
         con.execute(
@@ -455,6 +502,9 @@ class Revisiones:
                 (comentario or "").strip() or None, (motivo or "").strip() or None, _json(list(diferencias)), _json(dict(detalle or {})),
             ],
         )
+        if ficha is not None:                                # la ficha que esta acción revisó, guardada tal cual (M2)
+            n = int(con.execute("SELECT coalesce(max(id_instantanea), 0) + 1 FROM fichas_revisadas").fetchone()[0])
+            con.execute("INSERT INTO fichas_revisadas VALUES (?,?,?,?,?,?,?)", [n, caso.id_caso, siguiente, version, accion, _iso(self.ahora()), ficha.model_dump_json()])
 
     def _insertar_version(self, con: Any, caso: Caso, contenido: Mapping[str, Any], origen: str, revisor: str, base: int | None) -> int:
         n = int(con.execute("SELECT coalesce(max(version), 0) + 1 FROM versiones WHERE id_caso = ?", [caso.id_caso]).fetchone()[0])
@@ -466,13 +516,16 @@ class Revisiones:
         f = self._filas(con, "SELECT max(version) AS v FROM versiones WHERE id_caso = ?", [id_caso])
         return f[0]["v"] if f else None
 
-    def _accion_simple(self, id_caso: str, accion: str, revisor: str, *, comentario: str | None = None, motivo: str | None = None, detalle: Mapping[str, Any] | None = None) -> Fila:
+    def _accion_simple(
+        self, id_caso: str, accion: str, revisor: str, *, comentario: str | None = None, motivo: str | None = None,
+        detalle: Mapping[str, Any] | None = None, ficha: Ficha | None = None,
+    ) -> Fila:
         caso = self.caso(id_caso)
         with self._transaccion() as con:
             estado = self._estado_en(con, id_caso)
             hacia = self._comprobar(accion, estado, motivo, comentario)
             self._rol(revisor, caso.modalidad)
-            self._insertar(con, caso, accion, revisor, estado=estado, hacia=hacia, version=self._version_en(con, id_caso), comentario=comentario, motivo=motivo, detalle=detalle)
+            self._insertar(con, caso, accion, revisor, estado=estado, hacia=hacia, version=self._version_en(con, id_caso), comentario=comentario, motivo=motivo, detalle=detalle, ficha=ficha)
         return self.historial(id_caso)[-1]
 
     # ---- acciones (D-46)
@@ -487,21 +540,66 @@ class Revisiones:
         self._rol(revisor, modalidad)
         if (existente := self.caso_de_grupo(id_grupo, modalidad)) is not None:
             return existente
-        with self._transaccion() as con:
-            hacia = self._comprobar("abrir", self.cfg.estado_inicial, None, comentario)
-            n = int(con.execute("SELECT count(*) FROM casos").fetchone()[0]) + 1       # correlativo; ``casos`` nunca pierde filas
-            caso = Caso(f"{self.cfg.casos.prefijo}{n:0{self.cfg.casos.ancho}d}", id_grupo, modalidad, _iso(self.ahora()))
-            con.execute("INSERT INTO casos VALUES (?,?,?,?)", [caso.id_caso, caso.id_grupo, caso.modalidad, caso.fecha_apertura_utc])
-            version = self._insertar_version(con, caso, _a_dict(paquete), ORIGEN_GENERADA, revisor, None) if paquete is not None else None
-            self._insertar(con, caso, "abrir", revisor, estado=self.cfg.estado_inicial, hacia=hacia, version=version, comentario=comentario)
+        ficha = self._construir(id_grupo, modalidad, ())          # un grupo que no existe no se abre: la ficha queda guardada desde el inicio (M2)
+        try:
+            with self._transaccion() as con:
+                hacia = self._comprobar("abrir", self.cfg.estado_inicial, None, comentario)
+                n = self._siguiente_numero(con)
+                caso = Caso(f"{self.cfg.casos.prefijo}{n:0{self.cfg.casos.ancho}d}", id_grupo, modalidad, _iso(self.ahora()))
+                con.execute("INSERT INTO casos VALUES (?,?,?,?)", [caso.id_caso, caso.id_grupo, caso.modalidad, caso.fecha_apertura_utc])
+                version = self._insertar_version(con, caso, _a_dict(paquete), ORIGEN_GENERADA, revisor, None) if paquete is not None else None
+                self._insertar(con, caso, "abrir", revisor, estado=self.cfg.estado_inicial, hacia=hacia, version=version, comentario=comentario, ficha=ficha)
+                self._registrar(caso)
+        except ConflictoDeConcurrencia:
+            if (existente := self.caso_de_grupo(id_grupo, modalidad)) is not None:  # otra sesión abrió el mismo grupo: es ese caso
+                return existente
+            raise
         return caso
 
+    # ---- numeración: un CASO- nunca se reutiliza (M1)
+
+    def _numeros_conocidos(self, con: Any) -> list[int]:
+        """Todos los números de caso que se conocen: la base, el registro de casos y lo que ya se exportó (CSV, JSONL y ``CASO-NNN.md``)."""
+        patron = re.compile(rf"{re.escape(self.cfg.casos.prefijo)}(\d+)")
+        textos: list[str] = [id_caso for (id_caso,) in con.execute("SELECT id_caso FROM casos").fetchall()]
+        for ruta in [self.registro, *self.huellas]:
+            if ruta.is_dir():
+                textos += [p.name for p in ruta.iterdir()]
+                textos += [p.read_text(encoding="utf-8", errors="ignore") for p in ruta.glob("*.csv")]
+            elif ruta.is_file():
+                textos.append(ruta.read_text(encoding="utf-8", errors="ignore"))
+        return [int(n) for t in textos for n in patron.findall(t)]
+
+    def _siguiente_numero(self, con: Any) -> int:
+        """Máximo de los números conocidos + 1: sigue valiendo aunque se borre ``data/revision.duckdb``."""
+        return max(self._numeros_conocidos(con), default=0) + 1
+
+    def _registrar(self, caso: Caso) -> None:
+        """Agrega el caso al registro (CSV de solo agregar, junto a la base). Se escribe antes del ``COMMIT``: a lo sumo sobra un hueco."""
+        nuevo = not self.registro.exists()
+        self.registro.parent.mkdir(parents=True, exist_ok=True)
+        with self.registro.open("a", encoding="utf-8", newline="") as f:
+            w = csv.writer(f, lineterminator="\n")
+            if nuevo:
+                w.writerow(["id_caso", "id_grupo", "modalidad", "fecha_apertura_utc"])
+            w.writerow([caso.id_caso, caso.id_grupo, caso.modalidad, caso.fecha_apertura_utc])
+
     def aceptar(self, id_caso: str, revisor: str, comentario: str | None = None) -> Fila:
-        """«Aprobar como borrador»: el estado máximo. La ficha y el borrador conservan la marca BORRADOR."""
-        return self._accion_simple(id_caso, "aceptar", revisor, comentario=comentario)
+        """«Aprobar como borrador»: el estado máximo. La ficha y el borrador conservan la marca BORRADOR.
+
+        Guarda la ficha tal como se aprobó; si el grupo ya no existe en la base actual (huérfano) queda la última ficha revisada.
+        """
+        caso = self.caso(id_caso)
+        try:
+            ficha: Ficha | None = self._construir(caso.id_grupo, caso.modalidad, sorted(self.vinculos_rechazados(id_caso)))
+        except ErrorDeRevision:
+            ficha = None
+        return self._accion_simple(id_caso, "aceptar", revisor, comentario=comentario, ficha=ficha)
 
     def pedir_evidencia(self, id_caso: str, revisor: str, vacios: Sequence[str], comentario: str | None = None) -> Fila:
-        """Pasa a «requiere evidencia» y enlaza los vacíos de la ficha que lo motivan (sus códigos)."""
+        """Pasa a «requiere evidencia» y enlaza los vacíos de la ficha que lo motivan (sus códigos): al menos uno."""
+        if not [v for v in vacios if str(v).strip()]:
+            raise MotivoObligatorio(f"«{self.cfg.acciones['pedir_evidencia'].etiqueta}» exige enlazar al menos un vacío de la ficha")
         return self._accion_simple(id_caso, "pedir_evidencia", revisor, comentario=comentario, detalle={"vacios": list(vacios)})
 
     def descartar(self, id_caso: str, revisor: str, motivo: str | None, comentario: str | None = None) -> Fila:
@@ -519,29 +617,53 @@ class Revisiones:
             raise ErrorDeRevision(f"{id_evidencia}: no es un dato oficial (IND-, SIS- o SBP-)")
         if id_evidencia in self.vinculos_rechazados(id_caso):
             raise ErrorDeRevision(f"{id_evidencia}: ya estaba rechazado")
-        return self._accion_simple(id_caso, "rechazar_vinculo", revisor, comentario=comentario, motivo=motivo, detalle={"id_evidencia": id_evidencia})
+        caso = self.caso(id_caso)
+        ficha = self._construir(caso.id_grupo, caso.modalidad, sorted({*self.vinculos_rechazados(id_caso), id_evidencia}))
+        return self._accion_simple(id_caso, "rechazar_vinculo", revisor, comentario=comentario, motivo=motivo, detalle={"id_evidencia": id_evidencia}, ficha=ficha)
 
     def restaurar_vinculo(self, id_caso: str, revisor: str, id_evidencia: str, motivo: str | None, comentario: str | None = None) -> Fila:
         """Deshace un rechazo (queda como una fila más: el registro no se edita)."""
         self._comprobar("restaurar_vinculo", self.estado(id_caso), motivo, comentario)
         if id_evidencia not in self.vinculos_rechazados(id_caso):
             raise ErrorDeRevision(f"{id_evidencia}: no estaba rechazado")
-        return self._accion_simple(id_caso, "restaurar_vinculo", revisor, comentario=comentario, motivo=motivo, detalle={"id_evidencia": id_evidencia})
+        caso = self.caso(id_caso)
+        ficha = self._construir(caso.id_grupo, caso.modalidad, sorted(self.vinculos_rechazados(id_caso) - {id_evidencia}))
+        return self._accion_simple(id_caso, "restaurar_vinculo", revisor, comentario=comentario, motivo=motivo, detalle={"id_evidencia": id_evidencia}, ficha=ficha)
 
     # ---- ficha del caso
 
     def ficha_del_caso(self, caso: Caso, emb: Any = None) -> Ficha:
         """La ficha del grupo sin los vínculos que la persona rechazó, con el vacío que lo dice."""
+        return self._construir(caso.id_grupo, caso.modalidad, sorted(self.vinculos_rechazados(caso.id_caso)), emb)
+
+    def _construir(self, id_grupo: str, modalidad: str, rechazados: Sequence[str], emb: Any = None) -> Ficha:
+        """Arma la ficha desde la base de señales de hoy. Si el grupo ya no existe (el pipeline lo volvió a agrupar), lo dice con claridad."""
         from src.ficha import construir_ficha
 
-        rechazados = sorted(self.vinculos_rechazados(caso.id_caso))
         vc = self.cfg.vinculo_rechazado
         extra = [VacioFicha(codigo=vc.codigo, texto=vc.texto.format(n=len(rechazados)), verificacion=vc.verificacion)] if rechazados else []
-        con = db.conectar(self.base_fichas, solo_lectura=True)
         try:
-            return construir_ficha(caso.id_grupo, caso.modalidad, con, emb=emb, excluir_vinculos=rechazados, vacios_extra=extra)
-        finally:
-            con.close()
+            con = db.conectar(self.base_fichas, solo_lectura=True)
+            try:
+                return construir_ficha(id_grupo, modalidad, con, emb=emb, excluir_vinculos=list(rechazados), vacios_extra=extra)
+            finally:
+                con.close()
+        except (LookupError, duckdb.Error) as exc:
+            raise ErrorDeRevision(
+                f"{id_grupo}: el grupo ya no existe en la base de señales actual (el pipeline volvió a agrupar los titulares). "
+                "El caso se conserva con su última ficha revisada: se puede exportar, aprobar, descartar o reabrir, pero no regenerar ni cambiar vínculos."
+            ) from exc
+
+    def instantaneas(self, id_caso: str) -> list[Instantanea]:
+        """Las fichas guardadas del caso, de la más vieja a la más nueva (solo se agregan)."""
+        with self._conexion() as con:
+            filas = [] if con is None else self._filas(con, "SELECT * FROM fichas_revisadas WHERE id_caso = ? ORDER BY id_instantanea", [id_caso])
+        return [Instantanea(**{**f, "ficha": Ficha.model_validate_json(f["ficha"])}) for f in filas]
+
+    def ficha_revisada(self, id_caso: str) -> Ficha | None:
+        """La última ficha que una persona revisó (la que se exporta); ``None`` si el caso no tiene ninguna guardada."""
+        guardadas = self.instantaneas(id_caso)
+        return guardadas[-1].ficha if guardadas else None
 
     def entrada_del_caso(self, caso: Caso, emb: Any = None) -> Any:
         """La entrada de la generación (``EntradaFicha``) de la ficha del caso, sin los vínculos rechazados."""
@@ -620,7 +742,10 @@ class Revisiones:
         caso = self.caso(id_caso)
         self._comprobar("regenerar", self.estado(id_caso), None, comentario)
         self._rol(revisor, caso.modalidad)
-        entrada = self.entrada_del_caso(caso)
+        from src.generacion import desde_ficha
+
+        ficha = self.ficha_del_caso(caso)
+        entrada = desde_ficha(ficha)
         generador = generador or generar_paquete
         paquete = generador(caso.id_grupo, caso.modalidad, solo_cache=solo_cache, base=self.base_fichas, entrada=entrada, **opciones)
         previa = self.version_actual(id_caso)
@@ -629,7 +754,7 @@ class Revisiones:
             hacia = self._comprobar("regenerar", estado, None, comentario)
             n = self._insertar_version(con, caso, _a_dict(paquete), ORIGEN_GENERADA, revisor, previa.version if previa else None)
             detalle = {"version_base": previa.version if previa else None, "vinculos_excluidos": sorted(self.vinculos_rechazados(id_caso)), "solo_cache": solo_cache}
-            self._insertar(con, caso, "regenerar", revisor, estado=estado, hacia=hacia, version=n, comentario=comentario, detalle=detalle)
+            self._insertar(con, caso, "regenerar", revisor, estado=estado, hacia=hacia, version=n, comentario=comentario, detalle=detalle, ficha=ficha)
         return self.version_actual(id_caso)  # type: ignore[return-value]
 
 
@@ -650,10 +775,11 @@ def principal(argv: list[str] | None = None) -> int:
     grupo.add_argument("--historial", metavar="CASO-…", help="filas de la tabla revisiones del caso")
     parser.add_argument("--modalidad", choices=MODALIDADES, default="editorial")
     parser.add_argument("--revisor", help=f"uno de: {', '.join(sorted({r.nombre for r in cfg.revisores}))} (sin autenticación, D-49)")
-    parser.add_argument("--revision", type=Path, default=RAIZ / cfg.almacen.base)
+    parser.add_argument("--demo", action="store_true", help="usa la base de revisiones de la demo (aparte de la real)")
+    parser.add_argument("--revision", type=Path, default=None, help="por defecto la real, o la de la demo con --demo")
     parser.add_argument("--base", type=Path, default=None, help="senales.duckdb (por defecto la del pipeline)")
     args = parser.parse_args(argv)
-    rev = Revisiones(args.revision, args.base, cfg)
+    rev = Revisiones(args.revision or ruta_de_revision(args.demo, cfg), args.base, cfg, demo=args.demo, huellas=huellas_de_exportacion(args.demo, cfg))
     try:
         if args.abrir:
             if not args.revisor:

@@ -32,7 +32,7 @@ from src.configuracion import RAIZ, ConfigRevision, cargar_interfaz, cargar_revi
 from src.esquemas import ETIQUETA_BORRADOR, Ficha, RegistroFichasJsonl
 from src.ficha import CARPETA_PLANTILLAS, a_registro, escapar_markdown, vista
 from src.interfaz import hora_panama, secciones_de_paquete
-from src.revision import ErrorDeRevision, Fila, Revisiones
+from src.revision import ErrorDeRevision, Fila, Revisiones, huellas_de_exportacion, ruta_de_revision, rutas_de_exportacion
 
 PLANTILLA_CASO = "caso.md.j2"
 FORMATO_FECHA = "%Y-%m-%dT%H:%M:%SZ"
@@ -179,26 +179,36 @@ def registro_jsonl(rev: Revisiones, id_caso: str, ficha: Ficha) -> dict[str, Any
     return r
 
 
-def escribir_fichas_jsonl(rev: Revisiones, ruta: Path, fichas: dict[str, Ficha] | None = None) -> int:
-    """Reescribe ``fichas.jsonl`` con **todos** los casos (una línea cada uno, ordenados por ``CASO-``). Devuelve cuántas."""
-    fichas = fichas or {}
+def escribir_fichas_jsonl(rev: Revisiones, ruta: Path) -> int:
+    """Reescribe ``fichas.jsonl`` con los casos de ``rev`` (una línea cada uno, ordenados por ``CASO-``), cada uno desde **su ficha
+    guardada** al revisarla: nunca se reconstruye desde ``senales.duckdb``, así que un caso huérfano no rompe a los demás (B2, M2).
+    Devuelve cuántas líneas escribió."""
     lineas = []
     for caso in rev.casos():
-        ficha = fichas.get(caso.id_caso) or rev.ficha_del_caso(caso)
-        lineas.append(json.dumps(registro_jsonl(rev, caso.id_caso, ficha), ensure_ascii=False, sort_keys=True))
+        if (ficha := rev.ficha_revisada(caso.id_caso)) is not None:
+            lineas.append(json.dumps(registro_jsonl(rev, caso.id_caso, ficha), ensure_ascii=False, sort_keys=True))
     ruta.parent.mkdir(parents=True, exist_ok=True)
-    ruta.write_text("".join(f"{l}\n" for l in lineas), encoding="utf-8")
+    temporal = ruta.with_name(ruta.name + ".tmp")
+    temporal.write_text("".join(f"{l}\n" for l in lineas), encoding="utf-8")
+    temporal.replace(ruta)
     return len(lineas)
 
 
-def exportar_caso(rev: Revisiones, id_caso: str, carpeta: Path | None = None, ruta_jsonl: Path | None = None, ficha: Ficha | None = None, emb: Any = None) -> Exportacion:
-    """Escribe el Markdown y la fila CSV del caso (y actualiza ``fichas.jsonl``). Volver a exportar actualiza, no duplica."""
+def exportar_caso(rev: Revisiones, id_caso: str, carpeta: Path | None = None, ruta_jsonl: Path | None = None) -> Exportacion:
+    """Escribe el Markdown y la fila CSV **solo del caso pedido** (y regenera ``fichas.jsonl`` desde las fichas guardadas).
+
+    Sale de la ficha que una persona revisó (``Revisiones.ficha_revisada``), no de la base de señales de hoy. Volver a exportar
+    actualiza, no duplica. Sin rutas, usa las reales o, si ``rev.demo``, las de la demo: la demo nunca pisa lo real (X31).
+    """
     cfg = rev.cfg
     caso = rev.caso(id_caso)
     if rev.estado(id_caso) == cfg.estado_inicial:
         raise ErrorDeRevision(f"{id_caso}: no se abrió para revisar")
-    ficha = ficha or rev.ficha_del_caso(caso, emb)
-    carpeta = carpeta or RAIZ / cfg.exportacion.carpeta
+    ficha = rev.ficha_revisada(id_caso)
+    if ficha is None:
+        raise ErrorDeRevision(f"{id_caso}: no tiene una ficha revisada guardada que exportar")
+    por_defecto = rutas_de_exportacion(rev.demo, cfg, RAIZ)
+    carpeta = carpeta or por_defecto[0]
     carpeta.mkdir(parents=True, exist_ok=True)
     ahora = rev.ahora()
     fila = fila_notion(rev, id_caso, ficha, ahora)
@@ -207,7 +217,7 @@ def exportar_caso(rev: Revisiones, id_caso: str, carpeta: Path | None = None, ru
     ruta_md.write_text(md, encoding="utf-8")
     ruta_csv = carpeta / cfg.exportacion.csv
     actualizada = escribir_csv(ruta_csv, fila, cfg.exportacion.columnas)
-    escribir_fichas_jsonl(rev, ruta_jsonl or RAIZ / cfg.exportacion.fichas_jsonl, {id_caso: ficha})
+    escribir_fichas_jsonl(rev, ruta_jsonl or por_defecto[1])
     return Exportacion(id_caso, ruta_md, ruta_csv, md, fila, actualizada)
 
 
@@ -216,12 +226,15 @@ def principal(argv: list[str] | None = None) -> int:
     cfg = cargar_revision()
     parser = argparse.ArgumentParser(description="E1-16: exporta un caso a Markdown y a la fila CSV de «Casos y evidencias» (Notion)")
     parser.add_argument("--caso", required=True, help="ID del caso, p. ej. CASO-001")
-    parser.add_argument("--revision", type=Path, default=RAIZ / cfg.almacen.base)
-    parser.add_argument("--base", type=Path, default=None, help="senales.duckdb (por defecto la del pipeline)")
-    parser.add_argument("--salida", type=Path, default=RAIZ / cfg.exportacion.carpeta)
-    parser.add_argument("--fichas", type=Path, default=RAIZ / cfg.exportacion.fichas_jsonl)
+    parser.add_argument("--demo", action="store_true", help="revisiones y exportación de la demo (rutas aparte de las reales)")
+    parser.add_argument("--revision", type=Path, default=None, help="por defecto la base real, o la de la demo con --demo")
+    parser.add_argument("--base", type=Path, default=None, help="senales.duckdb (ya no hace falta para exportar: se exporta la ficha guardada)")
+    parser.add_argument("--salida", type=Path, default=None)
+    parser.add_argument("--fichas", type=Path, default=None)
     args = parser.parse_args(argv)
-    rev = Revisiones(args.revision, args.base, cfg)
+    carpeta, jsonl = rutas_de_exportacion(args.demo, cfg, RAIZ)
+    args.salida, args.fichas = args.salida or carpeta, args.fichas or jsonl
+    rev = Revisiones(args.revision or ruta_de_revision(args.demo, cfg), args.base, cfg, demo=args.demo, huellas=huellas_de_exportacion(args.demo, cfg, RAIZ))
     try:
         e = exportar_caso(rev, args.caso, args.salida, args.fichas)
     except (ErrorDeRevision, LookupError, RuntimeError, ValueError) as exc:

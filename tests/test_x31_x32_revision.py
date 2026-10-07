@@ -198,7 +198,7 @@ def test_un_conflicto_de_concurrencia_se_traduce_a_un_aviso_honesto(rev, monkeyp
         raise duckdb.TransactionException("PRIMARY KEY or UNIQUE constraint violation")
 
     monkeypatch.setattr(Revisiones, "_insertar", choca)
-    with pytest.raises(rv.ConflictoDeConcurrencia, match="otra persona") as e:
+    with pytest.raises(rv.ConflictoDeConcurrencia, match="(?i)otra persona") as e:
         rev.aceptar(c, EDITORIAL)
     assert isinstance(e.value, ErrorDeRevision)
 
@@ -280,5 +280,6 @@ def test_la_pantalla_abre_un_caso_huerfano_con_su_ficha_guardada(app, monkeypatc
     r = Revisiones(tmp_path / "revision.duckdb", base)
     r.abrir(h.G_SISMO, "editorial", EDITORIAL)
     monkeypatch.setattr(ui, "elegir_base", lambda demo, cfg, base_normal=None: (base_huerfana, None))
+    app.session_state["pantalla"] = "revision"
     at = app.run()
     assert not at.exception and "CASO-001" in "\n".join(str(w.value) for w in list(at.warning) + list(at.info))

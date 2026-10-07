@@ -208,7 +208,7 @@ def _aplicar(rev: Revisiones, c: str, accion: str) -> Any:
         "aceptar": lambda: rev.aceptar(c, EDITORIAL),
         "corregir": lambda: rev.corregir(c, EDITORIAL, {"afirmaciones.A2": "TVN Panamá reporta que el país mantiene la inflación estable"}),
         "regenerar": lambda: rev.regenerar(c, EDITORIAL, generador=generador_de_prueba()),
-        "pedir_evidencia": lambda: rev.pedir_evidencia(c, EDITORIAL, []),
+        "pedir_evidencia": lambda: rev.pedir_evidencia(c, EDITORIAL, ["sin_dato_oficial"]),
         "descartar": lambda: rev.descartar(c, EDITORIAL, "Duplicado de otro caso"),
         "reabrir": lambda: rev.reabrir(c, EDITORIAL, "motivo"),
         "rechazar_vinculo": lambda: rev.rechazar_vinculo(c, EDITORIAL, ID_COL, "mal aplicado"),
@@ -219,7 +219,7 @@ def _aplicar(rev: Revisiones, c: str, accion: str) -> Any:
 def _llevar_a(rev: Revisiones, estado: str) -> str:
     c = abrir(rev).id_caso
     if estado == "requiere evidencia":
-        rev.pedir_evidencia(c, EDITORIAL, [])
+        rev.pedir_evidencia(c, EDITORIAL, ["sin_dato_oficial"])
     elif estado == "aprobado como borrador":
         rev.aceptar(c, EDITORIAL)
     elif estado == "descartado":

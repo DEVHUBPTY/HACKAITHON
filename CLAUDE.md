@@ -51,7 +51,7 @@ poetry run python -m src.consulta "pregunta"         # consulta en español con 
 poetry run python -m eval.recuperacion               # Recall@5 y abstención, semántica vs. BM25, con n e IC
 poetry run streamlit run app.py                      # interfaz: 6 pantallas (E1-15); ?caso=GRP-… o ?caso=CASO-… abre la ficha; la pantalla Revisión es el flujo de la etapa 7 (E1-16)
 poetry run python -m src.revision --abrir GRP-… --revisor "Nombre"   # abre el grupo como CASO-… (también --estado GRP-…, --historial CASO-…); las acciones se hacen en la app (E1-16)
-poetry run python -m src.exportar --caso CASO-001    # Markdown + fila CSV de «Casos y evidencias» (Notion) en outputs/notion/, y outputs/fichas.jsonl; volver a exportar actualiza (E1-16)
+poetry run python -m src.exportar --caso CASO-001    # (--demo: rutas de la demo) Markdown + fila CSV de «Casos y evidencias» (Notion) en outputs/notion/, y outputs/fichas.jsonl; volver a exportar actualiza (E1-16)
 poetry run python -m eval.revision                   # tasas de aceptación, corrección y descarte con n e IC, motivos, tiempo por caso y % de afirmaciones editadas → outputs/revision.json (E1-16)
 poetry run streamlit run app.py -- --demo            # modo demo (data/demo.duckdb, C-06) con los pasos de docs/demo.md
 poetry run python -m scripts.verificar_offline       # chequeo antes del pitch
@@ -168,7 +168,7 @@ El `tema` de `noticias.csv` es el **tema de origen** (consulta de GDELT o catego
 - **Ningún número mágico en `src/`**: pesos, umbrales y ventanas viven en `config/*.yaml`.
 - Todo YAML de `config/` se carga con `src.configuracion` y se valida con un modelo pydantic que prohíbe claves desconocidas (D-79).
 - Ningún `if modalidad == ...` en `src/`: las diferencias entre modalidades van en YAML, plantillas y reglas del validador.
-- **Revisión humana (E1-16, D-46 a D-50):** las acciones, transiciones, motivos de descarte y revisores viven en `config/revision.yaml`. El botón se llama **«Aprobar como borrador»** y la ficha aprobada conserva la marca BORRADOR. `casos`, `versiones` y `revisiones` (en `data/revision.duckdb`) son de **solo agregar**: no hay `UPDATE` ni `DELETE`, y el estado actual es la última fila. Regenerar nunca sobrescribe una versión corregida. Todo texto corregido pasa por `revalidar_correccion` y la persona confirma cada advertencia. **No hay autenticación** (el revisor se elige de la lista): limitación declarada, no un control de seguridad. Lo que el reto exige a una persona (la revisión editorial) lo sigue haciendo una persona.
+- **Revisión humana (E1-16, D-46 a D-50):** las acciones, transiciones, motivos de descarte y revisores viven en `config/revision.yaml`. El botón se llama **«Aprobar como borrador»** y la ficha aprobada conserva la marca BORRADOR. `casos`, `versiones` y `revisiones` (en `data/revision.duckdb`) son de **solo agregar**: no hay `UPDATE` ni `DELETE`, y el estado actual es la última fila. Regenerar nunca sobrescribe una versión corregida. La ficha que se revisó queda guardada (`fichas_revisadas`) y se **exporta desde ahí**, no desde `senales.duckdb`; la demo exporta a `outputs/demo/`; un `CASO-` nunca se reutiliza (ver `docs/notion.md`). Todo texto corregido pasa por `revalidar_correccion` y la persona confirma cada advertencia. **No hay autenticación** (el revisor se elige de la lista): limitación declarada, no un control de seguridad. Lo que el reto exige a una persona (la revisión editorial) lo sigue haciendo una persona.
 
 ## Seguridad
 
