@@ -141,7 +141,7 @@ class Gdelt(ModeloConfig):
     # tema de origen (D-62) -> pata ('locales', 'internacional') -> definición; ver src/consultas_gdelt.py
     consultas: dict[str, dict[str, PataConsulta]]
     motivo_cambio_consultas: str
-    # Consultas reemplazadas (tema -> consulta antigua): sus crudos siguen en raw/ pero no alimentan el snapshot (D-83).
+    # Consultas reemplazadas (tema -> consulta antigua): sus crudos siguen en raw/ y SÍ alimentan el snapshot, declarados con su consulta (D-89, corrige D-83).
     consultas_historicas: dict[str, str]
     largo_minimo_termino: int
 
