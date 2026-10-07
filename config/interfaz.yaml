@@ -27,6 +27,7 @@ pesos_editables:                  # E3-04: vista «¿y si los pesos fueran otros
   minimo: 5                         # cada peso debe estar entre `minimo` y `maximo` (puntos); la suma es siempre 100 (PDF sección 4)
   maximo: 50
   paso: 1
+  decimales: 2                      # los pesos se redondean a estos decimales antes de validar y de mostrar (50.0000001 es 50, no «fuera de rango»)
   justificacion_minima_caracteres: 15   # PDF: «permitir justificar cambios de pesos»: sin justificación no se puede descargar la propuesta
   movimientos_mostrados: 10         # filas de la tabla de movimientos frente al ranking oficial
   textos:

@@ -85,6 +85,26 @@ def test_un_peso_fuera_del_rango_se_rechaza_aunque_la_suma_sea_100() -> None:
     assert any("E" in e for e in ui.validar_pesos(cero, CFG))      # con minimo > 0, anular un componente no se permite
 
 
+def test_un_peso_apenas_fuera_de_rango_por_ruido_de_coma_flotante_se_redondea_y_es_valido() -> None:
+    """X94: R = 50.0000001 era "R (50) debe estar entre 5 y 50" (contradictorio); redondeado a la config es 50 y vale."""
+    ruido = {**OFICIAL, "R": CFG.maximo + 10 ** -(CFG.decimales + 1), "I": OFICIAL["I"] + OFICIAL["R"] - CFG.maximo}
+    assert ui.redondear_pesos(ruido, CFG)["R"] == CFG.maximo
+    assert ui.validar_pesos(ruido, CFG) == []
+
+
+def test_un_peso_realmente_fuera_de_rango_muestra_el_valor_redondeado_sin_contradecirse() -> None:
+    errores = ui.validar_pesos({**OFICIAL, "R": 50.5, "I": 14.5, "N": 5.0}, CFG)
+    assert errores == [CFG.textos.rango.format(componente="R", valor="50.5", minimo="5", maximo="50")]
+
+
+def test_una_suma_apenas_distinta_por_ruido_se_redondea_y_no_dice_suman_100_y_deben_sumar_100() -> None:
+    """X94: E = 10.000000001 daba "Los pesos suman 100 y deben sumar 100"."""
+    ruido = {**OFICIAL, "E": OFICIAL["E"] + 10 ** -(CFG.decimales + 1)}
+    assert ui.validar_pesos(ruido, CFG) == []
+    real = {**OFICIAL, "E": OFICIAL["E"] + 0.5}      # 100.5 es una suma realmente distinta
+    assert ui.validar_pesos(real, CFG) == [CFG.textos.suma.format(suma="100.5", objetivo="100")]
+
+
 def test_faltan_pesos() -> None:
     assert ui.validar_pesos({"R": 100}, CFG) == ["Faltan pesos: I, U, N, E."]
 

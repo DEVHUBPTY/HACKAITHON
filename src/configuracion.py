@@ -2442,6 +2442,7 @@ class PesosEditablesInterfaz(ModeloConfig):
     minimo: float = Field(ge=0)
     maximo: float = Field(gt=0, le=100)
     paso: float = Field(gt=0)
+    decimales: int = Field(ge=0, le=6)
     justificacion_minima_caracteres: int = Field(ge=1)
     movimientos_mostrados: int = Field(ge=1)
     textos: TextosPesosEditables

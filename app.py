@@ -219,6 +219,7 @@ def escenario_de_pesos_ui(ctx: ui.Contexto) -> list[ui.FilaBandeja]:
             k: c.number_input(f"Peso {k}", min_value=0.0, max_value=100.0, value=oficiales[k], step=cfg.paso, key=f"peso_{k}", help=f"Oficial: {ui._numero(oficiales[k])}. Permitido: {ui._numero(cfg.minimo)} a {ui._numero(cfg.maximo)}.")
             for (k, c) in zip(oficiales, columnas, strict=True)
         }
+        pesos = ui.redondear_pesos(pesos, cfg)      # X94: lo que se valida, se muestra y se usa es el valor redondeado
         st.button("Volver a los pesos oficiales", key="pesos_restablecer", on_click=lambda: [st.session_state.pop(f"peso_{k}", None) for k in oficiales])
         st.caption(f"Suma: {ui._numero(sum(pesos.values()))} de {ui._numero(sum(oficiales.values()))}.")
         errores = ui.validar_pesos(pesos, cfg)

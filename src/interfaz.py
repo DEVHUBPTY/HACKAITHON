@@ -721,6 +721,7 @@ def validar_pesos(pesos: Mapping[str, float], cfg: PesosEditablesInterfaz | None
     faltan = [k for k in COMPONENTES if k not in pesos]
     if faltan:
         return [f"Faltan pesos: {', '.join(faltan)}."]
+    pesos = redondear_pesos(pesos, cfg)          # X94: se valida (y se muestra) el valor redondeado, no el ruido de coma flotante
     errores = [
         cfg.textos.rango.format(componente=k, valor=_numero(pesos[k]), minimo=_numero(cfg.minimo), maximo=_numero(cfg.maximo))
         for k in COMPONENTES
@@ -730,6 +731,12 @@ def validar_pesos(pesos: Mapping[str, float], cfg: PesosEditablesInterfaz | None
     if abs(suma - objetivo) > TOLERANCIA_SUMA:
         errores.append(cfg.textos.suma.format(suma=_numero(suma), objetivo=_numero(objetivo)))
     return errores
+
+
+def redondear_pesos(pesos: Mapping[str, float], cfg: PesosEditablesInterfaz | None = None) -> dict[str, float]:
+    """Los pesos redondeados a ``pesos_editables.decimales`` (config): lo que se valida, se muestra y se usa en el escenario."""
+    cfg = cfg or cargar_interfaz().pesos_editables
+    return {k: round(float(v), cfg.decimales) for k, v in pesos.items()}
 
 
 TOLERANCIA_SUMA = 1e-9   # épsilon de la suma en coma flotante; no es un parámetro del negocio
