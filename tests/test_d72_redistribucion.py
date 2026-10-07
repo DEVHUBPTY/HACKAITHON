@@ -40,8 +40,8 @@ def test_cada_ruta_restringida_esta_en_gitignore(fuente: str, ruta: str) -> None
     assert _git("check-ignore", "-q", sonda).returncode == 0, f"{fuente}: {ruta} no está en .gitignore"
 
 
-def test_el_catalogo_funciona_sin_el_csv_local_de_la_sbp(tmp_path: Path) -> None:
-    """Sin ``sbp_series.csv`` (no se versiona) el catálogo declara los nulos como no verificables en vez de fallar."""
+def test_el_catalogo_funciona_sin_el_csv_de_la_sbp(tmp_path: Path) -> None:
+    """Sin ``sbp_series.csv`` (se versiona por D-116, pero puede faltar) el catálogo declara los nulos como no verificables en vez de fallar."""
     import json
 
     manifest = json.loads((RAIZ / "data" / "manifest.json").read_text(encoding="utf-8"))

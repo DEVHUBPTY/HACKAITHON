@@ -346,7 +346,7 @@ independiente del mismo despacho cuenta como otra procedencia porque ninguna reg
 | Qué período se muestra | El último período con valor de cada serie dentro de 2024 (hoy 2024-12); una serie sin valores no aporta y un vacío no es 0 | Supuesto | `test_un_valor_nulo_no_se_vincula_ni_se_rellena_con_cero` |
 | Otros subtemas | Nunca se vinculan a la SBP | Spec E3-02 (solo banca) | `test_otros_subtemas_nunca_se_vinculan_a_la_sbp` |
 | Texto de la nota de período (`sbp.nota_periodo`) y de la regla (`sbp.plantilla_regla`) | «Dato mensual de {periodo} (series de 2024), no del mes de la noticia.» | Spec E3-02 (limitación visible) | `test_la_configuracion_de_vinculos_pide_los_textos_del_periodo` |
-| Decimales al mostrar un dato de la SBP (`presentacion.decimales_valor_sbp`) | 4 | Supuesto (la morosidad es una proporción de 0 a 1; con 2 decimales 0,1234 se vería 0,02) | `test_la_ficha_bancaria_muestra_un_dato_sbp_con_periodo_unidad_pagina_y_limitacion` |
+| Decimales al mostrar un dato de la SBP (`presentacion.decimales_valor_sbp`) | 4 | Supuesto (la morosidad es una proporción de 0 a 1; con 2 decimales, 0,1235 y 0,1246 se verían ambos 0,12) | `test_la_ficha_bancaria_muestra_un_dato_sbp_con_periodo_unidad_pagina_y_limitacion` |
 | Proporciones del reporte (`reporte_vinculos.json` → `sbp`) | n, de e IC 95 % de Wilson (grupos de banca con y sin dato) | CLAUDE.md (toda proporción con n e IC) | `test_el_subtema_de_banca_vincula_el_ultimo_periodo_de_cada_serie` |
 | Texto obligatorio de toda salida con datos de la SBP | «El análisis es del equipo y no una opinión oficial de la SBP» (`sbp.limitacion` de `fuentes.yaml`) | Spec E3-02 | `test_la_ficha_bancaria_muestra_un_dato_sbp_con_periodo_unidad_pagina_y_limitacion` |
 

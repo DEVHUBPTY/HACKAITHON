@@ -212,12 +212,12 @@ def _fila_sbp(
     """Fuente D (E3-02): las series agregadas de la SBP, con la huella del CSV y la de cada .xlsx descargado."""
     sb = q["sbp"]
     series = "; ".join(f"{k} ({v['nombre']}, {v['unidad']})" for k, v in sb["series"].items())
-    ruta = processed / "sbp_series.csv"   # no se versiona (D-72, X84): sin el CSV local, los nulos se declaran no verificables
+    ruta = processed / "sbp_series.csv"   # se versiona (D-116, riesgo aceptado): si falta, los nulos se declaran no verificables
     filas = []
     if ruta.exists():
         with ruta.open(encoding="utf-8", newline="") as f:
             filas = list(csv.DictReader(f))
-    nulos = sum(1 for x in filas if x["valor"] == "") if filas else "no verificables aquí (el CSV es local)"
+    nulos = sum(1 for x in filas if x["valor"] == "") if filas else "no verificables aquí (falta el CSV)"
     crudos = "; ".join(f"{k.split('/')[-1]}: {v['sha256']}" for k, v in sorted(manifest["crudos"].items()) if k.startswith("raw/sbp/"))
     return {
         "Fuente": "D · SBP (Superintendencia de Bancos de Panamá)",
