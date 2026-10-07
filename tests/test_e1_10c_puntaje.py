@@ -129,6 +129,9 @@ def _gdelt(titulo: str) -> limpieza.Resultado:
         "Suben los fletes marítimos entre Asia y la costa este de EE. UU.",
         "Navieras desvían portacontenedores al Canal de Suez",
         "US crude exports to Asia rise",                                          # «crude» como «crudo» (X54)
+        "Container shipping rates from China to US west coast jump",
+        "Container rates on the Asia\u2013US route climb",                          # X59: ruta explícita
+        "Shipping lines cut Asia-US capacity",
     ],
 )
 def test_x44_el_comercio_maritimo_y_de_combustibles_es_regional_no_ruido(titulo: str) -> None:
@@ -292,6 +295,8 @@ def test_x53_con_contexto_las_mismas_palabras_si_respaldan(subtema: str, titular
         "Germany imports more LNG from Qatar",
         "Brazil soybean cargoes delayed at Santos",
         "Nigeria boosts crude exports",
+        "China fuel imports surge as US sanctions bite Iran",                     # X59: «US» no es la ruta, y «us» no es EE. UU.
+        "Japan imports more LNG from Qatar, US analysts say",                     # X59: «US analysts» es el pronombre/adjetivo, no un destino
     ],
 )
 def test_x54_comercio_maritimo_o_de_combustibles_sin_ancla_de_d84_sigue_siendo_ruido(titulo: str) -> None:
