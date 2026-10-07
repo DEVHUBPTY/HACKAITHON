@@ -10,7 +10,7 @@ comparacion:
   decimales_empate: 1
 
 impacto:
-  alcance_subtema_desconocido: 0.5   # grupo sin subtema (tema `sin_tema`): alcance neutro, igual que `alcance_geografico.desconocido`
+  alcance_subtema_desconocido: 0.5   # grupo sin subtema (tema `sin_tema`): alcance neutro (D-109 bajó `alcance_geografico.desconocido` a 0.3; el subtema desconocido sigue en 0.5)
 
 dato_oficial:                     # qué vínculos de `vinculos` (columna `tipo`) cuentan como dato oficial en E y en el estado de evidencia
   relaciones_aceptadas: [directa, evento]   # `indirecta` NO: el indicador es contexto lejano y no mide el hecho (vinculos.yaml)
@@ -20,6 +20,23 @@ geografia:                        # alcance geográfico de I: se buscan los tér
   # Términos que nombran al país y a una provincia a la vez: solo cuentan como la provincia si los precede alguno de estos prefijos.
   prefijos_obligatorios:
     Panamá: ["provincia de"]
+    # D-110: nombres de lugar que también son nombres de persona o palabras comunes (David Beckham, ministro Herrera, «remedios»,
+    # «la mesa», «Santiago» apóstol…): solo cuentan como lugar si los precede un prefijo locativo.
+    Herrera: &locativos [en, de, del, desde, hacia, distrito de, provincia de, corregimiento de, ciudad de]
+    Colón: *locativos
+    David: *locativos
+    Santiago: *locativos
+    La Mesa: *locativos
+    Remedios: *locativos
+    Donoso: *locativos
+    Renacimiento: *locativos
+    San Francisco: *locativos
+    San Lorenzo: *locativos
+    Santa Isabel: *locativos
+    Las Palmas: *locativos
+    Las Minas: *locativos
+    Atalaya: *locativos
+    Montijo: *locativos
   # E1-10c (X42): un término de `nacional_implicito_terminos` no cuenta si lo precede alguno de estos prefijos.
   prefijos_excluidos:
     Panamá: ["ciudad de", "provincia de", "distrito de"]

@@ -100,28 +100,6 @@
     },
     {
       "posicion": 2,
-      "id_grupo": "GRP-ef3acec21e",
-      "titular_central": "Minsa: Adelantan vacunación contra VSR en embarazadas",
-      "puntaje": 90.23,
-      "empate_con": 0,
-      "rango": "alto",
-      "componentes": {
-        "R": 1.0,
-        "I": 1.0,
-        "U": 0.828,
-        "N": 1.0,
-        "E": 0.3667
-      },
-      "estado_de_evidencia": "insuficiente",
-      "accion": "Investigar ya",
-      "vacios": [
-        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
-      ],
-      "contradicciones": []
-    },
-    {
-      "posicion": 3,
       "id_grupo": "GRP-038c4f0643",
       "titular_central": "Clima en Panamá: Martes con lluvias y tormentas eléctricas en varias regiones durante la tarde",
       "puntaje": 89.59,
@@ -143,54 +121,7 @@
       "contradicciones": []
     },
     {
-      "posicion": 4,
-      "id_grupo": "GRP-1df3ab1e22",
-      "titular_central": "Mides solicita $47 millones para completar último pago de transferencias monetarias de 2026",
-      "puntaje": 87.36,
-      "empate_con": 0,
-      "rango": "alto",
-      "componentes": {
-        "R": 1.0,
-        "I": 0.75,
-        "U": 0.9974,
-        "N": 1.0,
-        "E": 0.3667
-      },
-      "estado_de_evidencia": "insuficiente",
-      "accion": "Investigar ya",
-      "vacios": [
-        "subtema no determinado: se usó el alcance neutro de impacto",
-        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
-        "los titulares traen cifras y no hay dato oficial vinculado",
-        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
-      ],
-      "contradicciones": []
-    },
-    {
-      "posicion": 5,
-      "id_grupo": "GRP-276c88e7f3",
-      "titular_central": "Tribunal Electoral avanza en la coordinación del Plan General del Elecciones de 2029",
-      "puntaje": 87.13,
-      "empate_con": 0,
-      "rango": "alto",
-      "componentes": {
-        "R": 1.0,
-        "I": 0.75,
-        "U": 0.9856,
-        "N": 1.0,
-        "E": 0.3667
-      },
-      "estado_de_evidencia": "insuficiente",
-      "accion": "Investigar ya",
-      "vacios": [
-        "subtema no determinado: se usó el alcance neutro de impacto",
-        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
-      ],
-      "contradicciones": []
-    },
-    {
-      "posicion": 6,
+      "posicion": 3,
       "id_grupo": "GRP-29baaf270e",
       "titular_central": "Panamá mantiene vigilancia epidemiológica ante caso sospechoso de peste neumónica en Rusia",
       "puntaje": 86.97,
@@ -213,31 +144,7 @@
       "contradicciones": []
     },
     {
-      "posicion": 7,
-      "id_grupo": "GRP-6e737ecad5",
-      "titular_central": "MOP solicita $43.1 millones para pagar compromisos y continuar obras en ejecución",
-      "puntaje": 86.74,
-      "empate_con": 0,
-      "rango": "alto",
-      "componentes": {
-        "R": 1.0,
-        "I": 0.75,
-        "U": 0.9659,
-        "N": 1.0,
-        "E": 0.3667
-      },
-      "estado_de_evidencia": "insuficiente",
-      "accion": "Investigar ya",
-      "vacios": [
-        "subtema no determinado: se usó el alcance neutro de impacto",
-        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
-        "los titulares traen cifras y no hay dato oficial vinculado",
-        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
-      ],
-      "contradicciones": []
-    },
-    {
-      "posicion": 8,
+      "posicion": 4,
       "id_grupo": "GRP-1c2f1d950d",
       "titular_central": "Obispos panameños presentarán en Roma la realidad de sus diócesis durante la visita ad limina",
       "puntaje": 86.48,
@@ -260,33 +167,11 @@
       "contradicciones": []
     },
     {
-      "posicion": 9,
-      "id_grupo": "GRP-84a6b3a04b",
-      "titular_central": "Colegios particulares atribuyen aumento de matrícula a migración al sector oficial y altos costos de operación",
-      "puntaje": 85.99,
-      "empate_con": 0,
-      "rango": "alto",
-      "componentes": {
-        "R": 1.0,
-        "I": 0.75,
-        "U": 0.9286,
-        "N": 1.0,
-        "E": 0.3667
-      },
-      "estado_de_evidencia": "insuficiente",
-      "accion": "Investigar ya",
-      "vacios": [
-        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
-      ],
-      "contradicciones": []
-    },
-    {
-      "posicion": 10,
+      "posicion": 5,
       "id_grupo": "GRP-f4a44182b1",
       "titular_central": "Panamá reforzará su presencia marítima en Vietnam con nueva oficina de servicio técnico de la AMP en Ho Chi Minh",
       "puntaje": 85.9,
-      "empate_con": 1,
+      "empate_con": 0,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
@@ -301,6 +186,122 @@
         "subtema no determinado: se usó el alcance neutro de impacto",
         "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
         "sin dato oficial vinculado (solo vínculo indirecto: no mide el hecho)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 6,
+      "id_grupo": "GRP-5e6531917f",
+      "titular_central": "Más de 30 mujeres han muerto de forma violenta en Panamá este año",
+      "puntaje": 84.66,
+      "empate_con": 0,
+      "rango": "alto",
+      "componentes": {
+        "R": 1.0,
+        "I": 0.75,
+        "U": 0.862,
+        "N": 1.0,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "subtema no determinado: se usó el alcance neutro de impacto",
+        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "los titulares traen cifras y no hay dato oficial vinculado",
+        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 7,
+      "id_grupo": "GRP-84a6b3a04b",
+      "titular_central": "Colegios particulares atribuyen aumento de matrícula a migración al sector oficial y altos costos de operación",
+      "puntaje": 83.49,
+      "empate_con": 1,
+      "rango": "alto",
+      "componentes": {
+        "R": 1.0,
+        "I": 0.65,
+        "U": 0.9286,
+        "N": 1.0,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 8,
+      "id_grupo": "GRP-39dfe8d714",
+      "titular_central": "Aeropuerto panameño suscribe convenio con empresa asiática",
+      "puntaje": 83.49,
+      "empate_con": 1,
+      "rango": "alto",
+      "componentes": {
+        "R": 1.0,
+        "I": 0.75,
+        "U": 0.9037,
+        "N": 1.0,
+        "E": 0.1667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "subtema no determinado: se usó el alcance neutro de impacto",
+        "urgencia estimada: fecha de publicación desconocida",
+        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)",
+        "1 de 1 titulares sin medio o fecha de publicación conocidos"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 9,
+      "id_grupo": "GRP-87e128925b",
+      "titular_central": "Veraguas: Preocupación por aumento de muertes por enfermedades transmisibles y respiratorias",
+      "puntaje": 82.37,
+      "empate_con": 0,
+      "rango": "alto",
+      "componentes": {
+        "R": 1.0,
+        "I": 0.55,
+        "U": 0.9977,
+        "N": 1.0,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "subtema no determinado: se usó el alcance neutro de impacto",
+        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 10,
+      "id_grupo": "GRP-5ab17b45cd",
+      "titular_central": "Asesinan a taxista en Remedios; fue hallado dentro de su vehículo con varias heridas",
+      "puntaje": 81.65,
+      "empate_con": 0,
+      "rango": "alto",
+      "componentes": {
+        "R": 1.0,
+        "I": 0.55,
+        "U": 0.9616,
+        "N": 1.0,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
       ],
       "contradicciones": []
     }

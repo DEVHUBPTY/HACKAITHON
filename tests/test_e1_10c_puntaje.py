@@ -81,15 +81,28 @@ def _nivel(*titulares: str) -> str:
     "titular",
     [
         "Más de 30 mujeres han muerto de forma violenta en Panamá este año",            # el país nombrado
-        "Ejecutivo sanciona la Ley 552 del Presupuesto del Canal de Panamá por $5,555 millones",
-        "MOP solicita $43.1 millones para pagar compromisos y continuar obras en ejecución",   # institución nacional
-        "Minsa: Adelantan vacunación contra VSR en embarazadas",
+        "Ejecutivo sanciona la Ley 552 del Presupuesto del Canal de Panamá por $5,555 millones",   # el país nombrado (Canal de Panamá)
         "Déficit de personal limita la capacidad operativa de los bomberos en el país",
         "Obispos panameños presentarán en Roma la realidad de sus diócesis",
     ],
 )
-def test_x42_el_pais_o_una_institucion_nacional_dan_alcance_nacional(titular: str) -> None:
+def test_x42_el_pais_o_su_gentilicio_dan_alcance_nacional(titular: str) -> None:
     assert _nivel(titular) == "nacional"
+
+
+@pytest.mark.parametrize(
+    "titular",
+    [
+        "MOP solicita $43.1 millones para pagar compromisos y continuar obras en ejecución",
+        "Minsa: Adelantan vacunación contra VSR en embarazadas",
+        "CSS traslada a un asegurado a otro hospital",
+        "Ejecutivo sanciona la ley de presupuesto",
+        "ACP anuncia nuevo cronograma de tránsito",
+        "Contraloría audita el gasto de la AMP",
+    ],
+)
+def test_d108_una_institucion_nacional_sola_da_desconocido(titular: str) -> None:
+    assert _nivel(titular) == "desconocido"
 
 
 @pytest.mark.parametrize(
@@ -105,6 +118,30 @@ def test_x42_el_pais_o_una_institucion_nacional_dan_alcance_nacional(titular: st
 )
 def test_x42_un_lugar_concreto_manda_sobre_la_mencion_implicita_del_pais(titulares: tuple[str, ...], nivel: str) -> None:
     assert _nivel(*titulares) == nivel
+
+
+@pytest.mark.parametrize(
+    ("titular", "nivel"),
+    [
+        ("David Beckham visita Panamá", "nacional"),                       # David es el nombre de pila, no el distrito
+        ("Lluvias en David dejan calles anegadas", "local"),
+        ("Corte de agua en el distrito de David", "local"),
+        ("Plan para la provincia de Herrera", "provincial"),
+        ("Ministro Herrera anuncia plan del MEF en Panamá", "nacional"),   # Herrera es un apellido
+        ("Santiago Peña llega a Panamá", "nacional"),
+        ("Accidente en Santiago deja tres heridos", "local"),
+        ("Cierran La Mesa de diálogo en Panamá", "nacional"),
+        ("Remedios para la gripe escasean en el país", "nacional"),
+        ("Inundaciones en Remedios", "local"),
+    ],
+)
+def test_d110_un_nombre_de_lugar_que_es_tambien_nombre_propio_solo_cuenta_con_prefijo_locativo(titular: str, nivel: str) -> None:
+    assert _nivel(titular) == nivel
+
+
+def test_d109_el_alcance_desconocido_vale_lo_mismo_que_el_local() -> None:
+    a = REGLAS.impacto.alcance_geografico
+    assert (a.desconocido, a.local) == (0.3, 0.3)
 
 
 # ------------------------------------------------------------------ X44 · notas regionales que afectan a Panamá
