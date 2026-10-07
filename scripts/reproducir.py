@@ -58,6 +58,7 @@ ENTRADAS_QUE_NO_SE_COMPARAN = frozenset({"commit"})  # cambia en cada ejecución
 ESTADO_SIN_CACHE = "sin_cache"
 ESTADO_NO_GENERA = "no_genera"
 LARGO_HASH_EN_PANTALLA = 12
+CARACTERES_DE_ERROR_EN_PANTALLA = 4000  # cola de la salida de un paso que falló
 CODIGO_FALLO = 1
 CODIGO_OK = 0
 
@@ -419,7 +420,7 @@ def _ejecutor_real(ctx: Contexto) -> Callable[[PasoReproduccion], int]:
             return PASOS_INTERNOS[paso.nombre](ctx)
         proceso = subprocess.run(comando_de(paso), cwd=ctx.raiz, capture_output=True, text=True, check=False)  # noqa: S603
         if proceso.returncode != CODIGO_OK:
-            print((proceso.stdout + proceso.stderr)[-4000:], file=sys.stderr)
+            print((proceso.stdout + proceso.stderr)[-CARACTERES_DE_ERROR_EN_PANTALLA:], file=sys.stderr)
         return proceso.returncode
 
     return ejecutar
