@@ -1,0 +1,8 @@
+# E1-15: la demo corre sin red; sin telemetría de uso y sin abrir el navegador por su cuenta.
+[browser]
+gatherUsageStats = false
+
+[server]
+headless = true
+address = "localhost"          # sin consulta de IP pública al arrancar (la demo corre sin red)
+fileWatcherType = "none"
