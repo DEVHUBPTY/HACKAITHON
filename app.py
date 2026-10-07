@@ -188,14 +188,14 @@ def pantalla_calidad(ctx: ui.Contexto) -> None:
 # ------------------------------------------------------------------ 2 · Bandeja
 
 
-def tabla_de_bandeja(ctx: ui.Contexto, filas: Sequence[ui.FilaBandeja]) -> None:
+def tabla_de_bandeja(ctx: ui.Contexto, filas: Sequence[ui.FilaBandeja], modalidad: Any) -> None:
     """Una tabla de la bandeja (la bandeja entera, o el bloque de un sector); con ``Horizonte`` si la modalidad lo calcula."""
     tabla = pd.DataFrame(
         [
             {
                 "#": f.posicion, "Tema": f.tema, "Titular representativo": f.titular, "P": round(f.puntaje, ctx.cfg.bandeja.decimales_puntaje), "Rango": f.rango,
                 **{k: f.componentes[k] for k in ui.COMPONENTES}, "Evidencia": f.estado_evidencia, "Acción": f.accion,
-                **({"Horizonte": f.horizonte} if f.horizonte else {}),
+                **({"Horizonte": ui.etiqueta_de_horizonte(f.horizonte, modalidad)} if f.horizonte else {}),
                 "Origen": ctx.cfg.textos.sintetico if f.sintetico else "",
             }
             for f in filas
@@ -221,15 +221,20 @@ def pantalla_bandeja(ctx: ui.Contexto) -> None:
         st.warning("El orden guardado no coincide con la regla de desempate: vuelva a ejecutar `python -m src.puntaje`.")
     total = len(ctx.filas)
     todas = st.checkbox(f"Mostrar las {total} filas", value=False, key="bandeja_todas")
-    visibles = ctx.filas if todas else ctx.filas[: ctx.cfg.bandeja.filas_iniciales]
     modalidad = cargar_modalidad(ctx.modalidad)
-    bloques = ui.agrupar_por_sector(visibles, modalidad)       # E2-01: solo si la modalidad declara sectores (YAML); si no, bandeja plana
+    bloques = ui.agrupar_por_sector(ctx.filas, modalidad)      # E2-01: solo si la modalidad declara sectores (YAML); si no, bandeja plana
     if bloques is None:
-        tabla_de_bandeja(ctx, visibles)
+        visibles = ctx.filas if todas else ctx.filas[: ctx.cfg.bandeja.filas_iniciales]
+        tabla_de_bandeja(ctx, visibles, modalidad)
     else:
+        # X40: primero se agrupa y después se limita por sector, para que ningún sector (p. ej. logística, CU-05) quede oculto
+        if not todas:
+            bloques = ui.limitar_por_sector(bloques, ctx.cfg.bandeja.filas_iniciales_por_sector)
         for bloque in bloques:
             st.subheader(bloque.etiqueta)
-            tabla_de_bandeja(ctx, bloque.filas)
+            tabla_de_bandeja(ctx, bloque.filas, modalidad)
+            st.caption(f"{len(bloque.filas)} de {bloque.total or len(bloque.filas)} grupos de este sector.")
+        visibles = [f for b in bloques for f in b.filas]
     st.caption(f"Se muestran {len(visibles)} de {total} grupos.")
     ids = [f.id_grupo for f in ctx.filas]
     por_id = {f.id_grupo: f for f in ctx.filas}

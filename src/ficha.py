@@ -238,7 +238,7 @@ class Datos:
     fuentes: dict[str, dict[str, Any]]
 
 
-def leer_datos(con: Any, id_grupo: str) -> Datos:
+def leer_datos(con: Any, id_grupo: str, modalidad: str) -> Datos:
     """Filas del grupo en ``grupos``, ``puntajes``, ``evidencia``, ``noticias``, ``procedencias``, ``vinculos`` y ``contradicciones``."""
     grupos = _consulta(con, "SELECT * FROM grupos WHERE id_grupo = ?", [id_grupo])
     if not grupos:
@@ -247,6 +247,7 @@ def leer_datos(con: Any, id_grupo: str) -> Datos:
     evidencias = _consulta(con, "SELECT * FROM evidencia WHERE id_grupo = ?", [id_grupo])
     if not puntajes or not evidencias:
         raise LookupError(f"{id_grupo}: sin puntaje ni estado de evidencia; ejecute `poetry run python -m src.puntaje`")
+    db.exigir_modalidad(evidencias[0].get("modalidad"), modalidad, id_grupo)       # X39: nunca se mezcla el puntaje de una modalidad con la acción de otra
     return Datos(
         grupo=grupos[0],
         puntaje=puntajes[0],
@@ -514,7 +515,7 @@ def construir_ficha(
     """Ficha de evidencia de ``id_grupo`` para ``modalidad`` leyendo de la conexión DuckDB ``con`` (después de ``src.puntaje``).
 
     ``emb`` son los embeddings cacheados para el titular central (si no se pasan, se abren los del modelo de agrupación; con la
-    caché llena no se carga el modelo). Lanza ``LookupError`` si el grupo no existe o no tiene puntaje.
+    caché llena no se carga el modelo). Lanza ``LookupError`` si el grupo no existe o no tiene puntaje y ``db.ModalidadDistinta`` si la corrida guardada es de otra modalidad.
 
     E1-16: ``excluir_vinculos`` son los ``id_evidencia`` oficiales que una persona rechazó (no entran en «respaldado» ni, por tanto, en
     el borrador); ``vacios_extra`` se agregan al frente de los vacíos para que la persona vea por qué falta ese dato. El puntaje, el estado
@@ -522,7 +523,7 @@ def construir_ficha(
     """
     cfg = cfg or cargar_verificacion()
     mod = cargar_modalidad(modalidad)
-    datos = leer_datos(con, id_grupo)
+    datos = leer_datos(con, id_grupo, modalidad)
     if excluir_vinculos:
         datos = replace(datos, vinculos=[v for v in datos.vinculos if v.get("id_evidencia") not in set(excluir_vinculos)])
     componentes = _json(datos.puntaje["componentes"], {})

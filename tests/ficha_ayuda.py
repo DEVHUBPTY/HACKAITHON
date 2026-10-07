@@ -57,7 +57,7 @@ def indicador(grupo: str, anio: int = 2024, rol: str = "panama", pais: str = "PA
     return fila | cambios
 
 
-def construir(ruta: Path, emb: Any, proveedor: ProveedorFalso | None = None) -> Path:
+def construir(ruta: Path, emb: Any, proveedor: ProveedorFalso | None = None, modalidad: str = "editorial") -> Path:
     """Base con nueve grupos y las tablas de E1-10 ya calculadas con ``prioridad.ejecutar`` (todo real, salvo el LLM)."""
     noticias: list[dict[str, Any]] = []
     grupos: list[dict[str, Any]] = []
@@ -139,5 +139,5 @@ def construir(ruta: Path, emb: Any, proveedor: ProveedorFalso | None = None) -> 
     vinculos.append(indicador(G_SOLO))
 
     db.guardar_todo(ruta, {"noticias": noticias, "grupos": grupos, "procedencias": procs, "vinculos": vinculos, "similitud_tema": sims, "fuentes": FUENTES})
-    prioridad.ejecutar(ruta, ruta.with_name("prioridad.json"), CORTE, proveedor, emb=emb)
+    prioridad.ejecutar(ruta, ruta.with_name("prioridad.json"), CORTE, proveedor, modalidad, emb=emb)
     return ruta

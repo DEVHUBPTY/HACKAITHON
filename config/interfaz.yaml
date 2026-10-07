@@ -20,6 +20,7 @@ bandeja:
   alto_filas_px: 36                 # alto de cada fila de la tabla
   decimales_puntaje: 1              # decimales de P y de las barras R·I·U·N·E al mostrarlas (el dato no se redondea)
   largo_titular_selector: 80        # caracteres del titular en los selectores de grupo
+  filas_iniciales_por_sector: 3     # bandeja por sector (E2-01): filas de cada bloque al abrir; ningún sector se oculta (el resto, con «Mostrar todas»)
 
 calidad:
   top_medios: 5                     # medios con más titulares válidos en el reporte

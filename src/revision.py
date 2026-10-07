@@ -650,7 +650,7 @@ class Revisiones:
                 return construir_ficha(id_grupo, modalidad, con, emb=emb, excluir_vinculos=list(rechazados), vacios_extra=extra)
             finally:
                 con.close()
-        except (LookupError, duckdb.Error) as exc:
+        except (LookupError, duckdb.Error) as exc:   # ``db.ModalidadDistinta`` no es LookupError: sube tal cual, con su instrucción
             raise ErrorDeRevision(
                 f"{id_grupo}: el grupo ya no existe en la base de señales actual (el pipeline volvió a agrupar los titulares). "
                 "El caso se conserva con su última ficha revisada: se puede exportar, aprobar, descartar o reabrir, pero no regenerar ni cambiar vínculos."

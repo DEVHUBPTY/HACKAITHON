@@ -427,6 +427,19 @@ def _proveedor(sin_llm: bool) -> Proveedor | None:
         return None
 
 
+def _imprimir_bandeja_por_sector(ruta_base: Path, modalidad: str) -> None:
+    """Si la modalidad puntúa por sector (lo dice su YAML), imprime la bandeja agrupada por sector (E2-01)."""
+    from src import interfaz  # aquí y no arriba: interfaz importa puntaje y este módulo es su orquestador
+
+    con = db.conectar(ruta_base, solo_lectura=True)
+    try:
+        lineas = interfaz.lineas_de_bandeja(interfaz.leer_bandeja(con, modalidad), cargar_modalidad(modalidad))
+    finally:
+        con.close()
+    for linea in lineas or []:
+        logger.info("%s", linea)
+
+
 def main(argv: list[str] | None = None) -> int:
     """CLI: puntaje, evidencia y contradicciones de ``data/senales.duckdb`` y ``outputs/prioridad.json``."""
     configurar_logging()
@@ -453,6 +466,7 @@ def main(argv: list[str] | None = None) -> int:
     logger.info("contradicciones: %s · LLM: %s", reporte["contradicciones"]["por_nota_llm"] or "ninguna", reporte["llm"]["estado"])
     for fila in reporte["ranking"][:5]:
         logger.info("  %d. %s · P=%.1f (%s) · evidencia %s · %s · %s", fila["posicion"], fila["id_grupo"], fila["puntaje"], fila["rango"], fila["estado_de_evidencia"], fila["accion"], (fila["titular_central"] or "")[:ANCHO_TITULAR_EN_LOG])
+    _imprimir_bandeja_por_sector(args.base, args.modalidad)
     return 0
 
 

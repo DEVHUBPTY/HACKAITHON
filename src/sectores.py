@@ -17,9 +17,9 @@ from datetime import datetime
 from typing import Any
 
 from src.agrupacion import fecha_de
-from src.configuracion import ConfigModalidad, ReglasV13
+from src.configuracion import CODIGOS_DE_HORIZONTE, ConfigModalidad, ReglasV13
 
-HORIZONTES = ("inmediato", "corto plazo", "estructural")
+HORIZONTES = CODIGOS_DE_HORIZONTE
 SEGUNDOS_POR_DIA = 86400
 
 

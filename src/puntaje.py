@@ -234,10 +234,10 @@ def impacto(
         sector = sector_de_tema(entrada.tema, modalidad)
         if sector is None:
             alcance_subtema = cfg.impacto.alcance_subtema_desconocido
-            vacios.append(Vacio("subtema_desconocido", cfg.vacios.subtema_desconocido))
+            vacios.append(Vacio("sector_desconocido", cfg.vacios.sector_desconocido))
         else:
             alcance_subtema = modalidad.alcance_por_sector[sector]
-        explicacion_alcance = {"sector": sector, "alcance_sector": alcance_subtema}
+        explicacion_alcance = {"subtema": entrada.subtema, "sector": sector, "alcance_sector": alcance_subtema}   # el subtema se conserva: la ficha lo usa para las fuentes sugeridas
     elif entrada.subtema is None:
         alcance_subtema = cfg.impacto.alcance_subtema_desconocido
         vacios.append(Vacio("subtema_desconocido", cfg.vacios.subtema_desconocido))

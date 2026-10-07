@@ -59,7 +59,14 @@ alcance_por_sector:
 horizonte:
   inmediato_hasta_dias: 7
   corto_plazo_hasta_dias: 56
+  etiquetas: {inmediato: "Inmediato", corto plazo: "Corto plazo", estructural: "Estructural"}
 
 # Bandeja agrupada por sector: los sectores se ordenan por el mayor P de sus grupos; los grupos sin sector van al final.
 bandeja:
   sin_sector: "Sin sector asignado"
+  etiquetas_sector:
+    economía: "Economía"
+    logística: "Logística"
+    turismo: "Turismo"
+    regulación: "Regulación"
+    continuidad operativa: "Continuidad operativa"

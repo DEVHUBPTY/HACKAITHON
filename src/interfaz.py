@@ -60,6 +60,7 @@ PARAMETRO_DEMO = "--demo"
 COLUMNA_COMPONENTE = {"R": "relevancia", "I": "impacto", "U": "urgencia", "N": "novedad", "E": "evidencia"}
 ORIGEN_SINTETICO = "sintetico"
 SIN_TEMA = "sin tema"
+ANCHO_TITULAR_EN_LINEA = 70      # caracteres del titular en la bandeja impresa por la CLI
 # Prefijo de ID -> (tabla, columna del ID, columna de URL, datos que acompañan a la cita como (etiqueta, columna, clase)).
 # Cada fecha lleva SU etiqueta (de qué es): nunca una «Fecha» genérica ni una por otra (publicación ≠ detección; el año ≠ la extracción).
 # Es un mapa fijo: nunca se arma SQL con texto del usuario. Clases: texto | fecha (UTC -> hora de Panamá).
@@ -192,6 +193,7 @@ class BloqueSector:
     sector: str | None
     etiqueta: str
     filas: tuple[FilaBandeja, ...]
+    total: int = 0      # filas del sector antes de limitar (0: igual a ``len(filas)``)
 
 
 def agrupar_por_sector(filas: Sequence[FilaBandeja], modalidad: ConfigModalidad, cfg: ConfigPrioridad | None = None) -> list[BloqueSector] | None:
@@ -211,10 +213,37 @@ def agrupar_por_sector(filas: Sequence[FilaBandeja], modalidad: ConfigModalidad,
         (s for s in por_sector if s is not None),
         key=lambda s: (-max(round(f.puntaje, d) for f in por_sector[s]), declarados.get(s, len(declarados)), s),
     )
-    bloques = [BloqueSector(s, s.capitalize(), tuple(por_sector[s])) for s in con_sector]
+    bloques = [BloqueSector(s, modalidad.bandeja.etiquetas_sector[s], tuple(por_sector[s]), len(por_sector[s])) for s in con_sector]
     if None in por_sector:
-        bloques.append(BloqueSector(None, modalidad.bandeja.sin_sector, tuple(por_sector[None])))
+        bloques.append(BloqueSector(None, modalidad.bandeja.sin_sector, tuple(por_sector[None]), len(por_sector[None])))
     return bloques
+
+
+def limitar_por_sector(bloques: Sequence[BloqueSector], maximo: int) -> list[BloqueSector]:
+    """Primero se agrupa y después se limita: cada sector conserva sus primeras ``maximo`` filas y ninguno se oculta (X40)."""
+    return [BloqueSector(b.sector, b.etiqueta, b.filas[:maximo], b.total or len(b.filas)) for b in bloques]
+
+
+def etiqueta_de_horizonte(horizonte: str | None, modalidad: ConfigModalidad) -> str | None:
+    """Texto del horizonte para la persona (YAML de la modalidad); el código si la modalidad no define su etiqueta."""
+    if horizonte is None or modalidad.horizonte is None:
+        return horizonte
+    return modalidad.horizonte.etiquetas.get(horizonte, horizonte)
+
+
+def lineas_de_bandeja(filas: Sequence[FilaBandeja], modalidad: ConfigModalidad) -> list[str] | None:
+    """La bandeja por sector en texto (para la CLI de ``src.puntaje``); ``None`` si la modalidad no puntúa por sector."""
+    bloques = agrupar_por_sector(filas, modalidad)
+    if bloques is None:
+        return None
+    lineas = []
+    for b in bloques:
+        lineas.append(f"{b.etiqueta} ({len(b.filas)})")
+        lineas += [
+            f"  {f.posicion}. {f.id_grupo} · P={f.puntaje:.1f} ({f.rango}) · {etiqueta_de_horizonte(f.horizonte, modalidad) or '-'} · {f.accion} · {f.titular[:ANCHO_TITULAR_EN_LINEA]}"
+            for f in b.filas
+        ]
+    return lineas
 
 
 def ordenar_bandeja(filas: Sequence[FilaBandeja], reglas: ReglasV13 | None = None, cfg: ConfigPrioridad | None = None) -> list[FilaBandeja]:

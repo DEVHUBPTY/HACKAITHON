@@ -18,6 +18,24 @@ from src.configuracion import RAIZ
 
 logger = logging.getLogger(__name__)
 
+
+class ModalidadDistinta(RuntimeError):
+    """Los puntajes y el estado de evidencia guardados son de otra modalidad que la pedida (E2-01, X39).
+
+    ``src.puntaje`` reemplaza esas tablas en cada corrida, así que una base solo guarda una modalidad a la vez. Leer la de otra
+    mezclaría el puntaje de una con la acción de la otra: se falla en lugar de mezclar. No es un ``LookupError`` a propósito.
+    """
+
+
+def exigir_modalidad(guardada: str | None, pedida: str, id_grupo: str = "") -> None:
+    """Falla con ``ModalidadDistinta`` si la modalidad guardada no es la pedida."""
+    if guardada != pedida:
+        donde = f"{id_grupo}: " if id_grupo else ""
+        raise ModalidadDistinta(
+            f"{donde}los puntajes de la base son de la modalidad {guardada!r}, no de {pedida!r}: "
+            f"ejecute `poetry run python -m src.puntaje --modalidad {pedida}` antes de leerlos"
+        )
+
 RUTA_BASE = RAIZ / "data" / "senales.duckdb"
 
 # Tabla -> [(columna, tipo)]. El orden es el de la tabla.
