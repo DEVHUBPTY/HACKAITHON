@@ -1,4 +1,4 @@
-"""T09 · Brief editorial: formato útil, citas pertinentes y distinción de hechos e inferencias (PDF sección 8, E1-13).
+"""T09 · Brief editorial o boletín bancario: formato útil, citas pertinentes y distinción de hechos e inferencias (PDF sección 8, E1-13, E2-02).
 
 Todo con un proveedor falso: lo que se prueba es que el validador deja pasar el borrador correcto y que **nada** de lo que el modelo
 invente llega al paquete, con cada rechazo registrado en ``outputs/rechazos.jsonl`` (aquí, en una carpeta temporal).
@@ -191,10 +191,7 @@ def test_las_pruebas_no_tocan_el_registro_real() -> None:
 
 
 def test_t09_aceptacion_brief_editorial_con_formato_util_citas_y_tipos_distintos() -> None:
-    """PDF T09 (parte editorial): formato útil, citas pertinentes y distinción de hechos e inferencias.
-
-    La parte del boletín bancario pertenece a E2-02 y queda pendiente; no se simula aquí.
-    """
+    """PDF T09 (parte editorial): formato útil, citas pertinentes y distinción de hechos e inferencias. La bancaria, más abajo (E2-02)."""
     p = generar(ficha(), ProveedorGuionado()).paquete
     assert p is not None and p.brief and p.guion and p.titulares and p.vacios == []          # formato útil
     assert validar_paquete(p, Contexto(ficha(), ("comunes", "editorial"))) == []             # citas válidas
@@ -202,3 +199,45 @@ def test_t09_aceptacion_brief_editorial_con_formato_util_citas_y_tipos_distintos
     assert {"hecho", "declaración", "inferencia"} <= {a.tipo for a in por_id.values()}        # tipos distinguidos
     assert all(a.citas for a in por_id.values() if a.tipo in ("hecho", "declaración"))
     assert p.leyenda_alcance
+
+
+# ============================================================================================ T09 en modalidad banca (E2-02)
+
+
+def test_t09_aceptacion_boletin_bancario_con_formato_util_citas_y_observacion_separada_de_hipotesis() -> None:
+    """PDF T09 (parte bancaria): el boletín de entorno tiene los campos de docs/salidas.md §2, cita evidencia válida y separa observación
+    (hecho, declaración) de hipótesis de impacto (inferencia, hipótesis, en condicional), con aviso fijo y leyenda."""
+    from src.configuracion import cargar_restricciones, cargar_salidas
+    from src.esquemas import BoletinBanca
+    from src.validador import contar_palabras
+    from tests.generacion_ayuda import ficha_banca, proveedor_banca
+
+    p = generar(ficha_banca(), proveedor_banca()).paquete
+    assert isinstance(p, BoletinBanca) and p.vacios == []
+    assert p.observaciones and p.hipotesis_impacto and p.sectores and p.horizonte and p.evidencia and len(p.preguntas) == 3   # formato útil
+    assert sum(contar_palabras(o.texto) for o in [*p.observaciones, *p.hipotesis_impacto]) <= cargar_salidas().banca.resumen_max_palabras
+    assert validar_paquete(p, Contexto(ficha_banca(), ("comunes", "banca"))) == []                                          # citas válidas
+    tipos = {a.id: a.tipo for a in p.afirmaciones}
+    assert {tipos[i] for o in p.observaciones for i in o.afirmaciones} <= {"hecho", "declaración"}                          # observación
+    assert {tipos[i] for o in p.hipotesis_impacto for i in o.afirmaciones} <= {"inferencia", "hipótesis"}                   # hipótesis
+    assert all(a.citas for a in p.afirmaciones if a.tipo in ("hecho", "declaración"))
+    r = cargar_restricciones()
+    assert p.aviso == r.aviso_banca and p.leyenda_alcance == r.leyendas_alcance.titular_metadatos and p.marca == r.marca_borrador
+
+
+@pytest.mark.parametrize(
+    ("bloque", "texto", "cita", "regla"),
+    [
+        ("observaciones", "Las lluvias en Chiriquí podrían afectar la actividad agrícola, a verificar.", "A3", "observacion_con_hipotesis"),
+        ("hipotesis_impacto", "La actividad agrícola es un tema a seguir en el entorno económico.", "A4", "impacto_sin_condicional"),
+        ("hipotesis_impacto", "Las lluvias podrían generar pérdidas en Chiriquí.", "A3", "perdidas_en_inferencias"),
+        ("observaciones", "Según La Prensa, recomendamos reducir exposición en Chiriquí.", "A1", "recomendacion"),
+    ],
+)
+def test_t09_lo_que_el_modelo_inventa_en_el_boletin_no_llega_y_queda_registrado(bloque: str, texto: str, cita: str, regla: str) -> None:
+    from tests.generacion_ayuda import BOLETIN, ficha_banca, proveedor_banca
+
+    malo = modificada(BOLETIN, lambda d: d[bloque].append(_o(texto, cita)))
+    p = generar(ficha_banca(), proveedor_banca(observaciones=malo)).paquete
+    assert seccion_vacia(p, bloque)
+    assert regla in {x["regla"] for x in registro() if x["evento"] == "rechazo" and x["seccion"] == bloque}

@@ -18,6 +18,10 @@ from tests.validador_ayuda import (
 )
 
 
+ID_LLUVIAS_B = "NOT-1111111111"   # titulares de la ficha bancaria de tests/generacion_ayuda.py
+ID_BANANO_B = "NOT-2222222222"
+
+
 def valida(*afirmaciones: Afirmacion, ctx=None):  # type: ignore[no-untyped-def]
     return validar_afirmaciones(list(afirmaciones), ctx or contexto())
 
@@ -507,6 +511,103 @@ def test_las_reglas_de_banca_vienen_del_yaml() -> None:
     assert "recomendacion" in reglas(valida(afirmacion("A1", "declaración", "TVN Panamá reporta que Mulino anuncia nuevo plan; conviene invertir", (ID_TVN, "titulo")), ctx=ctx).rechazos)
     hip = afirmacion("A2", "hipótesis", "El plan podría ocurrir sin duda", base=("A1",))
     assert "certeza" in reglas(valida(base, hip, ctx=ctx).rechazos)
+
+
+# ============================================================================================ banca: el boletín de entorno (E2-02, D-54)
+
+
+def _ctx_boletin():  # type: ignore[no-untyped-def]
+    """Contexto bancario con las afirmaciones del boletín ya validadas (A1 declaración con «pérdidas» literal, A2 hecho, A3 hipótesis, A4 inferencia)."""
+    from tests.generacion_ayuda import AFIRMACIONES_BANCA, ficha_banca
+    from tests.validador_ayuda import con_afirmaciones, salida
+
+    ctx = contexto(ficha_banca(), grupos=("comunes", "banca"))
+    afirmaciones = [
+        salida(a["id"], a["tipo"], a["texto"], *[(c["id"], c["campo"]) for c in a["citas"]], base=tuple(a["base"]))
+        for a in AFIRMACIONES_BANCA["afirmaciones"]
+    ]
+    return con_afirmaciones(ctx, *afirmaciones)
+
+
+def test_una_observacion_basada_en_una_hipotesis_se_rechaza_y_la_de_un_hecho_o_declaracion_no() -> None:
+    from src.validador import OBSERVACION_CON_HIPOTESIS
+
+    ctx = _ctx_boletin()
+    assert OBSERVACION_CON_HIPOTESIS in reglas(validar_seccion("observaciones", [o("Las lluvias en Chiriquí podrían afectar la actividad agrícola, a verificar.", "A3")], ctx))
+    assert OBSERVACION_CON_HIPOTESIS in reglas(validar_seccion("observaciones", [o("La actividad agrícola podría ser un tema a seguir en el entorno económico.", "A4")], ctx))
+    assert not validar_seccion("observaciones", [o("Según La Prensa, las lluvias causaron pérdidas en cultivos de Chiriquí.", "A1"), o("En 2023 la inflación anual de Panamá fue de 2.9 %.", "A2")], ctx)
+
+
+def test_una_hipotesis_de_impacto_sin_condicional_se_rechaza() -> None:
+    from src.validador import IMPACTO_SIN_CONDICIONAL
+
+    ctx = _ctx_boletin()
+    assert IMPACTO_SIN_CONDICIONAL in reglas(validar_seccion("hipotesis_impacto", [o("La actividad agrícola es un tema a seguir en el entorno económico.", "A4")], ctx))
+    assert not validar_seccion("hipotesis_impacto", [o("La actividad agrícola podría ser un tema a seguir en el entorno económico.", "A4")], ctx)
+    rechazada(afirmacion("A3", "hipótesis", "Las lluvias afectan la actividad agrícola", base=("A1",)), HIPOTESIS_SIN_CONDICIONAL, ctx=_ctx_boletin())
+
+
+def test_una_hipotesis_de_impacto_basada_en_un_hecho_o_una_declaracion_se_rechaza() -> None:
+    from src.validador import IMPACTO_COMO_HECHO
+
+    ctx = _ctx_boletin()
+    assert IMPACTO_COMO_HECHO in reglas(validar_seccion("hipotesis_impacto", [o("Según La Prensa, las lluvias podrían haber causado pérdidas.", "A1")], ctx))
+
+
+def test_recomendamos_reducir_exposicion_se_rechaza_en_cualquier_tipo_y_bloque() -> None:
+    ctx = _ctx_boletin()
+    r_hip = reglas(validar_seccion("hipotesis_impacto", [o("Recomendamos reducir exposición si las lluvias podrían afectar la actividad agrícola.", "A3")], ctx))
+    r_obs = reglas(validar_seccion("observaciones", [o("Según La Prensa, recomendamos reducir exposición en Chiriquí.", "A1")], ctx))
+    assert "recomendacion" in r_hip and "recomendacion" in r_obs
+    base = afirmacion("A1", "declaración", "La Prensa reporta que las lluvias causaron pérdidas en cultivos de Chiriquí", (ID_LLUVIAS_B, "titulo"))
+    inf = afirmacion("A2", "inferencia", "Recomendamos reducir exposición al sector", base=("A1",))
+    assert "recomendacion" in reglas(valida(base, inf, ctx=_ctx_boletin()).rechazos)
+
+
+def test_podria_generar_perdidas_en_una_hipotesis_se_rechaza_aunque_el_titular_lo_diga() -> None:
+    ctx = _ctx_boletin()
+    assert "perdidas_en_inferencias" in reglas(validar_seccion("hipotesis_impacto", [o("Las lluvias podrían generar pérdidas en Chiriquí.", "A3")], ctx))
+    base = afirmacion("A1", "declaración", "La Prensa reporta que las lluvias causaron pérdidas en cultivos de Chiriquí", (ID_LLUVIAS_B, "titulo"))
+    hip = afirmacion("A2", "hipótesis", "Las lluvias podrían generar pérdidas en Chiriquí", base=("A1",))
+    r = valida(base, hip, ctx=_ctx_boletin())
+    assert [a.id for a in r.validas] == ["A1"] and "perdidas_en_inferencias" in reglas(r.rechazos)
+
+
+def test_una_declaracion_literal_de_perdidas_se_permite_y_una_que_el_titular_no_trae_no() -> None:
+    ctx = _ctx_boletin()
+    assert not validar_seccion("observaciones", [o("Según La Prensa, las lluvias causaron pérdidas en cultivos de Chiriquí.", "A1")], ctx)
+    aceptada(afirmacion("A1", "declaración", "Según La Prensa, las lluvias causaron pérdidas en cultivos de Chiriquí", (ID_LLUVIAS_B, "titulo")), ctx=_ctx_boletin())
+    rechazada(afirmacion("A1", "declaración", "TVN Panamá reporta impagos en las exportaciones de banano", (ID_BANANO_B, "titulo")), "perdidas_en_inferencias", ctx=_ctx_boletin())
+    assert "perdidas_en_inferencias" in reglas(validar_seccion("observaciones", [o("En 2023 la inflación anual de Panamá fue de 2.9 % y hubo morosidad.", "A2")], ctx))
+
+
+def test_el_lenguaje_de_certeza_se_rechaza_en_las_hipotesis_de_impacto() -> None:
+    ctx = _ctx_boletin()
+    assert "certeza" in reglas(validar_seccion("hipotesis_impacto", [o("La actividad agrícola podría, sin duda, ser un tema a seguir en el entorno económico.", "A4")], ctx))
+    rechazada(afirmacion("A3", "inferencia", "La actividad agrícola será inevitable tema del entorno", base=("A1",)), "certeza", ctx=_ctx_boletin())
+
+
+def test_el_resumen_del_boletin_suma_ambos_bloques_contra_su_limite() -> None:
+    from src.validador import validar_conjunto
+
+    ctx = _ctx_boletin()
+    maximo = ctx.salidas.banca.resumen_max_palabras
+    obs = [o("Según La Prensa, las lluvias causaron pérdidas en " + " ".join(["cultivos"] * (maximo // 2)) + ".", "A1")]
+    hip = [o("Las lluvias podrían afectar la actividad " + " ".join(["agrícola"] * (maximo // 2)) + ", a verificar.", "A3")]
+    rechazos = validar_conjunto({"observaciones": obs, "hipotesis_impacto": hip}, ctx)
+    assert {r.regla for r in rechazos} == {LIMITE_PALABRAS} and {r.seccion for r in rechazos} == {"observaciones", "hipotesis_impacto"}
+    assert not validar_conjunto({"observaciones": obs}, ctx) and not validar_conjunto({"brief": obs}, ctx)
+
+
+def test_las_preguntas_del_boletin_son_exactamente_las_de_salidas_yaml_con_su_vacio() -> None:
+    from src.esquemas import PreguntaInvestigacion
+    from src.validador import CANTIDAD, PREGUNTA_SIN_VACIO
+
+    ctx = _ctx_boletin()
+    tres = [PreguntaInvestigacion(texto=f"¿Pregunta {n}?", vacio=f"V{n}") for n in (1, 2, 3)]
+    assert not validar_seccion("preguntas", tres, ctx)
+    assert CANTIDAD in reglas(validar_seccion("preguntas", tres[:2], ctx))
+    assert PREGUNTA_SIN_VACIO in reglas(validar_seccion("preguntas", [*tres[:2], PreguntaInvestigacion(texto="¿Otra?", vacio="V9")], ctx))
 
 
 def test_cada_lista_de_restricciones_tiene_su_regla_en_el_yaml_del_validador() -> None:

@@ -108,7 +108,75 @@ BUENAS: dict[str, Any] = {
     },
 }
 
-CLAVES_SALIDA = ("afirmaciones", "titulo_trabajo", "titulo", "brief", "guion", "resumen_web")
+
+# ------------------------------------------------------------------ banca (E2-02): ficha y respuestas del boletín de entorno
+
+ID_LLUVIAS = "NOT-1111111111"
+ID_BANANO = "NOT-2222222222"
+ID_GRP = "GRP-0123456789"
+TITULAR_LLUVIAS = "Lluvias causaron pérdidas en cultivos de Chiriquí"
+TITULAR_BANANO = "Exportaciones de banano superan los $17 millones en junio"
+
+
+def ficha_banca(accion: str = "Incluir en el boletín como observación", **cambios: Any) -> EntradaFicha:
+    """Ficha de la modalidad bancaria: dos titulares (uno trae «pérdidas» literal), un dato anual, el conteo y tres vacíos."""
+    datos: dict[str, Any] = {
+        "id_caso": "CASO-0008",
+        "version": 1,
+        "modalidad": "banca",
+        "accion": accion,
+        "uso_descripcion": False,
+        "registros": [
+            RegistroEvidencia(id=ID_LLUVIAS, idioma="es", campos={"titulo": TITULAR_LLUVIAS}, contexto={"medio": "La Prensa", "fecha_publicacion": "2026-10-05T10:00:00Z"}),
+            RegistroEvidencia(id=ID_BANANO, idioma="es", campos={"titulo": TITULAR_BANANO}, contexto={"medio": "TVN Panamá", "fecha_publicacion": "2026-10-04T12:00:00Z"}),
+            RegistroEvidencia(id=ID_IND, campos={"valor": "2.9 % anual"}, contexto={"anio": "2023", "indicador": "Inflación"}),
+            RegistroEvidencia(id=ID_GRP, campos={"n_titulares": "2", "n_medios": "2", "n_procedencias": "2"}),
+        ],
+        "vacios": [
+            VacioFicha(id="V1", descripcion="Falta una cifra oficial de la producción agrícola afectada"),
+            VacioFicha(id="V2", descripcion="No hay dato oficial de exportaciones de 2026"),
+            VacioFicha(id="V3", descripcion="Solo un medio reporta las lluvias"),
+        ],
+        "evidencia": ["Declaración: La Prensa reporta «Lluvias causaron pérdidas en cultivos de Chiriquí» · Cita: NOT-1111111111 · titulo"],
+        "tema": "economia",
+        "tema_secundario": "eventos_naturales",
+        "edad_evidencia_dias": 2.0,
+    }
+    datos.update(cambios)
+    return EntradaFicha(**datos)
+
+
+AFIRMACIONES_BANCA: dict[str, Any] = {
+    "afirmaciones": [
+        {"id": "A1", "tipo": "declaración", "texto": "La Prensa reporta que las lluvias causaron pérdidas en cultivos de Chiriquí", "citas": [_cita(ID_LLUVIAS, "titulo")], "base": []},
+        {"id": "A2", "tipo": "hecho", "texto": "La inflación de Panamá fue de 2.9 % anual en 2023", "citas": [_cita(ID_IND, "valor")], "base": []},
+        {"id": "A3", "tipo": "hipótesis", "texto": "Las lluvias en Chiriquí podrían afectar la actividad agrícola, a verificar", "citas": [], "base": ["A1"]},
+        {"id": "A4", "tipo": "inferencia", "texto": "La actividad agrícola podría ser un tema a seguir en el entorno económico", "citas": [], "base": ["A1", "A2"]},
+    ]
+}
+
+BOLETIN: dict[str, Any] = {
+    "observaciones": [
+        _o("Según La Prensa, las lluvias causaron pérdidas en cultivos de Chiriquí.", "A1"),
+        _o("En 2023 la inflación anual de Panamá fue de 2.9 %.", "A2"),
+    ],
+    "hipotesis_impacto": [
+        _o("Las lluvias en Chiriquí podrían afectar la actividad agrícola, a verificar.", "A3"),
+        _o("La actividad agrícola podría ser un tema a seguir en el entorno económico.", "A4"),
+    ],
+    "preguntas": [
+        {"texto": "¿Qué cifra oficial mide la producción agrícola afectada?", "vacio": "V1"},
+        {"texto": "¿Hay un dato oficial de exportaciones de 2026?", "vacio": "V2"},
+        {"texto": "¿Qué otros medios reportan las lluvias?", "vacio": "V3"},
+    ],
+}
+
+
+def proveedor_banca(**respuestas: Any) -> ProveedorGuionado:
+    """El proveedor guionado con las respuestas buenas del boletín (paso 1 y paso 2)."""
+    return ProveedorGuionado(**{"afirmaciones": AFIRMACIONES_BANCA, "observaciones": BOLETIN, **respuestas})
+
+CLAVES_SALIDA = ("afirmaciones", "titulo_trabajo", "titulo", "brief", "guion", "resumen_web", "observaciones")
 
 
 def clave_de(esquema: dict[str, Any]) -> str:
