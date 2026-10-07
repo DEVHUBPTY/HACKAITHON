@@ -289,7 +289,9 @@ def test_fixture_con_origen_distinto_de_sintetico_falla(tmp_path: Path) -> None:
 
 
 def test_config_benchmark_exige_los_cuatro_tipos() -> None:
+    # E1-18 agregó secciones obligatorias (intervalos, sustento, …): se parte de la configuración real y solo se cambian total y tipos.
+    resto = {k: v for k, v in cargar_benchmark().model_dump().items() if k not in ("total", "tipos")}
     with pytest.raises(ValueError, match="cuatro tipos"):
-        ConfigBenchmark(total=40, tipos={"respuesta_sustentada": 20, "sin_respuesta": 20})
+        ConfigBenchmark(total=40, tipos={"respuesta_sustentada": 20, "sin_respuesta": 20}, **resto)
     with pytest.raises(ValueError):
-        ConfigBenchmark(total=40, tipos={**PROPORCION, "inventado": 0})
+        ConfigBenchmark(total=40, tipos={**PROPORCION, "inventado": 0}, **resto)
