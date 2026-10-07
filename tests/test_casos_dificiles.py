@@ -22,18 +22,17 @@ CFG = cargar_clasificacion()
 TEMAS = cargar_temas()
 CASOS = evalclas.leer_casos_dificiles()
 
-# Limitaciones conocidas con el modelo y método activos (e5 · A), medidas el 2026-10-06. Ver docs/clasificacion.md.
+# Limitaciones conocidas con el modelo y método activos (e5 · A), medidas el 2026-10-06 y actualizadas en E1-07c (D-111: CD-12 se resolvió
+# y CD-04 pasó de Servicios públicos a Economía al nombrar las obras públicas en la descripción de Servicios públicos). Ver docs/clasificacion.md.
 LIMITACIONES_PRINCIPAL = {
     "CD-02": "regla 4 (falla de un servicio): se predice Eventos naturales en lugar de Servicios públicos",
-    "CD-04": "regla 2 (norma nueva): se predice Servicios públicos en lugar de Regulación",
+    "CD-04": "regla 2 (norma nueva): se predice Economía en lugar de Regulación (E1-07c: antes Servicios públicos)",
     "CD-08": "regla 6 (carga aérea): se predice Turismo en lugar de Logística/Canal",
-    "CD-12": "paro docente: se predice Eventos naturales en lugar de Servicios públicos (apareció al reescribir las referencias)",
     "CD-15": "fuera de temas: la similitud máxima (0.844) supera el umbral de 'sin tema' de e5; "
     "en el pipeline lo descarta antes el filtro de ruido (test_el_futbol_se_descarta_antes_...)",
 }
 LIMITACIONES_SECUNDARIO = {
     "CD-02": "el principal ya está mal: el 2.º mejor es Servicios públicos, no Eventos naturales",
-    "CD-04": "el principal ya está mal: el 2.º mejor es Economía, no Servicios públicos",
     "CD-14": "el segundo mejor es Logística/Canal, no Economía",
 }
 
@@ -109,9 +108,9 @@ def test_el_futbol_se_descarta_antes_por_el_filtro_de_ruido() -> None:
     assert (r.es_ruido, r.motivo_ruido) == (True, "fuera_de_temas")
 
 
-# Tema secundario GUARDADO (el que sale de `decidir` con el margen provisional de e5 · A), por caso. Solo 2 de los 15 casos
-# lo reciben y solo 1 de los 7 que lo esperan coincide (CD-05). El margen es un supuesto: ver docs/clasificacion.md.
-SECUNDARIO_GUARDADO = {"CD-04": "economia", "CD-05": "economia"}
+# Tema secundario GUARDADO (el que sale de `decidir` con el margen provisional de e5 · A), por caso. Solo 3 de los 15 casos
+# lo reciben y solo 2 de los 7 que lo esperan coinciden (CD-04, CD-05); CD-12 recibe uno que no se espera. El margen es un supuesto: ver docs/clasificacion.md.
+SECUNDARIO_GUARDADO = {"CD-04": "servicios_publicos", "CD-05": "economia", "CD-12": "eventos_naturales"}   # CD-12: secundario no esperado (E1-07c)
 
 
 @pytest.mark.parametrize("caso", [pytest.param(c, id=c.id) for c in CASOS])
@@ -120,7 +119,7 @@ def test_el_tema_secundario_guardado_de_cada_caso_esta_fijado(caso, predicciones
     assert pred.secundario == SECUNDARIO_GUARDADO.get(caso.id), f"{caso.id}: {pred.secundario}"
 
 
-def test_el_secundario_esperado_se_acierta_en_1_de_7_con_el_margen_provisional(predicciones) -> None:
+def test_el_secundario_esperado_se_acierta_en_2_de_7_con_el_margen_provisional(predicciones) -> None:
     esperados = [(c, p) for c, p in zip(CASOS, predicciones[CFG.metodo_activo], strict=True) if c.secundario]
     assert len(esperados) == 7
-    assert sum(1 for c, p in esperados if p.secundario == c.secundario) == 1
+    assert sum(1 for c, p in esperados if p.secundario == c.secundario) == 2
