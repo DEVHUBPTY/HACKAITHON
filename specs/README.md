@@ -46,6 +46,7 @@ La columna **Rol** indica el área de la tarea (D = datos, IA, P = producto), no
 | E3-02 | Fuente D · Series agregadas de la SBP | D | E2-03 | [`E3-02.md`](E3-02.md) |
 | E3-03 | Sincronización de fichas con Notion | P | E1-17 | [`E3-03.md`](E3-03.md) |
 | E3-04 | Pesos editables en la interfaz | P | E1-17 | [`E3-04.md`](E3-04.md) |
+| C-01 | Cinco fichas trazables | P | E1-16 | [`C-01.md`](C-01.md) |
 | C-06 | Casos de demostración por caso de uso | P + D | E1-16 | [`C-06.md`](C-06.md) |
 | C-07 | Paquete de entrega y auditoría final | D + P | C-06 | [`C-07.md`](C-07.md) |
 

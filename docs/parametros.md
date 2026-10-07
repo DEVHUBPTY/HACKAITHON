@@ -674,3 +674,19 @@ Clustering: la agrupación es determinista (similitud y umbral, sin inicializaci
 | `api.tamano_pagina_hijos` | 100 | Práctica (máximo de Notion por página de `children`) | `config` lo acota a 100 |
 | `cuerpo.max_caracteres_bloque` | 2000 | Práctica (límite de Notion por texto enriquecido) | Prueba de trozos ≤ 2000 |
 | `cuerpo.max_bloques_por_llamada` | 100 | Práctica (límite de Notion por `children`) | `config` lo acota a 100 |
+
+## Cinco fichas trazables (C-01, `config/fichas_trazables.yaml`)
+
+Ninguno decide un puntaje, una acción ni un vacío: gobiernan qué fichas se muestran como trazables y cómo se comprueban. La regla no se toca para «lucir mejor» (D-101); cambiarla es un cambio de configuración revisado.
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| `seleccion.cupos` | suficiente 2 · parcial 2 · insuficiente 1, recorriendo el ranking oficial en orden | Supuesto (cubrir los tres estados de evidencia: el top 5 por P serían hoy cinco fichas insuficientes de 1 procedencia) | `test_la_seleccion_toma_los_cupos_por_estado_en_orden_de_ranking` y `test_la_seleccion_es_determinista_e_independiente_del_orden_de_entrada` |
+| `seleccion.minimo_total` | 5 | PDF sección 5 (al menos 5 fichas trazables) | `test_con_menos_fichas_que_el_minimo_falla` |
+| `seleccion.minimo_insuficiente` | 1 | PDF sección 5 (una con evidencia insuficiente) | `test_sin_ninguna_ficha_insuficiente_la_seleccion_falla_con_un_mensaje` |
+| `seleccion.completar_con_ranking` | sí | Práctica (si un estado no alcanza su cupo, se completa con el ranking) | `test_si_un_estado_no_alcanza_su_cupo_se_completa_con_el_ranking` |
+| `registros` | cómo se resuelve cada prefijo (`NOT-`, `IND-`, `SIS-`, `GRP-`, `SBP-`) en los datos y cuáles exigen URL (un conteo `GRP-` no tiene URL: la tienen sus titulares) | D-63 (IDs estables) | `test_una_cita_a_un_id_que_no_esta_en_los_datos_falla` y `test_un_dato_oficial_sin_url_falla` |
+| `descripcion_minimo_caracteres` | 20 | Supuesto (una descripción más corta coincidiría por azar con cualquier texto) | `test_una_descripcion_corta_no_se_busca` |
+| `claves_de_autor` | autor, author, byline, creator, … | D-32 | `test_una_clave_de_autor_en_la_ficha_falla` |
+| `z_intervalo_confianza` | 1.96 | Práctica (IC de Wilson al 95 %, igual que `carga.yaml`) | `test_el_informe_cuenta_n_y_pone_ic_de_wilson_a_cada_proporcion` |
+| `revision.accion_por_estado` | suficiente y parcial → aceptar; insuficiente → pedir evidencia, siempre con el revisor provisional del asistente | D-101, D-112 (provisional, la rehace una persona en C-09) | `test_la_revision_provisional_aprueba_o_pide_evidencia_segun_el_estado_y_se_ve_rotulada` |
