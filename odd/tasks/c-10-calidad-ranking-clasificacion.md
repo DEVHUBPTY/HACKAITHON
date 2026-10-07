@@ -29,7 +29,7 @@ exactitud de tema en 35/64 (54,7 %). Fuera de alcance por ahora: generación (ca
 - [x] **T1** `specs/C-10.md` (Objetivo, Punteros, Restricciones, Listo cuando). Ruta: delegada (writer).
 - [x] **T2** Ranking D3, D6, D7 en `src/puntaje.py` y `config/reglas_v1.3.yaml`, con tests (RED→GREEN) y filas en `docs/parametros.md`. Ruta: delegada (writer).
 - [x] **T3** Clasificación: matriz de confusión, Economía regional/multilingüe, D4 (URL como sospecha), sin fuga. Ruta: delegada (writers). D4 hecho y corregido tras revisión; la mejora de Economía se probó dos veces y se revirtió (limitación documentada, ver Evidencia).
-- [ ] **T4** Medir (n, IC 95 %): `eval.clasificacion`, `eval.precision_at_5`, `eval.puntaje`, `eval.sensibilidad`; suite completa, `src.config --validar`, `scripts.reproducir --verificar`. Ruta: delegada (verificación).
+- [x] **T4** Medir (n, IC 95 %): `eval.clasificacion`, `eval.precision_at_5`, `eval.puntaje`, `eval.sensibilidad`; suite completa, `src.config --validar`, `scripts.reproducir --verificar`. Ruta: delegada (verificación).
 - [ ] **T5** PR con revisión independiente (D-78); corregir todo antes de integrar. Solo con pedido del dueño.
 
 ## Evidencia
@@ -77,5 +77,20 @@ exactitud de tema en 35/64 (54,7 %). Fuera de alcance por ahora: generación (ca
   mueven el centroide de Economía hasta absorber El Niño; la descripción no era la causa única. Nota en `docs/clasificacion.md`.
 - T3 cerrada como limitación documentada: dos intentos medidos y revertidos; la exactitud queda en 35/64 = 54,7 %.
 
+- T4 (ruta delegada, worker de verificación): `src.puntaje --sin-llm` (60 grupos; 43 alto, 17 medio, 0 bajo), `eval.puntaje`,
+  `eval.sensibilidad`, `eval.precision_at_5` con la misma selección provisional (D-101), `eval.clasificacion`,
+  `scripts.reproducir` y `--verificar`, `--validar` OK, suite 2703 passed, 3 skipped, 6 xfailed. Verificación del padre:
+  `--verificar` da REPRODUCIBLE (26 salidas) y la selección, `config/prioridad.yaml`, `config/reglas_v1.3.yaml` y
+  `outputs/clasificacion.json` no cambiaron.
+- Resultados con n e IC 95 % (todo exploratorio, juicio provisional del asistente, D-101):
+  - Precision@5 sistema 1/5 = 20,0 % [3,6–62,5], línea base por fecha 0/5 = 0 % [0–43,5]; igual que antes, los IC se solapan, no
+    hay mejora demostrada. Cambian dos grupos del top 5 (entran GRP-29baaf270e y GRP-f4a44182b1; ninguno está en la selección).
+  - I sube de mediana 0,425 a 0,55 (DE 0,170 → 0,178); P mediana 77,21 → 77,31 (DE 11,48 → 11,69); R, U, N y E sin cambio.
+    N sigue casi constante. Sensibilidad: 41/43 variantes sin cambio en el top 5; las 2 que cambian son supuestos ±20 % de I.
+  - Clasificación sin cambio: 35/64 = 54,7 % [42,6–66,3], macro-F1 0,430 (`outputs/clasificacion.json` idéntico).
+- Límites que siguen abiertos: 10 grupos del top sin borrador en la caché (generación, fuera de alcance de este tramo) y 11
+  crudos de `data/raw/` ausentes (RSS y GDELT no se versionan, D-72). El criterio de terminado del Backlog sobre ranking
+  («Precision@5 mejora frente a la línea base por fecha») NO se cumple: la medición es de n = 5 y no distingue.
+
 ## Próximo paso
-T4 (medición final y reproducibilidad). Antes: decidir con el dueño cómo atacar Economía sin romper Eventos naturales; después T4.
+Revisión nativa de las salidas regeneradas, cerrar T5 solo con pedido del dueño y decidir con el dueño cómo atacar Economía sin romper Eventos naturales; después T4.
