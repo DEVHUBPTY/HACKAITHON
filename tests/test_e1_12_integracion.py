@@ -9,7 +9,7 @@ import pytest
 
 from src import db, embeddings
 from src.configuracion import cargar_restricciones
-from src.esquemas import Ficha, LineaRespaldo
+from src.esquemas import Ficha, LineaRespaldo, VacioFicha
 from src.ficha import construir_ficha
 from src.generacion import EntradaFicha, desde_ficha, fuentes_y_verificaciones, generar
 from tests import ficha_ayuda as h
@@ -152,9 +152,11 @@ def _proveedor_para(e: EntradaFicha) -> ProveedorGuionado:
 @pytest.mark.parametrize("grupo", GRUPOS)
 def test_cada_pregunta_de_investigacion_referencia_un_vacio_existente_de_la_ficha(con, emb, grupo) -> None:
     f = construir_ficha(grupo, "editorial", con, emb=emb)
+    if not [*f.falta_comprobar.principales, *f.falta_comprobar.otros]:       # determinista: una ficha sin vacíos recibe uno fijo, así el caso siempre corre
+        fijo = VacioFicha(codigo="V-FIJO", texto="Falta una fuente oficial que confirme el hecho", verificacion="Consultar la fuente oficial")
+        f = f.model_copy(update={"falta_comprobar": f.falta_comprobar.model_copy(update={"principales": [fijo]})})
     e = desde_ficha(f).model_copy(update={"accion": "Investigar ya"})
-    if not e.vacios:
-        pytest.skip("la ficha no tiene vacíos: no hay preguntas que derivar")
+    assert e.vacios
     r = generar(e, _proveedor_para(e))
     assert r.tipo == "investigacion" and r.paquete is not None and len(r.paquete.preguntas) == 3
     assert all(q.vacio in {v.codigo for v in [*f.falta_comprobar.principales, *f.falta_comprobar.otros]} for q in r.paquete.preguntas)
