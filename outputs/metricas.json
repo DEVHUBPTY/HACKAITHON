@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "fecha_utc": "2026-10-07T04:20:13Z",
+  "fecha_utc": "2026-10-07T11:33:14Z",
   "benchmark": {
     "archivo": "benchmark_dev.jsonl",
     "sha256": "27c791a86055322eece5c45570b35ae4fe0f06bb89a4bed67c8d861c809f11cc",
@@ -20,7 +20,7 @@
     "metodo": "semantica",
     "umbral_similitud": 0.874,
     "consulta_sin_llm": true,
-    "internet_necesario": true
+    "internet_necesario": false
   },
   "intervalos": {
     "remuestreos": 2000,
@@ -416,20 +416,20 @@
         "valor": 0.0071,
         "ic95": [
           0.0003,
-          0.0073
+          0.0075
         ],
         "remuestreos": 2000
       },
       "p95": {
         "n": 40,
-        "valor": 0.0085,
+        "valor": 0.0097,
         "ic95": [
-          0.0077,
-          0.0093
+          0.0084,
+          0.0183
         ],
         "remuestreos": 2000
       },
-      "arranque_modelo_s": 3.254,
+      "arranque_modelo_s": 4.271,
       "nota": "consulta de punta a punta en frío (el vector de la consulta se codifica de verdad, sin caché) con el modelo de embeddings local ya cargado; sin red. La carga del modelo se reporta aparte (arranque_modelo_s)"
     },
     "paquete_completo": {
