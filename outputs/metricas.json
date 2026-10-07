@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "fecha_utc": "2026-10-07T12:48:42Z",
+  "fecha_utc": "2026-10-07T12:44:56Z",
   "benchmark": {
     "archivo": "benchmark_dev.jsonl",
     "sha256": "27c791a86055322eece5c45570b35ae4fe0f06bb89a4bed67c8d861c809f11cc",
@@ -147,15 +147,15 @@
     "nota": "Afirmaciones emitidas (respuestas y «último dato disponible» de las abstenciones). Cita válida = ID existente en el corpus + campo citable.",
     "borradores": {
       "factuales_con_cita_valida": {
-        "n": 9,
-        "de": 9,
+        "n": 41,
+        "de": 41,
         "proporcion": 1.0,
         "ic95": [
           1.0,
           1.0
         ],
         "ic95_wilson": [
-          0.7009,
+          0.9143,
           1.0
         ],
         "remuestreos": 2000,
@@ -163,15 +163,15 @@
         "fallos": []
       },
       "factuales_que_pasan_el_validador": {
-        "n": 9,
-        "de": 9,
+        "n": 41,
+        "de": 41,
         "proporcion": 1.0,
         "ic95": [
           1.0,
           1.0
         ],
         "ic95_wilson": [
-          0.7009,
+          0.9143,
           1.0
         ],
         "remuestreos": 2000,
@@ -179,15 +179,15 @@
         "fallos": []
       },
       "derivadas_con_base_valida": {
-        "n": 2,
-        "de": 2,
+        "n": 8,
+        "de": 8,
         "proporcion": 1.0,
         "ic95": [
           1.0,
           1.0
         ],
         "ic95_wilson": [
-          0.3424,
+          0.6756,
           1.0
         ],
         "remuestreos": 2000,
@@ -413,23 +413,23 @@
       "unidad": "s",
       "p50": {
         "n": 40,
-        "valor": 0.0076,
+        "valor": 0.0084,
         "ic95": [
           0.0003,
-          0.0084
+          0.0088
         ],
         "remuestreos": 2000
       },
       "p95": {
         "n": 40,
-        "valor": 0.009,
+        "valor": 0.0101,
         "ic95": [
-          0.0089,
-          0.0093
+          0.0091,
+          0.0105
         ],
         "remuestreos": 2000
       },
-      "arranque_modelo_s": 4.492,
+      "arranque_modelo_s": 4.943,
       "nota": "consulta de punta a punta en frío (el vector de la consulta se codifica de verdad, sin caché) con el modelo de embeddings local ya cargado; sin red. arranque_modelo_s es el arranque en frío del proceso (armar el consultor y cargar el modelo hasta el primer vector) y no entra en la latencia"
     },
     "paquete_completo": {
@@ -624,46 +624,35 @@
     "modo": "cache",
     "grupos": 12,
     "estados": {
-      "con_vacios": 2,
-      "sin_cache": 10
+      "con_vacios": 6,
+      "completo": 6
     },
-    "fallos": [
-      "GRP-79f3183472",
-      "GRP-038c4f0643",
-      "GRP-1c2f1d950d",
-      "GRP-1df3ab1e22",
-      "GRP-276c88e7f3",
-      "GRP-29baaf270e",
-      "GRP-5e6531917f",
-      "GRP-6e737ecad5",
-      "GRP-f4a44182b1",
-      "GRP-fcdfc2a3cc"
-    ]
+    "fallos": []
   },
   "rechazos_previos": {
     "fuente": "re-validación de las respuestas guardadas en data/cache_llm/ con el validador actual",
     "tasas": {
-      "unidades_evaluadas": 38,
+      "unidades_evaluadas": 151,
       "por_modelo": {
         "deepseek/deepseek-flash": {
-          "k": 11,
-          "n": 38,
-          "tasa": 0.2894736842105263,
+          "k": 39,
+          "n": 151,
+          "tasa": 0.2582781456953642,
           "ic95": [
-            0.17,
-            0.4476
+            0.1951,
+            0.3335
           ]
         }
       },
       "por_unidad": {
         "deepseek/deepseek-flash": {
           "afirmacion": {
-            "k": 3,
-            "n": 23,
-            "tasa": 0.13043478260869565,
+            "k": 23,
+            "n": 102,
+            "tasa": 0.22549019607843138,
             "ic95": [
-              0.0454,
-              0.3213
+              0.1552,
+              0.3157
             ]
           },
           "seccion:brief": {
@@ -685,12 +674,12 @@
             ]
           },
           "seccion:enfoque": {
-            "k": 2,
-            "n": 3,
-            "tasa": 0.6666666666666666,
+            "k": 10,
+            "n": 17,
+            "tasa": 0.5882352941176471,
             "ic95": [
-              0.2077,
-              0.9385
+              0.3601,
+              0.7839
             ]
           },
           "seccion:guion": {
@@ -704,11 +693,11 @@
           },
           "seccion:preguntas": {
             "k": 0,
-            "n": 2,
+            "n": 12,
             "tasa": 0.0,
             "ic95": [
               0.0,
-              0.6576
+              0.2425
             ]
           },
           "seccion:resumen_web": {
@@ -740,40 +729,62 @@
           },
           "seccion:titulo_trabajo": {
             "k": 0,
-            "n": 1,
+            "n": 11,
             "tasa": 0.0,
             "ic95": [
               0.0,
-              0.7935
+              0.2588
             ]
           }
         }
       },
       "por_regla": {
+        "base_invalida": {
+          "deepseek/deepseek-flash": {
+            "afirmacion": {
+              "k": 4,
+              "n": 102,
+              "tasa": 0.0392156862745098,
+              "ic95": [
+                0.0154,
+                0.0965
+              ]
+            }
+          }
+        },
         "causalidad": {
           "deepseek/deepseek-flash": {
             "afirmacion": {
-              "k": 2,
-              "n": 23,
-              "tasa": 0.08695652173913043,
+              "k": 13,
+              "n": 102,
+              "tasa": 0.12745098039215685,
               "ic95": [
-                0.0242,
-                0.268
+                0.076,
+                0.2059
               ]
             },
             "seccion:enfoque": {
-              "k": 1,
-              "n": 3,
-              "tasa": 0.3333333333333333,
+              "k": 3,
+              "n": 17,
+              "tasa": 0.17647058823529413,
               "ic95": [
-                0.0615,
-                0.7923
+                0.0619,
+                0.4103
               ]
             }
           }
         },
         "cifra_no_coincide": {
           "deepseek/deepseek-flash": {
+            "seccion:enfoque": {
+              "k": 4,
+              "n": 17,
+              "tasa": 0.23529411764705882,
+              "ic95": [
+                0.0955,
+                0.4726
+              ]
+            },
             "seccion:guion": {
               "k": 1,
               "n": 2,
@@ -788,12 +799,12 @@
         "enfoque_como_hecho": {
           "deepseek/deepseek-flash": {
             "seccion:enfoque": {
-              "k": 2,
-              "n": 3,
-              "tasa": 0.6666666666666666,
+              "k": 10,
+              "n": 17,
+              "tasa": 0.5882352941176471,
               "ic95": [
-                0.2077,
-                0.9385
+                0.3601,
+                0.7839
               ]
             }
           }
@@ -801,12 +812,12 @@
         "hipotesis_sin_condicional": {
           "deepseek/deepseek-flash": {
             "afirmacion": {
-              "k": 1,
-              "n": 23,
-              "tasa": 0.043478260869565216,
+              "k": 6,
+              "n": 102,
+              "tasa": 0.058823529411764705,
               "ic95": [
-                0.0077,
-                0.2099
+                0.0272,
+                0.1224
               ]
             }
           }
@@ -845,26 +856,112 @@
               ]
             }
           }
+        },
+        "sin_atribucion": {
+          "deepseek/deepseek-flash": {
+            "seccion:enfoque": {
+              "k": 2,
+              "n": 17,
+              "tasa": 0.11764705882352941,
+              "ic95": [
+                0.0329,
+                0.3434
+              ]
+            }
+          }
         }
       }
     }
   },
   "validez_sustento": {
-    "estado": "pendiente_revision_humana",
+    "estado": "completa",
     "de": 30,
-    "revisadas": 0,
+    "revisadas": 30,
     "meta": 0.9,
     "muestra_prevista": 30,
-    "nota": "Falta la revisión de una persona que no escribió el código de generación (docs/protocolo_evaluacion.md, sección 4).",
+    "origen_juicio": "asistente_provisional (D-101)",
+    "juicio_humano": false,
+    "aviso_origen": "JUICIO PROVISIONAL DEL ASISTENTE, NO HUMANO (D-101): se rehace a mano en C-09; no reportar como juicio de una persona.",
+    "conteo": {
+      "sustentada": 29,
+      "parcial": 1,
+      "no sustentada": 0,
+      "tipo incorrecto": 0
+    },
+    "sustentadas": {
+      "n": 29,
+      "de": 30,
+      "proporcion": 0.9667,
+      "ic95": [
+        0.9,
+        1.0
+      ],
+      "ic95_wilson": [
+        0.8333,
+        0.9941
+      ],
+      "remuestreos": 2000
+    },
+    "parciales": {
+      "n": 1,
+      "de": 30,
+      "proporcion": 0.0333,
+      "ic95": [
+        0.0,
+        0.1
+      ],
+      "ic95_wilson": [
+        0.0059,
+        0.1667
+      ],
+      "remuestreos": 2000
+    },
+    "tipo_incorrecto": {
+      "n": 0,
+      "de": 30,
+      "proporcion": 0.0,
+      "ic95": [
+        0.0,
+        0.0
+      ],
+      "ic95_wilson": [
+        0.0,
+        0.1135
+      ],
+      "remuestreos": 2000,
+      "bootstrap_degenerado": true
+    },
+    "fallos": [
+      {
+        "id_muestra": "S02",
+        "id": "GRP-39773bed5a/A4",
+        "veredicto": "parcial"
+      }
+    ],
+    "meta_validez": {
+      "meta": 0.9,
+      "criterio": "estimación puntual (docs/protocolo_evaluacion.md, sección 4)",
+      "estimacion_puntual": 0.9667,
+      "cumple_estimacion_puntual": true,
+      "limite_inferior_wilson": 0.8333,
+      "cumple_con_limite_inferior_wilson": false,
+      "nota_wilson": "información adicional: no reemplaza el criterio oficial",
+      "origen_juicio": "asistente_provisional (D-101)",
+      "juicio_humano": false
+    },
+    "revisores": [
+      "asistente (D-101)"
+    ],
+    "cumple_meta_provisional": true,
     "archivo": "revision_sustento.csv",
     "muestra": {
       "n": 30,
-      "pool": 64,
+      "pool": 102,
       "semilla": 42,
-      "estado_del_archivo": "reescrita_sin_cambios",
+      "estado_del_archivo": "conservada_con_veredictos",
       "origenes": {
-        "borrador": 5,
-        "consulta": 25
+        "borrador": 13,
+        "consulta": 17
       }
     }
   },

@@ -2618,6 +2618,32 @@ def cargar_precision(carpeta: Path | None = None) -> ConfigPrecision:
     return cargar_config("precision", ConfigPrecision, carpeta)
 
 
+# ------------------------------------------------------------------ origen_juicio.yaml (D-101)
+
+
+class ConfigOrigenJuicio(ModeloConfig):
+    """Procedencia de los juicios que alimentan una métrica (D-101): la columna, el origen humano y la etiqueta de cada origen."""
+
+    version: int
+    columna: str = Field(min_length=1)
+    humano: str = Field(min_length=1)
+    origenes: dict[str, str] = Field(min_length=2)
+    aviso_provisional: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _humano_y_no_humano(self) -> ConfigOrigenJuicio:
+        if self.humano not in self.origenes:
+            raise ValueError(f"humano: {self.humano!r} no está en origenes {sorted(self.origenes)}")
+        if any(k != k.strip().lower() or not v.strip() for k, v in self.origenes.items()):
+            raise ValueError("origenes: cada clave va en minúsculas sin espacios y cada etiqueta no puede quedar vacía")
+        return self
+
+
+def cargar_origen_juicio(carpeta: Path | None = None) -> ConfigOrigenJuicio:
+    """Atajo para ``config/origen_juicio.yaml``."""
+    return cargar_config("origen_juicio", ConfigOrigenJuicio, carpeta)
+
+
 # ------------------------------------------------------------------ pruebas.yaml (E1-17)
 
 IDS_PRUEBAS_ACEPTACION = tuple(f"T{n:02d}" for n in range(1, 11))
@@ -2678,6 +2704,7 @@ CARGADORES = {
     "cache": cargar_cache,
     "revision": cargar_revision,
     "precision": cargar_precision,
+    "origen_juicio": cargar_origen_juicio,
     "pruebas": cargar_pruebas,
     "reproducibilidad": cargar_reproducibilidad,
 }

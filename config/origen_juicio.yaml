@@ -1,0 +1,13 @@
+# D-101 · Quién hizo el juicio que alimenta una métrica: la selección del editor (E1-19, eval/seleccion_editor.csv) y los
+# veredictos de sustento (E1-18, outputs/revision_sustento.csv). La columna viaja dentro del archivo del juicio.
+# Un archivo sin la columna, o con la celda vacía, es humano (como antes). Basta UNA fila no humana para que todo el
+# resultado se rotule con ese origen: un juicio provisional nunca sale como humano. Se rehace a mano en C-09.
+version: 1
+
+columna: origen_juicio
+humano: humano                # el único origen que deja rotular el resultado como juicio humano
+origenes:                     # valor de la columna -> etiqueta en el JSON y en la consola
+  humano: "humano"
+  asistente_provisional: "asistente_provisional (D-101)"
+
+aviso_provisional: "JUICIO PROVISIONAL DEL ASISTENTE, NO HUMANO (D-101): se rehace a mano en C-09; no reportar como juicio de una persona."
