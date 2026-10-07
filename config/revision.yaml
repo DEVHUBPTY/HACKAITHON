@@ -55,10 +55,9 @@ vinculo_rechazado:
   texto: "La persona rechazó {n} vínculo(s) oficial(es) mal aplicado(s): no se usan en el borrador"
   verificacion: "Buscar el dato oficial que sí mide el hecho, o confirmar que no existe"
 
-# Las correcciones editan el texto de las afirmaciones y de las oraciones; cada una se revalida (D-48).
+# Las correcciones editan el texto de las afirmaciones y de las oraciones; cada una se revalida con src/validador.py (D-48).
 correccion:
   prefijo_afirmaciones: "afirmaciones"
-  advertencia_numero: "contiene la cifra «{numero}», que no está en la evidencia que cita"
   advertencia_vacio: "el texto no puede quedar vacío"
 
 exportacion:

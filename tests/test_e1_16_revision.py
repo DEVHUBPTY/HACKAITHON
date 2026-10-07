@@ -94,8 +94,29 @@ AFIRMACIONES = {"afirmaciones": [
 ]}
 
 
+FRASE = "Según reporta La Prensa Ejemplo, la inflación se mantiene estable en Panamá esta semana"
+SECCIONES = {
+    "titulo": {
+        "titulo": ga._o("TVN Panamá reporta inflación estable", "A2"),
+        "titulares": [ga._o("TVN Panamá reporta inflación estable en Panamá", "A2"), ga._o("La Prensa Ejemplo reporta inflación estable", "A1")],
+        "copy_digital": [ga._o("TVN Panamá reporta inflación estable. #Panamá", "A2")],
+    },
+    "brief": {
+        "brief": [ga._o("La Prensa Ejemplo reporta que la inflación se mantiene estable en Panamá.", "A1"), ga._o("La inflación de Panamá fue de 0.69 % anual en 2024.", "A3")],
+        "enfoque": [ga._o("Lo que reportan los medios podría ser consistente con el dato anual de 0.69 % de 2024.", "A4")],
+        "preguntas": [],
+    },
+    "guion": {"guion": [
+        *(ga._o(FRASE + ".", "A1", parte=p) for p in ("entrada", "entrada", "desarrollo")),
+        ga._o(ga.MARCADOR, parte="desarrollo"),
+        *(ga._o(FRASE + ".", "A1", parte=p) for p in ("desarrollo", "desarrollo", "desarrollo", "cierre", "cierre")),
+    ]},
+    "resumen_web": {"resumen_web": [ga._o("TVN Panamá reporta inflación estable.", "A2"), ga._o("La Prensa Ejemplo reporta que la inflación se mantiene estable en Panamá.", "A1")]},
+}
+
+
 def proveedor() -> ga.ProveedorGuionado:
-    return ga.ProveedorGuionado(afirmaciones=AFIRMACIONES)
+    return ga.ProveedorGuionado(afirmaciones=AFIRMACIONES, **SECCIONES)
 
 
 def generador_de_prueba(registro: list[Any] | None = None):
@@ -418,12 +439,27 @@ def test_las_oraciones_del_paquete_tambien_se_corrigen_y_se_revalidan(rev) -> No
     c = abrir(rev).id_caso
     editables = elementos_editables(contenido(rev, c))
     assert {"titulo", "titulares.0", "brief.0", "guion.0"} <= set(editables) and not any(e.texto.startswith("[VISUAL") for e in editables.values())
-    avisos = rev.revisar_correccion(c, {"titulares.0": "Mulino anuncia plan para el Canal, según TVN, con 123 barcos"})
-    assert [a.clave for a in avisos] == ["titulares.0"] and "123" in avisos[0].mensaje              # una cifra que ninguna afirmación citada trae
-    assert rev.revisar_correccion(c, {"titulares.0": "Mulino anuncia plan para el Canal, según TVN Panamá"}) == []
-    v = rev.corregir(c, EDITORIAL, {"titulares.0": "Mulino anuncia plan para el Canal, según TVN Panamá"})
-    assert v.contenido["titulares"][0]["texto"].endswith("TVN Panamá") and v.contenido["titulares"][0]["afirmaciones"] == ["A1"]
+    avisos = rev.revisar_correccion(c, {"titulares.0": "TVN Panamá reporta inflación estable en Panamá, con 123 barcos"})
+    assert [a.clave for a in avisos] == ["titulares.0"] and "cifra_no_coincide" in avisos[0].mensaje and "123" in avisos[0].mensaje   # el rechazo del validador
+    nuevo = "TVN Panamá reporta que la inflación sigue estable en Panamá"
+    assert rev.revisar_correccion(c, {"titulares.0": nuevo}) == []
+    v = rev.corregir(c, EDITORIAL, {"titulares.0": nuevo})
+    assert v.contenido["titulares"][0]["texto"] == nuevo and v.contenido["titulares"][0]["afirmaciones"] == ["A2"]
     assert rev.historial(c)[-1].detalle["afirmaciones_editadas"] == 0                                 # editó una oración, no una afirmación
+
+
+def test_la_revalidacion_llama_al_validador_y_no_a_las_funciones_privadas_de_la_generacion() -> None:
+    codigo = (RAIZ / "src" / "revision.py").read_text(encoding="utf-8")
+    assert "validador" in codigo and "validar_afirmaciones" in codigo and "validar_seccion" in codigo
+    assert "_errores_de_afirmacion" not in codigo and "_Contexto" not in codigo and "TODO(E1-13)" not in codigo
+    assert "advertencia_numero" not in (RAIZ / "config" / "revision.yaml").read_text(encoding="utf-8")       # ya no hay regla local de cifras
+
+
+def test_las_advertencias_son_los_rechazos_del_validador_con_su_regla(rev) -> None:
+    c = abrir(rev).id_caso
+    avisos = rev.revisar_correccion(c, {"afirmaciones.A3": "La inflación de Panamá fue de 9.99 % anual en 2024"})
+    assert any(a.clave == "afirmaciones.A3" and a.mensaje.startswith("[cifra_no_coincide]") for a in avisos)
+    assert any(a.clave == "afirmaciones.A4" for a in avisos)                       # la inferencia que se apoya en A3 ya no cabe
 
 
 def test_las_oraciones_se_revalidan_con_las_frases_prohibidas(rev) -> None:

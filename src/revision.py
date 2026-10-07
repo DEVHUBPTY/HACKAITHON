@@ -49,14 +49,12 @@ from src.configuracion import (
     MODALIDADES,
     RAIZ,
     ConfigRevision,
-    cargar_generacion,
     cargar_modalidad,
     cargar_normalizacion,
     cargar_restricciones,
     cargar_revision,
-    cargar_salidas,
 )
-from src.esquemas import PATRON_ID_REGISTRO, Afirmacion, Cita, Ficha, VacioFicha
+from src.esquemas import PATRON_ID_REGISTRO, Afirmacion, AfirmacionSalida, Cita, Ficha, Oracion, PreguntaInvestigacion, VacioFicha
 
 logger = logging.getLogger(__name__)
 
@@ -278,66 +276,65 @@ def aplicar_ediciones(contenido: Mapping[str, Any], cambios: Mapping[str, str]) 
     return nuevo
 
 
+def _paquete_ligero(contenido: Mapping[str, Any]) -> tuple[list[AfirmacionSalida], dict[str, Any]]:
+    """Las afirmaciones y las secciones de un borrador como los objetos que valida ``src/validador.py`` (sin más reglas que las suyas)."""
+    afirmaciones = [AfirmacionSalida.model_validate(a) for a in contenido.get("afirmaciones") or []]
+    secciones: dict[str, Any] = {}
+    for nombre in SECCIONES_UNICAS:
+        if contenido.get(nombre):
+            secciones[nombre] = Oracion.model_validate(contenido[nombre])
+    for nombre in SECCIONES_DE_LISTA:
+        if contenido.get(nombre):
+            secciones[nombre] = [PreguntaInvestigacion.model_validate(x) if nombre == "preguntas" else Oracion.model_validate(x) for x in contenido[nombre]]
+    return afirmaciones, secciones
+
+
+def _rechazos_del_borrador(entrada: Any, contenido: Mapping[str, Any], secciones_a_revisar: Collection[str]) -> list[tuple[str, Rechazo]]:
+    """``(clave, rechazo)`` de ``src/validador.py`` sobre las afirmaciones del borrador y sobre las secciones pedidas."""
+    from src import validador as v
+
+    ctx = v.Contexto(entrada, cargar_modalidad(entrada.modalidad).grupos_restricciones)
+    afirmaciones, secciones = _paquete_ligero(contenido)
+    crudas = [Afirmacion(id=a.id, tipo=a.tipo, texto=a.texto, citas=[Cita(id=c.id, campo=c.campo) for c in a.citas], base=a.base) for a in afirmaciones if a.texto.strip()]   # un texto vacío ya es una advertencia propia
+    salida = [(f"afirmaciones.{r.item}", r) for r in v.validar_afirmaciones(crudas, ctx).rechazos]
+    ctx.afirmaciones = {a.id: a for a in afirmaciones}              # las afirmaciones tal como quedaron, para juzgar las oraciones que las citan
+    for nombre in secciones_a_revisar:
+        if nombre in secciones:
+            salida += [(nombre, r) for r in v.validar_seccion(nombre, secciones[nombre], ctx)]
+    return salida
+
+
 def revalidar_correccion(
     entrada: Any, antes: Mapping[str, Any], despues: Mapping[str, Any], claves: Collection[str], cfg: ConfigRevision | None = None
 ) -> list[Advertencia]:
-    """Revalida el texto corregido y devuelve las advertencias que la persona debe confirmar (D-48). Lista vacía = nada que confirmar.
+    """Revalida el texto corregido con ``src/validador.py`` y devuelve las advertencias que la persona debe confirmar (D-48).
 
-    Este es el **único** punto de la revisión que llama a la validación. TODO(E1-13): hoy usa los puntos de entrada de
-    ``src/generacion.py`` (``_errores_de_afirmacion`` para una afirmación; ``_Contexto.revisar`` para una oración o una pregunta:
-    secretos, fuga del prompt, frases prohibidas y comillas que no son literales) y agrega aquí la regla de **cifras sin cita**, que
-    el validador de E1-13 traerá incluida. Cuando E1-13 se integre, apuntar esta función a ``src/validador.py`` y quitar lo local.
+    Es el **único** punto de la revisión que llama a la validación. Cada rechazo del validador (cita, cifras y fechas contra la evidencia,
+    comillas literales, causalidad, acusaciones, frases prohibidas, atribución, límites de la sección…) se muestra como advertencia con su
+    mensaje; la persona la confirma o la corrección no se guarda. Solo cuentan los rechazos **nuevos**: los que el borrador no tenía antes de
+    la corrección. Se revisan las afirmaciones, las secciones editadas y las que citan una afirmación editada (su texto ya no
+    necesariamente cabe en lo que ahora dice). Lista vacía = nada que confirmar.
     """
-    from src import generacion as g
-
     cfg = cfg or cargar_revision()
-    gen = cargar_generacion()
-    ctx = g._Contexto(entrada, gen, cargar_salidas(), cargar_restricciones(), gen.atribucion.marcadores, cargar_modalidad(entrada.modalidad).grupos_restricciones)
     claves = set(claves)
-    afirmaciones = {a["id"]: a for a in despues.get("afirmaciones") or []}
-    # una afirmación cuya base se corrigió también se revisa: ya no necesariamente cabe en lo que ahora dice su base
     editadas = {k.split(".", 1)[1] for k in claves if k.startswith("afirmaciones.")}
-    claves |= {f"afirmaciones.{i}" for i, a in afirmaciones.items() if set(a.get("base", [])) & editadas}
-    elementos = elementos_editables(despues)
+    secciones = {k.rsplit(".", 1)[0] if "." in k else k for k in claves if not k.startswith("afirmaciones.")}
+    for nombre in (*SECCIONES_UNICAS, *SECCIONES_DE_LISTA):
+        valor = despues.get(nombre)
+        valor = [valor] if isinstance(valor, Mapping) else valor or []
+        if editadas & {i for o in valor if isinstance(o, Mapping) for i in o.get("afirmaciones", [])}:
+            secciones.add(nombre)
+    previos = {(c, r.regla, r.motivo) for c, r in _rechazos_del_borrador(entrada, antes, secciones)}
+    primera_clave = {s: next((k for k in sorted(claves) if k == s or k.startswith(f"{s}.")), s) for s in secciones}
     avisos: list[Advertencia] = []
-
-    def cifras_nuevas(clave: str, texto: str, permitido: str) -> None:
-        conocidas = set(g.NUMERO.findall(permitido))
-        for numero in dict.fromkeys(g.NUMERO.findall(texto)):
-            if numero not in conocidas:
-                avisos.append(Advertencia(clave, cfg.correccion.advertencia_numero.format(numero=numero)))
-
-    def texto_de_registros(ids: Collection[str]) -> str:
-        partes: list[str] = []
-        for i in ids:
-            r = ctx.registros.get(i)
-            partes += [i, *(r.campos.values() if r else []), *(r.contexto.values() if r else [])]
-        return " ".join(partes)
-
-    for clave in sorted(claves):
-        e = elementos.get(clave)
-        if e is None:
+    for texto_vacio in [k for k, e in elementos_editables(despues).items() if k in claves and not e.texto.strip()]:
+        avisos.append(Advertencia(texto_vacio, cfg.correccion.advertencia_vacio))
+    for clave, r in _rechazos_del_borrador(entrada, despues, secciones):
+        if (clave, r.regla, r.motivo) in previos:
             continue
-        if not e.texto.strip():
-            avisos.append(Advertencia(clave, cfg.correccion.advertencia_vacio))
-            continue
-        if clave.startswith("afirmaciones."):
-            a = afirmaciones[clave.split(".", 1)[1]]
-            try:
-                modelo = Afirmacion(id=a["id"], tipo=a["tipo"], texto=a["texto"], citas=[Cita(id=c["id"], campo=c["campo"]) for c in a.get("citas", [])], base=a.get("base", []))
-            except ValueError as exc:
-                avisos.append(Advertencia(clave, str(exc)))
-                continue
-            avisos += [Advertencia(clave, m) for m in g._errores_de_afirmacion(modelo, ctx)]
-            base = " ".join(afirmaciones[b]["texto"] for b in a.get("base", []) if b in afirmaciones)
-            cifras_nuevas(clave, a["texto"], base if a.get("base") else texto_de_registros([c["id"] for c in a.get("citas", [])]))
-        else:
-            citadas = [afirmaciones[i] for i in e.afirmaciones if i in afirmaciones]
-            ids = [c["id"] for a in citadas for c in a.get("citas", [])]
-            avisos += [Advertencia(clave, m) for m in ctx.revisar(e.texto, ids)]
-            if clave.startswith("preguntas."):
-                continue                                # una pregunta no afirma: no cita ni lleva cifras de la evidencia
-            cifras_nuevas(clave, e.texto, " ".join(a["texto"] for a in citadas))
+        aviso = Advertencia(primera_clave.get(clave, clave), f"[{r.regla}] {r.mensaje}")
+        if aviso not in avisos:
+            avisos.append(aviso)
     return avisos
 
 

@@ -2316,7 +2316,6 @@ class VinculoRechazadoRevision(ModeloConfig):
 
 class CorreccionRevision(ModeloConfig):
     prefijo_afirmaciones: str = Field(min_length=1)
-    advertencia_numero: str = Field(min_length=1)
     advertencia_vacio: str = Field(min_length=1)
 
 
