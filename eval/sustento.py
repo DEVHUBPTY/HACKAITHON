@@ -10,6 +10,8 @@ IC95 de bootstrap y de Wilson y los IDs de lo que no quedó sustentado. Con la r
 
 **Procedencia (D-101).** La columna ``origen_juicio`` dice quién juzgó (``eval.origen_juicio``). Si alguna fila es del asistente, el
 resultado lleva ``origen_juicio`` provisional, ``juicio_humano: false`` y el aviso, en el JSON y en la consola: nunca sale como humano.
+Con un juicio no humano la meta se reporta como ``cumple_meta_provisional`` (nunca ``cumple_meta``) y ``meta_validez`` lleva el origen
+al lado. El criterio oficial es la estimación puntual (protocolo, sección 4); el límite inferior de Wilson se informa aparte, sin cambiarlo.
 """
 
 from __future__ import annotations
@@ -79,6 +81,32 @@ def preparar_muestra(muestra: Sequence[dict[str, Any]], ruta: Path) -> str:
     return "reescrita_sin_cambios" if ruta.read_bytes() == antes else "reescrita"
 
 
+def meta_validez(sustentadas: dict[str, Any], meta: float) -> dict[str, Any]:
+    """La meta contra la estimación puntual (el criterio oficial) y, como información adicional, contra el límite inferior de Wilson."""
+    inferior = sustentadas["ic95_wilson"][0]
+    return {
+        "meta": meta,
+        "criterio": "estimación puntual (docs/protocolo_evaluacion.md, sección 4)",
+        "estimacion_puntual": sustentadas["proporcion"],
+        "cumple_estimacion_puntual": sustentadas["proporcion"] >= meta,
+        "limite_inferior_wilson": inferior,
+        "cumple_con_limite_inferior_wilson": inferior >= meta,
+        "nota_wilson": "información adicional: no reemplaza el criterio oficial",
+    }
+
+
+def linea_meta(r: dict[str, Any]) -> str:
+    """Una línea de consola con la meta, siempre con el límite de Wilson y el origen del juicio (y su aviso si no es humano)."""
+    m = r["meta_validez"]
+    si_no = {True: "cumple", False: "no cumple"}
+    linea = (f"Meta ≥ {m['meta']:.0%} (estimación puntual, criterio oficial): {si_no[m['cumple_estimacion_puntual']]} "
+             f"({m['estimacion_puntual']:.1%}) · límite inferior Wilson {m['limite_inferior_wilson']:.1%}: "
+             f"{si_no[m['cumple_con_limite_inferior_wilson']]} (información adicional) · origen del juicio: {m['origen_juicio']}")
+    if "aviso_origen" in r:
+        linea += f" · {r['aviso_origen']}"
+    return linea
+
+
 def validez(filas: Sequence[dict[str, str]], criterio: CriterioAB, cfg: ConfigBenchmark | None = None,
             cfg_origen: ConfigOrigenJuicio | None = None) -> dict[str, Any]:
     """Validez de sustento = «sustentada» / revisadas, con IC y los fallos. ``estado``: ``pendiente_revision_humana`` (nadie revisó),
@@ -121,9 +149,11 @@ def validez(filas: Sequence[dict[str, str]], criterio: CriterioAB, cfg: ConfigBe
             {"id_muestra": i, "id": f"{por_id[i]['id_unidad']}/{por_id[i]['id_afirmacion']}", "veredicto": v}
             for i, v in puestos.items() if v != "sustentada"
         ],
-        "cumple_meta": sustentadas["proporcion"] >= cfg.sustento.meta_validez,
+        "meta_validez": meta_validez(sustentadas, cfg.sustento.meta_validez) | origen_juicio.describir(origen, cfg_origen),
         "revisores": sorted({(f.get("revisor") or "").strip() for f in filas if (f.get("revisor") or "").strip()}),
     }
+    clave_meta = "cumple_meta" if origen == cfg_origen.humano else "cumple_meta_provisional"
+    resultado[clave_meta] = resultado["meta_validez"]["cumple_estimacion_puntual"]
     if revisadas < cfg.sustento.muestra:
         resultado["nota"] = f"La muestra tiene {revisadas} < {cfg.sustento.muestra} afirmaciones: no se produjeron más (PDF 9.1: «si se producen tantas»)."
     return resultado
@@ -144,6 +174,8 @@ def principal(argv: list[str] | None = None) -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
     print(json.dumps(r, ensure_ascii=False, indent=2))
+    if "meta_validez" in r:
+        print("\n" + linea_meta(r))
     if "aviso_origen" in r:
         print(f"\n{r['aviso_origen']} · origen_juicio: {r['origen_juicio']}")
     if r["estado"] != "completa":

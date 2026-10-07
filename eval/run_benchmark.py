@@ -669,7 +669,9 @@ def linea_sustento(v: Mapping[str, Any]) -> str:
     linea = f"Validez de sustento                : {v['estado']} ({v['revisadas']}/{v['de']} revisadas)"
     if "origen_juicio" in v:
         linea += f" · origen del juicio: {v['origen_juicio']}"
-    if "aviso_origen" in v:
+    if "meta_validez" in v:
+        linea += f"\n  {sustento.linea_meta(dict(v))}"
+    elif "aviso_origen" in v:
         linea += f"\n  {v['aviso_origen']}"
     return linea
 
