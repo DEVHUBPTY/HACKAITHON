@@ -2406,6 +2406,54 @@ def cargar_revision(carpeta: Path | None = None) -> ConfigRevision:
     return cargar_config("revision", ConfigRevision, carpeta)
 
 
+# ------------------------------------------------------------------ precision.yaml (E1-19)
+
+
+class HojaCiegaPrecision(ModeloConfig):
+    semilla: str = Field(min_length=1)
+    columnas: list[str] = Field(min_length=1)
+    marca: str = Field(min_length=1)
+
+
+class ArchivosPrecision(ModeloConfig):
+    hoja: str = Field(min_length=1)
+    seleccion: str = Field(min_length=1)
+    salida: str = Field(min_length=1)
+
+
+class TextosPrecision(ModeloConfig):
+    pendiente: str = Field(min_length=1)
+    exploratoria: str = Field(min_length=1)
+    sin_especialista: str = Field(min_length=1)
+
+
+class ConfigPrecision(ModeloConfig):
+    """Precision@5 contra la selección de un editor (E1-19): k, cortes mínimos y la hoja ciega (sin puntajes ni posiciones)."""
+
+    version: int
+    k: int = Field(ge=1)
+    cortes_minimos: int = Field(ge=1)
+    hoja_ciega: HojaCiegaPrecision
+    archivos: ArchivosPrecision
+    textos: TextosPrecision
+
+    @model_validator(mode="after")
+    def _hoja_sin_pistas(self) -> ConfigPrecision:
+        prohibidas = {"puntaje", "posicion", "rango", "relevancia", "impacto", "urgencia", "novedad", "evidencia", "estado", "accion"}
+        filtradas = prohibidas & set(self.hoja_ciega.columnas)
+        if filtradas:
+            raise ValueError(f"hoja_ciega.columnas: la hoja del editor no puede llevar {sorted(filtradas)} (revelan el ranking)")
+        for obligatoria in ("id_grupo", "seleccion"):
+            if obligatoria not in self.hoja_ciega.columnas:
+                raise ValueError(f"hoja_ciega.columnas: falta {obligatoria!r}")
+        return self
+
+
+def cargar_precision(carpeta: Path | None = None) -> ConfigPrecision:
+    """Atajo para ``config/precision.yaml``."""
+    return cargar_config("precision", ConfigPrecision, carpeta)
+
+
 CODIGO_URGENCIA_SIN_PUBLICACION ="urgencia_sin_publicacion"   # el único vacío de E1-10 cuyo texto vive en reglas_v1.3.yaml
 MODALIDADES = ("editorial", "banca")
 OPCIONALES = {"modalidad_banca"}  # el esquema la admite aunque todavía no exista
@@ -2438,6 +2486,7 @@ CARGADORES = {
     "interfaz": cargar_interfaz,
     "cache": cargar_cache,
     "revision": cargar_revision,
+    "precision": cargar_precision,
 }
 
 

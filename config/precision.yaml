@@ -1,0 +1,22 @@
+# Precision@5 contra la selección independiente de un editor (E1-19, PDF 9.1 y 11).
+# El editor elige sus temas SIN ver el ranking: la hoja que recibe no lleva P, posición, componentes ni estado de evidencia.
+version: 1
+
+k: 5                          # temas que elige el editor y que se toman del ranking (PDF 9.1: Precision@5)
+cortes_minimos: 3             # fechas de corte distintas para no declarar el resultado exploratorio (spec E1-19, D-57)
+
+hoja_ciega:
+  # Orden de la hoja: SHA-256 de «semilla|id_grupo». No usa P, la posición, la fecha ni el tema: no insinúa nada.
+  semilla: "e1-19-hoja-ciega"
+  columnas: [corte, id_grupo, tema, titular, fecha_reciente, seleccion]
+  marca: x                    # lo que escribe el editor en la columna `seleccion` de sus k temas
+
+archivos:
+  hoja: eval/hoja_editor_ciega.csv
+  seleccion: eval/seleccion_editor.csv
+  salida: outputs/precision_at_5.json
+
+textos:
+  pendiente: "pendiente de selección humana"
+  exploratoria: "exploratoria, n = 1 (D-57): una sola fecha de corte; se declara así mientras no haya {cortes_minimos} cortes"
+  sin_especialista: "Si no hay especialista editorial, la evaluación se declara exploratoria (D-74)."
