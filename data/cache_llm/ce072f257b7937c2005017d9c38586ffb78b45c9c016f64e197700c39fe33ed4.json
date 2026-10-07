@@ -1,0 +1,11 @@
+{
+ "clave": "ce072f257b7937c2005017d9c38586ffb78b45c9c016f64e197700c39fe33ed4",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1705,
+ "tokens_salida": 386,
+ "creado_utc": "2026-10-07T11:59:00Z",
+ "respuesta": "{\"titulo\": {\"texto\": \"Medios reportan viaje de Mulino a Singapur y Vietnam por convenios\", \"afirmaciones\": [\"A1\", \"A2\"]}, \"titulares\": [{\"texto\": \"Prensa Latina reporta que el presidente panameño visitará Singapur y Vietnam\", \"afirmaciones\": [\"A1\"]}, {\"texto\": \"La Estrella reporta que Mulino suscribirá convenios bilaterales en Asia\", \"afirmaciones\": [\"A2\"]}, {\"texto\": \"Revista EY reporta que Panamá busca inversiones en Singapur y Vietnam\", \"afirmaciones\": [\"A3\"]}], \"copy_digital\": [{\"texto\": \"Tres medios reportan el mismo tema: el presidente panameño viajará a Asia.\", \"afirmaciones\": [\"A4\"]}, {\"texto\": \"Prensa Latina reporta que visitará Singapur y Vietnam.\", \"afirmaciones\": [\"A1\"]}, {\"texto\": \"La Estrella reporta que suscribirá convenios bilaterales con ambos países.\", \"afirmaciones\": [\"A2\"]}, {\"texto\": \"Revista EY reporta que la visita busca inversiones.\", \"afirmaciones\": [\"A3\"]}, {\"texto\": \"El grupo reúne tres titulares de tres medios, con tres procedencias independientes estimadas.\", \"afirmaciones\": [\"A4\", \"A5\"]}, {\"texto\": \"Si la población sigue estos anuncios, el tema podría ser relevante para quienes esperan información sobre inversiones y relaciones exteriores.\", \"afirmaciones\": [\"A6\"]}, {\"texto\": \"#Panamá #Asia\", \"afirmaciones\": [\"A1\"]}]}"
+}

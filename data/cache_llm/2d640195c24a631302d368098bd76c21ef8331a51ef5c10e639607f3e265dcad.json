@@ -1,0 +1,11 @@
+{
+ "clave": "2d640195c24a631302d368098bd76c21ef8331a51ef5c10e639607f3e265dcad",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1718,
+ "tokens_salida": 228,
+ "creado_utc": "2026-10-07T12:00:17Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta sequía en el campo de Coclé\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"El tema reúne un solo titular de un medio, con una procedencia independiente estimada, por lo que la evidencia disponible es limitada.\", \"afirmaciones\": [\"A2\", \"A3\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún indicador oficial sobre sequías o condiciones del campo en Coclé que pueda vincularse a este tema?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras fuentes independientes han reportado sobre la sequía en el campo de Coclé?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Qué datos oficiales permitirían verificar o contextualizar lo reportado por TVN Panamá sobre Coclé?\", \"vacio\": \"sin_dato_oficial\"}]}"
+}
