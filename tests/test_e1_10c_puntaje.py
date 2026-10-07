@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import pytest
 
-from src import contexto
+from src import contexto, limpieza, puntaje
 from src.configuracion import cargar_temas, cargar_vinculos
+from tests.prioridad_ayuda import CFG, REGLAS, miembro
 
 SUB = cargar_vinculos().subtema
 TEMAS = cargar_temas().temas
@@ -71,9 +72,6 @@ def test_x41_todo_subtema_del_catalogo_tiene_terminos_de_apoyo() -> None:
 
 
 def _nivel(*titulares: str) -> str:
-    from src import puntaje
-    from tests.prioridad_ayuda import CFG, REGLAS, miembro
-
     return puntaje.alcance_geografico([miembro(f"NOT-{i}", t) for i, t in enumerate(titulares)], REGLAS, CFG).nivel
 
 
@@ -105,3 +103,52 @@ def test_x42_el_pais_o_una_institucion_nacional_dan_alcance_nacional(titular: st
 )
 def test_x42_un_lugar_concreto_manda_sobre_la_mencion_implicita_del_pais(titulares: tuple[str, ...], nivel: str) -> None:
     assert _nivel(*titulares) == nivel
+
+
+# ------------------------------------------------------------------ X44 · notas regionales que afectan a Panamá
+
+
+def _gdelt(titulo: str) -> limpieza.Resultado:
+    fila = {
+        "titulo": titulo, "url": "https://ejemplo.example/n/1", "url_canonica": "https://ejemplo.example/n/1",
+        "medio": "Ejemplo", "dominio": "ejemplo.example", "origen": "GDELT", "pais_medio": None,
+        "fecha_deteccion": "2026-10-01T10:00:00Z", "fecha_publicacion": None, "fecha_extraccion": "2026-10-06T10:00:00Z",
+        "descripcion": None, "categoria_fuente": None,
+    }  # fmt: skip
+    return limpieza.evaluar(fila, limpieza.Reglas.desde_config())
+
+
+@pytest.mark.parametrize(
+    "titulo",
+    [
+        # comercio marítimo y de combustibles que pasa por el Canal o abastece a Panamá (D-84: «rutas marítimas»)
+        "Trump threat to ban diesel exports sets off global alarms",
+        "Exportaciones chinas sostienen la demanda de carga contenerizada pese a la debilidad de EE. UU.",
+        "US LNG Exports Increase in September, Europe Outbids Asia for Cargoes",   # etiqueta humana: logística, regional
+        "Suben los fletes marítimos entre Asia y la costa este de EE. UU.",
+        "Navieras desvían portacontenedores por la crisis del mar Rojo",
+    ],
+)
+def test_x44_el_comercio_maritimo_y_de_combustibles_es_regional_no_ruido(titulo: str) -> None:
+    r = _gdelt(titulo)
+    assert (r.motivo_ruido, r.alcance_regional) == (None, True)
+
+
+@pytest.mark.parametrize(
+    "titulo",
+    [
+        "Trump redirige ayuda a Europa",
+        "Emerging Technologies and Maritime Security",
+        "Navy destroyer named for late Sen. Ted Stevens will be commissioned in Whittier on Saturday",
+        "Carnival to Deploy Adventure, Legend, Spirit to West Coast in 2028",
+        "Sin combustible y con menos vuelos, pero a Cuba aún llegan aviones",   # escasez local en otro país, no un flujo comercial
+        "El Niño hits Australian wheat",
+    ],
+)
+def test_x44_lo_que_no_es_comercio_maritimo_ni_de_combustibles_sigue_siendo_ruido(titulo: str) -> None:
+    r = _gdelt(titulo)
+    assert (r.motivo_ruido, r.alcance_regional) == ("no_es_panama", False)
+
+
+def test_x44_un_falso_panama_con_comercio_maritimo_sigue_siendo_ruido() -> None:
+    assert _gdelt("Panama City port sees container shipping growth").motivo_ruido == "no_es_panama"
