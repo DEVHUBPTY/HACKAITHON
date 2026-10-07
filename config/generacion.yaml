@@ -43,6 +43,9 @@ texto:                     # recortes de los mensajes de error y de descarte (no
   motivo_max_caracteres: 600
   vista_previa_caracteres: 60
 
+# Modalidades con generación implementada; E2-02 agrega banca. Una modalidad fuera de la lista no genera nada.
+modalidades: [editorial]
+
 grupos:                    # D-44: 1 llamada de afirmaciones + 4 de redacción, cada una bajo demanda
   editorial: [titulos, brief, guion, resumen]
   investigacion: [investigacion]

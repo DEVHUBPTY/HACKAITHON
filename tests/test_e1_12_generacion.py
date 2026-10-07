@@ -428,3 +428,9 @@ def test_los_esquemas_tienen_exactamente_los_campos_de_salidas_md() -> None:
 
 def test_el_paquete_investigacion_no_incluye_guion_ni_copy_en_su_esquema() -> None:
     assert not {"guion", "copy_digital", "brief", "titulares", "resumen_web"} & set(PaqueteInvestigacion.model_fields)
+
+
+def test_una_modalidad_sin_generacion_implementada_no_genera_nada() -> None:
+    prov = ProveedorGuionado()
+    r = generar(ficha(modalidad="banca"), prov)
+    assert r.tipo == "nada" and prov.llamadas == [] and "E2-02" in (r.motivo or "")

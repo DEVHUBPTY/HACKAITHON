@@ -537,7 +537,7 @@ class Generador:
         self.cfg = cfg or cargar_generacion()
         self.restricciones, self.salidas = cargar_restricciones(), cargar_salidas()
         self.plan = planificar(ficha, forzar_completo, self.cfg)
-        grupos_restr = ["comunes", self.ficha.modalidad]
+        grupos_restr = cargar_modalidad(ficha.modalidad).grupos_restricciones if self.plan.tipo != "nada" else []
         self.ctx = _Contexto(ficha, self.cfg, self.salidas, self.restricciones, self.cfg.atribucion.marcadores, grupos_restr)
         self.llamadas: list[RegistroLlamada] = []
         self.descartadas: list[str] = []
@@ -810,7 +810,7 @@ def _retroalimentacion(problemas: Sequence[str]) -> str:
 def planificar(ficha: EntradaFicha, forzar_completo: bool, cfg: ConfigGeneracionBorrador) -> Plan:
     """Qué se genera según la acción de la ficha (D-42). La persona puede forzar el paquete completo (queda registrado)."""
     a = cfg.acciones
-    if ficha.modalidad != "editorial":
+    if ficha.modalidad not in cfg.modalidades:
         return Plan("nada", motivo=f"la generación de la modalidad {ficha.modalidad!r} llega con su propia spec (E2-02)")
     if not ficha.registros:
         return Plan("nada", motivo="sin evidencia: la ficha no tiene registros que citar (abstención antes de llamar al LLM)")

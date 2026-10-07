@@ -1887,6 +1887,7 @@ class ConfigGeneracionBorrador(ModeloConfig):
     prompts: PromptsGeneracion
     reintentos: int = Field(ge=0)
     afirmaciones: AfirmacionesGeneracion
+    modalidades: list[str] = Field(min_length=1)
     acciones: AccionesGeneracion
     prefijos: PrefijosGeneracion
     atribucion: AtribucionGeneracion
