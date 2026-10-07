@@ -481,15 +481,15 @@ def test_una_consulta_vacia_no_llama_al_consultor(app) -> None:
     assert not at.exception and not at.success and not at.warning
 
 
-def test_el_paquete_sin_e1_12_dice_que_no_esta_integrado(app) -> None:
+def test_el_paquete_sin_borrador_en_cache_lo_dice_sin_llamar_al_modelo(app) -> None:
     at = ir(app.run(), "paquete")
     assert not at.exception
-    assert any(CFG.textos.sin_borrador == str(i.value) for i in at.info)
+    assert any("no hay borrador en caché" in str(w.value) or "no genera borrador" in str(w.value) for w in at.warning)
     assert "Acción recomendada" in "\n".join(textos(at))
 
 
 def test_el_paquete_con_generador_muestra_el_borrador_con_marca_y_leyenda(app, monkeypatch) -> None:
-    monkeypatch.setattr(ui, "cargar_generador", lambda cfg=None: (lambda id_grupo, modalidad, *, solo_cache: {"titulo_de_trabajo": "Un enfoque", "preguntas": ["¿Qué falta?"]}))
+    monkeypatch.setattr(ui, "cargar_generador", lambda cfg=None: (lambda id_grupo, modalidad, *, solo_cache, **_: {"titulo_de_trabajo": "Un enfoque", "preguntas": ["¿Qué falta?"]}))
     at = ir(app.run(), "paquete")
     texto = "\n".join(textos(at))
     assert not at.exception and "Un enfoque" in texto and "¿Qué falta?" in texto and MARCA in texto and any(x in texto for x in LEYENDAS)

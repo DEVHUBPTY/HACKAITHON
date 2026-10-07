@@ -1,0 +1,11 @@
+{
+ "clave": "3cc3e1fd6939cf27c09271c378e88fab3b67663a07ebf0d5c0aadbc235b43562",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1701,
+ "tokens_salida": 411,
+ "creado_utc": "2026-10-07T03:10:28Z",
+ "respuesta": "{\"afirmaciones\": [{\"id\": \"A1\", \"tipo\": \"declaración\", \"texto\": \"TVN Panamá reporta que el MOP solicita $43.1 millones para pagar compromisos y continuar obras en ejecución.\", \"citas\": [{\"id\": \"NOT-cf4a8b6560\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A2\", \"tipo\": \"hecho\", \"texto\": \"El grupo de titulares sobre este tema está formado por 1 titular de 1 medio.\", \"citas\": [{\"id\": \"GRP-6e737ecad5\", \"campo\": \"n_titulares\"}, {\"id\": \"GRP-6e737ecad5\", \"campo\": \"n_medios\"}]}, {\"id\": \"A3\", \"tipo\": \"hecho\", \"texto\": \"La evidencia reúne 1 procedencia independiente estimada, ya que los titulares que replican a una misma fuente cuentan como una.\", \"citas\": [{\"id\": \"GRP-6e737ecad5\", \"campo\": \"n_procedencias\"}]}, {\"id\": \"A4\", \"tipo\": \"inferencia\", \"texto\": \"La cobertura disponible sobre este tema es limitada, pues se apoya en un único titular de un solo medio y en una sola procedencia estimada.\", \"base\": [\"A2\", \"A3\"]}, {\"id\": \"A5\", \"tipo\": \"hipótesis\", \"texto\": \"Si la solicitud de fondos del MOP se refiere a compromisos y obras en ejecución, la población podría verse afectada en la continuidad de esas obras y en la prestación de servicios asociados.\", \"base\": [\"A1\"]}]}"
+}

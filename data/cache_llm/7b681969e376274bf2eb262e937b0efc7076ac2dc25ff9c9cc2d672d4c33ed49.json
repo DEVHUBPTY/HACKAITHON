@@ -1,0 +1,11 @@
+{
+ "clave": "7b681969e376274bf2eb262e937b0efc7076ac2dc25ff9c9cc2d672d4c33ed49",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.1",
+ "version_cache": "1",
+ "tokens_entrada": 1460,
+ "tokens_salida": 318,
+ "creado_utc": "2026-10-07T03:09:56Z",
+ "respuesta": "{\"resumen_web\": [{\"texto\": \"Tres medios reportan que el presidente de Panamá visitará Singapur y Vietnam.\", \"afirmaciones\": [\"A1\", \"A2\", \"A3\"]}, {\"texto\": \"prensa-latina.cu reporta que el presidente panameño visitará ambos países.\", \"afirmaciones\": [\"A1\"]}, {\"texto\": \"laestrella.com.pa reporta que Mulino viajará a Asia y suscribirá convenios bilaterales con Singapur y Vietnam.\", \"afirmaciones\": [\"A2\"]}, {\"texto\": \"revistaeyn.com reporta que el presidente de Panamá visita Singapur y Vietnam en busca de inversiones.\", \"afirmaciones\": [\"A3\"]}, {\"texto\": \"El grupo reúne 3 titulares de 3 medios sobre este tema, con 3 procedencias independientes estimadas.\", \"afirmaciones\": [\"A4\", \"A5\"]}, {\"texto\": \"La coincidencia de tres medios sugiere que el tema tiene relevancia informativa para la población panameña, aunque no se conozcan fechas ni detalles de la agenda.\", \"afirmaciones\": [\"A6\"]}, {\"texto\": \"Si los convenios bilaterales y la búsqueda de inversiones se concretaran, podrían tener efectos en la economía y el empleo del país.\", \"afirmaciones\": [\"A7\"]}]}"
+}

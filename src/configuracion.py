@@ -2150,6 +2150,12 @@ class GeneracionInterfaz(ModeloConfig):
     solo_cache: bool
 
 
+class PaqueteInterfaz(ModeloConfig):
+    """Etiquetas legibles de los campos del paquete en la pantalla Paquete; un campo sin etiqueta usa su nombre capitalizado."""
+
+    etiquetas: dict[str, str]
+
+
 class RevisionInterfaz(ModeloConfig):
     estados: list[str] = Field(min_length=1)
     estado_inicial: str
@@ -2185,6 +2191,7 @@ class ConfigInterfaz(ModeloConfig):
     demo: DemoInterfaz
     citas: CitasInterfaz
     generacion: GeneracionInterfaz
+    paquete: PaqueteInterfaz
     revision: RevisionInterfaz
     textos: TextosInterfaz
 
@@ -2206,6 +2213,52 @@ class ConfigInterfaz(ModeloConfig):
 def cargar_interfaz(carpeta: Path | None = None) -> ConfigInterfaz:
     """Atajo para ``config/interfaz.yaml``."""
     return cargar_config("interfaz", ConfigInterfaz, carpeta)
+
+
+# ------------------------------------------------------------------ cache.yaml (E1-14)
+
+
+class SondeoRed(ModeloConfig):
+    timeout_segundos: float = Field(gt=0)
+    puerto: int = Field(gt=0, lt=65536)
+
+
+class CalentamientoCache(ModeloConfig):
+    top_bandeja: int = Field(ge=0)
+    guion_demo: str = Field(min_length=1)
+    patron_id_grupo: str = Field(min_length=1)
+
+    @field_validator("patron_id_grupo")
+    @classmethod
+    def _patron_valido(cls, v: str) -> str:
+        re.compile(v)
+        return v
+
+
+class TextosCache(ModeloConfig):
+    sin_cache: str = Field(min_length=1)
+    sin_cache_grupo: str = Field(min_length=1)
+    borrador_invalido: str = Field(min_length=1)
+    desajuste_proveedor: str = Field(min_length=1)
+    sin_red: str = Field(min_length=1)
+
+
+class ConfigCache(ModeloConfig):
+    """Caché de respuestas del LLM (E1-14): dónde vive, qué la invalida y cómo se detecta que no hay red."""
+
+    version: str
+    version_cache: str = Field(min_length=1)
+    proveedor_por_defecto: Literal["deepseek", "ollama"]
+    ruta: str = Field(min_length=1)
+    sondeo_red: SondeoRed
+    variable_offline: str = Field(min_length=1)
+    calentamiento: CalentamientoCache
+    textos: TextosCache
+
+
+def cargar_cache(carpeta: Path | None = None) -> ConfigCache:
+    """Atajo para ``config/cache.yaml``."""
+    return cargar_config("cache", ConfigCache, carpeta)
 
 
 CODIGO_URGENCIA_SIN_PUBLICACION = "urgencia_sin_publicacion"   # el único vacío de E1-10 cuyo texto vive en reglas_v1.3.yaml
@@ -2238,6 +2291,7 @@ CARGADORES = {
     "validador": cargar_validador,
     "verificacion": cargar_verificacion,
     "interfaz": cargar_interfaz,
+    "cache": cargar_cache,
 }
 
 

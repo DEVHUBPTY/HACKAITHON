@@ -53,6 +53,7 @@ poetry run python -m eval.recuperacion               # Recall@5 y abstención, s
 poetry run streamlit run app.py                      # interfaz: 6 pantallas (E1-15); ?caso=GRP-… abre la ficha
 poetry run streamlit run app.py -- --demo            # modo demo (data/demo.duckdb, C-06) con los pasos de docs/demo.md
 poetry run python -m scripts.verificar_offline       # chequeo antes del pitch
+poetry run python -m scripts.calentar_cache          # borradores en data/cache_llm (con red; --verificar sin red) · docs/fallback.md
 poetry run python -m scripts.catalogo                # outputs/catalogo.csv (E1-04)
 poetry run python -m scripts.explorar                # docs/exploracion.md (E0-09)
 poetry run python -m scripts.probar_llm --modelo <tag>  # latencia, JSON válido y memoria de un modelo de Ollama (E0-07)
@@ -76,19 +77,20 @@ Lo que existe hoy:
 
 ```
 CLAUDE.md  README.md  pyproject.toml  poetry.lock  .env.example  .github/pull_request_template.md  app.py (E1-15)  .streamlit/config.toml
-config/      reglas_v1.3.yaml · temas.yaml · ejemplos_excluidos.txt · vinculos.yaml · modalidad_editorial.yaml · salidas.yaml · restricciones.yaml · validador.yaml
-             ruido.yaml · fuentes.yaml · contrato.yaml · carga.yaml · normalizacion.yaml · clasificacion.yaml · etiquetado.yaml · exploracion.yaml · llm.yaml · benchmark.yaml · consulta.yaml · prioridad.yaml (E1-10) · generacion.yaml (E1-12)
+config/      reglas_v1.3.yaml · temas.yaml · ejemplos_excluidos.txt · vinculos.yaml · modalidad_editorial.yaml · salidas.yaml · restricciones.yaml · validador.yaml (E1-13)
+             cache.yaml (E1-14) · ruido.yaml · fuentes.yaml · contrato.yaml · carga.yaml · normalizacion.yaml · clasificacion.yaml · etiquetado.yaml · exploracion.yaml · llm.yaml · benchmark.yaml · consulta.yaml · prioridad.yaml (E1-10) · generacion.yaml (E1-12)
              verificacion.yaml (E1-10b) · interfaz.yaml (E1-15) · modalidad_banca.yaml (E1-10b, PARCIAL: solo tabla de acciones y fuentes extra; E2-01 la completa, D-90)
 templates/   ficha.md.j2 (E1-10b)
 prompts/     afirmaciones_citadas.txt (E0-07) · comparar_contradicciones.txt (E1-10) · afirmaciones_ficha.txt · paquete_editorial.txt (E1-12, versionados)
 data/        raw/ (inmutable) · processed/ (validos/ fuera de git) · registro_extraccion/ · manifest.json · CHANGELOG.md · diccionario.md · README.md
-             senales.duckdb (generado, fuera de git)
+             senales.duckdb (generado, fuera de git) · cache_llm/ (E1-14: borradores generados, SÍ versionada; docs/fallback.md)
 src/         carga · contexto (E1-09) · normalizacion · limpieza · embeddings · clasificacion · baseline · consulta · db · registro (D-75) · configuracion (D-79; config = alias de su CLI) · consultas_gdelt · esquemas (`Ficha` de E1-10b; paso 1 y paquetes de E1-12)
              agrupacion · procedencias · puntaje · evidencia · contradicciones · prioridad (E1-10: `python -m src.puntaje`) · ficha (E1-10b) · interfaz (E1-15: lógica de presentación de app.py, sin Streamlit)
              generacion (E1-12: dos pasos) · validador (E1-13: reglas deterministas; la generación solo lo llama)
-             solo docstring o esqueleto: cache · revision · exportar
+             solo docstring o esqueleto: revision · exportar
+             cache (E1-14: caché de respuestas del LLM, `data/cache_llm/` versionada, solo cache para la interfaz) · llm/costo (tope D-98: USD 100 / 200 M tokens; `SaldoAgotado` ante HTTP 402)
 src/llm/     proveedor.py (interfaz, `UsoLlm` y `crear_proveedor`, por LLM_PROVIDER) · ollama.py · deepseek.py · costo.py (tope de costo D-67; al alcanzarlo lanza `TopeDeCostoAlcanzado`, D-95)
-scripts/     extraer.py · conversion.py · manifest.py · validar_snapshot.py · catalogo.py · explorar.py · estimar_consultas_gdelt.py · probar_llm.py · medir_generacion.py (E1-12)
+scripts/     extraer.py · conversion.py · manifest.py · validar_snapshot.py · catalogo.py · explorar.py · estimar_consultas_gdelt.py · probar_llm.py · medir_generacion.py (E1-12) · calentar_cache.py (E1-14: calienta y `--verificar` la caché de borradores)
 eval/        etiquetar.py · etiquetas/ (una hoja por persona) · etiquetas.csv · ruido.py · validar_benchmark.py · clasificacion.py · calibrar_clasificacion.py · metricas.py · recuperacion.py · puntaje.py · sensibilidad.py
 benchmark/   benchmark_dev.jsonl (solo desarrollo) · sinteticos.csv · README.md
 tests/       fixtures/ · test_t01_carga.py · test_t03_recirculada.py · test_casos_dificiles.py · test_*.py
@@ -103,7 +105,7 @@ Previsto (lo crea la spec indicada):
 data/demo.duckdb (C-06)
 config/      revision.yaml (E1-16) · modalidad_banca.yaml completa (E2-01: sectores, horizonte, bandeja)
 prompts/     comparar_contradicciones.txt (E1-10) · respuesta_consulta.txt (E1-11) · boletin_banca.txt (E2-02)
-scripts/     buscar_casos.py · preparar_demo.py · calentar_cache.py · capturas_demo.py · verificar_offline.py (C-06) · reproducir.py (E1-20)
+scripts/     buscar_casos.py · preparar_demo.py · capturas_demo.py · verificar_offline.py (C-06) · reproducir.py (E1-20)
              empaquetar_datos.py · auditoria_final.py (C-07)
 eval/        run_benchmark.py (E1-18) · precision_at_5.py (E1-19) · y los módulos de métricas que pide cada spec
 tests/       test_t02_*.py, test_t04_*.py … test_t10_*.py (ver docs/protocolo_evaluacion.md)
@@ -174,7 +176,7 @@ El `tema` de `noticias.csv` es el **tema de origen** (consulta de GDELT o catego
 - No crear perfiles de personas ni agrupar por persona. Las acusaciones se atribuyen como declaraciones; **nunca** como hecho, inferencia ni hipótesis (D-68).
 - Causalidad solo si está literal en la fuente o en una hipótesis condicional (D-68).
 - Los logs redactan cualquier valor de variables sensibles (`*_KEY`, `*_TOKEN`, `*_SECRET`) (D-69).
-- Proveedor de pago con tope de costo (D-67); al alcanzarlo la generación **se detiene** con un error explícito (`TopeDeCostoAlcanzado`), sin volver a un modelo local (D-95). Los embeddings siguen siendo locales.
+- Proveedor de pago con tope de costo (D-67); al alcanzarlo la generación **se detiene** con un error explícito (`TopeDeCostoAlcanzado`), sin volver a un modelo local (D-95). D-98: el tope es solo una guarda (USD 100 / 200 M tokens); el límite real es el saldo, y un HTTP 402 (`SaldoAgotado`) detiene la generación sin reintento. Sin red, los borradores salen **solo de la caché** (`data/cache_llm/`, E1-14; `docs/fallback.md`). Los embeddings siguen siendo locales.
 - **Una alerta es una invitación a investigar.** Ni tono, ni volumen, ni repetición equivalen a fraude, pérdida o verdad comprobada.
 
 ## Lo que NUNCA se construye

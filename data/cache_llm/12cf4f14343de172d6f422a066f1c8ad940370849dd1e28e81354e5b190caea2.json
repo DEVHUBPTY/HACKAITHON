@@ -1,0 +1,11 @@
+{
+ "clave": "12cf4f14343de172d6f422a066f1c8ad940370849dd1e28e81354e5b190caea2",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "version_cache": "1",
+ "tokens_entrada": 1694,
+ "tokens_salida": 409,
+ "creado_utc": "2026-10-07T03:10:15Z",
+ "respuesta": "{\"afirmaciones\": [{\"id\": \"A1\", \"tipo\": \"declaración\", \"texto\": \"TVN Panamá reporta que el Minsa adelanta la vacunación contra el VSR en embarazadas.\", \"citas\": [{\"id\": \"NOT-3175aafec0\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A2\", \"tipo\": \"hecho\", \"texto\": \"El grupo de registros reúne 1 titular de 1 medio que reporta este tema.\", \"citas\": [{\"id\": \"GRP-ef3acec21e\", \"campo\": \"n_titulares\"}, {\"id\": \"GRP-ef3acec21e\", \"campo\": \"n_medios\"}]}, {\"id\": \"A3\", \"tipo\": \"hecho\", \"texto\": \"Se estima 1 procedencia independiente, ya que los titulares que replican a una misma fuente cuentan como una.\", \"citas\": [{\"id\": \"GRP-ef3acec21e\", \"campo\": \"n_procedencias\"}]}, {\"id\": \"A4\", \"tipo\": \"inferencia\", \"texto\": \"La cobertura disponible sobre este tema es limitada, pues se apoya en un único titular de un solo medio y en una sola procedencia estimada.\", \"base\": [\"A2\", \"A3\"], \"citas\": []}, {\"id\": \"A5\", \"tipo\": \"hipótesis\", \"texto\": \"Si la vacunación contra el VSR en embarazadas se adelanta, podría interesar a la población gestante y a su entorno por su posible relación con la protección de la salud materna e infantil.\", \"base\": [\"A1\"], \"citas\": []}]}"
+}

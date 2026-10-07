@@ -1,0 +1,11 @@
+{
+ "clave": "b0d5324d6e3ceeb33090d306923d817d8b71f27f1b9243a877d3dd82df71d4e3",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.1",
+ "version_cache": "1",
+ "tokens_entrada": 1661,
+ "tokens_salida": 251,
+ "creado_utc": "2026-10-07T03:10:37Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta aprehensión de Enrique Lau por enriquecimiento injustificado\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La versión disponible sobre el caso proviene de una sola procedencia independiente, según la evidencia estimada.\", \"afirmaciones\": [\"A4\"]}, {\"texto\": \"Si la población solo cuenta con esa procedencia, podría tener dificultades para contrastar la información.\", \"afirmaciones\": [\"A5\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún dato oficial vinculado al caso de Enrique Lau y a la investigación por enriquecimiento injustificado?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras procedencias independientes han reportado sobre la aprehensión de Enrique Lau?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Cómo se relaciona la falta de un dato oficial con la estimación de una sola procedencia independiente?\", \"vacio\": \"sin_dato_oficial\"}]}"
+}

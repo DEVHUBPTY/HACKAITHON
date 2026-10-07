@@ -45,6 +45,7 @@ from src.configuracion import (
     cargar_consulta,
     cargar_generacion,
     cargar_modalidad,
+    cargar_normalizacion,
     cargar_restricciones,
     cargar_salidas,
 )
@@ -65,6 +66,17 @@ from src.esquemas import (
     SalidaTitulos,
     Vacio,
     esquema_json_afirmaciones,
+)
+from src.cache import (
+    CacheLlm,
+    Identidad,
+    ProveedorConCache,
+    ProveedorSoloCache,
+    SinBorrador,
+    SinCache,
+    identidad_de,
+    modo_offline,
+    red_disponible,
 )
 from src.llm.costo import TopeDeCostoAlcanzado
 from src.llm.proveedor import ErrorProveedor, Proveedor
@@ -298,7 +310,8 @@ class Generador:
     def _llamar(self, paso: str, intento: int, version: str, system: str, usuario: str, esquema: dict[str, Any]) -> tuple[str, RegistroLlamada]:
         assert self.proveedor is not None
         inicio = time.perf_counter()
-        crudo = self.proveedor.generar_json(system, usuario, esquema)
+        versionado = getattr(self.proveedor, "generar_json_versionado", None)  # proveedores con caché (E1-14): la versión entra en la clave
+        crudo = versionado(version, system, usuario, esquema) if versionado else self.proveedor.generar_json(system, usuario, esquema)
         transcurrido = time.perf_counter() - inicio
         uso = getattr(self.proveedor, "ultimo_uso", None)
         registro = RegistroLlamada(
@@ -358,7 +371,7 @@ class Generador:
             usuario = base_usuario + ("" if intento == 0 else _retroalimentacion([motivo]))
             try:
                 crudo, registro = self._llamar("afirmaciones", intento, self._v_afirm, system, usuario, esquema_json_afirmaciones())
-            except TopeDeCostoAlcanzado:
+            except (TopeDeCostoAlcanzado, SinCache):
                 raise  # D-95: la generación se detiene; quien llama muestra el mensaje
             except ErrorProveedor as exc:
                 motivo = f"proveedor no disponible: {exc}"
@@ -456,7 +469,7 @@ class Generador:
             usuario = base_usuario if intento == 0 else base_usuario + _retroalimentacion(mensajes(sum(errores.values(), [])))
             try:
                 crudo, registro = self._llamar(grupo, intento, self._v_red, system, usuario, g.modelo.model_json_schema())
-            except TopeDeCostoAlcanzado:
+            except (TopeDeCostoAlcanzado, SinCache):
                 raise
             except ErrorProveedor as exc:
                 errores = {s: [Rechazo("proveedor", f"proveedor no disponible: {exc}")] for s in pendientes}
@@ -676,6 +689,79 @@ def desde_ficha(ficha: Ficha) -> EntradaFicha:
     )
 
 
+# ============================================================================================ entrada para la interfaz y la caché (E1-14)
+
+
+def generar_paquete(
+    id_grupo: str,
+    modalidad: str,
+    *,
+    solo_cache: bool = True,
+    base: Path | None = None,
+    proveedor: Proveedor | None = None,
+    cache: CacheLlm | None = None,
+    grupos: Sequence[str] | None = None,
+    forzar_completo: bool = False,
+    refrescar: bool = False,
+) -> PaqueteEditorial | PaqueteInvestigacion:
+    """El borrador del grupo, **desde la caché** (``solo_cache=True``, lo que usa la interfaz) o generándolo y guardándolo.
+
+    - ``solo_cache=True``: nunca crea un proveedor ni abre una conexión. Rearma el paquete con las respuestas guardadas (la validación
+      se repite sobre ellas). Un grupo de secciones sin respuesta guardada queda vacío con el motivo en ``vacios``; si no hay ninguno,
+      lanza ``SinBorrador`` (también cuando la acción de la ficha no genera borrador).
+    - ``solo_cache=False``: genera lo que falta (bajo demanda, D-44) y lo guarda. Sin red, con el modo offline o sin proveedor
+      configurado se comporta como ``solo_cache=True``. Si se alcanza el tope de costo o se agota el saldo (D-98) lanza
+      ``TopeDeCostoAlcanzado``/``SaldoAgotado``: lo ya guardado sigue disponible.
+    - ``proveedor`` y ``cache`` se inyectan en las pruebas; ``grupos`` limita qué grupos se piden (por defecto, todos).
+    """
+    entrada = _entrada_desde_grupo(id_grupo, modalidad, base or RAIZ / "data" / cargar_normalizacion().salida.base_de_datos)
+    cache = cache if cache is not None else CacheLlm()
+    cfg_cache = cache.cfg
+    if not solo_cache and (modo_offline(cfg=cfg_cache) or (proveedor is None and not red_disponible(cfg=cfg_cache))):
+        solo_cache = True
+    if solo_cache:
+        try:
+            identidad = Identidad(proveedor.nombre, proveedor.modelo) if proveedor else identidad_de()
+        except ErrorProveedor as exc:  # sin LLM_PROVIDER en local.env no se puede saber con qué se guardó: no hay borrador que mostrar
+            raise SinBorrador(cfg_cache.textos.sin_cache) from exc
+        prov: Any = ProveedorSoloCache(cache, identidad)
+    else:
+        from src.llm.proveedor import crear_proveedor
+
+        prov = ProveedorConCache(proveedor or crear_proveedor(), cache, refrescar)
+    g = Generador(entrada, prov, forzar_completo)
+    if g.plan.tipo == "nada":
+        raise SinBorrador(g.plan.motivo or cfg_cache.textos.sin_cache, por_accion=True)
+    pedidos = [x for x in (grupos or g.grupos) if x in g.grupos]
+    faltan: dict[str, str] = {}  # grupo -> motivo
+    aciertos = lambda: getattr(prov, "aciertos", 0)  # noqa: E731
+    motivo_falta = lambda antes: cfg_cache.textos.borrador_invalido if aciertos() > antes else cfg_cache.textos.sin_cache_grupo  # noqa: E731
+    antes = aciertos()
+    try:
+        g.generar_afirmaciones()
+    except SinCache:
+        faltan = dict.fromkeys(pedidos, motivo_falta(antes))  # un acierto seguido de un fallo: lo guardado ya no pasa la validación
+    for grupo in [] if faltan else pedidos:
+        antes = aciertos()
+        try:
+            g.generar_grupo(grupo)
+        except SinCache:
+            faltan[grupo] = motivo_falta(antes)
+    for grupo, motivo in faltan.items():
+        for seccion in GRUPOS[grupo].secciones:
+            if seccion not in g._secciones:
+                g._vacios.append(Vacio(origen="seccion", referencia=seccion, motivo=motivo))
+    if len(faltan) == len(pedidos):
+        if solo_cache and (calentadas := cache.identidades()) and (prov.nombre, prov.modelo) not in calentadas:
+            raise SinBorrador(cfg_cache.textos.desajuste_proveedor.format(
+                calentado=" · ".join(f"{p}/{m}" for p, m in sorted(calentadas)), actual=f"{prov.nombre}/{prov.modelo}"))
+        invalido = cfg_cache.textos.borrador_invalido in faltan.values()
+        raise SinBorrador(cfg_cache.textos.borrador_invalido if invalido else cfg_cache.textos.sin_cache)
+    paquete = g.paquete()
+    assert paquete is not None
+    return paquete
+
+
 # ============================================================================================ CLI
 
 
@@ -693,7 +779,7 @@ def _entrada_desde_grupo(id_grupo: str, modalidad: str, base: Path) -> EntradaFi
 
 def principal(argv: list[str] | None = None, crear: Callable[[], Proveedor] | None = None) -> int:
     """``python -m src.generacion --grupo GRP-…`` (ficha real) o ``--ficha-json ruta.json``: imprime el resultado en JSON."""
-    from src.configuracion import MODALIDADES, cargar_normalizacion
+    from src.configuracion import MODALIDADES
 
     parser = argparse.ArgumentParser(description="Genera el borrador de un caso a partir de su ficha (E1-12)")
     parser.add_argument("--grupo", help="ID del grupo (GRP-…): construye la ficha con src/ficha.py y genera")

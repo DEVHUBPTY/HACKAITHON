@@ -76,9 +76,9 @@ deepseek:                  # respaldo provisional de pago (D-80); la clave sale 
     entrada: 0.30     # USD por millón, deepseek-flash, entrada sin caché, tarifa PICO (la off-peak es 0.15); conservador
     salida: 1.20      # tarifa pico (off-peak 0.60)
 
-tope_costo:                # D-67, D-95: al alcanzarlo la generación se detiene con TopeDeCostoAlcanzado (sin respaldo local)
-  tokens: 10000000
-  usd: 5.00
+tope_costo:                # D-67, D-95, D-98 (solo guarda contra un bucle descontrolado; el límite real es el saldo de la cuenta): al alcanzarlo la generación se detiene con TopeDeCostoAlcanzado (sin respaldo local)
+  tokens: 200000000
+  usd: 100.00
   registro: outputs/costo_llm.json   # acumulado entre ejecuciones (fuera de git)
 
 medicion:                  # scripts/medir_generacion.py: latencia de la primera respuesta y del paquete completo
