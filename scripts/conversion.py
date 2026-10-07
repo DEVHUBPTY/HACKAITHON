@@ -390,38 +390,47 @@ def rango_divisible(ini: datetime, fin: datetime, config: dict[str, Any]) -> boo
     return (fin - ini).total_seconds() / 3600 / 2 >= config["gdelt"]["rango_minimo_horas"]
 
 
-MOTIVO_CONSULTA_REEMPLAZADA = "consulta reemplazada (D-83)"
+ESTADO_CONSULTA_HISTORICA = "consulta histórica vigente (D-89)"
 
 
 def separar_crudos_gdelt(carpeta_raw: Path, config: dict[str, Any]) -> tuple[list[Path], list[dict[str, Any]]]:
-    """Separa los crudos de GDELT en vigentes y reemplazados (D-83).
+    """Reúne los crudos de GDELT que alimentan el snapshot y declara los de consultas históricas (D-89).
 
-    Vigente = su (tema, pata) existe en ``gdelt.consultas``. El resto (p. ej. los anteriores a E0-04, sin pata)
-    queda intacto en ``raw/`` pero no alimenta el snapshot: se devuelve como excluido, con su consulta histórica.
+    Todo crudo reconocido alimenta ``noticias.csv``: los de las consultas vigentes (su (tema, pata) está en
+    ``gdelt.consultas``) y los de las consultas anteriores a E0-04 (sin pata y con tema en
+    ``gdelt.consultas_historicas``), que D-89 devuelve al snapshot (corrige D-83). Los segundos se devuelven
+    declarados con su consulta histórica. Un nombre que no cumple el patrón, o que no corresponde a ninguna consulta
+    vigente ni histórica, es un error: no se adivina su procedencia.
     """
     cfg = config["gdelt"]
     vigentes_ok = {(t, p) for t, patas in cfg["consultas"].items() for p in patas}
     historicas = cfg.get("consultas_historicas", {})
-    vigentes: list[Path] = []
-    excluidos: list[dict[str, Any]] = []
+    archivos: list[Path] = []
+    declarados: list[dict[str, Any]] = []
     for ruta in archivos_crudos(carpeta_raw / cfg["carpeta_cruda"], "gdelt_*.json"):
         m = PATRON_ARCHIVO_GDELT.match(ruta.name)
-        if m and (m["tema"], m["pata"]) in vigentes_ok:
-            vigentes.append(ruta)
-            continue
         if not m:
             raise ValueError(f"nombre de crudo GDELT no reconocido: {ruta.name}")
-        tema = m["tema"]
-        excluidos.append(
+        tema, pata = m["tema"], m["pata"]
+        if (tema, pata) in vigentes_ok:
+            archivos.append(ruta)
+            continue
+        if pata is not None or tema not in historicas:
+            raise ValueError(f"crudo GDELT sin consulta vigente ni histórica: {ruta.name}")
+        archivos.append(ruta)
+        texto = ruta.read_text(encoding="utf-8")
+        n = len(json.loads(texto, strict=False).get("articles") or []) if clasificar_respuesta(texto) == "ok" else 0
+        declarados.append(
             {
                 "archivo": ruta.name,
                 "tema": tema,
-                "pata": m["pata"],
-                "motivo": MOTIVO_CONSULTA_REEMPLAZADA,
-                "consulta_historica": historicas.get(tema),
+                "pata": None,
+                "estado": ESTADO_CONSULTA_HISTORICA,
+                "consulta_historica": historicas[tema],
+                "articulos": n,
             }
         )
-    return vigentes, excluidos
+    return archivos, declarados
 
 
 def crudos_gdelt(carpeta_raw: Path, config: dict[str, Any]) -> list[dict[str, Any]]:
@@ -579,7 +588,17 @@ def cobertura_gdelt(carpeta_raw: Path, config: dict[str, Any], fin: datetime, di
                     "detalle": c["detalle"],
                 }
             )
-    return {"por_tema": por_tema, "sin_resolver": sorted(sin_resolver, key=lambda x: (x["tema"], x["inicio"]))}
+    historica_por_tema = {}
+    for tema in config["gdelt"].get("consultas_historicas", {}):
+        propios = [c for c in crudos if c["tema"] == tema and c["pata"] is None]
+        cubiertos = _fusionar_intervalos([(c["ini"], c["fin"]) for c in propios if c["clase"] == "ok"])
+        dias_ok = sum(any(a <= d and d + timedelta(days=1) <= b for a, b in cubiertos) for d in ventana)
+        historica_por_tema[tema] = {
+            "dias_esperados": len(ventana),
+            "dias_cubiertos": dias_ok,
+            "crudos": len(propios),
+        }
+    return {"por_tema": por_tema, "historica_por_tema": historica_por_tema, "sin_resolver": sorted(sin_resolver, key=lambda x: (x["tema"], x["inicio"]))}
 
 
 def convertir_noticias(
@@ -590,7 +609,7 @@ def convertir_noticias(
     Devuelve (filas, fuentes, auditoría). La auditoría documenta la ventana y las exclusiones.
     """
     archivos_rss = archivos_crudos(carpeta_raw / config["rss_tvn"]["carpeta_cruda"], "rss_tvn_*.xml")
-    archivos_gdelt, crudos_excluidos = separar_crudos_gdelt(carpeta_raw, config)
+    archivos_gdelt, crudos_historicos = separar_crudos_gdelt(carpeta_raw, config)
     entradas: list[dict[str, Any]] = []
     for ruta in archivos_rss:
         entradas += _leer_rss(ruta, config)
@@ -640,8 +659,9 @@ def convertir_noticias(
             "fin": a_iso(fin),
         },
         "registros_crudos_leidos": len(entradas),
-        "crudos_excluidos": crudos_excluidos,
+        "crudos_consulta_historica": crudos_historicos,
         "gdelt_cobertura_por_tema": cobertura["por_tema"],
+        "gdelt_cobertura_historica_por_tema": cobertura["historica_por_tema"],
         "gdelt_rangos_sin_resolver": cobertura["sin_resolver"],
         "idiomas_sin_mapeo": dict(sorted(sin_mapeo.items())),
         "duplicados_descartados": len(entradas) - len(unicos) - sum(

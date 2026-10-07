@@ -152,7 +152,8 @@ gdelt:
     de 'logistica' eran logística). Ahora cada tema tiene una pata de medios de Panamá (sourcecountry:panama +
     términos en español) y una internacional con frases específicas de Panamá (excluye medios de Panamá).
   # Consultas anteriores a E0-04 (seguimiento). Sus crudos (gdelt_<tema>_*.json, sin pata) siguen en raw/, que es
-  # inmutable, pero NO alimentan noticias.csv: se informan en el manifest como crudos excluidos (D-83).
+  # inmutable, y SÍ alimentan noticias.csv (D-89, que corrige D-83): el manifest los declara con su consulta histórica
+  # y su cobertura se informa aparte de la de las consultas vigentes.
   consultas_historicas:
     logistica: 'Panama (logistica OR logistics OR puerto OR port OR shipping OR canal OR cargo)'
     turismo: 'Panama (turismo OR tourism OR turistas OR tourists OR hotel OR cruceros)'
