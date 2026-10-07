@@ -65,3 +65,43 @@ def test_x41_la_configuracion_ya_no_acepta_el_subtema_solo_por_margen() -> None:
 def test_x41_todo_subtema_del_catalogo_tiene_terminos_de_apoyo() -> None:
     faltan = [s for t in TEMAS.values() for s in t.subtemas if not SUB.terminos_por_subtema.get(s)]
     assert faltan == []
+
+
+# ------------------------------------------------------------------ X42 · alcance nacional
+
+
+def _nivel(*titulares: str) -> str:
+    from src import puntaje
+    from tests.prioridad_ayuda import CFG, REGLAS, miembro
+
+    return puntaje.alcance_geografico([miembro(f"NOT-{i}", t) for i, t in enumerate(titulares)], REGLAS, CFG).nivel
+
+
+@pytest.mark.parametrize(
+    "titular",
+    [
+        "Más de 30 mujeres han muerto de forma violenta en Panamá este año",            # el país nombrado
+        "Ejecutivo sanciona la Ley 552 del Presupuesto del Canal de Panamá por $5,555 millones",
+        "MOP solicita $43.1 millones para pagar compromisos y continuar obras en ejecución",   # institución nacional
+        "Minsa: Adelantan vacunación contra VSR en embarazadas",
+        "Déficit de personal limita la capacidad operativa de los bomberos en el país",
+        "Obispos panameños presentarán en Roma la realidad de sus diócesis",
+    ],
+)
+def test_x42_el_pais_o_una_institucion_nacional_dan_alcance_nacional(titular: str) -> None:
+    assert _nivel(titular) == "nacional"
+
+
+@pytest.mark.parametrize(
+    ("titulares", "nivel"),
+    [
+        (("Lluvias en Panamá dejan inundaciones en Chepo",), "local"),                    # el lugar concreto manda
+        (("Minsa refuerza la vacunación en Chiriquí",), "provincial"),
+        (("Corte de agua en la provincia de Panamá",), "provincial"),                      # la provincia no es el país
+        (("Tranque en la ciudad de Panamá por obras",), "desconocido"),                    # la ciudad tampoco es el país
+        (("Se reúne el comité técnico",), "desconocido"),
+        (("Cierran escuela en David", "Gobierno decreta alza a nivel nacional"), "nacional"),   # explícito sigue mandando
+    ],
+)
+def test_x42_un_lugar_concreto_manda_sobre_la_mencion_implicita_del_pais(titulares: tuple[str, ...], nivel: str) -> None:
+    assert _nivel(*titulares) == nivel
