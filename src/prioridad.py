@@ -275,18 +275,19 @@ def estado_del_llm(proveedor: Proveedor | None, resultados: Sequence[ResultadoGr
     """Si el LLM se usó, falló o no se configuró (nunca incluye credenciales)."""
     cs = [c for r in resultados for c in r.contradicciones]
     pendientes = [c for c in cs if c.nota_llm == contradiccion_mod.NOTA_PENDIENTE]
-    if proveedor is None:
+    if not cs:
+        estado = ESTADOS_DE_LLM[3]          # abstención antes de llamar: ningún par candidato, haya o no proveedor
+    elif proveedor is None:
         estado = ESTADOS_DE_LLM[0]          # no hay proveedor configurado (o --sin-llm)
-    elif not cs:
-        estado = ESTADOS_DE_LLM[3]          # abstención antes de llamar: ningún par candidato
     elif len(pendientes) == len(cs):
         estado = ESTADOS_DE_LLM[2]          # configurado pero no respondió o respondió algo inválido
     else:
         estado = ESTADOS_DE_LLM[1]
+    usado = proveedor if cs else None       # sin candidatos no se usó: el reporte versionado no depende de si Ollama está prendido
     return {
         "estado": estado,
-        "proveedor": getattr(proveedor, "nombre", None),
-        "modelo": getattr(proveedor, "modelo", None),
+        "proveedor": getattr(usado, "nombre", None),
+        "modelo": getattr(usado, "modelo", None),
         "motivos_pendientes": dict(sorted(Counter(c.motivo_pendiente for c in pendientes).items())),
     }
 

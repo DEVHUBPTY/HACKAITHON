@@ -224,3 +224,13 @@ def test_x22_un_grupo_solo_con_vinculo_indirecto_no_tiene_dato_oficial_ni_e_ofic
     assert e["tiene_oficial"] is False
     (p,) = _tabla(ruta, "puntajes", "posicion")
     assert json.loads(p["componentes"])["E"]["explicacion"]["tiene_oficial"] is False
+
+
+def test_sin_candidatos_el_estado_del_llm_no_depende_del_proveedor(tmp_path, emb) -> None:
+    """El prioridad.json versionado no cambia según Ollama esté prendido o no (revisión del PR #23)."""
+    noticias = [fila_noticia("NOT-z000000001", "Panamá reporta inflación estable", "medio.example", "GRP-z")]
+    ruta = tmp_path / "s.duckdb"
+    db.guardar_todo(ruta, {"noticias": noticias, "grupos": [fila_grupo("GRP-z", ["NOT-z000000001"], "Inflación", 1)], "procedencias": filas_procedencias("GRP-z", ["NOT-z000000001"])})
+    sin = prioridad.ejecutar(ruta, tmp_path / "p1.json", CORTE, None, emb=emb)["llm"]
+    con = prioridad.ejecutar(ruta, tmp_path / "p2.json", CORTE, ProveedorFalso({"pares": []}), emb=emb)["llm"]
+    assert sin == con == {"estado": "sin_candidatos", "proveedor": None, "modelo": None, "motivos_pendientes": {}}
