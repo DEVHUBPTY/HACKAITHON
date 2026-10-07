@@ -29,6 +29,13 @@ opcionales:                                # si faltan, su sección dice «fuent
 presentacion:
   decimales_porcentaje: 1                  # solo presentación
   decimales_valor: 3                       # solo presentación
+  decimales_tokens: 1                      # solo presentación (tokens por paquete)
+  decimales_usd: 4                         # solo presentación (costo por paquete; 0.0031 USD pide 4)
+  decimales_latencia: 4                    # solo presentación (la consulta local dura ≈ 0.007 s: con 3 decimales perdía el IC)
+
+coherencia:                                # clasificación: ia_vs_baseline.json contra clasificacion.json
+  ante_discrepancia_clasificacion: aviso   # aviso | falla (falla = la página no se genera)
+  tolerancia_macro_f1: 0.0005              # el redondeo a 4 decimales de cada salida
 
 # Supuesto del proyecto (D-97, docs/parametros.md): la consola de DeepSeek marcó ≈ 2.6 veces menos que el contador.
 sobreestimacion_contador_costo: 2.6

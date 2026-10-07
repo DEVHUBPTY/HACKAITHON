@@ -3033,6 +3033,16 @@ class OpcionalMetricas(ModeloConfig):
 class PresentacionMetricas(ModeloConfig):
     decimales_porcentaje: int = Field(ge=0, le=4)
     decimales_valor: int = Field(ge=0, le=6)
+    decimales_tokens: int = Field(ge=0, le=6)      # tokens por paquete (mediana)
+    decimales_usd: int = Field(ge=0, le=8)         # costo por paquete en USD
+    decimales_latencia: int = Field(ge=0, le=8)    # latencias en segundos (la consulta local dura milésimas)
+
+
+class CoherenciaMetricas(ModeloConfig):
+    """Qué hace la página cuando dos salidas medidas sobre lo mismo difieren en la clasificación."""
+
+    ante_discrepancia_clasificacion: Literal["aviso", "falla"]   # «falla»: la página no se genera
+    tolerancia_macro_f1: float = Field(ge=0, le=0.1)             # diferencia admitida por el redondeo de cada salida
 
 
 class ConfigPaginaMetricas(ModeloConfig):
@@ -3045,6 +3055,7 @@ class ConfigPaginaMetricas(ModeloConfig):
     fuentes: dict[str, str] = Field(min_length=1)
     opcionales: dict[str, OpcionalMetricas]
     presentacion: PresentacionMetricas
+    coherencia: CoherenciaMetricas
     sobreestimacion_contador_costo: float = Field(gt=1)
     etiqueta_automatico: str = Field(min_length=1)
 

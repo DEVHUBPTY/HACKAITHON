@@ -170,31 +170,32 @@ def origen_de_etiquetas(origenes: Any, donde: str) -> Origen:
     return Origen(PROVISIONAL, False) if origen_etiquetas.usa_provisionales(validos) else Origen(HUMANO, True)
 
 
-def origen_clasificacion(clasif: dict[str, Any]) -> Origen:
-    """Origen de las etiquetas con que se midió la clasificación: lo que declara ``clasificacion.json`` (``origenes`` y el aviso)."""
-    d = clasif.get("datos_reales", {})
-    if "origenes" not in d or "usa_etiquetas_provisionales" not in d:
-        raise OrigenIncoherente("clasificacion.json:datos_reales no declara el origen de las etiquetas")
-    org = origen_de_etiquetas(d["origenes"], "clasificacion.json:datos_reales.origenes")
-    if (org.tipo == PROVISIONAL) != bool(d["usa_etiquetas_provisionales"]):
-        raise OrigenIncoherente("clasificacion.json: usa_etiquetas_provisionales contradice los orígenes declarados")
+def _origen_declarado(bloque: dict[str, Any], usados: Any, conteo_csv: dict[str, int], donde: str) -> Origen:
+    """Origen de las etiquetas que **declara el mismo bloque que da la cifra** (``origenes`` y ``usa_etiquetas_provisionales``).
+
+    Si lo declarado es «humano» pero la cifra usó más titulares que filas humanas hay en ``eval/etiquetas.csv``, la salida
+    es incoherente consigo misma: falla en vez de rotular «humano».
+    """
+    if "origenes" not in bloque or "usa_etiquetas_provisionales" not in bloque:
+        raise OrigenIncoherente(f"{donde}: no declara el origen de las etiquetas (origenes / usa_etiquetas_provisionales); "
+                                "volver a correr la evaluación que la genera")
+    org = origen_de_etiquetas(bloque["origenes"], f"{donde}.origenes")
+    if (org.tipo == PROVISIONAL) != bool(bloque["usa_etiquetas_provisionales"]):
+        raise OrigenIncoherente(f"{donde}: usa_etiquetas_provisionales contradice los orígenes declarados")
+    humanas = conteo_csv.get(origen_etiquetas.HUMANO, 0)
+    if org.tipo == HUMANO and isinstance(usados, int) and usados > humanas:
+        raise OrigenIncoherente(f"{donde}: declara etiquetas humanas pero usó {usados} titulares y eval/etiquetas.csv solo tiene {humanas} humanas")
     return org
 
 
-def origen_agrupacion(agrup: dict[str, Any], conteo_csv: dict[str, int]) -> Origen:
-    """Origen de las etiquetas de la agrupación. ``agrupacion.json`` no lo declara: se deduce de cuántos titulares etiquetados usó.
+def origen_clasificacion(bloque: dict[str, Any], conteo_csv: dict[str, int]) -> Origen:
+    """Origen de la clasificación: lo declara ``ia_vs_baseline.json:clasificacion``, el mismo bloque del que sale la cifra."""
+    return _origen_declarado(bloque, bloque.get("vista_pipeline", {}).get("n"), conteo_csv, "ia_vs_baseline.json:clasificacion")
 
-    Si coincide con las filas humanas de ``eval/etiquetas.csv`` son humanas; si coincide con todas, incluye provisionales; si no
-    coincide con ninguna, no se puede saber y falla en vez de adivinar.
-    """
-    usados = agrup.get("titulares_etiquetados")
-    humanas, total = conteo_csv.get(origen_etiquetas.HUMANO, 0), sum(conteo_csv.values())
-    if usados == humanas:
-        return Origen(HUMANO, True)
-    if usados == total:
-        return Origen(PROVISIONAL, False)
-    raise OrigenIncoherente(f"agrupacion.json: {usados} titulares etiquetados no coincide con las {humanas} filas humanas ni con las {total} de "
-                            "eval/etiquetas.csv; no se puede rotular el origen")
+
+def origen_agrupacion(bloque: dict[str, Any], conteo_csv: dict[str, int]) -> Origen:
+    """Origen de la agrupación: lo declara ``ia_vs_baseline.json:agrupacion``, el mismo bloque del que sale la cifra."""
+    return _origen_declarado(bloque, bloque.get("titulares_etiquetados"), conteo_csv, "ia_vs_baseline.json:agrupacion")
 
 
 # ---------------------------------------------------------------------------------------------- métricas
@@ -357,8 +358,8 @@ def seccion_sustento(c: Contexto) -> tuple[list[Metrica], list[str]]:
 
 def seccion_baseline(c: Contexto) -> tuple[list[Metrica], list[str]]:
     iv, s = c.datos["ia_vs_baseline"], "Clasificación y agrupación: IA contra baseline"
-    org = origen_clasificacion(c.datos["clasificacion"])
-    org_ag = origen_agrupacion(c.datos["agrupacion"], c.datos["origenes_etiquetas"])
+    org = origen_clasificacion(iv["clasificacion"], c.datos["origenes_etiquetas"])
+    org_ag = origen_agrupacion(iv["agrupacion"], c.datos["origenes_etiquetas"])
     cl = iv["clasificacion"]["vista_pipeline"]
     o = [
         c.est(s, "Macro-F1 de clasificación · IA", cl["macro_f1_ia"], "macro_f1", "ia_vs_baseline", "clasificacion.vista_pipeline.macro_f1_ia",
@@ -433,17 +434,18 @@ def seccion_eficiencia(c: Contexto) -> tuple[list[Metrica], list[str]]:
                           ("paquete_completo", "Paquete completo de borrador"), ("llamada_llm", "Llamada al LLM")):
         for pct in ("p50", "p95"):
             o.append(c.est(s, f"Latencia {pct} · {rotulo}", lat[clave][pct], "valor", "metricas", f"latencia.{clave}.{pct}", "s",
-                           destacada=(pct == "p50" and clave in ("consulta", "paquete_completo"))))
+                           destacada=(pct == "p50" and clave in ("consulta", "paquete_completo")), dec=c.cfg.presentacion.decimales_latencia))
     for tipo, d in lat["paquete_por_tipo"].items():
-        o.append(c.est(s, f"Latencia p50 del paquete {tipo} (n pequeño)", d["p50"], "valor", "metricas", f"latencia.paquete_por_tipo.{tipo}.p50", "s"))
+        o.append(c.est(s, f"Latencia p50 del paquete {tipo} (n pequeño)", d["p50"], "valor", "metricas", f"latencia.paquete_por_tipo.{tipo}.p50", "s",
+                       dec=c.cfg.presentacion.decimales_latencia))
     b = m["tokens_y_costo"]["borradores"]
     if b.get("estado") != "medido":
         raise ErrorPagina("metricas.json:tokens_y_costo.borradores no está medido")
     tp = b["tokens_por_paquete"]
-    o.append(c.est(s, "Tokens de entrada por paquete (mediana)", tp["entrada"], "valor", "metricas", "tokens_y_costo.borradores.tokens_por_paquete.entrada", dec=1))
-    o.append(c.est(s, "Tokens de salida por paquete (mediana)", tp["salida"], "valor", "metricas", "tokens_y_costo.borradores.tokens_por_paquete.salida", dec=1))
+    o.append(c.est(s, "Tokens de entrada por paquete (mediana)", tp["entrada"], "valor", "metricas", "tokens_y_costo.borradores.tokens_por_paquete.entrada", dec=c.cfg.presentacion.decimales_tokens))
+    o.append(c.est(s, "Tokens de salida por paquete (mediana)", tp["salida"], "valor", "metricas", "tokens_y_costo.borradores.tokens_por_paquete.salida", dec=c.cfg.presentacion.decimales_tokens))
     o.append(c.est(s, "Costo por paquete (mediana, cota superior)", b["costo_usd"]["por_paquete_mediana"], "valor", "metricas",
-                   "tokens_y_costo.borradores.costo_usd.por_paquete_mediana", "USD", destacada=True, dec=4,
+                   "tokens_y_costo.borradores.costo_usd.por_paquete_mediana", "USD", destacada=True, dec=c.cfg.presentacion.decimales_usd,
                    nota=f"{b['proveedor']}/{b['modelo']}, medido {b['fecha_utc']}"))
     mt = lat["meta_sugerida"]
     lineas = [
@@ -561,7 +563,37 @@ def coherencia(c: Contexto) -> list[str]:
     top_i = [x if isinstance(x, str) else x.get("id", x.get("grupo")) for x in iv["ranking"].get("top_sistema", [])]
     if top_i and set(top_p) != set(top_i):
         avisos.append("El top 5 del sistema difiere entre precision_at_5.json e ia_vs_baseline.json: una de las dos salidas es anterior a un cambio del ranking.")
+    avisos += _coherencia_clasificacion(c)
     return avisos
+
+
+def _coherencia_clasificacion(c: Contexto) -> list[str]:
+    """La clasificación de ``ia_vs_baseline.json`` contra la de ``clasificacion.json`` para el modelo y método que midió.
+
+    Si difieren, una de las dos salidas es de otro clasificador o de otra base. Según la configuración avisa o hace fallar.
+    """
+    iv_c, cl = c.datos["ia_vs_baseline"]["clasificacion"], c.datos["clasificacion"]["datos_reales"]
+    clave = f"{iv_c['modelo']}/{iv_c['metodo']}"
+    tol = c.cfg.coherencia.tolerancia_macro_f1
+    try:
+        pipe = cl["pipeline"]["configuraciones"]
+        pares = [
+            ("macro-F1 de la IA", iv_c["vista_pipeline"]["macro_f1_ia"]["macro_f1"], pipe[clave]["sin_ponderar"]["macro_f1"]["macro_f1"], tol),
+            ("macro-F1 del baseline", iv_c["vista_pipeline"]["macro_f1_baseline"]["macro_f1"], pipe["baseline"]["sin_ponderar"]["macro_f1"]["macro_f1"], tol),
+            ("n de la vista del pipeline", iv_c["vista_pipeline"]["n"], cl["pipeline"]["conteo"]["evaluados"], 0),
+            ("aciertos de la exactitud de la IA", iv_c["vista_clasificador"]["exactitud_ia"]["n"], cl["configuraciones"][clave]["exactitud_principal"]["n"], 0),
+            ("total de la exactitud de la IA", iv_c["vista_clasificador"]["exactitud_ia"]["de"], cl["configuraciones"][clave]["exactitud_principal"]["de"], 0),
+        ]
+    except KeyError as e:
+        raise ErrorPagina(f"coherencia de la clasificación: falta {e} en ia_vs_baseline.json o clasificacion.json (configuración {clave})") from e
+    difieren = [f"{n}: ia_vs_baseline.json {a} contra clasificacion.json {b}" for n, a, b, t in pares if abs(a - b) > t]
+    if not difieren:
+        return []
+    msg = (f"La clasificación ({clave}) difiere entre salidas — " + "; ".join(difieren)
+           + ". Una es anterior a un cambio del clasificador o de la base: volver a correr eval.ia_vs_baseline y eval.clasificacion antes de citarla.")
+    if c.cfg.coherencia.ante_discrepancia_clasificacion == "falla":
+        raise ErrorPagina(msg)
+    return [msg]
 
 
 # ---------------------------------------------------------------------------------------------- git y carga
