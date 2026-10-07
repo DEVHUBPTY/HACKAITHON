@@ -196,3 +196,48 @@ def test_la_consola_usa_el_mismo_numero_de_remuestreos_que_el_documento() -> Non
     informe = json.loads((iv.RAIZ / "outputs" / "ia_vs_baseline.json").read_text(encoding="utf-8"))
     ic = informe["clasificacion"]["vista_clasificador"]["con_criterio_de_benchmark"]["diferencia_macro_f1"]["ic95"]
     assert str(ic) in iv.resumen(informe)[0]
+
+
+# ------------------------------------------------------------------ X104: lo declarado es lo leído
+
+
+class _Leido(Exception):
+    """Corta la evaluación justo después de que el informe lee las etiquetas (no hace falta base ni modelos)."""
+
+
+def test_x104_los_lectores_de_etiquetas_reciben_los_origenes_que_el_informe_declara(monkeypatch, tmp_path) -> None:
+    from eval import agrupacion as ag
+    from eval import clasificacion as cl
+    from eval import origen_etiquetas as oe
+
+    pedidos = (oe.HUMANO, oe.ASISTENTE_PROVISIONAL)       # un valor distinto del por defecto: si se ignora, el test lo ve
+    monkeypatch.setattr(iv, "ORIGENES_ETIQUETAS", pedidos)
+    vistos: dict[str, tuple[str, ...]] = {}
+
+    def espia(nombre):
+        def f(*args, **kwargs):
+            vistos[nombre] = tuple(kwargs["origenes"] if "origenes" in kwargs else args[3])
+            raise _Leido
+        return f
+
+    monkeypatch.setattr(cl, "leer_etiquetas", espia("clasificacion"))
+    with pytest.raises(_Leido):
+        iv.evaluar_clasificacion(tmp_path / "no_importa.duckdb")
+    monkeypatch.setattr(ag, "leer_grupos_humanos", espia("agrupacion"))
+    with pytest.raises(_Leido):
+        iv.evaluar_agrupacion(tmp_path / "no_importa.duckdb")
+    assert vistos == {"clasificacion": pedidos, "agrupacion": pedidos}
+
+
+def test_x104_el_informe_declara_con_la_misma_constante_con_que_lee() -> None:
+    import inspect
+
+    from eval import agrupacion as ag
+    from eval import clasificacion as cl
+    from eval import origen_etiquetas as oe
+
+    for fuente in (inspect.getsource(iv.evaluar_clasificacion), inspect.getsource(iv.evaluar_agrupacion)):
+        assert "oe.marcar({}, ORIGENES_ETIQUETAS)" in fuente and "SOLO_HUMANOS" not in fuente
+    # y lo que se declara coincide con lo que los lectores leen cuando nadie les pide otra cosa
+    for lector in (cl.leer_etiquetas, ag.leer_grupos_humanos):
+        assert tuple(inspect.signature(lector).parameters["origenes"].default) == tuple(iv.ORIGENES_ETIQUETAS) == oe.SOLO_HUMANOS

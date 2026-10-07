@@ -39,6 +39,10 @@ from eval import metricas
 from eval import origen_etiquetas as oe
 from src.configuracion import RAIZ, CriterioAB, cargar_benchmark, cargar_clasificacion
 
+# D-101: la procedencia de las etiquetas con que se mide. La leen los lectores del CSV Y la declara el informe, desde esta misma constante
+# (X104): así lo declarado no puede separarse de lo leído.
+ORIGENES_ETIQUETAS = oe.SOLO_HUMANOS
+
 SALIDA = RAIZ / "outputs" / "ia_vs_baseline.json"
 EJEMPLOS_POR_CASO = 5          # el spec pide de 3 a 5 ejemplos de cada caso (docs/ia_vs_baseline.md, E1-18)
 TAMANO_TOP = 5                 # top del ranking que se compara (el del Precision@5 de E1-19)
@@ -262,7 +266,7 @@ def evaluar_clasificacion(ruta_base: Path) -> dict[str, Any]:
 
     cfg, temas = cargar_clasificacion(), cargar_temas()
     modelo, metodo = cfg.modelo_activo, cfg.metodo_activo
-    etiquetas = leer_etiquetas(ETIQUETAS, "tema_principal", temas)
+    etiquetas = leer_etiquetas(ETIQUETAS, "tema_principal", temas, ORIGENES_ETIQUETAS)
     excluidos = ids_excluidos()
     con = db.conectar(ruta_base, solo_lectura=True)
     try:
@@ -312,7 +316,7 @@ def evaluar_clasificacion(ruta_base: Path) -> dict[str, Any]:
     d_pipe = metricas.diferencia_con_ic(todos_reales, base_todos, ia_todos, clases, cfg.criterio_ab)
     disc_pipe = discordantes(validos, todos_reales, ia_todos, base_todos)
     return {
-        **oe.marcar({}, oe.SOLO_HUMANOS),   # D-101: de qué procedencia son las etiquetas con que se midió (la página lo lee de aquí)
+        **oe.marcar({}, ORIGENES_ETIQUETAS),   # D-101: de qué procedencia son las etiquetas con que se midió (la página lo lee de aquí)
         "modelo": modelo,
         "metodo": metodo,
         "baseline": f"src/baseline.py, variante {cfg.baseline.variante_activa}",
@@ -361,7 +365,7 @@ def evaluar_agrupacion(ruta_base: Path, referencia: Path = RAIZ / "outputs" / "a
     criterio = cargar_benchmark().intervalos
     reglas = cargar_reglas()
     cfg = cargar_clasificacion().model_copy(update={"modelo_activo": reglas.agrupacion.modelo})
-    humanos = ag.leer_grupos_humanos()
+    humanos = ag.leer_grupos_humanos(origenes=ORIGENES_ETIQUETAS)
     con = db.conectar(ruta_base, solo_lectura=True)
     try:
         todas = db.leer_tabla(con, "noticias", "id_noticia")
@@ -421,7 +425,7 @@ def evaluar_agrupacion(ruta_base: Path, referencia: Path = RAIZ / "outputs" / "a
     cv_ref = None if referencia_json is None else referencia_json["validacion_cruzada"]["agrupado"]
     tp_cv, fp_n, fn_n = _conteos(real, cv, alcance_cv)
     return {
-        **oe.marcar({}, oe.SOLO_HUMANOS),   # D-101: los grupos son los de leer_grupos_humanos (solo personas)
+        **oe.marcar({}, ORIGENES_ETIQUETAS),   # D-101: los grupos son los de leer_grupos_humanos (solo personas)
         "modelo": cfg.modelo_activo,
         "umbral_elegido_con_todas_las_etiquetas": elegido,
         "umbral_por_pliegue_validacion_cruzada": umbral_de_pliegue,
