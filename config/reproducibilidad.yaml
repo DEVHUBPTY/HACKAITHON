@@ -45,10 +45,10 @@ salidas:
   tablas: [noticias, grupos, procedencias, vinculos, puntajes, evidencia, contradicciones, sismos, fuentes, indicadores]
   fichas: outputs/reproduccion/fichas.jsonl
   # La muestra de afirmaciones de la validez de sustento (X46): se hashean sus columnas de muestra y NO las que completa una persona
-  # (veredicto, comentario y revisor cambian a propósito en C-09).
+  # (veredicto, comentario, revisor y origen_juicio cambian a propósito en C-09).
   muestra_sustento:
     archivo: outputs/revision_sustento.csv
-    columnas_humanas: [veredicto, comentario, revisor]
+    columnas_humanas: [veredicto, comentario, revisor, origen_juicio]   # origen_juicio: quién juzgó (D-101)
   metricas: outputs/metricas.json
   # Claves de metricas.json que NO entran en el hash y por qué (docs/reproducibilidad.md). Ruta con puntos.
   excluir_de_metricas:

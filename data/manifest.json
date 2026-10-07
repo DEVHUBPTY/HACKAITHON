@@ -605,7 +605,7 @@
     "decimales_del_hash": 4,
     "ejecucion": {
       "arbol_con_cambios": false,
-      "commit": "a5a878dae8afe00150863b20f5c0500e6d896063",
+      "commit": "982ee04337cb35ca83629226ac55a298047857d3",
       "embeddings": {
         "clave": "minilm",
         "id": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
@@ -676,7 +676,7 @@
       "informe:outputs/reporte_calidad.json": "06b34a08500094c58bbc51e14cf32448e433c493ccec90ee7a5ebb96e3b1210c",
       "informe:outputs/reporte_vinculos.json": "048714b6d2cdc126a9ba74b4b8fdc31727b4b0d3616bbe132bc42a32f39a9c0d",
       "informe:outputs/validacion_snapshot.json": "5226e8f58d2ab29730f532909a82015ab320f5194244008eafd0f3a46204bb1a",
-      "metricas": "2d4ff9cfdd3518373e8e9f68d00c1506c7692e887bbf3d322b3717b039ff4948",
+      "metricas": "4496a6d7d31b8b53c173641576a567356a0a75d8607915ed55d7168d4099acba",
       "muestra_sustento": "3f9da12d97656494337abb8931af4d8fa43cc93ba22851c444853af940f34ff3",
       "reconstruido:data/processed/conversion.json": "fb8ac3865ff48f3f394e70e580c7a5f69f3b4665a810fd935055a18810d47481",
       "reconstruido:data/processed/eventos.geojson": "c43507e5934652ff45fcb0bdae781d498a08167457c9e9d82f67446d6966d411",

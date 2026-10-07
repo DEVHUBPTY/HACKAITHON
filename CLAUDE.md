@@ -83,7 +83,7 @@ Lo que existe hoy:
 ```
 CLAUDE.md  README.md  pyproject.toml  poetry.lock  .env.example  .github/pull_request_template.md  app.py (E1-15)  .streamlit/config.toml
 config/      reglas_v1.3.yaml · temas.yaml · ejemplos_excluidos.txt · vinculos.yaml · modalidad_editorial.yaml · salidas.yaml · restricciones.yaml · validador.yaml (E1-13)
-             cache.yaml (E1-14) · ruido.yaml · fuentes.yaml · contrato.yaml · carga.yaml · normalizacion.yaml · clasificacion.yaml · etiquetado.yaml · exploracion.yaml · llm.yaml · benchmark.yaml · consulta.yaml · prioridad.yaml (E1-10) · generacion.yaml (E1-12)
+             cache.yaml (E1-14) · ruido.yaml · fuentes.yaml · contrato.yaml · carga.yaml · normalizacion.yaml · clasificacion.yaml · etiquetado.yaml · exploracion.yaml · llm.yaml · benchmark.yaml · consulta.yaml · prioridad.yaml (E1-10) · generacion.yaml (E1-12) · origen_juicio.yaml (D-101: quién hizo el juicio de una métrica; el provisional del asistente nunca sale como humano)
              verificacion.yaml (E1-10b) · interfaz.yaml (E1-15) · revision.yaml (E1-16: estados, transiciones, motivos de descarte, revisores y roles, columnas de Notion) · reproducibilidad.yaml (E1-20: pasos, salidas que se hashean y qué se excluye) · modalidad_banca.yaml (E1-10b, PARCIAL: solo tabla de acciones y fuentes extra; E2-01 la completa, D-90)
 templates/   ficha.md.j2 (E1-10b) · caso.md.j2 (E1-16: ficha + versión + historial + leyenda, para Notion)
 prompts/     afirmaciones_citadas.txt (E0-07) · comparar_contradicciones.txt (E1-10) · afirmaciones_ficha.txt · paquete_editorial.txt (E1-12) · boletin_banca.txt (E2-02: los dos pasos del boletín), versionados
