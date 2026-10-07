@@ -11,8 +11,9 @@ estado de evidencia ni acción**, y en un orden que no depende de nada de eso. E
 usa la fecha, así que tampoco insinúa el baseline. El editor marca con ``x`` la columna ``seleccion`` de sus ``k`` temas y guarda el
 archivo como ``eval/seleccion_editor.csv``.
 
-**Sin selección no hay resultado.** Si el archivo no existe o no tiene marcas, se imprime «pendiente de selección humana» y se
-sale con código 0; nunca se simula al editor.
+**Sin selección no hay resultado.** Si el archivo existe pero no tiene marcas, o si se omite ``--seleccion`` y todavía no existe
+``eval/seleccion_editor.csv``, se imprime «pendiente de selección humana» y se sale con código 0; nunca se simula al editor. Una
+ruta pasada con ``--seleccion`` que no existe es un error (código 2) y no escribe la salida.
 
 **Cortes.** Cada selección lleva su ``corte`` (la ``fecha_referencia`` de la base que se le mostró). Con ``--base`` repetido se
 mide cada corte contra su base. El resultado es exploratorio salvo que se declare con ``--especialista`` que eligió una persona editorial especialista **y** haya al menos
@@ -94,7 +95,7 @@ def candidatos(con: Any) -> list[Candidato]:
         [ORIGEN_SINTETICO],
     ).fetchall()
     return [
-        Candidato(i, nombres.get(t, t or ""), titular, fecha or "", int(pos))
+        Candidato(i, nombres.get(t, (t or "").replace("_", " ")), titular, fecha or "", int(pos))
         for i, t, titular, fecha, pos in filas
     ]
 
@@ -238,7 +239,12 @@ def formatear(r: Mapping[str, Any], cfg: ConfigPrecision) -> str:
     if r["pruebas"] > 1:
         lineas += [f"  Total sistema: {_texto(r['sistema'])}", f"  Total baseline 'ranking por fecha': {_texto(r['baseline'])}"]
     if r["exploratoria"]:
-        lineas.append("  Resultado " + cfg.textos.exploratoria.format(pruebas=r["pruebas"], cortes_minimos=cfg.cortes_minimos))
+        motivos = []
+        if r["pruebas"] < cfg.cortes_minimos:
+            motivos.append(cfg.textos.motivo_pocos_cortes.format(pruebas=r["pruebas"], cortes_minimos=cfg.cortes_minimos))
+        if not r["especialista"]:
+            motivos.append(cfg.textos.motivo_sin_especialista)
+        lineas.append("  Resultado " + cfg.textos.exploratoria.format(motivos=" y ".join(motivos)))
     if not r["especialista"]:
         lineas.append("  " + cfg.textos.sin_especialista)
     lineas.append("  " + NOTA)

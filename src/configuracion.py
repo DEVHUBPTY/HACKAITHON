@@ -2424,6 +2424,8 @@ class ArchivosPrecision(ModeloConfig):
 class TextosPrecision(ModeloConfig):
     pendiente: str = Field(min_length=1)
     exploratoria: str = Field(min_length=1)
+    motivo_pocos_cortes: str = Field(min_length=1)
+    motivo_sin_especialista: str = Field(min_length=1)
     sin_especialista: str = Field(min_length=1)
 
 
