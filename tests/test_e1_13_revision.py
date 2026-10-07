@@ -214,3 +214,57 @@ def test_latam_es_america_latina_en_un_titular_traducido() -> None:
 
 def test_el_id_de_un_registro_citado_no_es_un_nombre_nuevo() -> None:
     acepta(afirmacion("A1", "hecho", f"El grupo {ID_GRP} reúne 5 titulares", (ID_GRP, "n_titulares")))
+
+
+# ============================================================================================ X33 · país y fuente salen del ID citado
+
+
+ID_COL = "IND-COL-NE.EXP.GNFS.ZS-2024"
+ID_CRI = "IND-CRI-NE.EXP.GNFS.ZS-2024"
+ID_SIS = "SIS-us6000abcd"
+ID_SBP = "SBP-activos-2026Q1"
+
+
+def ficha_paises():
+    f = ficha_ext()
+    f.registros += [
+        RegistroEvidencia(id=ID_COL, campos={"valor": "16.08"}, contexto={"anio": "2024"}),
+        RegistroEvidencia(id=ID_CRI, campos={"valor": "33.5"}, contexto={"anio": "2024"}),
+        RegistroEvidencia(id=ID_SIS, campos={"magnitude": "5.2"}, contexto={}),
+        RegistroEvidencia(id=ID_SBP, campos={"valor": "12.1"}, contexto={"anio": "2026"}),
+    ]
+    return f
+
+
+@pytest.mark.parametrize(
+    ("texto", "cita"),
+    [
+        ("Las exportaciones de Colombia fueron 16.08 % del PIB en 2024", (ID_COL, "valor")),
+        ("Las exportaciones de Costa Rica fueron 33.5 % del PIB en 2024", (ID_CRI, "valor")),
+        ("Según el Banco Mundial, las exportaciones de Colombia fueron 16.08 % del PIB en 2024", (ID_COL, "valor")),
+        ("Según el USGS, el sismo tuvo magnitud 5.2", (ID_SIS, "magnitude")),
+        ("Según la SBP, el indicador fue 12.1 % en 2026", (ID_SBP, "valor")),
+    ],
+)
+def test_el_pais_y_la_fuente_salen_del_id_citado(texto: str, cita: tuple[str, str]) -> None:
+    acepta(afirmacion("A1", "hecho", texto, cita), f=ficha_paises())
+
+
+def test_un_pais_que_no_es_el_del_id_sigue_rechazado() -> None:
+    rechaza(NOMBRE_NUEVO, afirmacion("A1", "hecho", "Las exportaciones de Colombia fueron 2.9 % del PIB en 2023", IND), f=ficha_paises())
+    rechaza(NOMBRE_NUEVO, afirmacion("A1", "hecho", "Las exportaciones de Costa Rica fueron 16.08 % del PIB en 2024", (ID_COL, "valor")), f=ficha_paises())
+    rechaza(NOMBRE_NUEVO, afirmacion("A1", "hecho", "Según el FMI, las exportaciones de Colombia fueron 16.08 % del PIB en 2024", (ID_COL, "valor")), f=ficha_paises())
+
+
+# ============================================================================================ falsos positivos: «las dos versiones» y «Autoridad»
+
+
+def test_las_dos_versiones_de_una_contradiccion_no_es_una_cifra() -> None:
+    ctx = ctx_con_base()
+    asi = [o(" ".join(["tema"] * 10) + ".", "A3") for _ in range(5)]
+    assert CIFRA_NO_COINCIDE not in reglas(validar_seccion("brief", [*asi, o("Las dos versiones difieren, según TVN Panamá.", "A1")], ctx))
+    rechaza(CIFRA_NO_COINCIDE, afirmacion("A1", "hecho", "Cinco medios reportan el tema", GRP))  # una cifra en palabras sigue contando
+
+
+def test_autoridad_de_un_titular_traducido_se_acepta_por_la_tabla_de_equivalencias() -> None:
+    acepta(afirmacion("A1", "declaración", "Reuters reporta que la Autoridad del Canal de Panamá registra tránsitos récord", (ID_REUTERS, "titulo")))
