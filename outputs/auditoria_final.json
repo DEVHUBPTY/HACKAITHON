@@ -1,6 +1,6 @@
 {
-  "commit": "01027c5",
-  "generado_utc": "2026-10-07T23:10:14Z",
+  "commit": "c1a89ab",
+  "generado_utc": "2026-10-07T23:18:28Z",
   "resumen": {
     "PASS": 9,
     "FALTA": 6,
@@ -93,7 +93,7 @@
       "grupo": "Entregables (sec. 10)",
       "requisito": "README con instalación, comando de ejecución, pruebas y evaluación reservada",
       "estado": "PASS",
-      "evidencia": "README.md: encabezados 9; secciones que faltan: ninguna.",
+      "evidencia": "README.md: encabezados 10; secciones que faltan: ninguna.",
       "como_verificar": "Editar README.md",
       "depende_de": ""
     },

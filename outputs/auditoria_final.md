@@ -1,6 +1,6 @@
 # Auditoría final · condiciones previas (C-07)
 
-Generada el 2026-10-07T23:10:14Z desde el commit `01027c5` con `poetry run python -m scripts.auditoria_final`. PASS: 9 · FALTA: 6 · NO VERIFICABLE AUTOMÁTICAMENTE: 10.
+Generada el 2026-10-07T23:18:28Z desde el commit `c1a89ab` con `poetry run python -m scripts.auditoria_final`. PASS: 9 · FALTA: 6 · NO VERIFICABLE AUTOMÁTICAMENTE: 10.
 
 | ID | Requisito | Estado | Depende de |
 |---|---|---|---|
@@ -89,7 +89,7 @@ Generada el 2026-10-07T23:10:14Z desde el commit `01027c5` con `poetry run pytho
 ### S10-02 · PASS
 
 - **Requisito:** README con instalación, comando de ejecución, pruebas y evaluación reservada
-- **Evidencia:** README.md: encabezados 9; secciones que faltan: ninguna.
+- **Evidencia:** README.md: encabezados 10; secciones que faltan: ninguna.
 - **Cómo verificar o corregir:** Editar README.md
 
 ### S10-03 · PASS

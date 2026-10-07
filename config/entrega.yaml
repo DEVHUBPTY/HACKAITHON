@@ -87,6 +87,7 @@ auditoria:
   columna_fuente_catalogo: "Fuente"
   fuentes_usadas_manifest: ["TVN", "GDELT", "Banco Mundial", "USGS", "SBP"]   # nombres que deben aparecer en el catálogo
   pagina_metricas: outputs/pagina_metricas.md
+  sin_efecto_en_metricas: ["config/entrega.yaml"]   # configuración de esta tarea: no cambia ninguna cifra
   marca_borrador_metricas: "BORRADOR"
   marca_provisional_metricas: "PROVISIONAL"
   carpetas_codigo_metricas: ["src", "eval", "config", "prompts", "data/processed"]   # un cambio aquí tras la página la deja desactualizada

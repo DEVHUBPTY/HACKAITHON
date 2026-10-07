@@ -161,7 +161,7 @@ def metricas(c: Contexto) -> None:
     if not commit:
         problemas.append("la página no declara su commit")
     else:
-        cambios = c.git("diff", "--name-only", commit, "HEAD", "--", *a.carpetas_codigo_metricas)
+        cambios = c.git("diff", "--name-only", commit, "HEAD", "--", *a.carpetas_codigo_metricas, *(f":(exclude){x}" for x in a.sin_efecto_en_metricas))
         if cambios is None:
             problemas.append(f"el commit {commit} de la página no existe en este repo")
         elif cambios.strip():

@@ -3320,6 +3320,7 @@ class AuditoriaEntrega(ModeloConfig):
     columna_fuente_catalogo: str
     fuentes_usadas_manifest: list[str] = Field(min_length=1)
     pagina_metricas: str
+    sin_efecto_en_metricas: list[str]
     marca_borrador_metricas: str
     marca_provisional_metricas: str
     carpetas_codigo_metricas: list[str] = Field(min_length=1)
