@@ -44,6 +44,10 @@ demo:
   parametro_caso: caso              # ?caso=<GRP-…|posición> abre la ficha
   guion: docs/demo.md               # los pasos de la barra lateral salen de la tabla de este archivo
 
+citas:
+  decimales_valor: 2                # decimales del valor de un indicador en el recuadro de cita (el dato no se redondea)
+  aviso_anual: "Dato anual del Banco Mundial: no describe la situación actual."
+
 generacion:                         # punto de enganche con E1-12 (src/generacion.py); se conecta tras integrar esa tarea
   modulo: src.generacion
   funcion: generar_paquete          # contrato: funcion(id_grupo, modalidad, *, solo_cache=True) -> mapa | modelo pydantic | None

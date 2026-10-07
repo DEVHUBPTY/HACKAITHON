@@ -1967,9 +1967,15 @@ class DemoInterfaz(ModeloConfig):
     guion: str = Field(min_length=1)
 
 
+class CitasInterfaz(ModeloConfig):
+    decimales_valor: int = Field(ge=0)
+    aviso_anual: str = Field(min_length=1)
+
+
 class GeneracionInterfaz(ModeloConfig):
-    modulo: str = Field(min_length=1)
-    funcion: str = Field(min_length=1)
+    # Lista cerrada: el YAML nunca elige qué módulo se importa. Al integrar E1-12 se agrega aquí el nombre real de la función.
+    modulo: Literal["src.generacion"]
+    funcion: Literal["generar_paquete"]
     solo_cache: bool
 
 
@@ -2006,6 +2012,7 @@ class ConfigInterfaz(ModeloConfig):
     consulta: ConsultaInterfaz
     ficha: FichaInterfaz
     demo: DemoInterfaz
+    citas: CitasInterfaz
     generacion: GeneracionInterfaz
     revision: RevisionInterfaz
     textos: TextosInterfaz

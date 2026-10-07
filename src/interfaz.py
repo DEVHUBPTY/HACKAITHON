@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import importlib
 import json
+import logging
 import re
 import sys
 from collections.abc import Callable, Mapping, Sequence
@@ -48,17 +49,23 @@ from src.esquemas import Cita, Ficha
 from src.ficha import Linea, Seccion, Vista
 from src.puntaje import COMPONENTES
 
+logger = logging.getLogger(__name__)
 PARAMETRO_DEMO = "--demo"
 COLUMNA_COMPONENTE = {"R": "relevancia", "I": "impacto", "U": "urgencia", "N": "novedad", "E": "evidencia"}
 ORIGEN_SINTETICO = "sintetico"
 SIN_TEMA = "sin tema"
-# Prefijo de ID -> (tabla, columna del ID, columna de fecha, columna de URL). Es un mapa fijo: nunca se arma SQL con texto del usuario.
-REGISTROS_CITABLES: dict[str, tuple[str, str, str | None, str | None]] = {
-    "NOT-": ("noticias", "id_noticia", "fecha_publicacion", "url"),
-    "SYN-": ("noticias", "id_noticia", "fecha_publicacion", "url"),
-    "IND-": ("indicadores", "id_indicador", "fecha_extraccion", "fuente_url"),
-    "SIS-": ("sismos", "id", "time", "url"),
-    "GRP-": ("grupos", "id_grupo", "fecha_fin", None),
+# Prefijo de ID -> (tabla, columna del ID, columna de URL, datos que acompañan a la cita como (etiqueta, columna, clase)).
+# Cada fecha lleva SU etiqueta (de qué es): nunca una «Fecha» genérica ni una por otra (publicación ≠ detección; el año ≠ la extracción).
+# Es un mapa fijo: nunca se arma SQL con texto del usuario. Clases: texto | fecha (UTC -> hora de Panamá).
+Extra = tuple[str, str, str]
+REGISTROS_CITABLES: dict[str, tuple[str, str, str | None, tuple[Extra, ...]]] = {
+    "NOT-": ("noticias", "id_noticia", "url", (("Medio", "medio", "texto"), ("Publicación", "fecha_publicacion", "fecha"), ("Detección", "fecha_deteccion", "fecha"))),
+    "SYN-": ("noticias", "id_noticia", "url", (("Medio", "medio", "texto"), ("Publicación", "fecha_publicacion", "fecha"), ("Detección", "fecha_deteccion", "fecha"))),
+    "IND-": ("indicadores", "id_indicador", "fuente_url", (
+        ("País", "pais_iso3", "texto"), ("Indicador", "indicador_id", "texto"), ("Año del dato", "anio", "texto"),
+        ("Unidad", "unidad", "texto"), ("Fecha de extracción", "fecha_extraccion", "fecha"))),
+    "SIS-": ("sismos", "id", "url", (("Hora del evento", "time", "fecha"), ("Estado", "status", "texto"), ("Lugar", "place", "texto"))),
+    "GRP-": ("grupos", "id_grupo", None, (("Inicio del grupo", "fecha_inicio", "fecha"), ("Fin del grupo", "fecha_fin", "fecha"))),
 }
 PATRON_FILA_DEMO = re.compile(r"^\|(?P<celdas>.+)\|\s*$")
 
@@ -249,43 +256,62 @@ def citas_de_ficha(ficha: Ficha) -> list[Cita]:
 
 @dataclass(frozen=True)
 class DetalleCita:
-    """Lo que muestra una cita al hacer clic: ID, campo, valor, fecha (hora de Panamá) y URL."""
+    """Lo que muestra una cita al hacer clic: ID, campo, valor y los datos que la acompañan, cada uno con su etiqueta, más la URL."""
 
     id: str
     campo: str
     valor: str
-    fecha: str
     url: str | None
     encontrada: bool = True
     sintetico: bool = False
     nota: str | None = None
+    filas: tuple[tuple[str, str], ...] = ()
+
+
+def _no_encontrada(id_registro: str, campo: str, nota: str) -> DetalleCita:
+    return DetalleCita(id_registro, campo, "", None, False, nota=nota)
 
 
 def detalle_cita(con: Any, id_registro: str, campo: str, cfg: ConfigInterfaz | None = None, cfg_ver: ConfigVerificacion | None = None) -> DetalleCita:
-    """Resuelve ``ID + campo`` contra la base. Un registro o campo inexistente se dice; un campo oculto (descripción del RSS) no se muestra."""
+    """Resuelve ``ID + campo`` contra la base. Un registro o campo inexistente se dice; un campo oculto (descripción del RSS) no se muestra.
+
+    Un indicador trae país, indicador, **año del dato**, unidad y la **fecha de extracción** por separado, con el aviso de que es un dato anual;
+    una noticia, su publicación y su detección por separado; un sismo, la hora del evento en Panamá y su estado.
+    """
     cfg = cfg or cargar_interfaz()
     cfg_ver = cfg_ver or cargar_verificacion()
-    desconocida = cfg_ver.presentacion.fecha_desconocida
     if campo in cfg.ficha.campos_ocultos:
-        return DetalleCita(id_registro, campo, "", desconocida, None, False, nota="Campo no disponible en la interfaz (redistribución restringida).")
+        return _no_encontrada(id_registro, campo, "Campo no disponible en la interfaz (redistribución restringida).")
     destino = next((v for k, v in REGISTROS_CITABLES.items() if id_registro.startswith(k)), None)
     if destino is None:
-        return DetalleCita(id_registro, campo, "", desconocida, None, False, nota="Este tipo de registro todavía no está en la base.")
-    tabla, col_id, col_fecha, col_url = destino
+        return _no_encontrada(id_registro, campo, "Este tipo de registro todavía no está en la base.")
+    tabla, col_id, col_url, extras = destino
     if campo not in db.columnas(tabla):
-        return DetalleCita(id_registro, campo, "", desconocida, None, False, nota=f"El registro no tiene el campo «{campo}».")
-    extra = ", origen" if tabla == "noticias" else ""
+        return _no_encontrada(id_registro, campo, f"El registro no tiene el campo «{campo}».")
+    columnas = [campo, col_url or "NULL", *(c for _, c, _ in extras)]
+    pide_origen = tabla == "noticias"
     cur = con.execute(
-        f"SELECT {campo} AS valor, {col_fecha or 'NULL'} AS fecha, {col_url or 'NULL'} AS url{extra} FROM {tabla} WHERE {col_id} = ?",  # noqa: S608 - nombres de un mapa fijo y validados contra el esquema
+        f"SELECT {', '.join(columnas)}{', origen' if pide_origen else ''} FROM {tabla} WHERE {col_id} = ?",  # noqa: S608 - nombres de un mapa fijo y validados contra el esquema
         [id_registro],
     )
     fila = cur.fetchone()
     if fila is None:
-        return DetalleCita(id_registro, campo, "", desconocida, None, False, nota="El registro no existe en esta base.")
-    valor, fecha, url = fila[0], fila[1], fila[2]
-    sintetico = tabla == "noticias" and fila[3] == ORIGEN_SINTETICO or id_registro.startswith("SYN-")
+        return _no_encontrada(id_registro, campo, "El registro no existe en esta base.")
+    valor, url, datos = fila[0], fila[1], fila[2 : 2 + len(extras)]
     texto = "sin dato" if valor is None else str(valor)    # un nulo es un nulo: nunca 0
-    return DetalleCita(id_registro, campo, texto, hora_panama(str(fecha) if fecha else None, cfg_ver), url, True, sintetico)
+    filas: list[tuple[str, str]] = []
+    for (etiqueta, _, clase), dato in zip(extras, datos, strict=True):
+        if clase == "fecha":
+            filas.append((etiqueta, hora_panama(str(dato) if dato else None, cfg_ver)))
+        else:
+            filas.append((etiqueta, "sin dato" if dato is None else str(dato)))
+    if tabla == "indicadores":
+        unidad = dict(filas).get("Unidad", "")
+        if campo == "valor" and valor is not None:
+            texto = f"{float(valor):.{cfg.citas.decimales_valor}f}" + (f" {unidad}" if unidad and unidad != "sin dato" else "")
+        filas.append(("Aviso", cfg.citas.aviso_anual))
+    sintetico = (pide_origen and fila[-1] == ORIGEN_SINTETICO) or id_registro.startswith("SYN-")
+    return DetalleCita(id_registro, campo, texto, url, True, bool(sintetico), filas=tuple(filas))
 
 
 # ------------------------------------------------------------------ calidad (pantalla 1)
@@ -394,30 +420,53 @@ class EstadoPaquete:
     motivo: str | None = None
 
 
-def cargar_generador(cfg: ConfigInterfaz | None = None) -> Callable[..., Any] | None:
-    """La función de generación de E1-12 (``config/interfaz.yaml:generacion``) o ``None`` si todavía no existe.
+class ErrorDeIntegracion(RuntimeError):
+    """La generación existe pero no se puede usar: falla al importarla o su contrato no coincide. No es «sin integrar»."""
 
-    TODO(E1-12): al integrar esa tarea, el nombre real de la función va en el YAML; la app no cambia.
+
+def cargar_generador(cfg: ConfigInterfaz | None = None) -> Callable[..., Any] | None:
+    """La función de generación de E1-12 (``config/interfaz.yaml:generacion``, lista cerrada) o ``None`` si todavía no existe.
+
+    «Ausente» = el módulo no existe o no define la función. Cualquier otro fallo al importar (una dependencia interna que no está,
+    un error de sintaxis) lanza ``ErrorDeIntegracion``: se registra y se dice, no se confunde con que falte.
+    TODO(E1-12): al integrar esa tarea, si la función se llama distinto, se agrega el nombre al ``Literal`` de ``GeneracionInterfaz``.
     Contrato esperado: ``funcion(id_grupo, modalidad, *, solo_cache=True) -> mapa | modelo pydantic | None``.
     """
     g = (cfg or cargar_interfaz()).generacion
     try:
         modulo = importlib.import_module(g.modulo)
-    except ImportError:
-        return None
+    except ModuleNotFoundError as exc:
+        if exc.name == g.modulo:
+            return None
+        logger.exception("Error al importar %s: falta %s", g.modulo, exc.name)
+        raise ErrorDeIntegracion(f"error al importar {g.modulo}: falta el módulo «{exc.name}»") from exc
+    except Exception as exc:  # noqa: BLE001 - cualquier fallo del módulo de otra tarea se informa, no rompe la pantalla
+        logger.exception("Error al importar %s", g.modulo)
+        raise ErrorDeIntegracion(f"error al importar {g.modulo}: {type(exc).__name__}: {exc}") from exc
     funcion = getattr(modulo, g.funcion, None)
     return funcion if callable(funcion) else None
 
 
 def obtener_paquete(id_grupo: str, modalidad: str, cfg: ConfigInterfaz | None = None, generador: Callable[..., Any] | None = None) -> EstadoPaquete:
-    """Pide el borrador al generador **solo desde caché** (``solo_cache``): la interfaz nunca espera al modelo ni usa la red."""
+    """Pide el borrador al generador **solo desde caché** (``solo_cache``): la interfaz nunca espera al modelo ni usa la red.
+
+    Estados: ``disponible``; ``sin_integrar`` (el módulo o la función no existen); ``error_integracion`` (falla al importar o el
+    contrato no coincide); ``sin_cache`` (no hay borrador guardado o el generador no pudo leerlo).
+    """
     cfg = cfg or cargar_interfaz()
-    generador = generador or cargar_generador(cfg)
+    try:
+        generador = generador or cargar_generador(cfg)
+    except ErrorDeIntegracion as exc:
+        return EstadoPaquete("error_integracion", motivo=f"Error de integración con la generación: {exc}")
     if generador is None:
         return EstadoPaquete("sin_integrar", motivo=cfg.textos.sin_borrador)
     try:
         paquete = generador(id_grupo, modalidad, solo_cache=cfg.generacion.solo_cache)
+    except TypeError as exc:
+        logger.exception("El contrato de la generación no coincide")
+        return EstadoPaquete("error_integracion", motivo=f"Error de integración con la generación: el contrato no coincide ({exc}); se esperaba solo_cache=")
     except Exception as exc:  # noqa: BLE001 - un fallo del LLM o de la red nunca debe romper la pantalla
+        logger.warning("La generación falló: %s", type(exc).__name__)
         return EstadoPaquete("sin_cache", motivo=f"{cfg.textos.borrador_no_listo} ({type(exc).__name__})")
     if paquete is None:
         return EstadoPaquete("sin_cache", motivo=cfg.textos.borrador_no_listo)

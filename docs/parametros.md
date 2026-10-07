@@ -385,6 +385,7 @@ Constantes de presentación: ninguna decide un puntaje, una acción ni un vacío
 | Decimales de P y de las barras al mostrar (`bandeja.decimales_puntaje`) | 1 (barras: 2) | Supuesto (solo presentación; el dato no se redondea) | — |
 | Largo del titular en los selectores (`bandeja.largo_titular_selector`) | 80 caracteres | Supuesto (solo presentación) | — |
 | Recuadros de cita por fila (`ficha.citas_por_fila`) | 3 | Supuesto (solo presentación) | — |
+| Decimales del valor de un indicador en el recuadro de cita (`citas.decimales_valor`) | 2 | Supuesto (legibilidad; el dato no se redondea) | `test_la_precision_del_valor_sale_del_yaml` |
 | Medios mostrados en Calidad (`calidad.top_medios`) | 5 | Supuesto (legibilidad) | `test_calidad_muestra_el_ruido_con_su_n_y_el_reporte_de_carga` |
 | Método de consulta inicial (`consulta.metodo_inicial`) | `semantica` | E1-11 (método elegido sobre BM25) | `test_la_consulta_responde_con_citas_y_se_abstiene_diciendo_que_falta` |
 | Largo máximo de la pregunta (`consulta.largo_maximo_caracteres`) | 500 | Supuesto (una pregunta, no un documento) | — |

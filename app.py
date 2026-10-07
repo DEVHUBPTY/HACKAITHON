@@ -95,7 +95,9 @@ def citas_clicables(ctx: ui.Contexto, citas: list[tuple[str, str]], titulo: str 
             d = ui.detalle_cita(ctx.con, id_registro, campo, ctx.cfg, ctx.cfg_ver)
             st.markdown(f"**ID:** `{d.id}`  \n**Campo:** `{d.campo}`")
             if d.encontrada:
-                st.markdown(f"**Valor:** {escapar_markdown(d.valor)}  \n**Fecha:** {d.fecha}")
+                st.markdown(f"**Valor:** {escapar_markdown(d.valor)}")
+                for etiqueta, dato in d.filas:
+                    st.markdown(f"**{etiqueta}:** {escapar_markdown(dato)}")
                 if d.url:
                     st.markdown(f"**URL:** {d.url}")
                 if d.sintetico:
