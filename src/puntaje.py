@@ -185,18 +185,42 @@ def _patron_con_tilde(termino: str) -> re.Pattern[str]:
     return re.compile(rf"(?<!\w){re.escape(termino.casefold())}(?!\w)")
 
 
+def _con_tilde_sin_prefijo_excluido(texto: str, termino: str, excluidos: Sequence[str]) -> bool:
+    """X66: el término escrito con su tilde aparece al menos una vez **sin** uno de sus prefijos excluidos delante («Cristóbal Colón»)."""
+    bajo = texto.casefold()
+    previos = [normalizar_geografia(p) for p in excluidos]
+    for m in _patron_con_tilde(termino).finditer(bajo):
+        antes = normalizar_geografia(bajo[: m.start()])
+        if not any(antes == p or antes.endswith(" " + p) for p in previos):
+            return True
+    return False
+
+
 def terminos_presentes(
-    texto: str, terminos: Sequence[str], prefijos: Mapping[str, Sequence[str]], sufijos_excluidos: Mapping[str, Sequence[str]] | None = None
+    texto: str,
+    terminos: Sequence[str],
+    prefijos: Mapping[str, Sequence[str]],
+    sufijos_excluidos: Mapping[str, Sequence[str]] | None = None,
+    requieren_tilde: Sequence[str] = (),
+    prefijos_excluidos_lugar: Mapping[str, Sequence[str]] | None = None,
 ) -> list[str]:
     """Términos de ``terminos`` que aparecen en ``texto`` (en el orden dado).
 
     X51: un término con ``sufijos_excluidos`` no cuenta sin tilde si lo sigue una de esas palabras («pese a»); escrito con su
     tilde («Pesé») siempre cuenta.
+
+    X66: un término de ``requieren_tilde`` solo cuenta escrito con su tilde («Colón»; «colon» es el órgano) y, si tiene
+    ``prefijos_excluidos_lugar``, no cuenta precedido de ellos («Cristóbal Colón»).
     """
     plano_texto = normalizar_geografia(texto)
     sufijos = sufijos_excluidos or {}
+    excluidos_lugar = prefijos_excluidos_lugar or {}
     presentes = []
     for t in terminos:
+        if t in requieren_tilde:
+            if _con_tilde_sin_prefijo_excluido(texto, t, excluidos_lugar.get(t, ())):
+                presentes.append(t)
+            continue
         excluir = tuple(sufijos.get(t, ()))
         if _patron_termino(t, tuple(prefijos.get(t, ())), excluir).search(plano_texto) or (
             excluir and _patron_con_tilde(t).search(texto.casefold())
@@ -233,7 +257,15 @@ def alcance_geografico(miembros: Sequence[Mapping[str, Any]], reglas: ReglasV13,
     for m in miembros:
         titular = str(m.get("titulo_limpio") or "")
         for nivel in NIVELES_GEOGRAFICOS:
-            hallados[nivel].extend(terminos_presentes(titular, listas[nivel], prefijos, cfg.geografia.sufijos_excluidos))
+            hallados[nivel].extend(terminos_presentes(
+                    titular,
+                    listas[nivel],
+                    prefijos,
+                    cfg.geografia.sufijos_excluidos,
+                    cfg.geografia.requieren_tilde,
+                    cfg.geografia.prefijos_excluidos_lugar,
+                )
+            )
         implicitos.extend(terminos_sin_prefijo_excluido(titular, g.nacional_implicito_terminos, cfg.geografia.prefijos_excluidos))
     for nivel in NIVELES_GEOGRAFICOS:
         if hallados[nivel]:

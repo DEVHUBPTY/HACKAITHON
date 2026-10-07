@@ -23,7 +23,6 @@ geografia:                        # alcance geográfico de I: se buscan los tér
     # D-110: nombres de lugar que también son nombres de persona o palabras comunes (David Beckham, ministro Herrera, «remedios»,
     # «la mesa», «Santiago» apóstol…): solo cuentan como lugar si los precede un prefijo locativo.
     Herrera: &locativos [en, de, del, desde, hacia, distrito de, provincia de, corregimiento de, ciudad de]
-    Colón: *locativos
     David: *locativos
     Santiago: *locativos
     La Mesa: *locativos
@@ -44,6 +43,10 @@ geografia:                        # alcance geográfico de I: se buscan los tér
   # distrito de Pesé). Escrito con su tilde («Pesé») siempre cuenta.
   sufijos_excluidos:
     Pesé: ["a", "al"]
+  # X66: «Colón» es una provincia (no pide prefijo), pero «colon» sin tilde es el órgano («cáncer de colon») y «Cristóbal Colón» es la persona.
+  requieren_tilde: [Colón]
+  prefijos_excluidos_lugar:
+    Colón: ["Cristóbal"]
 
 medios:
   desconocidos: ["", "desconocido", "unknown", "n/a"]   # valores de `medio` que no identifican un medio (componente identificable de E)

@@ -1808,6 +1808,8 @@ class GeografiaPrioridad(ModeloConfig):
     prefijos_obligatorios: dict[str, list[str]]
     prefijos_excluidos: dict[str, list[str]]   # E1-10c (X42): el término implícito no cuenta precedido de estos
     sufijos_excluidos: dict[str, list[str]]    # X51: sin tilde, el término no cuenta seguido de estas palabras («pese a»)
+    requieren_tilde: list[str]                 # X66: el término solo cuenta escrito con su tilde («Colón»; «colon» es el órgano)
+    prefijos_excluidos_lugar: dict[str, list[str]]   # X66: el término de lugar no cuenta precedido de estos («Cristóbal Colón»)
 
 
 class MediosPrioridad(ModeloConfig):

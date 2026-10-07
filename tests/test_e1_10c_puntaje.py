@@ -266,6 +266,35 @@ def test_x51_el_distrito_de_pese_sigue_siendo_local(titular: str) -> None:
     assert _nivel(titular) == "local"
 
 
+# ------------------------------------------------------------------ X66 · «Colón» es una provincia; «colon» (órgano) y Cristóbal Colón no
+
+
+@pytest.mark.parametrize(
+    "titular",
+    ["Colón registra inundaciones", "Colón, en alerta por lluvias", "Zona Libre de Colón registra mayor movimiento comercial", "Lluvias inundan calles de Colón"],
+)
+def test_x66_colon_con_tilde_es_la_provincia_sin_prefijo(titular: str) -> None:
+    assert _nivel(titular) == "provincial"
+
+
+@pytest.mark.parametrize("titular", ["Cáncer de colon aumenta en Panamá", "Cancer de colon: Minsa llama a tamizaje"])
+def test_x66_colon_el_organo_no_es_la_provincia(titular: str) -> None:
+    assert _nivel(titular) != "provincial"
+
+
+def test_x66_el_cancer_de_colon_en_panama_es_nacional() -> None:
+    assert _nivel("Cáncer de colon aumenta en Panamá") == "nacional"
+
+
+@pytest.mark.parametrize("titular", ["Estatua de Cristóbal Colón cae en protesta", "Cristóbal Colón llegó a América en 1492"])
+def test_x66_cristobal_colon_no_es_la_provincia(titular: str) -> None:
+    assert _nivel(titular) != "provincial"
+
+
+def test_x66_cristobal_colon_no_tapa_a_la_provincia_en_el_mismo_titular() -> None:
+    assert _nivel("Estatua de Cristóbal Colón sufre daños en Colón") == "provincial"
+
+
 # ------------------------------------------------------------------ X52 · un lugar concreto manda sobre la sigla nacional
 
 
