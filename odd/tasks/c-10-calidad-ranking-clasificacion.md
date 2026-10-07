@@ -93,4 +93,7 @@ exactitud de tema en 35/64 (54,7 %). Fuera de alcance por ahora: generación (ca
   («Precision@5 mejora frente a la línea base por fecha») NO se cumple: la medición es de n = 5 y no distingue.
 
 ## Próximo paso
-Revisión nativa de las salidas regeneradas, cerrar T5 solo con pedido del dueño y decidir con el dueño cómo atacar Economía sin romper Eventos naturales; después T4.
+T5 (PR con revisión independiente, D-78) solo con pedido del dueño. Los reviews nativos por tramos ya están aprobados y reconocidos
+(hasta `c74cc41`). Pendientes abiertos: 11 crudos de `data/raw/` ausentes (el tramo crudo → procesado no se verifica), borradores
+de 10 grupos del top sin caché (generación, fuera de alcance) y el criterio de Precision@5 del Backlog sin cumplir (1/5 contra 0/5,
+n = 5). Decidir con el dueño cómo atacar Economía sin romper Eventos naturales; después T4.
