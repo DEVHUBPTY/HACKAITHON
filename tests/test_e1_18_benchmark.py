@@ -288,3 +288,15 @@ def test_la_configuracion_del_benchmark_trae_intervalos_y_muestra() -> None:
     assert cfg.intervalos.remuestreos >= 1000 and cfg.intervalos.confianza == 0.95
     assert cfg.sustento.muestra == 30 and cfg.sustento.meta_validez == 0.9
     assert cfg.sustento.veredictos == ["sustentada", "parcial", "no sustentada", "tipo incorrecto"]
+
+
+# ------------------------------------------------------------------ medición de los modelos de embeddings (docs/modelos.md)
+
+
+def test_medir_embeddings_con_un_motor_falso_reporta_cifras_sin_costo() -> None:
+    from scripts import medir_embeddings
+    from tests.motor_falso import MotorFalso
+
+    r = medir_embeddings.medir("e5", ["titular uno", "titular dos", "titular tres"], motor=MotorFalso())
+    assert r["modelo"] == "e5" and r["n_textos"] == 3 and r["dimension"] == 256 and r["costo_usd"] == 0.0
+    assert r["codificar_s"] >= 0 and r["rss_maximo_bytes"] > 0 and r["parametros"] is None
