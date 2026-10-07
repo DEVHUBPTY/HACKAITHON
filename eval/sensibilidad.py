@@ -19,7 +19,7 @@ El estado de evidencia no depende de P, así que no entra aquí.
 
 **Lo que no se mueve, y por qué:** supuestos que no afectan a P (cifra del titular, voto del subtema para el contexto, los
 umbrales de contradicción: solo afectan al estado de evidencia o al contexto), la coincidencia de sismos (± 2 días; el snapshot
-no tiene grupos de sismos) y los de banca (la modalidad no existe todavía). El detalle va en el JSON (``fuera_del_alcance``).
+no tiene grupos de sismos) y los de banca (modalidad_banca.yaml es parcial hasta E2-01, D-90). El detalle va en el JSON (``fuera_del_alcance``).
 
 Uso: ``poetry run python -m eval.sensibilidad [--salida outputs/sensibilidad.json] [--ahora ISO]``.
 """
@@ -67,7 +67,7 @@ FUERA_DEL_ALCANCE = {
     "cifra_titular.* (ventana, palabras, patrones)": "solo cambia la etiqueta de comparación del contexto, no P ni el estado",
     "subtema del grupo (voto)": "método de contexto; I usa el subtema ya elegido",
     "coincidencia de sismos (± 2 días)": "el snapshot no tiene grupos de sismos con vínculo de USGS que dependan de ella",
-    "alcance por sector (banca)": "la modalidad de banca todavía no existe",
+    "alcance por sector (banca)": "modalidad_banca.yaml es parcial (D-90): no define el alcance por sector hasta E2-01",
     "contradicciones.* (tope, verbos, solo_entre_procedencias)": "cambian el estado de evidencia y la acción, no P ni el ranking",
     "umbral de agrupación (calibrado, no supuesto)": "se calibra con etiquetas humanas (python -m eval.agrupacion)",
 }

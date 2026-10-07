@@ -76,6 +76,26 @@ Las reglas v1.3 fijan las fórmulas; estas filas fijan lo que dejan abierto. Tod
 | Componente «casi constante» (`puntaje_eval.casi_constante_desviacion`) | Desviación estándar < 0.05 en [0, 1] | Supuesto | `eval.puntaje` |
 | Filas del ranking en `outputs/prioridad.json` (`puntaje_eval.top_en_reporte`) | 10 | Presentación | — |
 
+## Ficha de evidencia (E1-10b, `config/verificacion.yaml`, `config/modalidad_*.yaml`)
+
+La ficha no calcula puntaje ni estado: lee lo de E1-10 y agrega presentación y reglas de verificación (sin LLM, D-36). Solo la tabla de acciones, el medio de referencia y las fuentes extra cambian por modalidad.
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| Vacíos arriba (`vacios.principales`) | 3; el resto va en un desplegable | PDF/spec E1-10b («los 3 más importantes arriba») | `test_los_tres_vacios_mas_importantes_van_arriba_*` |
+| Orden de importancia de los vacíos (`vacios.orden_importancia`) | contradicción · cifra discrepante · cifras sin dato oficial · sin dato oficial · solo vínculo indirecto · procedencias insuficientes · recirculada · evento sin revisar · período distinto · medios o fechas desconocidos · urgencia sin publicación · subtema desconocido | Supuesto (criterio editorial: lo que más cambia la decisión va primero) | Revisión editorial · `test_los_tres_vacios_mas_importantes_*` |
+| Tipos de vacío propios de la ficha | `solo_vinculo_indirecto` (X22: el indicador vinculado no mide el hecho), `cifra_discrepante` y `cifra_periodo_distinto` (de `vinculos.comparacion_titular`), `evento_sin_revisar` (`vinculos.estado_evento = automatic`). No cambian el estado de evidencia | Diseño (revisión de E1-10, spec E1-10b) | `test_cada_tipo_de_vacio_aparece_cuando_se_cumple_su_condicion_y_no_cuando_no` |
+| Siguientes pasos de la acción (`siguientes_pasos.maximo`) | 3, derivados de las verificaciones de los vacíos más importantes | Supuesto | `test_los_siguientes_pasos_se_derivan_de_los_vacios_mas_importantes` |
+| Candidatos a titular central (`titular_central.candidatos`) | Los 3 titulares más cercanos al centroide compiten por la preferencia | Supuesto | `test_el_titular_central_prefiere_espanol_y_medio_panameno_*` |
+| Preferencia del titular central | Idioma `es` y medio de `pais_medio` = Panamá | Spec E1-10b | Ídem |
+| Empate de distancia al centroide | Se redondea a la precisión de float32 (6 decimales, `np.finfo`) y gana el menor `id_noticia` | Práctica (el ruido de coma flotante no decide) | `test_el_titular_central_es_determinista_ante_empates` |
+| Fuentes sugeridas por subtema y por tema (`fuentes.por_subtema`, `fuentes.por_tema`) | 38 subtemas y 6 temas, de 1 a 3 instituciones cada uno; sin subtema (D-92) solo las del tema | Supuesto (criterio editorial; son sugerencias, nunca evidencia, D-37) | `test_verificacion_cubre_todos_los_subtemas_y_temas` · `validar_coherencia` |
+| Fuentes sugeridas extra de la banca | SBP, MEF, INEC (`fuentes_sugeridas_extra`) | Diseño (D-38) | `test_la_banca_agrega_sus_fuentes_extra_al_final_y_sin_repetir` |
+| Zona horaria y formato al mostrar (`presentacion.zona_horaria`, `formato_fecha`) | `America/Panama` (UTC-5, sin horario de verano) · `AAAA-MM-DD HH:MM` | PDF (hora de Panamá solo en la interfaz) | `test_la_cobertura_dice_titulares_medios_y_rango_de_fechas_en_hora_de_panama` |
+| Decimales al mostrar un valor (`presentacion.decimales_valor`) | 2 | Presentación | — |
+| Tabla de acciones de la banca (`modalidad_banca.yaml`) | Alto = Incluir en el boletín como observación · Incluir como señal a confirmar · Seguimiento prioritario; Medio = Incluir como contexto · Seguimiento · Seguimiento; Bajo = Archivar | Diseño (D-35, D-38; mismas celdas que el diseño de solución) | `test_la_modalidad_banca_es_parcial_y_usa_el_mismo_modelo_que_la_editorial` |
+| `modalidad_banca.yaml` es **parcial** (`parcial: true`, D-90) | Solo trae lo que necesita la ficha; E2-01 agrega el mapeo tema → sector, el alcance por sector, el horizonte y la bandeja | Diseño (D-90) | Ídem |
+
 ## Organizar y contextualizar
 
 | Parámetro | Valor | Origen | Cómo se valida |
