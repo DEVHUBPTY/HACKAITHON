@@ -2406,6 +2406,33 @@ def cargar_revision(carpeta: Path | None = None) -> ConfigRevision:
     return cargar_config("revision", ConfigRevision, carpeta)
 
 
+# ------------------------------------------------------------------ pruebas.yaml (E1-17)
+
+IDS_PRUEBAS_ACEPTACION = tuple(f"T{n:02d}" for n in range(1, 11))
+
+
+class ConfigPruebas(ModeloConfig):
+    """Modelo de ``config/pruebas.yaml``: por prueba T01–T10, la parte que el test no cubre y por qué sigue pendiente."""
+
+    pendientes: dict[str, str]
+
+    @field_validator("pendientes")
+    @classmethod
+    def _ids_y_causas(cls, v: dict[str, str]) -> dict[str, str]:
+        ajenos = sorted(set(v) - set(IDS_PRUEBAS_ACEPTACION))
+        if ajenos:
+            raise ValueError(f"ids que no son T01–T10: {ajenos}")
+        vacias = sorted(k for k, causa in v.items() if not causa.strip())
+        if vacias:
+            raise ValueError(f"causa vacía en {vacias}")
+        return v
+
+
+def cargar_pruebas(carpeta: Path | None = None) -> ConfigPruebas:
+    """Atajo para ``config/pruebas.yaml``."""
+    return cargar_config("pruebas", ConfigPruebas, carpeta)
+
+
 CODIGO_URGENCIA_SIN_PUBLICACION ="urgencia_sin_publicacion"   # el único vacío de E1-10 cuyo texto vive en reglas_v1.3.yaml
 MODALIDADES = ("editorial", "banca")
 OPCIONALES = {"modalidad_banca"}  # el esquema la admite aunque todavía no exista
@@ -2438,6 +2465,7 @@ CARGADORES = {
     "interfaz": cargar_interfaz,
     "cache": cargar_cache,
     "revision": cargar_revision,
+    "pruebas": cargar_pruebas,
 }
 
 

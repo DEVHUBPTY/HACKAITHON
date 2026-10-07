@@ -6,6 +6,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+pytestmark = pytest.mark.t03
+
 from src import db, limpieza, normalizacion, puntaje
 from src.configuracion import cargar_fuentes, cargar_normalizacion, cargar_prioridad, cargar_reglas
 
@@ -115,3 +117,12 @@ def test_la_deteccion_reciente_no_rescata_la_urgencia_de_una_recirculada() -> No
     (p,) = puntaje.calcular_puntajes([_grupo_de(fila)], REGLAS, PRIORIDAD, CORTE)
     assert p.componentes["U"].explicacion["fecha_origen"] == "publicacion"
     assert not any(v.codigo == "urgencia_sin_publicacion" for v in p.vacios)
+
+
+def test_t03_aceptacion_muestra_la_fecha_original_y_no_la_presenta_como_evento_nuevo() -> None:
+    """PDF T03: mostrar fecha original; no presentarla como un evento nuevo."""
+    (fila,) = _normalizar(normalizacion.leer_csv(FIXTURE))
+    assert fila["fecha_publicacion"] == "2024-03-14T15:00:00Z" and fila["fecha_deteccion"] != fila["fecha_publicacion"]
+    (p,) = puntaje.calcular_puntajes([_grupo_de(fila)], REGLAS, PRIORIDAD, CORTE)
+    assert p.componentes["U"].explicacion["fecha"] == "2024-03-14T15:00:00Z"   # la fecha original es la que se muestra
+    assert p.recirculada is True and p.es_nueva is False

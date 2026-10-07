@@ -13,6 +13,8 @@ from typing import Any
 
 import pytest
 
+pytestmark = pytest.mark.t09
+
 from src.generacion import Generador, generar
 from src.registro import olvidar_sensibles, registrar_sensible
 from src.validador import Contexto, RegistroRechazos, Rechazo, calcular_tasas, principal, validar_paquete
@@ -186,3 +188,17 @@ def test_un_registro_que_no_se_puede_escribir_no_tumba_la_generacion(monkeypatch
 def test_las_pruebas_no_tocan_el_registro_real() -> None:
     assert "rechazos.jsonl" in os.environ["RECHAZOS_JSONL"] and "outputs" not in os.environ["RECHAZOS_JSONL"]
     assert Generador(ficha(), None).registro_rechazos.ruta == Path(os.environ["RECHAZOS_JSONL"])
+
+
+def test_t09_aceptacion_brief_editorial_con_formato_util_citas_y_tipos_distintos() -> None:
+    """PDF T09 (parte editorial): formato útil, citas pertinentes y distinción de hechos e inferencias.
+
+    La parte del boletín bancario pertenece a E2-02 y queda pendiente; no se simula aquí.
+    """
+    p = generar(ficha(), ProveedorGuionado()).paquete
+    assert p is not None and p.brief and p.guion and p.titulares and p.vacios == []          # formato útil
+    assert validar_paquete(p, Contexto(ficha(), ("comunes", "editorial"))) == []             # citas válidas
+    por_id = {a.id: a for a in p.afirmaciones}
+    assert {"hecho", "declaración", "inferencia"} <= {a.tipo for a in por_id.values()}        # tipos distinguidos
+    assert all(a.citas for a in por_id.values() if a.tipo in ("hecho", "declaración"))
+    assert p.leyenda_alcance

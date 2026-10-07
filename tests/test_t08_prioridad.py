@@ -10,6 +10,8 @@ from datetime import UTC, datetime
 
 import pytest
 
+pytestmark = pytest.mark.t08
+
 from src import procedencias, puntaje
 from tests.prioridad_ayuda import AHORA, CFG, REGLAS, entrada, iso, miembro, vector
 
@@ -391,3 +393,16 @@ def test_m2_la_geografia_normaliza_guiones_espacios_y_tildes(titulo: str) -> Non
 
 def test_m2_el_guion_no_une_palabras_distintas() -> None:
     assert puntaje.alcance_geografico([miembro(titulo="Corte en Chiriquígrande")], REGLAS, CFG).nivel == "desconocido"
+
+
+def test_t08_aceptacion_expone_componentes_y_regla_y_la_prioridad_no_habilita_publicacion() -> None:
+    """PDF T08: exponer componentes y regla; la prioridad no habilita publicación."""
+    fuerte = entrada(
+        "GRP-t08",
+        [miembro(f"NOT-t08000000{n}", "Gobierno anuncia a nivel nacional un decreto", d, similitud=0.95, publicado_hace=2 + n) for n, d in enumerate(("prensa.com", "laestrella.com.pa", "tvn-2.com"))],
+        vectores=np.stack([vector(0.0, 1.0)] * 3), subtema="crecimiento_pib", n_procedencias=3, tiene_oficial=True,
+    )
+    r = _calcular(_varios(fuerte))["GRP-t08"]
+    assert r.rango == "alto" and set(r.componentes) == {"R", "I", "U", "N", "E"} and all(c.explicacion for c in r.componentes.values())
+    assert r.version_reglas == REGLAS.version                                # la regla que produjo el puntaje
+    assert r.habilita_publicacion is False and "publicar" not in json.dumps(r.a_diccionario(), ensure_ascii=False).lower()
