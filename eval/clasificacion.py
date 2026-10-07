@@ -20,11 +20,13 @@ import csv
 import json
 import re
 import sys
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from eval import metricas
+from eval import origen_etiquetas as oe
 from src import db
 from src.baseline import SIN_TEMA, Baseline
 from src.clasificacion import (
@@ -387,40 +389,43 @@ def ids_excluidos(ruta: Path = EXCLUIDOS) -> set[str]:
     }
 
 
-def leer_etiquetas(ruta: Path, columna: str, temas: ConfigTemas) -> dict[str, EtiquetaHumana]:
+def leer_etiquetas(
+    ruta: Path, columna: str, temas: ConfigTemas, origenes: Iterable[str] = oe.SOLO_HUMANOS
+) -> dict[str, EtiquetaHumana]:
     """``id_noticia -> EtiquetaHumana`` del CSV consolidado de E1-06 (``eval/etiquetar.py --consolidar``).
 
     * Un titular que una persona marcó como ruido (``ruido`` = ``no_es_panama``, ``fuera_de_temas`` o ``no_es_noticia``)
       es una **abstención correcta**: su etiqueta de oro es ``sin_tema``. No es "sin etiquetar".
     * Sin ruido y sin ``tema_principal`` (``columna``), el titular no está etiquetado y se omite.
     * ``peso_muestreo`` (población / muestra del estrato) pondera las métricas; si el CSV no trae la columna, pesa 1.
+    * ``origenes``: solo se leen las filas con esa procedencia (por defecto las humanas; las ``asistente_provisional``
+      de D-101 se piden de forma explícita, ver ``eval/origen_etiquetas.py``).
     * Falla si falta ``id_noticia`` o ``columna``, o si un tema, un motivo de ruido o un peso no son válidos.
     """
     with ruta.open(encoding="utf-8", newline="") as f:
-        lector = csv.DictReader(f)
-        campos = lector.fieldnames or []
-        if "id_noticia" not in campos or columna not in campos:
-            raise KeyError(f"{ruta.name} no tiene las columnas id_noticia y {columna!r} (tiene: {campos})")
-        etiquetas: dict[str, EtiquetaHumana] = {}
-        for fila in lector:
-            id_ = fila["id_noticia"].strip()
-            motivo = plano((fila.get(COLUMNA_RUIDO) or "").strip())
-            if motivo in SIN_RUIDO:
-                tema = tema_a_id(fila[columna] or "", temas)
-                if tema is None:    # una celda vacía sin ruido es "sin etiquetar", no una etiqueta
-                    continue
-            elif motivo in FUERA_DE_LOS_TEMAS:
-                tema = SIN_TEMA
-            else:
-                raise ValueError(f"{id_}: ruido {motivo!r} desconocido (use ninguno o {sorted(FUERA_DE_LOS_TEMAS - {SIN_TEMA})})")
-            bruto = (fila.get(COLUMNA_PESO) or "").strip()
-            try:
-                peso = float(bruto) if bruto else 1.0
-            except ValueError as exc:
-                raise ValueError(f"{id_}: {COLUMNA_PESO} {bruto!r} no es un número") from exc
-            if not peso > 0 or peso == float("inf"):
-                raise ValueError(f"{id_}: {COLUMNA_PESO} debe ser un número positivo (es {bruto!r})")
-            etiquetas[id_] = EtiquetaHumana(tema, peso, (fila.get(COLUMNA_ESTRATO) or "").strip() or None)
+        campos = csv.DictReader(f).fieldnames or []
+    if "id_noticia" not in campos or columna not in campos:
+        raise KeyError(f"{ruta.name} no tiene las columnas id_noticia y {columna!r} (tiene: {campos})")
+    etiquetas: dict[str, EtiquetaHumana] = {}
+    for fila in oe.leer_filas(ruta, origenes):
+        id_ = fila["id_noticia"].strip()
+        motivo = plano((fila.get(COLUMNA_RUIDO) or "").strip())
+        if motivo in SIN_RUIDO:
+            tema = tema_a_id(fila[columna] or "", temas)
+            if tema is None:    # una celda vacía sin ruido es "sin etiquetar", no una etiqueta
+                continue
+        elif motivo in FUERA_DE_LOS_TEMAS:
+            tema = SIN_TEMA
+        else:
+            raise ValueError(f"{id_}: ruido {motivo!r} desconocido (use ninguno o {sorted(FUERA_DE_LOS_TEMAS - {SIN_TEMA})})")
+        bruto = (fila.get(COLUMNA_PESO) or "").strip()
+        try:
+            peso = float(bruto) if bruto else 1.0
+        except ValueError as exc:
+            raise ValueError(f"{id_}: {COLUMNA_PESO} {bruto!r} no es un número") from exc
+        if not peso > 0 or peso == float("inf"):
+            raise ValueError(f"{id_}: {COLUMNA_PESO} debe ser un número positivo (es {bruto!r})")
+        etiquetas[id_] = EtiquetaHumana(tema, peso, (fila.get(COLUMNA_ESTRATO) or "").strip() or None)
     return etiquetas
 
 

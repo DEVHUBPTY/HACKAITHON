@@ -13,9 +13,11 @@ from __future__ import annotations
 import argparse
 import csv
 import sys
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
+from eval import origen_etiquetas as oe
 from src import db
 from src.carga import intervalo_wilson
 from src.configuracion import RAIZ, cargar_carga, cargar_normalizacion
@@ -33,18 +35,20 @@ def _texto_proporcion(k: int, n: int, z: float) -> str:
     return f"{k}/{n} = {100 * k / n:.1f} % [IC 95 %: {100 * ic[0]:.1f}–{100 * ic[1]:.1f} %]"
 
 
-def leer_etiquetas(ruta: Path, columna: str) -> dict[str, str | None]:
-    """``id_noticia -> motivo humano`` (``None`` si la persona no marcó ruido). Falla si falta la columna."""
+def leer_etiquetas(ruta: Path, columna: str, origenes: Iterable[str] = oe.SOLO_HUMANOS) -> dict[str, str | None]:
+    """``id_noticia -> motivo humano`` (``None`` si la persona no marcó ruido). Falla si falta la columna.
+
+    Solo lee las filas de ``origenes`` (por defecto las humanas; las provisionales de D-101 hay que pedirlas).
+    """
     with ruta.open(encoding="utf-8", newline="") as f:
-        lector = csv.DictReader(f)
-        campos = lector.fieldnames or []
-        if "id_noticia" not in campos or columna not in campos:
-            raise KeyError(f"{ruta.name} no tiene las columnas id_noticia y {columna!r} (tiene: {campos})")
-        etiquetas: dict[str, str | None] = {}
-        for fila in lector:
-            valor = (fila[columna] or "").strip()
-            etiquetas[fila["id_noticia"].strip()] = None if valor.casefold() in SIN_RUIDO else valor
-        return etiquetas
+        campos = csv.DictReader(f).fieldnames or []
+    if "id_noticia" not in campos or columna not in campos:
+        raise KeyError(f"{ruta.name} no tiene las columnas id_noticia y {columna!r} (tiene: {campos})")
+    etiquetas: dict[str, str | None] = {}
+    for fila in oe.leer_filas(ruta, origenes):
+        valor = (fila[columna] or "").strip()
+        etiquetas[fila["id_noticia"].strip()] = None if valor.casefold() in SIN_RUIDO else valor
+    return etiquetas
 
 
 def medir(etiquetas: dict[str, str | None], predichas: dict[str, str | None], z: float) -> list[str]:
@@ -65,13 +69,14 @@ def medir(etiquetas: dict[str, str | None], predichas: dict[str, str | None], z:
     return lineas
 
 
-def leer_regional(ruta: Path, columna: str = "alcance_regional") -> dict[str, bool] | None:
+def leer_regional(
+    ruta: Path, columna: str = "alcance_regional", origenes: Iterable[str] = oe.SOLO_HUMANOS
+) -> dict[str, bool] | None:
     """``id_noticia -> alcance regional marcado por la persona`` (D-84). ``None`` si el CSV no trae la columna."""
     with ruta.open(encoding="utf-8", newline="") as f:
-        lector = csv.DictReader(f)
-        if columna not in (lector.fieldnames or []):
+        if columna not in (csv.DictReader(f).fieldnames or []):
             return None
-        return {fila["id_noticia"].strip(): (fila[columna] or "").strip().casefold() in SI_REGIONAL for fila in lector}
+    return {fila["id_noticia"].strip(): (fila[columna] or "").strip().casefold() in SI_REGIONAL for fila in oe.leer_filas(ruta, origenes)}
 
 
 def medir_regional(humanos: dict[str, bool], predichas: dict[str, bool], z: float) -> list[str]:

@@ -31,13 +31,14 @@ import csv
 import hashlib
 import json
 import sys
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from itertools import combinations
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 
+from eval import origen_etiquetas as oe
 from src import db
 from src.agrupacion import agrupar_indices, codificar_titulares, fecha_de
 from src.clasificacion import proporcion
@@ -66,10 +67,9 @@ LARGO_HASH_PLIEGUE = 8      # caracteres hexadecimales del SHA-1 del ID que deci
 # ------------------------------------------------------------------ etiquetas y pares
 
 
-def leer_grupos_humanos(ruta: Path = ETIQUETAS) -> dict[str, str | None]:
-    """``id_noticia`` -> grupo humano (``None`` = suelto) de todos los titulares etiquetados."""
-    with ruta.open(encoding="utf-8", newline="") as f:
-        return {fila["id_noticia"]: (fila.get("grupo") or "").strip() or None for fila in csv.DictReader(f)}
+def leer_grupos_humanos(ruta: Path = ETIQUETAS, origenes: Iterable[str] = oe.SOLO_HUMANOS) -> dict[str, str | None]:
+    """``id_noticia`` -> grupo humano (``None`` = suelto) de los titulares etiquetados por ``origenes`` (por defecto, personas)."""
+    return {fila["id_noticia"]: (fila.get("grupo") or "").strip() or None for fila in oe.leer_filas(ruta, origenes)}
 
 
 def pares_positivos(etiquetas: Sequence[str | None]) -> np.ndarray:

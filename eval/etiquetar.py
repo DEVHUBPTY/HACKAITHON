@@ -32,6 +32,7 @@ from typing import Any
 if __package__ in (None, ""):  # `streamlit run eval/etiquetar.py` o `python eval/etiquetar.py`: la raíz no está en sys.path
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from eval import origen_etiquetas as oe  # noqa: E402
 from src import db  # noqa: E402
 from src.carga import intervalo_wilson  # noqa: E402
 from src.configuracion import (  # noqa: E402
@@ -56,7 +57,7 @@ COLUMNAS = (
     "etiquetado_por",
     "fecha_etiquetado",
 )
-COLUMNAS_CONSOLIDADO = (*COLUMNAS, "estrato", "peso_muestreo", "n_etiquetadores")
+COLUMNAS_CONSOLIDADO = (*COLUMNAS, "estrato", "peso_muestreo", "n_etiquetadores", oe.COLUMNA_ORIGEN)   # origen: E1-07b, D-101
 SI = "si"  # valor de alcance_regional marcado; vacío = no
 PATRON_GRUPO = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
 PATRON_NOMBRE = re.compile(r"^[^\W\d_]+(?:[ .'-][^\W\d_]+)*\.?$")
@@ -321,7 +322,9 @@ def validar_hoja(ruta: Path, cfg: ConfigEtiquetado, temas: ConfigTemas, ids_mues
         campos = tuple(csv.DictReader(f).fieldnames or ())
     if campos not in (COLUMNAS, COLUMNAS_CONSOLIDADO):
         return [f"{ruta.name}: columnas {campos} no son las esperadas {COLUMNAS}"]
-    filas = leer_csv(ruta)
+    # Las filas ``asistente_provisional`` (D-101) no son de una persona ni de la muestra de E1-06: su contrato es otro y lo
+    # valida ``eval/origen_etiquetas.py``. Aquí solo se validan las humanas.
+    filas = [f for f in leer_csv(ruta) if f.get(oe.COLUMNA_ORIGEN) != oe.ASISTENTE_PROVISIONAL]
     vistos: Counter[str] = Counter(f["id_noticia"] for f in filas)
     for i, fila in enumerate(filas, start=2):
         problemas += [f"{ruta.name}:{i} ({fila['id_noticia']}): {m}" for m in validar_fila(fila, cfg, temas)]
@@ -482,6 +485,7 @@ def consolidar(
         base["etiquetado_por"] = "; ".join(f["etiquetado_por"] for f in ganadoras)
         base["fecha_etiquetado"] = max(f["fecha_etiquetado"] for f in ganadoras)
         base["n_etiquetadores"] = str(len(ganadoras))
+        base[oe.COLUMNA_ORIGEN] = oe.HUMANO
         m = info.get(id_noticia)
         base["estrato"] = m["estrato"] if m else ""
         base["peso_muestreo"] = f"{m['peso']:.6g}" if m else ""

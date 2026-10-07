@@ -17,6 +17,11 @@ humanas de ``eval/etiquetas.csv`` (D-85)? El módulo **mide y no corrige**: no e
    útiles del snapshot** (no usan las etiquetas), y los textos de las referencias exploratorias están escritos aquí, a
    partir de ``docs/guia_temas.md`` y de la regla D-84.
 
+**Tres vías (D-101).** ``diagnosticar_en_tres_vias`` repite el diagnóstico con las etiquetas ``humano`` (las de la persona,
+D-85), con las ``asistente_provisional`` solas y con las dos juntas. Estas últimas las propuso un agente y las aprobó
+provisionalmente el asistente (riesgo de circularidad, pendientes de la revisión humana C-09): todo resultado que las use se
+marca como PROVISIONAL en el JSON y en la impresión, y la conclusión se toma de la vía humana o, con la salvedad, de la combinada.
+
 Limitaciones que el reporte repite: una sola persona etiquetó; las etiquetas son un censo del estrato «no ruido» del
 snapshot anterior, así que **no hay datos de prueba independientes** de los que se usaron para diagnosticar; y
 ``sin_tema`` tiene muy pocos casos. Uso: ``HF_HUB_OFFLINE=1 poetry run python -m eval.diagnostico_temas``.
@@ -25,10 +30,10 @@ snapshot anterior, así que **no hay datos de prueba independientes** de los que
 from __future__ import annotations
 
 import argparse
-import csv
 import json
 import sys
 from collections import Counter
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
@@ -36,6 +41,7 @@ import numpy as np
 
 from eval import clasificacion as evalclas
 from eval import metricas
+from eval import origen_etiquetas as oe
 from src import db
 from src.baseline import SIN_TEMA
 from src.clasificacion import METODO_A, construir_referencias, proporcion, puntuar, texto_de_entrada
@@ -62,7 +68,22 @@ SEMILLA_CV = 20261007
 PORCENTAJES_MARGEN = (10, 20, 30)       # abstenerse en el p % de titulares útiles con menor margen
 PORCENTAJES_FUERA = (1, 5, 10)          # abstenerse en el p % de titulares útiles más parecidos a «fuera de temas»
 OBJETIVOS = ("macro_f1", "exactitud")  # qué se maximiza al elegir el umbral en el entrenamiento
+MIN_EVENTOS_POR_VIA = PLIEGUES          # una vía con menos eventos que pliegues no admite validación cruzada: no se calcula
 MIN_POSITIVOS_CONFIABLES = 30           # por debajo, una proporción o un AUC son anecdóticos; el reporte lo dice
+
+ADVERTENCIA_BASE = (
+    "Una sola persona etiquetó (D-85); las etiquetas son un censo del estrato «no ruido» del snapshot anterior: "
+    "no hay datos de prueba independientes de los usados para diagnosticar."
+)
+ADVERTENCIA_PROVISIONAL = (
+    "Usa etiquetas que propuso un agente y aprobó provisionalmente el asistente (D-101): riesgo de circularidad, "
+    "pendientes de la revisión humana C-09; no son una verdad de referencia."
+)
+VIAS = {
+    "humano": (oe.HUMANO,),
+    "asistente_provisional": (oe.ASISTENTE_PROVISIONAL,),
+    "combinado": (oe.HUMANO, oe.ASISTENTE_PROVISIONAL),
+}
 
 # Referencias EXPLORATORIAS (no son del sistema; no se escribieron mirando los titulares etiquetados, sino a partir de la
 # guía: «Fuera de los temas» y la regla D-84 de alcance regional).
@@ -90,6 +111,14 @@ ECONOMIA_REGIONAL_EJEMPLOS = (
     "Misión oficial busca atraer inversión extranjera y firmar acuerdos comerciales",
     "Potencias recortan la cooperación económica y reorientan fondos hacia la región",
 )
+
+
+class EtiquetasInsuficientes(ValueError):
+    """La vía tiene menos eventos etiquetados que pliegues de validación cruzada: no se calcula (no se inventan métricas)."""
+
+    def __init__(self, evaluados: int, eventos: int) -> None:
+        super().__init__(f"{evaluados} filas en {eventos} eventos: menos de {MIN_EVENTOS_POR_VIA} eventos, no se calcula")
+        self.evaluados, self.eventos = evaluados, eventos
 
 
 # ------------------------------------------------------------------ estadística básica
@@ -253,10 +282,9 @@ def calibrar_umbral_cv(
 # ------------------------------------------------------------------ datos
 
 
-def _leer_grupos(ruta: Path) -> dict[str, str]:
-    """``id_noticia -> grupo`` de la etiqueta humana (vacío si la persona no lo agrupó)."""
-    with ruta.open(encoding="utf-8", newline="") as f:
-        return {fila["id_noticia"].strip(): (fila.get("grupo") or "").strip() for fila in csv.DictReader(f)}
+def _leer_grupos(ruta: Path, origenes: Iterable[str] = oe.SOLO_HUMANOS) -> dict[str, str]:
+    """``id_noticia -> grupo`` de la etiqueta (vacío si no se agrupó), solo de las filas de ``origenes``."""
+    return {fila["id_noticia"].strip(): (fila.get("grupo") or "").strip() for fila in oe.leer_filas(ruta, origenes)}
 
 
 def _variante_economia(temas: ConfigTemas, descripcion: bool, ejemplos: bool) -> ConfigTemas:
@@ -304,9 +332,18 @@ def _resumen_opcion(
 
 
 def diagnosticar(
-    ruta_etiquetas: Path, ruta_base: Path, cfg: ConfigClasificacion, temas: ConfigTemas, motores: dict[str, Any] | None = None
+    ruta_etiquetas: Path,
+    ruta_base: Path,
+    cfg: ConfigClasificacion,
+    temas: ConfigTemas,
+    motores: dict[str, Any] | None = None,
+    origenes: Iterable[str] = oe.SOLO_HUMANOS,
 ) -> dict[str, Any]:
-    """Todo el diagnóstico para el modelo y método activos. No modifica la base ni ``config/``."""
+    """Todo el diagnóstico para el modelo y método activos con las etiquetas de ``origenes`` (por defecto, las humanas).
+
+    No modifica la base ni ``config/``. Lanza ``EtiquetasInsuficientes`` si hay menos eventos que pliegues.
+    """
+    origenes = oe.validar_origenes(origenes)
     nombre = cfg.modelo_activo
     metodo = cfg.metodo_activo
     if metodo != METODO_A:
@@ -314,8 +351,8 @@ def diagnosticar(
     umbral = cfg.modelos[nombre].umbrales[metodo].umbral_sin_tema
     z = cargar_carga().salida.z_intervalo_confianza
     reglas = Reglas.desde_config()
-    etiquetas = evalclas.leer_etiquetas(ruta_etiquetas, "tema_principal", temas)
-    grupos = _leer_grupos(ruta_etiquetas)
+    etiquetas = evalclas.leer_etiquetas(ruta_etiquetas, "tema_principal", temas, origenes)
+    grupos = _leer_grupos(ruta_etiquetas, origenes)
     excluidos = evalclas.ids_excluidos()
     con = db.conectar(ruta_base, solo_lectura=True)
     try:
@@ -338,6 +375,8 @@ def diagnosticar(
     id_ev = [i for i, e in zip(ids, etiquetado, strict=True) if e]
     y = np.array([etiquetas[i].tema for i in id_ev], dtype=object)
     eventos = [grupos.get(i) or i for i in id_ev]
+    if len(set(eventos)) < MIN_EVENTOS_POR_VIA:
+        raise EtiquetasInsuficientes(len(id_ev), len(set(eventos)))
     clases = evalclas.clases_de(temas)
     sin = y == SIN_TEMA
     pesos_evento = np.array([1 / Counter(eventos)[e] for e in eventos])
@@ -420,10 +459,9 @@ def diagnosticar(
             "eventos": len(set(eventos)),
             "por_tema_humano": dict(Counter(y)),
             "titulares_utiles_del_snapshot": len(ids),
-            "advertencia": (
-                "Una sola persona etiquetó (D-85); las etiquetas son un censo del estrato «no ruido» del snapshot anterior: "
-                "no hay datos de prueba independientes de los usados para diagnosticar."
-            ),
+            "origenes": list(origenes),
+            "usa_etiquetas_provisionales": oe.ASISTENTE_PROVISIONAL in origenes,
+            "advertencia": ADVERTENCIA_BASE if oe.ASISTENTE_PROVISIONAL not in origenes else f"PROVISIONAL (D-101). {ADVERTENCIA_PROVISIONAL} {ADVERTENCIA_BASE}",
         },
         "errores_del_clasificador_activo": {
             "por_fila": descomponer_errores(list(y), list(pred_actual_etq)),
@@ -440,6 +478,32 @@ def diagnosticar(
             "nota": "Comparación con etiquetas humanas; los grupos sin ningún titular etiquetado no se pueden evaluar.",
         },
     }
+
+
+def diagnosticar_en_tres_vias(
+    ruta_etiquetas: Path, ruta_base: Path, cfg: ConfigClasificacion, temas: ConfigTemas, motores: dict[str, Any] | None = None
+) -> dict[str, Any]:
+    """El mismo diagnóstico con las etiquetas humanas, con las provisionales (D-101) solas y con las dos juntas.
+
+    Cada vía dice si usa etiquetas provisionales y lleva su aviso. Una vía con menos eventos que pliegues queda como
+    ``INSUFICIENTE`` (con sus conteos) en vez de calcular métricas sin base.
+    """
+    vias: dict[str, Any] = {}
+    for nombre, origenes in VIAS.items():
+        provisional = oe.ASISTENTE_PROVISIONAL in origenes
+        via: dict[str, Any] = {
+            "origenes": list(origenes),
+            "usa_etiquetas_provisionales": provisional,
+            "aviso": f"PROVISIONAL (D-101). {ADVERTENCIA_PROVISIONAL}" if provisional else ADVERTENCIA_BASE,
+        }
+        try:
+            via["diagnostico"] = diagnosticar(ruta_etiquetas, ruta_base, cfg, temas, motores, origenes)
+            via["estado"] = "CALCULADO"
+            via["evaluados"] = via["diagnostico"]["conjunto"]["evaluados"]
+        except EtiquetasInsuficientes as exc:
+            via.update({"estado": "INSUFICIENTE", "evaluados": exc.evaluados, "eventos": exc.eventos, "detalle": str(exc)})
+        vias[nombre] = via
+    return {"vias": vias}
 
 
 # ------------------------------------------------------------------ impresión
@@ -492,8 +556,15 @@ def main(argv: list[str] | None = None) -> int:
     if not args.etiquetas.exists() or not args.base.exists():
         print(f"Faltan {args.etiquetas} o {args.base}: no se calcula nada (no se inventan métricas).", file=sys.stderr)
         return evalclas.CODIGO_SIN_ETIQUETAS
-    informe = diagnosticar(args.etiquetas, args.base, cargar_clasificacion(), cargar_temas())
-    print("\n".join(imprimir(informe)))
+    informe = diagnosticar_en_tres_vias(args.etiquetas, args.base, cargar_clasificacion(), cargar_temas())
+    for nombre, via in informe["vias"].items():
+        marca = " · PROVISIONAL (D-101)" if via["usa_etiquetas_provisionales"] else ""
+        print(f"\n######## Vía «{nombre}»{marca} ########")
+        print(via["aviso"])
+        if via["estado"] == "CALCULADO":
+            print("\n".join(imprimir(via["diagnostico"])))
+        else:
+            print(f"NO SE CALCULA: {via['detalle']}")
     args.salida.parent.mkdir(parents=True, exist_ok=True)
     with args.salida.open("w", encoding="utf-8") as f:
         json.dump(informe, f, ensure_ascii=False, indent=2, default=str)
