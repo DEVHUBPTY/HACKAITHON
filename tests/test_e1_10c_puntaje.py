@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import math
+
+import numpy as np
 import pytest
 
 from src import contexto, limpieza, puntaje
 from src.configuracion import cargar_temas, cargar_vinculos
-from tests.prioridad_ayuda import CFG, REGLAS, miembro
+from tests.prioridad_ayuda import AHORA, CFG, REGLAS, entrada, miembro, vector
 
 SUB = cargar_vinculos().subtema
 TEMAS = cargar_temas().temas
@@ -152,3 +155,55 @@ def test_x44_lo_que_no_es_comercio_maritimo_ni_de_combustibles_sigue_siendo_ruid
 
 def test_x44_un_falso_panama_con_comercio_maritimo_sigue_siendo_ruido() -> None:
     assert _gdelt("Panama City port sees container shipping growth").motivo_ruido == "no_es_panama"
+
+
+# ------------------------------------------------------------------ D-103 · N y R
+
+
+UMBRAL = REGLAS.agrupacion.umbral_similitud
+
+
+def _con_similitud(s: float) -> np.ndarray:
+    """Vector cuyo coseno con ``vector(1, 0)`` es exactamente ``s``."""
+    return np.stack([vector(s, math.sqrt(1 - s * s))])
+
+
+def _n(similitud: float, reglas=REGLAS) -> puntaje.Componente:
+    entradas = [
+        entrada("GRP-previo", [miembro("NOT-p", publicado_hace=100)], vectores=np.stack([vector(1, 0)])),
+        entrada("GRP-nuevo", [miembro("NOT-n", publicado_hace=10)], vectores=_con_similitud(similitud)),
+    ]
+    return {p.id_grupo: p for p in puntaje.calcular_puntajes(entradas, reglas, CFG, AHORA)}["GRP-nuevo"].componentes["N"]
+
+
+@pytest.mark.parametrize("similitud", [0.0, 0.3, 0.6, UMBRAL - 0.001])
+def test_d103_bajo_el_umbral_de_agrupacion_n_es_1(similitud: float) -> None:
+    assert _n(similitud).valor == 1.0
+
+
+@pytest.mark.parametrize("similitud", [UMBRAL, (UMBRAL + 1) / 2, 0.95, 1.0])
+def test_d103_desde_el_umbral_n_descuenta_lineal_hasta_0_con_un_duplicado(similitud: float) -> None:
+    c = _n(similitud)
+    assert c.valor == pytest.approx((1 - similitud) / (1 - UMBRAL), abs=1e-6)
+    assert c.explicacion["umbral_similitud"] == UMBRAL and c.explicacion["similitud_maxima"] == pytest.approx(similitud, abs=1e-6)
+
+
+def test_d103_el_umbral_de_n_es_el_de_la_agrupacion_no_una_copia() -> None:
+    otro = REGLAS.model_copy(update={"agrupacion": REGLAS.agrupacion.model_copy(update={"umbral_similitud": 0.9})})
+    assert _n(0.8).valor < 1.0 and _n(0.8, otro).valor == 1.0
+
+
+def test_d103_r_no_usa_la_confianza_del_clasificador() -> None:
+    entradas = [
+        entrada("GRP-alta", [miembro("NOT-a", similitud=0.95)], vectores=np.stack([vector(1, 0)])),
+        entrada("GRP-baja", [miembro("NOT-b", similitud=0.40)], vectores=np.stack([vector(0, 1)])),
+        entrada("GRP-reg", [miembro("NOT-r", similitud=0.95, regional=True)], vectores=np.stack([vector(1, 1)])),
+    ]
+    r = {p.id_grupo: p.componentes["R"] for p in puntaje.calcular_puntajes(entradas, REGLAS, CFG, AHORA)}
+    assert r["GRP-alta"].valor == r["GRP-baja"].valor == REGLAS.relevancia.foco_panama_sujeto
+    assert r["GRP-reg"].valor == REGLAS.relevancia.foco_otro_pais_afecta
+    assert not any("similitud" in k for k in r["GRP-alta"].explicacion)
+
+
+def test_d103_los_pesos_de_p_no_cambian() -> None:
+    assert (REGLAS.pesos.R, REGLAS.pesos.I, REGLAS.pesos.U, REGLAS.pesos.N, REGLAS.pesos.E) == (30, 25, 20, 15, 10)
