@@ -2610,6 +2610,10 @@ class ConfigRevision(ModeloConfig):
     exportacion: ExportacionRevision
     textos: TextosRevision
 
+    def es_provisional(self, revisor: str, modalidad: str | None = None) -> bool:
+        """``True`` si el revisor está declarado ``provisional`` (D-112). Única implementación: la pantalla, la CLI y la exportación la usan."""
+        return any(r.provisional for r in self.revisores if r.nombre == revisor and (modalidad is None or r.modalidad == modalidad))
+
     @model_validator(mode="after")
     def _coherente(self) -> ConfigRevision:
         if self.estado_inicial != self.estados[0]:

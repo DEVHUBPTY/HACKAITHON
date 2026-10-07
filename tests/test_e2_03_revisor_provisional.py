@@ -162,3 +162,28 @@ def test_x73_la_inferencia_y_la_hipotesis_muestran_las_afirmaciones_base_en_el_b
     textos = ui.secciones_de_paquete({"observaciones": afirmaciones}, {"observaciones": "Observaciones"})[0][1]
     assert "(IND-X · valor)" in textos[0] and "base:" not in textos[0]
     assert textos[1] == "A6 [inferencia] Es posible que importe. (base: A1, A2)"
+
+
+# ============================================================================================ X72: la marca no se pierde con la configuración
+
+
+def test_x72_sacar_al_asistente_de_la_configuracion_con_filas_en_el_registro_falla_en_vez_de_perder_la_marca(rev) -> None:
+    c = _aprobado_por_el_asistente(rev)
+    sin_asistente = ConfigRevision.model_validate(_con(revisores=[r for r in yaml.safe_load((RAIZ / "config" / "revision.yaml").read_text(encoding="utf-8"))["revisores"] if "Asistente" not in r["nombre"]]))
+    reabierta = Revisiones(rev.ruta, rev.base_fichas, sin_asistente)
+    with pytest.raises(revision.ErrorDeRevision, match="ya no están en config/revision.yaml.*Asistente"):
+        reabierta.estado_rotulado(c)
+    with pytest.raises(revision.ErrorDeRevision, match="Asistente"):
+        reabierta.historial(c)
+    assert rev.estado_rotulado(c).endswith(MARCA)  # con la configuración vigente sigue rotulado
+
+
+def test_x72_una_base_sin_revisiones_o_con_revisores_declarados_abre_sin_error(rev) -> None:
+    assert rev.casos() == []
+    _aprobado_por_el_asistente(rev)
+    assert rev.todas_las_filas()
+
+
+def test_es_provisional_tiene_una_sola_implementacion() -> None:
+    assert ui.es_provisional(ASISTENTE, "banca", CFG) and CFG.es_provisional(ASISTENTE) and not CFG.es_provisional(PERSONA)
+    assert not ui.es_provisional("Nadie", None, CFG)

@@ -498,7 +498,7 @@ def acciones_disponibles(estado: str, cfg: ConfigRevision | None = None) -> dict
 
 def es_provisional(revisor: str, modalidad: str | None = None, cfg: ConfigRevision | None = None) -> bool:
     """El revisor está declarado ``provisional`` en ``config/revision.yaml`` (D-112)."""
-    return any(r.provisional for r in (cfg or cargar_revision()).revisores if r.nombre == revisor and (modalidad is None or r.modalidad == modalidad))
+    return (cfg or cargar_revision()).es_provisional(revisor, modalidad)
 
 
 def tabla_historial(filas: Sequence[Any], cfg_ver: ConfigVerificacion | None = None, modalidad: str | None = None, cfg_rev: ConfigRevision | None = None) -> list[dict[str, Any]]:

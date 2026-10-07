@@ -360,6 +360,7 @@ class Revisiones:
         self.cfg = cfg or cargar_revision()
         self.ahora = ahora or ahora_utc
         self._transiciones = self.cfg.transiciones()
+        self._revisores_verificados = False
 
     # ---- conexión
 
@@ -373,9 +374,27 @@ class Revisiones:
         try:
             for ddl in TABLAS.values():
                 con.execute(ddl)
+            self._verificar_revisores(con)
             yield con
         finally:
             con.close()
+
+    def _verificar_revisores(self, con: Any) -> None:
+        """X72: todo revisor del registro sigue declarado en ``config/revision.yaml``.
+
+        La marca provisional se deriva de la configuración vigente; si alguien sacara al asistente de la lista, su historia quedaría sin
+        marca y parecería de una persona. Se falla con un error que lo nombra en lugar de reinterpretar el registro (de solo agregar).
+        """
+        if self._revisores_verificados:
+            return
+        presentes = {f[0] for f in con.execute("SELECT DISTINCT revisor FROM revisiones").fetchall()}
+        faltan = sorted(presentes - {r.nombre for r in self.cfg.revisores})
+        if faltan:
+            raise ErrorDeRevision(
+                f"{self.ruta.name}: el registro de revisiones tiene revisores que ya no están en config/revision.yaml: {faltan}. "
+                "Una entrada de revisor (en especial una provisional, D-112) no se borra ni se renombra: su historia perdería la marca."
+            )
+        self._revisores_verificados = True
 
     @contextmanager
     def _transaccion(self) -> Iterator[Any]:
@@ -439,7 +458,7 @@ class Revisiones:
 
     def es_provisional(self, revisor: str, modalidad: str | None = None) -> bool:
         """``True`` si el revisor está declarado ``provisional`` en ``config/revision.yaml`` (D-112); sin nombres fijos en el código."""
-        return any(r.provisional for r in self.cfg.revisores if r.nombre == revisor and (modalidad is None or r.modalidad == modalidad))
+        return self.cfg.es_provisional(revisor, modalidad)
 
     def revisor_rotulado(self, fila: Fila, modalidad: str | None = None) -> str:
         """``Nombre (rol)`` y, si el revisor es provisional, la marca de ``textos.marca_provisional``."""

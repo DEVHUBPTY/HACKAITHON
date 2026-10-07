@@ -50,6 +50,7 @@ revisores:
   # D-112 (extiende D-101): durante el desarrollo el asistente hace los pasos de juicio humano, de forma provisional y rotulada.
   # `provisional: true` marca cada fila suya (historial, Markdown, CSV de Notion y fichas.jsonl). En C-09 una persona agrega su
   # propia fila sobre el mismo CASO-: la suya pasa a ser la vigente y la del asistente queda como historia rotulada.
+  # No se borra ni se renombra una entrada que ya tiene filas en `revisiones`: Revisiones lo rechaza (X72), porque su historia perdería la marca.
   - {nombre: "Asistente (provisional, D-101)", rol: "Revisión editorial", modalidad: editorial, provisional: true}
   - {nombre: "Asistente (provisional, D-101)", rol: "Analista",           modalidad: banca,     provisional: true}
 limitacion_revisor: "Sin autenticación: el revisor se elige de la lista y el registro confía en esa elección (D-49)."
