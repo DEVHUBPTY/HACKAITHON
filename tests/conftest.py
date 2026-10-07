@@ -2,6 +2,7 @@
 
 import copy
 import json
+from datetime import datetime
 from pathlib import Path
 
 import pytest
@@ -102,6 +103,34 @@ def usgs_sintetico() -> dict:
     }
 
 
+def escribir_sbp_sintetico(carpeta: Path, momento: str = "20261007-120000", valor_inicial: float = 1000.0, nulo_en: str | None = None) -> None:
+    """Dos informes .xlsx con la forma de los de la SBP (E3-02): 24 meses (2023-06 a 2025-05) en la fila 4, el «Sistema Bancario» en la
+    fila 6 y, en el de morosos, su proporción en la fila 14. Trae filas de otros bancos, que la conversión nunca debe leer."""
+    import openpyxl
+
+    carpeta.mkdir(parents=True, exist_ok=True)
+    meses = [(2023 + (5 + i) // 12, (5 + i) % 12 + 1) for i in range(24)]
+    for clave, hoja, filas in (
+        ("morosos", "Morosos", {6: "SISTEMA BANCARIO", 7: "BANCO INDIVIDUAL SA", 14: "Morosos / Sistema Bancario"}),
+        ("provisiones", "Provisiones", {6: "SISTEMA BANCARIO", 7: "BANCO INDIVIDUAL SA"}),
+    ):
+        libro = openpyxl.Workbook()
+        ws = libro.active
+        ws.title = hoja
+        ws.cell(row=5, column=1, value="CENTRO BANCARIO")
+        for fila, etiqueta in filas.items():
+            ws.cell(row=fila, column=1, value=etiqueta)
+        for j, (anio, mes) in enumerate(meses):
+            col = j + 2
+            ws.cell(row=4, column=col, value=datetime(anio, mes, 1))
+            ws.cell(row=5, column=col, value=valor_inicial + 500 + j)
+            ws.cell(row=6, column=col, value=None if nulo_en == f"{anio}-{mes:02d}" else valor_inicial + j)
+            ws.cell(row=7, column=col, value=7777.0)          # un banco concreto: nunca debe salir
+            if 14 in filas:
+                ws.cell(row=14, column=col, value=0.015 + j / 10000)
+        libro.save(carpeta / f"sbp_{clave}_{momento}.xlsx")
+
+
 def wb_sintetico(indicador: str, valores: dict[tuple[str, int], float | None]) -> list:
     return [
         {"page": 1, "pages": 1, "per_page": 1000, "total": len(valores)},
@@ -157,6 +186,7 @@ def data_sintetica(tmp_path: Path, config: dict) -> Path:
         json.dumps(wb_sintetico("SP.POP.TOTL", pob)), encoding="utf-8"
     )
     (raw / "usgs" / "usgs_20261006T120300Z.geojson").write_text(json.dumps(usgs_sintetico()), encoding="utf-8")
+    escribir_sbp_sintetico(raw / "sbp")
     conversion.convertir_todo(raw, data / "processed", config)
     escribir_manifest(data, config)
     return data

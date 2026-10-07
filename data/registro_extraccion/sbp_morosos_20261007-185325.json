@@ -1,0 +1,13 @@
+{
+  "aviso_legal": "https://www.superbancos.gob.pa/documentos/aviso_legal/aviso_legal.pdf",
+  "bytes": 58996,
+  "condiciones": "Aviso legal de la SBP: reproducción y redistribución restringidas sin autorización previa por escrito; información solo informativa y sujeta a cambios; la SBP no responde por análisis de terceros. Autorización de reutilización: Pendiente de verificar.",
+  "fecha_extraccion": "2026-10-07T18:53:25Z",
+  "fuente": "SBP",
+  "informe": "Resumen de los saldos morosos por tipo de banca",
+  "origen": "generado por scripts.extraer",
+  "pagina_del_enlace": "https://www.superbancos.gob.pa/estadisticas-financieras/cartera-credito",
+  "robots_txt": "consultado: la página y el archivo están permitidos",
+  "sha256": "19229f257f1a8afa5117130fc3c4e9da5bfe09845f7f7a61c8c2fed300cc9a1b",
+  "url": "https://www.superbancos.gob.pa/documentos/financiera_y_estadistica/reportes_estadisticos/2026/08/calidad_credito_provisiones/Morosos.xlsx"
+}

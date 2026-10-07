@@ -12,11 +12,11 @@ poetry run python -m scripts.catalogo             # outputs/catalogo.csv (E1-04)
 # requiere outputs/reporte_calidad.json (src.carga); sin él, --sin-reporte marca "reporte de calidad no generado"
 ```
 
-El catálogo (`outputs/catalogo.csv`) lista las 4 fuentes que define la base *Catálogo de datos* de Notion; las que aún no se usan (hoy D, SBP, pendiente de E3-02 y solo si se activa banca) quedan marcadas como "Fuente no usada todavía".
+El catálogo (`outputs/catalogo.csv`) lista las 4 fuentes que define la base *Catálogo de datos* de Notion; las que aún no se usan quedan marcadas como "Fuente no usada todavía". La fuente D (SBP) ya está en el snapshot (E3-02, `processed/sbp_series.csv`).
 
 ## Versión del snapshot y receta (D-83, corregida por D-89)
 
-El snapshot versionado es la v1.2. Sus noticias de GDELT vienen de los crudos de las consultas antiguas (anteriores a E0-04, sin pata), que D-89 devuelve a `noticias.csv` (D-83 los había excluido, pero las etiquetas humanas y el benchmark de desarrollo apuntan a esas noticias). Esas consultas figuran en `consultas_historicas` de `config/fuentes.yaml` y en el manifest, que declara cada crudo en `crudos_consulta_historica` y reporta su cobertura aparte (`cobertura_efectiva.gdelt_dias_por_tema_consulta_historica`). Las consultas vigentes de `config/fuentes.yaml` (dos patas por tema) son la receta de la próxima extracción; su cobertura sigue en 0 porque GDELT responde HTTP 429 de forma sostenida y la extracción está en pausa. El ruido se marca en `src.limpieza`, no se borra.
+El snapshot versionado es la v1.3 (v1.2 más la fuente D, E3-02). Sus noticias de GDELT vienen de los crudos de las consultas antiguas (anteriores a E0-04, sin pata), que D-89 devuelve a `noticias.csv` (D-83 los había excluido, pero las etiquetas humanas y el benchmark de desarrollo apuntan a esas noticias). Esas consultas figuran en `consultas_historicas` de `config/fuentes.yaml` y en el manifest, que declara cada crudo en `crudos_consulta_historica` y reporta su cobertura aparte (`cobertura_efectiva.gdelt_dias_por_tema_consulta_historica`). Las consultas vigentes de `config/fuentes.yaml` (dos patas por tema) son la receta de la próxima extracción; su cobertura sigue en 0 porque GDELT responde HTTP 429 de forma sostenida y la extracción está en pausa. El ruido se marca en `src.limpieza`, no se borra.
 
 ## Qué se versiona y qué no (D-72)
 
@@ -24,6 +24,7 @@ El snapshot versionado es la v1.2. Sus noticias de GDELT vienen de los crudos de
 |---|---|---|
 | `raw/rss_tvn/` | **No** (`.gitignore`) | El RSS trae la descripción de cada nota: extracto con redistribución restringida |
 | `raw/gdelt/` | **No** (`.gitignore`) | GDELT trae `socialimage` (derechos de imagen) |
+| `raw/sbp/` | **No** (`.gitignore`) | Los .xlsx de la SBP: su aviso legal prohíbe reproducir o redistribuir sin autorización escrita (pendiente de pedir). Se regeneran con `scripts.extraer --sbp` |
 | `raw/banco_mundial/`, `raw/usgs/` | Sí | Datos abiertos (CC BY 4.0 · dominio público de USGS) |
 | `registro_extraccion/` | Sí | Fallos y notas de extracción (rangos, motivos, origen); sin contenido restringido. **No son respuestas de la API** |
 | `processed/` | Sí | Solo metadatos: no contiene `descripcion` ni `socialimage` |
@@ -48,6 +49,7 @@ por eso se descarga a diario).
   no se aplica (inconsistencia documentada en el manifest).
 - `indicadores.csv`: cuadrícula completa de 6 países × 6 indicadores × 15 años = **540** filas (el PDF
   dice 1.350, pero su propia aritmética da 540; se documenta en el manifest). Lo faltante queda vacío, nunca 0.
+- `sbp_series.csv` (fuente D, E3-02): 3 series agregadas del sistema bancario × 12 meses de 2024 = 36 filas; una fila de cada informe .xlsx (la del «Sistema Bancario», verificada por su etiqueta); celda vacía = nulo; unidad original; `pagina` = hoja y celda. Es opcional: sin `raw/sbp/` la conversión no lo toca.
 - `processed/conversion.json`: ventana aplicada, registros excluidos con motivo y cobertura de GDELT por tema.
 - Campos de cada archivo: `diccionario.md`.
 - `fecha_corte_UTC` del manifest sale de los crudos, no del reloj: mismo `raw/`, mismo manifest.

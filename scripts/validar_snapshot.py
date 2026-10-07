@@ -20,7 +20,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from scripts import conversion
+from scripts import conversion, sbp
 from scripts.conversion import (
     CAMPOS_EVENTO,
     CAMPOS_FUENTES,
@@ -346,6 +346,34 @@ def _validar_eventos(inf: Informe, processed: Path, config: dict[str, Any], resu
         inf.error("usgs:volumen", "sin eventos")
 
 
+def _validar_sbp(inf: Informe, processed: Path, config: dict[str, Any], resumen: dict) -> None:
+    """Fuente D (E3-02, opcional): las columnas de la spec, 12 períodos por serie y unidad, página y condiciones en cada fila."""
+    ruta = processed / sbp.NOMBRE_CSV
+    if not ruta.exists():
+        inf.advertencia("archivo:sbp_series.csv", "no existe: la fuente D (SBP) es opcional y solo la usa la modalidad banca")
+        return
+    columnas, filas = _leer_csv(ruta)
+    resumen["sbp_series"] = len(filas)
+    if columnas != sbp.COLUMNAS_SBP:
+        inf.error("contrato:sbp_series.csv", f"columnas {columnas}; se esperaban {sbp.COLUMNAS_SBP}")
+        return
+    cfg = config["sbp"]
+    esperadas = {f"{sbp.PREFIJO_ID}{k}" for k in cfg["series"]}
+    periodos: dict[str, set[str]] = {}
+    for f in filas:
+        periodos.setdefault(f["id_serie"], set()).add(f["periodo"])
+    incompletas = {k: len(v) for k, v in periodos.items() if len(v) != cfg["periodos_por_serie"]}
+    sin_dato = [f"{f['id_serie']}:{f['periodo']}" for f in filas if not (f["unidad"] and f["pagina"] and f["informe"] and f["condiciones"])]
+    if set(periodos) != esperadas or incompletas or len(filas) != len(esperadas) * cfg["periodos_por_serie"]:
+        inf.error("sbp:series_y_periodos", f"series {sorted(periodos)}; incompletas {incompletas}; se esperaban {sorted(esperadas)} con {cfg['periodos_por_serie']} períodos")
+    else:
+        inf.ok("sbp:series_y_periodos", f"{len(esperadas)} series con {cfg['periodos_por_serie']} períodos cada una")
+    if sin_dato:
+        inf.error("sbp:unidad_pagina_condiciones", f"{len(sin_dato)} filas sin unidad, página, informe o condiciones, ej. {sin_dato[:2]}")
+    else:
+        inf.ok("sbp:unidad_pagina_condiciones", "todas las filas llevan unidad, página, informe y condiciones")
+
+
 def _validar_manifest(inf: Informe, data: Path, resumen: dict) -> None:
     ruta = data / "manifest.json"
     if not ruta.exists():
@@ -409,6 +437,7 @@ def validar(data: Path, config: dict[str, Any]) -> dict[str, Any]:
     _validar_noticias(inf, processed, config, resumen)
     _validar_indicadores(inf, processed, config, resumen)
     _validar_eventos(inf, processed, config, resumen)
+    _validar_sbp(inf, processed, config, resumen)
     _validar_manifest(inf, data, resumen)
     _validar_cobertura_contra_extraccion(inf, data, config, resumen)
     return inf.como_dict(resumen)

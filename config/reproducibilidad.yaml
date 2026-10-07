@@ -33,6 +33,7 @@ salidas:
     - data/processed/fuentes.json
     - data/processed/indicadores.csv
     - data/processed/noticias.csv
+    - data/processed/sbp_series.csv      # E3-02: fuente D; la reconstrucción desde raw/sbp/ solo corre donde están los .xlsx (no se versionan)
     - data/processed/validos/*
   # Informes JSON de los pasos: se comparan por contenido (flotantes redondeados), no por bytes. A cada uno, las claves que NO entran en el
   # hash y por qué (docs/reproducibilidad.md). Ruta con puntos.

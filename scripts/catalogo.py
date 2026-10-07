@@ -192,6 +192,71 @@ def _excluidos_noticias(manifest: dict[str, Any], duplicados: int | None, report
     return f"{texto} Carga (E1-02): {_rechazos(reporte, 'noticias.csv')}; {_rechazos(reporte, 'fuentes.json')}."
 
 
+PATRON_FECHA_SBP = re.compile(r"_(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})\.xlsx$")
+
+
+def _extraccion_sbp(manifest: dict[str, Any]) -> str:
+    """Fechas de las descargas de la SBP, tomadas del nombre de cada crudo (``sbp_<informe>_<YYYYMMDD-HHMMSS>.xlsx``)."""
+    fechas = sorted(
+        "{}-{}-{}T{}:{}:{}Z".format(*m.groups()) for k in manifest["crudos"] if k.startswith("raw/sbp/") and (m := PATRON_FECHA_SBP.search(k))
+    )
+    if not fechas:
+        return PENDIENTE
+    return fechas[0] if fechas[0] == fechas[-1] else f"{fechas[0]} a {fechas[-1]}"
+
+
+def _fila_sbp(
+    manifest: dict[str, Any], processed: Path, reporte: dict[str, Any] | None, lic: dict[str, Any], q: dict[str, Any], cantidad: dict[str, int]
+) -> dict[str, str]:
+    """Fuente D (E3-02): las series agregadas de la SBP, con la huella del CSV y la de cada .xlsx descargado."""
+    sb = q["sbp"]
+    series = "; ".join(f"{k} ({v['nombre']}, {v['unidad']})" for k, v in sb["series"].items())
+    with (processed / "sbp_series.csv").open(encoding="utf-8", newline="") as f:
+        filas = list(csv.DictReader(f))
+    nulos = sum(1 for x in filas if x["valor"] == "")
+    crudos = "; ".join(f"{k.split('/')[-1]}: {v['sha256']}" for k, v in sorted(manifest["crudos"].items()) if k.startswith("raw/sbp/"))
+    return {
+        "Fuente": "D · SBP (Superintendencia de Bancos de Panamá)",
+        "Archivo": "sbp_series.csv",
+        "Modalidad": "Banca",
+        "Etapa": "Etapa 3",
+        "URL": " · ".join(sorted({v["pagina"] for v in sb["informes"].values()})),
+        "Fecha de extracción": f"{_extraccion_sbp(manifest)} · {_versionado(manifest)}",
+        "Cobertura": f"{len(sb['series'])} series agregadas del sistema bancario, {sb['periodos']}: {series}. "
+        f"{cantidad['sbp_series.csv']} filas, {nulos} valores nulos (se conservan como nulos, nunca como 0). "
+        "Solo agregados del sistema: nunca información de clientes ni de bancos individuales. Datos mensuales de 2024, no actuales.",
+        "Campos": ", ".join(filas[0].keys()) if filas else "",
+        "Licencia / condiciones": f"{lic['sbp']}. Solo informativo y sujeto a cambios; la SBP no responde por análisis de terceros; "
+        "el análisis es del equipo y no una opinión oficial de la SBP.",
+        "Transformaciones": _transformaciones(manifest, ("SBP",)),
+        "Registros válidos": f"{cantidad['sbp_series.csv']} filas en el manifest (validadas por scripts.validar_snapshot: columnas, 12 períodos por serie, unidad, página y condiciones)",
+        "Registros excluidos y motivo": "Ninguno: la conversión falla si la fila del informe no es la esperada en vez de excluir datos.",
+        "SHA-256": f"sbp_series.csv: {_sha(manifest, 'sbp_series.csv')} · crudos (no versionados) {crudos}",
+    }
+
+
+def _fila_sbp_pendiente() -> dict[str, str]:
+    """Fuente D sin extraer (snapshot de otra organización o sin banca): queda marcada, sin inventar nada."""
+    return {
+        "Fuente": "D · SBP (Superintendencia de Bancos de Panamá)",
+        "Archivo": "sbp_series.csv (formato propuesto)",
+        "Modalidad": "Banca",
+        "Etapa": "Etapa 3",
+        "URL": "https://www.superbancos.gob.pa",
+        "Fecha de extracción": "Pendiente: extracción manual (E3-02)",
+        "Cobertura": "Fuente no usada todavía: pendiente de E3-02, solo si se activa banca. 12 informes mensuales de 2024 "
+        "o 12 meses documentados; solo series agregadas. No hay datos en el snapshot.",
+        "Campos": "id_serie, nombre_serie, periodo, valor (nullable), unidad, informe, pagina, url, "
+        "fecha_extraccion, condiciones",
+        "Licencia / condiciones": f"{PENDIENTE}. Solo informativo y sujeto a cambios; la SBP no responde por análisis "
+        "de terceros; sus opiniones formales están solo en informes oficiales.",
+        "Transformaciones": "Extracción manual a CSV con página de origen (E3-02); IDs SBP-<serie>-<período>",
+        "Registros válidos": "Fuente no usada todavía: pendiente de E3-02, solo si se activa banca",
+        "Registros excluidos y motivo": "Fuente no usada todavía: pendiente de E3-02, solo si se activa banca",
+        "SHA-256": "Fuente no usada todavía: pendiente de E3-02, solo si se activa banca",
+    }
+
+
 def construir_filas(
     manifest: dict[str, Any], processed: Path, reporte: dict[str, Any] | None = None
 ) -> list[dict[str, str]]:
@@ -269,24 +334,7 @@ def construir_filas(
         f"{_rechazos(reporte, 'eventos.geojson')}.",
         "SHA-256": f"eventos.geojson: {_sha(manifest, 'eventos.geojson')}",
     }
-    sbp = {
-        "Fuente": "D · SBP (Superintendencia de Bancos de Panamá)",
-        "Archivo": "sbp_series.csv (formato propuesto)",
-        "Modalidad": "Banca",
-        "Etapa": "Etapa 3",
-        "URL": "https://www.superbancos.gob.pa",
-        "Fecha de extracción": "Pendiente: extracción manual (E3-02)",
-        "Cobertura": "Fuente no usada todavía: pendiente de E3-02, solo si se activa banca. 12 informes mensuales de 2024 "
-        "o 12 meses documentados; solo series agregadas. No hay datos en el snapshot.",
-        "Campos": "id_serie, nombre_serie, periodo, valor (nullable), unidad, informe, pagina, url, "
-        "fecha_extraccion, condiciones",
-        "Licencia / condiciones": f"{PENDIENTE}. Solo informativo y sujeto a cambios; la SBP no responde por análisis "
-        "de terceros; sus opiniones formales están solo en informes oficiales.",
-        "Transformaciones": "Extracción manual a CSV con página de origen (E3-02); IDs SBP-<serie>-<período>",
-        "Registros válidos": "Fuente no usada todavía: pendiente de E3-02, solo si se activa banca",
-        "Registros excluidos y motivo": "Fuente no usada todavía: pendiente de E3-02, solo si se activa banca",
-        "SHA-256": "Fuente no usada todavía: pendiente de E3-02, solo si se activa banca",
-    }
+    sbp = _fila_sbp(manifest, processed, reporte, lic, q, cantidad) if "sbp_series.csv" in cantidad else _fila_sbp_pendiente()
     return [noticias, banco, usgs, sbp]
 
 

@@ -186,6 +186,51 @@ class Usgs(ModeloConfig):
     carpeta_cruda: str
 
 
+class InformeSbp(ModeloConfig):
+    """Un informe .xlsx de la SBP: de qué página se toma el enlace y qué hoja se lee."""
+
+    nombre: str
+    pagina: str
+    archivo: str
+    hoja: str
+
+
+class SerieSbp(ModeloConfig):
+    """Una serie agregada: una fila de un informe. ``etiqueta_fila`` protege contra leer otra fila (p. ej. un banco)."""
+
+    nombre: str
+    informe: str
+    fila: int = Field(ge=1)
+    etiqueta_fila: str
+    unidad: str
+
+
+class Sbp(ModeloConfig):
+    sitio: str
+    carpeta_cruda: str
+    pausa_segundos: int = Field(ge=0)
+    periodo_inicio: str = Field(pattern=r"^\d{4}-(0[1-9]|1[0-2])$")
+    periodo_fin: str = Field(pattern=r"^\d{4}-(0[1-9]|1[0-2])$")
+    periodos_por_serie: int = Field(ge=1)
+    aviso_legal_url: str
+    condiciones: str
+    licencia: str
+    limitacion: str
+    informes: dict[str, InformeSbp]
+    fila_de_encabezados: int = Field(ge=1)
+    series: dict[str, SerieSbp]
+
+    @model_validator(mode="after")
+    def _coherente(self) -> "Sbp":
+        for id_serie, s in self.series.items():
+            if s.informe not in self.informes:
+                raise ValueError(f"la serie {id_serie} usa el informe {s.informe!r}, que no está declarado")
+        meses = (int(self.periodo_fin[:4]) - int(self.periodo_inicio[:4])) * 12 + int(self.periodo_fin[5:]) - int(self.periodo_inicio[5:]) + 1
+        if meses != self.periodos_por_serie:
+            raise ValueError(f"periodo_inicio..periodo_fin son {meses} meses y periodos_por_serie dice {self.periodos_por_serie}")
+        return self
+
+
 class ConfigFuentes(ModeloConfig):
     """Modelo de ``config/fuentes.yaml``."""
 
@@ -199,6 +244,7 @@ class ConfigFuentes(ModeloConfig):
     gdelt: Gdelt
     banco_mundial: BancoMundial
     usgs: Usgs
+    sbp: Sbp
     paises_es: dict[str, str]
 
 
@@ -726,7 +772,7 @@ def cargar_temas(carpeta: Path | None = None) -> ConfigTemas:
 
 
 class Vinculo(ModeloConfig):
-    fuente: Literal["indicador", "usgs"]
+    fuente: Literal["indicador", "usgs", "sbp"]
     id: str | None = None
     relacion: str
     limitacion: str
@@ -734,7 +780,7 @@ class Vinculo(ModeloConfig):
     @model_validator(mode="after")
     def _id_segun_fuente(self) -> Vinculo:
         if (self.fuente == "indicador") != (self.id is not None):
-            raise ValueError("un vínculo a indicador lleva id; uno a usgs no")
+            raise ValueError("un vínculo a indicador lleva id; uno a usgs o a sbp no (las series de la SBP salen de fuentes.yaml)")
         return self
 
 
@@ -769,6 +815,27 @@ class SismosVinculo(ModeloConfig):
             ZoneInfo(v)
         except (ZoneInfoNotFoundError, ValueError) as exc:
             raise ValueError(f"zona horaria desconocida: {v}") from exc
+        return v
+
+
+class SbpVinculo(ModeloConfig):
+    """Textos fijos del vínculo con las series agregadas de la SBP (E3-02)."""
+
+    plantilla_regla: str
+    nota_periodo: str
+
+    @field_validator("plantilla_regla")
+    @classmethod
+    def _con_subtema(cls, v: str) -> str:
+        if "{subtema}" not in v:
+            raise ValueError("plantilla_regla debe llevar {subtema}")
+        return v
+
+    @field_validator("nota_periodo")
+    @classmethod
+    def _con_periodo(cls, v: str) -> str:
+        if "{periodo}" not in v:
+            raise ValueError("nota_periodo debe llevar {periodo}")
         return v
 
 
@@ -844,6 +911,7 @@ class ConfigVinculos(ModeloConfig):
     pais_por_defecto: str
     subtema: SubtemaVinculo
     sismos: SismosVinculo
+    sbp: SbpVinculo
     vinculos: dict[str, Vinculo]  # por subtema
     vinculos_por_tema: dict[str, Vinculo]  # cualquier subtema del tema
     tendencia_anios: int = Field(ge=1)
@@ -2222,6 +2290,7 @@ class PresentacionVerificacion(ModeloConfig):
     sufijo_zona: str
     fecha_desconocida: str
     decimales_valor: int = Field(ge=0)
+    decimales_valor_sbp: int = Field(ge=0)
     origen_fecha: dict[str, str]
     fuentes_oficiales: dict[str, str]
     roles: dict[str, str]

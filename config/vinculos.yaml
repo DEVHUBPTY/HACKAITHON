@@ -103,6 +103,12 @@ sismos:                             # E1-09b: presentación y textos fijos del v
     - "La fuente solo describe el evento sísmico; no informa daños ni pérdidas."
     - "Un evento con estado automático puede cambiar al ser revisado."
 
+# E3-02 · series agregadas del sistema bancario de la SBP (src/contexto_sbp.py), solo para subtemas con `fuente: sbp`. Son datos
+# MENSUALES de 2024 (config/fuentes.yaml: sbp), no el mes de la noticia: la nota de cada fila lo dice.
+sbp:
+  plantilla_regla: "Subtema {subtema}: último período con valor de cada serie agregada del sistema bancario de la SBP (sbp_series.csv)."
+  nota_periodo: "Dato mensual de {periodo} (series de 2024), no del mes de la noticia."
+
 # E1-09 · contextualización con el Banco Mundial (src/contexto.py). Todo dato del Banco Mundial es ANUAL.
 tendencia_anios: 5                  # PDF/spec E1-09: tendencia = últimos 5 años de Panamá (nulos siguen nulos)
 indicadores_solo_contexto: [SP.POP.TOTL]   # la población nunca se vincula sola (spec E1-09)
@@ -166,6 +172,13 @@ vinculos:                           # por subtema
     fuente: usgs
     relacion: evento
     limitacion: "La caja de USGS no es Panamá: mostrar siempre el place original; solo sirve para hechos sísmicos."
+  # E3-02 (PROVISIONAL, ver «Preguntas abiertas» de specs/E3-02.md): morosidad y provisiones del sistema bancario como contexto del
+  # subtema de banca. `directa` porque miden el sistema bancario que el subtema nombra; si el dueño prefiere `indirecta`, el dato deja de
+  # contar como dato oficial en E y en el estado de evidencia y ya no se muestra en la ficha.
+  banca_calificaciones:
+    fuente: sbp
+    relacion: directa
+    limitacion: "Series agregadas del sistema bancario; no describen una entidad ni un cliente, ni miden una calificación de riesgo ni una pérdida."
 
 vinculos_por_tema:                  # cualquier subtema del tema
   logistica:

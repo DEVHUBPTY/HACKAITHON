@@ -14,17 +14,21 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import json
 import logging
+import re
 import sys
 import time
+import urllib.robotparser
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
+from urllib.parse import urljoin, urlsplit
 
 import requests
 
-from scripts import conversion
+from scripts import conversion, sbp
 from src import consultas_gdelt
 from src.registro import configurar_logging
 
@@ -348,23 +352,89 @@ def extraer_usgs(raw: Path, config: dict[str, Any]) -> Path:
     return _guardar(raw / cfg["carpeta_cruda"], nombre, resp.content)
 
 
+# ------------------------------------------------------------------------ SBP
+
+
+def _robots_permite(sitio: str, ruta: str, config: dict[str, Any]) -> bool:
+    """Respeta el robots.txt del sitio de la SBP antes de pedir una página o un archivo."""
+    robots = urllib.robotparser.RobotFileParser()
+    robots.parse(_get(sitio + "/robots.txt", None, config).text.splitlines())
+    return robots.can_fetch(config["general"]["agente_http"], sitio + ruta)
+
+
+def _enlace_del_informe(pagina_html: str, archivo: str, sitio: str, pagina: str) -> str:
+    """URL absoluta (sin parámetro de versión) del enlace de ``archivo`` en la página donde la SBP publica el informe."""
+    patron = re.compile(r'href="([^"]*/' + re.escape(archivo) + r')(?:\?[^"]*)?"')
+    m = patron.search(pagina_html)
+    if not m:
+        raise ErrorDeExtraccion(f"La página {pagina} de la SBP no tiene el enlace de {archivo}")
+    return urljoin(sitio + pagina, m.group(1))
+
+
+def extraer_sbp(raw: Path, config: dict[str, Any]) -> list[Path]:
+    """Descarga los informes agregados de la SBP (E3-02) a ``raw/sbp/`` y deja su registro de extracción.
+
+    Solo informes públicos, con la pausa de ``sbp.pausa_segundos`` y respetando robots.txt. El registro (fuera de ``raw/``)
+    anota la URL exacta, el SHA-256 y la fecha: lo que pide el manifest para que la fuente D sea trazable.
+    """
+    cfg = config["sbp"]
+    sitio = cfg["sitio"]
+    guardados: list[Path] = []
+    paginas: dict[str, str] = {}
+    for i, (clave, informe) in enumerate(cfg["informes"].items()):
+        if i:
+            time.sleep(cfg["pausa_segundos"])
+        if not _robots_permite(sitio, informe["pagina"], config):
+            raise ErrorDeExtraccion(f"robots.txt de la SBP no permite {informe['pagina']}")
+        if informe["pagina"] not in paginas:
+            paginas[informe["pagina"]] = _get(sitio + informe["pagina"], None, config).text
+            time.sleep(cfg["pausa_segundos"])
+        url = _enlace_del_informe(paginas[informe["pagina"]], informe["archivo"], sitio, informe["pagina"])
+        if not _robots_permite(sitio, urlsplit(url).path, config):
+            raise ErrorDeExtraccion(f"robots.txt de la SBP no permite {urlsplit(url).path}")
+        resp = _get(url, None, config)
+        if not resp.content.startswith(b"PK"):  # un .xlsx es un zip
+            raise ErrorDeExtraccion(f"La SBP no devolvió un .xlsx en {url}")
+        momento = _ahora()
+        ruta = _guardar(raw / cfg["carpeta_cruda"], sbp.nombre_crudo(clave, momento), resp.content)
+        conversion.escribir_json(
+            raw.parent / config["general"]["carpeta_registro"] / f"{ruta.stem}.json",
+            {
+                "origen": ORIGEN_REGISTRO_HERRAMIENTA,
+                "fuente": "SBP",
+                "informe": informe["nombre"],
+                "url": url,
+                "pagina_del_enlace": sitio + informe["pagina"],
+                "aviso_legal": cfg["aviso_legal_url"],
+                "condiciones": " ".join(cfg["condiciones"].split()),
+                "robots_txt": "consultado: la página y el archivo están permitidos",
+                "sha256": hashlib.sha256(resp.content).hexdigest(),
+                "bytes": len(resp.content),
+                "fecha_extraccion": momento.strftime(conversion.FORMATO_ISO),
+            },
+        )
+        guardados.append(ruta)
+    return guardados
+
+
 # ------------------------------------------------------------------------ CLI
 
 
 def main(argv: list[str] | None = None) -> int:
     """Punto de entrada de ``python -m scripts.extraer``."""
-    p = argparse.ArgumentParser(description="Extrae las fuentes A, B y C y las convierte al contrato.")
-    p.add_argument("--todo", action="store_true", help="RSS, GDELT, Banco Mundial y USGS")
+    p = argparse.ArgumentParser(description="Extrae las fuentes A, B, C y D y las convierte al contrato.")
+    p.add_argument("--todo", action="store_true", help="RSS, GDELT, Banco Mundial y USGS (la SBP, fuente D opcional, solo con --sbp)")
     p.add_argument("--rss", action="store_true", help="agrega un RSS de TVN nuevo (apto para correr a diario)")
     p.add_argument("--gdelt", action="store_true")
     p.add_argument("--banco-mundial", action="store_true", dest="banco_mundial")
     p.add_argument("--usgs", action="store_true")
+    p.add_argument("--sbp", action="store_true", help="fuente D: informes agregados de la SBP (E3-02)")
     p.add_argument("--forzar", action="store_true", help="vuelve a pedir a GDELT rangos que ya tienen crudo")
     p.add_argument("--raw", type=Path, default=RAIZ / "data" / "raw")
     p.add_argument("--processed", type=Path, default=RAIZ / "data" / "processed")
     p.add_argument("--sin-convertir", action="store_true", help="solo descarga, no genera processed/")
     args = p.parse_args(argv)
-    if not (args.todo or args.rss or args.gdelt or args.banco_mundial or args.usgs):
+    if not (args.todo or args.rss or args.gdelt or args.banco_mundial or args.usgs or args.sbp):
         p.error("indica --todo o al menos una fuente")
 
     configurar_logging()
@@ -375,6 +445,7 @@ def main(argv: list[str] | None = None) -> int:
         ("gdelt", args.todo or args.gdelt, lambda r, c: extraer_gdelt(r, c, forzar=args.forzar)),
         ("banco_mundial", args.todo or args.banco_mundial, extraer_banco_mundial),
         ("usgs", args.todo or args.usgs, extraer_usgs),
+        ("sbp", args.sbp, extraer_sbp)   # explícito: no entra en --todo (fuente D opcional, de banca),
     ]
     for nombre, activo, funcion in pasos:
         if not activo:
