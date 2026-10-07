@@ -40,6 +40,8 @@ class ProveedorDeepSeek:
             "response_format": {"type": "json_object"},
             "stream": False,
         }
+        if not self._cfg.generacion.pensar:  # deepseek-flash razona por defecto y el razonamiento consume ``max_tokens``
+            cuerpo["thinking"] = {"type": "disabled"}
         inicio = time.perf_counter()
         try:
             resp = self.sesion.post(

@@ -1,4 +1,4 @@
-# version: 1.0
+# version: 1.1
 # Paso 2 de la generación (E1-12, D-44): redacción por grupo de secciones. El system prompt de cada llamada es
 # `comunes` + el bloque del grupo + el esquema. Los bloques se separan con líneas que empiezan con "## ".
 # Marcadores: {esquema} (JSON Schema de la salida del grupo) y {marcador_visual} (config/restricciones.yaml).
@@ -18,6 +18,7 @@ Reglas:
 - No describas imágenes ni videos como existentes. No simules haber leído el artículo completo: solo se conoce el titular y sus metadatos.
 - Sin palabras sensacionalistas (escándalo, bombazo, impactante, alarmante, caos, urgente…) ni emojis.
 - Si hay una contradicción abierta, presenta ambas versiones; no elijas una.
+- Los límites de palabras son estrictos y no se negocian: antes de responder cuenta las palabras de cada sección y, si te pasas, recorta. Es mejor quedarte un 20 % por debajo del máximo que rozarlo. Los hashtags y las cifras cuentan como palabras.
 - Si no puedes redactar una sección sin inventar, devuélvela vacía: es preferible a rellenarla.
 - Responde únicamente con un objeto JSON que cumpla este esquema:
 {esquema}

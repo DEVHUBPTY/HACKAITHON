@@ -21,9 +21,9 @@ acciones:
   investigacion: ["Investigar ya", "Vigilar"]
   nada: ["Archivar", "Archivar como contexto"]
 
-# Qué prefijo de ID es un dato oficial y cuál es lo que reporta un medio (CLAUDE.md, D-63). `SYN-` son casos sintéticos.
+# Qué prefijo de ID respalda un hecho (dato oficial o conteo)  y cuál es lo que reporta un medio (CLAUDE.md, D-63). `SYN-` son casos sintéticos.
 prefijos:
-  oficiales: ["IND-", "SIS-", "SBP-"]
+  oficiales: ["IND-", "SIS-", "SBP-", "GRP-"]   # GRP- = conteos del grupo (n titulares, medios, procedencias)
   reportes: ["NOT-", "SYN-"]
 
 # Un título o titular basado en una declaración lleva atribución: el nombre del medio o alguno de estos verbos (palabra completa).
@@ -39,6 +39,13 @@ traducido:                 # D-45: la cita de un titular que no está en este id
 fuga_prompt:
   palabras_por_fragmento: 6
 
+objetivo_fraccion_limite: 0.8   # el aviso del reintento pide quedar en esta fracción del máximo de palabras (supuesto)
+
+# Si tras el reintento una de estas secciones solo falla por superar el máximo de palabras, se quitan oraciones del final
+# (nunca se reescribe ni se agrega nada) hasta que cabe, y se deja constancia en `vacios`. Es un supuesto nuestro:
+# los máximos de brief (250) y copy (80) son del PDF y no se relajan.
+recortables: [brief, resumen_web, copy_digital]
+
 texto:                     # recortes de los mensajes de error y de descarte (no de la salida)
   motivo_max_caracteres: 600
   vista_previa_caracteres: 60
@@ -52,12 +59,12 @@ grupos:                    # D-44: 1 llamada de afirmaciones + 4 de redacción, 
 
 deepseek:                  # respaldo provisional de pago (D-80); la clave sale de local.env (DEEPSEEK_API_KEY)
   base_url: "https://api.deepseek.com"
-  modelo: "deepseek-chat"
+  modelo: "deepseek-flash"      # modelo documentado en api-docs.deepseek.com (2026-10-06); DEEPSEEK_MODEL de local.env lo sobrescribe
   timeout_segundos: 120
   max_tokens: 1536
   precio_usd_por_millon_tokens:
-    entrada: 0.28
-    salida: 0.42
+    entrada: 0.30     # USD por millón, deepseek-flash, entrada sin caché, tarifa PICO (la off-peak es 0.15); conservador
+    salida: 1.20      # tarifa pico (off-peak 0.60)
 
 tope_costo:                # D-67: al alcanzarlo, la siguiente llamada usa el modelo local
   tokens: 1000000

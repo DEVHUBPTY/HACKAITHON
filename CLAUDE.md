@@ -88,7 +88,7 @@ src/         carga · contexto (E1-09) · normalizacion · limpieza · embedding
              agrupacion · procedencias · puntaje · evidencia · contradicciones · prioridad (E1-10: `python -m src.puntaje`) · ficha (E1-10b)
              generacion (E1-12: dos pasos, validación mínima que E1-13 reemplaza)
              solo docstring o esqueleto: validador · cache · revision · exportar
-src/llm/     proveedor.py (interfaz, `UsoLlm` y `crear_proveedor`, por LLM_PROVIDER) · ollama.py · deepseek.py · costo.py (tope de costo D-67 y respaldo local)
+src/llm/     proveedor.py (interfaz, `UsoLlm` y `crear_proveedor`, por LLM_PROVIDER) · ollama.py · deepseek.py · costo.py (tope de costo D-67; al alcanzarlo lanza `TopeDeCostoAlcanzado`, D-95)
 scripts/     extraer.py · conversion.py · manifest.py · validar_snapshot.py · catalogo.py · explorar.py · estimar_consultas_gdelt.py · probar_llm.py · medir_generacion.py (E1-12)
 eval/        etiquetar.py · etiquetas/ (una hoja por persona) · etiquetas.csv · ruido.py · validar_benchmark.py · clasificacion.py · calibrar_clasificacion.py · metricas.py · recuperacion.py · puntaje.py · sensibilidad.py
 benchmark/   benchmark_dev.jsonl (solo desarrollo) · sinteticos.csv · README.md
@@ -158,7 +158,7 @@ El `tema` de `noticias.csv` es el **tema de origen** (consulta de GDELT o catego
 - **La acción de la ficha decide qué se genera**: sin evidencia suficiente no hay guion ni copy, solo paquete de investigación.
 - **Restricción común del reto (D-51):** toda salida (ficha, borrador, consulta, boletín, exportación) lleva la leyenda de alcance: **"basado únicamente en titular/metadatos"**, o "basado en titular, descripción del RSS y metadatos; no se leyó el artículo completo" si se usó la descripción. **Nunca simular haber leído el artículo** ni atribuirle detalles que no estén en la evidencia. Frases prohibidas en `config/restricciones.yaml`.
 - El LLM no tiene herramientas ni acciones disponibles. Solo produce texto estructurado.
-- Proveedor por configuración (`LLM_PROVIDER`), nunca hardcodeado. Primario: Ollama local (modelo provisional `qwen3.5:9b`, E0-07). DeepSeek es el respaldo provisional, con el tope de costo de D-67 (D-80).
+- Proveedor por configuración (`LLM_PROVIDER`), nunca hardcodeado. Durante el evento **DeepSeek es el único proveedor de generación** (D-94, D-95; `LLM_PROVIDER=deepseek`), con el tope de costo de D-67. Ollama (`qwen3.5:9b`, E0-07) sigue soportado por configuración pero está apagado y no se usa: era demasiado lento (≈ 2 min por paquete).
 - Embeddings **siempre locales**.
 - Puntaje, estado de evidencia, **ficha** y validación son **código determinista**, no LLM.
 - **Ningún número mágico en `src/`**: pesos, umbrales y ventanas viven en `config/*.yaml`.
@@ -175,7 +175,7 @@ El `tema` de `noticias.csv` es el **tema de origen** (consulta de GDELT o catego
 - No crear perfiles de personas ni agrupar por persona. Las acusaciones se atribuyen como declaraciones; **nunca** como hecho, inferencia ni hipótesis (D-68).
 - Causalidad solo si está literal en la fuente o en una hipótesis condicional (D-68).
 - Los logs redactan cualquier valor de variables sensibles (`*_KEY`, `*_TOKEN`, `*_SECRET`) (D-69).
-- Proveedor de pago con tope de costo; al alcanzarlo, se vuelve al modelo local (D-67).
+- Proveedor de pago con tope de costo (D-67); al alcanzarlo la generación **se detiene** con un error explícito (`TopeDeCostoAlcanzado`), sin volver a un modelo local (D-95). Los embeddings siguen siendo locales.
 - **Una alerta es una invitación a investigar.** Ni tono, ni volumen, ni repetición equivalen a fraude, pérdida o verdad comprobada.
 
 ## Lo que NUNCA se construye

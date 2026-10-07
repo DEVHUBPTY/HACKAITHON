@@ -1,8 +1,8 @@
-"""Tope de costo del proveedor de pago (D-67): al alcanzarlo, la siguiente llamada usa el modelo local.
+"""Tope de costo del proveedor de pago (D-67, D-95): al alcanzarlo, la generación se detiene con un error explícito.
 
 ``RegistroCosto`` acumula tokens y USD (y los guarda entre ejecuciones si tiene ruta). ``ProveedorConTope`` envuelve al
-proveedor de pago y al local: antes de cada llamada mira el acumulado; si ya alcanzó el tope de tokens o de USD, deriva la
-llamada al respaldo local y lo registra. El tope se mide **antes** de llamar, así que una sola llamada puede rebasarlo por su
+proveedor de pago: antes de cada llamada mira el acumulado; si ya alcanzó el tope de tokens o de USD, no llama y lanza
+``TopeDeCostoAlcanzado`` (D-95: DeepSeek es el único proveedor de generación; no hay respaldo local). El tope se mide **antes** de llamar, así que una sola llamada puede rebasarlo por su
 propio tamaño; el costo real de esa llamada queda contado.
 """
 
@@ -14,10 +14,14 @@ from pathlib import Path
 from typing import Any
 
 from src.configuracion import PreciosDeepSeek, TopeCostoConfig
-from src.llm.proveedor import ErrorProveedor, Proveedor, UsoLlm
+from src.llm.proveedor import ErrorProveedor, UsoLlm
 
 log = logging.getLogger(__name__)
 UN_MILLON = 1_000_000
+
+
+class TopeDeCostoAlcanzado(ErrorProveedor):
+    """Se alcanzó el tope de costo (D-67): no se hacen más llamadas al proveedor de pago hasta que una persona lo suba."""
 
 
 class RegistroCosto:
@@ -46,41 +50,31 @@ class RegistroCosto:
 
 
 class ProveedorConTope:
-    """Proveedor de pago con respaldo local al alcanzar el tope. ``nombre`` y ``modelo`` son los de la última llamada."""
+    """Proveedor de pago con tope de costo. Al alcanzarlo lanza ``TopeDeCostoAlcanzado`` y no llama."""
 
-    def __init__(
-        self,
-        principal: Any,
-        respaldo: Proveedor | None,
-        registro: RegistroCosto,
-        tope: TopeCostoConfig,
-        precios: PreciosDeepSeek,
-    ) -> None:
-        self.principal, self.respaldo, self.registro, self.tope, self.precios = principal, respaldo, registro, tope, precios
-        self._activo: Any = principal
+    def __init__(self, principal: Any, registro: RegistroCosto, tope: TopeCostoConfig, precios: PreciosDeepSeek) -> None:
+        self.principal, self.registro, self.tope, self.precios = principal, registro, tope, precios
         self.ultimo_uso: UsoLlm | None = None
 
     @property
     def nombre(self) -> str:
-        return str(self._activo.nombre)
+        return str(self.principal.nombre)
 
     @property
     def modelo(self) -> str:
-        return str(self._activo.modelo)
+        return str(self.principal.modelo)
 
     def generar_json(self, system: str, usuario: str, esquema: dict[str, Any]) -> str:
         if self.registro.agotado(self.tope):
-            if self.respaldo is None:
-                raise ErrorProveedor("tope de costo alcanzado y no hay modelo local configurado (OLLAMA_MODEL)")
-            log.warning(
-                "tope de costo alcanzado (tokens=%d de %d, usd=%.4f de %.2f): la llamada usa el modelo local %s",
-                self.registro.tokens, self.tope.tokens, self.registro.usd, self.tope.usd, self.respaldo.modelo,
+            log.error(
+                "tope de costo alcanzado (tokens=%d de %d, usd=%.4f de %.2f): la generación se detiene",
+                self.registro.tokens, self.tope.tokens, self.registro.usd, self.tope.usd,
             )
-            self._activo = self.respaldo
-            texto = self.respaldo.generar_json(system, usuario, esquema)
-            self.ultimo_uso = getattr(self.respaldo, "ultimo_uso", None)
-            return texto
-        self._activo = self.principal
+            raise TopeDeCostoAlcanzado(
+                f"Se alcanzó el tope de costo de generación ({self.registro.tokens} de {self.tope.tokens} tokens; "
+                f"USD {self.registro.usd:.4f} de {self.tope.usd:.2f}). No se hacen más llamadas hasta que una persona suba el tope "
+                "en config/generacion.yaml o reinicie outputs/costo_llm.json."
+            )
         texto = self.principal.generar_json(system, usuario, esquema)
         self.ultimo_uso = getattr(self.principal, "ultimo_uso", None)
         if self.ultimo_uso is not None:

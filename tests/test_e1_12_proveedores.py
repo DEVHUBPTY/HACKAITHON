@@ -10,7 +10,7 @@ from typing import Any
 import pytest
 
 from src.configuracion import cargar_generacion, cargar_llm
-from src.llm.costo import ProveedorConTope, RegistroCosto
+from src.llm.costo import ProveedorConTope, RegistroCosto, TopeDeCostoAlcanzado
 from src.llm.deepseek import ProveedorDeepSeek
 from src.llm.ollama import ProveedorOllama
 from src.llm.proveedor import ErrorProveedor, crear_proveedor
@@ -61,6 +61,7 @@ def test_deepseek_pide_json_con_temperatura_cero_y_la_clave_va_solo_en_el_encabe
     assert url == "https://api.deepseek.com/chat/completions"
     assert cuerpo["temperature"] == 0 and cuerpo["response_format"] == {"type": "json_object"}
     assert [m["role"] for m in cuerpo["messages"]] == ["system", "user"]
+    assert cuerpo["thinking"] == {"type": "disabled"} and cuerpo["model"] == cargar_generacion().deepseek.modelo
     assert "tools" not in cuerpo and "tool_choice" not in cuerpo  # el modelo no tiene herramientas
     assert CLAVE not in json.dumps(cuerpo) and encabezados["Authorization"] == f"Bearer {CLAVE}"
 
@@ -94,62 +95,54 @@ def test_cada_llamada_registra_tokens_y_latencia_sin_secretos_ni_prompts(caplog:
     assert CLAVE not in texto and "SYSTEM-SECRETO" not in texto and "USUARIO-NO" not in texto
 
 
-# ------------------------------------------------------------------ tope de costo (D-67)
+# ------------------------------------------------------------------ tope de costo (D-67, D-95)
 
 
-def _con_tope(tmp_path: Path | None, deepseek: _Sesion, local: _Sesion, tope_tokens: int = 10_000, tope_usd: float = 1.0) -> ProveedorConTope:
+def _con_tope(tmp_path: Path | None, deepseek: _Sesion, tope_tokens: int = 10_000, tope_usd: float = 1.0) -> ProveedorConTope:
     gen = cargar_generacion()
     tope = gen.tope_costo.model_copy(update={"tokens": tope_tokens, "usd": tope_usd})
     registro = RegistroCosto(tmp_path / "costo.json" if tmp_path else None)
-    principal = ProveedorDeepSeek(CLAVE, gen, cargar_llm(), deepseek)
-    respaldo = ProveedorOllama("localhost:11434", "local:1b", cargar_llm(), local)
-    return ProveedorConTope(principal, respaldo, registro, tope, gen.deepseek.precio_usd_por_millon_tokens)
+    return ProveedorConTope(ProveedorDeepSeek(CLAVE, gen, cargar_llm(), deepseek), registro, tope, gen.deepseek.precio_usd_por_millon_tokens)
 
 
 def test_bajo_el_tope_se_usa_deepseek_y_se_acumula_el_costo() -> None:
-    ds, local = _Sesion(entrada=1_000_000, salida=1_000_000), _Sesion()
-    p = _con_tope(None, ds, local, tope_tokens=5_000_000, tope_usd=5.0)
+    ds = _Sesion(entrada=1_000_000, salida=1_000_000)
+    p = _con_tope(None, ds, tope_tokens=5_000_000, tope_usd=5.0)
     p.generar_json("s", "u", {})
-    assert len(ds.enviados) == 1 and not local.enviados and p.nombre == "deepseek"
+    assert len(ds.enviados) == 1 and p.nombre == "deepseek"
     precios = cargar_generacion().deepseek.precio_usd_por_millon_tokens
     assert p.registro.tokens == 2_000_000 and p.registro.usd == pytest.approx(precios.entrada + precios.salida)
 
 
-def test_al_superar_el_tope_de_tokens_la_siguiente_llamada_usa_el_modelo_local(caplog: pytest.LogCaptureFixture) -> None:
-    ds, local = _Sesion(entrada=900, salida=200), _Sesion(contenido='{"local": 1}')
-    p = _con_tope(None, ds, local, tope_tokens=1000)
+def test_al_superar_el_tope_de_tokens_la_siguiente_llamada_se_detiene_con_un_error_explicito(caplog: pytest.LogCaptureFixture) -> None:
+    ds = _Sesion(entrada=900, salida=200)
+    p = _con_tope(None, ds, tope_tokens=1000)
     p.generar_json("s", "u", {})  # 1100 tokens: supera el tope
     assert p.registro.agotado(p.tope)
-    with caplog.at_level(logging.WARNING):
-        assert p.generar_json("s", "u", {}) == '{"local": 1}'
-    assert len(ds.enviados) == 1 and len(local.enviados) == 1
-    assert p.nombre == "ollama" and p.modelo == "local:1b"
+    with caplog.at_level(logging.ERROR), pytest.raises(TopeDeCostoAlcanzado, match="tope de costo") as e:
+        p.generar_json("s", "u", {})
+    assert len(ds.enviados) == 1  # no se llamó otra vez ni a ningún modelo local
+    assert isinstance(e.value, ErrorProveedor) and "1100" in str(e.value) and CLAVE not in str(e.value)
     assert any("tope de costo" in r.getMessage() for r in caplog.records)
 
 
-def test_al_superar_el_tope_de_usd_tambien_se_vuelve_al_local() -> None:
-    ds, local = _Sesion(entrada=2_000_000, salida=0), _Sesion()
-    p = _con_tope(None, ds, local, tope_tokens=100_000_000, tope_usd=0.10)  # 2 M tokens de entrada cuestan más de USD 0,10
+def test_al_superar_el_tope_de_usd_tambien_se_detiene() -> None:
+    ds = _Sesion(entrada=2_000_000, salida=0)
+    p = _con_tope(None, ds, tope_tokens=100_000_000, tope_usd=0.10)  # 2 M tokens de entrada cuestan más de USD 0,10
     p.generar_json("s", "u", {})
-    p.generar_json("s", "u", {})
-    assert len(ds.enviados) == 1 and len(local.enviados) == 1
+    with pytest.raises(TopeDeCostoAlcanzado):
+        p.generar_json("s", "u", {})
+    assert len(ds.enviados) == 1
 
 
 def test_el_acumulado_persiste_entre_ejecuciones(tmp_path: Path) -> None:
-    ds, local = _Sesion(entrada=900, salida=200), _Sesion()
-    _con_tope(tmp_path, ds, local, tope_tokens=1000).generar_json("s", "u", {})
-    segunda = _con_tope(tmp_path, _Sesion(), local, tope_tokens=1000)
+    _con_tope(tmp_path, _Sesion(entrada=900, salida=200), tope_tokens=1000).generar_json("s", "u", {})
+    ds2 = _Sesion()
+    segunda = _con_tope(tmp_path, ds2, tope_tokens=1000)
     assert segunda.registro.tokens == 1100
-    segunda.generar_json("s", "u", {})
-    assert len(local.enviados) == 1  # el tope ya estaba alcanzado: no se llamó a DeepSeek
-
-
-def test_tope_alcanzado_y_sin_modelo_local_es_un_error_claro() -> None:
-    p = _con_tope(None, _Sesion(entrada=2000, salida=0), _Sesion(), tope_tokens=1000)
-    p.respaldo = None
-    p.generar_json("s", "u", {})
-    with pytest.raises(ErrorProveedor, match="tope de costo"):
-        p.generar_json("s", "u", {})
+    with pytest.raises(TopeDeCostoAlcanzado):
+        segunda.generar_json("s", "u", {})
+    assert ds2.enviados == []  # el tope ya estaba alcanzado: no se llamó a DeepSeek
 
 
 def test_el_tope_esta_configurado() -> None:
@@ -164,12 +157,10 @@ def test_cambiar_llm_provider_cambia_el_proveedor_sin_tocar_codigo() -> None:
     base = {"OLLAMA_MODEL": "m:1b", "OLLAMA_HOST": "127.0.0.1:9", "DEEPSEEK_API_KEY": CLAVE}
     assert isinstance(crear_proveedor({**base, "LLM_PROVIDER": "ollama"}), ProveedorOllama)
     ds = crear_proveedor({**base, "LLM_PROVIDER": "deepseek"})
-    assert isinstance(ds, ProveedorConTope) and isinstance(ds.principal, ProveedorDeepSeek) and isinstance(ds.respaldo, ProveedorOllama)
-    assert ds.nombre == "deepseek"
+    assert isinstance(ds, ProveedorConTope) and isinstance(ds.principal, ProveedorDeepSeek) and ds.nombre == "deepseek"
+    assert not hasattr(ds, "respaldo")  # D-95: sin respaldo local
 
 
-def test_deepseek_sin_clave_falla_con_un_mensaje_claro_y_sin_modelo_local_no_hay_respaldo() -> None:
+def test_deepseek_sin_clave_falla_con_un_mensaje_claro() -> None:
     with pytest.raises(ErrorProveedor, match="DEEPSEEK_API_KEY"):
         crear_proveedor({"LLM_PROVIDER": "deepseek"})
-    sin_local = crear_proveedor({"LLM_PROVIDER": "deepseek", "DEEPSEEK_API_KEY": CLAVE})
-    assert isinstance(sin_local, ProveedorConTope) and sin_local.respaldo is None

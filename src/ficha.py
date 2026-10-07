@@ -46,6 +46,7 @@ from src.configuracion import (
     ConfigModalidad,
     ConfigVerificacion,
     cargar_clasificacion,
+    cargar_fuentes,
     cargar_modalidad,
     cargar_normalizacion,
     cargar_prioridad,
@@ -402,6 +403,7 @@ def _limitacion_comun(filas: Sequence[Mapping[str, Any]]) -> str | None:
 def _lineas_de_indicadores(indicadores: Sequence[Mapping[str, Any]], cfg: ConfigVerificacion) -> list[LineaRespaldo]:
     """Una línea por dato de Panamá y una por rol (comparables, tendencia): cada valor lleva su propia cita y el año va en el texto."""
     p = cfg.presentacion
+    nombres = {i: x.nombre for i, x in cargar_fuentes().banco_mundial.indicadores.items()}
     lineas: list[LineaRespaldo] = []
     for rol in ORDEN_DE_ROLES:
         filas = [v for v in indicadores if v["rol"] == rol]
@@ -416,6 +418,7 @@ def _lineas_de_indicadores(indicadores: Sequence[Mapping[str, Any]], cfg: Config
                     texto=f"{p.fuentes_oficiales[FUENTE_INDICADOR]} · {p.roles[rol]} · {valores}",
                     citas=[Cita(id=str(v["id_evidencia"]), campo="valor") for v in lote],
                     limitacion=_limitacion_comun(lote),
+                    indicador=" / ".join(dict.fromkeys(nombres.get(str(v["indicador_id"]), str(v["indicador_id"])) for v in lote)),
                 )
             )
     return lineas

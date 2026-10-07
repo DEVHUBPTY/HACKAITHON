@@ -60,8 +60,8 @@ class Proveedor(Protocol):
 def crear_proveedor(env: Mapping[str, str] | None = None, cfg: ConfigLlm | None = None) -> Proveedor:
     """El proveedor que dice ``LLM_PROVIDER`` en ``local.env`` (``env`` permite inyectarlo en pruebas).
 
-    ``deepseek`` devuelve un ``ProveedorConTope`` (D-67): DeepSeek hasta el tope de costo y, al alcanzarlo, el modelo local de
-    Ollama si ``OLLAMA_MODEL`` está definido. Lanza ``ErrorProveedor`` si no hay proveedor configurado, si el nombre no se conoce
+    ``deepseek`` devuelve un ``ProveedorConTope`` (D-67, D-95): DeepSeek hasta el tope de costo; al alcanzarlo lanza
+    ``TopeDeCostoAlcanzado`` (no hay respaldo local). Ollama sigue soportado por configuración (``LLM_PROVIDER=ollama``). Lanza ``ErrorProveedor`` si no hay proveedor configurado, si el nombre no se conoce
     o si falta la configuración del elegido.
     """
     env = leer_local_env() if env is None else env
@@ -85,13 +85,12 @@ def _crear_deepseek(env: Mapping[str, str], cfg: ConfigLlm) -> Proveedor:
     from src.configuracion import cargar_generacion
     from src.llm.costo import ProveedorConTope, RegistroCosto
     from src.llm.deepseek import ProveedorDeepSeek
-    from src.llm.ollama import ProveedorOllama
 
     clave = (env.get("DEEPSEEK_API_KEY") or "").strip()
     if not clave:
         raise ErrorProveedor("DEEPSEEK_API_KEY no está definido en local.env")
     gen = cargar_generacion()
-    modelo_local = (env.get("OLLAMA_MODEL") or "").strip()
-    respaldo = ProveedorOllama(env.get("OLLAMA_HOST") or cfg.ollama.host_por_defecto, modelo_local, cfg) if modelo_local else None
+    if modelo := (env.get("DEEPSEEK_MODEL") or "").strip():
+        gen = gen.model_copy(update={"deepseek": gen.deepseek.model_copy(update={"modelo": modelo})})
     registro = RegistroCosto(RAIZ / gen.tope_costo.registro)
-    return ProveedorConTope(ProveedorDeepSeek(clave, gen, cfg), respaldo, registro, gen.tope_costo, gen.deepseek.precio_usd_por_millon_tokens)
+    return ProveedorConTope(ProveedorDeepSeek(clave, gen, cfg), registro, gen.tope_costo, gen.deepseek.precio_usd_por_millon_tokens)

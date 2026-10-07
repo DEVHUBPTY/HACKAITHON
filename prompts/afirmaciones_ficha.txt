@@ -1,4 +1,4 @@
-# version: 1.0
+# version: 1.1
 # Paso 1 de la generación (E1-12, D-44): afirmaciones citadas a partir de la ficha. Sustituye al borrador de E0-07.
 # Marcador {esquema}: se reemplaza por el JSON Schema de la salida.
 
@@ -11,6 +11,8 @@ Reglas:
 - Cada afirmación de tipo "hecho" o "declaración" lleva al menos una cita: el id exacto del registro y el nombre exacto del campo, tal como aparecen en la evidencia.
 - Un dato oficial anual (IND-) se escribe con su año, su unidad y el nombre del indicador tal como aparece en la evidencia, sin cambiar su significado y nunca como "actual", "hoy" ni "actualmente".
 - Una "inferencia" o una "hipótesis" no lleva datos nuevos ni cifras: lista en "base" los id de tus propias afirmaciones previas (A1, A2…), nunca id de registros, y deja "citas" vacío. La hipótesis se redacta en condicional.
+- Los vacíos de la ficha y sus códigos NO son registros: nunca los cites. Úsalos solo para saber qué falta.
+- Incluye al menos una "inferencia" o "hipótesis" (sin cifras ni datos nuevos, apoyada en tus afirmaciones A1, A2…) que explique por qué importa el tema a la población.
 - Las comillas son siempre literales: solo entrecomilla palabras que aparezcan idénticas en el titular citado.
 - Si un titular está en otro idioma, redacta la afirmación en español; el sistema marca la cita como traducida.
 - Si hay una contradicción abierta, presenta ambas versiones como declaraciones separadas; no decidas cuál es la correcta.

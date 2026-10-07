@@ -1921,6 +1921,8 @@ class ConfigGeneracionBorrador(ModeloConfig):
     atribucion: AtribucionGeneracion
     traducido: TraducidoGeneracion
     texto: TextoGeneracion
+    recortables: list[str]
+    objetivo_fraccion_limite: float = Field(gt=0, le=1)
     fuga_prompt: FugaPromptGeneracion
     grupos: GruposGeneracion
     deepseek: DeepSeekConfig

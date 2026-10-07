@@ -419,6 +419,7 @@ class LineaRespaldo(ModeloFicha):
     citas: list[Cita] = Field(min_length=1)
     limitacion: str | None = None
     atribucion: str | None = None
+    indicador: str | None = None  # nombre del indicador oficial (fuentes.yaml); lo usa la generación (E1-12). Nulo en las demás líneas
     fecha: str | None = None     # ISO 8601 UTC de un evento; la hora de Panamá solo se aplica al mostrar
 
     @model_validator(mode="after")

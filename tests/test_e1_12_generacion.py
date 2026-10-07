@@ -434,3 +434,34 @@ def test_una_modalidad_sin_generacion_implementada_no_genera_nada() -> None:
     prov = ProveedorGuionado()
     r = generar(ficha(modalidad="banca"), prov)
     assert r.tipo == "nada" and prov.llamadas == [] and "E2-02" in (r.motivo or "")
+
+
+def test_al_alcanzar_el_tope_de_costo_la_generacion_se_detiene_y_no_deja_un_paquete_a_medias() -> None:
+    from src.llm.costo import TopeDeCostoAlcanzado
+
+    class ConTope(ProveedorGuionado):
+        def generar_json(self, system: str, usuario: str, esquema: dict[str, Any]) -> str:
+            if len(self.llamadas) == 2:
+                raise TopeDeCostoAlcanzado("tope de costo alcanzado")
+            return super().generar_json(system, usuario, esquema)
+
+    with pytest.raises(TopeDeCostoAlcanzado):
+        generar(ficha(), ConTope())
+
+
+def test_una_seccion_que_solo_supera_el_maximo_se_recorta_por_oraciones_y_queda_constancia() -> None:
+    cuerpo = " ".join(["palabra"] * 30)
+    largo = modificada(BUENAS["resumen_web"], lambda d: d.update(resumen_web=[{"texto": f"TVN reporta {cuerpo}.", "afirmaciones": ["A1"]} for _ in range(6)]))
+    prov = ProveedorGuionado(resumen_web=largo)
+    p = generar(ficha(), prov).paquete
+    assert prov.claves.count("resumen_web") == 2  # el reintento se hizo antes de recortar
+    assert 0 < len(p.resumen_web) < 6 and sum(palabras(o.texto) for o in p.resumen_web) <= SALIDAS.resumen_web_max_palabras  # type: ignore[union-attr]
+    nota = [v for v in p.vacios if v.referencia == "resumen_web"]  # type: ignore[union-attr]
+    assert len(nota) == 1 and nota[0].motivo.startswith("recortada")
+    assert all(o.texto in {x["texto"] for x in largo["resumen_web"]} for o in p.resumen_web)  # solo oraciones del modelo, sin agregar nada  # type: ignore[union-attr]
+
+
+def test_el_recorte_no_se_aplica_a_secciones_que_fallan_por_otra_razon() -> None:
+    cuerpo = " ".join(["palabra"] * 30)
+    mala = modificada(BUENAS["resumen_web"], lambda d: d.update(resumen_web=[{"texto": f"TVN reporta {cuerpo}.", "afirmaciones": ["A99"]} for _ in range(6)]))
+    assert generar(ficha(), ProveedorGuionado(resumen_web=mala)).paquete.resumen_web == []  # type: ignore[union-attr]

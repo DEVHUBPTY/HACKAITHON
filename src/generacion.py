@@ -53,6 +53,7 @@ from src.configuracion import (
 )
 from src.esquemas import (
     Afirmacion,
+    Ficha,
     AfirmacionSalida,
     CitaSalida,
     Oracion,
@@ -69,6 +70,7 @@ from src.esquemas import (
     esquema_json_afirmaciones,
 )
 from src.limpieza import plano
+from src.llm.costo import TopeDeCostoAlcanzado
 from src.llm.proveedor import ErrorProveedor, Proveedor
 from src.registro import MARCA_REDACCION, valores_sensibles
 
@@ -82,6 +84,7 @@ NUMERO = re.compile(r"\d+(?:[.,]\d+)?")
 PALABRAS_VOLATILES = ("actual", "actualmente", "hoy")
 
 Tipo = Literal["editorial", "investigacion", "nada"]
+MARCA_EXCESO = "supera el máximo"
 
 
 # ============================================================================================ entrada: la ficha (forma mínima)
@@ -99,6 +102,7 @@ class RegistroEvidencia(BaseModel):
     id: str
     campos: dict[str, str]
     idioma: str | None = None
+    campo_texto: str = "titulo"  # campo que guarda el texto del titular (en la ficha real, ``titulo_limpio``)
 
 
 class VacioFicha(BaseModel):
@@ -448,7 +452,10 @@ def _oraciones(
 
 def _limite(seccion: str, valor: Sequence[OracionLlm], ctx: _Contexto, maximo: int) -> list[str]:
     n = sum(_palabras(o.texto, ctx.restricciones.marcador_visual) for o in valor)
-    return [f"{seccion} tiene {n} palabras y el máximo es {maximo}"] if n > maximo else []
+    if n <= maximo:
+        return []
+    objetivo = int(maximo * ctx.cfg.objetivo_fraccion_limite)
+    return [f"{seccion} tiene {n} palabras y {MARCA_EXCESO} ({maximo}): recórtala a unas {objetivo} palabras (quita {n - objetivo})"]
 
 
 def _contradicciones_cubiertas(valor: Sequence[OracionLlm], ctx: _Contexto) -> list[str]:
@@ -600,10 +607,10 @@ class Generador:
                 continue
             for id_, frag in ((c.id_a, c.fragmento_a), (c.id_b, c.fragmento_b)):
                 r = self.ctx.registros.get(id_)
-                if r is None or "titulo" not in r.campos or frag.strip() not in r.campos["titulo"]:
+                if r is None or r.campo_texto not in r.campos or frag.strip() not in r.campos[r.campo_texto]:
                     continue
                 medio = r.campos.get("medio", "un medio")
-                salida.append(AfirmacionSalida(id="", tipo="declaración", texto=f"{medio} reporta «{frag.strip()}»", citas=[_cita_salida(id_, "titulo", self.ctx)]))
+                salida.append(AfirmacionSalida(id="", tipo="declaración", texto=f"{medio} reporta «{frag.strip()}»", citas=[_cita_salida(id_, r.campo_texto, self.ctx)]))
         return salida
 
     def generar_afirmaciones(self) -> list[AfirmacionSalida]:
@@ -622,6 +629,8 @@ class Generador:
             usuario = base_usuario + ("" if intento == 0 else _retroalimentacion([motivo]))
             try:
                 crudo, registro = self._llamar("afirmaciones", intento, self._v_afirm, system, usuario, esquema_json_afirmaciones())
+            except TopeDeCostoAlcanzado:
+                raise  # D-95: la generación se detiene; quien llama muestra el mensaje
             except ErrorProveedor as exc:
                 motivo = f"proveedor no disponible: {exc}"
                 break
@@ -670,7 +679,19 @@ class Generador:
         abiertas = [c for c in self.ficha.contradicciones if c.abierta]
         if abiertas:
             lineas.append("contradicciones abiertas: presenta ambas versiones apoyándote en las afirmaciones de cada una.")
-        return f"{d.abre}\n" + "\n".join(lineas) + f"\n{d.cierra}\n\nRedacta las secciones del grupo y responde con el JSON."
+        return f"{d.abre}\n" + "\n".join(lineas) + f"\n{d.cierra}\n\n{self._limites(grupo)}Redacta las secciones del grupo y responde con el JSON."
+
+    def _limites(self, grupo: str) -> str:
+        """Los máximos de palabras de las secciones del grupo, con el objetivo de longitud, para pedirlos de forma explícita."""
+        e, f = self.salidas.editorial, self.cfg.objetivo_fraccion_limite
+        maximos = {
+            "titulo": e.titulo_max_palabras, "titulo_trabajo": e.titulo_max_palabras, "titulares": e.titular_max_palabras,
+            "copy_digital": e.copy_max_palabras, "brief": e.brief_max_palabras, "resumen_web": e.resumen_web_max_palabras,
+        }
+        partes = [f"{s} ≤ {m} palabras (apunta a {int(m * f)})" for s in GRUPOS[grupo].secciones if (m := maximos.get(s))]
+        if "guion" in GRUPOS[grupo].secciones:
+            partes.append(f"guion entre {e.guion_palabras_min} y {e.guion_palabras_max} palabras (sin contar los marcadores)")
+        return ("Límites estrictos de palabras: " + "; ".join(partes) + ". Cuéntalas antes de responder.\n\n") if partes else ""
 
     def _system_redaccion(self, grupo: str) -> str:
         g = GRUPOS[grupo]
@@ -694,10 +715,13 @@ class Generador:
         base_usuario = self._mensaje_redaccion(grupo)
         pendientes = list(g.secciones)
         errores: dict[str, list[str]] = {}
+        ultimos: dict[str, Any] = {}
         for intento in range(1 + self.cfg.reintentos):
             usuario = base_usuario if intento == 0 else base_usuario + _retroalimentacion(sum(errores.values(), []))
             try:
                 crudo, registro = self._llamar(grupo, intento, self._v_red, system, usuario, g.modelo.model_json_schema())
+            except TopeDeCostoAlcanzado:
+                raise
             except ErrorProveedor as exc:
                 errores = {s: [f"proveedor no disponible: {exc}"] for s in pendientes}
                 break
@@ -709,6 +733,7 @@ class Generador:
             errores = {}
             for s in list(pendientes):
                 valor = getattr(salida, s)
+                ultimos[s] = valor
                 problemas = validar_seccion(s, valor, self.ctx)
                 if problemas:
                     errores[s] = problemas
@@ -718,8 +743,25 @@ class Generador:
             registro.valida = not pendientes
             if not pendientes:
                 break
+        for s in list(pendientes):
+            if recortada := self._recortar(s, ultimos.get(s), errores.get(s, [])):
+                self._secciones[s], quitadas = recortada
+                self._vacios.append(Vacio(origen="seccion", referencia=s, motivo=f"recortada: se quitaron {quitadas} oraciones del final por superar el máximo de palabras"))
+                pendientes.remove(s)
         for s in pendientes:
             self._vacios.append(Vacio(origen="seccion", referencia=s, motivo="; ".join(errores.get(s, ["sin respuesta"]))[: self.cfg.texto.motivo_max_caracteres]))
+
+    def _recortar(self, seccion: str, valor: Any, errores: Sequence[str]) -> tuple[list[OracionLlm], int] | None:
+        """Quita oraciones del final hasta que la sección cabe. Solo si el único problema es el exceso de palabras."""
+        if seccion not in self.cfg.recortables or not isinstance(valor, list) or not errores:
+            return None
+        if any(MARCA_EXCESO not in e for e in errores):
+            return None
+        for n in range(1, len(valor)):
+            candidata = valor[: len(valor) - n]
+            if not validar_seccion(seccion, candidata, self.ctx):
+                return list(candidata), n
+        return None
 
     def generar_todo(self) -> None:
         for g in self.grupos:
@@ -834,35 +876,129 @@ def generar(ficha: EntradaFicha, proveedor: Proveedor | None, forzar_completo: b
     return g.resultado()
 
 
+# ============================================================================================ adaptador desde la Ficha real (E1-10b)
+
+
+def fuentes_y_verificaciones(ficha: Ficha) -> list[str]:
+    """«Fuentes y verificaciones pendientes» tal cual la ficha (D-37, D-43): cada vacío con su verificación, las fuentes sugeridas
+    y el aviso de que son sugerencias y no evidencia. Se copia sin LLM."""
+    f = ficha.falta_comprobar
+    return [
+        *(f"{v.texto} → {v.verificacion}" for v in [*f.principales, *f.otros]),
+        *(f"Fuente sugerida: {x.nombre}" for x in f.fuentes_sugeridas),
+        f.aviso_fuentes,
+    ]
+
+
+def _anio_de(texto: str) -> str | None:
+    m = re.search(r"\b[A-Z]{3} (\d{4}):", texto)
+    return m.group(1) if m else None
+
+
+def desde_ficha(ficha: Ficha) -> EntradaFicha:
+    """Convierte la ``Ficha`` real en la única entrada del LLM. Las citas conservan **ID + campo** tal como están en la ficha.
+
+    - Titulares: un registro por titular citable (``campo_titular``, normalmente ``titulo_limpio``), con su medio e idioma.
+    - Conteos del grupo (``GRP-``): los campos que citan las líneas «reportes».
+    - Datos y eventos oficiales: el texto de la línea de la ficha en el campo que citan (``valor``, ``magnitude``) y el nombre del
+      indicador; el año se toma de la línea cuando la línea cita un solo dato.
+    - Vacíos: los de la ficha (principales y otros). Contradicciones: ambas versiones; sin fragmento literal se usa el titular.
+    """
+    registros: dict[str, RegistroEvidencia] = {}
+    for t in ficha.quien_lo_reporta.titulares:
+        campos = {t.campo_titular: t.titular, "medio": t.medio}
+        if t.fecha_publicacion:
+            campos["fecha_publicacion"] = t.fecha_publicacion
+        registros[t.id_noticia] = RegistroEvidencia(id=t.id_noticia, idioma=t.idioma, campos=campos, campo_texto=t.campo_titular)
+    r = ficha.respaldado
+    for linea in (*r.reportes, *r.datos_oficiales, *r.eventos_oficiales):
+        solo_uno = len(linea.citas) == 1
+        for c in linea.citas:
+            reg = registros.setdefault(c.id, RegistroEvidencia(id=c.id, campos={}))
+            reg.campos[c.campo] = linea.texto
+            if linea.indicador:
+                reg.campos["indicador"] = linea.indicador
+            if solo_uno and c.id.startswith("IND-") and (anio := _anio_de(linea.texto)):
+                reg.campos["anio"] = anio
+    abiertas = [
+        ContradiccionFicha(
+            id_a=c.version_a.id, id_b=c.version_b.id,
+            fragmento_a=c.fragmento_a or c.version_a.titular, fragmento_b=c.fragmento_b or c.version_b.titular,
+        )
+        for c in ficha.que_se_reporta.contradicciones  # siempre abiertas: solo una persona las cierra (X21)
+    ]
+    f = ficha.falta_comprobar
+    return EntradaFicha(
+        id_caso=ficha.id_grupo,
+        modalidad=ficha.modalidad,
+        accion=ficha.accion_recomendada.accion,
+        uso_descripcion=ficha.alcance == cargar_restricciones().leyendas_alcance.con_descripcion,
+        registros=list(registros.values()),
+        vacios=[VacioFicha(id=v.codigo, descripcion=v.texto) for v in [*f.principales, *f.otros]],
+        fuentes_verificaciones=fuentes_y_verificaciones(ficha),
+        contradicciones=abiertas,
+    )
+
+
 # ============================================================================================ CLI
 
 
+def _entrada_desde_grupo(id_grupo: str, modalidad: str, base: Path) -> EntradaFicha:
+    """Construye la ficha real del grupo (E1-10b) y la convierte en la entrada de la generación."""
+    from src import db
+    from src.ficha import construir_ficha
+
+    con = db.conectar(base, solo_lectura=True)
+    try:
+        return desde_ficha(construir_ficha(id_grupo, modalidad, con, emb=None))
+    finally:
+        con.close()
+
+
 def principal(argv: list[str] | None = None, crear: Callable[[], Proveedor] | None = None) -> int:
-    """``python -m src.generacion --ficha-json ruta.json``: imprime el resultado en JSON."""
+    """``python -m src.generacion --grupo GRP-…`` (ficha real) o ``--ficha-json ruta.json``: imprime el resultado en JSON."""
+    from src.configuracion import MODALIDADES, cargar_normalizacion
+
     parser = argparse.ArgumentParser(description="Genera el borrador de un caso a partir de su ficha (E1-12)")
-    parser.add_argument("--ficha-json", type=Path, help="EntradaFicha en JSON")
-    parser.add_argument("--grupo", help="ID del grupo (GRP-…): requiere src/ficha.py (E1-10b), pendiente de integrar")
+    parser.add_argument("--grupo", help="ID del grupo (GRP-…): construye la ficha con src/ficha.py y genera")
+    parser.add_argument("--modalidad", choices=MODALIDADES, default="editorial")
+    parser.add_argument("--base", type=Path, default=RAIZ / "data" / cargar_normalizacion().salida.base_de_datos)
+    parser.add_argument("--ficha-json", type=Path, help="EntradaFicha en JSON (alternativa a --grupo)")
     parser.add_argument("--forzar-completo", action="store_true", help="fuerza el paquete completo y lo deja registrado")
+    parser.add_argument("--proveedor", choices=["ollama", "deepseek"], help="sobrescribe LLM_PROVIDER de local.env")
     args = parser.parse_args(argv)
     from src.registro import configurar_logging
 
     configurar_logging()
-    if args.grupo and not args.ficha_json:
-        print("ERROR: --grupo requiere construir la ficha con src/ficha.py (E1-10b), que todavía no está integrado; use --ficha-json", file=sys.stderr)
-        return 2
-    if not args.ficha_json:
-        parser.error("indique --ficha-json")
-    ficha = EntradaFicha.model_validate_json(args.ficha_json.read_text(encoding="utf-8"))
+    if bool(args.grupo) == bool(args.ficha_json):
+        parser.error("indique --grupo o --ficha-json (uno solo)")
+    if args.grupo:
+        if not args.base.exists():
+            print(f"ERROR: no existe {args.base}: ejecute primero `poetry run python -m src.puntaje`", file=sys.stderr)
+            return 1
+        try:
+            ficha = _entrada_desde_grupo(args.grupo, args.modalidad, args.base)
+        except (LookupError, RuntimeError, ValueError) as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            return 1
+    else:
+        ficha = EntradaFicha.model_validate_json(args.ficha_json.read_text(encoding="utf-8"))
     try:
         if crear is None:
+            from src.configuracion import leer_local_env
             from src.llm.proveedor import crear_proveedor
 
-            crear = crear_proveedor
+            env = {**leer_local_env(), **({"LLM_PROVIDER": args.proveedor} if args.proveedor else {})}
+            crear = lambda: crear_proveedor(env)  # noqa: E731
         proveedor: Proveedor | None = crear() if planificar(ficha, args.forzar_completo, cargar_generacion()).tipo != "nada" else None
     except ErrorProveedor as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
-    r = generar(ficha, proveedor, args.forzar_completo)
+    try:
+        r = generar(ficha, proveedor, args.forzar_completo)
+    except TopeDeCostoAlcanzado as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 3
     salida = {
         "tipo": r.tipo,
         "motivo": r.motivo,

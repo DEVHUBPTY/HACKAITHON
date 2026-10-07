@@ -53,7 +53,8 @@ def una_repeticion(ficha: EntradaFicha, proveedor: Any) -> dict[str, Any]:
     total = time.perf_counter() - inicio
     paquete = g.paquete()
     assert paquete is not None
-    secciones_vacias = [v.referencia for v in paquete.vacios if v.origen == "seccion"]
+    secciones_vacias = [v.referencia for v in paquete.vacios if v.origen == "seccion" and not v.motivo.startswith("recortada")]
+    secciones_recortadas = [v.referencia for v in paquete.vacios if v.motivo.startswith("recortada")]
     return {
         "primera_respuesta_s": primera,
         "paquete_completo_s": total,
@@ -61,6 +62,7 @@ def una_repeticion(ficha: EntradaFicha, proveedor: Any) -> dict[str, Any]:
         "tokens_entrada": sum(c.tokens_entrada for c in g.llamadas),
         "tokens_salida": sum(c.tokens_salida for c in g.llamadas),
         "secciones_vacias": secciones_vacias,
+        "secciones_recortadas": secciones_recortadas,
         "afirmaciones_validas": len(paquete.afirmaciones),
         "descartadas": len(g.descartadas),
     }
@@ -99,6 +101,7 @@ def principal(argv: list[str] | None = None) -> int:
         "tokens_por_paquete": {"entrada": statistics.median(m["tokens_entrada"] for m in medidas), "salida": statistics.median(m["tokens_salida"] for m in medidas)},
         "llamadas_por_paquete": [m["llamadas"] for m in medidas],
         "secciones_vacias_por_repeticion": [m["secciones_vacias"] for m in medidas],
+        "secciones_recortadas_por_repeticion": [m["secciones_recortadas"] for m in medidas],
         "afirmaciones_validas_por_repeticion": [m["afirmaciones_validas"] for m in medidas],
     }
     registro = getattr(proveedor, "registro", None)
