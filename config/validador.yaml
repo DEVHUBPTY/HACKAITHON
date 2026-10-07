@@ -16,7 +16,9 @@ numeros:
 # D-41: una hipótesis y una redacción condicional llevan alguno de estos marcadores.
 condicionales: [podría, podrían, pudiera, pudieran, es posible, sería, serían, habría, quizá, quizás, tal vez, posiblemente,
                 a verificar, por verificar, por confirmar, a confirmar, no se descarta, de confirmarse, de ser cierto, eventualmente,
-                si se confirma, en caso de]
+                si se confirma, en caso de,
+                # X63: expectativa y probabilidad también hacen condicional una redacción: una observación no puede traerlas (y una hipótesis sí)
+                probablemente, es probable que, previsiblemente, es previsible que, se espera que, se prevé que, se anticipa que]
 
 # D-68: conectores causales. Solo se aceptan si están literalmente en el titular citado (declaración atribuida) o en una hipótesis condicional.
 causales: [causó, causaron, provocó, provocaron, ocasionó, ocasionaron, originó, originaron, desencadenó, generó, debido a, por culpa de,

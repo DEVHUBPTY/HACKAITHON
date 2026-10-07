@@ -639,6 +639,41 @@ def test_x49_una_observacion_no_se_redacta_en_condicional() -> None:
     assert OBSERVACION_CONDICIONAL in reglas(validar_seccion("observaciones", [o("En 2023 la inflación anual de Panamá fue de 2.9 %, a verificar.", "A2")], ctx))
     assert not validar_seccion("observaciones", [o("En 2023 la inflación anual de Panamá fue de 2.9 %.", "A2")], ctx)
 
+X63_MARCADORES = ["Probablemente las lluvias afectaron cultivos de Chiriquí.", "Se espera que las lluvias hayan afectado cultivos de Chiriquí.",
+                  "Se prevé que las lluvias hayan afectado cultivos de Chiriquí.", "Previsiblemente las lluvias afectaron cultivos de Chiriquí.",
+                  "Es probable que las lluvias afectaran cultivos de Chiriquí.", "En 2023 la inflación anual de Panamá fue probablemente de 2.9 %."]
+
+
+@pytest.mark.parametrize("texto", X63_MARCADORES)
+def test_x63_una_observacion_no_lleva_marcadores_de_probabilidad_ni_expectativa(texto: str) -> None:
+    from src.validador import OBSERVACION_CONDICIONAL
+
+    ctx = _ctx_boletin()
+    assert OBSERVACION_CONDICIONAL in reglas(validar_seccion("observaciones", [o(texto, "A2" if "inflación" in texto else "A1")], ctx)), texto
+
+
+@pytest.mark.parametrize("texto", ["Probablemente las lluvias en Chiriquí afecten la actividad agrícola, a verificar.",
+                                   "Se espera que las lluvias en Chiriquí afecten la actividad agrícola, a verificar con más fuentes.",
+                                   "Es probable que la actividad agrícola resulte relevante para el entorno económico, a verificar."])
+def test_x63_una_hipotesis_con_probabilidad_o_expectativa_sigue_valida(texto: str) -> None:
+    ctx = _ctx_boletin()
+    assert not validar_seccion("hipotesis_impacto", [o(texto, "A3")], ctx), texto
+
+
+def test_x63_una_hipotesis_sin_ningun_marcador_sigue_rechazada() -> None:
+    from src.validador import IMPACTO_SIN_CONDICIONAL
+
+    ctx = _ctx_boletin()
+    assert IMPACTO_SIN_CONDICIONAL in reglas(validar_seccion("hipotesis_impacto", [o("Las lluvias en Chiriquí afectan la actividad agrícola.", "A3")], ctx))
+
+
+def test_x63_la_observacion_que_trae_el_marcador_literal_del_titular_sigue_valida() -> None:
+    from tests.validador_ayuda import con_afirmaciones, salida
+
+    titular = "Se espera que las lluvias causaron pérdidas en cultivos de Chiriquí, según La Prensa"
+    ctx = con_afirmaciones(_ctx_boletin_con_titular(titular), salida("A1", "declaración", titular, (ID_LLUVIAS_B, "titulo")))
+    assert not validar_seccion("observaciones", [o(f"{titular}.", "A1")], ctx)
+
 
 X50_LEXICO = ["riesgo crediticio", "riesgos crediticios", "riesgo de crédito", "solvencia", "insolvencia", "mora", "morosos", "morosas", "morosidad",
               "incumplimiento", "incumplimientos", "deterioro crediticio"]
