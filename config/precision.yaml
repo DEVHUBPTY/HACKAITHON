@@ -18,5 +18,5 @@ archivos:
 
 textos:
   pendiente: "pendiente de selección humana"
-  exploratoria: "exploratoria: {pruebas} fecha(s) de corte, y se piden {cortes_minimos} (con n = 1 se declara así, D-57)"
+  exploratoria: "exploratoria: {pruebas} fecha(s) de corte (se piden {cortes_minimos}, con n = 1 se declara así, D-57) y se necesita un especialista declarado con --especialista"
   sin_especialista: "Si no hay especialista editorial, la evaluación se declara exploratoria (D-74)."

@@ -21,7 +21,8 @@ A partir del mismo snapshot: **elegir 5 temas para la agenda** y, **para uno de 
 3. **Mínimo 3 pruebas por condición** (6 en total). Se reporta n. Con menos, o sin especialista editorial, el resultado se declara **exploratorio** (D-74).
 4. **Calidad aparte del tiempo.** Una persona que no hizo la tarea revisa las fuentes citadas del brief con el veredicto de `docs/protocolo_evaluacion.md` sección 4 (sustentada, parcial, no sustentada, tipo incorrecto). Ahorrar tiempo no vale si baja el sustento.
 5. **Qué se cronometra.** Desde que se entrega la consigna hasta que la persona declara que terminó, sin contar el arranque de la app ni la carga de datos. El cronómetro lo maneja quien modera, no el participante.
-6. **Consigna idéntica** en ambas condiciones. La persona del equipo que probó la app antes (quien la construyó) no participa como sujeto.
+6. **Quien hace la prueba de tiempo en una fecha de corte no es quien eligió los 5 temas de Precision@5 para ese mismo corte** (vería la respuesta, o la habría influido).
+7. **Consigna idéntica** en ambas condiciones. La persona del equipo que probó la app antes (quien la construyó) no participa como sujeto.
 
 ## Registro de pruebas
 

@@ -15,7 +15,8 @@ archivo como ``eval/seleccion_editor.csv``.
 sale con código 0; nunca se simula al editor.
 
 **Cortes.** Cada selección lleva su ``corte`` (la ``fecha_referencia`` de la base que se le mostró). Con ``--base`` repetido se
-mide cada corte contra su base. Con menos de ``cortes_minimos`` cortes el resultado se declara exploratorio (D-57, D-74). El total
+mide cada corte contra su base. El resultado es exploratorio salvo que se declare con ``--especialista`` que eligió una persona editorial especialista **y** haya al menos
+``cortes_minimos`` cortes (D-57, D-74): sin esa declaración es siempre exploratorio, sean cuales sean los cortes. El total
 junta los aciertos de todos los cortes (k·n temas); los temas de un mismo corte no son independientes, así que el intervalo es
 orientativo.
 
@@ -140,9 +141,14 @@ def evaluar_corte(cands: Sequence[Candidato], elegidos: set[str], corte: str, k:
     return resultado
 
 
-def resumir(cortes: Sequence[Mapping[str, Any]], cfg: ConfigPrecision, z: float) -> dict[str, Any]:
-    """Junta los cortes: aciertos y n sumados, y si el resultado es exploratorio (menos de ``cortes_minimos`` cortes)."""
-    resumen: dict[str, Any] = {"pruebas": len(cortes), "exploratoria": len(cortes) < cfg.cortes_minimos, "cortes_minimos": cfg.cortes_minimos}
+def resumir(cortes: Sequence[Mapping[str, Any]], cfg: ConfigPrecision, z: float, especialista: bool = False) -> dict[str, Any]:
+    """Junta los cortes: aciertos y n sumados. Es exploratorio si no se declaró especialista (X36) o hay menos de ``cortes_minimos`` cortes."""
+    resumen: dict[str, Any] = {
+        "pruebas": len(cortes),
+        "especialista": especialista,
+        "exploratoria": (not especialista) or len(cortes) < cfg.cortes_minimos,
+        "cortes_minimos": cfg.cortes_minimos,
+    }
     for nombre in ("sistema", "baseline"):
         resumen[nombre] = _proporcion(sum(c[nombre]["k"] for c in cortes), sum(c[nombre]["n"] for c in cortes), z)
     return resumen
@@ -233,6 +239,7 @@ def formatear(r: Mapping[str, Any], cfg: ConfigPrecision) -> str:
         lineas += [f"  Total sistema: {_texto(r['sistema'])}", f"  Total baseline 'ranking por fecha': {_texto(r['baseline'])}"]
     if r["exploratoria"]:
         lineas.append("  Resultado " + cfg.textos.exploratoria.format(pruebas=r["pruebas"], cortes_minimos=cfg.cortes_minimos))
+    if not r["especialista"]:
         lineas.append("  " + cfg.textos.sin_especialista)
     lineas.append("  " + NOTA)
     return "\n".join(lineas)
@@ -260,6 +267,7 @@ def principal(argv: list[str] | None = None) -> int:
     parser.add_argument("--seleccion", type=Path, action="append", help=f"hoja marcada por el editor; se puede repetir, y una ruta que no existe es un error (sin el flag: {cfg.archivos.seleccion}, y si falta está pendiente)")
     parser.add_argument("--base", type=Path, action="append", help="base DuckDB de cada corte (por defecto data/senales.duckdb); se puede repetir")
     parser.add_argument("--salida", type=Path, default=RAIZ / cfg.archivos.salida)
+    parser.add_argument("--especialista", action="store_true", help="declara que quien eligió los temas es una persona editorial especialista; sin esto el resultado es exploratorio")
     parser.add_argument("--hoja", action="store_true", help="escribe la hoja ciega para el editor y termina")
     parser.add_argument("--hoja-salida", type=Path, default=RAIZ / cfg.archivos.hoja)
     parser.add_argument("--corte", default=None, help="corte que lleva la hoja (por defecto, el de la base)")
@@ -311,7 +319,7 @@ def principal(argv: list[str] | None = None) -> int:
     except SeleccionInvalida as exc:
         print(f"Selección inválida: {exc}", file=sys.stderr)
         return 2
-    resultado = {"estado": ESTADO_MEDIDO, "k": cfg.k, "cortes": cortes, "nota": NOTA} | resumir(cortes, cfg, z)
+    resultado = {"estado": ESTADO_MEDIDO, "k": cfg.k, "cortes": cortes, "nota": NOTA} | resumir(cortes, cfg, z, args.especialista)
     _escribir_json(args.salida, resultado)
     print(formatear(resultado, cfg))
     return 0

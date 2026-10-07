@@ -130,9 +130,9 @@ def test_resumen_un_corte_es_exploratorio_n1() -> None:
     assert r["sistema"]["n"] == 5
 
 
-def test_resumen_tres_cortes_deja_de_ser_exploratorio_y_junta_n() -> None:
+def test_resumen_tres_cortes_con_especialista_deja_de_ser_exploratorio_y_junta_n() -> None:
     cortes = [{"corte": f"c{i}", "sistema": {"k": 3, "n": 5}, "baseline": {"k": 1, "n": 5}} for i in range(3)]
-    r = pa5.resumir(cortes, CFG, Z)
+    r = pa5.resumir(cortes, CFG, Z, especialista=True)
     assert r["pruebas"] == 3 and r["exploratoria"] is False
     assert (r["sistema"]["k"], r["sistema"]["n"]) == (9, 15)
     assert (r["baseline"]["k"], r["baseline"]["n"]) == (3, 15)

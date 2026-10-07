@@ -402,7 +402,7 @@ Las listas de frases prohibidas siguen en `config/restricciones.yaml` y los lím
 | Parámetro | Valor | Origen | Cómo se valida |
 |---|---|---|---|
 | `k` | 5 | PDF 9.1 (Precision@5: el editor elige 5 temas) | `eval/precision_at_5.py` exige exactamente `k` marcas por corte |
-| `cortes_minimos` | 3 | Spec E1-19 y D-57 (3 fechas de corte distintas si hay editor) | Con menos cortes el resultado se declara exploratorio; con 1, n = 1 |
+| `cortes_minimos` | 3 | Spec E1-19 y D-57 (3 fechas de corte distintas si hay editor) | Con menos cortes el resultado se declara exploratorio; con 1, n = 1. Sin `--especialista` es exploratorio siempre (D-74) |
 | `hoja_ciega.semilla` | `e1-19-hoja-ciega` | Práctica (orden reproducible que no depende de P, posición ni fecha) | `tests/test_e1_19_precision.py`: el orden no cambia si cambian P y fechas |
 | `hoja_ciega.marca` | `x` | Convención de la hoja | Lectura de `eval/seleccion_editor.csv` |
 | Baseline «ranking por fecha» | Máximo de `fecha_publicacion` de las noticias del grupo, descendente; sin fecha de publicación al final; empate por ID. Nunca la fecha de detección | PDF sección 8 y reglas de datos (publicación ≠ detección) | Test del baseline con un grupo solo-GDELT; el reporte y el JSON cuentan los grupos sin fecha de publicación |
