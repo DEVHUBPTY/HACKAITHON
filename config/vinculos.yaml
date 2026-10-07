@@ -45,8 +45,10 @@ cifra_titular:
   palabras_de_baja: [cae, cayó, cayo, caída, caida, retrocede, retrocedió, contrae, contrajo, contracción, contraccion, disminuye, disminuyó, desciende, descendió, decrece, decreció, reduce, redujo, se hunde, bajó]   # verbos de baja inequívocos: sin «a», la cifra es una variación negativa
   palabras_de_baja_ambiguas: [baja]   # «baja» es verbo o adjetivo: solo vale como cambio si le sigue «a»/«hasta»; si no, no se compara
   palabras_de_alza: [sube, subió, aumenta, aumentó, crece, creció, avanza, avanzó, repunta, repuntó, se eleva, se elevó]
-  palabras_de_nivel: [a, hasta]       # verbo de cambio + una de estas = nivel alcanzado: la cifra conserva su signo
-  palabras_de_cota: [bajo, sobre, menos de, más de, mas de, cerca de, alrededor de, hasta]   # aproximación o cota: no se compara
+  palabras_de_nivel: [a, al, hasta]   # verbo de cambio + una de estas = nivel alcanzado: la cifra conserva su signo («al» = a + el)
+  palabras_de_cota: [bajo, sobre, menos de, menos del, más de, más del, mas de, mas del, cerca de, cerca del, alrededor de, alrededor del, casi, al menos, unos, unas, aproximadamente, hasta]   # aproximación o cota: no se compara
+  palabras_de_proyeccion: [podría, podrían, prevé, prevén, proyecta, proyectan, estima, estiman, pronostica, pronostican, anticipa, espera]   # proyección o pronóstico (en cualquier lugar del titular): no es un dato observado, no se compara
+  patrones_de_verbo_no_listado: ['\w+(?:ría|rían|rá|rán)', '\w{2,}(?:ar|er|ir)', 'se\s+\w+']   # entre la palabra clave y la cifra: futuro/condicional, infinitivo o verbo reflexivo fuera de las listas; el signo es incierto, no se compara
   indicadores_de_variacion: [NY.GDP.MKTP.KD.ZG]   # el indicador oficial ya es una tasa de cambio: «cae 2 %» = -2; en los demás, una variación no se compara con el nivel oficial
   ventana_caracteres: 40            # máximo de caracteres (sin cifras ni %) entre la palabra clave y la cifra (supuesto)
   palabras_clave:

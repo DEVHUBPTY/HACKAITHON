@@ -40,7 +40,7 @@ poetry run python -m src.clasificacion               # embeddings locales y tema
 poetry run python -m eval.clasificacion              # métricas de clasificación (casos difíciles y etiquetas)
 poetry run python -m src.agrupacion                  # grupos GRP- y procedencias independientes (estimadas)
 poetry run python -m eval.agrupacion                 # calibra el umbral y mide precisión/recall de pares con etiquetas
-poetry run python -m src.contexto                    # vínculos con el Banco Mundial por subtema → tabla vinculos y outputs/reporte_vinculos.json (E1-09)
+poetry run python -m src.contexto                    # vínculos por subtema con el Banco Mundial y, por defecto, USGS (--eventos, data/processed/eventos.geojson) → tabla vinculos y outputs/reporte_vinculos.json (E1-09, E1-09b)
 poetry run python -m src.consulta "pregunta"         # consulta en español con abstención (--metodo semantica|bm25)
 poetry run python -m eval.recuperacion               # Recall@5 y abstención, semántica vs. BM25, con n e IC
 poetry run streamlit run app.py                      # interfaz
