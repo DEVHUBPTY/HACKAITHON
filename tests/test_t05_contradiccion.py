@@ -245,4 +245,9 @@ def test_t05_aceptacion_muestra_ambas_versiones_su_alcance_y_la_revision_pendien
     assert {c.titular_a, c.titular_b} == {"Lluvias obligan a cerrar 12 escuelas en Veraguas", "Más de 40 escuelas permanecen cerradas en Veraguas por las lluvias"}
     assert (r.fragmento_a, r.fragmento_b) == ("12 escuelas", "40 escuelas") and c.medio_a != c.medio_b   # ambas, con su fuente
     assert r.abierta and r.estado == ESTADO_VERIFICAR and r.etiqueta == ETIQUETA                       # revisión pendiente
-    assert not any(hasattr(r, campo) for campo in ("ganadora", "version_correcta", "veredicto"))        # no se escoge una
+    # No se escoge una: ni el orden de entrada ni lo que opine el LLM cambian el par abierto, y ninguna respuesta lo cierra.
+    (invertida,) = contradicciones.evaluar_grupo(list(reversed(filas)), procedencia, ProveedorFalso(_respuesta(_par())), CFG)
+    assert {invertida.candidato.id_a, invertida.candidato.id_b} == {c.id_a, c.id_b} and invertida.abierta and invertida.estado == r.estado
+    for nota in (_par(posible=False), _par(frag_a="40 escuelas", frag_b="12 escuelas")):
+        (otra,) = contradicciones.evaluar_grupo(filas, procedencia, ProveedorFalso(_respuesta(nota)), CFG)
+        assert otra.abierta and otra.estado == ESTADO_VERIFICAR and {otra.candidato.titular_a, otra.candidato.titular_b} == {c.titular_a, c.titular_b}
