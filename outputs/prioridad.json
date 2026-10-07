@@ -6,30 +6,30 @@
   "grupos": 58,
   "por_rango": {
     "alto": {
-      "n": 15,
+      "n": 10,
       "de": 58,
-      "proporcion": 0.2586,
+      "proporcion": 0.1724,
       "ic95": [
-        0.1635,
-        0.3838
+        0.0964,
+        0.2891
       ]
     },
     "medio": {
-      "n": 42,
+      "n": 44,
       "de": 58,
-      "proporcion": 0.7241,
+      "proporcion": 0.7586,
       "ic95": [
-        0.598,
-        0.8225
+        0.6347,
+        0.8504
       ]
     },
     "bajo": {
-      "n": 1,
+      "n": 4,
       "de": 58,
-      "proporcion": 0.0172,
+      "proporcion": 0.069,
       "ic95": [
-        0.003,
-        0.0914
+        0.0271,
+        0.1643
       ]
     }
   },
@@ -44,21 +44,21 @@
       ]
     },
     "parcial": {
-      "n": 5,
+      "n": 3,
       "de": 58,
-      "proporcion": 0.0862,
+      "proporcion": 0.0517,
       "ic95": [
-        0.0374,
-        0.1864
+        0.0177,
+        0.1414
       ]
     },
     "insuficiente": {
-      "n": 51,
+      "n": 53,
       "de": 58,
-      "proporcion": 0.8793,
+      "proporcion": 0.9138,
       "ic95": [
-        0.7712,
-        0.9403
+        0.8136,
+        0.9626
       ]
     }
   },
@@ -70,35 +70,14 @@
     "pares": []
   },
   "llm": {
-    "estado": "sin_candidatos",
-    "proveedor": "ollama",
-    "modelo": "qwen3.5:9b",
+    "estado": "sin_llm",
+    "proveedor": null,
+    "modelo": null,
     "motivos_pendientes": {}
   },
   "ranking": [
     {
       "posicion": 1,
-      "id_grupo": "GRP-ef3acec21e",
-      "titular_central": "Minsa: Adelantan vacunación contra VSR en embarazadas",
-      "puntaje": 86.21,
-      "rango": "alto",
-      "componentes": {
-        "R": 0.9912,
-        "I": 0.75,
-        "U": 0.966,
-        "N": 0.9821,
-        "E": 0.3667
-      },
-      "estado_de_evidencia": "insuficiente",
-      "accion": "Investigar ya",
-      "vacios": [
-        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (tema_sin_indicador)"
-      ],
-      "contradicciones": []
-    },
-    {
-      "posicion": 2,
       "id_grupo": "GRP-84a6b3a04b",
       "titular_central": "Colegios particulares atribuyen aumento de matrícula a migración al sector oficial y altos costos de operación",
       "puntaje": 81.31,
@@ -113,6 +92,28 @@
       "estado_de_evidencia": "insuficiente",
       "accion": "Investigar ya",
       "vacios": [
+        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (tema_sin_indicador)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 2,
+      "id_grupo": "GRP-ef3acec21e",
+      "titular_central": "Minsa: Adelantan vacunación contra VSR en embarazadas",
+      "puntaje": 79.96,
+      "rango": "alto",
+      "componentes": {
+        "R": 0.9912,
+        "I": 0.5,
+        "U": 0.966,
+        "N": 0.9821,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "subtema no determinado: se usó el alcance neutro de impacto",
         "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
         "sin dato oficial vinculado (tema_sin_indicador)"
       ],
@@ -141,48 +142,6 @@
     },
     {
       "posicion": 4,
-      "id_grupo": "GRP-39773bed5a",
-      "titular_central": "Árbol cae sobre dos vehículos en estacionamientos del hospital San Miguel Arcángel",
-      "puntaje": 79.16,
-      "rango": "alto",
-      "componentes": {
-        "R": 0.7632,
-        "I": 0.75,
-        "U": 0.9826,
-        "N": 0.9464,
-        "E": 0.3667
-      },
-      "estado_de_evidencia": "insuficiente",
-      "accion": "Investigar ya",
-      "vacios": [
-        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (tema_sin_indicador)"
-      ],
-      "contradicciones": []
-    },
-    {
-      "posicion": 5,
-      "id_grupo": "GRP-87e128925b",
-      "titular_central": "Veraguas: Preocupación por aumento de muertes por enfermedades transmisibles y respiratorias",
-      "puntaje": 76.18,
-      "rango": "alto",
-      "componentes": {
-        "R": 0.8158,
-        "I": 0.8,
-        "U": 1.0,
-        "N": 0.5357,
-        "E": 0.3667
-      },
-      "estado_de_evidencia": "insuficiente",
-      "accion": "Investigar ya",
-      "vacios": [
-        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (tema_sin_indicador)"
-      ],
-      "contradicciones": []
-    },
-    {
-      "posicion": 6,
       "id_grupo": "GRP-8af4196527",
       "titular_central": "César Caicedo ahora está recluido en el Hospital Santo Tomás; había sido trasladado a Coiba",
       "puntaje": 76.09,
@@ -203,7 +162,7 @@
       "contradicciones": []
     },
     {
-      "posicion": 7,
+      "posicion": 5,
       "id_grupo": "GRP-6e737ecad5",
       "titular_central": "MOP solicita $43.1 millones para pagar compromisos y continuar obras en ejecución",
       "puntaje": 75.25,
@@ -225,49 +184,29 @@
       "contradicciones": []
     },
     {
-      "posicion": 8,
-      "id_grupo": "GRP-1e2c34f6bf",
-      "titular_central": "Pase-U: Largas filas en Changuinola en el segundo día de entrega de tarjetas Punch del Ifarhu",
-      "puntaje": 73.73,
+      "posicion": 6,
+      "id_grupo": "GRP-39773bed5a",
+      "titular_central": "Árbol cae sobre dos vehículos en estacionamientos del hospital San Miguel Arcángel",
+      "puntaje": 72.91,
       "rango": "alto",
       "componentes": {
-        "R": 0.886,
-        "I": 0.65,
-        "U": 1.0,
-        "N": 0.4821,
+        "R": 0.7632,
+        "I": 0.5,
+        "U": 0.9826,
+        "N": 0.9464,
         "E": 0.3667
       },
       "estado_de_evidencia": "insuficiente",
       "accion": "Investigar ya",
       "vacios": [
+        "subtema no determinado: se usó el alcance neutro de impacto",
         "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
         "sin dato oficial vinculado (tema_sin_indicador)"
       ],
       "contradicciones": []
     },
     {
-      "posicion": 9,
-      "id_grupo": "GRP-21ad932d54",
-      "titular_central": "Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá",
-      "puntaje": 73.67,
-      "rango": "alto",
-      "componentes": {
-        "R": 0.8684,
-        "I": 0.75,
-        "U": 0.9789,
-        "N": 0.375,
-        "E": 0.3667
-      },
-      "estado_de_evidencia": "insuficiente",
-      "accion": "Investigar ya",
-      "vacios": [
-        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (tema_sin_indicador)"
-      ],
-      "contradicciones": []
-    },
-    {
-      "posicion": 10,
+      "posicion": 7,
       "id_grupo": "GRP-fcdfc2a3cc",
       "titular_central": "Aprehenden a Enrique Lau, exdirector de la CSS, por supuesto enriquecimiento injustificado",
       "puntaje": 71.82,
@@ -284,6 +223,69 @@
       "vacios": [
         "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
         "sin dato oficial vinculado (tema_sin_indicador)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 8,
+      "id_grupo": "GRP-9442098153",
+      "titular_central": "Contenido Exclusivo: El metro por la Tumba Muerto",
+      "puntaje": 71.67,
+      "rango": "alto",
+      "componentes": {
+        "R": 0.8947,
+        "I": 0.75,
+        "U": 1.0,
+        "N": 0.1607,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (tema_sin_indicador)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 9,
+      "id_grupo": "GRP-45aebb27b2",
+      "titular_central": "Contenido Exclusivo: Coclé, se seca el campo",
+      "puntaje": 71.59,
+      "rango": "alto",
+      "componentes": {
+        "R": 0.9825,
+        "I": 0.8,
+        "U": 0.1725,
+        "N": 1.0,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (tema_sin_indicador)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 10,
+      "id_grupo": "GRP-f4a44182b1",
+      "titular_central": "Panamá reforzará su presencia marítima en Vietnam con nueva oficina de servicio técnico de la AMP en Ho Chi Minh",
+      "puntaje": 70.86,
+      "rango": "alto",
+      "componentes": {
+        "R": 0.9123,
+        "I": 0.75,
+        "U": 1.0,
+        "N": 0.0714,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia(s) independiente(s) estimada(s); se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (sin vínculo en la tabla de contexto)"
       ],
       "contradicciones": []
     }

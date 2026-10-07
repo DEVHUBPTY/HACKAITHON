@@ -328,9 +328,10 @@ def _anio_de(fecha: str | None) -> int | None:
     return int(fecha[POSICION_ANIO]) if fecha and fecha[POSICION_ANIO].isdigit() else None
 
 
-def leer_grupos(con: Any, cfg: SubtemaVinculo) -> list[dict[str, Any]]:
+def leer_grupos(con: Any, cfg: SubtemaVinculo | None = None) -> list[dict[str, Any]]:
     """Cada grupo con su tema, el subtema más cercano (método B) si lo respalda el margen o un término (D-92), su criterio,
-    el titular central y el año."""
+    el titular central y el año. Sin ``cfg`` usa ``vinculos.subtema`` de la configuración."""
+    cfg = cfg or cargar_vinculos().subtema
     titulares: defaultdict[str, list[str]] = defaultdict(list)
     for id_grupo, titulo in con.execute("SELECT id_grupo, COALESCE(titulo_limpio, titulo) FROM noticias WHERE id_grupo IS NOT NULL").fetchall():
         if titulo:
@@ -370,7 +371,7 @@ def construir_vinculos(
     filas: list[dict[str, Any]] = []
     delegados: list[str] = []
     for g in grupos:
-        resultado = vincular_grupo(g["id_grupo"], g["tema"], g["subtema"], g["titular"], g["anio_publicacion"], indicadores, cfg, g["criterio_subtema"])
+        resultado = vincular_grupo(g["id_grupo"], g["tema"], g["subtema"], g["titular"], g["anio_publicacion"], indicadores, cfg, g.get("criterio_subtema"))
         if resultado is None:
             delegados.append(g["id_grupo"])
             continue
