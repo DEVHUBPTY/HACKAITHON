@@ -368,6 +368,8 @@ Las listas de frases prohibidas siguen en `config/restricciones.yaml` y los lím
 
 ### Compuerta final y caché
 
+- **Reintento del paso 1 sin inferencia** (`afirmaciones.exigir_inferencia: true`, `generacion.yaml`): en la medición real 17 de 21 enfoques salían vacíos porque la única inferencia traía «porque» (D-68). Si ninguna inferencia o hipótesis pasa la validación se reintenta una vez con el motivo; si el reintento tampoco la trae se conservan las afirmaciones válidas del primero (`test_si_ninguna_inferencia_sobrevive_*`). Supuesto nuestro: un enfoque vacío cuesta más que una llamada.
+
 - `Generador.paquete()` pasa el paquete armado por `validar_paquete`: una sección que no valida se vacía con su motivo en `vacios` (`test_el_paquete_pasa_por_la_compuerta_final_*`). `Consultor` rechaza una leyenda de alcance que no sea la de `restricciones.yaml` (`test_el_consultor_exige_una_leyenda_valida`); la respuesta de consulta es extractiva y no pasa por las reglas de redacción.
 - `calentar_cache --verificar` dice **«con vacíos (…)»** cuando una sección quedó vacía por la validación, y `--podar` borra las respuestas que ningún grupo verificado usa (`CacheLlm.usadas`/`podar`).
 

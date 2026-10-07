@@ -13,6 +13,7 @@ reintentos: 1
 afirmaciones:
   minimas_validas: 1       # sin al menos una afirmación válida no se redacta nada
   maximas: 8               # el LLM puede proponer más; se conservan las primeras
+  exigir_inferencia: true  # el enfoque se apoya en una inferencia o hipótesis (D-41): si ninguna sobrevive a la validación se reintenta una vez con el motivo (E1-13)
 
 # Qué se genera según la acción de la ficha (D-42). Acción fuera de estas listas: no se genera nada y se avisa.
 acciones:

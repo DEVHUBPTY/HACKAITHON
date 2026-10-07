@@ -367,6 +367,7 @@ class Generador:
         base_usuario = self._mensaje_ficha()
         motivo = "no hubo afirmaciones válidas"
         validas: list[AfirmacionSalida] = []
+        mejor: list[AfirmacionSalida] = []
         for intento in range(1 + self.cfg.reintentos):
             usuario = base_usuario + ("" if intento == 0 else _retroalimentacion([motivo]))
             try:
@@ -388,9 +389,16 @@ class Generador:
             self.descartadas += descartadas
             if len(validas) >= self.cfg.afirmaciones.minimas_validas:
                 registro.valida = True
-                break
+                con_inferencia = any(a.tipo in ("inferencia", "hipótesis") for a in validas)
+                if con_inferencia or not self.cfg.afirmaciones.exigir_inferencia or intento == self.cfg.reintentos:
+                    break
+                # sin ninguna inferencia o hipótesis válida el enfoque quedaría vacío: se reintenta, y si no mejora se conservan estas
+                mejor = validas
+                motivo = "ninguna inferencia o hipótesis pasó la validación: " + "; ".join(descartadas)[: self.cfg.texto.motivo_max_caracteres]
+                continue
             motivo = "no hubo afirmaciones válidas: " + "; ".join(descartadas)[: self.cfg.texto.motivo_max_caracteres]
             validas = []
+        validas = validas or mejor
         if validas:
             self._afirmaciones = self._con_contradicciones(validas)
             self.ctx.afirmaciones = {a.id: a for a in self._afirmaciones}

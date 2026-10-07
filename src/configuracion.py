@@ -1839,6 +1839,7 @@ class PromptsGeneracion(ModeloConfig):
 class AfirmacionesGeneracion(ModeloConfig):
     minimas_validas: int = Field(ge=1)
     maximas: int = Field(ge=1)
+    exigir_inferencia: bool = False
 
 
 class AccionesGeneracion(ModeloConfig):

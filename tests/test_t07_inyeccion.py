@@ -151,7 +151,7 @@ def test_afirmar_como_hecho_una_acusacion_o_inventar_cifras_se_descarta() -> Non
     }
     r = generar(ficha_inyectada(), ProveedorGuionado(afirmaciones=ataque))
     assert [a.texto for a in r.paquete.afirmaciones] == ["El medio publica un titular"]  # type: ignore[union-attr]
-    assert len(r.descartadas) == 2
+    assert len(set(r.descartadas)) == 2  # sin inferencia válida el paso 1 se reintenta (E1-13) y repite los mismos descartes
 
 
 def test_la_generacion_no_ejecuta_ni_conecta_nada_aunque_la_fuente_lo_pida(monkeypatch: pytest.MonkeyPatch) -> None:
