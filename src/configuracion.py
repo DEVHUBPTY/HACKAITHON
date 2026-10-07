@@ -2639,7 +2639,8 @@ class ConfigRevision(ModeloConfig):
             raise ValueError("revisores: debe haber al menos uno por modalidad")
         if len({(r.nombre, r.modalidad) for r in self.revisores}) != len(self.revisores):
             raise ValueError("revisores: una persona aparece una sola vez por modalidad")
-        if any(r.provisional and r.modalidad == "editorial" for r in self.revisores) != any(r.provisional and r.modalidad == "banca" for r in self.revisores):
+        todas = {r.modalidad for r in self.revisores}
+        if any({x.modalidad for x in self.revisores if x.nombre == r.nombre} != todas for r in self.revisores if r.provisional):
             raise ValueError("revisores: un revisor provisional se declara en las dos modalidades (D-112)")
         if all(r.provisional for r in self.revisores):
             raise ValueError("revisores: debe haber al menos una persona no provisional (D-112)")
