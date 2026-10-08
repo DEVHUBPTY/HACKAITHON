@@ -141,3 +141,9 @@ logistica:
     remuestreos: 5000
     confianza: 0.95
     semilla: 42
+  # D-123 · Aprendizaje activo. La evaluación es SIEMPRE la muestra original congelada; el pool de entrenamiento son las
+  # etiquetas humanas (origen humano, nunca provisionales ni propuestas de un LLM) de titulares fuera de ella.
+  # C, umbral y margen siguen siendo los calibrados con las referencias (no se recalibran con el pool).
+  aprendizaje_activo:
+    usar_pool: true
+    muestra_evaluacion: eval/muestra_original.csv

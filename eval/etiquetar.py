@@ -793,6 +793,37 @@ def grupos_sugeridos(hojas: dict[str, list[Fila]], yo: str, ids_dobles: set[str]
     return sorted(grupos)
 
 
+def ordenar_cola(mias: list[dict[str, Any]], hechas: set[str], cola: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
+    """Primero los pendientes con puntaje, del más incierto al más seguro (``cola[id]['posicion']``); luego los pendientes
+    sin puntaje y, al final, los ya etiquetados, cada grupo en su orden original. Solo cambia el orden de la lista:
+    no guarda ni sugiere ninguna etiqueta (D-123)."""
+    pendientes = [m for m in mias if m["id_noticia"] not in hechas]
+    con = sorted((m for m in pendientes if m["id_noticia"] in cola), key=lambda m: cola[m["id_noticia"]]["posicion"])
+    sin = [m for m in pendientes if m["id_noticia"] not in cola]
+    return [*con, *sin, *(m for m in mias if m["id_noticia"] in hechas)]
+
+
+def _cola_de_incertidumbre(ruta_base: Path, ids: list[str], raiz: Path, _cfg: ConfigEtiquetado) -> dict[str, dict[str, Any]]:
+    """Cola del clasificador logístico (referencias + pool de etiquetas humanas fuera de la evaluación congelada)."""
+    from eval import aprendizaje_activo as aa
+    from src.configuracion import cargar_clasificacion
+    from src.embeddings import crear
+
+    ccl = cargar_clasificacion()
+    emb = crear(ccl, ccl.modelo_activo)
+    ruta_consolidado = raiz / _cfg.archivos.consolidado
+    pool = (
+        aa.pool_desde_config(ruta_consolidado, cargar_temas(), ccl.logistica.aprendizaje_activo.muestra_evaluacion, raiz)
+        if ccl.logistica.aprendizaje_activo.usar_pool and ruta_consolidado.exists()
+        else aa.Pool((), (), {})
+    ).solo(ids_en_base(ruta_base))
+    return aa.cola_por_incertidumbre(ids, ruta_base, pool, emb, ccl, cargar_temas())
+
+
+def ids_en_base(ruta_base: Path) -> set[str]:
+    return {n["id_noticia"] for n in leer_noticias(ruta_base)}
+
+
 def interfaz() -> None:  # pragma: no cover - se prueba a mano y con AppTest
     import streamlit as st
 
@@ -855,11 +886,25 @@ def interfaz() -> None:  # pragma: no cover - se prueba a mano y con AppTest
         mias = asignadas(muestra, int(parte), int(partes))
     propuestas = leer_propuestas(raiz_etq / cfg.archivos.carpeta_propuestas)
     hechas = {f["id_noticia"]: f for f in leer_csv(ruta)}
+    cola: dict[str, dict[str, Any]] = {}
+    if vista != "Todos" and not desempate and next(a for a in cfg.muestra.ampliaciones if a.nombre == vista).ordenar_por_incertidumbre:
+        try:
+            cola = st.cache_resource(show_spinner="Ordenando por incertidumbre del clasificador…")(_cola_de_incertidumbre)(
+                ruta_base, [m["id_noticia"] for m in mias], raiz_etq, cfg
+            )
+            mias = ordenar_cola(mias, set(hechas), cola)
+            st.caption("Cola ordenada por incertidumbre: primero los titulares donde el clasificador está menos seguro (D-123).")
+        except Exception as exc:  # noqa: BLE001 - sin modelo local el orden es el de siempre; no bloquea el etiquetado
+            st.warning(f"No se pudo ordenar por incertidumbre ({exc}); se muestra el orden normal.")
     pendientes = [m for m in mias if m["id_noticia"] not in hechas]
     st.progress((len(mias) - len(pendientes)) / len(mias) if mias else 0.0)
     st.write(f"**{nombre}**: {len(mias) - len(pendientes)} de {len(mias)} titulares etiquetados (hoja `{ruta.name}`).")
 
-    etiquetas_lista = [f"{'✓' if m['id_noticia'] in hechas else '·'} {m['orden']:>3} · {m['titulo'][:90]}" for m in mias]
+    def _p(m: dict[str, Any]) -> str:
+        c = cola.get(m["id_noticia"])
+        return f" · p={c['p_maxima']:.2f}" if c else ""
+
+    etiquetas_lista = [f"{'✓' if m['id_noticia'] in hechas else '·'} {m['orden']:>3} · {m['titulo'][:90]}{_p(m)}" for m in mias]
     por_defecto = mias.index(pendientes[0]) if pendientes else 0
     elegido = st.selectbox("Titular", range(len(mias)), index=por_defecto, format_func=lambda i: etiquetas_lista[i], key=f"sel-{len(pendientes)}")
     noticia = mias[elegido]
@@ -877,6 +922,12 @@ def interfaz() -> None:  # pragma: no cover - se prueba a mano y con AppTest
         f"Detectado: {_fecha_panama(noticia['fecha_deteccion'], cfg)}"
     )
     st.code(noticia["url"], language=None, wrap_lines=True)
+    if nid in cola:
+        c = cola[nid]
+        st.caption(
+            f"Clasificador (D-123): probabilidad máxima {c['p_maxima']:.2f} (tema más probable: {c['tema']}), margen {c['margen']:.2f}. "
+            "Es solo un indicador de incertidumbre, no una etiqueta: decide tú."
+        )
     if sugerida and propuesta:
         st.warning(
             f"**Propuesta de LLM ({proveedor_propuesta(propuesta.get('propuesto_por', ''))}) — revísala: confirma o corrige.** "

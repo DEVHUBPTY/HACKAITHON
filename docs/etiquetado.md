@@ -117,6 +117,18 @@ Las 100 etiquetas de D-85 se hicieron sobre una población de 170 titulares eleg
 
 `--validar` y `--consolidar` aceptan estas filas (con su `estrato` y `peso_muestreo` 1 en el consolidado); las 61 filas `asistente_provisional` se siguen conservando. Los lectores de `eval/` usan `peso_muestreo` como un número por fila (`eval/metricas.py`), así que el estrato nuevo no los rompe: es un censo, peso 1.
 
+## Aprendizaje activo (D-123)
+
+El etiquetado también alimenta al clasificador, con una persona decidiendo siempre. El ciclo es **etiquetar → reentrenar → medir**:
+
+1. **Etiquetar.** En `streamlit run eval/etiquetar.py`, la ampliación (`tvn_20261008`) se muestra ordenada por incertidumbre (`ordenar_por_incertidumbre` en `config/etiquetado.yaml`): primero los titulares donde el clasificador logístico tiene la menor probabilidad máxima, luego el menor margen entre la 1.ª y la 2.ª y, al final, el `id_noticia`. Junto a cada titular se ve esa probabilidad como indicador; **no es una etiqueta** y no se guarda nada sin «Guardar y seguir». Si el modelo local no está disponible, la herramienta avisa y usa el orden normal.
+2. **Consolidar** (`--consolidar`, ver arriba). La cola y el entrenamiento leen `eval/etiquetas.csv`.
+3. **Reentrenar y medir:** `poetry run python -m eval.clasificacion`. El método `logistica` se entrena con los textos de referencia de `temas.yaml` **más** el *pool*: las etiquetas de origen `humano`, firmadas por una persona, con tema y sin ruido, de titulares que **no** están en la muestra original. El informe imprime la huella sha256 del pool (sobre `id` y tema ordenados), el n por clase del pool, de las referencias y el total, y el bootstrap pareado contra el método A. Una corrida con el mismo pool da la misma huella y las mismas métricas.
+
+**Por qué la evaluación queda congelada.** Se mide siempre sobre los 100 IDs de `eval/muestra_original.csv`. Si los titulares etiquetados después entraran a la evaluación y al entrenamiento a la vez, la métrica premiaría memorizar y dejaría de decir cuánto generaliza el clasificador; además, la cola por incertidumbre elige justo los casos difíciles, y medir sobre ellos movería el n y los pesos del muestreo. Por eso `eval/aprendizaje_activo.py` excluye esos IDs del pool y `ErrorDeSeparacion` salta si alguno se cuela (hay un test). Nunca entran al pool las filas `asistente_provisional` (D-101) ni las propuestas de un LLM.
+
+**Límites.** C, el umbral y el margen siguen siendo los calibrados con las referencias; no se recalibran con el pool. La revisión editorial (E1-16) no permite cambiar el tema de un grupo, así que hoy no hay correcciones de tema por esa vía que sumar al pool (hueco declarado). El pool actual está vacío: las 100 etiquetas humanas son la evaluación y las 47 de la ampliación esperan a una persona. `metodo_activo` sigue en `A` hasta que el IC 95 % de la diferencia pareada quede sobre cero.
+
 ## Límites
 
 - `fuera_de_ventana` no se etiqueta (es un hecho de fecha, no de contenido); `eval.ruido` compara los motivos que el filtro marca con los cuatro valores humanos.

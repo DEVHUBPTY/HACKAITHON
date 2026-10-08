@@ -25,6 +25,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from eval import aprendizaje_activo as aa
 from eval import metricas
 from eval import origen_etiquetas as oe
 from src import db
@@ -165,14 +166,24 @@ class Prediccion:
 
 
 def predecir(
-    textos: list[str], cfg: ConfigClasificacion, temas: ConfigTemas, nombre_modelo: str, emb: Embeddings, reglas: Reglas
+    textos: list[str],
+    cfg: ConfigClasificacion,
+    temas: ConfigTemas,
+    nombre_modelo: str,
+    emb: Embeddings,
+    reglas: Reglas,
+    pool: tuple[list[str], list[str]] | None = None,
 ) -> dict[str, list[Prediccion]]:
-    """Predicciones de ``baseline`` (variante activa), ``baseline_ampliado`` y del modelo con A, B y ``logistica`` (D-121)."""
+    """Predicciones de ``baseline`` (variante activa), ``baseline_ampliado`` y del modelo con A, B y ``logistica`` (D-121).
+
+    ``pool`` = (textos, temas) de las etiquetas humanas de entrenamiento (D-123); solo las usa ``logistica``.
+    """
     salida: dict[str, list[Prediccion]] = {}
     for clave, variante in (("baseline", None), ("baseline_ampliado", "ampliado")):
         b = Baseline(cfg, temas, variante)
         salida[clave] = [Prediccion(r.principal, r.secundario, None, r.secundario) for r in map(b.clasificar, textos)]
-    ref = construir_referencias(emb, temas, reglas, cfg.logistica)
+    vectores_pool = (emb.codificar(pool[0], "titular"), pool[1]) if pool and pool[0] else None
+    ref = construir_referencias(emb, temas, reglas, cfg.logistica, vectores_pool)
     vectores = emb.codificar(textos, "titular")
     for metodo in (METODO_A, METODO_B, METODO_LOGISTICO):
         decisiones: list[Decision] = decidir_todos(
@@ -455,8 +466,13 @@ def evaluar_etiquetas(
     nombres_modelos: list[str],
     motores: dict[str, Any] | None = None,
     origenes: Iterable[str] = oe.SOLO_HUMANOS,
+    evaluacion_congelada: Path | None = None,
 ) -> dict[str, Any]:
     """Métricas con etiquetas humanas, sin los ejemplos de ``temas.yaml``, en dos vistas.
+
+    ``evaluacion_congelada`` (D-123): CSV de la muestra original. Si se da, la evaluación se limita a esos IDs y el método
+    ``logistica`` se entrena además con el pool de etiquetas humanas de los demás (``eval/aprendizaje_activo.py``); el
+    informe declara la huella y los conteos de ese pool. Sin él, la evaluación es la de siempre y el pool está vacío.
 
     * **Clasificador** (``configuraciones``, ``comparaciones``): los titulares que el filtro de ruido dejó pasar. Si una
       persona los marcó ruido, la etiqueta es ``sin_tema`` y el clasificador debería abstenerse.
@@ -481,7 +497,10 @@ def evaluar_etiquetas(
         con.close()
     en_base = {f[0]: f for f in filas}
     z = cargar_carga().salida.z_intervalo_confianza
-    validos = sorted(i for i in etiquetas if i in en_base and i not in excluidos)
+    congelados = aa.ids_congelados(evaluacion_congelada) if evaluacion_congelada else None
+    validos = sorted(
+        i for i in etiquetas if i in en_base and i not in excluidos and (congelados is None or provisional or i in congelados)
+    )
     pasaron = [i for i in validos if not en_base[i][3]]
     conteo = {
         "etiquetados": len(etiquetas),
@@ -490,6 +509,11 @@ def evaluar_etiquetas(
         "marcados_como_ruido_por_el_sistema": len(validos) - len(pasaron),
         "evaluados": len(pasaron),
     }
+    pool = aa.Pool((), (), {})
+    if congelados is not None and cfg.logistica.aprendizaje_activo.usar_pool:
+        pool = aa.construir_pool(ruta_etiquetas, temas, congelados, validos).solo(en_base)
+        conteo["fuera_de_la_evaluacion_congelada"] = sum(1 for i in etiquetas if i not in congelados)
+    pool_textos = ([texto_de_entrada(en_base[i][1], en_base[i][2], cfg.usar_descripcion) for i in pool.ids], list(pool.temas))
     if not pasaron:
         return oe.marcar({"estado": "SIN_FILAS_EVALUABLES", "conteo": conteo}, origenes)
     reglas = Reglas.desde_config()
@@ -512,7 +536,15 @@ def evaluar_etiquetas(
         "pipeline": {"conteo": {"evaluados": len(validos)}, "configuraciones": {}},
         "logistica": {
             "metodo": METODO_LOGISTICO,
-            "entrenamiento": "solo textos de referencia de config/temas.yaml (descripción, ejemplos, prototipos); las etiquetas humanas no entran",
+            "entrenamiento": (
+                "textos de referencia de config/temas.yaml (descripción, ejemplos, prototipos) + pool de etiquetas humanas "
+                "fuera de la evaluación congelada (D-123); la evaluación nunca entra al entrenamiento"
+            ),
+            "pool": {
+                **pool.resumen(sum(aa.referencias_por_clase(temas).values())),
+                "referencias_por_clase": aa.referencias_por_clase(temas),
+                "total_por_clase": {t: n + pool.por_clase.get(t, 0) for t, n in aa.referencias_por_clase(temas).items()},
+            },
             "configuraciones": {},
             "comparaciones_con_A": {},
             "pipeline": {"sin_ponderar": {}},
@@ -520,7 +552,7 @@ def evaluar_etiquetas(
     }
     for nombre in nombres_modelos:
         emb = crear(cfg, nombre, motor=(motores or {}).get(nombre))
-        pred = predecir(textos, cfg, temas, nombre, emb, reglas)
+        pred = predecir(textos, cfg, temas, nombre, emb, reglas, pool_textos)
         for etiqueta, preds in configuraciones_de(nombre, pred):
             if etiqueta in resultado["configuraciones"]:
                 continue
@@ -607,6 +639,11 @@ def imprimir_logistica(bloque: dict[str, Any], clases: list[str]) -> list[str]:
     """Líneas del método logístico (D-121) junto a A: métricas con n e IC y la diferencia pareada de macro-F1."""
     lineas = imprimir("Método logístico (D-121), mismos titulares que A", {"configuraciones": bloque["configuraciones"]}, clases)
     lineas.append(f"Entrenamiento: {bloque['entrenamiento']}")
+    p = bloque["pool"]
+    lineas.append(
+        f"Pool (D-123): n = {p['n_pool']}, huella sha256 {p['huella_pool']}; por clase {p['por_clase_pool']}; "
+        f"referencias {p['n_referencias']}; total por clase {p['total_por_clase']}; descartadas {p['descartadas']}"
+    )
     for modelo, d in bloque["comparaciones_con_A"].items():
         lineas.append(
             f"\n[{modelo}] bootstrap PAREADO logística − A (n = {d['n']}, {d['remuestreos']} remuestreos): "
@@ -653,7 +690,10 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     else:
         try:
-            real = evaluar_etiquetas(args.etiquetas, args.base, args.columna, cfg, temas, args.modelos)
+            real = evaluar_etiquetas(
+                args.etiquetas, args.base, args.columna, cfg, temas, args.modelos,
+                evaluacion_congelada=RAIZ / cfg.logistica.aprendizaje_activo.muestra_evaluacion,
+            )
         except (KeyError, ValueError) as exc:
             print(f"ETIQUETAS NO UTILIZABLES: {exc}. No se calcula ninguna métrica sobre datos reales.", file=sys.stderr)
             return CODIGO_SIN_ETIQUETAS

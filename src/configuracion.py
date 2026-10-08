@@ -1565,6 +1565,17 @@ class ModeloEmbeddings(ModeloConfig):
         return self
 
 
+class ConfigAprendizajeActivo(ModeloConfig):
+    """Ciclo de aprendizaje activo con una persona en el circuito (D-123).
+
+    ``muestra_evaluacion`` fija el conjunto de EVALUACIÓN (los IDs de la muestra original congelada): nunca entra al
+    entrenamiento. El pool de entrenamiento son las etiquetas humanas de titulares que NO están en ese conjunto.
+    """
+
+    usar_pool: bool                  # si el método `logistica` también se entrena con el pool de etiquetas humanas
+    muestra_evaluacion: str = Field(min_length=1)   # CSV con la columna id_noticia: la evaluación congelada
+
+
 class ConfigLogistica(ModeloConfig):
     """Clasificador por regresión logística (D-121). Se entrena SOLO con los textos de referencia de ``temas.yaml``
     (descripción, ejemplos y prototipos de subtema); las etiquetas humanas no entran nunca en el entrenamiento.
@@ -1588,6 +1599,7 @@ class ConfigLogistica(ModeloConfig):
     margen_secundario: float = Field(ge=0, le=1)     # diferencia de probabilidad para ofrecer un tema secundario
     decimales_umbral: int = Field(ge=0)              # el umbral se guarda redondeado a estos decimales
     bootstrap_pareado: CriterioAB                    # comparación pareada de macro-F1 contra el método A (>= 2000 remuestreos)
+    aprendizaje_activo: ConfigAprendizajeActivo      # D-123: pool de etiquetas humanas fuera de la evaluación congelada
 
     @model_validator(mode="after")
     def _coherente(self) -> ConfigLogistica:
@@ -1797,6 +1809,8 @@ class AmpliacionEtiquetado(ModeloConfig):
     ids_desde: str                 # CSV con columna id_noticia (p. ej. eval/propuestas/*.csv); solo se leen los IDs
     estrato: str = Field(min_length=1)
     peso_muestreo: float = Field(gt=0)   # censo del estrato: 1.0
+    # D-123: la cola de la ampliación va de los titulares más inciertos para el clasificador a los más seguros
+    ordenar_por_incertidumbre: bool = True
 
 
 class MuestraEtiquetado(ModeloConfig):

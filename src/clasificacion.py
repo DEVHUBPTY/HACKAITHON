@@ -113,12 +113,17 @@ def textos_de_referencia(temas: ConfigTemas, reglas: Reglas) -> dict[str, list[s
 
 
 def construir_referencias(
-    emb: Embeddings, temas: ConfigTemas, reglas: Reglas | None = None, logistica: ConfigLogistica | None = None
+    emb: Embeddings,
+    temas: ConfigTemas,
+    reglas: Reglas | None = None,
+    logistica: ConfigLogistica | None = None,
+    pool: tuple[np.ndarray, list[str]] | None = None,
 ) -> Referencias:
     """Codifica descripciones, ejemplos y prototipos (rol ``tema``) y arma centroides y prototipos.
 
     Con ``logistica`` también ajusta el clasificador de D-121 con esos mismos vectores (descripción, ejemplos y
-    prototipos de subtema); nunca con etiquetas humanas.
+    prototipos de subtema) y, desde D-123, con el ``pool`` (vectores de titulares y su tema) de etiquetas humanas que
+    ``eval/aprendizaje_activo.py`` separa de la evaluación. Sin ``pool`` el entrenamiento es solo el de referencias.
     """
     reglas = reglas or Reglas.desde_config()
     ids = list(temas.temas)
@@ -135,8 +140,9 @@ def construir_referencias(
     prototipos = emb.codificar([temas.temas[t].subtemas[s].prototipo for t, s in subtemas], "tema")
     modelo = None
     if logistica is not None:
-        X = np.vstack([*entrenamiento, prototipos])
-        modelo = entrenar(X, [*etiquetas, *(t for t, _ in subtemas)], ids, logistica)
+        X = np.vstack([*entrenamiento, prototipos, *([pool[0]] if pool is not None and len(pool[1]) else [])])
+        y = [*etiquetas, *(t for t, _ in subtemas), *(pool[1] if pool is not None else [])]
+        modelo = entrenar(X, y, ids, logistica)
     return Referencias(ids, np.stack(centroides), subtemas, prototipos, modelo)
 
 

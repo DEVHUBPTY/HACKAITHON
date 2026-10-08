@@ -23,6 +23,7 @@ muestra:
       ids_desde: eval/propuestas/llm_20261008.csv
       estrato: ampliacion_tvn_20261008
       peso_muestreo: 1.0
+      ordenar_por_incertidumbre: true   # D-123: cola ordenada por incertidumbre del clasificador logístico
 
 archivos:
   carpeta_personas: eval/etiquetas      # una hoja por persona: <nombre>.csv
