@@ -198,17 +198,38 @@ def test_proporcion_sin_denominador_en_la_fuente_hace_fallar(raiz: Path):
         _pagina(raiz)
 
 
+def _fuente_humana(raiz: Path, ruta: str, clave: str | None = None) -> bool:
+    datos = json.loads((raiz / ruta).read_text(encoding="utf-8"))
+    return bool((datos[clave] if clave else datos)["juicio_humano"])
+
+
 def test_provisionales_salen_marcados_y_nunca_como_humanos(raiz: Path):
+    # El rótulo de cada fila sigue a su fuente (C-09 volvió humanos el sustento y Precision@5): provisional → marcado; humano → sin marca.
+    humano = {"| Precision@5": _fuente_humana(raiz, "outputs/precision_at_5.json"),
+              "| Afirmaciones sustentadas": _fuente_humana(raiz, "outputs/metricas.json", "validez_sustento")}
     texto = _pagina(raiz)
+    vistas = set()
     for f in texto.splitlines():
-        if f.startswith("| Precision@5") or f.startswith("| Afirmaciones sustentadas"):
-            assert "**PROVISIONAL**" in f and "| humano |" not in f, f
+        for prefijo, es_humano in humano.items():
+            if f.startswith(prefijo):
+                vistas.add(prefijo)
+                if es_humano:
+                    assert "| humano |" in f and "**PROVISIONAL**" not in f, f
+                else:
+                    assert "**PROVISIONAL**" in f and "| humano |" not in f, f
         if "PROVISIONAL (asistente)" in f:
             assert "**PROVISIONAL**" in f and "| humano |" not in f, f
+    assert vistas == set(humano)
+
+
+def test_una_fuente_provisional_sale_marcada_aunque_las_reales_sean_humanas(raiz: Path):
+    _editar(raiz, "outputs/precision_at_5.json", lambda d: d.update(origen_juicio="asistente_provisional (D-101)", juicio_humano=False))
+    filas = [f for f in _pagina(raiz).splitlines() if f.startswith("| Precision@5")]
+    assert filas and all("**PROVISIONAL**" in f and "| humano |" not in f for f in filas)
 
 
 def test_fuente_provisional_que_se_declara_humana_hace_fallar(raiz: Path):
-    _editar(raiz, "outputs/precision_at_5.json", lambda d: d.update(juicio_humano=True))   # origen_juicio sigue diciendo provisional
+    _editar(raiz, "outputs/precision_at_5.json", lambda d: d.update(origen_juicio="asistente_provisional (D-101)", juicio_humano=True))   # el origen dice provisional y la bandera humano
     with pytest.raises(pm.OrigenIncoherente):
         _pagina(raiz)
 
@@ -471,6 +492,7 @@ def test_decimales_de_tokens_usd_y_latencia_salen_de_la_configuracion(raiz: Path
 
 def test_la_latencia_de_la_consulta_conserva_resolucion(raiz: Path):
     """Revisión, info 7: 0.0068 s no puede mostrarse como 0.007 con un IC «0.000 – 0.007»."""
+    _editar(raiz, "outputs/metricas.json", lambda d: d["latencia"]["consulta"]["p50"].update(valor=0.0068, ic95=[0.0002, 0.0071]))   # fijo: no depende de la última corrida
     consulta = next(f for f in _pagina(raiz).splitlines() if f.startswith("| Latencia p50 · Consulta"))
     assert "0.000 –" not in consulta and "0.0068" in consulta
 
