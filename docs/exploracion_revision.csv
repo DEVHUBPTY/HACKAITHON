@@ -16,6 +16,7 @@ NOT-0fbe3f9064,no_es_panama,no,no,propuesta_agente,"TVN, pero trata de Argentina
 NOT-122eadce2c,no_es_panama,no,no,propuesta_agente,
 NOT-14527e9f45,no_es_panama,no,no,propuesta_agente,"TVN, pero trata de Argentina"
 NOT-14dcb8e259,servicios_publicos,no,no,propuesta_agente,
+NOT-1550f5f415,no_es_panama,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-1710ce462f,economia,no,si,propuesta_agente,
 NOT-1819a7014e,fuera_de_temas,no,no,propuesta_agente,política exterior
 NOT-18a6d3703b,no_es_panama,no,no,propuesta_agente,
@@ -30,6 +31,7 @@ NOT-213eb698b8,no_es_panama,no,no,propuesta_agente,
 NOT-220be165b5,servicios_publicos,si,no,propuesta_agente,
 NOT-23b8a1155a,no_es_panama,no,no,propuesta_agente,
 NOT-25535e98dd,no_es_panama,no,no,propuesta_agente,
+NOT-26103a18a9,no_es_panama,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-26fd75f865,no_es_panama,no,no,propuesta_agente,
 NOT-278e2e40cf,no_es_panama,no,no,propuesta_agente,
 NOT-281264992d,no_es_panama,no,no,propuesta_agente,
@@ -39,23 +41,33 @@ NOT-2c59d43457,no_es_panama,no,no,propuesta_agente,
 NOT-2ece201ac9,no_es_panama,no,no,propuesta_agente,
 NOT-2f73db1173,eventos_naturales,no,si,propuesta_agente,pronóstico del tiempo
 NOT-3054cdb253,no_es_panama,no,no,propuesta_agente,
+NOT-30a9b864f0,fuera_de_temas,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-3175aafec0,servicios_publicos,no,si,propuesta_agente,
 NOT-33032542b7,fuera_de_temas,no,no,propuesta_agente,política exterior
+NOT-35875c046f,turismo,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-35b6bd907a,no_es_panama,no,no,propuesta_agente,
+NOT-3602873cc3,fuera_de_temas,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-364916b1e1,no_es_panama,si,no,propuesta_agente,
+NOT-3824af80a0,fuera_de_temas,si,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-38702b3c42,no_es_panama,si,no,propuesta_agente,
+NOT-38e461b044,no_es_panama,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
+NOT-3952ddcff3,no_es_panama,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-3be05280f2,servicios_publicos,no,si,propuesta_agente,
 NOT-3d5aa5cfec,sin_contenido,no,no,propuesta_agente,solo el nombre del medio
 NOT-3e7e311433,no_es_panama,no,no,propuesta_agente,
 NOT-4107048810,no_es_panama,no,no,propuesta_agente,
+NOT-453f02387d,logistica,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-46c7fec582,servicios_publicos,no,no,propuesta_agente,
 NOT-46ccb7acfc,no_es_panama,no,no,propuesta_agente,
+NOT-47f236bdf2,servicios_publicos,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-4bd9ff1d5c,no_es_panama,no,no,propuesta_agente,
+NOT-4df98e1be1,eventos_naturales,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-4e1754a3f9,servicios_publicos,no,no,propuesta_agente,
 NOT-50c2fa1e7c,no_es_panama,no,no,propuesta_agente,
 NOT-524bed949d,no_es_panama,no,no,propuesta_agente,
 NOT-54104a8f29,no_es_panama,no,no,propuesta_agente,
 NOT-549c8211e8,servicios_publicos,no,no,propuesta_agente,
+NOT-54f514f1fa,servicios_publicos,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-56f1346b80,no_es_panama,no,no,propuesta_agente,partido de Argentina emitido por medio panameño
 NOT-574ef5d8a5,no_es_panama,no,no,propuesta_agente,
 NOT-5768895344,no_es_panama,no,no,propuesta_agente,
@@ -63,6 +75,7 @@ NOT-588cc70d55,no_es_panama,no,no,propuesta_agente,
 NOT-5a4863366a,logistica,no,si,propuesta_agente,presupuesto del Canal: regla 3
 NOT-5bcd9d014d,fuera_de_temas,si,no,propuesta_agente,incendio de vivienda: suceso local
 NOT-5d839301a6,no_es_panama,no,no,propuesta_agente,
+NOT-5e33683cd3,no_es_panama,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-5f01d8ad42,sin_contenido,no,no,propuesta_agente,solo el dominio
 NOT-5f3e3c2ca2,no_es_panama,no,no,propuesta_agente,
 NOT-5f405bd2a6,no_es_panama,no,no,propuesta_agente,
@@ -71,46 +84,63 @@ NOT-6177f8136c,no_es_panama,no,no,propuesta_agente,
 NOT-623c659be3,economia,no,si,propuesta_agente,
 NOT-64993efbcf,no_es_panama,no,no,propuesta_agente,
 NOT-65049548e8,no_es_panama,no,no,propuesta_agente,
+NOT-6537887bb9,no_es_panama,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-6570aa0a00,no_es_panama,no,no,propuesta_agente,
 NOT-659917802b,no_es_panama,no,no,propuesta_agente,
 NOT-660d940f9d,regulacion,no,no,propuesta_agente,"postura sobre reforma electoral, no una norma nueva (no es ejemplo de Regulación)"
 NOT-663cf9d020,fuera_de_temas,no,no,propuesta_agente,
 NOT-66fdc7fa16,servicios_publicos,no,no,propuesta_agente,
 NOT-6717a15ab7,no_es_panama,no,no,propuesta_agente,
+NOT-676c3cf531,no_es_panama,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-67933d738f,logistica,si,no,propuesta_agente,"nombramiento en el Canal, sin hecho operativo"
+NOT-67a1a035f7,no_es_panama,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
+NOT-67c9cc2f3f,no_es_panama,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
+NOT-68d2d3887e,fuera_de_temas,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-695ae57869,no_es_panama,no,no,propuesta_agente,
 NOT-6995afb03d,sin_contenido,no,no,propuesta_agente,solo el dominio
 NOT-6a08378c7c,servicios_publicos,no,no,propuesta_agente,seguridad ciudadana
 NOT-6cf079b299,no_es_panama,no,no,propuesta_agente,
 NOT-6ecb18bd18,no_es_panama,no,no,propuesta_agente,
+NOT-6f1123ebc1,turismo,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-6fb7a2662e,no_es_panama,no,no,propuesta_agente,
+NOT-702cb42100,fuera_de_temas,si,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
+NOT-705e4b69cc,no_es_panama,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-707e818414,no_es_panama,no,no,propuesta_agente,
 NOT-71438edf3e,no_es_panama,no,no,propuesta_agente,partido de Argentina emitido por medio panameño
 NOT-7170117798,no_es_panama,no,no,propuesta_agente,
 NOT-720c2ff646,no_es_panama,no,no,propuesta_agente,
 NOT-741df15381,servicios_publicos,si,no,propuesta_agente,educación pública: entrega de tarjetas Pase-U
 NOT-760266bd52,no_es_panama,no,no,propuesta_agente,
+NOT-7676c557c0,no_es_panama,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
+NOT-7776195ee7,no_es_panama,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-78827c5155,sin_contenido,no,no,propuesta_agente,solo el dominio
 NOT-7993d2b1f3,sin_contenido,no,no,propuesta_agente,solo el dominio
 NOT-79dc0fcc3b,sin_contenido,no,no,propuesta_agente,"portada del medio, no un titular"
 NOT-7bc0adfe59,no_es_panama,no,no,propuesta_agente,
 NOT-7c0e7e3832,fuera_de_temas,no,no,propuesta_agente,
 NOT-7d8bead89b,no_es_panama,no,no,propuesta_agente,
+NOT-7f85397675,servicios_publicos,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-81063bea73,no_es_panama,no,no,propuesta_agente,
 NOT-8206bf1857,regulacion,si,no,propuesta_agente,opinión sobre la reapertura de la mina: Regulación o Economía
 NOT-83cb540519,fuera_de_temas,no,no,propuesta_agente,
 NOT-83fcd2619e,no_es_panama,no,no,propuesta_agente,
+NOT-8473a453ef,no_es_panama,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-87a36bfb3b,no_es_panama,no,no,propuesta_agente,
 NOT-8897c80d23,servicios_publicos,si,no,propuesta_agente,
 NOT-8921b118ee,servicios_publicos,no,si,propuesta_agente,
+NOT-898659b0ba,servicios_publicos,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-89b5cc1eb2,no_es_panama,no,no,propuesta_agente,
 NOT-8eca227e4e,no_es_panama,no,no,propuesta_agente,
+NOT-8fa6e9b5f2,fuera_de_temas,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-8ffb07170d,servicios_publicos,no,no,propuesta_agente,salud pública
 NOT-9013970ab7,no_es_panama,no,no,propuesta_agente,
 NOT-9049f7c28f,no_es_panama,no,no,propuesta_agente,
 NOT-9112a370be,no_es_panama,no,no,propuesta_agente,
 NOT-91cf07481a,no_es_panama,no,no,propuesta_agente,
+NOT-9269f5fc9e,servicios_publicos,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
+NOT-927a71e178,fuera_de_temas,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-94e9865b40,servicios_publicos,si,no,propuesta_agente,proceso penal: atribuir como declaración
+NOT-963385655a,servicios_publicos,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-96445b423c,fuera_de_temas,no,no,propuesta_agente,
 NOT-96d1ecac7d,economia,no,no,propuesta_agente,
 NOT-99c8146e07,regulacion,no,si,propuesta_agente,
@@ -119,15 +149,23 @@ NOT-9d163d8d34,no_es_panama,no,no,propuesta_agente,
 NOT-9d5aed848f,fuera_de_temas,no,no,propuesta_agente,
 NOT-9e06ae02d6,no_es_panama,no,no,propuesta_agente,"TVN, pero trata de Argentina"
 NOT-9fa200bb12,fuera_de_temas,no,no,propuesta_agente,
+NOT-a04070f1db,no_es_panama,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-a1aca2bba5,no_es_panama,no,no,propuesta_agente,
+NOT-a3f27cca6f,fuera_de_temas,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
+NOT-a56f1d6c94,turismo,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-a5f4fc324e,economia,no,no,propuesta_agente,finanzas públicas
 NOT-a71293e7e8,no_es_panama,si,no,propuesta_agente,
 NOT-a76fe48ec6,servicios_publicos,si,no,propuesta_agente,proceso penal: atribuir como declaración
 NOT-a7b275f69d,no_es_panama,no,no,propuesta_agente,
+NOT-a82b88d354,fuera_de_temas,si,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-a89192d2fa,no_es_panama,no,no,propuesta_agente,
 NOT-aacff154c6,economia,si,no,propuesta_agente,obra municipal pequeña
+NOT-aba6299a4d,servicios_publicos,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-ac576893a0,no_es_panama,no,no,propuesta_agente,partido de Argentina emitido por medio panameño
+NOT-ad4b52508e,logistica,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-adb01e330f,no_es_panama,no,no,propuesta_agente,
+NOT-aec8c87a11,servicios_publicos,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
+NOT-af0acb2fbe,no_es_panama,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-af16fef0ea,no_es_panama,no,no,propuesta_agente,
 NOT-af2c98a539,no_es_panama,no,no,propuesta_agente,
 NOT-afe10e9df9,no_es_panama,si,no,propuesta_agente,tema climático global
@@ -158,22 +196,28 @@ NOT-c557ad4339,fuera_de_temas,no,no,propuesta_agente,
 NOT-c5695de607,fuera_de_temas,si,no,propuesta_agente,protesta municipal
 NOT-c62e67f86d,fuera_de_temas,no,no,propuesta_agente,
 NOT-c6484b2dd2,no_es_panama,no,no,propuesta_agente,
+NOT-c70fa66f39,servicios_publicos,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-c712a8d7e4,no_es_panama,no,no,propuesta_agente,
 NOT-c8859ae7ee,no_es_panama,no,no,propuesta_agente,
+NOT-c9ca2c4f1b,eventos_naturales,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-ca4e1fbcb5,no_es_panama,no,no,propuesta_agente,
 NOT-ca6fae4efb,servicios_publicos,si,no,propuesta_agente,incidente menor en un hospital
 NOT-cf027fac38,economia,si,no,propuesta_agente,
 NOT-cf4a8b6560,economia,no,no,propuesta_agente,finanzas públicas
+NOT-cf68dbface,no_es_panama,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-cfb4443c40,no_es_panama,no,no,propuesta_agente,
 NOT-d0819b0c85,no_es_panama,no,no,propuesta_agente,
 NOT-d1a04c684b,servicios_publicos,si,no,propuesta_agente,decomiso: seguridad o comercio exterior
 NOT-d1dad65858,no_es_panama,no,no,propuesta_agente,
 NOT-d1e861a440,servicios_publicos,no,no,propuesta_agente,seguridad ciudadana
+NOT-d238bdd0ba,economia,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-d25926a799,turismo,no,si,propuesta_agente,
 NOT-d5bb5b6e4d,no_es_panama,no,no,propuesta_agente,
 NOT-d6cc7acc03,fuera_de_temas,no,no,propuesta_agente,
 NOT-d84f07e7fe,no_es_panama,no,no,propuesta_agente,
 NOT-dabad2e0a8,no_es_panama,no,no,propuesta_agente,
+NOT-db96e0d8f2,fuera_de_temas,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
+NOT-dc6152d50d,servicios_publicos,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-ddac67c160,no_es_panama,no,no,propuesta_agente,
 NOT-dde43008f3,no_es_panama,no,no,propuesta_agente,
 NOT-de2a14c7e0,fuera_de_temas,no,no,propuesta_agente,
@@ -183,6 +227,7 @@ NOT-dffe2ef209,no_es_panama,no,no,propuesta_agente,
 NOT-e1ef662816,no_es_panama,si,no,propuesta_agente,
 NOT-e26f5334c5,no_es_panama,no,no,propuesta_agente,
 NOT-e2ac2876f4,no_es_panama,no,no,propuesta_agente,
+NOT-e349c24a43,no_es_panama,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-e4be84d36a,no_es_panama,no,no,propuesta_agente,
 NOT-e4f8660e0d,no_es_panama,no,no,propuesta_agente,
 NOT-e6ee0d9efd,fuera_de_temas,no,no,propuesta_agente,
@@ -214,9 +259,11 @@ NOT-f9dc7ffeb1,no_es_panama,no,no,propuesta_agente,
 NOT-fab0f9e504,economia,no,no,propuesta_agente,finanzas públicas
 NOT-faebbc2867,no_es_panama,no,no,propuesta_agente,
 NOT-fb0597e7e5,no_es_panama,no,no,propuesta_agente,
+NOT-fb6a099995,no_es_panama,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-fb96d4be46,no_es_panama,no,no,propuesta_agente,
 NOT-fbc3efaa5d,fuera_de_temas,no,no,propuesta_agente,política exterior
 NOT-fbcc9e5a02,no_es_panama,no,no,propuesta_agente,
 NOT-fc94561c6d,no_es_panama,no,no,propuesta_agente,
+NOT-fea873c833,no_es_panama,no,no,propuesta_agente,"captura TVN 2026-10-08; propuesta desde ruido/tema_clasificado, pendiente de revisión humana"
 NOT-ff1b1ed15c,servicios_publicos,no,si,propuesta_agente,
 NOT-ff3fb6b356,no_es_panama,no,no,propuesta_agente,

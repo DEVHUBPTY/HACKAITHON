@@ -156,6 +156,8 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("tema_clasificado", "VARCHAR"),
         ("ids_noticia", "VARCHAR NOT NULL"),
         ("estimado", "BOOLEAN NOT NULL"),
+        ("tema_origen_clasificador", "VARCHAR"),  # D-122: tema del clasificador cuando un subtema nombrado lo corrigió; nulo si no se corrigió
+        ("criterio_tema", "VARCHAR"),             # D-122: por qué se corrigió (``subtema_nombrado``); nulo si el tema es el del clasificador
     ],
     "procedencias": [  # E1-08: procedencias independientes de cada grupo y por qué se unieron los titulares
         ("id_grupo", "VARCHAR NOT NULL"),

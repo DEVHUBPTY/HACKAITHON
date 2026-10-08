@@ -1,0 +1,48 @@
+id_noticia,titulo,ruido,tema_principal,tema_secundario,grupo,alcance_regional,duda,propuesto_por,fecha_propuesta
+NOT-1550f5f415,Ghana presentó solicitud para unirse a los BRICS,no_es_panama,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-26103a18a9,Israel recuerda a las víctimas del 7 de octubre antes de las elecciones,no_es_panama,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-30a9b864f0,"MLB Playoffs 2026 resultado| Guardianes, con el panameño Daniel Espino como abridor, se revitalizan ante Medias Blancas en la Serie Divisional",fuera_de_temas,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-35875c046f,César Caicedo regresa a Coiba tras decisión de las autoridades,fuera_de_temas,,,,False,"No queda claro el tema; parece suceso o medio ambiente, fuera de los 6 temas",llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-3602873cc3,LPF | El Football Video Support está cada vez más cerca de nuestra liga,fuera_de_temas,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-3824af80a0,Gianmatteo Rousseau | Piloto panameño que triunfa en el extranjero,fuera_de_temas,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-38e461b044,Shakira y Piqué vuelven a los tribunales por el régimen de visitas de sus hijos,no_es_panama,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-3952ddcff3,Gianni Infantino tiene por ahora el camino despejado a su reelección en la FIFA,no_es_panama,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-453f02387d,"Relanzamientos de las relaciones de Panamá y Vietnam: Acuerdos, inversiones y la Zona Libre de Colón",ninguno,logistica,economia,ninguno,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-47f236bdf2,Aprehenden a 10 personas por presunta minería ilegal y delitos ambientales en Coclé del Norte,fuera_de_temas,,,,False,"Aprehensión por minería ilegal: parece suceso/ambiental, no encaja claramente en los 6 temas",llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-4df98e1be1,Defensoría abrirá queja de oficio por desborde de aguas residuales y afectación ambiental en barriada de Pacora,ninguno,servicios_publicos,,ninguno,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-54f514f1fa,"Contenido exclusivo: Dietilenglicol, 20 años de dolor",fuera_de_temas,,,,False,Titular de contenido especial sin hecho noticioso claro,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-5e33683cd3,"Muere Piero, la voz de 'Mi viejo', a los 81 años",fuera_de_temas,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-6537887bb9,Kast da marcha atrás en su reforma de seguridad ante escaso apoyo en Chile,no_es_panama,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-676c3cf531,"Shakira prepara un cierre histórico en Madrid con Bizarrap, Maluma y Beéle",fuera_de_temas,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-67a1a035f7,Muere hija de Paquita la del Barrio a poco más de un año de la partida de la cantante,fuera_de_temas,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-67c9cc2f3f,Amber Heard reaparece en España tras completar su primera media maratón,no_es_panama,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-68d2d3887e,MLB Playoffs 2026 noticias| Daniel Espino: panameño entra en la historia con apertura efímera en Juego 3 de serie Guardianes vs Medias Blancas,fuera_de_temas,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-6f1123ebc1,Festival Navideño 'City of Stars 2026': Alcaldía de Panamá presenta el calendario de actividades,fuera_de_temas,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-702cb42100,Panamá condena atentados del 7 de octubre y pide paz entre israelíes y palestinos,fuera_de_temas,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-705e4b69cc,"Muere Maricarmen, la mujer de más de 80 años cuyo desalojo desató las movilizaciones por la vivienda en España",no_es_panama,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-7676c557c0,Tom Cruise defiende Digger tras el fracaso en taquilla y responde a las críticas,no_es_panama,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-7776195ee7,Una veintena de muertos en Ucrania tras bombardeos rusos,no_es_panama,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-7f85397675,Lau Cortés: Ordenan detención domiciliaria e imputan cargos por enriquecimiento injustificado y blanqueo de capitales,fuera_de_temas,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-8473a453ef,El Nobel de Química premia un descubrimiento clave para fabricar fármacos,no_es_panama,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-898659b0ba,Asamblea: Debate por la renovación del contrato de Ciudad del Saber genera cuestionamientos por exoneraciones,ninguno,regulacion,,ninguno,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-8fa6e9b5f2,MLB Playoffs 2026 resultado| Dodgers apagan a Bravos y atrapan boleto a la Serie de Campeonato de la Liga Nacional,fuera_de_temas,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-9269f5fc9e,Sinaproc busca superar el 10% de participación ciudadana en el tercer simulacro nacional,ninguno,eventos_naturales,,ninguno,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-927a71e178,Preselección de Panamá inicia preparación para el Premundial de Béisbol U12 2026,fuera_de_temas,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-963385655a,Universidad Tecnológica evalúa unos 200 edificios para determinar su seguridad ante sismos,ninguno,eventos_naturales,servicios_publicos,ninguno,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-a04070f1db,EEUU prohíbe el alcohol y decreta toque de queda a soldados en Japón tras asesinato de una mujer,no_es_panama,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-a3f27cca6f,Panamá inicia su preparación para el Premundial de Béisbol U12 2026,fuera_de_temas,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-a56f1d6c94,Veraguas prepara operativo para fiestas patrias con refuerzo policial y controles en la Panamericana,ninguno,servicios_publicos,,ninguno,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-a82b88d354,¡Noche de diva! Ale Merod gana el octavo show de Tu Cara Me Suena como Jennifer Lopez,fuera_de_temas,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-aba6299a4d,Municipio de Arraiján: Stefany Peñalba guarda silencio en medio de disputa por uso de fondos y presuntas irregularidades,fuera_de_temas,,,,False,"Disputa por fondos municipales con presuntas irregularidades: posible corrupción administrativa, no encaja en los 6 temas",llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-ad4b52508e,Unos 22 aprehendidos en la operación Comunidad Segura contra el microtráfico en Colón y Panama Oeste,ninguno,servicios_publicos,,ninguno,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-aec8c87a11,Pilotos solicitan al Aeropuerto de Tocumen fortalecer controles por riesgo de aves durante temporada migratoria,ninguno,logistica,,ninguno,False,"Riesgo de aves en Tocumen: seguridad operacional aeroportuaria, se ubica en Logística/Canal por ser aviación no de pasajeros",llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-af0acb2fbe,Cristiano Ronaldo le envió un mensaje a Lionel Messi luego del partido de despedida,fuera_de_temas,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-c70fa66f39,Exfuncionarios de alto perfil investigados: estos son los casos y su situación judicial,fuera_de_temas,,,,False,"Casos judiciales de exfuncionarios: proceso judicial, no un tema del reto",llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-c9ca2c4f1b,Chiriquí| Investigan incendio en sastrería de calle Quinta en David,ninguno,eventos_naturales,,ninguno,False,"Incendio en sastrería: incendio no forestal, podría ser suceso; se marca eventos naturales por el fuego",llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-cf68dbface,Canadá no permitirá suicidio asistido para quienes solo padecen enfermedades mentales,no_es_panama,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-d238bdd0ba,Presupuesto 2027: Presidente de la Comisión recomendará más fondos para salud y cumplir con primas de antigüedad,ninguno,economia,servicios_publicos,ninguno,False,Presupuesto y fondos para salud: finanzas públicas con salud como secundario,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-db96e0d8f2,MLB Playoffs 2026 resultado| Yankees son eliminados por Rays en la Serie Divisional. José 'Chema' Caballero estuvo en la alineación,fuera_de_temas,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-dc6152d50d,Ataque a tiros cerca de la estación del metro de San Miguelito deja un muerto y dos heridos,ninguno,servicios_publicos,,ninguno,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-e349c24a43,Timbiriche rechaza la nueva serie de ViX y aclara que ninguno de sus integrantes participó,fuera_de_temas,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-fb6a099995,La OMS advierte contra los tratamientos antiobesidad en menores de 10 años,no_es_panama,,,,False,Advertencia de la OMS sin mención a Panamá; no se identifica afectación directa,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z
+NOT-fea873c833,Lionel Messi despedida| Estos fueron los momentos que marcaron una noche inolvidable,fuera_de_temas,,,,False,,llm:deepseek:deepseek-flash,2026-10-08T04:15:55Z

@@ -11,9 +11,30 @@ from eval import ruido as eval_ruido
 from src import db
 from src.configuracion import cargar_etiquetado, cargar_temas, validar_todo
 
-CFG = cargar_etiquetado()
+_CFG_REAL = cargar_etiquetado()
+# Las pruebas sortean sobre bases sintéticas: sin la muestra congelada ni las ampliaciones de la config real.
+CFG = _CFG_REAL.model_copy(update={"muestra": _CFG_REAL.muestra.model_copy(update={"congelada": None, "ampliaciones": []})})
 TEMAS = cargar_temas()
 UTC_FIJA = "2026-10-06T15:00:00Z"
+
+
+@pytest.fixture(autouse=True)
+def _config_sintetica(monkeypatch):
+    """``main`` carga la config real; las pruebas usan ``CFG`` (sin muestra congelada, que apunta a la base real)."""
+    monkeypatch.setattr(et, "cargar_etiquetado", lambda *a, **k: CFG)
+
+
+def _config_sintetica_dir(tmp_path: Path, monkeypatch) -> None:
+    """Para ``AppTest`` (corre el script en limpio): una carpeta de config sin muestra congelada ni ampliaciones (``HACKIA_CONFIG``)."""
+    import yaml
+
+    datos = yaml.safe_load((Path(et.RAIZ) / "config" / "etiquetado.yaml").read_text(encoding="utf-8"))
+    datos["muestra"].pop("congelada", None)
+    datos["muestra"].pop("ampliaciones", None)
+    carpeta = tmp_path / "config_sintetica"
+    carpeta.mkdir()
+    (carpeta / "etiquetado.yaml").write_text(yaml.safe_dump(datos, allow_unicode=True), encoding="utf-8")
+    monkeypatch.setenv("HACKIA_CONFIG", str(carpeta))
 
 
 def _noticias(n: int = 150) -> list[dict]:
@@ -411,6 +432,7 @@ def test_la_interfaz_guarda_una_etiqueta_en_una_carpeta_temporal(tmp_path, monke
     """
     from streamlit.testing.v1 import AppTest
 
+    _config_sintetica_dir(tmp_path, monkeypatch)
     monkeypatch.setenv("HACKIA_BASE", str(_base(tmp_path / "s.duckdb")))
     monkeypatch.setenv("HACKIA_RAIZ", str(tmp_path))
     app = AppTest.from_file(str(Path(et.__file__)), default_timeout=60)
@@ -438,6 +460,7 @@ def test_la_interfaz_en_desempate_muestra_solo_los_titulos_en_disputa(tmp_path, 
     carpeta = tmp_path / CFG.archivos.carpeta_personas
     et.escribir_csv(carpeta / "ana.csv", [_fila(d, "Ana")])
     et.escribir_csv(carpeta / "beto.csv", [_fila(d, "Beto", principal="turismo")])
+    _config_sintetica_dir(tmp_path, monkeypatch)
     monkeypatch.setenv("HACKIA_BASE", str(ruta_base))
     monkeypatch.setenv("HACKIA_RAIZ", str(tmp_path))
     app = AppTest.from_file(str(Path(et.__file__)), default_timeout=60)

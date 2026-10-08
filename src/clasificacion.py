@@ -1,11 +1,15 @@
 """Clasificación de titulares en los 6 temas (``tema_clasificado``) o ``sin_tema`` (E1-07, D-21, D-62).
 
-Dos métodos con el mismo código y la misma salida (solo los 6 temas del reto):
+Tres métodos con el mismo código y la misma salida (solo los 6 temas del reto):
 
 * **A** (descripción + ejemplos): cada tema es el centroide de los embeddings de su descripción y de sus titulares de
   ejemplo (``config/temas.yaml``). La similitud con un tema es el coseno con su centroide.
 * **B** (prototipos por subtema): cada subtema tiene un prototipo; la similitud con un tema es la del subtema más
   parecido y el resultado sube a su tema. El subtema queda como detalle ("Servicios públicos · agua potable").
+
+* **logistica** (D-121): regresión logística sobre los mismos embeddings, entrenada con los textos de referencia de
+  ``temas.yaml`` (``src/clasificacion_logistica.py``). La "similitud" con un tema es su probabilidad; el umbral
+  ``sin_tema`` es la probabilidad máxima mínima (``logistica`` en ``config/clasificacion.yaml``).
 
 Reglas comunes: solo se clasifica ``titulo_limpio`` de los registros con ``es_ruido = false`` (con la descripción del
 RSS como texto interno si existe, D-31); el ``tema`` de origen del contrato **nunca** se lee (D-62: sería una fuga de
@@ -33,9 +37,12 @@ import numpy as np
 from src import db
 from src.baseline import SIN_TEMA, Baseline
 from src.carga import intervalo_wilson
+from src.clasificacion_logistica import ModeloLogistico, entrenar, probabilidades
 from src.configuracion import (
+    METODO_LOGISTICO,
     RAIZ,
     ConfigClasificacion,
+    ConfigLogistica,
     ConfigRuido,
     ConfigTemas,
     UmbralesMetodo,
@@ -89,6 +96,7 @@ class Referencias:
     centroides: np.ndarray                  # (temas, d)
     subtemas: list[tuple[str, str]]         # (tema, subtema) por fila de ``prototipos``
     prototipos: np.ndarray                  # (subtemas, d)
+    logistico: ModeloLogistico | None = None    # solo si se pidió (D-121)
 
 
 def _unitario(vector: np.ndarray) -> np.ndarray:
@@ -104,18 +112,51 @@ def textos_de_referencia(temas: ConfigTemas, reglas: Reglas) -> dict[str, list[s
     }
 
 
-def construir_referencias(emb: Embeddings, temas: ConfigTemas, reglas: Reglas | None = None) -> Referencias:
-    """Codifica descripciones, ejemplos y prototipos (rol ``tema``) y arma centroides y prototipos."""
+def construir_referencias(
+    emb: Embeddings,
+    temas: ConfigTemas,
+    reglas: Reglas | None = None,
+    logistica: ConfigLogistica | None = None,
+    pool: tuple[np.ndarray, list[str]] | None = None,
+) -> Referencias:
+    """Codifica descripciones, ejemplos y prototipos (rol ``tema``) y arma centroides y prototipos.
+
+    Con ``logistica`` también ajusta el clasificador de D-121 con esos mismos vectores (descripción, ejemplos y
+    prototipos de subtema) y, desde D-123, con el ``pool`` (vectores de titulares y su tema) de etiquetas humanas que
+    ``eval/aprendizaje_activo.py`` separa de la evaluación. Sin ``pool`` el entrenamiento es solo el de referencias.
+    """
     reglas = reglas or Reglas.desde_config()
     ids = list(temas.temas)
     centroides = []
+    entrenamiento: list[np.ndarray] = []
+    etiquetas: list[str] = []
     for id_tema, textos in textos_de_referencia(temas, reglas).items():
         vectores = emb.codificar(textos, "tema")
         centroides.append(_unitario(vectores.mean(axis=0)))
+        entrenamiento.append(vectores)
+        etiquetas += [id_tema] * len(textos)
         logger.debug("Centroide de %s con %d textos", id_tema, len(textos))
     subtemas = [(id_tema, sub) for id_tema, tema in temas.temas.items() for sub in tema.subtemas]
     prototipos = emb.codificar([temas.temas[t].subtemas[s].prototipo for t, s in subtemas], "tema")
-    return Referencias(ids, np.stack(centroides), subtemas, prototipos)
+    modelo = None
+    if logistica is not None:
+        X = np.vstack([*entrenamiento, prototipos, *([pool[0]] if pool is not None and len(pool[1]) else [])])
+        y = [*etiquetas, *(t for t, _ in subtemas), *(pool[1] if pool is not None else [])]
+        modelo = entrenar(X, y, ids, logistica)
+    return Referencias(ids, np.stack(centroides), subtemas, prototipos, modelo)
+
+
+def datos_de_entrenamiento(emb: Embeddings, temas: ConfigTemas, reglas: Reglas | None = None) -> tuple[np.ndarray, list[str]]:
+    """Vectores y etiquetas con que se entrena (y se calibra) el método logístico: solo referencias de ``temas.yaml``."""
+    reglas = reglas or Reglas.desde_config()
+    vectores, etiquetas = [], []
+    for id_tema, textos in textos_de_referencia(temas, reglas).items():
+        vectores.append(emb.codificar(textos, "tema"))
+        etiquetas += [id_tema] * len(textos)
+    for id_tema, tema in temas.temas.items():
+        vectores.append(emb.codificar([s.prototipo for s in tema.subtemas.values()], "tema"))
+        etiquetas += [id_tema] * len(tema.subtemas)
+    return np.vstack(vectores), etiquetas
 
 
 # ------------------------------------------------------------------ puntaje y decisión
@@ -131,12 +172,16 @@ class Puntajes:
 
 
 def puntuar(vectores: np.ndarray, ref: Referencias, metodo: str) -> Puntajes:
-    """Similitud coseno de ``vectores`` (ya normalizados) con los 6 temas según el método."""
+    """Similitud coseno de ``vectores`` (ya normalizados) con los 6 temas según el método (en ``logistica``, probabilidad)."""
     n = vectores.shape[0]
     if metodo == METODO_A:
         return Puntajes(vectores @ ref.centroides.T, [[None] * len(ref.temas) for _ in range(n)], np.full((n, len(ref.temas)), np.nan))
+    if metodo == METODO_LOGISTICO:
+        if ref.logistico is None:
+            raise ValueError("método logistica: las referencias se construyeron sin `logistica` (construir_referencias)")
+        return Puntajes(probabilidades(ref.logistico, vectores), [[None] * len(ref.temas) for _ in range(n)], np.full((n, len(ref.temas)), np.nan))
     if metodo != METODO_B:
-        raise ValueError(f"método desconocido: {metodo!r} (A o B)")
+        raise ValueError(f"método desconocido: {metodo!r} (A, B o {METODO_LOGISTICO})")
     sims = vectores @ ref.prototipos.T                                     # (n, subtemas)
     similitud = np.full((n, len(ref.temas)), -np.inf, dtype=np.float64)
     margen = np.full((n, len(ref.temas)), np.nan, dtype=np.float64)
@@ -189,6 +234,13 @@ def decidir(similitud: np.ndarray, subtemas: list[str | None], temas: list[str],
 def decidir_todos(puntajes: Puntajes, temas: list[str], umbrales: UmbralesMetodo) -> list[Decision]:
     """``decidir`` para cada fila de ``puntajes``."""
     return [decidir(puntajes.similitud[i], puntajes.subtema[i], temas, umbrales) for i in range(puntajes.similitud.shape[0])]
+
+
+def umbrales_de(cfg: ConfigClasificacion, nombre_modelo: str, metodo: str) -> UmbralesMetodo:
+    """Umbrales del método: por modelo en A y B; los de ``logistica`` son propios (probabilidad, no coseno)."""
+    if metodo == METODO_LOGISTICO:
+        return UmbralesMetodo(umbral_sin_tema=cfg.logistica.umbral_sin_tema, margen_secundario=cfg.logistica.margen_secundario)
+    return cfg.modelos[nombre_modelo].umbrales[metodo]
 
 
 def clasificar_textos(
@@ -316,7 +368,7 @@ def aplicar_a_base(
     ``similitud_tema``: no inserta ni borra noticias (el ruido se marca, no se borra).
     """
     metodo = metodo or cfg.metodo_activo
-    umbrales = cfg.modelos[cfg.modelo_activo].umbrales[metodo]
+    umbrales = umbrales_de(cfg, cfg.modelo_activo, metodo)
     reglas = reglas or Reglas.desde_config()
     fijar_semilla(cfg.semilla)
     con = db.conectar(ruta_base)
@@ -349,12 +401,13 @@ def aplicar_a_base(
 
         # 2) clasificación de lo que no es ruido; el `tema` de origen no se lee en ningún punto
         utiles = [f for f in filas if not f["es_ruido"]]
-        ref = construir_referencias(emb, temas, reglas)
+        ref = construir_referencias(emb, temas, reglas, cfg.logistica if metodo == METODO_LOGISTICO else None)
         baseline = Baseline(cfg, temas)
-        modelo = cfg.modelos[cfg.modelo_activo]
         vectores = emb.codificar([f["_texto"] for f in utiles], "titular") if utiles else np.zeros((0, ref.centroides.shape[1]))
         puntajes = {m: puntuar(vectores, ref, m) for m in (METODO_A, METODO_B)}
-        decisiones = decidir_todos(puntajes[metodo], ref.temas, modelo.umbrales[metodo])
+        if metodo == METODO_LOGISTICO:
+            puntajes[metodo] = puntuar(vectores, ref, metodo)
+        decisiones = decidir_todos(puntajes[metodo], ref.temas, umbrales)
         for f, d in zip(utiles, decisiones, strict=True):
             f.update(
                 tema_clasificado=d.principal,
@@ -414,7 +467,7 @@ def ejecutar(ruta_base: Path, ruta_reporte: Path, nombre_modelo: str | None = No
     ruido, temas = cargar_ruido(), cargar_temas()
     emb = crear(cfg)
     filas = aplicar_a_base(ruta_base, cfg, ruido, temas, emb, metodo)
-    seccion = construir_reporte(filas, cfg, ruido, cfg.modelos[cfg.modelo_activo].umbrales[metodo], metodo, cargar_carga().salida.z_intervalo_confianza)
+    seccion = construir_reporte(filas, cfg, ruido, umbrales_de(cfg, cfg.modelo_activo, metodo), metodo, cargar_carga().salida.z_intervalo_confianza)
     seccion["embeddings"] = {"codificados": emb.codificados, "aciertos_cache": emb.aciertos_cache}
     escribir_seccion(ruta_reporte, "clasificacion", seccion)
     return seccion
@@ -429,7 +482,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--base", type=Path, default=RAIZ / "data" / cargar_normalizacion().salida.base_de_datos)
     parser.add_argument("--reporte", type=Path, default=RAIZ / "outputs" / carga.salida.reporte)
     parser.add_argument("--modelo", choices=sorted(cfg.modelos), default=cfg.modelo_activo)
-    parser.add_argument("--metodo", choices=("A", "B"), default=cfg.metodo_activo)
+    parser.add_argument("--metodo", choices=(METODO_A, METODO_B, METODO_LOGISTICO), default=cfg.metodo_activo)
     args = parser.parse_args(argv)
     if not args.base.exists():
         logger.error("No existe %s: ejecute primero `normalizacion` y `limpieza`", args.base)

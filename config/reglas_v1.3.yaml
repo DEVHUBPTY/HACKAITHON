@@ -18,10 +18,14 @@ desempate: [u_desc, id_asc]  # mayor U; si empatan, menor ID
 
 # D-103: ni R ni N usan ya percentiles de similitud (antes D-35: «percentil dentro del snapshot»).
 
-relevancia:                 # R = peso_foco × foco. D-103 quitó la parte temática (confianza del clasificador) y renormalizó
-  peso_foco: 1.0            # antes 0.5 foco + 0.5 percentil(similitud temática); la única parte que queda pesa 1
+relevancia:                 # R = peso_foco × foco × pertenencia temática. D-103 quitó la parte temática basada en la CONFIANZA del clasificador;
+  peso_foco: 1.0            # D-119 la restituye de otra forma: pertenencia DISCRETA según la ETIQUETA (nunca la confianza) a los temas de la modalidad
   foco_panama_sujeto: 1.0
   foco_otro_pais_afecta: 0.5
+  pertenencia_tematica:     # "Relación con Panamá y con los temas de la modalidad" (PDF sección 4). Temas = los 6 de config/temas.yaml
+    tema_principal: 1.0     # algún titular del grupo tiene un tema de la modalidad como tema_clasificado
+    solo_secundario: 0.6    # ninguno lo tiene como principal, pero alguno lo tiene como tema_secundario
+    sin_tema: 0.3           # ninguno (etiqueta nula, no_es_panama, fuera_de_temas o no_es_noticia): baja el orden sin anular el grupo
 
 impacto:                    # I = peso_subtema × alcance(subtema) + peso_geografico × alcance geográfico
   peso_subtema: 0.5         # el dato oficial y las procedencias NO entran en I (D-15, D-35)
@@ -77,11 +81,18 @@ urgencia:                   # U usa la publicación original MÁS RECIENTE del g
   # Sin fecha_publicacion en ningún titular (todo GDELT): se usa fecha_deteccion como cota y se agrega este vacío.
   fecha_sin_publicacion: fecha_deteccion
   vacio_sin_publicacion: "urgencia estimada: fecha de publicación desconocida"
+  # D-124: la detección es igual o posterior a la publicación; con ella el grupo se ve más nuevo de lo que es. U se topa en este valor
+  # (supuesto conservador: la mitad de la escala) y la explicación marca `fecha_imputada`. Nunca se presenta como publicación.
+  tope_fecha_imputada: 0.5
 
-novedad:                    # D-103: s = similitud máxima con un titular de un grupo anterior; u = agrupacion.umbral_similitud
-  # N = 1 si s < u (no es el mismo evento: no se descuenta); si s ≥ u, N = (1 − s) / (1 − u), lineal de 1 (en el umbral)
-  # a 0 (duplicado exacto). El umbral es el MISMO con que se agrupa (no se copia aquí).
-  sin_grupos_previos: 1.0   # el primer grupo no tiene con qué compararse
+novedad:                    # D-124 (reemplaza a D-103): N continua entre dos anclas a priori
+  # s = similitud coseno entre el CENTROIDE del grupo y el de cada grupo que empezó ANTES y dentro de `ventana_dias` (la
+  # fecha de inicio es la del titular más antiguo: publicación y, si falta, detección). Se toma la máxima.
+  # N = 1 si s <= ancla_baja; N = 0 si s >= ancla_alta; lineal entre ambas. ancla_alta = agrupacion.umbral_similitud (arriba
+  # de él el agrupamiento habría unido los dos grupos: sería el mismo evento); no se copia aquí. Una duplicación nunca sube N.
+  sin_grupos_previos: 1.0   # sin ningún grupo anterior dentro de la ventana, N = este valor
+  ventana_dias: 7           # supuesto: la misma ventana con que se agrupa (agrupacion.ventana_dias); más lejos ya no es repetición
+  ancla_baja: 0.50          # supuesto a priori: extremo inferior del barrido de calibración (agrupacion.calibracion.barrido_desde); por debajo no es candidato a mismo evento. NO se ajustó para que N se vea distribuido
 
 evidencia:                  # E (v1.3, D-56)
   peso_procedencias: 0.5

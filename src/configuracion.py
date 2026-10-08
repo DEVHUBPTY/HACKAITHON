@@ -585,12 +585,31 @@ class Rangos(ModeloConfig):
         return self
 
 
+class PertenenciaTematica(ModeloConfig):
+    """Pertenencia de un grupo a los temas de la modalidad (D-119): tres valores discretos según la etiqueta, nunca la confianza."""
+
+    tema_principal: float = Unidad
+    solo_secundario: float = Unidad
+    sin_tema: float = Unidad
+
+    @model_validator(mode="after")
+    def _monotona(self) -> PertenenciaTematica:
+        if not self.tema_principal >= self.solo_secundario >= self.sin_tema:
+            raise ValueError("pertenencia_tematica debe cumplir tema_principal >= solo_secundario >= sin_tema")
+        return self
+
+
 class Relevancia(ModeloConfig):
-    """R = ``peso_foco`` × foco. D-103 quitó la parte temática (percentil de la similitud con el tema)."""
+    """R = ``peso_foco`` × foco × pertenencia temática.
+
+    D-103 quitó la parte temática que usaba la confianza del clasificador (percentil de la similitud); D-119 la restituye como
+    pertenencia discreta según la etiqueta (``tema_clasificado`` / ``tema_secundario``), sin leer nunca la confianza.
+    """
 
     peso_foco: float = Unidad
     foco_panama_sujeto: float = Unidad
     foco_otro_pais_afecta: float = Unidad
+    pertenencia_tematica: PertenenciaTematica
 
     @model_validator(mode="after")
     def _partes(self) -> Relevancia:
@@ -626,6 +645,9 @@ class Urgencia(ModeloConfig):
     dias_nulo: float = Field(gt=0)
     fecha_sin_publicacion: Literal["fecha_deteccion"]
     vacio_sin_publicacion: str
+    # D-124: con la fecha de detección en lugar de la de publicación (imputada), U no pasa de este tope: la detección es
+    # igual o posterior a la publicación, así que el grupo puede ser más viejo de lo que parece.
+    tope_fecha_imputada: float = Unidad
 
     @model_validator(mode="after")
     def _ventana(self) -> Urgencia:
@@ -636,6 +658,10 @@ class Urgencia(ModeloConfig):
 
 class Novedad(ModeloConfig):
     sin_grupos_previos: float = Unidad
+    # D-124: N continua a partir de la similitud del centroide del grupo con el de los grupos que EMPEZARON antes dentro de
+    # esta ventana (días). N = 1 si la similitud <= ancla_baja y 0 si >= ancla_alta (= agrupacion.umbral_similitud, no se copia).
+    ventana_dias: float = Field(gt=0)
+    ancla_baja: float = Unidad
 
 
 class EvidenciaReglas(ModeloConfig):
@@ -815,6 +841,14 @@ class Vinculo(ModeloConfig):
         return self
 
 
+class CorreccionTema(ModeloConfig):
+    """D-122: un subtema nombrado corrige el tema del grupo (determinista, sin embeddings; ver ``contexto.tema_por_subtema_nombrado``)."""
+
+    activa: bool
+    corregir_sin_tema: bool   # si el clasificador no asignó tema (``sin_tema`` o nulo), un único tema nombrado lo asigna
+    criterio: str = Field(min_length=1)   # valor que se guarda en ``grupos.criterio_tema`` cuando el tema se corrige
+
+
 class SubtemaVinculo(ModeloConfig):
     """D-92 y E1-10c (X41): el grupo toma el subtema más cercano solo si un criterio de ``criterios`` lo respalda.
 
@@ -831,6 +865,8 @@ class SubtemaVinculo(ModeloConfig):
     # E1-07c (X78, D-111): marcadores (palabra o frase completa) que, en un titular, impiden que ese titular respalde el subtema
     # («juez imputa a funcionarios del MOP» es un proceso judicial, no una obra). No lo vuelven ruido: el tema se decide aparte.
     exclusiones_por_subtema: dict[str, list[str]] = Field(default_factory=dict)
+    # D-122: si los titulares nombran subtemas de un único tema distinto al clasificado, ese tema gana.
+    correccion_tema: CorreccionTema = Field(default_factory=lambda: CorreccionTema(activa=False, corregir_sin_tema=False, criterio="subtema_nombrado"))
 
     @field_validator("patrones_por_subtema")
     @classmethod
@@ -1428,12 +1464,13 @@ class PanamaRuido(ModeloConfig):
     origenes_exentos: list[str]
     paises_medio_exentos: list[str]
     regionales: list[str]
+    fenomenos_regionales_con_impacto: list[str]  # D-120
     dominio_con_seccion: str
     secciones_dudosas: list[str]
 
     @model_validator(mode="after")
     def _regex_validas(self) -> PanamaRuido:
-        _compilar_todas([*self.falsos, *self.menciones, *self.regionales], "panama")
+        _compilar_todas([*self.falsos, *self.menciones, *self.regionales, *self.fenomenos_regionales_con_impacto], "panama")
         return self
 
 
@@ -1492,6 +1529,9 @@ def cargar_ruido(carpeta: Path | None = None) -> ConfigRuido:
 # ------------------------------------------------------------------ clasificacion.yaml (E1-07)
 
 METODOS_CLASIFICACION = ("A", "B")
+MIN_REMUESTREOS_PAREADOS = 2000   # mínimo exigido al bootstrap pareado (D-121)
+METODO_LOGISTICO = "logistica"      # D-121: regresión logística sobre los mismos embeddings; no lleva umbrales por modelo (ver ConfigLogistica)
+METODOS_ACTIVABLES = (*METODOS_CLASIFICACION, METODO_LOGISTICO)
 
 
 class UmbralesMetodo(ModeloConfig):
@@ -1529,6 +1569,51 @@ class ModeloEmbeddings(ModeloConfig):
     def _metodos(self) -> ModeloEmbeddings:
         if set(self.umbrales) != set(METODOS_CLASIFICACION):
             raise ValueError(f"umbrales: deben estar los métodos {list(METODOS_CLASIFICACION)}")
+        return self
+
+
+class ConfigAprendizajeActivo(ModeloConfig):
+    """Ciclo de aprendizaje activo con una persona en el circuito (D-123).
+
+    ``muestra_evaluacion`` fija el conjunto de EVALUACIÓN (los IDs de la muestra original congelada): nunca entra al
+    entrenamiento. El pool de entrenamiento son las etiquetas humanas de titulares que NO están en ese conjunto.
+    """
+
+    usar_pool: bool                  # si el método `logistica` también se entrena con el pool de etiquetas humanas
+    muestra_evaluacion: str = Field(min_length=1)   # CSV con la columna id_noticia: la evaluación congelada
+
+
+class ConfigLogistica(ModeloConfig):
+    """Clasificador por regresión logística (D-121). Se entrena SOLO con los textos de referencia de ``temas.yaml``
+    (descripción, ejemplos y prototipos de subtema); las etiquetas humanas no entran nunca en el entrenamiento.
+
+    ``regularizacion_c`` y ``umbral_sin_tema`` son el RESULTADO de ``python -m eval.calibrar_logistico`` (validación
+    cruzada estratificada sobre esos textos): el primero maximiza el macro-F1 de la validación cruzada de la
+    ``rejilla_c``; el segundo es el ``percentil_umbral`` de la probabilidad máxima, fuera de muestra, de los textos que la
+    validación cruzada acierta; ``margen_secundario`` = ``percentil_margen`` de la brecha entre las dos mayores
+    probabilidades de esos mismos textos. Un test recalcula ambos y falla si el YAML no coincide.
+    """
+
+    regularizacion_c: float = Field(gt=0)
+    rejilla_c: list[float] = Field(min_length=1)
+    pesos_de_clase: Literal["balanced"] | None
+    max_iter: int = Field(gt=0)
+    pliegues: int = Field(ge=2)
+    semilla: int
+    percentil_umbral: float = Field(ge=0, le=100)
+    percentil_margen: float = Field(ge=0, le=100)    # margen_secundario = este percentil de (1.ª − 2.ª probabilidad) fuera de muestra
+    umbral_sin_tema: float = Field(ge=0, le=1)       # probabilidad máxima mínima; por debajo, sin_tema
+    margen_secundario: float = Field(ge=0, le=1)     # diferencia de probabilidad para ofrecer un tema secundario
+    decimales_umbral: int = Field(ge=0)              # el umbral se guarda redondeado a estos decimales
+    bootstrap_pareado: CriterioAB                    # comparación pareada de macro-F1 contra el método A (>= 2000 remuestreos)
+    aprendizaje_activo: ConfigAprendizajeActivo      # D-123: pool de etiquetas humanas fuera de la evaluación congelada
+
+    @model_validator(mode="after")
+    def _coherente(self) -> ConfigLogistica:
+        if self.regularizacion_c not in self.rejilla_c or any(c <= 0 for c in self.rejilla_c):
+            raise ValueError("logistica: regularizacion_c debe pertenecer a rejilla_c y toda C ser positiva")
+        if self.bootstrap_pareado.remuestreos < MIN_REMUESTREOS_PAREADOS:
+            raise ValueError(f"logistica.bootstrap_pareado: al menos {MIN_REMUESTREOS_PAREADOS} remuestreos")
         return self
 
 
@@ -1629,13 +1714,14 @@ class ConfigClasificacion(ModeloConfig):
     criterio_ab: CriterioAB
     fuga_semantica: FugaSemantica
     baseline: BaselineClasificacion
+    logistica: ConfigLogistica
 
     @model_validator(mode="after")
     def _coherente(self) -> ConfigClasificacion:
         if self.modelo_activo not in self.modelos:
             raise ValueError(f"modelo_activo {self.modelo_activo!r} no está en modelos {sorted(self.modelos)}")
-        if self.metodo_activo not in METODOS_CLASIFICACION:
-            raise ValueError(f"metodo_activo: uno de {list(METODOS_CLASIFICACION)}")
+        if self.metodo_activo not in METODOS_ACTIVABLES:
+            raise ValueError(f"metodo_activo: uno de {list(METODOS_ACTIVABLES)}")
         if self.fuga_semantica.modelo not in self.modelos:
             raise ValueError(f"fuga_semantica.modelo {self.fuga_semantica.modelo!r} no está en modelos")
         if self.lote < 1:
@@ -1723,11 +1809,26 @@ class EstratosEtiquetado(ModeloConfig):
     ruido: EstratoEtiquetado
 
 
+class AmpliacionEtiquetado(ModeloConfig):
+    """Titulares que se agregan a la muestra sin tocar los originales (censo de una captura nueva, estrato propio)."""
+
+    nombre: str = Field(min_length=1)
+    ids_desde: str                 # CSV con columna id_noticia (p. ej. eval/propuestas/*.csv); solo se leen los IDs
+    estrato: str = Field(min_length=1)
+    peso_muestreo: float = Field(gt=0)   # censo del estrato: 1.0
+    # D-123: la cola de la ampliación va de los titulares más inciertos para el clasificador a los más seguros
+    ordenar_por_incertidumbre: bool = True
+
+
 class MuestraEtiquetado(ModeloConfig):
     semilla: int
     tamano: int = Field(ge=1)
     tamano_acuerdo: int = Field(ge=2)
     estratos: EstratosEtiquetado
+    # CSV con la muestra original ya fijada (orden, estrato, pesos, dobles). Si está, la muestra original sale de ahí y no
+    # se vuelve a sortear: el filtro de ruido cambió después de etiquetar y la población creció.
+    congelada: str | None = None
+    ampliaciones: list[AmpliacionEtiquetado] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _acuerdo_cabe(self) -> MuestraEtiquetado:
@@ -1740,11 +1841,18 @@ class MuestraEtiquetado(ModeloConfig):
             raise ValueError("los dobles de los estratos deben sumar tamano_acuerdo")
         if e.no_ruido.dobles > e.no_ruido.cuota or e.ruido.dobles > e.ruido.cuota:
             raise ValueError("los dobles de un estrato no pueden superar su cuota")
+        nombres = [a.nombre for a in self.ampliaciones]
+        estratos = [a.estrato for a in self.ampliaciones]
+        if len(set(nombres)) != len(nombres) or len(set(estratos)) != len(estratos):
+            raise ValueError("cada ampliación lleva un nombre y un estrato propios")
+        if set(estratos) & {"no_ruido", "ruido"}:
+            raise ValueError("el estrato de una ampliación no puede ser no_ruido ni ruido")
         return self
 
 
 class ArchivosEtiquetado(ModeloConfig):
     carpeta_personas: str
+    carpeta_propuestas: str = "eval/propuestas"   # propuestas de un LLM: solo rellenan el formulario, nunca son etiquetas
     consolidado: str
     ejemplos_excluidos: str
 

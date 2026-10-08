@@ -189,7 +189,8 @@ def n_efectivo(muestra: list[dict[str, Any]]) -> float:
 def composicion(muestra: list[dict[str, Any]]) -> list[str]:
     """Líneas legibles: composición por estrato, pesos, dobles y n efectivo."""
     lineas = []
-    for k in ESTRATOS:
+    estratos = [*ESTRATOS, *dict.fromkeys(x["estrato"] for x in muestra if x["estrato"] not in ESTRATOS)]  # ampliaciones: censo, peso de config
+    for k in estratos:
         m = [x for x in muestra if x["estrato"] == k]
         if m:
             lineas.append(
@@ -544,9 +545,100 @@ def _base_por_defecto() -> Path:
     return RAIZ / "data" / cargar_normalizacion().salida.base_de_datos
 
 
-def muestra_desde_base(ruta_base: Path, cfg: ConfigEtiquetado) -> list[dict[str, Any]]:
-    excluidos = cargar_excluidos(RAIZ / cfg.archivos.ejemplos_excluidos)
-    return construir_muestra(leer_noticias(ruta_base), excluidos, cfg)
+def ids_ampliacion(ruta: Path) -> list[str]:
+    """IDs (en el orden del archivo, sin repetir) de un CSV de ampliación. Solo se lee ``id_noticia``: el resto del archivo
+    (p. ej. una propuesta de LLM) no es una etiqueta y aquí no se usa."""
+    return list(dict.fromkeys(f["id_noticia"] for f in leer_csv(ruta) if f.get("id_noticia")))
+
+
+def leer_muestra_congelada(ruta: Path, por_id: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
+    """La muestra original fijada en ``ruta`` (columnas ``orden,id_noticia,estrato,poblacion,n_estrato,peso,doble``)."""
+    filas = sorted(leer_csv(ruta), key=lambda f: int(f["orden"]))
+    faltan = [f["id_noticia"] for f in filas if f["id_noticia"] not in por_id]
+    if faltan:
+        raise ErrorEtiquetado(f"la muestra congelada ({ruta.name}) tiene {len(faltan)} IDs que no están en la base: {faltan[:3]}…")
+    return [
+        {**por_id[f["id_noticia"]], "estrato": f["estrato"], "poblacion": int(f["poblacion"]), "n_estrato": int(f["n_estrato"]),
+         "peso": float(f["peso"]), "doble": f["doble"] == SI, "orden": int(f["orden"])}
+        for f in filas
+    ]
+
+
+def filas_ampliacion(cfg: ConfigEtiquetado, por_id: dict[str, dict[str, Any]], ocupados: set[str], raiz: Path = RAIZ) -> list[dict[str, Any]]:
+    """Filas de las ampliaciones configuradas, después de la muestra original: un censo por ampliación, con su estrato y su
+    peso de config. ``orden`` continúa el de la muestra; nunca son dobles."""
+    filas: list[dict[str, Any]] = []
+    for amp in cfg.muestra.ampliaciones:
+        ids = [i for i in ids_ampliacion(raiz / amp.ids_desde) if i not in ocupados]
+        faltan = [i for i in ids if i not in por_id]
+        if faltan:
+            raise ErrorEtiquetado(f"ampliación {amp.nombre}: {len(faltan)} IDs no están en la base: {faltan[:3]}…")
+        for i in ids:
+            filas.append({**por_id[i], "estrato": amp.estrato, "poblacion": len(ids), "n_estrato": len(ids), "peso": amp.peso_muestreo,
+                          "doble": False, "orden": len(ocupados) + len(filas) + 1})
+    return filas
+
+
+def muestra_desde_base(ruta_base: Path, cfg: ConfigEtiquetado, raiz: Path = RAIZ) -> list[dict[str, Any]]:
+    """Muestra completa: la original (fijada en ``muestra.congelada`` o, sin ella, sorteada con la semilla) seguida de las
+    ampliaciones. Los IDs de las ampliaciones no entran nunca en la población del sorteo original."""
+    excluidos = cargar_excluidos(raiz / cfg.archivos.ejemplos_excluidos)
+    noticias = leer_noticias(ruta_base)
+    por_id = {n["id_noticia"]: n for n in noticias}
+    ampliados = {i for a in cfg.muestra.ampliaciones for i in ids_ampliacion(raiz / a.ids_desde)}
+    if cfg.muestra.congelada:
+        original = leer_muestra_congelada(raiz / cfg.muestra.congelada, por_id)
+    else:
+        original = construir_muestra([n for n in noticias if n["id_noticia"] not in ampliados], excluidos, cfg)
+    ids_orig = {m["id_noticia"] for m in original}
+    return [*original, *filas_ampliacion(cfg, por_id, ids_orig, raiz)]
+
+
+# ------------------------------------------------------------------ propuestas de un LLM (solo rellenan el formulario)
+
+COLUMNAS_PROPUESTA = ("id_noticia", "titulo", "ruido", "tema_principal", "tema_secundario", "grupo", "alcance_regional", "duda",
+                      "propuesto_por", "fecha_propuesta")
+PREFIJO_LLM = "llm:"
+
+
+def leer_propuestas(carpeta: Path) -> dict[str, Fila]:
+    """``id_noticia -> propuesta`` de todos los ``*.csv`` de la carpeta (la última en orden alfabético gana).
+
+    Una propuesta **no es una etiqueta**: ninguna lectura de ``eval/`` la usa como tal; solo rellena el formulario para que
+    una persona la confirme o la corrija, y solo se guarda si pulsa «Guardar y seguir».
+    """
+    propuestas: dict[str, Fila] = {}
+    for ruta in sorted(carpeta.glob("*.csv")):
+        for f in leer_csv(ruta):
+            if f.get("id_noticia"):
+                propuestas[f["id_noticia"]] = f
+    return propuestas
+
+
+def proveedor_propuesta(propuesto_por: str) -> str:
+    """``llm:deepseek:deepseek-flash`` -> ``deepseek`` (quien propuso, para rotularlo en pantalla)."""
+    partes = propuesto_por.split(":")
+    return partes[1] if propuesto_por.startswith(PREFIJO_LLM) and len(partes) > 1 else propuesto_por or "desconocido"
+
+
+def valores_desde_propuesta(propuesta: Fila | None, cfg: ConfigEtiquetado, temas: ConfigTemas) -> Fila | None:
+    """Valores por defecto del formulario a partir de una propuesta, con la forma de una fila guardada (``nota`` siempre
+    vacía: es de la persona). Función pura: no guarda nada. ``None`` si no hay propuesta o su ruido no es válido; un tema
+    inexistente se deja vacío (el formulario cae al primero, sin dar por buena una propuesta inválida)."""
+    if not propuesta or propuesta.get("ruido") not in (cfg.ruido.sin_ruido, *cfg.ruido.motivos):
+        return None
+    es_ruido = propuesta["ruido"] != cfg.ruido.sin_ruido
+    validos = temas_validos(temas)
+    principal = propuesta.get("tema_principal", "")
+    secundario = propuesta.get("tema_secundario", "")
+    return {
+        "ruido": propuesta["ruido"],
+        "tema_principal": "" if es_ruido or principal not in validos else principal,
+        "tema_secundario": "" if es_ruido or secundario not in validos or secundario == principal else secundario,
+        "grupo": "" if es_ruido else normalizar_grupo(propuesta.get("grupo", "")),
+        "alcance_regional": SI if not es_ruido and propuesta.get("alcance_regional", "").strip().lower() in ("true", "si", "sí", "1") else "",
+        "nota": "",
+    }
 
 
 def _texto_disputas(disputas: dict[str, list[str]], titulos: dict[str, str]) -> list[str]:
@@ -701,10 +793,42 @@ def grupos_sugeridos(hojas: dict[str, list[Fila]], yo: str, ids_dobles: set[str]
     return sorted(grupos)
 
 
+def ordenar_cola(mias: list[dict[str, Any]], hechas: set[str], cola: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
+    """Primero los pendientes con puntaje, del más incierto al más seguro (``cola[id]['posicion']``); luego los pendientes
+    sin puntaje y, al final, los ya etiquetados, cada grupo en su orden original. Solo cambia el orden de la lista:
+    no guarda ni sugiere ninguna etiqueta (D-123)."""
+    pendientes = [m for m in mias if m["id_noticia"] not in hechas]
+    con = sorted((m for m in pendientes if m["id_noticia"] in cola), key=lambda m: cola[m["id_noticia"]]["posicion"])
+    sin = [m for m in pendientes if m["id_noticia"] not in cola]
+    return [*con, *sin, *(m for m in mias if m["id_noticia"] in hechas)]
+
+
+def _cola_de_incertidumbre(ruta_base: Path, ids: list[str], raiz: Path, _cfg: ConfigEtiquetado) -> dict[str, dict[str, Any]]:
+    """Cola del clasificador logístico (referencias + pool de etiquetas humanas fuera de la evaluación congelada)."""
+    from eval import aprendizaje_activo as aa
+    from src.configuracion import cargar_clasificacion
+    from src.embeddings import crear
+
+    ccl = cargar_clasificacion()
+    emb = crear(ccl, ccl.modelo_activo)
+    ruta_consolidado = raiz / _cfg.archivos.consolidado
+    pool = (
+        aa.pool_desde_config(ruta_consolidado, cargar_temas(), ccl.logistica.aprendizaje_activo.muestra_evaluacion, raiz)
+        if ccl.logistica.aprendizaje_activo.usar_pool and ruta_consolidado.exists()
+        else aa.Pool((), (), {})
+    ).solo(ids_en_base(ruta_base))
+    return aa.cola_por_incertidumbre(ids, ruta_base, pool, emb, ccl, cargar_temas())
+
+
+def ids_en_base(ruta_base: Path) -> set[str]:
+    return {n["id_noticia"] for n in leer_noticias(ruta_base)}
+
+
 def interfaz() -> None:  # pragma: no cover - se prueba a mano y con AppTest
     import streamlit as st
 
-    cfg, temas = cargar_etiquetado(), cargar_temas()
+    carpeta_cfg = os.environ.get("HACKIA_CONFIG")   # inyectable para pruebas: carpeta con otro etiquetado.yaml
+    cfg, temas = cargar_etiquetado(Path(carpeta_cfg) if carpeta_cfg else None), cargar_temas()
     st.set_page_config(page_title="Etiquetado de titulares", layout="wide")
     st.title("Etiquetado de titulares")
     st.caption("Etiqueta con tu criterio y la guía de la izquierda. Esta herramienta no sugiere ninguna respuesta.")
@@ -725,6 +849,13 @@ def interfaz() -> None:  # pragma: no cover - se prueba a mano y con AppTest
             "Desempate",
             help="Para una tercera persona: muestra solo los titulares en disputa entre otras dos personas (sin mostrar sus etiquetas).",
         )
+        ampliaciones = {a.nombre: a.estrato for a in cfg.muestra.ampliaciones}
+        vista = st.selectbox(
+            "Qué titulares ver",
+            ["Todos", *ampliaciones],
+            help="Una ampliación son titulares nuevos agregados después de los 100 originales (config/etiquetado.yaml). "
+            "Al elegirla se ven todos sus titulares, sin repartir por «parte».",
+        ) if ampliaciones else "Todos"
         with st.expander("Guía de temas y reglas de frontera", expanded=True):
             st.markdown(_seccion_guia())
 
@@ -749,19 +880,40 @@ def interfaz() -> None:  # pragma: no cover - se prueba a mano y con AppTest
         if not mias:
             st.success("No hay titulares en disputa para desempatar.")
             st.stop()
+    elif vista != "Todos":   # la ampliación es un censo para una sola persona: se ve completa, sin repartir
+        mias = [m for m in muestra if m["estrato"] == ampliaciones[vista]]
     else:
         mias = asignadas(muestra, int(parte), int(partes))
+    propuestas = leer_propuestas(raiz_etq / cfg.archivos.carpeta_propuestas)
     hechas = {f["id_noticia"]: f for f in leer_csv(ruta)}
+    cola: dict[str, dict[str, Any]] = {}
+    if vista != "Todos" and not desempate and next(a for a in cfg.muestra.ampliaciones if a.nombre == vista).ordenar_por_incertidumbre:
+        try:
+            cola = st.cache_resource(show_spinner="Ordenando por incertidumbre del clasificador…")(_cola_de_incertidumbre)(
+                ruta_base, [m["id_noticia"] for m in mias], raiz_etq, cfg
+            )
+            mias = ordenar_cola(mias, set(hechas), cola)
+            st.caption("Cola ordenada por incertidumbre: primero los titulares donde el clasificador está menos seguro (D-123).")
+        except Exception as exc:  # noqa: BLE001 - sin modelo local el orden es el de siempre; no bloquea el etiquetado
+            st.warning(f"No se pudo ordenar por incertidumbre ({exc}); se muestra el orden normal.")
     pendientes = [m for m in mias if m["id_noticia"] not in hechas]
     st.progress((len(mias) - len(pendientes)) / len(mias) if mias else 0.0)
     st.write(f"**{nombre}**: {len(mias) - len(pendientes)} de {len(mias)} titulares etiquetados (hoja `{ruta.name}`).")
 
-    etiquetas_lista = [f"{'✓' if m['id_noticia'] in hechas else '·'} {m['orden']:>3} · {m['titulo'][:90]}" for m in mias]
+    def _p(m: dict[str, Any]) -> str:
+        c = cola.get(m["id_noticia"])
+        return f" · p={c['p_maxima']:.2f}" if c else ""
+
+    etiquetas_lista = [f"{'✓' if m['id_noticia'] in hechas else '·'} {m['orden']:>3} · {m['titulo'][:90]}{_p(m)}" for m in mias]
     por_defecto = mias.index(pendientes[0]) if pendientes else 0
     elegido = st.selectbox("Titular", range(len(mias)), index=por_defecto, format_func=lambda i: etiquetas_lista[i], key=f"sel-{len(pendientes)}")
     noticia = mias[elegido]
-    previa = hechas.get(noticia["id_noticia"])
     nid = noticia["id_noticia"]
+    previa = hechas.get(nid)
+    propuesta = propuestas.get(nid)
+    sugerida = None if previa else valores_desde_propuesta(propuesta, cfg, temas)   # solo mientras la persona no haya guardado
+    if sugerida and propuesta:
+        previa = sugerida   # rellena el formulario; no se guarda hasta «Guardar y seguir»
 
     st.subheader(f"Titular {noticia['orden']} de {len(muestra)}" + ("  ·  lo etiquetan dos personas por separado" if noticia["doble"] and not desempate else "  ·  desempate" if desempate else ""))
     st.code(noticia["titulo"], language=None, wrap_lines=True)  # texto plano: un titular nunca se interpreta como Markdown/HTML
@@ -770,6 +922,20 @@ def interfaz() -> None:  # pragma: no cover - se prueba a mano y con AppTest
         f"Detectado: {_fecha_panama(noticia['fecha_deteccion'], cfg)}"
     )
     st.code(noticia["url"], language=None, wrap_lines=True)
+    if nid in cola:
+        c = cola[nid]
+        st.caption(
+            f"Clasificador (D-123): probabilidad máxima {c['p_maxima']:.2f} (tema más probable: {c['tema']}), margen {c['margen']:.2f}. "
+            "Es solo un indicador de incertidumbre, no una etiqueta: decide tú."
+        )
+    if sugerida and propuesta:
+        st.warning(
+            f"**Propuesta de LLM ({proveedor_propuesta(propuesta.get('propuesto_por', ''))}) — revísala: confirma o corrige.** "
+            "Los campos vienen rellenados con la propuesta; no se guarda nada hasta que pulses «Guardar y seguir». "
+            "Una propuesta sin revisar no es una etiqueta."
+        )
+        if propuesta.get("duda"):
+            st.info(f"Duda del LLM: {propuesta['duda']}")
 
     opciones_ruido = [cfg.ruido.sin_ruido, *cfg.ruido.motivos]
     ruido = st.radio(

@@ -36,6 +36,8 @@ def miembro(
     regional: bool = False,
     similitud: float = 0.8,
     recirculada: bool | None = None,
+    tema: str | None = "economia",
+    tema_secundario: str | None = None,
 ) -> dict[str, Any]:
     """Una fila de ``noticias`` con los campos que usa el puntaje."""
     return {
@@ -48,6 +50,8 @@ def miembro(
         "es_recirculada": recirculada,
         "alcance_regional": regional,
         "tema_similitud": similitud,
+        "tema_clasificado": tema,
+        "tema_secundario": tema_secundario,
     }
 
 

@@ -157,9 +157,15 @@ def test_suficiente_exige_sin_contradiccion_abierta(tmp_path: Path) -> None:
 
 
 def test_d103_ya_no_hay_percentiles_ni_parte_tematica_en_r() -> None:
-    """D-103 reemplaza al percentil de D-35: R tiene una sola parte (foco) y N usa el umbral de agrupación."""
+    """D-103 reemplaza al percentil de D-35: R no usa percentiles ni la confianza del clasificador y N usa el umbral de agrupación.
+
+    D-119 agregó ``pertenencia_tematica`` a R: es pertenencia DISCRETA según la etiqueta, no confianza. Por eso el conjunto de
+    campos creció en ese solo bloque; la guarda contra percentiles o similitudes se mantiene.
+    """
     reglas = cargar_reglas()
-    assert not hasattr(reglas, "percentil") and set(type(reglas.relevancia).model_fields) == {"peso_foco", "foco_panama_sujeto", "foco_otro_pais_afecta"}
+    campos = set(type(reglas.relevancia).model_fields)
+    assert not hasattr(reglas, "percentil") and campos == {"peso_foco", "foco_panama_sujeto", "foco_otro_pais_afecta", "pertenencia_tematica"}
+    assert not any("similitud" in c or "percentil" in c or "confianza" in c for c in campos | set(type(reglas.relevancia.pertenencia_tematica).model_fields))
     assert reglas.relevancia.peso_foco == 1.0
 
 

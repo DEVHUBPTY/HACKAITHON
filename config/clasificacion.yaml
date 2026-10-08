@@ -119,3 +119,31 @@ baseline:
       extension: [proyecto de ley, legislacion, reglamento, norma, normativa, regula, regulacion, regulador, superintendencia,
                   asep, lista gris, lista negra, lista fiscal, licitacion, sanciona, multa, multado, asamblea, ejecutivo sanciona,
                   gaceta oficial]
+
+# D-121 · Clasificador por regresión logística (método `logistica`). Se entrena SOLO con los textos de referencia de
+# temas.yaml (descripción + ejemplos + prototipos de subtema); las etiquetas humanas no entran en el entrenamiento ni en
+# la calibración. `regularizacion_c`, `umbral_sin_tema` y `margen_secundario` son el RESULTADO de
+# `python -m eval.calibrar_logistico` (validación cruzada estratificada con la semilla de abajo); un test los recalcula.
+# Origen y validación: docs/parametros.md, sección «Clasificación (E1-07)».
+logistica:
+  regularizacion_c: 1000.0      # RESULTADO de la calibración (rejilla_c, macro-F1 de validación cruzada)
+  rejilla_c: [1.0, 10.0, 100.0, 1000.0]
+  pesos_de_clase: balanced      # balanced | null; los temas tienen entre 14 y 22 textos
+  max_iter: 1000
+  pliegues: 5                   # <= textos del tema con menos referencias (14)
+  semilla: 42
+  percentil_umbral: 5.0         # mismo supuesto que el método A (percentil 5 de la confianza)
+  percentil_margen: 25.0        # mismo supuesto que el método A (percentil 25 de la brecha)
+  umbral_sin_tema: 0.472         # RESULTADO de la calibración
+  margen_secundario: 0.462       # RESULTADO de la calibración
+  decimales_umbral: 3
+  bootstrap_pareado:            # comparación pareada del macro-F1 contra el método A (eval.clasificacion)
+    remuestreos: 5000
+    confianza: 0.95
+    semilla: 42
+  # D-123 · Aprendizaje activo. La evaluación es SIEMPRE la muestra original congelada; el pool de entrenamiento son las
+  # etiquetas humanas (origen humano, nunca provisionales ni propuestas de un LLM) de titulares fuera de ella.
+  # C, umbral y margen siguen siendo los calibrados con las referencias (no se recalibran con el pool).
+  aprendizaje_activo:
+    usar_pool: true
+    muestra_evaluacion: eval/muestra_original.csv

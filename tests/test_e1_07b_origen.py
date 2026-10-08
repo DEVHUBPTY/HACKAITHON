@@ -245,8 +245,12 @@ def test_validar_hoja_descarta_una_provisional_aunque_traiga_espacios_o_mayuscul
 # ------------------------------------------------------------------ --consolidar no borra las provisionales
 
 
-def test_consolidar_conserva_las_filas_provisionales_del_consolidado_existente(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_consolidar_conserva_las_filas_provisionales_del_consolidado_existente(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
     from tests.test_etiquetado import CFG, _base as _base_etq, _fila as _fila_etq
+
+    monkeypatch.setattr(etiquetar, "cargar_etiquetado", lambda *a, **k: CFG)   # CFG sintética: sin muestra congelada
 
     ruta_base = _base_etq(tmp_path / "s.duckdb")
     muestra = etiquetar.muestra_desde_base(ruta_base, CFG)

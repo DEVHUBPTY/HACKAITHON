@@ -3,6 +3,14 @@
 Generado por `python -m scripts.manifest` a partir del historial de `manifest.json`.
 No editar a mano.
 
+## v1.4 · 2026-10-08T03:35:18Z
+
+- Hash del snapshot: `4503952d97fb1018429b517c2e230cf69fcb501f9f0529c38faa01d16e3683b6`
+- Cambio de fuente: noticias.csv: 221 -> 268
+- Cambio de fuente: Contenido distinto en processed/conversion.json (mismo conteo)
+- Registros excluidos: 97 {'fuera_de_ventana': 97}
+- Cantidad por archivo: conversion.json 97, eventos.geojson 82, fuentes.json 110, indicadores.csv 540, noticias.csv 268, sbp_series.csv 36
+
 ## v1.3 · 2026-10-07T00:41:03Z
 
 - Hash del snapshot: `d0ae54537df7824aaf0a4295b56a50c9d4dcd00806d3ddb36e931d3007e8057e`

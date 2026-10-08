@@ -221,21 +221,31 @@ def _n(similitud: float, reglas=REGLAS) -> puntaje.Componente:
     return {p.id_grupo: p for p in puntaje.calcular_puntajes(entradas, reglas, CFG, AHORA)}["GRP-nuevo"].componentes["N"]
 
 
-@pytest.mark.parametrize("similitud", [0.0, 0.3, 0.6, UMBRAL - 0.001])
-def test_d103_bajo_el_umbral_de_agrupacion_n_es_1(similitud: float) -> None:
-    assert _n(similitud).valor == 1.0
+BAJA = REGLAS.novedad.ancla_baja
 
 
-@pytest.mark.parametrize("similitud", [UMBRAL, (UMBRAL + 1) / 2, 0.95, 1.0])
-def test_d103_desde_el_umbral_n_descuenta_lineal_hasta_0_con_un_duplicado(similitud: float) -> None:
+# D-124 reemplaza la regla de N de D-103 (1 bajo el umbral y lineal desde él) por una continua entre ancla_baja y ancla_alta.
+@pytest.mark.parametrize("similitud", [0.0, 0.3, BAJA])
+def test_d124_hasta_el_ancla_baja_n_es_1(similitud: float) -> None:
+    assert _n(similitud).valor == pytest.approx(1.0, abs=1e-6)
+
+
+@pytest.mark.parametrize("similitud", [UMBRAL, 0.8, 0.95, 1.0])
+def test_d124_desde_el_ancla_alta_que_es_el_umbral_de_agrupacion_n_es_0(similitud: float) -> None:
     c = _n(similitud)
-    assert c.valor == pytest.approx((1 - similitud) / (1 - UMBRAL), abs=1e-6)
-    assert c.explicacion["umbral_similitud"] == UMBRAL and c.explicacion["similitud_maxima"] == pytest.approx(similitud, abs=1e-6)
+    assert c.valor == pytest.approx(0.0, abs=1e-6)
+    assert c.explicacion["ancla_alta"] == UMBRAL == c.explicacion["umbral_similitud"]
+    assert c.explicacion["similitud_maxima"] == pytest.approx(similitud, abs=1e-6)
 
 
-def test_d103_el_umbral_de_n_es_el_de_la_agrupacion_no_una_copia() -> None:
+@pytest.mark.parametrize("similitud", [BAJA + 0.01, (BAJA + UMBRAL) / 2, UMBRAL - 0.01])
+def test_d124_entre_las_anclas_n_es_lineal(similitud: float) -> None:
+    assert _n(similitud).valor == pytest.approx((UMBRAL - similitud) / (UMBRAL - BAJA), abs=1e-6)
+
+
+def test_d124_el_ancla_alta_es_el_umbral_de_la_agrupacion_no_una_copia() -> None:
     otro = REGLAS.model_copy(update={"agrupacion": REGLAS.agrupacion.model_copy(update={"umbral_similitud": 0.9})})
-    assert _n(0.8).valor < 1.0 and _n(0.8, otro).valor == 1.0
+    assert _n(0.8).valor == 0.0 and _n(0.8, otro).valor == pytest.approx((0.9 - 0.8) / (0.9 - BAJA), abs=1e-6)
 
 
 def test_d103_r_no_usa_la_confianza_del_clasificador() -> None:
@@ -404,5 +414,5 @@ def test_d106_u_va_de_1_al_publicar_a_0_al_cerrar_la_ventana() -> None:
 
 def test_d106_sin_publicacion_sigue_usando_la_deteccion_y_el_vacio() -> None:
     c, vacios = puntaje.urgencia([miembro("NOT-g", publicado_hace=None, detectado_hace=30)], AHORA, REGLAS)
-    assert c.explicacion["fecha_origen"] == "deteccion" and c.valor == _u(30).valor
+    assert c.explicacion["fecha_origen"] == "deteccion" and c.valor == min(_u(30).valor, REGLAS.urgencia.tope_fecha_imputada)
     assert any(v.codigo == "urgencia_sin_publicacion" for v in vacios)

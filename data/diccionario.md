@@ -237,9 +237,11 @@ cinco medios que replican una agencia son una procedencia. Los reemplaza `python
 | `fecha_fin` | VARCHAR | sí | `noticias` | derivado | La más reciente, con el mismo criterio. |
 | `fecha_fin_origen` | VARCHAR | sí | `noticias` | derivado | `publicacion` o `deteccion`: de qué campo sale `fecha_fin`. |
 | `idiomas` | VARCHAR | sí | `noticias` | derivado | Idiomas de los titulares, ordenados, separados por coma. |
-| `tema_clasificado` | VARCHAR | sí | `noticias` | derivado | Tema más frecuente de sus titulares (empate: orden alfabético); nulo si ninguno está clasificado. |
+| `tema_clasificado` | VARCHAR | sí | `noticias` | derivado | Tema más frecuente de sus titulares (empate: orden alfabético); nulo si ninguno está clasificado. Con D-122 puede ser el tema de un subtema que los titulares nombran (ver `tema_origen_clasificador`). |
 | `ids_noticia` | VARCHAR | no | `noticias` | derivado | Los `NOT-` del grupo, ordenados y separados por coma. |
 | `estimado` | BOOLEAN | no | agrupación | derivado | Siempre verdadero: el conteo de procedencias es una estimación y se presenta así. |
+| `tema_origen_clasificador` | VARCHAR | sí | agrupación | derivado | D-122: tema que dio el clasificador (el más frecuente de los titulares) cuando un subtema nombrado por los titulares lo corrigió. Nulo si el tema no se corrigió. |
+| `criterio_tema` | VARCHAR | sí | agrupación | derivado | D-122: por qué se corrigió el tema, `subtema_nombrado` (los titulares nombran subtemas de un único tema distinto al clasificado; `vinculos.subtema.correccion_tema`). Nulo si el tema es el del clasificador. |
 
 ### `procedencias`: procedencias independientes de cada grupo (E1-08)
 

@@ -1,72 +1,72 @@
 {
   "nota": "Un tema cambia si estaba en el top 5 de las reglas v1.3 y ya no está. Las variantes que dejan la regla igual (valor recortado a 1) no cuentan como estabilidad: van en `sin_efecto`. P es de ordenamiento; no habilita publicación.",
   "version_reglas": "1.3",
-  "fecha_referencia": "2026-10-07T00:41:03Z",
+  "fecha_referencia": "2026-10-08T03:35:18Z",
   "tamano_ranking": 5,
   "variacion_peso_puntos": 5.0,
   "variacion_supuesto": 0.2,
   "top_base": [
     "GRP-21ad932d54",
-    "GRP-038c4f0643",
     "GRP-5e6531917f",
-    "GRP-84a6b3a04b",
-    "GRP-39dfe8d714"
+    "GRP-8a448d1fd9",
+    "GRP-4d8b340bd9",
+    "GRP-7ddcf92e16"
   ],
   "empate_en_el_corte_base": null,
   "reagrupar_con_las_reglas_actuales_reproduce_la_base": true,
-  "variantes": 46,
-  "variantes_con_efecto": 43,
+  "variantes": 52,
+  "variantes_con_efecto": 49,
   "sin_efecto": [
     "Foco: Panamá sujeto +",
     "Alcance geográfico nacional +",
     "N del primer grupo +"
   ],
   "top_sin_cambio": {
-    "n": 26,
-    "de": 43,
-    "proporcion": 0.6047,
+    "n": 37,
+    "de": 49,
+    "proporcion": 0.7551,
     "ic95": [
-      0.4558,
-      0.7363
+      0.6191,
+      0.854
     ]
   },
   "con_algun_cambio": {
-    "n": 17,
-    "de": 43,
-    "proporcion": 0.3953,
+    "n": 12,
+    "de": 49,
+    "proporcion": 0.2449,
     "ic95": [
-      0.2637,
-      0.5442
+      0.146,
+      0.3809
     ]
   },
   "mismo_orden": {
-    "n": 18,
-    "de": 43,
-    "proporcion": 0.4186,
+    "n": 27,
+    "de": 49,
+    "proporcion": 0.551,
     "ic95": [
-      0.2838,
-      0.5667
+      0.4131,
+      0.6815
     ]
   },
-  "maximo_de_temas_que_cambian": 2,
+  "maximo_de_temas_que_cambian": 3,
   "temas_retenidos": {
-    "n": 195,
-    "de": 215,
-    "proporcion": 0.907,
+    "n": 226,
+    "de": 245,
+    "proporcion": 0.9224,
     "ic95": [
-      0.8607,
-      0.939
+      0.8821,
+      0.9498
     ],
     "nota": "puestos del top 5 que se conservan en las variantes con efecto; los puestos de una misma variante no son independientes, el IC es orientativo"
   },
   "por_grupo": {
     "peso": {
       "variantes": 10,
-      "con_cambio": 4
+      "con_cambio": 0
     },
     "supuesto": {
-      "variantes": 36,
-      "con_cambio": 13
+      "variantes": 42,
+      "con_cambio": 12
     }
   },
   "detalle": [
@@ -78,10 +78,10 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
       "cambian": 0,
       "salen": [],
@@ -98,10 +98,10 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
       "cambian": 0,
       "salen": [],
@@ -118,19 +118,15 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-39dfe8d714",
-        "GRP-1b52bb958d"
+        "GRP-4d8b340bd9",
+        "GRP-8a448d1fd9",
+        "GRP-7ddcf92e16"
       ],
-      "cambian": 1,
-      "salen": [
-        "GRP-84a6b3a04b"
-      ],
-      "entran": [
-        "GRP-1b52bb958d"
-      ],
-      "mismo_conjunto": false,
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
       "mismo_orden": false,
       "parametro_con_direccion": "Peso I +"
     },
@@ -142,19 +138,15 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-1b52bb958d"
+        "GRP-7ddcf92e16"
       ],
-      "cambian": 1,
-      "salen": [
-        "GRP-39dfe8d714"
-      ],
-      "entran": [
-        "GRP-1b52bb958d"
-      ],
-      "mismo_conjunto": false,
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
       "mismo_orden": false,
       "parametro_con_direccion": "Peso I -"
     },
@@ -166,16 +158,16 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-7ddcf92e16"
       ],
       "cambian": 0,
       "salen": [],
       "entran": [],
       "mismo_conjunto": true,
-      "mismo_orden": true,
+      "mismo_orden": false,
       "parametro_con_direccion": "Peso U +"
     },
     {
@@ -186,21 +178,15 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-81a11a5998",
-        "GRP-1b52bb958d"
+        "GRP-4d8b340bd9",
+        "GRP-8a448d1fd9",
+        "GRP-7ddcf92e16"
       ],
-      "cambian": 2,
-      "salen": [
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
-      ],
-      "entran": [
-        "GRP-81a11a5998",
-        "GRP-1b52bb958d"
-      ],
-      "mismo_conjunto": false,
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
       "mismo_orden": false,
       "parametro_con_direccion": "Peso U -"
     },
@@ -212,10 +198,10 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
       "cambian": 0,
       "salen": [],
@@ -232,10 +218,10 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
       "cambian": 0,
       "salen": [],
@@ -252,20 +238,16 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-1b52bb958d"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
-      "cambian": 1,
-      "salen": [
-        "GRP-39dfe8d714"
-      ],
-      "entran": [
-        "GRP-1b52bb958d"
-      ],
-      "mismo_conjunto": false,
-      "mismo_orden": false,
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
       "parametro_con_direccion": "Peso E +"
     },
     {
@@ -276,16 +258,16 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-39dfe8d714",
-        "GRP-84a6b3a04b"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
       "cambian": 0,
       "salen": [],
       "entran": [],
       "mismo_conjunto": true,
-      "mismo_orden": false,
+      "mismo_orden": true,
       "parametro_con_direccion": "Peso E -"
     },
     {
@@ -296,10 +278,10 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
       "cambian": 0,
       "salen": [],
@@ -316,10 +298,10 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
       "cambian": 0,
       "salen": [],
@@ -336,10 +318,10 @@
       "con_efecto": false,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
       "cambian": 0,
       "salen": [],
@@ -356,10 +338,10 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
       "cambian": 0,
       "salen": [],
@@ -376,19 +358,15 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-1b52bb958d"
+        "GRP-7ddcf92e16"
       ],
-      "cambian": 1,
-      "salen": [
-        "GRP-39dfe8d714"
-      ],
-      "entran": [
-        "GRP-1b52bb958d"
-      ],
-      "mismo_conjunto": false,
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
       "mismo_orden": false,
       "parametro_con_direccion": "Partes de I (subtema · geográfico) +"
     },
@@ -400,17 +378,17 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-39dfe8d714",
-        "GRP-1b52bb958d"
+        "GRP-4d8b340bd9",
+        "GRP-8a448d1fd9",
+        "GRP-a329f4e91e"
       ],
       "cambian": 1,
       "salen": [
-        "GRP-84a6b3a04b"
+        "GRP-7ddcf92e16"
       ],
       "entran": [
-        "GRP-1b52bb958d"
+        "GRP-a329f4e91e"
       ],
       "mismo_conjunto": false,
       "mismo_orden": false,
@@ -424,10 +402,10 @@
       "con_efecto": false,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
       "cambian": 0,
       "salen": [],
@@ -444,19 +422,15 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-1b52bb958d"
+        "GRP-7ddcf92e16"
       ],
-      "cambian": 1,
-      "salen": [
-        "GRP-39dfe8d714"
-      ],
-      "entran": [
-        "GRP-1b52bb958d"
-      ],
-      "mismo_conjunto": false,
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
       "mismo_orden": false,
       "parametro_con_direccion": "Alcance geográfico nacional -"
     },
@@ -468,19 +442,17 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
+        "GRP-4d8b340bd9",
         "GRP-5e6531917f",
-        "GRP-1b52bb958d",
-        "GRP-87e128925b"
+        "GRP-8a448d1fd9",
+        "GRP-a329f4e91e"
       ],
-      "cambian": 2,
+      "cambian": 1,
       "salen": [
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-7ddcf92e16"
       ],
       "entran": [
-        "GRP-1b52bb958d",
-        "GRP-87e128925b"
+        "GRP-a329f4e91e"
       ],
       "mismo_conjunto": false,
       "mismo_orden": false,
@@ -494,10 +466,10 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
       "cambian": 0,
       "salen": [],
@@ -514,10 +486,10 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
       "cambian": 0,
       "salen": [],
@@ -534,16 +506,20 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-03e3ef16d9"
       ],
-      "cambian": 0,
-      "salen": [],
-      "entran": [],
-      "mismo_conjunto": true,
-      "mismo_orden": true,
+      "cambian": 1,
+      "salen": [
+        "GRP-7ddcf92e16"
+      ],
+      "entran": [
+        "GRP-03e3ef16d9"
+      ],
+      "mismo_conjunto": false,
+      "mismo_orden": false,
       "parametro_con_direccion": "Alcance geográfico local -"
     },
     {
@@ -554,16 +530,20 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
+        "GRP-8a448d1fd9",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-4d8b340bd9",
+        "GRP-03e3ef16d9"
       ],
-      "cambian": 0,
-      "salen": [],
-      "entran": [],
-      "mismo_conjunto": true,
-      "mismo_orden": true,
+      "cambian": 1,
+      "salen": [
+        "GRP-7ddcf92e16"
+      ],
+      "entran": [
+        "GRP-03e3ef16d9"
+      ],
+      "mismo_conjunto": false,
+      "mismo_orden": false,
       "parametro_con_direccion": "Alcance geográfico desconocido +"
     },
     {
@@ -574,19 +554,15 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-39dfe8d714",
-        "GRP-1b52bb958d"
+        "GRP-4d8b340bd9",
+        "GRP-8a448d1fd9",
+        "GRP-7ddcf92e16"
       ],
-      "cambian": 1,
-      "salen": [
-        "GRP-84a6b3a04b"
-      ],
-      "entran": [
-        "GRP-1b52bb958d"
-      ],
-      "mismo_conjunto": false,
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
       "mismo_orden": false,
       "parametro_con_direccion": "Alcance geográfico desconocido -"
     },
@@ -598,10 +574,10 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
       "cambian": 0,
       "salen": [],
@@ -618,10 +594,10 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
       "cambian": 0,
       "salen": [],
@@ -637,22 +613,16 @@
       "reagrupa": false,
       "con_efecto": true,
       "top": [
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
         "GRP-21ad932d54",
-        "GRP-1b52bb958d",
-        "GRP-6e737ecad5"
+        "GRP-4d8b340bd9",
+        "GRP-8a448d1fd9",
+        "GRP-7ddcf92e16"
       ],
-      "cambian": 2,
-      "salen": [
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
-      ],
-      "entran": [
-        "GRP-1b52bb958d",
-        "GRP-6e737ecad5"
-      ],
-      "mismo_conjunto": false,
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
       "mismo_orden": false,
       "parametro_con_direccion": "Alcance por subtema (la tabla entera) +"
     },
@@ -664,17 +634,17 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-39dfe8d714",
-        "GRP-87e128925b"
+        "GRP-4d8b340bd9",
+        "GRP-8a448d1fd9",
+        "GRP-a329f4e91e"
       ],
       "cambian": 1,
       "salen": [
-        "GRP-84a6b3a04b"
+        "GRP-7ddcf92e16"
       ],
       "entran": [
-        "GRP-87e128925b"
+        "GRP-a329f4e91e"
       ],
       "mismo_conjunto": false,
       "mismo_orden": false,
@@ -688,17 +658,17 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-39dfe8d714",
-        "GRP-87e128925b"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-a329f4e91e"
       ],
       "cambian": 1,
       "salen": [
-        "GRP-84a6b3a04b"
+        "GRP-7ddcf92e16"
       ],
       "entran": [
-        "GRP-87e128925b"
+        "GRP-a329f4e91e"
       ],
       "mismo_conjunto": false,
       "mismo_orden": false,
@@ -712,20 +682,16 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-1b52bb958d"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
-      "cambian": 1,
-      "salen": [
-        "GRP-39dfe8d714"
-      ],
-      "entran": [
-        "GRP-1b52bb958d"
-      ],
-      "mismo_conjunto": false,
-      "mismo_orden": false,
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
       "parametro_con_direccion": "Alcance de I sin subtema -"
     },
     {
@@ -736,19 +702,15 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-1b52bb958d",
-        "GRP-39dfe8d714"
+        "GRP-4d8b340bd9",
+        "GRP-8a448d1fd9",
+        "GRP-7ddcf92e16"
       ],
-      "cambian": 1,
-      "salen": [
-        "GRP-84a6b3a04b"
-      ],
-      "entran": [
-        "GRP-1b52bb958d"
-      ],
-      "mismo_conjunto": false,
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
       "mismo_orden": false,
       "parametro_con_direccion": "U: días con U = 0 +"
     },
@@ -760,16 +722,16 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-7ddcf92e16"
       ],
       "cambian": 0,
       "salen": [],
       "entran": [],
       "mismo_conjunto": true,
-      "mismo_orden": true,
+      "mismo_orden": false,
       "parametro_con_direccion": "U: días con U = 0 -"
     },
     {
@@ -780,16 +742,16 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-39dfe8d714",
-        "GRP-84a6b3a04b"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
       "cambian": 0,
       "salen": [],
       "entran": [],
       "mismo_conjunto": true,
-      "mismo_orden": false,
+      "mismo_orden": true,
       "parametro_con_direccion": "Partes de E: procedencias +"
     },
     {
@@ -800,20 +762,16 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-1b52bb958d"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
-      "cambian": 1,
-      "salen": [
-        "GRP-39dfe8d714"
-      ],
-      "entran": [
-        "GRP-1b52bb958d"
-      ],
-      "mismo_conjunto": false,
-      "mismo_orden": false,
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
       "parametro_con_direccion": "Partes de E: procedencias -"
     },
     {
@@ -824,16 +782,16 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-39dfe8d714",
-        "GRP-84a6b3a04b"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
       "cambian": 0,
       "salen": [],
       "entran": [],
       "mismo_conjunto": true,
-      "mismo_orden": false,
+      "mismo_orden": true,
       "parametro_con_direccion": "Partes de E: oficial +"
     },
     {
@@ -844,20 +802,16 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-1b52bb958d"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
-      "cambian": 1,
-      "salen": [
-        "GRP-39dfe8d714"
-      ],
-      "entran": [
-        "GRP-1b52bb958d"
-      ],
-      "mismo_conjunto": false,
-      "mismo_orden": false,
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
       "parametro_con_direccion": "Partes de E: oficial -"
     },
     {
@@ -868,20 +822,16 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-1b52bb958d"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
-      "cambian": 1,
-      "salen": [
-        "GRP-39dfe8d714"
-      ],
-      "entran": [
-        "GRP-1b52bb958d"
-      ],
-      "mismo_conjunto": false,
-      "mismo_orden": false,
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
       "parametro_con_direccion": "Partes de E: identificable +"
     },
     {
@@ -892,16 +842,16 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-39dfe8d714",
-        "GRP-84a6b3a04b"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
       "cambian": 0,
       "salen": [],
       "entran": [],
       "mismo_conjunto": true,
-      "mismo_orden": false,
+      "mismo_orden": true,
       "parametro_con_direccion": "Partes de E: identificable -"
     },
     {
@@ -912,10 +862,10 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
       "cambian": 0,
       "salen": [],
@@ -932,10 +882,10 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
       "cambian": 0,
       "salen": [],
@@ -946,16 +896,150 @@
     },
     {
       "grupo": "supuesto",
+      "parametro": "N: ancla baja (D-124)",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-21ad932d54",
+        "GRP-038c4f0643",
+        "GRP-50d72e2b04",
+        "GRP-5e6531917f",
+        "GRP-2b6511298e"
+      ],
+      "cambian": 3,
+      "salen": [
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
+      ],
+      "entran": [
+        "GRP-038c4f0643",
+        "GRP-50d72e2b04",
+        "GRP-2b6511298e"
+      ],
+      "mismo_conjunto": false,
+      "mismo_orden": false,
+      "parametro_con_direccion": "N: ancla baja (D-124) +"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "N: ancla baja (D-124)",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-8a448d1fd9",
+        "GRP-21ad932d54",
+        "GRP-5e6531917f",
+        "GRP-03e3ef16d9",
+        "GRP-a329f4e91e"
+      ],
+      "cambian": 2,
+      "salen": [
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
+      ],
+      "entran": [
+        "GRP-03e3ef16d9",
+        "GRP-a329f4e91e"
+      ],
+      "mismo_conjunto": false,
+      "mismo_orden": false,
+      "parametro_con_direccion": "N: ancla baja (D-124) -"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "N: ventana de comparación (días, D-124)",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-21ad932d54",
+        "GRP-5e6531917f",
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "N: ventana de comparación (días, D-124) +"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "N: ventana de comparación (días, D-124)",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-21ad932d54",
+        "GRP-5e6531917f",
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "N: ventana de comparación (días, D-124) -"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "U: tope con fecha imputada (D-124)",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-21ad932d54",
+        "GRP-5e6531917f",
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "U: tope con fecha imputada (D-124) +"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "U: tope con fecha imputada (D-124)",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-21ad932d54",
+        "GRP-5e6531917f",
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "U: tope con fecha imputada (D-124) -"
+    },
+    {
+      "grupo": "supuesto",
       "parametro": "N del primer grupo",
       "direccion": "+",
       "reagrupa": false,
       "con_efecto": false,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
       "cambian": 0,
       "salen": [],
@@ -972,10 +1056,10 @@
       "con_efecto": true,
       "top": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
         "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
       "cambian": 0,
       "salen": [],
@@ -991,16 +1075,22 @@
       "reagrupa": true,
       "con_efecto": true,
       "top": [
-        "GRP-038c4f0643",
+        "GRP-1dc52c45ff",
+        "GRP-7ddcf92e16",
         "GRP-5e6531917f",
-        "GRP-21ad932d54",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-a329f4e91e",
+        "GRP-21ad932d54"
       ],
-      "cambian": 0,
-      "salen": [],
-      "entran": [],
-      "mismo_conjunto": true,
+      "cambian": 2,
+      "salen": [
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9"
+      ],
+      "entran": [
+        "GRP-1dc52c45ff",
+        "GRP-a329f4e91e"
+      ],
+      "mismo_conjunto": false,
       "mismo_orden": false,
       "parametro_con_direccion": "Ventana de agrupación (días) +"
     },
@@ -1011,16 +1101,22 @@
       "reagrupa": true,
       "con_efecto": true,
       "top": [
-        "GRP-038c4f0643",
+        "GRP-1dc52c45ff",
+        "GRP-7ddcf92e16",
         "GRP-5e6531917f",
-        "GRP-21ad932d54",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-a329f4e91e",
+        "GRP-21ad932d54"
       ],
-      "cambian": 0,
-      "salen": [],
-      "entran": [],
-      "mismo_conjunto": true,
+      "cambian": 2,
+      "salen": [
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9"
+      ],
+      "entran": [
+        "GRP-1dc52c45ff",
+        "GRP-a329f4e91e"
+      ],
+      "mismo_conjunto": false,
       "mismo_orden": false,
       "parametro_con_direccion": "Ventana de agrupación (días) -"
     },
@@ -1031,16 +1127,22 @@
       "reagrupa": true,
       "con_efecto": true,
       "top": [
-        "GRP-038c4f0643",
+        "GRP-1dc52c45ff",
+        "GRP-7ddcf92e16",
         "GRP-5e6531917f",
-        "GRP-21ad932d54",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-a329f4e91e",
+        "GRP-21ad932d54"
       ],
-      "cambian": 0,
-      "salen": [],
-      "entran": [],
-      "mismo_conjunto": true,
+      "cambian": 2,
+      "salen": [
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9"
+      ],
+      "entran": [
+        "GRP-1dc52c45ff",
+        "GRP-a329f4e91e"
+      ],
+      "mismo_conjunto": false,
       "mismo_orden": false,
       "parametro_con_direccion": "Umbral de «mismo texto» (procedencias) +"
     },
@@ -1051,195 +1153,159 @@
       "reagrupa": true,
       "con_efecto": true,
       "top": [
-        "GRP-038c4f0643",
+        "GRP-1dc52c45ff",
+        "GRP-7ddcf92e16",
         "GRP-5e6531917f",
-        "GRP-21ad932d54",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-a329f4e91e",
+        "GRP-21ad932d54"
       ],
-      "cambian": 0,
-      "salen": [],
-      "entran": [],
-      "mismo_conjunto": true,
+      "cambian": 2,
+      "salen": [
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9"
+      ],
+      "entran": [
+        "GRP-1dc52c45ff",
+        "GRP-a329f4e91e"
+      ],
+      "mismo_conjunto": false,
       "mismo_orden": false,
       "parametro_con_direccion": "Umbral de «mismo texto» (procedencias) -"
     }
   ],
   "mas_sensibles": [
     {
-      "parametro": "Alcance geográfico provincial +",
-      "cambian": 2,
+      "parametro": "N: ancla baja (D-124) +",
+      "cambian": 3,
       "salen": [
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
       "entran": [
-        "GRP-1b52bb958d",
-        "GRP-87e128925b"
+        "GRP-038c4f0643",
+        "GRP-50d72e2b04",
+        "GRP-2b6511298e"
       ]
     },
     {
-      "parametro": "Alcance por subtema (la tabla entera) +",
+      "parametro": "N: ancla baja (D-124) -",
       "cambian": 2,
       "salen": [
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
       "entran": [
-        "GRP-1b52bb958d",
-        "GRP-6e737ecad5"
+        "GRP-03e3ef16d9",
+        "GRP-a329f4e91e"
       ]
     },
     {
-      "parametro": "Peso U -",
+      "parametro": "Umbral de «mismo texto» (procedencias) +",
       "cambian": 2,
       "salen": [
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9"
       ],
       "entran": [
-        "GRP-81a11a5998",
-        "GRP-1b52bb958d"
+        "GRP-1dc52c45ff",
+        "GRP-a329f4e91e"
+      ]
+    },
+    {
+      "parametro": "Umbral de «mismo texto» (procedencias) -",
+      "cambian": 2,
+      "salen": [
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9"
+      ],
+      "entran": [
+        "GRP-1dc52c45ff",
+        "GRP-a329f4e91e"
+      ]
+    },
+    {
+      "parametro": "Ventana de agrupación (días) +",
+      "cambian": 2,
+      "salen": [
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9"
+      ],
+      "entran": [
+        "GRP-1dc52c45ff",
+        "GRP-a329f4e91e"
+      ]
+    },
+    {
+      "parametro": "Ventana de agrupación (días) -",
+      "cambian": 2,
+      "salen": [
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9"
+      ],
+      "entran": [
+        "GRP-1dc52c45ff",
+        "GRP-a329f4e91e"
       ]
     },
     {
       "parametro": "Alcance de I sin subtema +",
       "cambian": 1,
       "salen": [
-        "GRP-84a6b3a04b"
+        "GRP-7ddcf92e16"
       ],
       "entran": [
-        "GRP-87e128925b"
+        "GRP-a329f4e91e"
       ]
     },
     {
-      "parametro": "Alcance de I sin subtema -",
+      "parametro": "Alcance geográfico desconocido +",
       "cambian": 1,
       "salen": [
-        "GRP-39dfe8d714"
+        "GRP-7ddcf92e16"
       ],
       "entran": [
-        "GRP-1b52bb958d"
+        "GRP-03e3ef16d9"
       ]
     },
     {
-      "parametro": "Alcance geográfico desconocido -",
+      "parametro": "Alcance geográfico local -",
       "cambian": 1,
       "salen": [
-        "GRP-84a6b3a04b"
+        "GRP-7ddcf92e16"
       ],
       "entran": [
-        "GRP-1b52bb958d"
+        "GRP-03e3ef16d9"
       ]
     },
     {
-      "parametro": "Alcance geográfico nacional -",
+      "parametro": "Alcance geográfico provincial +",
       "cambian": 1,
       "salen": [
-        "GRP-39dfe8d714"
+        "GRP-7ddcf92e16"
       ],
       "entran": [
-        "GRP-1b52bb958d"
+        "GRP-a329f4e91e"
       ]
     },
     {
       "parametro": "Alcance por subtema (la tabla entera) -",
       "cambian": 1,
       "salen": [
-        "GRP-84a6b3a04b"
+        "GRP-7ddcf92e16"
       ],
       "entran": [
-        "GRP-87e128925b"
-      ]
-    },
-    {
-      "parametro": "Partes de E: identificable +",
-      "cambian": 1,
-      "salen": [
-        "GRP-39dfe8d714"
-      ],
-      "entran": [
-        "GRP-1b52bb958d"
-      ]
-    },
-    {
-      "parametro": "Partes de E: oficial -",
-      "cambian": 1,
-      "salen": [
-        "GRP-39dfe8d714"
-      ],
-      "entran": [
-        "GRP-1b52bb958d"
-      ]
-    },
-    {
-      "parametro": "Partes de E: procedencias -",
-      "cambian": 1,
-      "salen": [
-        "GRP-39dfe8d714"
-      ],
-      "entran": [
-        "GRP-1b52bb958d"
-      ]
-    },
-    {
-      "parametro": "Partes de I (subtema · geográfico) +",
-      "cambian": 1,
-      "salen": [
-        "GRP-39dfe8d714"
-      ],
-      "entran": [
-        "GRP-1b52bb958d"
+        "GRP-a329f4e91e"
       ]
     },
     {
       "parametro": "Partes de I (subtema · geográfico) -",
       "cambian": 1,
       "salen": [
-        "GRP-84a6b3a04b"
+        "GRP-7ddcf92e16"
       ],
       "entran": [
-        "GRP-1b52bb958d"
-      ]
-    },
-    {
-      "parametro": "Peso E +",
-      "cambian": 1,
-      "salen": [
-        "GRP-39dfe8d714"
-      ],
-      "entran": [
-        "GRP-1b52bb958d"
-      ]
-    },
-    {
-      "parametro": "Peso I +",
-      "cambian": 1,
-      "salen": [
-        "GRP-84a6b3a04b"
-      ],
-      "entran": [
-        "GRP-1b52bb958d"
-      ]
-    },
-    {
-      "parametro": "Peso I -",
-      "cambian": 1,
-      "salen": [
-        "GRP-39dfe8d714"
-      ],
-      "entran": [
-        "GRP-1b52bb958d"
-      ]
-    },
-    {
-      "parametro": "U: días con U = 0 +",
-      "cambian": 1,
-      "salen": [
-        "GRP-84a6b3a04b"
-      ],
-      "entran": [
-        "GRP-1b52bb958d"
+        "GRP-a329f4e91e"
       ]
     }
   ],
