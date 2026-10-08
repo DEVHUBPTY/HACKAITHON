@@ -7,40 +7,38 @@
   "origen_juicio": "humano",
   "juicio_humano": true,
   "conteo": {
-    "sustentada": 6,
-    "parcial": 0,
+    "sustentada": 5,
+    "parcial": 1,
     "no sustentada": 0,
     "tipo incorrecto": 0
   },
   "sustentadas": {
-    "n": 6,
+    "n": 5,
     "de": 6,
-    "proporcion": 1.0,
+    "proporcion": 0.8333,
     "ic95": [
-      1.0,
+      0.5,
       1.0
     ],
     "ic95_wilson": [
-      0.6097,
-      1.0
+      0.4365,
+      0.9699
     ],
-    "remuestreos": 2000,
-    "bootstrap_degenerado": true
+    "remuestreos": 2000
   },
   "parciales": {
-    "n": 0,
+    "n": 1,
     "de": 6,
-    "proporcion": 0.0,
+    "proporcion": 0.1667,
     "ic95": [
       0.0,
-      0.0
+      0.5
     ],
     "ic95_wilson": [
-      0.0,
-      0.3903
+      0.0301,
+      0.5635
     ],
-    "remuestreos": 2000,
-    "bootstrap_degenerado": true
+    "remuestreos": 2000
   },
   "tipo_incorrecto": {
     "n": 0,
@@ -57,13 +55,19 @@
     "remuestreos": 2000,
     "bootstrap_degenerado": true
   },
-  "fallos": [],
+  "fallos": [
+    {
+      "id_muestra": "S06",
+      "id": "GRP-da35c3dead/A6",
+      "veredicto": "parcial"
+    }
+  ],
   "meta_validez": {
     "meta": 0.9,
     "criterio": "estimación puntual (docs/protocolo_evaluacion.md, sección 4)",
-    "estimacion_puntual": 1.0,
-    "cumple_estimacion_puntual": true,
-    "limite_inferior_wilson": 0.6097,
+    "estimacion_puntual": 0.8333,
+    "cumple_estimacion_puntual": false,
+    "limite_inferior_wilson": 0.4365,
     "cumple_con_limite_inferior_wilson": false,
     "nota_wilson": "información adicional: no reemplaza el criterio oficial",
     "origen_juicio": "humano",
@@ -72,6 +76,6 @@
   "revisores": [
     "David Feng"
   ],
-  "cumple_meta": true,
+  "cumple_meta": false,
   "nota": "La muestra tiene 6 < 30 afirmaciones: no se produjeron más (PDF 9.1: «si se producen tantas»)."
 }
