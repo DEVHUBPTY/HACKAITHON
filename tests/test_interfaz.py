@@ -454,7 +454,7 @@ def test_el_atajo_caso_abre_la_ficha_del_grupo(app) -> None:
 def test_el_atajo_caso_con_un_valor_malo_no_rompe_ni_cambia_de_pantalla(app) -> None:
     app.query_params["caso"] = "'; DROP TABLE grupos; --"
     at = app.run()
-    assert not at.exception and at.session_state["pantalla"] == "calidad"
+    assert not at.exception and at.session_state["pantalla"] == "inicio"
 
 
 def test_la_consulta_responde_con_citas_y_se_abstiene_diciendo_que_falta(app) -> None:
@@ -502,7 +502,8 @@ def test_la_revision_de_un_grupo_sin_caso_muestra_los_cinco_estados_y_solo_ofrec
     at = ir(app.run(), "revision")
     assert not at.exception
     assert "Estado actual:** nuevo" in "\n".join(textos(at))
-    assert [b.label for b in at.main.button] == ["Abrir para revisar"] and at.main.button[0].disabled      # hasta elegir quién revisa (D-49)
+    propios = [b for b in at.main.button if not str(b.key).startswith(("paso_", "nav_"))]      # D-131: sin el indicador de etapas ni la navegación
+    assert [b.label for b in propios] == ["Abrir para revisar"] and propios[0].disabled      # hasta elegir quién revisa (D-49)
     assert list(at.dataframe[0].value["Estados del reto"]) == CFG.revision.estados
     assert "aprobado como borrador" in "\n".join(textos(at))
 
@@ -543,7 +544,7 @@ def test_el_modo_demo_muestra_la_insignia_y_los_pasos_del_guion(monkeypatch, bas
     at = app.run()
     assert not at.exception
     lateral = "\n".join(str(m.value) for m in at.sidebar.markdown)
-    assert "MODO DEMO" in lateral and ui.leer_guion(CFG)[0].tiempo in lateral
+    assert "Modo demo" in lateral and ui.leer_guion(CFG)[0].tiempo in lateral
 
 
 def test_la_app_no_usa_la_red_al_importar_ni_al_pintar(monkeypatch, app) -> None:

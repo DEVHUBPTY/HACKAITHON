@@ -12,7 +12,7 @@ import re
 import sys
 import unicodedata
 from pathlib import Path
-from typing import Literal, TypeVar, get_args
+from typing import Any, Literal, TypeVar, get_args
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import yaml
@@ -2561,7 +2561,43 @@ def cargar_verificacion(carpeta: Path | None = None) -> ConfigVerificacion:
 # ------------------------------------------------------------------ interfaz.yaml (E1-15)
 
 
+CLAVE_INICIO = "inicio"     # D-131: «Cómo funciona», la pantalla de entrada; no es una de las ocho pantallas de la secuencia
+
+
+def _textos_de(valor: Any) -> list[str]:
+    """Todas las cadenas de un valor anidado (para revisar que ningún texto de la interfaz hable de publicar)."""
+    if isinstance(valor, str):
+        return [valor]
+    if isinstance(valor, dict):
+        return [t for v in valor.values() for t in _textos_de(v)]
+    if isinstance(valor, list | tuple):
+        return [t for v in valor for t in _textos_de(v)]
+    return []
+
+
 CLAVES_DE_PANTALLA = ("calidad", "organizar", "contextualizar", "bandeja", "ficha", "paquete", "revision", "consulta")
+
+
+MedidaInterfaz = Literal["registros_leidos", "registros_validos", "filas_en_base", "grupos", "grupos_puntuados", "borradores_en_cache",
+                         "fichas_disponibles", "casos_revisados", "casos_exportados", "vinculos"]
+
+
+class GuiaEtapa(ModeloConfig):
+    """D-131: lo que explica cada pantalla (qué hace, cómo leerla, qué caso de uso demuestra) y lo que entra y sale de ella en la secuencia."""
+
+    que_hace: str = Field(min_length=1)
+    como_leer: str = Field(min_length=1)
+    caso_de_uso: str = Field(min_length=1)
+    entra: str = Field(min_length=1)
+    sale: str = Field(min_length=1)
+    medida: MedidaInterfaz | None = None       # la cuenta viva de la etapa en «Cómo funciona» (sale de los datos, nunca está escrita aquí)
+    unidad_cuenta: str | None = None
+
+    @model_validator(mode="after")
+    def _cuenta_completa(self) -> GuiaEtapa:
+        if (self.medida is None) != (self.unidad_cuenta is None):
+            raise ValueError("guia: medida y unidad_cuenta van juntas o ninguna")
+        return self
 
 
 class PantallaInterfaz(ModeloConfig):
@@ -2571,14 +2607,14 @@ class PantallaInterfaz(ModeloConfig):
     titulo: str = Field(min_length=1)
     descripcion: str = Field(min_length=1)
     separada: bool = False
+    guia: GuiaEtapa
 
 
 class PasoArquitectura(ModeloConfig):
     """D-128: un paso de la arquitectura mínima del PDF (sección 8) con la cuenta real que lo respalda y las pantallas donde se ve."""
 
     etiqueta: str = Field(min_length=1)
-    medida: Literal["registros_leidos", "registros_validos", "filas_en_base", "grupos", "grupos_puntuados", "borradores_en_cache",
-                    "fichas_disponibles", "casos_revisados", "casos_exportados"]
+    medida: MedidaInterfaz
     unidad: str = Field(min_length=1)
     pantallas: list[Literal["calidad", "organizar", "contextualizar", "bandeja", "ficha", "paquete", "revision", "consulta"]] = Field(min_length=1)
     ancla: str | None = Field(default=None, pattern=r"^[a-z0-9-]+$")   # D-130: parte de la pantalla «1 · Cargar» donde se ve el paso
@@ -2700,6 +2736,21 @@ class PaqueteInterfaz(ModeloConfig):
     """Etiquetas legibles de los campos del paquete en la pantalla Paquete; un campo sin etiqueta usa su nombre capitalizado."""
 
     etiquetas: dict[str, str]
+    etiqueta_usuario: str = Field(min_length=1)        # «Para: {usuario}»: a quién sirve cada sección (columna «Lector» de docs/salidas.md)
+    lectores: dict[str, str]                           # clave del lector → su nombre legible
+    usuarios: dict[str, dict[str, str]]                # modalidad → campo del paquete → clave del lector
+
+    @model_validator(mode="after")
+    def _usuarios_coherentes(self) -> PaqueteInterfaz:
+        if "{usuario}" not in self.etiqueta_usuario:
+            raise ValueError("paquete.etiqueta_usuario debe llevar {usuario}")
+        for modalidad, campos in self.usuarios.items():
+            for campo, lector in campos.items():
+                if lector not in self.lectores:
+                    raise ValueError(f"paquete.usuarios.{modalidad}.{campo}: lector «{lector}» no declarado en paquete.lectores")
+                if campo not in self.etiquetas:
+                    raise ValueError(f"paquete.usuarios.{modalidad}.{campo}: el campo no tiene etiqueta en paquete.etiquetas")
+        return self
 
 
 class RevisionInterfaz(ModeloConfig):
@@ -2753,6 +2804,91 @@ class TextosInterfaz(ModeloConfig):
     aprobar_aviso: str
 
 
+class ModalidadInicio(ModeloConfig):
+    """Una de las tres modalidades del PDF (sección 2): quién la usa, qué obtiene y hasta dónde llega este prototipo."""
+
+    nombre: str = Field(min_length=1)
+    quien: str = Field(min_length=1)
+    obtiene: str = Field(min_length=1)
+    alcance: str = Field(min_length=1)
+
+
+class ReglaInicio(ModeloConfig):
+    titulo: str = Field(min_length=1)
+    texto: str = Field(min_length=1)
+
+
+class InicioInterfaz(ModeloConfig):
+    """D-131: la pantalla de entrada «Cómo funciona». Los textos son de presentación; las cuentas de cada etapa salen de los datos."""
+
+    titulo: str = Field(min_length=1)
+    descripcion: str = Field(min_length=1)
+    proposito: str = Field(min_length=1)
+    titulo_modalidades: str = Field(min_length=1)
+    texto_cita: str = Field(min_length=1)          # la frase del PDF sección 3 que explica por qué hay tres modalidades
+    modalidades: list[ModalidadInicio] = Field(min_length=3, max_length=3)
+    titulo_etapas: str = Field(min_length=1)
+    ayuda_etapas: str = Field(min_length=1)
+    etiqueta_entra: str = Field(min_length=1)
+    etiqueta_sale: str = Field(min_length=1)
+    boton_abrir: str = Field(min_length=1)
+    sin_dato: str = Field(min_length=1)
+    titulo_reglas: str = Field(min_length=1)
+    reglas: list[ReglaInicio] = Field(min_length=3)
+    texto_arquitectura: str = Field(min_length=1)
+    boton_arquitectura: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _marcadores(self) -> InicioInterfaz:
+        if "{titulo}" not in self.boton_abrir:
+            raise ValueError("inicio.boton_abrir debe llevar {titulo}")
+        return self
+
+
+class NavegacionInterfaz(ModeloConfig):
+    """D-131: rótulos del recorrido por etapas (indicador de etapas, bloque de guía y botones de etapa anterior y siguiente)."""
+
+    que_hace: str = Field(min_length=1)
+    como_leer: str = Field(min_length=1)
+    caso_de_uso: str = Field(min_length=1)
+    anterior: str = Field(min_length=1)
+    siguiente: str = Field(min_length=1)
+    ayuda_paso: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _marcadores(self) -> NavegacionInterfaz:
+        for campo in ("anterior", "siguiente", "ayuda_paso"):
+            if "{titulo}" not in getattr(self, campo):
+                raise ValueError(f"navegacion.{campo} debe llevar {{titulo}}")
+        return self
+
+
+_COLOR = r"^#[0-9A-Fa-f]{6}$"
+_CSS_PROHIBIDO = re.compile(r"http|url\(|@import|expression\(|javascript:", re.IGNORECASE)
+
+
+class EstiloInterfaz(ModeloConfig):
+    """D-131: sistema visual. El tema base (fondo, tinta, acento) vive en ``.streamlit/config.toml`` y debe coincidir con estos colores
+    (lo vigila una prueba); aquí va el CSS mínimo, sin recursos externos (la demo corre sin red)."""
+
+    acento: str = Field(pattern=_COLOR)           # petróleo: lo único con acento (secuencia, etapa actual, botones principales)
+    tinta: str = Field(pattern=_COLOR)
+    papel: str = Field(pattern=_COLOR)
+    papel_secundario: str = Field(pattern=_COLOR)
+    semanticos: dict[str, dict[str, str]]         # colores con significado: columna → valor → color (solo alto, medio, insuficiente, suficiente)
+    css: str = Field(min_length=1)                # plantilla ``string.Template``: ${acento}, ${tinta}, ${papel}, ${papel_secundario}
+
+    @model_validator(mode="after")
+    def _seguro(self) -> EstiloInterfaz:
+        if _CSS_PROHIBIDO.search(self.css):
+            raise ValueError("estilo.css: sin recursos externos (http, url(), @import): la demo corre sin red")
+        for columna, valores in self.semanticos.items():
+            for valor, color in valores.items():
+                if not re.match(_COLOR, color):
+                    raise ValueError(f"estilo.semanticos.{columna}.{valor}: color inválido")
+        return self
+
+
 class ConfigInterfaz(ModeloConfig):
     """Modelo de ``config/interfaz.yaml``: constantes de presentación de la app (E1-15). Sin reglas de negocio."""
 
@@ -2761,6 +2897,9 @@ class ConfigInterfaz(ModeloConfig):
     modalidad_inicial: Literal["editorial", "banca"]
     pantallas: list[PantallaInterfaz] = Field(min_length=8, max_length=8)
     pantalla_inicial: str
+    inicio: InicioInterfaz
+    navegacion: NavegacionInterfaz
+    estilo: EstiloInterfaz
     cargar: CargarInterfaz
     organizar: OrganizarInterfaz
     contextualizar: ContextualizarInterfaz
@@ -2784,10 +2923,11 @@ class ConfigInterfaz(ModeloConfig):
             raise ValueError(f"pantallas: las ocho claves {', '.join(CLAVES_DE_PANTALLA)} deben aparecer una vez")
         if [p.clave for p in self.pantallas if p.separada] != ["consulta"]:
             raise ValueError("pantallas: solo la consulta va separada de las siete etapas del reto")
-        if self.pantalla_inicial in [p.clave for p in self.pantallas if p.separada]:
-            raise ValueError("pantalla_inicial: debe ser una de las siete etapas")
-        if self.pantalla_inicial not in claves:
-            raise ValueError("pantalla_inicial: debe ser una de las pantallas")
+        if self.pantalla_inicial != CLAVE_INICIO:
+            raise ValueError(f"pantalla_inicial: la aplicación abre en «{CLAVE_INICIO}» (Cómo funciona, D-131)")
+        for p in self.pantallas:
+            if not p.separada and (p.guia.medida is None):
+                raise ValueError(f"pantallas.{p.clave}.guia: cada etapa lleva la cuenta viva (medida y unidad_cuenta)")
         if self.revision.estado_inicial not in self.revision.estados:
             raise ValueError("revision.estado_inicial: debe estar en revision.estados")
         propios = [t for v in self.textos.model_dump().values() for t in (v.values() if isinstance(v, dict) else [v])]
@@ -2795,7 +2935,8 @@ class ConfigInterfaz(ModeloConfig):
                   *(p.titulo for p in self.pantallas), *(p.descripcion for p in self.pantallas),
                   *self.organizar.motivos_ruido.values(), self.organizar.ayuda_grupos, self.organizar.ayuda_procedencias,
                   *self.contextualizar.motivos_sin_vinculo.values(), self.contextualizar.aviso_no_forzar, self.contextualizar.aviso_usgs,
-                  *self.registro_notion.model_dump().values()]
+                  *self.registro_notion.model_dump().values(),
+                  *_textos_de(self.inicio.model_dump()), *_textos_de(self.navegacion.model_dump()), *(t for p in self.pantallas for t in _textos_de(p.guia.model_dump()))]
         textos = [self.titulo_app, *self.consulta.ejemplos, *self.revision.estados, *propios, *nuevos]
         if any(FORMAS_DE_PUBLICAR.search(t) for t in textos):
             raise ValueError("ningún texto de la interfaz puede hablar de publicar")

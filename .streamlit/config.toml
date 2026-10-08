@@ -6,3 +6,13 @@ gatherUsageStats = false
 headless = true
 address = "localhost"          # sin consulta de IP pública al arrancar (la demo corre sin red)
 fileWatcherType = "none"
+
+# D-131: tema claro y editorial; los colores deben coincidir con `estilo` de config/interfaz.yaml (lo vigila una prueba).
+# Fuente del sistema: ningún recurso externo (la demo corre sin red).
+[theme]
+base = "light"
+primaryColor = "#0E7C86"
+backgroundColor = "#F6F7F9"
+secondaryBackgroundColor = "#E8ECF1"
+textColor = "#1B2A41"
+font = "sans-serif"

@@ -32,7 +32,7 @@ import pandas as pd  # noqa: E402
 import streamlit as st  # noqa: E402
 
 from src import corrida as co, db, exportar, interfaz as ui, revision as rv  # noqa: E402
-from src.configuracion import MODALIDADES, RAIZ, cargar_carga, cargar_corrida, cargar_modalidad, cargar_temas, leer_local_env  # noqa: E402
+from src.configuracion import CLAVE_INICIO, MODALIDADES, RAIZ, cargar_carga, cargar_corrida, cargar_modalidad, cargar_temas, leer_local_env  # noqa: E402
 from src.cache import SinBorrador  # noqa: E402
 from src.consulta import RespuestaConsulta, crear_consultor  # noqa: E402
 from src.esquemas import ETIQUETA_BORRADOR, Ficha  # noqa: E402
@@ -77,11 +77,74 @@ def pie(ctx: ui.Contexto, alcance: str | None = None) -> None:
     st.caption(f"**{ETIQUETA_BORRADOR}** · Alcance: {alcance or ui.leyenda_de_alcance()}")
 
 
+def indicador_de_etapas(ctx: ui.Contexto, clave: str) -> None:
+    """D-131: la secuencia siempre a la vista: las siete etapas en fila, la actual resaltada (color principal) y cada una con su salto."""
+    etapas = ui.etapas_del_reto(ctx.cfg)
+    for e, col in zip(etapas, st.columns(len(etapas)), strict=True):
+        with col:
+            st.button(
+                e.titulo, key=f"paso_{e.clave}", on_click=ir_a, args=(e.clave,), width="stretch", type="primary" if e.clave == clave else "secondary",
+                help=ctx.cfg.navegacion.ayuda_paso.format(titulo=e.titulo),
+            )
+
+
 def encabezado(ctx: ui.Contexto, clave: str) -> None:
-    """D-128: cada pantalla lleva el nombre de su etapa del PDF y lo que el PDF pide en ella."""
+    """D-128: cada pantalla lleva el nombre de su etapa del PDF y lo que el PDF pide en ella.
+    D-131: antes va el indicador de etapas y después, la guía (qué hace, cómo leerla y qué caso de uso demuestra)."""
     p = next(x for x in ctx.cfg.pantallas if x.clave == clave)
+    if not p.separada:
+        indicador_de_etapas(ctx, clave)
     st.header(p.titulo)
     st.caption(p.descripcion)
+    nav = ctx.cfg.navegacion
+    with st.container(key="guia_etapa"):
+        st.markdown(f"**{nav.que_hace}.** {p.guia.que_hace}")
+        st.markdown(f"**{nav.como_leer}.** {p.guia.como_leer}")
+        st.markdown(f"**{nav.caso_de_uso}.** {p.guia.caso_de_uso}")
+
+
+def navegacion_inferior(ctx: ui.Contexto, clave: str) -> None:
+    """D-131: al pie de cada etapa, ir a la anterior o a la siguiente (la 1 no tiene anterior y la 7 no tiene siguiente). El grupo elegido se conserva."""
+    anterior, siguiente = ui.vecinas_de_etapa(ctx.cfg, clave)
+    if anterior is None and siguiente is None:
+        return
+    nav = ctx.cfg.navegacion
+    with st.container(key="navegacion_pie"):
+        izquierda, derecha = st.columns(2)
+        if anterior is not None:
+            izquierda.button(nav.anterior.format(titulo=anterior.titulo), key="nav_anterior", on_click=ir_a, args=(anterior.clave,), width="stretch")
+        if siguiente is not None:
+            derecha.button(nav.siguiente.format(titulo=siguiente.titulo), key="nav_siguiente", on_click=ir_a, args=(siguiente.clave,), type="primary", width="stretch")
+
+
+def pantalla_inicio(ctx: ui.Contexto) -> None:
+    """D-131: «Cómo funciona», la entrada: para qué sirve, quién la usa, las siete etapas con lo que entra y sale de cada una, y tres reglas de la casa."""
+    ini = ctx.cfg.inicio
+    st.header(ini.titulo)
+    st.caption(ini.descripcion)
+    st.markdown(ini.proposito)
+    st.subheader(ini.titulo_modalidades)
+    st.markdown(ini.texto_cita)
+    for m in ini.modalidades:
+        st.markdown(f"- **{m.nombre}** · {m.quien}: {m.obtiene} {m.alcance}")
+    st.subheader(ini.titulo_etapas)
+    st.caption(ini.ayuda_etapas)
+    etapas = ui.etapas_de_inicio(ctx.con, ctx.cfg, carga_activa(), ctx.revisiones, ctx.demo)
+    for e, col in zip(etapas, st.columns(len(etapas)), strict=True):
+        with col, st.container(key=f"etapa_{e.clave}"):
+            st.metric(e.titulo, ini.sin_dato if e.cuenta is None else f"{e.cuenta:,}".replace(",", " "), help=e.unidad)
+            st.caption(e.unidad)
+            st.markdown(f"**{ini.etiqueta_entra}:** {e.entra}")
+            st.markdown(f"**{ini.etiqueta_sale}:** {e.sale}")
+            st.button(ini.boton_abrir.format(titulo=e.titulo), key=f"inicio_{e.clave}", on_click=ir_a, args=(e.clave,), width="stretch")
+    st.subheader(ini.titulo_reglas)
+    for i, (regla, col) in enumerate(zip(ini.reglas, st.columns(len(ini.reglas)), strict=True)):
+        with col, st.container(key=f"regla_{i}"):
+            st.markdown(f"**{regla.titulo}**")
+            st.markdown(regla.texto)
+    st.caption(ini.texto_arquitectura)
+    st.button(ini.boton_arquitectura, key="inicio_arquitectura", on_click=ir_a, args=(ctx.cfg.pantallas[0].clave,))
+    pie(ctx)
 
 
 def titulo_de(ctx: ui.Contexto, clave: str) -> str:
@@ -347,13 +410,19 @@ def pintar_resultado_propio(r: co.ResultadoPropio, cfg: Any) -> None:
     st.download_button("Descargar el veredicto de cada fila (CSV)", r.csv_de_filas, file_name=f"veredicto_{r.tipo}.csv", mime="text/csv", key=f"t01_veredicto_{r.tipo}")
 
 
+def carga_activa() -> dict[str, Any] | None:
+    """El reporte de carga de la base activa, o ``None`` si no se puede leer (la cuenta queda «sin dato», nunca inventada)."""
+    try:
+        return reporte_de_carga(str(reporte_activo()))
+    except Exception:  # noqa: BLE001 - la pantalla debe abrir aunque falten los archivos del snapshot
+        return None
+
+
 def pantalla_calidad(ctx: ui.Contexto) -> None:
     encabezado(ctx, "calidad")
-    try:
-        carga = reporte_de_carga(str(reporte_activo()))
-    except Exception as exc:  # noqa: BLE001 - la pantalla debe abrir aunque falten los archivos del snapshot
-        st.warning(f"No se pudo leer el reporte de carga ({type(exc).__name__}).")
-        carga = None
+    carga = carga_activa()
+    if carga is None:
+        st.warning("No se pudo leer el reporte de carga.")
     arquitectura(ctx, carga)
     carga_en_vivo(ctx)
     archivo_propio()
@@ -508,8 +577,15 @@ def tabla_de_bandeja(ctx: ui.Contexto, filas: Sequence[ui.FilaBandeja], modalida
             for f in filas
         ]
     )
+    def con_significado(columna: str) -> Any:     # D-131: solo el rango y el estado de evidencia llevan color, y es el de su significado (alto, medio, insuficiente, suficiente)
+        def pintar(valor: Any) -> str:
+            color = ui.color_semantico(ctx.cfg, columna.lower(), str(valor))
+            return f"color: {color}; font-weight: 600" if color else ""
+        return pintar
+
+    estilo = tabla.style.map(con_significado("Rango"), subset=["Rango"]).map(con_significado("Evidencia"), subset=["Evidencia"])
     st.dataframe(
-        tabla, hide_index=True, width="stretch", height=(len(tabla) + 1) * ctx.cfg.bandeja.alto_filas_px,
+        estilo, hide_index=True, width="stretch", height=(len(tabla) + 1) * ctx.cfg.bandeja.alto_filas_px,
         column_config={k: st.column_config.ProgressColumn(k, help=f"Componente {k} (0 a 1)", min_value=0.0, max_value=1.0, format=f"%.{ctx.cfg.bandeja.decimales_puntaje + 1}f") for k in ui.COMPONENTES}
         | {"P": st.column_config.NumberColumn("P", format=f"%.{ctx.cfg.bandeja.decimales_puntaje}f"), "Titular representativo": st.column_config.TextColumn(width="large")},
     )
@@ -710,6 +786,9 @@ def pantalla_paquete(ctx: ui.Contexto) -> None:
         st.markdown(f"**{ETIQUETA_BORRADOR}**")
         for titulo, parrafos in ui.secciones_de_paquete(estado.paquete, ctx.cfg.paquete.etiquetas):
             with st.expander(titulo, expanded=True):
+                lector = ui.usuario_de_seccion(ctx.cfg, ctx.modalidad, titulo)      # D-131: a quién sirve esta sección
+                if lector:
+                    st.caption(ctx.cfg.paquete.etiqueta_usuario.format(usuario=lector))
                 for p in parrafos:
                     st.markdown(escapar_markdown(p))
     else:
@@ -975,7 +1054,7 @@ def _correccion(ctx: ui.Contexto, caso: Any, version: Any, revisor: str | None, 
 
 
 PANTALLAS = {
-    "calidad": pantalla_calidad, "organizar": pantalla_organizar, "contextualizar": pantalla_contextualizar, "bandeja": pantalla_bandeja,
+    "inicio": pantalla_inicio, "calidad": pantalla_calidad, "organizar": pantalla_organizar, "contextualizar": pantalla_contextualizar, "bandeja": pantalla_bandeja,
     "ficha": pantalla_ficha, "paquete": pantalla_paquete, "revision": pantalla_revision, "consulta": pantalla_consulta,
 }
 
@@ -990,7 +1069,7 @@ def barra_lateral(cfg: Any, demo: bool) -> str:
     with st.sidebar:
         st.title(cfg.titulo_app)
         if demo:
-            st.markdown(":red-badge[MODO DEMO]")
+            st.markdown(":gray-badge[Modo demo]")
         modalidad = st.selectbox(
             "Modalidad", list(MODALIDADES), index=MODALIDADES.index(cfg.modalidad_inicial), key="modalidad",
             format_func=lambda m: cargar_modalidad(m).nombre + (" (parcial)" if cargar_modalidad(m).parcial else ""),
@@ -998,6 +1077,7 @@ def barra_lateral(cfg: Any, demo: bool) -> str:
         etapas = {p.clave: p.titulo for p in cfg.pantallas if not p.separada}
         st.session_state.setdefault("pantalla", cfg.pantalla_inicial)
         actual = st.session_state["pantalla"]
+        st.button(cfg.inicio.titulo, key="pantalla_inicio", on_click=ir_a, args=(CLAVE_INICIO,), type="primary" if actual == CLAVE_INICIO else "secondary", width="stretch")
         st.session_state["pantalla_etapa"] = actual if actual in etapas else None     # en la consulta, ninguna etapa queda marcada
         st.radio("Etapas del reto", list(etapas), format_func=etapas.get, key="pantalla_etapa", index=None, on_change=elegir_etapa)
         st.divider()
@@ -1024,6 +1104,7 @@ def aplicar_atajo(cfg: Any, filas: list[ui.FilaBandeja], revisiones: Any) -> Non
 def main() -> None:
     cfg = ui.cargar_interfaz()
     st.set_page_config(page_title=cfg.titulo_app, layout="wide")
+    st.html(f"<style>{ui.css_de_la_interfaz(cfg)}</style>")      # D-131: CSS mínimo y local, sin recursos externos
     demo = ui.modo_demo()
     ruta, aviso = ui.elegir_base(demo, cfg)
     if aviso:
@@ -1048,6 +1129,7 @@ def main() -> None:
     modalidad = barra_lateral(cfg, demo)
     ctx = ui.Contexto(cfg, ui.cargar_verificacion(), con, modalidad, demo, aviso, ui.leer_bandeja(con, modalidad, nombres), ruta, revisiones)
     PANTALLAS[st.session_state["pantalla"]](ctx)
+    navegacion_inferior(ctx, st.session_state["pantalla"])
 
 
 main()

@@ -7,15 +7,154 @@ titulo_app: "HackIAthon · De la señal a la decisión"
 modalidad_inicial: editorial
 
 pantallas:                          # orden de la barra lateral (D-128): las siete etapas del reto (PDF sección 3, con su nombre) y, aparte, la consulta
-  - {clave: calidad, titulo: "1 · Cargar", descripcion: "Leer el paquete público congelado. Validar IDs, URLs, fechas, campos obligatorios y filas nulas. Emitir un reporte de calidad."}
-  - {clave: organizar, titulo: "2 · Organizar", descripcion: "Clasificar temas: economía, logística/Canal, turismo, servicios públicos, eventos naturales y regulación. Agrupar noticias sobre el mismo evento."}
-  - {clave: contextualizar, titulo: "3 · Contextualizar", descripcion: "Relacionar noticias con indicadores o eventos oficiales pertinentes. Mostrar período, unidad y limitaciones. Si no existe relación sustentada, no forzarla."}
-  - {clave: bandeja, titulo: "4 · Priorizar", descripcion: "Calcular un puntaje de atención, mostrar componentes y generar una lista ordenada. Distinguir relevancia de suficiencia de evidencia."}
-  - {clave: ficha, titulo: "5 · Explicar", descripcion: "Abrir una ficha: qué se reporta, quién lo reporta, qué está respaldado, qué falta comprobar y qué acción se recomienda al usuario."}
-  - {clave: paquete, titulo: "6 · Producir", descripcion: "Redactar un borrador propio de la modalidad, con citas por afirmación. Diferenciar hechos, declaraciones, inferencias e hipótesis."}
-  - {clave: revision, titulo: "7 · Revisar", descripcion: "Registrar aceptación, corrección o descarte por una persona responsable. Crear o actualizar la ficha en Notion (registro en Notion)."}
-  - {clave: consulta, titulo: "Consulta", descripcion: "Herramienta aparte: preguntas en español sobre los datos, con abstención cuando no hay evidencia suficiente.", separada: true}
-pantalla_inicial: calidad
+  # D-131: cada pantalla trae su `guia` (qué hace, cómo leerla, qué caso de uso demuestra, qué entra y qué sale) y, en las etapas, la cuenta viva (`medida`, la misma de `cargar.arquitectura`)
+  - clave: calidad
+    titulo: "1 · Cargar"
+    descripcion: "Leer el paquete público congelado. Validar IDs, URLs, fechas, campos obligatorios y filas nulas. Emitir un reporte de calidad."
+    guia:
+      que_hace: "Lee el paquete público congelado y comprueba que cada registro sea utilizable: IDs, URLs, fechas, campos obligatorios y nulos."
+      como_leer: "Arriba está la arquitectura del prototipo con la cuenta real de cada paso; más abajo se puede ejecutar la carga en vivo o probar un archivo propio. Lo que no sirve se marca, no se borra."
+      caso_de_uso: "Ninguno de los cinco: aquí se demuestra la prueba T01 de carga con validación."
+      entra: "El paquete público congelado: noticias, indicadores, sismos y series de la SBP"
+      sale: "Registros válidos y un reporte de calidad"
+      medida: registros_validos
+      unidad_cuenta: "registros válidos"
+  - clave: organizar
+    titulo: "2 · Organizar"
+    descripcion: "Clasificar temas: economía, logística/Canal, turismo, servicios públicos, eventos naturales y regulación. Agrupar noticias sobre el mismo evento."
+    guia:
+      que_hace: "Clasifica cada titular en uno de los seis temas del reto y agrupa los que hablan del mismo evento."
+      como_leer: "Cada fila de la tabla es un grupo. Compare titulares, medios y procedencias: repetir un titular no es corroborarlo."
+      caso_de_uso: "CU-03 · Agrupar titulares repetidos y distinguir repetición de corroboración independiente."
+      entra: "Registros válidos"
+      sale: "Grupos de titulares con su tema y sus procedencias independientes"
+      medida: grupos
+      unidad_cuenta: "grupos de noticias"
+  - clave: contextualizar
+    titulo: "3 · Contextualizar"
+    descripcion: "Relacionar noticias con indicadores o eventos oficiales pertinentes. Mostrar período, unidad y limitaciones. Si no existe relación sustentada, no forzarla."
+    guia:
+      que_hace: "Relaciona cada grupo con indicadores o eventos oficiales pertinentes, con su período, su unidad y sus limitaciones."
+      como_leer: "Cada fila es un vínculo con un dato oficial. Los datos del Banco Mundial son anuales, no de hoy. Si no hay una relación sustentada, no se fuerza."
+      caso_de_uso: "CU-02 · Incorporar una serie oficial a un tema económico sin confundir un dato anual histórico con una medición de hoy."
+      entra: "Grupos de titulares y datos oficiales (Banco Mundial, USGS y SBP)"
+      sale: "Vínculos sustentados, o la constancia de que no hay relación"
+      medida: vinculos
+      unidad_cuenta: "vínculos con datos oficiales"
+  - clave: bandeja
+    titulo: "4 · Priorizar"
+    descripcion: "Calcular un puntaje de atención, mostrar componentes y generar una lista ordenada. Distinguir relevancia de suficiencia de evidencia."
+    guia:
+      que_hace: "Calcula un puntaje de atención de 0 a 100, muestra sus cinco componentes y ordena la lista."
+      como_leer: "P ordena la atención; el estado de evidencia dice si ya se puede trabajar. Son independientes: un tema puede ser prioritario y tener evidencia insuficiente."
+      caso_de_uso: "CU-01 · ¿Qué cinco temas merecen revisión para la agenda de Panamá y por qué? En la modalidad Banca, la bandeja por sector sirve a CU-05."
+      entra: "Grupos con sus vínculos oficiales"
+      sale: "Ranking con puntaje, componentes, estado de evidencia y acción recomendada"
+      medida: grupos_puntuados
+      unidad_cuenta: "grupos puntuados"
+  - clave: ficha
+    titulo: "5 · Explicar"
+    descripcion: "Abrir una ficha: qué se reporta, quién lo reporta, qué está respaldado, qué falta comprobar y qué acción se recomienda al usuario."
+    guia:
+      que_hace: "Abre la ficha de un grupo: qué se reporta, quién lo reporta, qué está respaldado, qué falta comprobar y qué acción se recomienda."
+      como_leer: "Empiece por el resumen y despliegue cada sección. Cada línea respaldada lleva su cita (ID y campo), y un titular se lee como declaración de su medio, no como hecho."
+      caso_de_uso: "CU-01 y CU-04 · Evidencia disponible y vacíos de verificación; ante una cifra sin dato oficial, la ficha se abstiene."
+      entra: "Un grupo de la bandeja"
+      sale: "Ficha de evidencia con citas verificables"
+      medida: fichas_disponibles
+      unidad_cuenta: "fichas de evidencia"
+  - clave: paquete
+    titulo: "6 · Producir"
+    descripcion: "Redactar un borrador propio de la modalidad, con citas por afirmación. Diferenciar hechos, declaraciones, inferencias e hipótesis."
+    guia:
+      que_hace: "Redacta el borrador propio de la modalidad, con citas por afirmación, a partir de lo que la ficha respalda."
+      como_leer: "Cada afirmación indica su tipo: hecho, declaración, inferencia o hipótesis. Si la evidencia no alcanza, no hay guion ni copy, solo un paquete de investigación. Aquí se lee lo ya guardado."
+      caso_de_uso: "CU-02 · Redactar un brief sin confundir datos anuales con mediciones de hoy. En la modalidad Banca, CU-05 · boletín del entorno logístico."
+      entra: "Una ficha con evidencia"
+      sale: "Borrador con citas y su leyenda de alcance"
+      medida: borradores_en_cache
+      unidad_cuenta: "respuestas del LLM guardadas"
+  - clave: revision
+    titulo: "7 · Revisar"
+    descripcion: "Registrar aceptación, corrección o descarte por una persona responsable. Crear o actualizar la ficha en Notion (registro en Notion)."
+    guia:
+      que_hace: "Una persona acepta, corrige o descarta el borrador y deja el registro; después se crea o actualiza la ficha en Notion."
+      como_leer: "Elija el grupo, abra el caso y use las acciones. El estado máximo es «aprobado como borrador», y cada cambio queda como una fila nueva del historial."
+      caso_de_uso: "Ninguno de los cinco: es el flujo de revisión humana de la etapa 7 del reto."
+      entra: "Un borrador"
+      sale: "Caso con estado, historial y ficha lista para Notion"
+      medida: casos_revisados
+      unidad_cuenta: "casos abiertos para revisar"
+  - clave: consulta
+    titulo: "Consulta"
+    descripcion: "Herramienta aparte: preguntas en español sobre los datos, con abstención cuando no hay evidencia suficiente."
+    separada: true
+    guia:
+      que_hace: "Responde preguntas en español sobre los datos cargados, con citas, o se abstiene cuando no hay evidencia suficiente."
+      como_leer: "Pruebe un ejemplo. Una cita se abre con un clic y muestra el registro original, con el año del dato y la fecha de extracción. Una abstención dice qué faltaría."
+      caso_de_uso: "CU-04 · Preguntar por una cifra inexistente o por una contradicción: abstenerse o mostrar las versiones y la verificación pendiente."
+      entra: "Una pregunta en español"
+      sale: "Respuesta con citas, o abstención"
+pantalla_inicial: inicio            # D-131: la aplicación abre en «Cómo funciona»
+
+inicio:                             # D-131: pantalla de entrada; las cuentas de cada etapa salen de los datos (guia.medida de cada pantalla)
+  titulo: "Cómo funciona"
+  descripcion: "Una secuencia de siete etapas que convierte titulares públicos y datos oficiales en una bandeja de temas priorizados, fichas de evidencia y borradores para una decisión humana."
+  proposito: "Cada etapa recibe el resultado de la anterior y entrega algo que la siguiente puede usar. Se puede recorrer en orden, de la señal a la decisión, o abrir directamente la etapa que se necesite."
+  titulo_modalidades: "Tres modalidades, un mismo núcleo"
+  texto_cita: "El reto dice: «El equipo elegirá una modalidad» (PDF sección 3). Este prototipo implementa la principal y cubre las otras dos así:"
+  modalidades:
+    - nombre: "TVN · principal"
+      quien: "Editor/a y periodista"
+      obtiene: "agenda priorizada, ficha de investigación, preguntas pendientes y borradores por formato."
+      alcance: "Es la modalidad que implementa este prototipo."
+    - nombre: "TVN · digital"
+      quien: "Productor/a digital"
+      obtiene: "propuestas de titulares, resumen web y copy social, siempre sujetos a revisión."
+      alcance: "Se cubre dentro del mismo paquete editorial: titulares propuestos, resumen web y copy digital."
+    - nombre: "Banca"
+      quien: "Analista de estudios económicos o riesgo sectorial"
+      obtiene: "boletín de entorno, señales y preguntas para seguimiento."
+      alcance: "Es una extensión, configurada sobre el mismo núcleo. Solo esta modalidad usa la fuente D (informes agregados de la SBP)."
+  titulo_etapas: "Las siete etapas, de la señal a la decisión"
+  ayuda_etapas: "Cada columna muestra lo que entra en la etapa, lo que sale y cuánto hay ahora en los datos de esta base."
+  etiqueta_entra: "Entra"
+  etiqueta_sale: "Sale"
+  boton_abrir: "Abrir {titulo}"
+  sin_dato: "sin dato"
+  titulo_reglas: "Tres reglas de la casa"
+  reglas:
+    - {titulo: "Todo es borrador", texto: "Nada se da por definitivo: el estado máximo es «aprobado como borrador» y toda salida lleva su leyenda de alcance."}
+    - {titulo: "Cada afirmación lleva su cita", texto: "Una cita es el ID de un registro más el campo que lo respalda. Lo que no se puede citar, no se afirma."}
+    - {titulo: "La persona revisora decide", texto: "El sistema ordena y propone; aceptar, corregir o descartar es siempre una decisión humana."}
+  texto_arquitectura: "La arquitectura del prototipo (PDF sección 8), con la cuenta real de cada paso, está en la etapa 1."
+  boton_arquitectura: "Ver la arquitectura en 1 · Cargar"
+
+navegacion:                         # D-131: indicador de etapas, bloque de guía y botones de etapa anterior y siguiente
+  que_hace: "Qué hace esta etapa"
+  como_leer: "Cómo leer esta pantalla"
+  caso_de_uso: "Caso de uso que se demuestra aquí"
+  anterior: "Etapa anterior: {titulo}"
+  siguiente: "Siguiente: {titulo}"
+  ayuda_paso: "Ir a {titulo}"
+
+estilo:                             # D-131: sistema visual claro y editorial. El tema base está en .streamlit/config.toml y debe coincidir (lo vigila una prueba)
+  acento: "#0E7C86"                 # petróleo: lo único con acento (secuencia, etapa actual y botones principales)
+  tinta: "#1B2A41"
+  papel: "#F6F7F9"
+  papel_secundario: "#E8ECF1"
+  semanticos:                       # colores con significado, reservados a eso: columna de la bandeja → valor → color
+    rango: {alto: "#B3261E", medio: "#C98A12"}
+    evidencia: {insuficiente: "#C98A12", suficiente: "#2E7D4F"}
+  css: |
+    .st-key-guia_etapa { border-left: 3px solid ${acento}; padding: 0.1rem 0 0.1rem 0.9rem; margin: 0.25rem 0 1.25rem; }
+    .st-key-guia_etapa p { margin: 0.2rem 0; }
+    [class*="st-key-paso_"] button { min-height: 2.1rem; padding: 0.15rem 0.3rem; line-height: 1.15; }
+    [class*="st-key-paso_"] button p { font-size: 0.8rem; }
+    [class*="st-key-etapa_"] { border-top: 2px solid ${acento}; padding-top: 0.5rem; }
+    [class*="st-key-regla_"] { border-left: 3px solid ${tinta}; padding-left: 0.8rem; }
+    .st-key-navegacion_pie { border-top: 1px solid ${papel_secundario}; padding-top: 0.75rem; margin-top: 1rem; }
+    h1, h2, h3 { letter-spacing: -0.01em; }
 
 cargar:                             # D-128: la arquitectura mínima del PDF (sección 8); cada cuenta sale de los datos, nunca está escrita aquí
   titulo_arquitectura: "Arquitectura del prototipo (PDF sección 8)"
@@ -124,6 +263,32 @@ generacion:                         # punto de enganche con E1-12 (src/generacio
   solo_cache: true                  # la interfaz nunca espera al LLM: usa borradores de caché (sin red)
 
 paquete:                            # etiquetas de los campos del paquete (docs/salidas.md) en la pantalla Paquete
+  etiqueta_usuario: "Para: {usuario}"     # D-131: a quién sirve cada sección (columna «Lector» de docs/salidas.md)
+  lectores:
+    editor: "Editor/a y periodista"
+    produccion: "Producción"
+    digital: "Productor/a digital (TVN · digital)"
+    analista: "Analista (banca)"
+  usuarios:                               # modalidad → campo del paquete → lector
+    editorial:
+      titulo: editor
+      enfoque: editor
+      brief: editor
+      preguntas: editor
+      fuentes_verificaciones: editor
+      guion: produccion
+      titulares: digital
+      resumen_web: digital
+      copy_digital: digital
+    banca:
+      titulo_trabajo: analista
+      observaciones: analista
+      hipotesis_impacto: analista
+      sectores: analista
+      horizonte: analista
+      evidencia: analista
+      preguntas: analista
+      aviso: analista
   etiquetas:
     marca: "Marca"
     id_caso: "Caso"

@@ -304,6 +304,8 @@ def test_la_pantalla_carga_en_vivo_explora_la_corrida_y_vuelve_a_la_base(monkeyp
     st.cache_data.clear()
     antes = vivos()
     at = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=180).run()
+    at.session_state["pantalla"] = "calidad"      # D-131: la aplicación abre en «Cómo funciona»
+    at.run()
     assert not at.exception
     assert "Pendiente" in "\n".join(str(c.value) for c in at.caption)         # antes de pulsar, cada paso dice que está pendiente
     at.button(key="corrida_cargar").click().run()
@@ -333,6 +335,8 @@ def test_la_pantalla_valida_un_archivo_propio_sin_tocar_la_base(monkeypatch: pyt
     st.cache_data.clear()
     antes = vivos()
     at = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=120).run()
+    at.session_state["pantalla"] = "calidad"      # D-131: la aplicación abre en «Cómo funciona»
+    at.run()
     assert not at.exception and [b for b in at.button if b.key == "t01_validar"][0].disabled   # sin archivo no hay nada que validar
     assert any(d for d in at.get("download_button"))                                          # el ejemplo con errores se puede descargar
     assert vivos() == antes
