@@ -95,7 +95,7 @@ panama:
     - '\b(rutas? maritim\w*|shipping routes?|trade routes?|maritim\w*|shipping|carga contenerizada|contenedores|containers?|navieras?|cargoes|cargo)\b'
     - *comercio_maritimo_x44   # X44: comercio marítimo o de combustibles con ancla de ruta (rutas marítimas, Canal, Asia–EE. UU.)
     - '\b(migracion|migrantes?|migration|migrants?|darien)\b'
-  secciones_dudosas: [mundo, tvmax, entretenimiento]   # gente-tvn y videos son contenido propio de TVN: no se filtran por sección
+  secciones_dudosas: [mundo, tvmax, entretenimiento, tu-cara-me-suena]   # D-126: tu-cara-me-suena es la sección del programa de TVN (farándula). gente-tvn y videos son contenido propio de TVN: no se filtran por sección
 
 # Es de Panamá, pero de un área que el reto no cubre (docs/guia_temas.md): deportes, farándula, cultura, política partidista.
 fuera_de_temas:
@@ -103,6 +103,7 @@ fuera_de_temas:
     - '\bf[uú]tbol\b'
     - '\bselecci[oó]n (de f|nacional|mayor|argentina|colombia)\w*'
     - '\b(mlb|playoffs?|torneo|amistoso|goleador|golea\w*|basquet|beisbol|liga de naciones|liga panamena|lpf)\b'
+    - '\b(automovilismo|formula [1-4]|indycar|nascar|karting|motorsport\w*)\b|\bpilotos?\b.{0,60}\b(carreras?|campeonato|escuderia|circuito)\b'   # D-126: piloto de carreras, nunca un piloto de avión
     - '\bcopa (del mundo|america|oro|kirin|concacaf|libertadores|sudamericana|davis|mundial)\b'   # no "Copa Airlines"
     - '\b(mundial (de|sub|femenino|masculino)|(al|el|del|para el|en el) mundial)\b'            # no "Banco Mundial"
     - '\b(eliminatorias|semifinales?)\b'
@@ -113,6 +114,7 @@ fuera_de_temas:
     - "\\bgira (musical|mundial|de conciertos)\\b|\\bgira '"                                      # no "Mulino gira instrucciones"
     - '\b(kardashian|lohan|pedro pascal|offset)\b'
     - '\bconcierto\b(?! benefic| solidari)'                                                     # no "concierto benéfico"
+    - '\b(shows?|reality|tu cara me suena|concursantes?)\b'                                    # D-126: espectáculo y concursos de TV («el octavo show de Tu Cara Me Suena»); palabra completa
   cultura:
     - '\bferia del libro\b'
     - '\bfestival (de|internacional de) (cine|jazz|musica|teatro)\b'
@@ -120,10 +122,24 @@ fuera_de_temas:
     - '\bprimarias?\b'
     - '\bcampana electoral\b'
     - '\bcandidat[oa]s? presidencial(es)?\b'                  # no "candidato a contralor" (cargo no partidista)
+  # D-126: pronunciamiento sobre un hecho de OTRO país, sin efecto declarado en Panamá (diplomacia, no los 6 temas).
+  # Cada patrón se anula si el titular nombra algo que sí toca a Panamá (Canal, buques, panameños, migrantes, comercio).
+  politica_internacional:
+    - '^(?!.*\b(canal|buques?|barcos?|panamenos?|panamenas?|connacionales?|migrantes?|darien|comercio|aranceles?|sanciones?|economia)\b)(?=.*\b(condena\w*|repudia\w*|lamenta\w*|rechaza\w*)\b).*\b(atentados?|terroris\w*|guerra|bombardeos?|invasion)\b'
+    - '^(?!.*\b(canal|buques?|barcos?|panamenos?|panamenas?|connacionales?|migrantes?|darien|comercio|aranceles?|sanciones?|economia)\b).*\bpid(e|en|io)\b.{0,20}\bpaz\b'
+  # D-126: se aplican SOLO en una sección dudosa de TVN (señal candidata, como `deportes`/`farandula` allí). «piloto» a secas es
+  # un piloto de carreras en tvmax/entretenimiento; un piloto de avión (aeropuerto, aerolínea, vuelo) no cuenta.
+  solo_en_seccion_dudosa:
+    - '^(?!.*\b(aeropuerto|aerolineas?|aviones?|aviacion|aeronaves?|vuelos?|helicopteros?|tocumen|aereo|aerea|aeronautic\w*)\b).*\bpilotos?\b'
 
   # Autopromoción de TVN (H5): no es noticia de los temas. "Contenido Exclusivo: ..." sí puede estarlo y no se marca.
   autopromocion_tvn:
     - '^\s*(tvn media|gente tvn|gente que inspira)\b(?!.*\b(inundacion\w*|donacion\w*|damnificad\w*|emergencia|ayuda humanitaria|incendio\w*|tragedia|sismo|lluvias?)\b)'
+
+# D-126: un titular que el clasificador deja sin tema (similitud máxima bajo `umbral_sin_tema`) no es de ninguno de los 6 temas del
+# reto: se marca ruido `fuera_de_temas` (no se borra) y no entra a grupos ni a la bandeja. Lo aplica src/clasificacion.py.
+sin_tema_como_ruido:
+  activo: true
 
 # Prototipo de noticia sobre Panamá (similitud de embeddings; diferido desde E1-03b en la revisión X14; implementado en E1-07 en src/clasificacion.py).
 # Con el modelo de clasificacion.yaml (modelo_activo): un titular que no está marcado como ruido ni como alcance

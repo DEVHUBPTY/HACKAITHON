@@ -57,11 +57,13 @@ logger = logging.getLogger(__name__)
 
 METODO_A = "A"
 MOTIVO_NO_ES_PANAMA = "no_es_panama"
+MOTIVO_FUERA_DE_TEMAS = "fuera_de_temas"
 DECIMALES_PRESENTACION = 4  # presentación de proporciones e IC: no afecta ninguna decisión
 
 COLUMNAS_CLASIFICACION = (
     "similitud_panama",
     "ruido_similitud",
+    "ruido_sin_tema",
     "tema_clasificado",
     "tema_similitud",
     "subtema_clasificado",   # obsoleta desde D-125: se reinicia (queda nula) para que una base vieja no conserve datos
@@ -285,6 +287,10 @@ def construir_reporte(
         ),
         "nota_concordancia": "Acuerdo entre dos métodos automáticos; no mide cuál acierta.",
         "similitud_principal": _resumen([f["tema_similitud"] for f in clasificadas]),
+        "ruido_sin_tema": {   # D-126: sin tema = ruido fuera_de_temas; siguen dentro de `distribucion` como sin_tema
+            "activo": ruido.sin_tema_como_ruido.activo,
+            "marcadas": proporcion(sum(1 for f in filas if f.get("ruido_sin_tema")), len(filas), z),
+        },
         "ruido_similitud": {
             "activo": ruido.similitud_prototipo.activo,
             "umbral": ruido.similitud_prototipo.umbral,
@@ -351,6 +357,10 @@ def aplicar_a_base(
         for f in filas:
             if f.get("ruido_similitud"):  # una corrida anterior la marcó por similitud: antes no era ruido (solo se marcan las no-ruido)
                 f["es_ruido"], f["motivo_ruido"] = False, None
+            if f.get("ruido_sin_tema"):  # idem D-126: el clasificador la marcó sin tema; se reclasifica desde cero
+                f["es_ruido"], f["motivo_ruido"] = False, None
+            for columna in COLUMNAS_CLASIFICACION:  # D-126: lo clasificado antes no se arrastra (el ruido no lleva tema de una corrida vieja)
+                f[columna] = None
         for f in filas:
             f["_texto"] = texto_de_entrada(f["titulo_limpio"], f.get("descripcion"), cfg.usar_descripcion)
 
@@ -384,6 +394,13 @@ def aplicar_a_base(
                 tema_secundario_similitud=d.similitud_secundaria,
                 tema_baseline=baseline.clasificar(f["_texto"]).principal,
             )
+        # D-126: sin tema = ninguno de los 6 del reto -> ruido `fuera_de_temas` (se conserva `tema_clasificado = sin_tema`)
+        for f in filas:
+            f["ruido_sin_tema"] = None
+        if ruido.sin_tema_como_ruido.activo:
+            for f in utiles:
+                if f["tema_clasificado"] == SIN_TEMA:
+                    f.update(es_ruido=True, motivo_ruido=MOTIVO_FUERA_DE_TEMAS, ruido_sin_tema=True)
         # similitud con cada tema, por método (explicabilidad); subtema y margen_subtema: obsoletas desde D-125, quedan nulas
         detalle = [
             [f["id_noticia"], m, t, float(puntajes[m].similitud[i, j]), None, None]
@@ -397,11 +414,12 @@ def aplicar_a_base(
             _reiniciar(con)
             con.executemany(
                 "UPDATE noticias SET es_ruido = ?, motivo_ruido = ?, similitud_panama = ?, ruido_similitud = ?, "
-                "tema_clasificado = ?, tema_similitud = ?, tema_secundario = ?, "
+                "ruido_sin_tema = ?, tema_clasificado = ?, tema_similitud = ?, tema_secundario = ?, "
                 "tema_secundario_similitud = ?, tema_baseline = ? WHERE id_noticia = ?",
                 [
                     [
                         f["es_ruido"], f["motivo_ruido"], f["similitud_panama"], f["ruido_similitud"],
+                        f["ruido_sin_tema"],
                         f.get("tema_clasificado"), f.get("tema_similitud"),
                         f.get("tema_secundario"), f.get("tema_secundario_similitud"), f.get("tema_baseline"),
                         f["id_noticia"],

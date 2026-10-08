@@ -86,6 +86,7 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         # E1-07 (los llena src/clasificacion.py; nulos hasta entonces). `tema` de arriba es el de ORIGEN (D-62).
         ("similitud_panama", "DOUBLE"),
         ("ruido_similitud", "BOOLEAN"),
+        ("ruido_sin_tema", "BOOLEAN"),   # D-126: true si el ruido `fuera_de_temas` lo puso el clasificador (sin_tema)
         ("tema_clasificado", "VARCHAR"),
         ("tema_similitud", "DOUBLE"),
         ("subtema_clasificado", "VARCHAR"),   # obsoleta desde D-125: ya no se llena (nulo); se conserva para que las bases viejas carguen

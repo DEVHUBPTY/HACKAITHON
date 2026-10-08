@@ -1472,11 +1472,16 @@ class FueraDeTemasRuido(ModeloConfig):
     cultura: list[str]
     politica_partidista: list[str]
     autopromocion_tvn: list[str]
+    politica_internacional: list[str]      # D-126
+    solo_en_seccion_dudosa: list[str]      # D-126
 
     @model_validator(mode="after")
     def _regex_validas(self) -> FueraDeTemasRuido:
         _compilar_todas(
-            [*self.deportes, *self.farandula, *self.cultura, *self.politica_partidista, *self.autopromocion_tvn],
+            [
+                *self.deportes, *self.farandula, *self.cultura, *self.politica_partidista, *self.autopromocion_tvn,
+                *self.politica_internacional, *self.solo_en_seccion_dudosa,
+            ],
             "fuera_de_temas",
         )
         return self
@@ -1502,6 +1507,12 @@ class SimilitudPrototipo(ModeloConfig):
         return self
 
 
+class SinTemaComoRuido(ModeloConfig):
+    """D-126: un titular que el clasificador deja sin tema se marca ruido ``fuera_de_temas`` (src/clasificacion.py)."""
+
+    activo: bool
+
+
 class ConfigRuido(ModeloConfig):
     """Modelo de ``config/ruido.yaml``."""
 
@@ -1510,6 +1521,7 @@ class ConfigRuido(ModeloConfig):
     no_noticia: NoNoticiaRuido
     panama: PanamaRuido
     fuera_de_temas: FueraDeTemasRuido
+    sin_tema_como_ruido: SinTemaComoRuido
     similitud_prototipo: SimilitudPrototipo
 
 
