@@ -5,7 +5,7 @@ sobre el snapshot real, con los IDs que existen hoy. La app corre **local y sin 
 
 ```bash
 poetry run streamlit run app.py              # snapshot (data/senales.duckdb)
-poetry run streamlit run app.py -- --demo    # base de demo (data/demo.duckdb, la crea C-06) y barra lateral con estos pasos
+.venv/bin/streamlit run app.py -- --demo    # (poetry run se come el «--» y no pasa --demo) base de demo (data/demo.duckdb, la crea C-06) y barra lateral con estos pasos
 ```
 
 La barra lateral del modo demo lee la tabla de abajo: **mantén el formato** (`| m:ss–m:ss | pantalla | qué se hace | "qué se dice" | plan B |`).
@@ -17,11 +17,11 @@ Los atajos `?caso=<GRP-…|posición>` abren la ficha (5 · Explicar) directamen
 | Tiempo | Pantalla (atajo) | Qué se hace | Qué se dice | Plan B |
 |---|---|---|---|---|
 | 0:00–0:15 | Cómo funciona → 1 · Cargar | Abrir en **Cómo funciona**: señalar la secuencia de siete etapas (qué entra, qué sale, cuánto hay) y las tres reglas de la casa; abrir **1 · Cargar** desde su tarjeta. Mostrar la arquitectura del prototipo (cada paso con su cuenta real), el ruido marcado (con su IC 95 %) y el reporte de carga | "Esta es la secuencia, de la señal a la decisión. Cargamos el snapshot; lo que no sirve se marca, no se borra." | Captura de Calidad |
-| 0:15–1:00 | 4 · Priorizar | Señalar la versión de reglas y el corte del snapshot (hora de Panamá); abrir las 5 primeras filas: P, barras R·I·U·N·E, estado y acción. La #1 (`GRP-84a6b3a04b`) es **Alto + Insuficiente → Investigar ya** | "El puntaje ordena la atención; la evidencia dice si se puede trabajar. Son independientes." | Captura de Bandeja |
+| 0:15–1:00 | 4 · Priorizar | Señalar la versión de reglas y el corte del snapshot (hora de Panamá); abrir las 5 primeras filas: P, barras R·I·U·N·E, estado y acción. La #1 (`GRP-5e6531917f`) es **Alto + Insuficiente → Investigar ya** | "El puntaje ordena la atención; la evidencia dice si se puede trabajar. Son independientes." | Captura de Bandeja |
 | 1:00–1:30 | 5 · Explicar `?caso=GRP-79f3183472` | Abrir *Quién lo reporta*: 20 titulares de 18 medios y **1 procedencia** (Xinhua + Big News Network) | "20 titulares, 18 medios, una sola procedencia: se cuenta una fuente independiente." | Ficha en Markdown (`python -m src.ficha --grupo GRP-79f3183472`) |
 | 1:30–2:00 | Consulta | Preguntar «¿Cuál fue la inflación de Panamá en 2023?»; hacer clic en la cita `IND-PAN-FP.CPI.TOTL.ZG-2023 · valor` (valor con su unidad, **año del dato**, **fecha de extracción**, país, indicador y URL) | "Este dato es del Banco Mundial, anual, de 2023: el sistema no lo presenta como actual." | `python -m src.consulta "…"` |
 | 2:00–2:40 | 5 · Explicar `?caso=GRP-da35c3dead` | Titular central, 3 medios, 3 procedencias, **Borrador opcional**; abrir *Qué está respaldado* y hacer clic en una cita `NOT-… · titulo_limpio` | "Cada línea respaldada lleva su cita ID + campo; un titular es una declaración de su medio, no un hecho." | Ficha en Markdown |
-| 2:40–3:20 | 6 · Producir → 7 · Revisar | Paquete: cada sección dice a quién sirve («Para: Editor/a y periodista», «Productor/a digital», «Analista (banca)»); el borrador del grupo, leído de la caché (`data/cache_llm/`, sin red). **Aviso:** `GRP-da35c3dead` quedó con `titulares`, `copy_digital` y `guion` vacíos tras recalentar la caché (X45; `docs/reproducibilidad.md`); la tarea E1-12b lo corrige. Revisar: los cinco estados del reto, lo que la persona debe comprobar y el *Registro en Notion* (crea o actualiza la ficha) | "Todo es borrador: el estado máximo es «aprobado como borrador»." | Pantalla de Revisión |
+| 2:40–3:20 | 6 · Producir → 7 · Revisar | Paquete: cada sección dice a quién sirve («Para: Editor/a y periodista», «Productor/a digital», «Analista (banca)»); el borrador del grupo, leído de la caché (`data/cache_llm/`, sin red). Si una sección aparece vacía es porque el validador la rechazó: el sistema prefiere el vacío a inventar. Revisar: los cinco estados del reto, lo que la persona debe comprobar y el *Registro en Notion* (crea o actualiza la ficha) | "Todo es borrador: el estado máximo es «aprobado como borrador»." | Pantalla de Revisión |
 | 3:20–4:00 | Consulta | Preguntar «¿Cuál fue el desempleo de Panamá en 2025?» → **abstención** con el último dato disponible (2024: 8.45 %) y qué haría falta | "Si no hay evidencia, se abstiene y dice qué falta." | `python -m src.consulta "…"` |
 
 ## Etapa 1 en vivo y prueba T01 (D-130)
@@ -41,7 +41,7 @@ El PDF pide para CU-04 «preguntar por una cifra inexistente o por una contradic
 | Mitad de CU-04 | Caso | Origen | Cómo se abre |
 |---|---|---|---|
 | Cifra inexistente | Consulta «¿Cuál fue el desempleo de Panamá en 2025?» → abstención con el último dato (2024) | **Real** (snapshot) | Consulta (guion, 3:20–4:00) |
-| Contradicción | `GRP-55e0774b97`: `SYN-C06-001` (Medio Sintético C: «36 tránsitos diarios») frente a `SYN-C06-002` (Medio Sintético D: «28 tránsitos diarios») | **SINTÉTICO** (`tests/fixtures/c06_contradiccion_demo.csv`) | `poetry run streamlit run app.py -- --demo` y `http://localhost:8501/?caso=GRP-55e0774b97` |
+| Contradicción | `GRP-55e0774b97`: `SYN-C06-001` (Medio Sintético C: «36 tránsitos diarios») frente a `SYN-C06-002` (Medio Sintético D: «28 tránsitos diarios») | **SINTÉTICO** (`tests/fixtures/c06_contradiccion_demo.csv`) | `.venv/bin/streamlit run app.py -- --demo` y `http://localhost:8501/?caso=GRP-55e0774b97` |
 
 El snapshot real no tiene ninguna contradicción abierta, así que ese caso se agrega a una **copia** de la base (`poetry run python -m scripts.preparar_demo` → `data/demo.duckdb`, fuera de git). Lleva la insignia **SINTÉTICO** en cada pantalla donde aparece (Organizar, Contextualizar, Priorizar, Explicar, Producir y Revisar) y en la exportación a Notion (Markdown y CSV). En 5 · Explicar la ficha muestra *Versión A* y *Versión B* con su medio, su ID y su cita, la etiqueta «posible contradicción, verificar» y, en *Qué falta comprobar*, la verificación pendiente; **nunca elige cuál es la verdadera** ni cierra el par. *Qué se dice:* "Dos medios dan cifras incompatibles: mostramos las dos versiones con su fuente y dejamos la verificación a una persona. Este caso es sintético y está marcado." La base de la demo **nunca** se usa para métricas: toda métrica se niega a leerla.
 
@@ -99,6 +99,6 @@ Pasada ejecutada el 2026-10-06 con el snapshot real (`data/senales.duckdb`), sin
 **30 minutos antes**
 - [ ] Wi-Fi apagado
 - [ ] `poetry run python -m scripts.verificar_offline` en verde (C-06)
-- [ ] `poetry run streamlit run app.py -- --demo` abierto en Calidad
+- [ ] `.venv/bin/streamlit run app.py -- --demo` abierto en Calidad
 - [ ] Notion abierto en *Presentación al jurado*
 - [ ] Con el Wi-Fi apagado (T10) los borradores salen **solo de la caché** (E1-14, calentada la noche anterior): DeepSeek es el único proveedor de generación (D-94/D-95) y no hay modelo local que arrancar
