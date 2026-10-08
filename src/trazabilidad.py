@@ -421,10 +421,15 @@ def verificar_ficha(
         except ValueError as exc:
             u(Unidad("contrato_fichas_jsonl", False, str(exc)[:200]))
 
-    # --- la revisión del asistente se ve como provisional (D-112)
+    # --- la revisión del asistente se ve como provisional (D-112); la de una persona nunca se rotula así (C-09)
     if revision_provisional is not None and marca_provisional:
-        visible = bool(revision_provisional) and any(marca_provisional in t for t in textos_extra) and (fila_notion is None or marca_provisional in fila_notion.get("Revisor", ""))
-        u(Unidad("revision_provisional_visible", visible, marca_provisional))
+        en_textos = any(marca_provisional in t for t in textos_extra)
+        en_notion = fila_notion is not None and marca_provisional in fila_notion.get("Revisor", "")
+        if revision_provisional:
+            correcto = en_textos and (fila_notion is None or en_notion)
+        else:
+            correcto = not en_textos and not en_notion
+        u(Unidad("revision_provisional_visible", correcto, marca_provisional))
     return res
 
 
