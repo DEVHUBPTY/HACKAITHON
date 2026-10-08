@@ -21,9 +21,9 @@ cargar:                             # D-128: la arquitectura mínima del PDF (se
   titulo_arquitectura: "Arquitectura del prototipo (PDF sección 8)"
   ayuda_arquitectura: "Cada paso muestra su cuenta real en los datos de esta base; el botón abre la pantalla donde se ve. Una carga por lote: sin monitoreo continuo y sin internet durante el pitch."
   arquitectura:
-    - {etiqueta: "Fuentes públicas / snapshot", medida: registros_leidos, unidad: "registros leídos", pantallas: [calidad]}
-    - {etiqueta: "Validación y normalización", medida: registros_validos, unidad: "registros válidos", pantallas: [calidad]}
-    - {etiqueta: "Almacenamiento", medida: filas_en_base, unidad: "filas en senales.duckdb (noticias, indicadores y sismos)", pantallas: [calidad]}
+    - {etiqueta: "Fuentes públicas / snapshot", medida: registros_leidos, unidad: "registros leídos", pantallas: [calidad], ancla: fuentes}
+    - {etiqueta: "Validación y normalización", medida: registros_validos, unidad: "registros válidos", pantallas: [calidad], ancla: validacion}
+    - {etiqueta: "Almacenamiento", medida: filas_en_base, unidad: "filas en senales.duckdb (noticias, indicadores y sismos)", pantallas: [calidad], ancla: almacenamiento}
     - {etiqueta: "Búsqueda y agrupación", medida: grupos, unidad: "grupos de noticias", pantallas: [organizar, contextualizar, consulta]}
     - {etiqueta: "Motor de priorización", medida: grupos_puntuados, unidad: "grupos puntuados", pantallas: [bandeja]}
     - {etiqueta: "Generación con evidencias", medida: borradores_en_cache, unidad: "respuestas del LLM guardadas (no son borradores por grupo)", pantallas: [paquete]}

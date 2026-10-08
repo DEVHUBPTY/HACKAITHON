@@ -500,6 +500,7 @@ class PasoVista:
     cuenta: int | None
     unidad: str
     pantallas: tuple[str, ...]
+    ancla: str | None = None   # D-130: parte de la pantalla «1 · Cargar» donde se ve el paso
 
 
 def _contar(con: Any, tabla: str) -> int:
@@ -547,7 +548,7 @@ def pasos_de_arquitectura(
         "casos_revisados": len(revisiones.casos()) if revisiones is not None else 0,
         "casos_exportados": casos_exportados(demo),
     }
-    return [PasoVista(p.etiqueta, cuentas[p.medida], p.unidad, tuple(p.pantallas)) for p in cfg.cargar.arquitectura]
+    return [PasoVista(p.etiqueta, cuentas[p.medida], p.unidad, tuple(p.pantallas), p.ancla) for p in cfg.cargar.arquitectura]
 
 
 # ------------------------------------------------------------------ D-128 · etapa 2 · Organizar

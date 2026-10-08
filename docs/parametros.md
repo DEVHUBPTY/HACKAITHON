@@ -730,3 +730,21 @@ Ninguno decide un puntaje ni una acción: gobiernan cómo se presentan las siete
 | `organizar.motivos_ruido` | Nombre legible de `no_es_panama`, `no_es_noticia` y `fuera_de_temas` | D-87 y D-126 (los tres motivos de ruido; `sin_tema` ya no existe) | `test_organizar_muestra_el_ruido_marcado_por_motivo_con_su_cuenta` |
 | `contextualizar.fuentes`, `relaciones`, `roles`, `motivos_sin_vinculo` | Textos de presentación de la fuente, la relación (directa, indirecta, evento), el papel del dato y el motivo sin vínculo (`sin_relacion_sustentada` → «No se fuerza la relación», `tema_sin_indicador`) | PDF sección 3 («Si no existe relación sustentada, no forzarla») · D-125/D-127 | `test_contextualizar_muestra_cada_vinculo_con_periodo_unidad_y_limitaciones`, `test_contextualizar_no_fuerza_la_relacion_y_agrupa_los_grupos_sin_vinculo_por_motivo` |
 | `registro_notion.*` | Rótulos del paso «Registro en Notion» de la etapa 7 (exportar Markdown y CSV; sincronizar por la API solo con `NOTION_TOKEN`) | PDF sección 3 (etapa 7: «Crear o actualizar manualmente la ficha en Notion») y E3-03 | `test_revisar_nombra_el_paso_como_registro_en_notion_y_nunca_habla_de_publicar` |
+
+## Carga en vivo de la etapa 1 (D-130, `config/corrida.yaml`)
+
+Ninguno decide un puntaje: gobiernan dónde se escribe una corrida, cuántas se guardan y cómo se compara con la base de la app. Las reglas de validación y normalización siguen siendo las de `config/carga.yaml`, `config/contrato.yaml` y `config/normalizacion.yaml` (no se duplican).
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| `corridas.carpeta` | `hackiathon_corridas` bajo el directorio temporal del sistema | Decisión de diseño D-130: fuera de git y fuera de `data/`, para que ninguna corrida pueda confundirse con un archivo vivo ni ensuciar el árbol | `test_la_corrida_solo_escribe_dentro_de_su_carpeta_y_no_toca_lo_vivo` |
+| `corridas.formato_nombre` | `%Y%m%dT%H%M%SZ` (hora UTC) | Práctica (mismo formato de fecha que el resto de los datos) | `test_la_carpeta_de_corrida_conserva_solo_las_ultimas_y_nunca_borra_otras_carpetas` |
+| `corridas.conservar_ultimas` | 5 | Supuesto (cada corrida pesa unos MB; alcanza para comparar y explorar) | Mismo test: solo se borran carpetas con nombre de corrida |
+| `corridas.subcarpeta_validos`, `subcarpeta_salida`, `subcarpeta_propio`, `base_revision` | `validos`, `salida`, `archivo_propio`, `revision.duckdb` | Espejo de `data/processed/validos/` y `outputs/` | Mismo test de aislamiento; al explorar una corrida las revisiones van a su `revision.duckdb`, nunca a `data/revision.duckdb` |
+| `insumos.*` | Rutas de solo lectura: `data/processed`, `data/raw`, `data/manifest.json`, `sbp_series.csv`, modalidad `editorial` | Las del pipeline (`config/reproducibilidad.yaml`) | `test_la_corrida_completa_sobre_los_datos_reales_reproduce_la_base_de_la_app` |
+| `comparacion.decimales_huella` | 4 | Igual que `reproducibilidad.decimales` (ruido de ~1e-7 entre lotes del modelo de embeddings) | `test_dos_bases_iguales_se_reconocen_aunque_el_ruido_flotante_sea_menor_al_redondeo` |
+| `comparacion.cuentas[]`, `comparacion.huellas[]` | Cuentas (titulares, ruido, útiles, indicadores, sismos, grupos, vínculos, puntajes, grupos por rango) y huellas fila a fila (IDs de titulares, IDs de grupos, vínculos, puntaje y rango) | Las tablas que `config/reproducibilidad.yaml` ya declara deterministas | `test_las_diferencias_se_listan_una_por_una_con_los_dos_valores`, `test_una_tabla_ausente_en_un_lado_es_una_diferencia_y_no_un_cero` |
+| `archivo_propio.maximo_bytes` | 5 000 000 | Supuesto (un CSV de noticias del snapshot pesa ~100 KB; el tope evita subir algo absurdo) | `test_un_archivo_inutilizable_se_rechaza_con_un_error_claro` |
+| `archivo_propio.filas_visibles` | 300 | Supuesto (tope de filas que se listan en pantalla; el CSV descargable lleva todas) | Revisión visual |
+| `archivo_propio.columna_esperado`, `ejemplo_noticias`, `ejemplo_indicadores` | `error_esperado`, y los fixtures T01 `tests/fixtures/t01_*.csv` | PDF sección 9 (T01: «Archivo con fechas inválidas y nulos») · E1-02 | `test_el_archivo_t01_de_noticias_reporta_cada_rechazo_con_su_motivo` |
+| `pasos[]`, `textos.*` | Orden de los nueve pasos y su explicación | PDF sección 3 (etapa 1) y sección 8 (arquitectura) | `test_cada_paso_trae_explicacion_cifras_y_tiempo` |

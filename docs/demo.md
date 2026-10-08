@@ -24,6 +24,16 @@ Los atajos `?caso=<GRP-…|posición>` abren la ficha (5 · Explicar) directamen
 | 2:40–3:20 | 6 · Producir → 7 · Revisar | Paquete: el borrador del grupo, leído de la caché (`data/cache_llm/`, sin red). **Aviso:** `GRP-da35c3dead` quedó con `titulares`, `copy_digital` y `guion` vacíos tras recalentar la caché (X45; `docs/reproducibilidad.md`); la tarea E1-12b lo corrige. Revisar: los cinco estados del reto, lo que la persona debe comprobar y el *Registro en Notion* (crea o actualiza la ficha) | "Todo es borrador: el estado máximo es «aprobado como borrador»." | Pantalla de Revisión |
 | 3:20–4:00 | Consulta | Preguntar «¿Cuál fue el desempleo de Panamá en 2025?» → **abstención** con el último dato disponible (2024: 8.45 %) y qué haría falta | "Si no hay evidencia, se abstiene y dice qué falta." | `python -m src.consulta "…"` |
 
+## Etapa 1 en vivo y prueba T01 (D-130)
+
+En **1 · Cargar**, bajo la arquitectura (cada tarjeta 1 a 3 tiene un enlace que baja a su paso):
+
+1. **Cargar el paquete congelado.** Muestra, paso a paso y con cifras reales: *fuentes* (archivos y registros leídos, SHA-256 contra `data/manifest.json` con ✓/✗, versión y corte), *validación* (las reglas de `config/carga.yaml` y los rechazos por tipo), *normalización* (transformaciones del manifest y cuentas), *almacenamiento* (tablas de la base de la corrida y `data/raw` / `data/processed` idénticos antes y después) y luego limpieza, clasificación, agrupación, contexto y puntaje (`--sin-llm`) sobre **esa** base. Al final compara con la base de la app (cuentas y huellas fila a fila). Tarda unos 3 s con la caché de embeddings caliente.
+2. **Explorar esta corrida** cambia, solo en esa sesión, la base de todas las pantallas por la de la corrida; **Volver a la base de la app** lo deshace. Nunca se reemplaza `data/senales.duckdb`; la corrida vive en `<tmp>/hackiathon_corridas/<hora UTC>/` (fuera de git) y se conservan las últimas 5.
+3. **Probar con un archivo propio (T01).** Descargar «ejemplo de noticias con errores», subirlo y pulsar *Validar mi archivo*: solo corre la etapa 1; cada fila sale «aceptada» o «rechazada» con su motivo (fecha inválida, ID duplicado, URL mal formada, campo obligatorio vacío) y los nulos quedan como nulos. El ejemplo de indicadores muestra que un `valor` nulo es válido. Nada de lo subido entra a la base de la app.
+
+*Qué se dice:* "Esta es la etapa 1 corriendo ahora, no una captura: lee el paquete congelado, verifica sus hashes, valida, normaliza y guarda; y las etapas siguientes corren sobre esa carga y dan lo mismo que la base de la app." *Plan B:* captura de la pantalla, o `poetry run python -m scripts.reproducir --verificar`.
+
 ## Pruebas dinámicas del jurado
 
 | Pregunta | Dónde ir |

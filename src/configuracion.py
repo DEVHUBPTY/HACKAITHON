@@ -2581,6 +2581,7 @@ class PasoArquitectura(ModeloConfig):
                     "fichas_disponibles", "casos_revisados", "casos_exportados"]
     unidad: str = Field(min_length=1)
     pantallas: list[Literal["calidad", "organizar", "contextualizar", "bandeja", "ficha", "paquete", "revision", "consulta"]] = Field(min_length=1)
+    ancla: str | None = Field(default=None, pattern=r"^[a-z0-9-]+$")   # D-130: parte de la pantalla «1 · Cargar» donde se ve el paso
 
 
 class CargarInterfaz(ModeloConfig):
@@ -2804,6 +2805,106 @@ class ConfigInterfaz(ModeloConfig):
 def cargar_interfaz(carpeta: Path | None = None) -> ConfigInterfaz:
     """Atajo para ``config/interfaz.yaml``."""
     return cargar_config("interfaz", ConfigInterfaz, carpeta)
+
+
+# ------------------------------------------------------------------ corrida.yaml (D-130)
+
+
+class CarpetasCorrida(ModeloConfig):
+    carpeta: str = Field(min_length=1)
+    formato_nombre: str = Field(min_length=1)
+    conservar_ultimas: int = Field(ge=1)
+    subcarpeta_validos: str = Field(min_length=1)
+    subcarpeta_salida: str = Field(min_length=1)
+    subcarpeta_propio: str = Field(min_length=1)
+    base_revision: str = Field(min_length=1)
+
+
+class InsumosCorrida(ModeloConfig):
+    carpeta_datos: str = Field(min_length=1)
+    carpeta_procesados: str = Field(min_length=1)
+    carpeta_crudos: str = Field(min_length=1)
+    manifest: str = Field(min_length=1)
+    series_sbp: str = Field(min_length=1)
+    modalidad: Literal["editorial", "banca"]
+
+
+class CuentaComparacion(ModeloConfig):
+    """Una cuenta de la comparación: ``tabla`` es un nombre simple; ``donde`` es una condición fija escrita aquí, nunca del usuario."""
+
+    etiqueta: str = Field(min_length=1)
+    tabla: str = Field(pattern=r"^[a-z_]+$")
+    donde: str | None = None
+    agrupar_por: str | None = Field(default=None, pattern=r"^[a-z_]+$")
+
+
+class HuellaComparacion(ModeloConfig):
+    etiqueta: str = Field(min_length=1)
+    tabla: str = Field(pattern=r"^[a-z_]+$")
+    columnas: list[str] = Field(min_length=1)
+
+
+class ComparacionCorrida(ModeloConfig):
+    decimales_huella: int = Field(ge=0)
+    cuentas: list[CuentaComparacion] = Field(min_length=1)
+    huellas: list[HuellaComparacion] = Field(min_length=1)
+
+
+class ArchivoPropioCorrida(ModeloConfig):
+    maximo_bytes: int = Field(gt=0)
+    filas_visibles: int = Field(gt=0)
+    columna_esperado: str = Field(min_length=1)
+    ejemplo_noticias: str = Field(min_length=1)
+    ejemplo_indicadores: str = Field(min_length=1)
+    nombre_descarga_noticias: str = Field(min_length=1)
+    nombre_descarga_indicadores: str = Field(min_length=1)
+
+
+class TextosCorrida(ModeloConfig):
+    titulo: str = Field(min_length=1)
+    explicacion: str = Field(min_length=1)
+    boton: str = Field(min_length=1)
+    boton_propio: str = Field(min_length=1)
+    sin_red: str = Field(min_length=1)
+    explorar: str = Field(min_length=1)
+    volver: str = Field(min_length=1)
+    aviso_explorando: str = Field(min_length=1)
+    iguales: str = Field(min_length=1)
+    distintas: str = Field(min_length=1)
+    titulo_propio: str = Field(min_length=1)
+    explicacion_propio: str = Field(min_length=1)
+    sin_archivo: str = Field(min_length=1)
+
+
+class PasoCorridaConfig(ModeloConfig):
+    clave: Literal["fuentes", "validacion", "normalizacion", "almacenamiento", "limpieza", "clasificacion", "agrupacion", "contexto", "puntaje"]
+    titulo: str = Field(min_length=1)
+    explicacion: str = Field(min_length=1)
+
+
+class ConfigCorrida(ModeloConfig):
+    """Modelo de ``config/corrida.yaml``: carga en vivo de la etapa 1 y las etapas que la siguen (D-130)."""
+
+    version: str
+    corridas: CarpetasCorrida
+    insumos: InsumosCorrida
+    comparacion: ComparacionCorrida
+    archivo_propio: ArchivoPropioCorrida
+    textos: TextosCorrida
+    pasos: list[PasoCorridaConfig] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _pasos_unicos(self) -> ConfigCorrida:
+        claves = [p.clave for p in self.pasos]
+        if len(claves) != len(set(claves)):
+            raise ValueError("pasos: una clave está repetida")
+        return self
+
+
+def cargar_corrida(carpeta: Path | None = None) -> ConfigCorrida:
+    """Atajo para ``config/corrida.yaml``."""
+    return cargar_config("corrida", ConfigCorrida, carpeta)
+
 
 
 # ------------------------------------------------------------------ cache.yaml (E1-14)
@@ -3516,6 +3617,7 @@ CARGADORES = {
     "verificacion": cargar_verificacion,
     "interfaz": cargar_interfaz,
     "cache": cargar_cache,
+    "corrida": cargar_corrida,
     "revision": cargar_revision,
     "precision": cargar_precision,
     "fichas_trazables": cargar_fichas_trazables,

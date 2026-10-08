@@ -25,13 +25,14 @@ import contextlib  # noqa: E402
 import io  # noqa: E402
 import logging  # noqa: E402
 from collections.abc import Sequence  # noqa: E402
+from pathlib import Path  # noqa: E402
 from typing import Any  # noqa: E402
 
 import pandas as pd  # noqa: E402
 import streamlit as st  # noqa: E402
 
-from src import db, exportar, interfaz as ui, revision as rv  # noqa: E402
-from src.configuracion import MODALIDADES, RAIZ, cargar_modalidad, cargar_temas, leer_local_env  # noqa: E402
+from src import corrida as co, db, exportar, interfaz as ui, revision as rv  # noqa: E402
+from src.configuracion import MODALIDADES, RAIZ, cargar_carga, cargar_corrida, cargar_modalidad, cargar_temas, leer_local_env  # noqa: E402
 from src.cache import SinBorrador  # noqa: E402
 from src.consulta import RespuestaConsulta, crear_consultor  # noqa: E402
 from src.esquemas import ETIQUETA_BORRADOR, Ficha  # noqa: E402
@@ -62,8 +63,9 @@ def ficha_de(ruta: str, id_grupo: str, modalidad: str) -> Ficha:
 
 
 @st.cache_data(show_spinner=False)
-def reporte_de_carga() -> dict[str, Any]:
-    return ui.reporte_de_carga(REPORTE_CARGA)
+def reporte_de_carga(ruta: str = str(REPORTE_CARGA)) -> dict[str, Any]:
+    """El reporte de carga de la app o, al explorar una corrida (D-130), el de esa corrida."""
+    return ui.reporte_de_carga(Path(ruta))
 
 
 # ------------------------------------------------------------------ piezas comunes
@@ -170,18 +172,191 @@ def arquitectura(ctx: ui.Contexto, carga: dict[str, Any] | None) -> None:
             with col, st.container(border=True):
                 st.metric(f"{i + 1} · {paso.etiqueta}", "sin dato" if paso.cuenta is None else f"{paso.cuenta:,}".replace(",", " "), help=paso.unidad)
                 st.caption(paso.unidad + (" →" if i + 1 < len(pasos) else ""))
+                if paso.ancla:    # D-130: el paso se ve más abajo, en esta misma pantalla
+                    st.markdown(f"[Ir a este paso, más abajo ↓](#{paso.ancla})")
                 for destino in paso.pantallas:
                     st.button(f"Ver en {titulo_de(ctx, destino)}", key=f"arq_{i}_{destino}", on_click=ir_a, args=(destino,), width="stretch")
+
+
+# ------------------------------------------------------------------ 1 · Cargar en vivo y prueba T01 (D-130)
+
+COLUMNAS_POR_FILA = 4
+
+
+def reporte_activo() -> Path:
+    """El reporte de carga de la app, o el de la corrida que se está explorando en esta sesión."""
+    base = st.session_state.get("base_explorada")
+    if base:
+        r = Path(base).parent / cargar_corrida().corridas.subcarpeta_salida / cargar_carga().salida.reporte
+        if r.exists():
+            return r
+    return REPORTE_CARGA
+
+
+def pintar_paso(paso: co.Paso) -> None:
+    """Explicación, cifras reales, tablas y mensajes de un paso (los mismos en vivo y al volver a pintar la corrida guardada)."""
+    st.caption(paso.explicacion)
+    numericas = {k: v for k, v in paso.cifras.items() if isinstance(v, (int, float)) and not isinstance(v, bool)}
+    items = list(numericas.items())
+    for inicio in range(0, len(items), COLUMNAS_POR_FILA):
+        for (k, v), col in zip(items[inicio : inicio + COLUMNAS_POR_FILA], st.columns(COLUMNAS_POR_FILA), strict=False):
+            col.metric(k, f"{v:,}".replace(",", " ") if isinstance(v, int) else v)
+    for k, v in paso.cifras.items():
+        if k not in numericas:
+            st.markdown(f"**{escapar_markdown(k)}:** {escapar_markdown(str(v))}")
+    for nombre, filas in paso.tablas.items():
+        if filas:
+            st.markdown(f"**{nombre}**")
+            st.dataframe(pd.DataFrame(filas), hide_index=True)
+    for m in paso.mensajes:
+        (st.error if paso.estado == co.ESTADO_FALLA else st.warning)(m)
+
+
+def etiqueta_de_paso(paso: co.Paso) -> str:
+    marca = {co.ESTADO_OK: "✓", co.ESTADO_AVISO: "⚠", co.ESTADO_FALLA: "✗", co.ESTADO_OMITIDO: "–"}[paso.estado]
+    return f"{marca} {paso.titulo} · {paso.segundos:.1f} s"
+
+
+def explorar_corrida(ruta: str) -> None:
+    st.session_state["base_explorada"] = ruta
+
+
+def volver_a_la_base() -> None:
+    st.session_state.pop("base_explorada", None)
+
+
+def pintar_comparacion(c: co.Comparacion, cfg: Any) -> None:
+    st.subheader("Esta carga vs. la base de la app", anchor="comparacion")
+    (st.success if c.iguales else st.warning)(cfg.textos.iguales if c.iguales else cfg.textos.distintas)
+    st.dataframe(
+        pd.DataFrame([{"Concepto": f.etiqueta, "Esta carga": f.corrida, "Base de la app": f.viva, "Coincide": co.MARCA_OK if f.igual else co.MARCA_MAL} for f in c.filas]),
+        hide_index=True,
+    )
+
+
+def carga_en_vivo(ctx: ui.Contexto) -> None:
+    """Botón «Cargar el paquete congelado»: corre la etapa 1 y las siguientes sobre una base propia, mostrando cada paso (D-130)."""
+    cfg = cargar_corrida()
+    st.subheader(cfg.textos.titulo, anchor="cargar")
+    st.write(cfg.textos.explicacion)
+    st.caption(cfg.textos.sin_red)
+    pedido = st.button(cfg.textos.boton, type="primary", key="corrida_cargar")
+    barra = st.empty()
+    contenedores: dict[str, Any] = {}
+    for p in cfg.pasos:
+        st.subheader(p.titulo, anchor=p.clave)
+        contenedores[p.clave] = st.container()
+    zona_final = st.container()
+    guardada = st.session_state.get("corrida")
+    if pedido:
+        corrida = co.Corrida(cfg)
+        total = len(cfg.pasos)
+        for i, p in enumerate(cfg.pasos):
+            barra.progress(i / total, text=f"{p.titulo}…")
+            with contenedores[p.clave], st.status(f"{p.titulo}…", expanded=True) as estado:
+                paso = corrida.ejecutar_paso(p.clave)
+                pintar_paso(paso)
+                estado.update(label=etiqueta_de_paso(paso), state="error" if paso.estado == co.ESTADO_FALLA else "complete")
+        barra.progress(1.0, text="Listo")
+        comparacion = None
+        if all(x.estado in {co.ESTADO_OK, co.ESTADO_AVISO} for x in corrida.pasos.values()):
+            comparacion = corrida.comparar(db.RUTA_BASE)
+        guardada = st.session_state["corrida"] = {
+            "carpeta": str(corrida.carpeta), "base": str(corrida.base), "pasos": list(corrida.pasos.values()), "comparacion": comparacion,
+        }
+        st.session_state.pop("base_explorada", None)
+    elif guardada:
+        for paso in guardada["pasos"]:
+            with contenedores[paso.clave], st.expander(etiqueta_de_paso(paso), expanded=False):
+                pintar_paso(paso)
+    else:
+        for p in cfg.pasos:
+            with contenedores[p.clave]:
+                st.caption(p.explicacion)
+                st.caption(f"Pendiente: pulse «{cfg.textos.boton}».")
+    if guardada:
+        with zona_final:
+            st.caption(f"Carpeta de la corrida (fuera del repositorio): {guardada['carpeta']} · tiempo total {sum(p.segundos for p in guardada['pasos']):.1f} s")
+            if guardada["comparacion"] is None:
+                st.warning("La corrida no terminó bien: no se compara con la base de la app.")
+            else:
+                pintar_comparacion(guardada["comparacion"], cfg)
+                if Path(guardada["base"]).exists():
+                    if st.session_state.get("base_explorada") == guardada["base"]:
+                        st.button(cfg.textos.volver, key="corrida_volver", on_click=volver_a_la_base)
+                    else:
+                        st.button(cfg.textos.explorar, key="corrida_explorar", on_click=explorar_corrida, args=(guardada["base"],))
+
+
+def archivo_propio() -> None:
+    """T01: valida solo la etapa 1 sobre un CSV subido, fila por fila. Nunca alimenta la base de la app (D-130)."""
+    cfg = cargar_corrida()
+    st.subheader(cfg.textos.titulo_propio, anchor="archivo-propio")
+    st.write(cfg.textos.explicacion_propio)
+    c1, c2 = st.columns(2)
+    for tipo, nombre, col in (("noticias", cfg.archivo_propio.nombre_descarga_noticias, c1), ("indicadores", cfg.archivo_propio.nombre_descarga_indicadores, c2)):
+        ejemplo = co.ejemplo_con_errores(tipo, cfg)
+        if ejemplo:
+            col.download_button(f"Descargar un ejemplo de {tipo} con errores", ejemplo, file_name=nombre, mime="text/csv", key=f"t01_ejemplo_{tipo}")
+    noticias = c1.file_uploader("CSV de noticias", type="csv", key="t01_noticias")
+    indicadores = c2.file_uploader("CSV de indicadores (opcional)", type="csv", key="t01_indicadores")
+    if st.button(cfg.textos.boton_propio, key="t01_validar", disabled=not (noticias or indicadores)):
+        carpeta = co.crear_carpeta_de_corrida(cfg, subcarpeta=cfg.corridas.subcarpeta_propio)
+        resultados, errores = [], []
+        for tipo, archivo in (("noticias", noticias), ("indicadores", indicadores)):
+            if archivo is None:
+                continue
+            try:
+                resultados.append(co.validar_archivo_propio(archivo.getvalue(), tipo, carpeta, cfg))
+            except co.ErrorDeCorrida as exc:
+                errores.append(f"{archivo.name}: {exc}")
+        st.session_state["t01_resultados"], st.session_state["t01_errores"] = resultados, errores
+    for e in st.session_state.get("t01_errores", []):
+        st.error(e)
+    resultados = st.session_state.get("t01_resultados")
+    if not resultados:
+        st.caption(cfg.textos.sin_archivo)
+        return
+    for r in resultados:
+        pintar_resultado_propio(r, cfg)
+
+
+def pintar_resultado_propio(r: co.ResultadoPropio, cfg: Any) -> None:
+    st.markdown(f"**Reporte de calidad de {r.archivo}**")
+    a, b, c = st.columns(3)
+    a.metric("Leídas", r.leidas)
+    b.metric("Aceptadas", r.validas)
+    c.metric("Rechazadas", r.rechazadas)
+    for e in r.errores_de_archivo:
+        st.error(f"{e['campo']}: {e['motivo']}")
+    if r.errores_por_tipo:
+        st.dataframe(pd.DataFrame({"Tipo de error": list(r.errores_por_tipo), "Filas": list(r.errores_por_tipo.values())}), hide_index=True)
+    if r.coinciden_con_lo_esperado:
+        k, n = r.coinciden_con_lo_esperado
+        st.caption(f"El archivo declara el error esperado de cada fila ({cfg.archivo_propio.columna_esperado}): el resultado coincide en {k} de {n} filas.")
+    filas = [
+        {"Fila": f.posicion, "ID": f.id, "Veredicto": "✓ aceptada" if f.estado == "aceptada" else "✗ rechazada", "Motivo": f.motivos, "Valor rechazado": f.valor_rechazado,
+         **({"Esperado": f.esperado or ""} if r.columna_esperado else {}), **f.campos}
+        for f in r.filas[: cfg.archivo_propio.filas_visibles]
+    ]
+    if len(r.filas) > len(filas):
+        st.caption(f"Se listan {len(filas)} de {len(r.filas)} filas; el CSV descargable lleva todas.")
+    st.dataframe(pd.DataFrame(filas), hide_index=True)
+    if r.nulos_en_validas:
+        st.caption("Nulos conservados como nulos en las filas aceptadas (nunca se rellenan con cero): " + " · ".join(f"{k}: {v}" for k, v in r.nulos_en_validas.items()))
+    st.download_button("Descargar el veredicto de cada fila (CSV)", r.csv_de_filas, file_name=f"veredicto_{r.tipo}.csv", mime="text/csv", key=f"t01_veredicto_{r.tipo}")
 
 
 def pantalla_calidad(ctx: ui.Contexto) -> None:
     encabezado(ctx, "calidad")
     try:
-        carga = reporte_de_carga()
+        carga = reporte_de_carga(str(reporte_activo()))
     except Exception as exc:  # noqa: BLE001 - la pantalla debe abrir aunque falten los archivos del snapshot
         st.warning(f"No se pudo leer el reporte de carga ({type(exc).__name__}).")
         carga = None
     arquitectura(ctx, carga)
+    carga_en_vivo(ctx)
+    archivo_propio()
     st.subheader("Calidad de los datos")
     st.caption("Lo que no sirve se marca, no se borra: el ruido se conserva y se cuenta, pero no entra en la bandeja.")
     r = ui.resumen_de_calidad(ctx.con)
@@ -853,13 +1028,22 @@ def main() -> None:
     ruta, aviso = ui.elegir_base(demo, cfg)
     if aviso:
         st.warning(aviso)
+    explorada = st.session_state.get("base_explorada")      # D-130: la base de una corrida, solo en esta sesión; nunca reemplaza el archivo vivo
+    if explorada and not Path(explorada).exists():
+        st.session_state.pop("base_explorada", None)
+        explorada = None
+    if explorada:
+        ruta = Path(explorada)
+        st.warning(cargar_corrida().textos.aviso_explorando)
+        st.button(cargar_corrida().textos.volver, key="volver_a_la_base", on_click=volver_a_la_base)
     if not ruta.exists():
         st.error(cfg.textos.sin_base)
         st.stop()
     con = abrir_base(str(ruta)).cursor()
     nombres = {k: t.nombre for k, t in cargar_temas().temas.items()}
     previa = st.session_state.get("modalidad", cfg.modalidad_inicial)
-    revisiones = rv.Revisiones(ui.ruta_de_revision(demo), ruta, demo=demo, huellas=rv.huellas_de_exportacion(demo))  # aparte: la base de las pantallas es de solo lectura
+    ruta_rev = ruta.parent / cargar_corrida().corridas.base_revision if explorada else ui.ruta_de_revision(demo)    # al explorar una corrida, las revisiones van a su carpeta
+    revisiones = rv.Revisiones(ruta_rev, ruta, demo=demo, huellas=rv.huellas_de_exportacion(demo))  # aparte: la base de las pantallas es de solo lectura
     aplicar_atajo(cfg, ui.leer_bandeja(con, previa, nombres), revisiones)      # antes de crear los widgets: así puede fijar la pantalla
     modalidad = barra_lateral(cfg, demo)
     ctx = ui.Contexto(cfg, ui.cargar_verificacion(), con, modalidad, demo, aviso, ui.leer_bandeja(con, modalidad, nombres), ruta, revisiones)
