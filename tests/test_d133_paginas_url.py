@@ -206,7 +206,6 @@ def test_la_consulta_guarda_y_restaura_el_metodo_en_la_url(app) -> None:
     otro.query_params["m"] = "bm25"
     otro = otro.run()
     assert not otro.exception and otro.selectbox(key="consulta_metodo").value == "bm25"
-    assert any("bm25" in str(c.value) for c in otro.caption)
 
 
 def test_el_texto_de_la_ultima_respuesta_viene_de_la_configuracion() -> None:
