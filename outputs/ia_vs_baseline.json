@@ -2311,11 +2311,11 @@
     "grupos": 72,
     "top": 5,
     "top_sistema": [
-      "GRP-21ad932d54",
       "GRP-5e6531917f",
-      "GRP-8a448d1fd9",
+      "GRP-21ad932d54",
       "GRP-4d8b340bd9",
-      "GRP-7ddcf92e16"
+      "GRP-a329f4e91e",
+      "GRP-1dc52c45ff"
     ],
     "top_por_fecha": [
       "GRP-3a15fc6a18",
@@ -2326,58 +2326,38 @@
     ],
     "solapamiento": {
       "k": 5,
-      "coinciden": [],
+      "coinciden": [
+        "GRP-1dc52c45ff"
+      ],
       "solo_sistema": [
-        "GRP-21ad932d54",
         "GRP-5e6531917f",
-        "GRP-8a448d1fd9",
+        "GRP-21ad932d54",
         "GRP-4d8b340bd9",
-        "GRP-7ddcf92e16"
+        "GRP-a329f4e91e"
       ],
       "solo_baseline": [
         "GRP-3a15fc6a18",
-        "GRP-1dc52c45ff",
         "GRP-50d72e2b04",
         "GRP-a03bab5b02",
         "GRP-1627d09497"
       ],
-      "n_coinciden": 0
+      "n_coinciden": 1
     },
     "empates_de_fecha_en_el_corte": [],
     "ejemplos_solo_sistema": [
-      {
-        "id_grupo": "GRP-21ad932d54",
-        "titular_central": "Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá",
-        "n_titulares": 1,
-        "n_medios": 1,
-        "posicion_sistema": 1,
-        "posicion_por_fecha": 51,
-        "fecha_mas_reciente": "2026-10-05T21:38:58Z",
-        "puntaje": 87.25,
-        "rango": "alto",
-        "componentes": {
-          "R": 1.0,
-          "I": 1.0,
-          "U": 0.6789,
-          "N": 1.0,
-          "E": 0.3667
-        },
-        "estado_de_evidencia": "insuficiente",
-        "accion": "Investigar ya"
-      },
       {
         "id_grupo": "GRP-5e6531917f",
         "titular_central": "Más de 30 mujeres han muerto de forma violenta en Panamá este año",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 2,
+        "posicion_sistema": 1,
         "posicion_por_fecha": 44,
         "fecha_mas_reciente": "2026-10-06T01:30:01Z",
-        "puntaje": 85.2,
+        "puntaje": 86.08,
         "rango": "alto",
         "componentes": {
           "R": 1.0,
-          "I": 0.9,
+          "I": 0.935,
           "U": 0.7019,
           "N": 1.0,
           "E": 0.3667
@@ -2386,19 +2366,19 @@
         "accion": "Investigar ya"
       },
       {
-        "id_grupo": "GRP-8a448d1fd9",
-        "titular_central": "Universidad Tecnológica evalúa unos 200 edificios para determinar su seguridad ante sismos",
+        "id_grupo": "GRP-21ad932d54",
+        "titular_central": "Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 3,
-        "posicion_por_fecha": 6,
-        "fecha_mas_reciente": "2026-10-08T00:33:51Z",
-        "puntaje": 84.56,
+        "posicion_sistema": 2,
+        "posicion_por_fecha": 51,
+        "fecha_mas_reciente": "2026-10-05T21:38:58Z",
+        "puntaje": 85.62,
         "rango": "alto",
         "componentes": {
           "R": 1.0,
-          "I": 0.65,
-          "U": 0.982,
+          "I": 0.935,
+          "U": 0.6789,
           "N": 1.0,
           "E": 0.3667
         },
@@ -2410,14 +2390,14 @@
         "titular_central": "Aprehenden a 10 personas por presunta minería ilegal y delitos ambientales en Coclé del Norte",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 4,
+        "posicion_sistema": 3,
         "posicion_por_fecha": 20,
         "fecha_mas_reciente": "2026-10-07T12:48:21Z",
-        "puntaje": 84.41,
+        "puntaje": 85.28,
         "rango": "alto",
         "componentes": {
           "R": 1.0,
-          "I": 0.7,
+          "I": 0.735,
           "U": 0.912,
           "N": 1.0,
           "E": 0.3667
@@ -2426,19 +2406,19 @@
         "accion": "Investigar ya"
       },
       {
-        "id_grupo": "GRP-7ddcf92e16",
-        "titular_central": "Ataque a tiros cerca de la estación del metro de San Miguelito deja un muerto y dos heridos",
+        "id_grupo": "GRP-a329f4e91e",
+        "titular_central": "Chiriquí | Investigan incendio en sastrería de calle Quinta en David",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 5,
-        "posicion_por_fecha": 7,
-        "fecha_mas_reciente": "2026-10-08T00:08:54Z",
-        "puntaje": 82.01,
+        "posicion_sistema": 4,
+        "posicion_por_fecha": 11,
+        "fecha_mas_reciente": "2026-10-07T18:08:42Z",
+        "puntaje": 85.04,
         "rango": "alto",
         "componentes": {
           "R": 1.0,
-          "I": 0.55,
-          "U": 0.9795,
+          "I": 0.7,
+          "U": 0.9438,
           "N": 1.0,
           "E": 0.3667
         },
@@ -2452,36 +2432,16 @@
         "titular_central": "Lau Cortés: Ordenan detención domiciliaria e imputan cargos por enriquecimiento injustificado y blanqueo de capitales",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 25,
+        "posicion_sistema": 11,
         "posicion_por_fecha": 1,
         "fecha_mas_reciente": "2026-10-08T02:30:00Z",
-        "puntaje": 77.46,
+        "puntaje": 82.09,
         "rango": "alto",
         "componentes": {
           "R": 1.0,
-          "I": 0.4,
+          "I": 0.585,
           "U": 0.9935,
           "N": 0.9285,
-          "E": 0.3667
-        },
-        "estado_de_evidencia": null,
-        "accion": null
-      },
-      {
-        "id_grupo": "GRP-1dc52c45ff",
-        "titular_central": "César Caicedo ahora está recluido en el Hospital Santo Tomás; había sido trasladado a Coiba",
-        "n_titulares": 2,
-        "n_medios": 1,
-        "posicion_sistema": 17,
-        "posicion_por_fecha": 2,
-        "fecha_mas_reciente": "2026-10-08T02:10:57Z",
-        "puntaje": 78.5,
-        "rango": "alto",
-        "componentes": {
-          "R": 1.0,
-          "I": 0.4,
-          "U": 0.9916,
-          "N": 1.0,
           "E": 0.3667
         },
         "estado_de_evidencia": null,
@@ -2492,14 +2452,14 @@
         "titular_central": "Unos 22 aprehendidos en la operación Comunidad Segura contra el microtráfico en Colón y Panama Oeste",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 18,
+        "posicion_sistema": 34,
         "posicion_por_fecha": 3,
         "fecha_mas_reciente": "2026-10-08T02:02:13Z",
-        "puntaje": 78.53,
+        "puntaje": 77.28,
         "rango": "alto",
         "componentes": {
           "R": 1.0,
-          "I": 0.7,
+          "I": 0.65,
           "U": 0.9908,
           "N": 0.5033,
           "E": 0.3667
@@ -2512,14 +2472,14 @@
         "titular_central": "Asamblea: Debate por la renovación del contrato de Ciudad del Saber genera cuestionamientos por exoneraciones",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 24,
+        "posicion_sistema": 28,
         "posicion_por_fecha": 4,
         "fecha_mas_reciente": "2026-10-08T01:14:47Z",
-        "puntaje": 77.84,
+        "puntaje": 78.72,
         "rango": "alto",
         "componentes": {
           "R": 1.0,
-          "I": 0.55,
+          "I": 0.585,
           "U": 0.9861,
           "N": 0.7137,
           "E": 0.3667
@@ -2532,56 +2492,36 @@
         "titular_central": "Contenido exclusivo: Dietilenglicol, 20 años de dolor",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 20,
+        "posicion_sistema": 6,
         "posicion_por_fecha": 5,
         "fecha_mas_reciente": "2026-10-08T01:02:59Z",
-        "puntaje": 78.36,
+        "puntaje": 82.99,
         "rango": "alto",
         "componentes": {
           "R": 1.0,
-          "I": 0.4,
+          "I": 0.585,
           "U": 0.9849,
-          "N": 1.0,
-          "E": 0.3667
-        },
-        "estado_de_evidencia": null,
-        "accion": null
-      }
-    ],
-    "top_sistema_detalle": [
-      {
-        "id_grupo": "GRP-21ad932d54",
-        "titular_central": "Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá",
-        "n_titulares": 1,
-        "n_medios": 1,
-        "posicion_sistema": 1,
-        "posicion_por_fecha": 51,
-        "fecha_mas_reciente": "2026-10-05T21:38:58Z",
-        "puntaje": 87.25,
-        "rango": "alto",
-        "componentes": {
-          "R": 1.0,
-          "I": 1.0,
-          "U": 0.6789,
           "N": 1.0,
           "E": 0.3667
         },
         "estado_de_evidencia": "insuficiente",
         "accion": "Investigar ya"
-      },
+      }
+    ],
+    "top_sistema_detalle": [
       {
         "id_grupo": "GRP-5e6531917f",
         "titular_central": "Más de 30 mujeres han muerto de forma violenta en Panamá este año",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 2,
+        "posicion_sistema": 1,
         "posicion_por_fecha": 44,
         "fecha_mas_reciente": "2026-10-06T01:30:01Z",
-        "puntaje": 85.2,
+        "puntaje": 86.08,
         "rango": "alto",
         "componentes": {
           "R": 1.0,
-          "I": 0.9,
+          "I": 0.935,
           "U": 0.7019,
           "N": 1.0,
           "E": 0.3667
@@ -2590,19 +2530,19 @@
         "accion": "Investigar ya"
       },
       {
-        "id_grupo": "GRP-8a448d1fd9",
-        "titular_central": "Universidad Tecnológica evalúa unos 200 edificios para determinar su seguridad ante sismos",
+        "id_grupo": "GRP-21ad932d54",
+        "titular_central": "Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 3,
-        "posicion_por_fecha": 6,
-        "fecha_mas_reciente": "2026-10-08T00:33:51Z",
-        "puntaje": 84.56,
+        "posicion_sistema": 2,
+        "posicion_por_fecha": 51,
+        "fecha_mas_reciente": "2026-10-05T21:38:58Z",
+        "puntaje": 85.62,
         "rango": "alto",
         "componentes": {
           "R": 1.0,
-          "I": 0.65,
-          "U": 0.982,
+          "I": 0.935,
+          "U": 0.6789,
           "N": 1.0,
           "E": 0.3667
         },
@@ -2614,14 +2554,14 @@
         "titular_central": "Aprehenden a 10 personas por presunta minería ilegal y delitos ambientales en Coclé del Norte",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 4,
+        "posicion_sistema": 3,
         "posicion_por_fecha": 20,
         "fecha_mas_reciente": "2026-10-07T12:48:21Z",
-        "puntaje": 84.41,
+        "puntaje": 85.28,
         "rango": "alto",
         "componentes": {
           "R": 1.0,
-          "I": 0.7,
+          "I": 0.735,
           "U": 0.912,
           "N": 1.0,
           "E": 0.3667
@@ -2630,19 +2570,39 @@
         "accion": "Investigar ya"
       },
       {
-        "id_grupo": "GRP-7ddcf92e16",
-        "titular_central": "Ataque a tiros cerca de la estación del metro de San Miguelito deja un muerto y dos heridos",
+        "id_grupo": "GRP-a329f4e91e",
+        "titular_central": "Chiriquí | Investigan incendio en sastrería de calle Quinta en David",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 5,
-        "posicion_por_fecha": 7,
-        "fecha_mas_reciente": "2026-10-08T00:08:54Z",
-        "puntaje": 82.01,
+        "posicion_sistema": 4,
+        "posicion_por_fecha": 11,
+        "fecha_mas_reciente": "2026-10-07T18:08:42Z",
+        "puntaje": 85.04,
         "rango": "alto",
         "componentes": {
           "R": 1.0,
-          "I": 0.55,
-          "U": 0.9795,
+          "I": 0.7,
+          "U": 0.9438,
+          "N": 1.0,
+          "E": 0.3667
+        },
+        "estado_de_evidencia": "insuficiente",
+        "accion": "Investigar ya"
+      },
+      {
+        "id_grupo": "GRP-1dc52c45ff",
+        "titular_central": "César Caicedo ahora está recluido en el Hospital Santo Tomás; había sido trasladado a Coiba",
+        "n_titulares": 2,
+        "n_medios": 1,
+        "posicion_sistema": 5,
+        "posicion_por_fecha": 2,
+        "fecha_mas_reciente": "2026-10-08T02:10:57Z",
+        "puntaje": 83.12,
+        "rango": "alto",
+        "componentes": {
+          "R": 1.0,
+          "I": 0.585,
+          "U": 0.9916,
           "N": 1.0,
           "E": 0.3667
         },
@@ -2653,30 +2613,30 @@
     "estabilidad": {
       "variantes_con_efecto": 49,
       "top_sin_cambio": {
-        "n": 37,
+        "n": 39,
         "de": 49,
-        "proporcion": 0.7551,
+        "proporcion": 0.7959,
         "ic95": [
-          0.6191,
-          0.854
+          0.6636,
+          0.8852
         ]
       },
       "con_algun_cambio": {
-        "n": 12,
+        "n": 10,
         "de": 49,
-        "proporcion": 0.2449,
+        "proporcion": 0.2041,
         "ic95": [
-          0.146,
-          0.3809
+          0.1148,
+          0.3364
         ]
       },
       "mismo_orden": {
-        "n": 27,
+        "n": 34,
         "de": 49,
-        "proporcion": 0.551,
+        "proporcion": 0.6939,
         "ic95": [
-          0.4131,
-          0.6815
+          0.5547,
+          0.8048
         ]
       },
       "fuente": "outputs/sensibilidad.json"

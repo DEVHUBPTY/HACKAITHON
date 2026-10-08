@@ -6,21 +6,21 @@
   "grupos": 72,
   "por_rango": {
     "alto": {
-      "n": 49,
+      "n": 54,
       "de": 72,
-      "proporcion": 0.6806,
+      "proporcion": 0.75,
       "ic95": [
-        0.5661,
-        0.7767
+        0.6391,
+        0.8356
       ]
     },
     "medio": {
-      "n": 23,
+      "n": 18,
       "de": 72,
-      "proporcion": 0.3194,
+      "proporcion": 0.25,
       "ic95": [
-        0.2233,
-        0.4339
+        0.1644,
+        0.3609
       ]
     },
     "bajo": {
@@ -44,21 +44,21 @@
       ]
     },
     "parcial": {
-      "n": 4,
+      "n": 3,
       "de": 72,
-      "proporcion": 0.0556,
+      "proporcion": 0.0417,
       "ic95": [
-        0.0218,
-        0.1343
+        0.0143,
+        0.1155
       ]
     },
     "insuficiente": {
-      "n": 66,
+      "n": 67,
       "de": 72,
-      "proporcion": 0.9167,
+      "proporcion": 0.9306,
       "ic95": [
-        0.8299,
-        0.9612
+        0.8475,
+        0.97
       ]
     }
   },
@@ -78,36 +78,14 @@
   "ranking": [
     {
       "posicion": 1,
-      "id_grupo": "GRP-21ad932d54",
-      "titular_central": "Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá",
-      "puntaje": 87.25,
-      "empate_con": 0,
-      "rango": "alto",
-      "componentes": {
-        "R": 1.0,
-        "I": 1.0,
-        "U": 0.6789,
-        "N": 1.0,
-        "E": 0.3667
-      },
-      "estado_de_evidencia": "insuficiente",
-      "accion": "Investigar ya",
-      "vacios": [
-        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
-      ],
-      "contradicciones": []
-    },
-    {
-      "posicion": 2,
       "id_grupo": "GRP-5e6531917f",
       "titular_central": "Más de 30 mujeres han muerto de forma violenta en Panamá este año",
-      "puntaje": 85.2,
+      "puntaje": 86.08,
       "empate_con": 0,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
-        "I": 0.9,
+        "I": 0.935,
         "U": 0.7019,
         "N": 1.0,
         "E": 0.3667
@@ -122,16 +100,16 @@
       "contradicciones": []
     },
     {
-      "posicion": 3,
-      "id_grupo": "GRP-8a448d1fd9",
-      "titular_central": "Universidad Tecnológica evalúa unos 200 edificios para determinar su seguridad ante sismos",
-      "puntaje": 84.56,
+      "posicion": 2,
+      "id_grupo": "GRP-21ad932d54",
+      "titular_central": "Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá",
+      "puntaje": 85.62,
       "empate_con": 0,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
-        "I": 0.65,
-        "U": 0.982,
+        "I": 0.935,
+        "U": 0.6789,
         "N": 1.0,
         "E": 0.3667
       },
@@ -139,21 +117,20 @@
       "accion": "Investigar ya",
       "vacios": [
         "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
-        "los titulares traen cifras y no hay dato oficial vinculado",
-        "sin dato oficial vinculado (el tema está fuera de la cobertura de las fuentes oficiales)"
+        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
       ],
       "contradicciones": []
     },
     {
-      "posicion": 4,
+      "posicion": 3,
       "id_grupo": "GRP-4d8b340bd9",
       "titular_central": "Aprehenden a 10 personas por presunta minería ilegal y delitos ambientales en Coclé del Norte",
-      "puntaje": 84.41,
+      "puntaje": 85.28,
       "empate_con": 0,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
-        "I": 0.7,
+        "I": 0.735,
         "U": 0.912,
         "N": 1.0,
         "E": 0.3667
@@ -168,16 +145,38 @@
       "contradicciones": []
     },
     {
-      "posicion": 5,
-      "id_grupo": "GRP-7ddcf92e16",
-      "titular_central": "Ataque a tiros cerca de la estación del metro de San Miguelito deja un muerto y dos heridos",
-      "puntaje": 82.01,
+      "posicion": 4,
+      "id_grupo": "GRP-a329f4e91e",
+      "titular_central": "Chiriquí | Investigan incendio en sastrería de calle Quinta en David",
+      "puntaje": 85.04,
       "empate_con": 0,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
-        "I": 0.55,
-        "U": 0.9795,
+        "I": 0.7,
+        "U": 0.9438,
+        "N": 1.0,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 5,
+      "id_grupo": "GRP-1dc52c45ff",
+      "titular_central": "César Caicedo ahora está recluido en el Hospital Santo Tomás; había sido trasladado a Coiba",
+      "puntaje": 83.12,
+      "empate_con": 0,
+      "rango": "alto",
+      "componentes": {
+        "R": 1.0,
+        "I": 0.585,
+        "U": 0.9916,
         "N": 1.0,
         "E": 0.3667
       },
@@ -191,15 +190,15 @@
     },
     {
       "posicion": 6,
-      "id_grupo": "GRP-03e3ef16d9",
-      "titular_central": "Sinaproc busca superar el 10% de participación ciudadana en el tercer simulacro nacional",
-      "puntaje": 81.35,
+      "id_grupo": "GRP-1627d09497",
+      "titular_central": "Contenido exclusivo: Dietilenglicol, 20 años de dolor",
+      "puntaje": 82.99,
       "empate_con": 0,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
-        "I": 0.55,
-        "U": 0.9468,
+        "I": 0.585,
+        "U": 0.9849,
         "N": 1.0,
         "E": 0.3667
       },
@@ -214,60 +213,15 @@
     },
     {
       "posicion": 7,
-      "id_grupo": "GRP-a329f4e91e",
-      "titular_central": "Chiriquí | Investigan incendio en sastrería de calle Quinta en David",
-      "puntaje": 81.29,
-      "empate_con": 0,
+      "id_grupo": "GRP-8a448d1fd9",
+      "titular_central": "Universidad Tecnológica evalúa unos 200 edificios para determinar su seguridad ante sismos",
+      "puntaje": 82.93,
+      "empate_con": 2,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
-        "I": 0.55,
-        "U": 0.9438,
-        "N": 1.0,
-        "E": 0.3667
-      },
-      "estado_de_evidencia": "insuficiente",
-      "accion": "Investigar ya",
-      "vacios": [
-        "subtema no determinado: se usó el alcance neutro de impacto",
-        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
-      ],
-      "contradicciones": []
-    },
-    {
-      "posicion": 8,
-      "id_grupo": "GRP-41ed91b93c",
-      "titular_central": "Presupuesto 2027: Presidente de la Comisión recomendará más fondos para salud y cumplir con primas de antigüedad",
-      "puntaje": 80.7,
-      "empate_con": 0,
-      "rango": "alto",
-      "componentes": {
-        "R": 1.0,
-        "I": 0.55,
-        "U": 0.9142,
-        "N": 1.0,
-        "E": 0.3667
-      },
-      "estado_de_evidencia": "insuficiente",
-      "accion": "Investigar ya",
-      "vacios": [
-        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
-      ],
-      "contradicciones": []
-    },
-    {
-      "posicion": 9,
-      "id_grupo": "GRP-be613f0763",
-      "titular_central": "Reformas electorales: Blandón defiende el 3% para nuevos partidos y rechaza aumento del financiamiento privado",
-      "puntaje": 80.32,
-      "empate_con": 1,
-      "rango": "alto",
-      "componentes": {
-        "R": 1.0,
-        "I": 0.65,
-        "U": 0.7704,
+        "I": 0.585,
+        "U": 0.982,
         "N": 1.0,
         "E": 0.3667
       },
@@ -281,16 +235,16 @@
       "contradicciones": []
     },
     {
-      "posicion": 10,
-      "id_grupo": "GRP-84a6b3a04b",
-      "titular_central": "Colegios particulares atribuyen aumento de matrícula a migración al sector oficial y altos costos de operación",
-      "puntaje": 80.29,
-      "empate_con": 1,
+      "posicion": 8,
+      "id_grupo": "GRP-7ddcf92e16",
+      "titular_central": "Ataque a tiros cerca de la estación del metro de San Miguelito deja un muerto y dos heridos",
+      "puntaje": 82.88,
+      "empate_con": 2,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
-        "I": 0.65,
-        "U": 0.7684,
+        "I": 0.585,
+        "U": 0.9795,
         "N": 1.0,
         "E": 0.3667
       },
@@ -298,6 +252,51 @@
       "accion": "Investigar ya",
       "vacios": [
         "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 9,
+      "id_grupo": "GRP-87e128925b",
+      "titular_central": "Veraguas: Preocupación por aumento de muertes por enfermedades transmisibles y respiratorias",
+      "puntaje": 82.92,
+      "empate_con": 2,
+      "rango": "alto",
+      "componentes": {
+        "R": 1.0,
+        "I": 0.7,
+        "U": 0.8375,
+        "N": 1.0,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 10,
+      "id_grupo": "GRP-03e3ef16d9",
+      "titular_central": "Sinaproc busca superar el 10% de participación ciudadana en el tercer simulacro nacional",
+      "puntaje": 82.23,
+      "empate_con": 0,
+      "rango": "alto",
+      "componentes": {
+        "R": 1.0,
+        "I": 0.585,
+        "U": 0.9468,
+        "N": 1.0,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "los titulares traen cifras y no hay dato oficial vinculado",
         "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
       ],
       "contradicciones": []
