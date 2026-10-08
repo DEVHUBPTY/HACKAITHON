@@ -533,6 +533,108 @@ deshace al volver a correr si cambia la lista o el tema. En el snapshot actual *
 secciones sospechosas y las 13 ya eran ruido por palabras clave. Para la evaluación `sin_tema` y `fuera_de_temas` cuentan igual
 (`FUERA_DE_LOS_TEMAS`), así que D4 no mueve la exactitud ni el macro-F1.
 
+## C-10b · Modelo supervisado exploratorio (2026-10-07)
+
+**Resultado: el modelo supervisado NO supera al método A ni al mejor baseline de forma distinguible; el criterio D-57 NO se
+cumple, y no se cambió ningún componente de la canalización.** El modelo **no está conectado a producción**: la canalización
+sigue clasificando con e5 · método A (`src/clasificacion.py`). Todo lo de esta sección es **EXPLORATORIO**: ≈ 30 eventos, una
+sola persona etiquetó (D-85), y las etiquetas son un censo del estrato «no ruido» del snapshot anterior, no datos de prueba
+independientes. Solo se usan etiquetas `origen = humano` (D-101); ninguna de las 61 provisionales entra, ni los ejemplos de
+`temas.yaml`. Reproducir: `HF_HUB_OFFLINE=1 poetry run python -m eval.clasificacion_por_evento` y
+`HF_HUB_OFFLINE=1 poetry run python -m eval.clasificacion_supervisada` (salidas: `outputs/clasificacion_por_evento.json` y
+`outputs/clasificacion_supervisada.json`). Cada una se corrió **una sola vez**, con hiperparámetros fijados de antemano en
+`config/clasificacion.yaml`; no se ajustó nada mirando la métrica.
+
+### 1 · Evaluación por evento (método A y baselines; 64 filas, 30 eventos)
+
+Unidad: el evento (`grupo` de la etiqueta, o la propia noticia). IC por fila: Wilson 95 %; IC por evento: bootstrap sobre eventos
+(1.000 remuestreos, semilla 42, `criterio_ab`). La curva de abstención usa solo los umbrales que **ya están** en el YAML (0.797 y
+0.824 de e5; no se calibró nada).
+
+| Sistema | Exactitud por fila (n = 64) | Exactitud por evento [IC 95 %] | Macro-F1 por evento [IC 95 %] | Cobertura (filas) | Exactitud entre cubiertas (filas) |
+|---|---|---|---|---|---|
+| e5 · A, **activo** (umbral 0.824) | 35/64 = 54.7 % [42.6–66.3] | 0.517 [0.350–0.683] | 0.430 [0.248–0.619] | 52/64 = 81.2 % [70.0–88.9] | 35/52 = 67.3 % [53.8–78.5] |
+| e5 · A sin abstención (también con 0.797) | 36/64 = 56.2 % [44.1–67.7] | 0.519 [0.350–0.686] | 0.389 [0.222–0.613] | 64/64 = 100 % [94.3–100] | 36/64 = 56.2 % [44.1–67.7] |
+| Baseline por palabras clave (guía) | 29/64 = 45.3 % [33.7–57.4] | 0.311 [0.155–0.489] | 0.467 [0.147–0.611] | 29/64 = 45.3 % [33.7–57.4] | 26/29 = 89.7 % [73.6–96.4] |
+| Baseline ampliado | 30/64 = 46.9 % [35.2–58.9] | 0.344 [0.177–0.511] | 0.477 [0.166–0.629] | 30/64 = 46.9 % [35.2–58.9] | 27/30 = 90.0 % [74.4–96.5] |
+
+- **Los IC se solapan en todas las comparaciones** (diferencias pareadas por evento frente al activo, IC 95 % de bootstrap):
+  sin abstención, exactitud +0.003 [0.000, 0.008] y macro-F1 −0.041 [−0.107, 0.001]; baseline guía −0.206 [−0.450, 0.045] y
+  +0.037 [−0.321, 0.209]; baseline ampliado −0.172 [−0.400, 0.061] y +0.047 [−0.297, 0.226]. Ninguna excluye el cero: con 30
+  eventos esta evaluación **no distingue** al método A de los baselines ni de quitar la abstención.
+- **La abstención del activo cubre el 81 % de las filas pero solo el 97 % de los eventos** (0.969 [0.908–1.000]): las 12 filas que
+  se abstienen son de un solo evento. Entre las filas cubiertas acierta 67.3 %; los baselines aciertan ~90 % entre lo que cubren,
+  pero cubren menos de la mitad de las filas (se abstienen cuando ninguna palabra clave coincide).
+- **Qué significan «Economía 4/26» y «Eventos naturales 20/20».** Eventos naturales son 20 filas de **un solo evento** (31.2 % de
+  las filas): el recall por evento es 1.0 con un evento, sin IC estimable. Economía son 26 filas de 11 eventos y el evento mayor
+  aporta 13 (50 %) y fracasa 0/13 (las 12 abstenciones más una confusión); por evento el recall de Economía es
+  0.318 [0.091–0.591]. Sin el evento mayor (El Niño) la exactitud por fila del activo es 15/44 = 34.1 % [21.9–48.9]. Los otros
+  recall del activo: Servicios públicos 8/9 (por evento 0.889 [0.667–1.000], 9 eventos), Logística 2/2, Regulación 1/1, Turismo
+  0/1, `sin_tema` 0/5 (5 eventos). En Servicios públicos y Economía los baselines recuperan menos (2/9 y 2–3/26).
+
+### 2 · Modelo supervisado (regresión logística sobre los embeddings e5)
+
+**Diseño (fijado antes de medir).** `LogisticRegression` (C = 1.0, `class_weight = balanced`, `max_iter` = 1.000) sobre los mismos
+embeddings e5 del texto que usa el clasificador (titular y, si existe, descripción, de uso interno, D-31). Clases: 6 temas y
+`sin_tema` como una clase más (como `eval.clasificacion`, donde una fila que la persona marcó como ruido tiene la etiqueta de oro
+`sin_tema`; el YAML permite excluirla). Validación cruzada de 5 pliegues **agrupada por evento**, repetida 20 veces con particiones
+distintas (semilla 20261007, mismo procedimiento que el diagnóstico de E1-07b). `verificar_sin_fuga` comprueba en cada pliegue
+que ningún evento esté a la vez en el entrenamiento y en la prueba, y un test lo vigila. Una clase con menos de **2 eventos** no se
+entrena ni se evalúa en la validación cruzada (con un solo evento no queda ninguno para entrenar mientras se prueba):
+
+| Clase | Filas · eventos | Tratamiento |
+|---|---|---|
+| Economía | 26 · 11 | entrenada |
+| Servicios públicos | 9 · 9 | entrenada |
+| `sin_tema` | 5 · 5 | entrenada |
+| Logística | 2 · 2 | entrenada (con 2 eventos queda 1 para entrenar al probar el otro) |
+| **Eventos naturales** | 20 · 1 | **excluida** (menos de 2 eventos); método A 20/20, baseline 20/20 |
+| **Turismo** | 1 · 1 | **excluida**; método A 0/1, baseline 1/1 |
+| **Regulación** | 1 · 1 | **excluida**; método A 1/1, baseline 0/1 |
+
+Se evalúan por tanto **42 de las 64 filas y 27 de los 30 eventos**. El método A y el mejor baseline (**baseline ampliado**,
+elegido por exactitud por evento con las mismas etiquetas, lo que lo favorece) se miden sobre **las mismas 42 filas**. Como la
+validación cruzada deja fuera a Eventos naturales, **no hay un recall de Eventos naturales para el supervisado**: es la limitación
+más seria (el modelo nunca habría aprendido la clase que hoy el método A acierta 20/20).
+
+| Sistema (42 filas, 27 eventos) | Exactitud por fila | Exactitud por evento [IC 95 %] | Macro-F1 por evento [IC 95 %] |
+|---|---|---|---|
+| Supervisado (promedio de 20 repeticiones) | 26/42 = 61.9 % [46.8–75.0] (aprox.) | 0.548 [0.392–0.715] | 0.399 [0.281–0.586] |
+| Método A, activo | 14/42 = 33.3 % [21.0–48.4] | 0.500 [0.315–0.685] | 0.431 [0.251–0.592] |
+| Baseline ampliado | 9/42 = 21.4 % [11.7–35.9] | 0.309 [0.136–0.469] | 0.341 [0.092–0.514] |
+
+La exactitud por fila del supervisado es un promedio de 20 repeticiones (la fracción de repeticiones en que acierta cada fila) y
+su IC de Wilson es aproximado (`aproximado: true` en el JSON); varió entre 0.381 y 0.714 según la partición, lo que ya dice
+cuánto depende el resultado de qué eventos caen juntos. La exactitud del método A baja de 54.7 % a 33.3 % en este subconjunto
+porque sale El Niño (20 filas acertadas) y queda el evento de 13 filas que falla.
+
+Recall por tema, por evento (IC 95 %): Economía supervisado 0.508 [0.298–0.728] frente a método A 0.318 [0.091–0.591] y
+baseline 0.212 [0.030–0.455] (11 eventos); Servicios públicos 0.956 [0.928–0.983] frente a 0.889 [0.667–1.000] y 0.222
+[0.000–0.556] (9 eventos); `sin_tema` 0.120 [0.000–0.360] frente a 0.000 y 0.600 [0.200–1.000] (5 eventos); Logística 0.000
+frente a 1.000 y 0.500 (2 eventos: el bootstrap sobre 2 eventos no tiene variación útil).
+
+### 3 · Comparación pareada por evento y criterio D-57
+
+| Diferencia (supervisado − otro) | Exactitud por evento [IC 95 %] | Macro-F1 [IC 95 %] | ¿IC solapados? | D-57 |
+|---|---|---|---|---|
+| − método A activo | +0.048 [−0.115, +0.226] | −0.032 [−0.234, +0.297] | Sí (exactitud y macro-F1) | **No se cumple**: el IC de macro-F1 no excluye el cero a favor |
+| − mejor baseline (ampliado) | +0.239 [−0.011, +0.508] | +0.058 [−0.173, +0.400] | Sí (exactitud y macro-F1) | **No se cumple**: el IC de macro-F1 no excluye el cero a favor |
+
+D-57 adaptado a eventos: la diferencia de macro-F1 debe tener el IC 95 % por encima de cero y ningún tema puede empeorar de forma
+significativa (recall por evento con IC enteramente por debajo de cero). **No se cumple en ninguna de las dos comparaciones.**
+Contra el baseline hay además dos señales por tema que sí excluyen el cero: Servicios públicos mejora +0.733 [+0.406, +0.967] y
+`sin_tema` empeora −0.480 [−0.880, −0.080]; contra el método A, Economía +0.190 [−0.073, +0.445], Servicios públicos +0.067
+[−0.056, +0.284] y `sin_tema` +0.120 [0.000, +0.360] no excluyen el cero y Logística (−1.0, 2 eventos) es una diferencia
+degenerada. Con 27 eventos el IC de una diferencia mide ±0.17–0.29: **no se puede afirmar que el supervisado sea mejor ni peor**.
+
+**Limitación explícita.** (1) ≈ 27 eventos y una sola persona que etiqueta: el IC por evento es muy ancho y las conclusiones son
+exploratorias. (2) Tres clases (Eventos naturales, Turismo y Regulación) tienen un solo evento y **no se pueden aprender ni
+evaluar** con validación cruzada por evento; la clase más grande por filas (Eventos naturales) es justo una de ellas. (3) Las
+mismas etiquetas diagnosticaron el método A en E1-07b y C-10, y el mejor baseline se eligió con ellas: hay sesgo a favor de los dos
+comparadores. (4) Las etiquetas no son un muestreo de la población (son un censo del estrato «no ruido»). **Ni este modelo ni
+estas cifras justifican cambiar el clasificador de producción**; para decidir hace falta lo de `docs/revision_etiquetas.md`
+(confirmar las 61, un segundo etiquetador y ≥ 10–20 eventos por tema).
+
 ## Pendiente
 
 1. **Más etiquetas y más personas:** las 100 etiquetas actuales son de una sola persona y repiten titulares. Reetiquetar con

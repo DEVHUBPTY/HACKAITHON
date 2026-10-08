@@ -1,0 +1,737 @@
+{
+  "modelo": "regresion_logistica",
+  "entrada": "embeddings e5 de la canalización",
+  "exploratorio": true,
+  "conectado_a_produccion": false,
+  "advertencia": "EXPLORATORIO y NO está conectado a producción: la canalización sigue usando el método A. ≈ 29 eventos, una sola persona etiquetó (D-85), censo del estrato «no ruido» del snapshot anterior; las clases con pocos eventos no se pueden aprender.",
+  "hiperparametros": {
+    "pliegues": 5,
+    "repeticiones": 20,
+    "semilla": 20261007,
+    "C": 1.0,
+    "class_weight": "balanced",
+    "max_iter": 1000,
+    "min_eventos_por_clase": 2,
+    "sin_tema": "clase"
+  },
+  "bootstrap": {
+    "remuestreos": 1000,
+    "confianza": 0.95,
+    "semilla": 42,
+    "unidad": "evento"
+  },
+  "conjunto": {
+    "origenes": [
+      "humano"
+    ],
+    "usa_etiquetas_provisionales": false,
+    "filas_totales": 64,
+    "eventos_totales": 30,
+    "filas_evaluadas": 42,
+    "eventos_evaluados": 27,
+    "ejemplos_excluidos_descartados": 0,
+    "filas_por_tema": {
+      "economia": 26,
+      "eventos_naturales": 20,
+      "servicios_publicos": 9,
+      "turismo": 1,
+      "sin_tema": 5,
+      "regulacion": 1,
+      "logistica": 2
+    },
+    "tratamiento_sin_tema": "clase"
+  },
+  "clases": {
+    "entrenadas": [
+      "economia",
+      "servicios_publicos",
+      "sin_tema",
+      "logistica"
+    ],
+    "excluidas": {
+      "eventos_naturales": {
+        "filas": 20,
+        "eventos": 1,
+        "motivo": "menos de 2 eventos",
+        "recall_metodo_A": {
+          "n": 20,
+          "de": 20,
+          "proporcion": 1.0,
+          "ic95": [
+            0.8389,
+            1.0
+          ]
+        },
+        "recall_mejor_baseline": {
+          "n": 20,
+          "de": 20,
+          "proporcion": 1.0,
+          "ic95": [
+            0.8389,
+            1.0
+          ]
+        },
+        "supervisado": "no entrenable: sin eventos suficientes para entrenar mientras se prueba otro"
+      },
+      "turismo": {
+        "filas": 1,
+        "eventos": 1,
+        "motivo": "menos de 2 eventos",
+        "recall_metodo_A": {
+          "n": 0,
+          "de": 1,
+          "proporcion": 0.0,
+          "ic95": [
+            0.0,
+            0.7935
+          ]
+        },
+        "recall_mejor_baseline": {
+          "n": 1,
+          "de": 1,
+          "proporcion": 1.0,
+          "ic95": [
+            0.2065,
+            1.0
+          ]
+        },
+        "supervisado": "no entrenable: sin eventos suficientes para entrenar mientras se prueba otro"
+      },
+      "regulacion": {
+        "filas": 1,
+        "eventos": 1,
+        "motivo": "menos de 2 eventos",
+        "recall_metodo_A": {
+          "n": 1,
+          "de": 1,
+          "proporcion": 1.0,
+          "ic95": [
+            0.2065,
+            1.0
+          ]
+        },
+        "recall_mejor_baseline": {
+          "n": 0,
+          "de": 1,
+          "proporcion": 0.0,
+          "ic95": [
+            0.0,
+            0.7935
+          ]
+        },
+        "supervisado": "no entrenable: sin eventos suficientes para entrenar mientras se prueba otro"
+      }
+    },
+    "eventos_por_clase": {
+      "economia": 11,
+      "servicios_publicos": 9,
+      "sin_tema": 5,
+      "logistica": 2
+    }
+  },
+  "mejor_baseline": "baseline_ampliado",
+  "nota_mejor_baseline": "elegido por exactitud por evento con las mismas etiquetas: favorece al baseline",
+  "sistemas": {
+    "supervisado": {
+      "exactitud_por_fila": {
+        "n": 26,
+        "de": 42,
+        "proporcion": 0.619,
+        "ic95": [
+          0.4681,
+          0.75
+        ],
+        "aproximado": true
+      },
+      "exactitud_por_evento": {
+        "valor": 0.5477,
+        "ic95": [
+          0.3921,
+          0.7149
+        ],
+        "eventos": 27,
+        "remuestreos": 1000
+      },
+      "macro_f1_por_evento": {
+        "valor": 0.3994,
+        "ic95": [
+          0.281,
+          0.5861
+        ],
+        "eventos": 27,
+        "filas": 42,
+        "remuestreos": 1000
+      },
+      "cobertura_por_fila": {
+        "n": 35,
+        "de": 42,
+        "proporcion": 0.8333,
+        "ic95": [
+          0.694,
+          0.9168
+        ],
+        "aproximado": true
+      },
+      "cobertura_por_evento": {
+        "valor": 0.8022,
+        "ic95": [
+          0.6984,
+          0.9037
+        ],
+        "eventos": 27,
+        "remuestreos": 1000
+      },
+      "exactitud_entre_cubiertas_por_fila": {
+        "n": 26,
+        "de": 35,
+        "proporcion": 0.7429,
+        "ic95": [
+          0.5793,
+          0.8584
+        ],
+        "aproximado": true
+      },
+      "exactitud_entre_cubiertas_por_evento": {
+        "valor": 0.6307,
+        "ic95": [
+          0.4643,
+          0.7889
+        ],
+        "eventos": 27,
+        "remuestreos": 1000
+      },
+      "abstenciones": 7,
+      "recall_por_tema": {
+        "economia": {
+          "filas": {
+            "n": 17,
+            "de": 26,
+            "proporcion": 0.6538,
+            "ic95": [
+              0.4622,
+              0.8059
+            ],
+            "aproximado": true
+          },
+          "eventos": 11,
+          "recall_por_evento": 0.5079254079254079,
+          "ic95": [
+            0.2984,
+            0.7277
+          ],
+          "nota_ic": null
+        },
+        "logistica": {
+          "filas": {
+            "n": 0,
+            "de": 2,
+            "proporcion": 0.0,
+            "ic95": [
+              0.0,
+              0.6576
+            ],
+            "aproximado": true
+          },
+          "eventos": 2,
+          "recall_por_evento": 0.0,
+          "ic95": [
+            0.0,
+            0.0
+          ],
+          "nota_ic": null
+        },
+        "servicios_publicos": {
+          "filas": {
+            "n": 9,
+            "de": 9,
+            "proporcion": 1.0,
+            "ic95": [
+              0.7008,
+              1.0
+            ],
+            "aproximado": true
+          },
+          "eventos": 9,
+          "recall_por_evento": 0.9555555555555555,
+          "ic95": [
+            0.9278,
+            0.9833
+          ],
+          "nota_ic": null
+        },
+        "sin_tema": {
+          "filas": {
+            "n": 1,
+            "de": 5,
+            "proporcion": 0.2,
+            "ic95": [
+              0.0362,
+              0.6245
+            ],
+            "aproximado": true
+          },
+          "eventos": 5,
+          "recall_por_evento": 0.12,
+          "ic95": [
+            0.0,
+            0.36
+          ],
+          "nota_ic": null
+        }
+      }
+    },
+    "metodo_A_activo": {
+      "exactitud_por_fila": {
+        "n": 14,
+        "de": 42,
+        "proporcion": 0.3333,
+        "ic95": [
+          0.2101,
+          0.4845
+        ],
+        "aproximado": false
+      },
+      "exactitud_por_evento": {
+        "valor": 0.5,
+        "ic95": [
+          0.3148,
+          0.6852
+        ],
+        "eventos": 27,
+        "remuestreos": 1000
+      },
+      "macro_f1_por_evento": {
+        "valor": 0.4312,
+        "ic95": [
+          0.2506,
+          0.592
+        ],
+        "eventos": 27,
+        "filas": 42,
+        "remuestreos": 1000
+      },
+      "cobertura_por_fila": {
+        "n": 30,
+        "de": 42,
+        "proporcion": 0.7143,
+        "ic95": [
+          0.5643,
+          0.8283
+        ],
+        "aproximado": false
+      },
+      "cobertura_por_evento": {
+        "valor": 0.9658,
+        "ic95": [
+          0.8974,
+          1.0
+        ],
+        "eventos": 27,
+        "remuestreos": 1000
+      },
+      "exactitud_entre_cubiertas_por_fila": {
+        "n": 14,
+        "de": 30,
+        "proporcion": 0.4667,
+        "ic95": [
+          0.3023,
+          0.6386
+        ],
+        "aproximado": false
+      },
+      "exactitud_entre_cubiertas_por_evento": {
+        "valor": 0.5,
+        "ic95": [
+          0.3148,
+          0.6852
+        ],
+        "eventos": 27,
+        "remuestreos": 1000
+      },
+      "abstenciones": 12,
+      "recall_por_tema": {
+        "economia": {
+          "filas": {
+            "n": 4,
+            "de": 26,
+            "proporcion": 0.1538,
+            "ic95": [
+              0.0615,
+              0.3353
+            ],
+            "aproximado": false
+          },
+          "eventos": 11,
+          "recall_por_evento": 0.3181818181818182,
+          "ic95": [
+            0.0909,
+            0.5909
+          ],
+          "nota_ic": null
+        },
+        "logistica": {
+          "filas": {
+            "n": 2,
+            "de": 2,
+            "proporcion": 1.0,
+            "ic95": [
+              0.3424,
+              1.0
+            ],
+            "aproximado": false
+          },
+          "eventos": 2,
+          "recall_por_evento": 1.0,
+          "ic95": [
+            1.0,
+            1.0
+          ],
+          "nota_ic": null
+        },
+        "servicios_publicos": {
+          "filas": {
+            "n": 8,
+            "de": 9,
+            "proporcion": 0.8889,
+            "ic95": [
+              0.565,
+              0.9801
+            ],
+            "aproximado": false
+          },
+          "eventos": 9,
+          "recall_por_evento": 0.8888888888888888,
+          "ic95": [
+            0.6667,
+            1.0
+          ],
+          "nota_ic": null
+        },
+        "sin_tema": {
+          "filas": {
+            "n": 0,
+            "de": 5,
+            "proporcion": 0.0,
+            "ic95": [
+              0.0,
+              0.4345
+            ],
+            "aproximado": false
+          },
+          "eventos": 5,
+          "recall_por_evento": 0.0,
+          "ic95": [
+            0.0,
+            0.0
+          ],
+          "nota_ic": null
+        }
+      }
+    },
+    "baseline_ampliado": {
+      "exactitud_por_fila": {
+        "n": 9,
+        "de": 42,
+        "proporcion": 0.2143,
+        "ic95": [
+          0.1171,
+          0.3594
+        ],
+        "aproximado": false
+      },
+      "exactitud_por_evento": {
+        "valor": 0.3086,
+        "ic95": [
+          0.1358,
+          0.4694
+        ],
+        "eventos": 27,
+        "remuestreos": 1000
+      },
+      "macro_f1_por_evento": {
+        "valor": 0.3412,
+        "ic95": [
+          0.0924,
+          0.5142
+        ],
+        "eventos": 27,
+        "filas": 42,
+        "remuestreos": 1000
+      },
+      "cobertura_por_fila": {
+        "n": 9,
+        "de": 42,
+        "proporcion": 0.2143,
+        "ic95": [
+          0.1171,
+          0.3594
+        ],
+        "aproximado": false
+      },
+      "cobertura_por_evento": {
+        "valor": 0.3086,
+        "ic95": [
+          0.1481,
+          0.4691
+        ],
+        "eventos": 27,
+        "remuestreos": 1000
+      },
+      "exactitud_entre_cubiertas_por_fila": {
+        "n": 6,
+        "de": 9,
+        "proporcion": 0.6667,
+        "ic95": [
+          0.3542,
+          0.8794
+        ],
+        "aproximado": false
+      },
+      "exactitud_entre_cubiertas_por_evento": {
+        "valor": 0.6667,
+        "ic95": [
+          0.3333,
+          0.8889
+        ],
+        "eventos": 9,
+        "remuestreos": 1000
+      },
+      "abstenciones": 33,
+      "recall_por_tema": {
+        "economia": {
+          "filas": {
+            "n": 3,
+            "de": 26,
+            "proporcion": 0.1154,
+            "ic95": [
+              0.04,
+              0.2898
+            ],
+            "aproximado": false
+          },
+          "eventos": 11,
+          "recall_por_evento": 0.21212121212121213,
+          "ic95": [
+            0.0303,
+            0.4545
+          ],
+          "nota_ic": null
+        },
+        "logistica": {
+          "filas": {
+            "n": 1,
+            "de": 2,
+            "proporcion": 0.5,
+            "ic95": [
+              0.0945,
+              0.9055
+            ],
+            "aproximado": false
+          },
+          "eventos": 2,
+          "recall_por_evento": 0.5,
+          "ic95": [
+            0.0,
+            1.0
+          ],
+          "nota_ic": null
+        },
+        "servicios_publicos": {
+          "filas": {
+            "n": 2,
+            "de": 9,
+            "proporcion": 0.2222,
+            "ic95": [
+              0.0632,
+              0.5474
+            ],
+            "aproximado": false
+          },
+          "eventos": 9,
+          "recall_por_evento": 0.2222222222222222,
+          "ic95": [
+            0.0,
+            0.5556
+          ],
+          "nota_ic": null
+        },
+        "sin_tema": {
+          "filas": {
+            "n": 3,
+            "de": 5,
+            "proporcion": 0.6,
+            "ic95": [
+              0.2307,
+              0.8824
+            ],
+            "aproximado": false
+          },
+          "eventos": 5,
+          "recall_por_evento": 0.6,
+          "ic95": [
+            0.2,
+            1.0
+          ],
+          "nota_ic": null
+        }
+      }
+    }
+  },
+  "comparaciones": {
+    "supervisado_menos_metodo_A_activo": {
+      "exactitud_por_evento": {
+        "diferencia": 0.0477,
+        "ic95": [
+          -0.1149,
+          0.2258
+        ],
+        "excluye_cero": false,
+        "eventos": 27,
+        "eventos_que_cambian": 17
+      },
+      "macro_f1": {
+        "diferencia": -0.0318,
+        "ic95": [
+          -0.2335,
+          0.2974
+        ],
+        "excluye_cero": false,
+        "a_favor": false,
+        "eventos": 27
+      },
+      "recall_por_tema": {
+        "economia": {
+          "diferencia": 0.1897,
+          "ic95": [
+            -0.0727,
+            0.4451
+          ],
+          "excluye_cero": false,
+          "eventos": 11,
+          "eventos_que_cambian": 9
+        },
+        "servicios_publicos": {
+          "diferencia": 0.0667,
+          "ic95": [
+            -0.0557,
+            0.2835
+          ],
+          "excluye_cero": false,
+          "eventos": 9,
+          "eventos_que_cambian": 5
+        },
+        "sin_tema": {
+          "diferencia": 0.12,
+          "ic95": [
+            0.0,
+            0.36
+          ],
+          "excluye_cero": false,
+          "eventos": 5,
+          "eventos_que_cambian": 1
+        },
+        "logistica": {
+          "diferencia": -1.0,
+          "ic95": [
+            -1.0,
+            -1.0
+          ],
+          "excluye_cero": true,
+          "eventos": 2,
+          "eventos_que_cambian": 2
+        }
+      },
+      "criterio_d57": {
+        "cumplido": false,
+        "motivo": "el IC 95 % de la diferencia de macro-F1 [-0.2335, 0.2974] no excluye el cero a favor",
+        "temas_que_empeoran": [
+          "logistica"
+        ]
+      },
+      "ic_se_solapan": {
+        "exactitud_por_evento": true,
+        "macro_f1": true
+      }
+    },
+    "supervisado_menos_mejor_baseline": {
+      "exactitud_por_evento": {
+        "diferencia": 0.239,
+        "ic95": [
+          -0.0108,
+          0.5076
+        ],
+        "excluye_cero": false,
+        "eventos": 27,
+        "eventos_que_cambian": 23
+      },
+      "macro_f1": {
+        "diferencia": 0.0582,
+        "ic95": [
+          -0.1729,
+          0.3996
+        ],
+        "excluye_cero": false,
+        "a_favor": false,
+        "eventos": 27
+      },
+      "recall_por_tema": {
+        "economia": {
+          "diferencia": 0.2958,
+          "ic95": [
+            -0.0867,
+            0.6281
+          ],
+          "excluye_cero": false,
+          "eventos": 11,
+          "eventos_que_cambian": 11
+        },
+        "servicios_publicos": {
+          "diferencia": 0.7333,
+          "ic95": [
+            0.4056,
+            0.9667
+          ],
+          "excluye_cero": true,
+          "eventos": 9,
+          "eventos_que_cambian": 8
+        },
+        "sin_tema": {
+          "diferencia": -0.48,
+          "ic95": [
+            -0.88,
+            -0.08
+          ],
+          "excluye_cero": true,
+          "eventos": 5,
+          "eventos_que_cambian": 3
+        },
+        "logistica": {
+          "diferencia": -0.5,
+          "ic95": [
+            -1.0,
+            0.0
+          ],
+          "excluye_cero": false,
+          "eventos": 2,
+          "eventos_que_cambian": 1
+        }
+      },
+      "criterio_d57": {
+        "cumplido": false,
+        "motivo": "el IC 95 % de la diferencia de macro-F1 [-0.1729, 0.3996] no excluye el cero a favor",
+        "temas_que_empeoran": [
+          "sin_tema"
+        ]
+      },
+      "ic_se_solapan": {
+        "exactitud_por_evento": true,
+        "macro_f1": true
+      }
+    }
+  },
+  "variacion_entre_repeticiones": {
+    "exactitud_por_fila_minima": 0.381,
+    "exactitud_por_fila_maxima": 0.7143,
+    "repeticiones": 20
+  }
+}

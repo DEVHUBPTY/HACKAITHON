@@ -119,3 +119,20 @@ baseline:
       extension: [proyecto de ley, legislacion, reglamento, norma, normativa, regula, regulacion, regulador, superintendencia,
                   asep, lista gris, lista negra, lista fiscal, licitacion, sanciona, multa, multado, asamblea, ejecutivo sanciona,
                   gaceta oficial]
+
+# C-10b · Evaluación por evento y modelo supervisado EXPLORATORIO (no está conectado a producción). Origen y validación de
+# cada valor: docs/parametros.md, sección «Clasificación (E1-07)». El bootstrap (remuestreos, confianza y semilla) es el de
+# `criterio_ab`; los umbrales de la curva de abstención son los que ya están en `modelos.<modelo>.umbrales` (no hay nuevos).
+por_evento:
+  eventos_dominantes: 5     # cuántos eventos con más filas se listan (qué pesa en la exactitud por fila)
+  min_eventos_ic: 2         # un recall por tema con menos eventos que esto se reporta sin IC (no es estimable)
+
+supervisado:
+  pliegues: 5               # validación cruzada agrupada por evento (mismo procedimiento que eval/diagnostico_temas.py)
+  repeticiones: 20          # particiones aleatorias distintas por evento
+  semilla: 20261007
+  C: 1.0                    # inverso de la regularización L2 de la regresión logística
+  class_weight: balanced    # pesos inversos a la frecuencia de cada clase
+  max_iter: 1000
+  min_eventos_por_clase: 2  # una clase con menos eventos no se entrena ni se evalúa en la validación cruzada: se reporta aparte
+  sin_tema: clase           # clase = `sin_tema` es una séptima clase (como en eval.clasificacion); excluir = sus filas no entran

@@ -1647,6 +1647,46 @@ class FugaSemantica(ModeloConfig):
         return self
 
 
+class EvaluacionPorEvento(ModeloConfig):
+    """C-10b: evaluación de la clasificación con el evento como unidad (``eval/clasificacion_por_evento.py``)."""
+
+    eventos_dominantes: int      # cuántos eventos con más filas se listan
+    min_eventos_ic: int          # menos eventos que esto: el recall por tema se reporta sin IC
+
+    @model_validator(mode="after")
+    def _rangos(self) -> EvaluacionPorEvento:
+        if self.eventos_dominantes < 1:
+            raise ValueError("por_evento.eventos_dominantes: al menos 1")
+        if self.min_eventos_ic < 2:
+            raise ValueError("por_evento.min_eventos_ic: al menos 2 (un bootstrap sobre un solo evento no tiene variación)")
+        return self
+
+
+class SupervisadoClasificacion(ModeloConfig):
+    """C-10b: regresión logística exploratoria sobre embeddings con validación cruzada agrupada por evento."""
+
+    pliegues: int
+    repeticiones: int
+    semilla: int
+    C: float
+    class_weight: Literal["balanced"]
+    max_iter: int
+    min_eventos_por_clase: int
+    sin_tema: Literal["clase", "excluir"]
+
+    @model_validator(mode="after")
+    def _rangos(self) -> SupervisadoClasificacion:
+        if self.pliegues < 2:
+            raise ValueError("supervisado.pliegues: al menos 2")
+        if self.repeticiones < 1 or self.max_iter < 1:
+            raise ValueError("supervisado.repeticiones y max_iter: al menos 1")
+        if not self.C > 0:
+            raise ValueError("supervisado.C: mayor que 0")
+        if self.min_eventos_por_clase < 2:
+            raise ValueError("supervisado.min_eventos_por_clase: al menos 2 (con un solo evento no queda ninguno para entrenar al evaluar)")
+        return self
+
+
 class ConfigClasificacion(ModeloConfig):
     """Modelo de ``config/clasificacion.yaml``."""
 
@@ -1662,6 +1702,8 @@ class ConfigClasificacion(ModeloConfig):
     criterio_ab: CriterioAB
     fuga_semantica: FugaSemantica
     baseline: BaselineClasificacion
+    por_evento: EvaluacionPorEvento
+    supervisado: SupervisadoClasificacion
 
     @model_validator(mode="after")
     def _coherente(self) -> ConfigClasificacion:
