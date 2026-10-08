@@ -191,9 +191,9 @@ def test_d124_el_ancla_alta_es_el_umbral_de_la_agrupacion_no_una_copia() -> None
 
 def test_d103_r_no_usa_la_confianza_del_clasificador() -> None:
     entradas = [
-        entrada("GRP-alta", [miembro("NOT-a", similitud=0.95)], vectores=np.stack([vector(1, 0)])),
-        entrada("GRP-baja", [miembro("NOT-b", similitud=0.40)], vectores=np.stack([vector(0, 1)])),
-        entrada("GRP-reg", [miembro("NOT-r", similitud=0.95, regional=True)], vectores=np.stack([vector(1, 1)])),
+        entrada("GRP-alta", [miembro("NOT-a", "Panamá anuncia una medida", similitud=0.95)], vectores=np.stack([vector(1, 0)])),
+        entrada("GRP-baja", [miembro("NOT-b", "Panamá anuncia una medida", similitud=0.40)], vectores=np.stack([vector(0, 1)])),
+        entrada("GRP-reg", [miembro("NOT-r", "El Niño golpea Centroamérica", similitud=0.95, regional=True)], vectores=np.stack([vector(1, 1)])),
     ]
     r = {p.id_grupo: p.componentes["R"] for p in puntaje.calcular_puntajes(entradas, REGLAS, CFG, AHORA)}
     assert r["GRP-alta"].valor == r["GRP-baja"].valor == REGLAS.relevancia.foco_panama_sujeto

@@ -38,6 +38,7 @@ def miembro(
     recirculada: bool | None = None,
     tema: str | None = "economia",
     tema_secundario: str | None = None,
+    pais_medio: str | None = "Panamá",
 ) -> dict[str, Any]:
     """Una fila de ``noticias`` con los campos que usa el puntaje."""
     return {
@@ -45,6 +46,7 @@ def miembro(
         "titulo_limpio": titulo,
         "medio": medio,
         "dominio": medio,
+        "pais_medio": pais_medio,
         "fecha_publicacion": None if publicado_hace is None else iso(publicado_hace),
         "fecha_deteccion": None if detectado_hace is None else iso(detectado_hace),
         "es_recirculada": recirculada,

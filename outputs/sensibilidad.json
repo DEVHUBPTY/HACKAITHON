@@ -14,58 +14,58 @@
   ],
   "empate_en_el_corte_base": null,
   "reagrupar_con_las_reglas_actuales_reproduce_la_base": true,
-  "variantes": 52,
-  "variantes_con_efecto": 49,
+  "variantes": 54,
+  "variantes_con_efecto": 51,
   "sin_efecto": [
     "Foco: Panamá sujeto +",
     "Alcance geográfico nacional +",
     "N del primer grupo +"
   ],
   "top_sin_cambio": {
-    "n": 41,
-    "de": 49,
-    "proporcion": 0.8367,
+    "n": 44,
+    "de": 51,
+    "proporcion": 0.8627,
     "ic95": [
-      0.7096,
-      0.9149
+      0.7428,
+      0.9319
     ]
   },
   "con_algun_cambio": {
-    "n": 8,
-    "de": 49,
-    "proporcion": 0.1633,
+    "n": 7,
+    "de": 51,
+    "proporcion": 0.1373,
     "ic95": [
-      0.0851,
-      0.2904
+      0.0681,
+      0.2572
     ]
   },
   "mismo_orden": {
-    "n": 36,
-    "de": 49,
-    "proporcion": 0.7347,
+    "n": 38,
+    "de": 51,
+    "proporcion": 0.7451,
     "ic95": [
-      0.5974,
-      0.8379
+      0.6113,
+      0.8445
     ]
   },
-  "maximo_de_temas_que_cambian": 4,
+  "maximo_de_temas_que_cambian": 2,
   "temas_retenidos": {
-    "n": 234,
-    "de": 245,
-    "proporcion": 0.9551,
+    "n": 247,
+    "de": 255,
+    "proporcion": 0.9686,
     "ic95": [
-      0.9214,
-      0.9747
+      0.9393,
+      0.984
     ],
     "nota": "puestos del top 5 que se conservan en las variantes con efecto; los puestos de una misma variante no son independientes, el IC es orientativo"
   },
   "por_grupo": {
     "peso": {
       "variantes": 10,
-      "con_cambio": 3
+      "con_cambio": 2
     },
     "supuesto": {
-      "variantes": 42,
+      "variantes": 44,
       "con_cambio": 5
     }
   },
@@ -141,14 +141,14 @@
         "GRP-a329f4e91e",
         "GRP-5e6531917f",
         "GRP-21ad932d54",
-        "GRP-1dc52c45ff"
+        "GRP-7ddcf92e16"
       ],
       "cambian": 1,
       "salen": [
         "GRP-29baaf270e"
       ],
       "entran": [
-        "GRP-1dc52c45ff"
+        "GRP-7ddcf92e16"
       ],
       "mismo_conjunto": false,
       "mismo_orden": false,
@@ -165,16 +165,12 @@
         "GRP-a329f4e91e",
         "GRP-5e6531917f",
         "GRP-21ad932d54",
-        "GRP-1dc52c45ff"
-      ],
-      "cambian": 1,
-      "salen": [
         "GRP-29baaf270e"
       ],
-      "entran": [
-        "GRP-1dc52c45ff"
-      ],
-      "mismo_conjunto": false,
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
       "mismo_orden": false,
       "parametro_con_direccion": "Peso U +"
     },
@@ -209,14 +205,14 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-7ddcf92e16"
       ],
       "cambian": 1,
       "salen": [
         "GRP-29baaf270e"
       ],
       "entran": [
-        "GRP-1dc52c45ff"
+        "GRP-7ddcf92e16"
       ],
       "mismo_conjunto": false,
       "mismo_orden": false,
@@ -324,6 +320,46 @@
     },
     {
       "grupo": "supuesto",
+      "parametro": "Foco: Panamá implícito",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-5e6531917f",
+        "GRP-21ad932d54",
+        "GRP-4d8b340bd9",
+        "GRP-a329f4e91e",
+        "GRP-29baaf270e"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Foco: Panamá implícito +"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Foco: Panamá implícito",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-5e6531917f",
+        "GRP-21ad932d54",
+        "GRP-4d8b340bd9",
+        "GRP-a329f4e91e",
+        "GRP-29baaf270e"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Foco: Panamá implícito -"
+    },
+    {
+      "grupo": "supuesto",
       "parametro": "Foco: Panamá sujeto",
       "direccion": "+",
       "reagrupa": false,
@@ -373,14 +409,14 @@
         "GRP-5e6531917f",
         "GRP-a329f4e91e",
         "GRP-21ad932d54",
-        "GRP-1dc52c45ff"
+        "GRP-7ddcf92e16"
       ],
       "cambian": 1,
       "salen": [
         "GRP-29baaf270e"
       ],
       "entran": [
-        "GRP-1dc52c45ff"
+        "GRP-7ddcf92e16"
       ],
       "mismo_conjunto": false,
       "mismo_orden": false,
@@ -436,15 +472,15 @@
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
         "GRP-5e6531917f",
-        "GRP-1dc52c45ff",
-        "GRP-21ad932d54"
+        "GRP-21ad932d54",
+        "GRP-7ddcf92e16"
       ],
       "cambian": 1,
       "salen": [
         "GRP-29baaf270e"
       ],
       "entran": [
-        "GRP-1dc52c45ff"
+        "GRP-7ddcf92e16"
       ],
       "mismo_conjunto": false,
       "mismo_orden": false,
@@ -926,23 +962,19 @@
       "con_efecto": true,
       "top": [
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff",
-        "GRP-1627d09497",
-        "GRP-8a448d1fd9",
-        "GRP-87e128925b"
-      ],
-      "cambian": 4,
-      "salen": [
-        "GRP-5e6531917f",
+        "GRP-87e128925b",
         "GRP-21ad932d54",
+        "GRP-5e6531917f",
+        "GRP-03e3ef16d9"
+      ],
+      "cambian": 2,
+      "salen": [
         "GRP-4d8b340bd9",
         "GRP-29baaf270e"
       ],
       "entran": [
-        "GRP-1dc52c45ff",
-        "GRP-1627d09497",
-        "GRP-8a448d1fd9",
-        "GRP-87e128925b"
+        "GRP-87e128925b",
+        "GRP-03e3ef16d9"
       ],
       "mismo_conjunto": false,
       "mismo_orden": false,
@@ -1152,18 +1184,14 @@
   "mas_sensibles": [
     {
       "parametro": "N: ancla baja (D-124) -",
-      "cambian": 4,
+      "cambian": 2,
       "salen": [
-        "GRP-5e6531917f",
-        "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-29baaf270e"
       ],
       "entran": [
-        "GRP-1dc52c45ff",
-        "GRP-1627d09497",
-        "GRP-8a448d1fd9",
-        "GRP-87e128925b"
+        "GRP-87e128925b",
+        "GRP-03e3ef16d9"
       ]
     },
     {
@@ -1173,7 +1201,7 @@
         "GRP-29baaf270e"
       ],
       "entran": [
-        "GRP-1dc52c45ff"
+        "GRP-7ddcf92e16"
       ]
     },
     {
@@ -1203,7 +1231,7 @@
         "GRP-29baaf270e"
       ],
       "entran": [
-        "GRP-1dc52c45ff"
+        "GRP-7ddcf92e16"
       ]
     },
     {
@@ -1213,7 +1241,7 @@
         "GRP-29baaf270e"
       ],
       "entran": [
-        "GRP-1dc52c45ff"
+        "GRP-7ddcf92e16"
       ]
     },
     {
@@ -1223,17 +1251,7 @@
         "GRP-29baaf270e"
       ],
       "entran": [
-        "GRP-1dc52c45ff"
-      ]
-    },
-    {
-      "parametro": "Peso U +",
-      "cambian": 1,
-      "salen": [
-        "GRP-29baaf270e"
-      ],
-      "entran": [
-        "GRP-1dc52c45ff"
+        "GRP-7ddcf92e16"
       ]
     }
   ],

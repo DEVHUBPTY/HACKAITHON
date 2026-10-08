@@ -603,18 +603,36 @@ class PertenenciaTematica(ModeloConfig):
 class Relevancia(ModeloConfig):
     """R = ``peso_foco`` × foco × pertenencia temática.
 
+    D-135: el foco es graduado (``foco_panama_sujeto`` ≥ ``foco_panama_implicito`` ≥ ``foco_otro_pais_afecta``) según lo que dicen
+    los titulares; ``panama_actores`` son los gentilicios e instituciones de Panamá que cuentan como actor panameño.
+
     D-103 quitó la parte temática que usaba la confianza del clasificador (percentil de la similitud); D-119 la restituye como
     pertenencia discreta según la etiqueta (``tema_clasificado`` / ``tema_secundario``), sin leer nunca la confianza.
     """
 
     peso_foco: float = Unidad
     foco_panama_sujeto: float = Unidad
+    foco_panama_implicito: float = Unidad
     foco_otro_pais_afecta: float = Unidad
+    panama_actores: list[str] = Field(min_length=1)
     pertenencia_tematica: PertenenciaTematica
+
+    @field_validator("panama_actores")
+    @classmethod
+    def _actores_sin_vacios_ni_repetidos(cls, terminos: list[str]) -> list[str]:
+        normalizados = [_sin_tildes(t) for t in terminos]
+        if any(not n for n in normalizados):
+            raise ValueError("panama_actores: un término no puede estar vacío")
+        repetidos = sorted({n for n in normalizados if normalizados.count(n) > 1})
+        if repetidos:
+            raise ValueError(f"panama_actores: términos repetidos (sin tildes ni mayúsculas): {repetidos}")
+        return terminos
 
     @model_validator(mode="after")
     def _partes(self) -> Relevancia:
         _suma_es([self.peso_foco], 1, "las partes de R")
+        if not self.foco_panama_sujeto >= self.foco_panama_implicito >= self.foco_otro_pais_afecta:
+            raise ValueError("el foco debe cumplir foco_panama_sujeto >= foco_panama_implicito >= foco_otro_pais_afecta")
         return self
 
 
@@ -2230,6 +2248,15 @@ class ContradiccionesPrioridad(ModeloConfig):
     pares_opuestos: list[ParOpuesto]
 
 
+class RelevanciaPrioridad(ModeloConfig):
+    """Textos de D-135: el nivel de foco de R dicho en palabras (plantillas con {campos})."""
+
+    panama_sujeto: str = Field(min_length=1)
+    panama_implicito: str = Field(min_length=1)
+    otro_pais_afecta: str = Field(min_length=1)
+    prefijo_ficha: str = Field(min_length=1)
+
+
 class VaciosPrioridad(ModeloConfig):
     procedencias_insuficientes: str
     cifras_sin_dato_oficial: str
@@ -2269,6 +2296,7 @@ class ConfigPrioridad(ModeloConfig):
     medios: MediosPrioridad
     cifras: CifrasPrioridad
     contradicciones: ContradiccionesPrioridad
+    relevancia: RelevanciaPrioridad
     vacios: VaciosPrioridad
     sensibilidad: SensibilidadPrioridad
     puntaje_eval: PuntajeEval
