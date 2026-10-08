@@ -1,0 +1,12 @@
+{
+ "clave": "09de1878ae13313b21c9d32ecf2ffab6e2f76f0e215d84e693a39a4d2982eed9",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "paquete_editorial",
+ "version_cache": "1",
+ "tokens_entrada": 1937,
+ "tokens_salida": 325,
+ "creado_utc": "2026-10-08T20:18:10Z",
+ "respuesta": "{\n  \"titulo_trabajo\": {\n    \"texto\": \"TVN Panamá reporta solicitud de pilotos sobre controles de aves en Tocumen\",\n    \"afirmaciones\": [\"A1\"]\n  },\n  \"enfoque\": [\n    {\n      \"texto\": \"Si la cobertura se sostiene en una sola procedencia independiente estimada, la evidencia disponible sería insuficiente para dar el tema por consolidado.\",\n      \"afirmaciones\": [\"A3\"]\n    },\n    {\n      \"texto\": \"Sin un dato oficial vinculado, la relación entre la solicitud reportada y los registros del aeropuerto quedaría por establecerse.\",\n      \"afirmaciones\": [\"A1\"]\n    }\n  ],\n  \"preguntas\": [\n    {\n      \"texto\": \"¿Existe algún dato oficial que sustente una relación con la solicitud reportada por TVN Panamá?\",\n      \"vacio\": \"sin_dato_oficial\"\n    },\n    {\n      \"texto\": \"¿Qué otras procedencias independientes han reportado la solicitud de los pilotos al Aeropuerto de Tocumen?\",\n      \"vacio\": \"procedencias_insuficientes\"\n    },\n    {\n      \"texto\": \"¿Qué documentos o registros oficiales permitirían vincular la solicitud reportada con los controles del aeropuerto?\",\n      \"vacio\": \"sin_dato_oficial\"\n    }\n  ]\n}"
+}

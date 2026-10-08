@@ -1,0 +1,12 @@
+{
+ "clave": "dab384add406dc143f841b652b908b5bac88859c7714c3f0d76e0c1da04e068c",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "paquete_editorial",
+ "version_cache": "1",
+ "tokens_entrada": 1813,
+ "tokens_salida": 227,
+ "creado_utc": "2026-10-08T20:17:31Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta más de 30 mujeres muertas de forma violenta este año\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"Si la población contara con más procedencias independientes sobre este tema, sería posible contrastar y ampliar la información disponible.\", \"afirmaciones\": [\"A4\"]}], \"preguntas\": [{\"texto\": \"¿Qué cifras oficiales sobre muertes violentas de mujeres en Panamá existen y con qué año se corresponden?\", \"vacio\": \"cifras_sin_dato_oficial\"}, {\"texto\": \"¿Qué institución o registro oficial podría vincularse a este tema para sustentar una relación con un dato oficial?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otros medios o fuentes independientes han reportado sobre este tema además de TVN Panamá?\", \"vacio\": \"procedencias_insuficientes\"}]}"
+}

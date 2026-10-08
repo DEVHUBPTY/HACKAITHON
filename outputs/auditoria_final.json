@@ -1,9 +1,9 @@
 {
-  "commit": "3098068",
-  "generado_utc": "2026-10-08T20:10:38Z",
+  "commit": "c76eb50",
+  "generado_utc": "2026-10-08T20:18:41Z",
   "resumen": {
-    "PASS": 10,
-    "FALTA": 5,
+    "PASS": 11,
+    "FALTA": 4,
     "NO VERIFICABLE AUTOMÁTICAMENTE": 10
   },
   "items": [
@@ -66,7 +66,7 @@
       "grupo": "Admisión (sec. 5)",
       "requisito": "Métricas de la ejecución final: página generada del commit vigente, sin borrador ni juicios provisionales",
       "estado": "FALTA",
-      "evidencia": "outputs/pagina_metricas.md (commit 3098068): la página sigue marcada «BORRADOR»; hay métricas con juicio PROVISIONAL (D-101)",
+      "evidencia": "outputs/pagina_metricas.md (commit c76eb50): la página sigue marcada «BORRADOR»; hay métricas con juicio PROVISIONAL (D-101)",
       "como_verificar": "Tras C-09 y C-10: correr los eval/ y `poetry run python -m scripts.pagina_metricas`.",
       "depende_de": "C-09, C-10"
     },
@@ -164,8 +164,8 @@
       "id": "S10-10",
       "grupo": "Entregables (sec. 10)",
       "requisito": "Paquete de datos redistribuible: snapshot, diccionario, manifest, licencias, benchmark dev, sin campos restringidos",
-      "estado": "FALTA",
-      "evidencia": "entrega/datos: [paquete_ausente] /Users/sparrow/Development/PROJECTS/HackAIthon/entrega/datos: no existe: correr `poetry run python -m scripts.empaquetar_datos`",
+      "estado": "PASS",
+      "evidencia": "entrega/datos: checksums correctos y sin material prohibido.",
       "como_verificar": "poetry run python -m scripts.empaquetar_datos",
       "depende_de": ""
     },
@@ -183,7 +183,7 @@
       "grupo": "Condiciones previas",
       "requisito": "Sin secretos en historial, archivos, capturas ni exportaciones",
       "estado": "FALTA",
-      "evidencia": "Pendiente C-11: no existe outputs/auditoria_secretos.json (escaneo del historial de git, capturas y exportaciones). escaneo rápido de 530 archivos versionados: sin coincidencias; local.env/.env versionados: no.",
+      "evidencia": "Pendiente C-11: no existe outputs/auditoria_secretos.json (escaneo del historial de git, capturas y exportaciones). escaneo rápido de 532 archivos versionados: sin coincidencias; local.env/.env versionados: no.",
       "como_verificar": "Correr el escaneo de C-11 y guardar su resultado.",
       "depende_de": "C-11"
     },
@@ -210,7 +210,7 @@
       "grupo": "Condiciones previas",
       "requisito": "Nada con redistribución restringida, ni bases de datos de la sesión, ni el benchmark reservado en el repositorio (D-72)",
       "estado": "PASS",
-      "evidencia": "`git ls-files` (530 archivos): rutas restringidas (['data/raw/rss_tvn/', 'data/raw/gdelt/', 'data/raw/sbp/']) versionadas: ninguna; bases ['data/demo.duckdb', '*.duckdb', '*.duckdb.wal'] versionadas: ninguna; benchmark reservado versionado: ninguno.",
+      "evidencia": "`git ls-files` (532 archivos): rutas restringidas (['data/raw/rss_tvn/', 'data/raw/gdelt/', 'data/raw/sbp/']) versionadas: ninguna; bases ['data/demo.duckdb', '*.duckdb', '*.duckdb.wal'] versionadas: ninguna; benchmark reservado versionado: ninguno.",
       "como_verificar": "git rm --cached <ruta>",
       "depende_de": ""
     },

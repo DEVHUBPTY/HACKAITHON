@@ -1,0 +1,12 @@
+{
+ "clave": "cdbcc6c373ab39698167d15752bf5258cf165c3ef0b869314c1494eb1e1d5705",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.3",
+ "prompt": "afirmaciones_ficha",
+ "version_cache": "1",
+ "tokens_entrada": 1871,
+ "tokens_salida": 319,
+ "creado_utc": "2026-10-08T20:17:30Z",
+ "respuesta": "{\"afirmaciones\": [{\"id\": \"A1\", \"tipo\": \"declaración\", \"texto\": \"TVN Panamá reporta que más de 30 mujeres han muerto de forma violenta en Panamá este año.\", \"citas\": [{\"id\": \"NOT-0d91fa48b0\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A2\", \"tipo\": \"hecho\", \"texto\": \"El grupo de registros reúne 1 titular de 1 medio que reporta este tema.\", \"citas\": [{\"id\": \"GRP-5e6531917f\", \"campo\": \"n_titulares\"}, {\"id\": \"GRP-5e6531917f\", \"campo\": \"n_medios\"}]}, {\"id\": \"A3\", \"tipo\": \"hecho\", \"texto\": \"La estimación de procedencias independientes para este tema es de 1.\", \"citas\": [{\"id\": \"GRP-5e6531917f\", \"campo\": \"n_procedencias\"}]}, {\"id\": \"A4\", \"tipo\": \"hipótesis\", \"texto\": \"Si la población contara con más procedencias independientes sobre este tema, sería posible contrastar y ampliar la información disponible.\", \"base\": [\"A1\", \"A2\", \"A3\"], \"citas\": []}]}"
+}

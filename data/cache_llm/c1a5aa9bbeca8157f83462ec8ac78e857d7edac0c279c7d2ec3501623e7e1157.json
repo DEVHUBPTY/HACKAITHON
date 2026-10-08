@@ -1,0 +1,12 @@
+{
+ "clave": "c1a5aa9bbeca8157f83462ec8ac78e857d7edac0c279c7d2ec3501623e7e1157",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "paquete_editorial",
+ "version_cache": "1",
+ "tokens_entrada": 1758,
+ "tokens_salida": 306,
+ "creado_utc": "2026-10-08T20:18:09Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta solicitud de pilotos por riesgo de aves en Tocumen\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La cobertura se sostiene en una sola procedencia independiente estimada, por lo que la evidencia disponible sería insuficiente para dar el tema por consolidado.\", \"afirmaciones\": [\"A3\"]}, {\"texto\": \"Sin un dato oficial vinculado, la relación entre la solicitud reportada y los registros del aeropuerto quedaría por establecerse.\", \"afirmaciones\": [\"A3\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún dato oficial del Aeropuerto de Tocumen o de la autoridad aeronáutica sobre controles de riesgo de aves durante la temporada migratoria?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué documentos, informes o registros oficiales podrían vincularse con la solicitud que TVN Panamá reporta?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otros medios o fuentes independientes han reportado sobre controles de riesgo de aves en el Aeropuerto de Tocumen?\", \"vacio\": \"procedencias_insuficientes\"}]}"
+}

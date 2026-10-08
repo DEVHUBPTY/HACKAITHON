@@ -1,0 +1,12 @@
+{
+ "clave": "bbcf2c7703df1010b2b91b961d536b3cac3211a090b9359fef2cfd36623facb7",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "paquete_editorial",
+ "version_cache": "1",
+ "tokens_entrada": 1833,
+ "tokens_salida": 216,
+ "creado_utc": "2026-10-08T20:17:51Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta vigilancia en Panamá por caso sospechoso en Rusia\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"Si la población sigue de cerca los avisos sobre enfermedades infecciosas, este tema podría resultar relevante para su información sanitaria cotidiana.\", \"afirmaciones\": [\"A4\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún indicador oficial asignado a este tema y qué institución lo publicaría?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué datos oficiales permitirían contextualizar la vigilancia epidemiológica mencionada?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Puede confirmarse una segunda procedencia independiente que reporte este tema?\", \"vacio\": \"procedencias_insuficientes\"}]}"
+}

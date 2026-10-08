@@ -1,0 +1,12 @@
+{
+ "clave": "2667ba651c7c554c49fb3428aacd87707db735fb2f7bb12b022eb4348f6d3e8b",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.3",
+ "prompt": "afirmaciones_ficha",
+ "version_cache": "1",
+ "tokens_entrada": 1769,
+ "tokens_salida": 341,
+ "creado_utc": "2026-10-08T20:18:12Z",
+ "respuesta": "{\"afirmaciones\": [{\"id\": \"A1\", \"tipo\": \"declaración\", \"texto\": \"TVN Panamá reporta que dispararon contra el vehículo del exdiputado Pedro Torres en Colón.\", \"citas\": [{\"id\": \"NOT-66fdc7fa16\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A2\", \"tipo\": \"hecho\", \"texto\": \"El grupo de registros reúne 1 titular de 1 medio que reporta este tema.\", \"citas\": [{\"id\": \"GRP-1b52bb958d\", \"campo\": \"n_titulares\"}, {\"id\": \"GRP-1b52bb958d\", \"campo\": \"n_medios\"}]}, {\"id\": \"A3\", \"tipo\": \"hecho\", \"texto\": \"Se estima 1 procedencia independiente para este tema.\", \"citas\": [{\"id\": \"GRP-1b52bb958d\", \"campo\": \"n_procedencias\"}]}, {\"id\": \"A4\", \"tipo\": \"inferencia\", \"texto\": \"La población de Colón y del país tiene interés en conocer lo reportado sobre un ataque contra el vehículo de una figura pública, por lo que la verificación de los hechos y de sus fuentes resulta relevante para la discusión pública.\", \"base\": [\"A1\", \"A2\", \"A3\"], \"citas\": []}]}"
+}

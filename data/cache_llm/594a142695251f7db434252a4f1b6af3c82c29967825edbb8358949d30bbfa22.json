@@ -1,0 +1,12 @@
+{
+ "clave": "594a142695251f7db434252a4f1b6af3c82c29967825edbb8358949d30bbfa22",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.3",
+ "prompt": "afirmaciones_ficha",
+ "version_cache": "1",
+ "tokens_entrada": 1770,
+ "tokens_salida": 320,
+ "creado_utc": "2026-10-08T20:17:34Z",
+ "respuesta": "{\"afirmaciones\": [{\"id\": \"A1\", \"tipo\": \"declaración\", \"texto\": \"TVN Panamá reporta que el Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá.\", \"citas\": [{\"id\": \"NOT-3be05280f2\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A2\", \"tipo\": \"hecho\", \"texto\": \"El grupo de registros reúne 1 titular de 1 medio que reporta este tema.\", \"citas\": [{\"id\": \"GRP-21ad932d54\", \"campo\": \"n_titulares\"}, {\"id\": \"GRP-21ad932d54\", \"campo\": \"n_medios\"}]}, {\"id\": \"A3\", \"tipo\": \"hecho\", \"texto\": \"El grupo cuenta con 1 procedencia independiente estimada.\", \"citas\": [{\"id\": \"GRP-21ad932d54\", \"campo\": \"n_procedencias\"}]}, {\"id\": \"A4\", \"tipo\": \"inferencia\", \"texto\": \"La población podría considerar relevante este tema al tratarse de diagnósticos de cáncer de mama en hombres, un asunto de salud que puede afectar a personas de cualquier sexo.\", \"base\": [\"A1\"], \"citas\": []}]}"
+}

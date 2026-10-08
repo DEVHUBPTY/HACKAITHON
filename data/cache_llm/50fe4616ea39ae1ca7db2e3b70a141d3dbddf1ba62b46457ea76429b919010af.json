@@ -1,0 +1,12 @@
+{
+ "clave": "50fe4616ea39ae1ca7db2e3b70a141d3dbddf1ba62b46457ea76429b919010af",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "paquete_editorial",
+ "version_cache": "1",
+ "tokens_entrada": 1865,
+ "tokens_salida": 505,
+ "creado_utc": "2026-10-08T20:17:16Z",
+ "respuesta": "{\"brief\": [{\"texto\": \"Tres medios reportan que el presidente de Panamá, Mulino, viajará a Asia.\", \"afirmaciones\": [\"A1\", \"A2\", \"A3\"]}, {\"texto\": \"Según prensa-latina.cu, el presidente panameño visitará Singapur y Vietnam.\", \"afirmaciones\": [\"A1\"]}, {\"texto\": \"Según laestrella.com.pa, Mulino viajará a Asia y suscribirá convenios bilaterales con Singapur y Vietnam.\", \"afirmaciones\": [\"A2\"]}, {\"texto\": \"Según revistaeyn.com, el presidente de Panamá visita Singapur y Vietnam en busca de inversiones.\", \"afirmaciones\": [\"A3\"]}, {\"texto\": \"El grupo de registros reúne 3 titulares de 3 medios que reportan este tema.\", \"afirmaciones\": [\"A4\"]}, {\"texto\": \"Se estiman 3 procedencias independientes, contando los titulares que replican a una misma fuente como una.\", \"afirmaciones\": [\"A5\"]}, {\"texto\": \"La ficha no registra un dato oficial vinculado a estos titulares.\", \"afirmaciones\": [\"A4\"]}, {\"texto\": \"Los 3 de 3 titulares figuran sin medio o fecha de publicación conocidos.\", \"afirmaciones\": [\"A4\"]}], \"enfoque\": [{\"texto\": \"Si se confirma el viaje, la búsqueda de inversiones y los convenios bilaterales reportados por los medios podría incidir en la población panameña.\", \"afirmaciones\": [\"A2\", \"A3\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún dato oficial que sustente o detalle el viaje reportado por los medios?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué medio y qué fecha de publicación corresponden a cada uno de los 3 titulares?\", \"vacio\": \"medios_o_fechas_desconocidos\"}, {\"texto\": \"¿Cómo afecta la fecha de publicación desconocida a la urgencia estimada de este tema?\", \"vacio\": \"urgencia_sin_publicacion\"}]}"
+}

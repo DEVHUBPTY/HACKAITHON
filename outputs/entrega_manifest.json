@@ -25,8 +25,8 @@
       "sha256": "6e31b936fe4cefc99903752938e06766076608e8f15f00dee7e835ba42147d9c"
     },
     "evidencias/fichas.jsonl": {
-      "bytes": 112338,
-      "sha256": "b8f2a9cd930a0baa054f536e95e084de933a45233be30e138120180013eb648a"
+      "bytes": 112413,
+      "sha256": "86762a5ebdaaec8516d0d6992fffcccc7fbc477c21f2382bfb308a20b5a439ac"
     },
     "evidencias/fichas_trazables/CASO-001.md": {
       "bytes": 10978,
@@ -65,8 +65,8 @@
       "sha256": "e4c17d6ba97792011ebf3421ff472467fc14ef978844a40005bf6c8b60be4f69"
     },
     "evidencias/pagina_metricas.md": {
-      "bytes": 23249,
-      "sha256": "0ff366d2ad3fb2b3b5deeb26bbe6db837df3fc37fc760dd32a4b0e7937352dc4"
+      "bytes": 23443,
+      "sha256": "10f93f6ea2a057f0a94866a5802d23f447c7922fa8d31a8bf9ed93e34080e207"
     },
     "evidencias/pruebas.csv": {
       "bytes": 3667,
@@ -149,7 +149,7 @@
       "sha256": "85f9f17e5e5f4095aae423b749ad7cb72952fc8329086830f6ba78b216644b96"
     }
   },
-  "bytes_total": 882187,
+  "bytes_total": 882456,
   "n_archivos": 37,
   "paquete": "Panamá · Señales y Evidencias v1",
   "sbp_incluida": true,

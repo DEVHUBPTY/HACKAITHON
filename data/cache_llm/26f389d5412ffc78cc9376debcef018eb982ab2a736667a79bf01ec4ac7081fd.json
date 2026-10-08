@@ -1,0 +1,12 @@
+{
+ "clave": "26f389d5412ffc78cc9376debcef018eb982ab2a736667a79bf01ec4ac7081fd",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.3",
+ "prompt": "afirmaciones_ficha",
+ "version_cache": "1",
+ "tokens_entrada": 1904,
+ "tokens_salida": 331,
+ "creado_utc": "2026-10-08T20:18:06Z",
+ "respuesta": "{\"afirmaciones\":[{\"id\":\"A1\",\"tipo\":\"declaración\",\"texto\":\"TVN Panamá reporta que los pilotos solicitan al Aeropuerto de Tocumen fortalecer los controles por riesgo de aves durante la temporada migratoria.\",\"citas\":[{\"id\":\"NOT-aec8c87a11\",\"campo\":\"titulo_limpio\"}]},{\"id\":\"A2\",\"tipo\":\"hecho\",\"texto\":\"El grupo de registros GRP-e3fb06f2ab contabiliza 1 titular de 1 medio que reporta este tema.\",\"citas\":[{\"id\":\"GRP-e3fb06f2ab\",\"campo\":\"n_titulares\"},{\"id\":\"GRP-e3fb06f2ab\",\"campo\":\"n_medios\"}]},{\"id\":\"A3\",\"tipo\":\"hecho\",\"texto\":\"El grupo de registros GRP-e3fb06f2ab estima 1 procedencia independiente.\",\"citas\":[{\"id\":\"GRP-e3fb06f2ab\",\"campo\":\"n_procedencias\"}]},{\"id\":\"A4\",\"tipo\":\"hipótesis\",\"texto\":\"Si los controles en el Aeropuerto de Tocumen se mantuvieran sin cambios durante la temporada migratoria, el riesgo de aves seguiría siendo un asunto de interés para los pilotos y para quienes usan esa terminal.\",\"citas\":[],\"base\":[\"A1\",\"A2\",\"A3\"]}]}"
+}

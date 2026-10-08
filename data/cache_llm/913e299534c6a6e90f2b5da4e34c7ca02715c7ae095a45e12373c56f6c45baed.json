@@ -1,0 +1,12 @@
+{
+ "clave": "913e299534c6a6e90f2b5da4e34c7ca02715c7ae095a45e12373c56f6c45baed",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "paquete_editorial",
+ "version_cache": "1",
+ "tokens_entrada": 1635,
+ "tokens_salida": 370,
+ "creado_utc": "2026-10-08T20:17:13Z",
+ "respuesta": "{\"titulo\": {\"texto\": \"Mulino viajará a Asia y firmará convenios, reporta laestrella.com.pa\", \"afirmaciones\": [\"A2\"]}, \"titulares\": [{\"texto\": \"Presidente panameño visitará Singapur y Vietnam, según prensa-latina.cu\", \"afirmaciones\": [\"A1\"]}, {\"texto\": \"Mulino viajará a Asia y suscribirá convenios bilaterales, reporta laestrella.com.pa\", \"afirmaciones\": [\"A2\"]}, {\"texto\": \"Presidente de Panamá visita Singapur y Vietnam en busca de inversiones, según revistaeyn.com\", \"afirmaciones\": [\"A3\"]}], \"copy_digital\": [{\"texto\": \"Tres medios reportan sobre los viajes del presidente panameño.\", \"afirmaciones\": [\"A4\"]}, {\"texto\": \"Según prensa-latina.cu, visitará Singapur y Vietnam.\", \"afirmaciones\": [\"A1\"]}, {\"texto\": \"Según laestrella.com.pa, viajará a Asia y suscribirá convenios bilaterales con Singapur y Vietnam.\", \"afirmaciones\": [\"A2\"]}, {\"texto\": \"Según revistaeyn.com, visita ambos países en busca de inversiones.\", \"afirmaciones\": [\"A3\"]}, {\"texto\": \"El grupo reúne 3 titulares de 3 medios, con 3 procedencias independientes estimadas.\", \"afirmaciones\": [\"A4\", \"A5\"]}, {\"texto\": \"#Panamá #Asia\", \"afirmaciones\": [\"A1\"]}]}"
+}
