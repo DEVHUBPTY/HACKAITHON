@@ -127,7 +127,16 @@ El etiquetado también alimenta al clasificador, con una persona decidiendo siem
 
 **Por qué la evaluación queda congelada.** Se mide siempre sobre los 100 IDs de `eval/muestra_original.csv`. Si los titulares etiquetados después entraran a la evaluación y al entrenamiento a la vez, la métrica premiaría memorizar y dejaría de decir cuánto generaliza el clasificador; además, la cola por incertidumbre elige justo los casos difíciles, y medir sobre ellos movería el n y los pesos del muestreo. Por eso `eval/aprendizaje_activo.py` excluye esos IDs del pool y `ErrorDeSeparacion` salta si alguno se cuela (hay un test). Nunca entran al pool las filas `asistente_provisional` (D-101) ni las propuestas de un LLM.
 
-**Límites.** C, el umbral y el margen siguen siendo los calibrados con las referencias; no se recalibran con el pool. La revisión editorial (E1-16) no permite cambiar el tema de un grupo, así que hoy no hay correcciones de tema por esa vía que sumar al pool (hueco declarado). El pool actual está vacío: las 100 etiquetas humanas son la evaluación y las 47 de la ampliación esperan a una persona. `metodo_activo` sigue en `A` hasta que el IC 95 % de la diferencia pareada quede sobre cero.
+**Límites.** C, el umbral y el margen siguen siendo los calibrados con las referencias; no se recalibran con el pool. La revisión editorial (E1-16) no permite cambiar el tema de un grupo, así que hoy no hay correcciones de tema por esa vía que sumar al pool (hueco declarado). Con C-12 el pool tiene las filas con tema del conjunto ampliado (ver más abajo); las 47 de la ampliación `tvn_20261008` siguen esperando a una persona. `metodo_activo` sigue en `A` hasta que el IC 95 % de la diferencia pareada quede sobre cero.
+
+## Conjunto ampliado: las 61 filas que confirmó una persona (C-12)
+
+`eval/etiquetas_ampliadas.csv` = las 100 etiquetas humanas de `eval/etiquetas.csv` + 61 filas que **David** decidió el 2026-10-07 sobre la hoja `eval/preetiquetado/hoja_preetiquetado.csv` (`docs/preetiquetado.md`). Se genera con `poetry run python -m eval.etiquetar --incorporar-hoja --hoja eval/preetiquetado/hoja_preetiquetado.csv` (todo o nada, determinista, no escribe sobre sus entradas). `eval/etiquetas.csv` **no cambia**: esas 61 siguen ahí como `asistente_provisional`.
+
+- **Son humanas (D-85).** Una persona las firmó (`etiquetado_por` = David, `fecha_etiquetado` = 2026-10-07) y conservan esos campos y su `origen = humano`. Lo que sigue siendo provisional (D-101) es la copia de `eval/etiquetas.csv`.
+- **Confirmación más débil en 42 de las 61.** 19 se revisaron una a una (las marcadas `dudoso = si` en la hoja) y **42 se aprobaron en bloque** (nota «Aprobado en bloque por la persona»). Es una confirmación humana, pero no una revisión fila por fila; cualquier cifra que se apoye en ellas debe decirlo. 3 de las 61 cambiaron de etiqueta respecto de la propuesta provisional.
+- **Solo entrenan, nunca evalúan.** El *pool* de D-123 sale de este archivo (`logistica.aprendizaje_activo.etiquetas_pool` en `config/clasificacion.yaml`); la evaluación sigue siendo `eval/muestra_original.csv`, y `construir_pool` excluye esos 100 IDs (hay un test que lo comprueba contra los archivos reales). Una fila de ruido no entra al pool: la abstención sale del umbral, no se aprende.
+- **Sin peso de muestreo.** No vienen de la muestra estratificada de E1-06 (`estrato = preetiquetado_c11`, `peso_muestreo` vacío): no se mezclan en estimaciones ponderadas. Un titular de ruido con `grupo` en la hoja lo pierde y se avisa.
 
 ## Límites
 

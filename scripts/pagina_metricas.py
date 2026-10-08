@@ -758,7 +758,7 @@ def generar(c: Contexto | None = None, ahora: datetime | None = None) -> str:
     ef, lef = seccion_eficiencia(c)
     rz, lrz = seccion_rechazos(c)
     rv, lrv = seccion_revision(c)
-    secciones += [("Benchmark de desarrollo: citas y abstención", seccion_benchmark(c), []),
+    secciones += [("Benchmark de desarrollo: citas y abstención", seccion_benchmark(c), [c.cfg.limitacion_umbral_consulta]),
                   ("Búsqueda: semántica contra BM25", bm, lb),
                   ("Validez de sustento (revisión de afirmaciones)", sus, ls),
                   ("Clasificación y agrupación: IA contra baseline", bas, lbas),

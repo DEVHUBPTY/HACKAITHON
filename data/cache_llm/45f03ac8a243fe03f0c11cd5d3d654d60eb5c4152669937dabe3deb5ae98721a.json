@@ -1,0 +1,12 @@
+{
+ "clave": "45f03ac8a243fe03f0c11cd5d3d654d60eb5c4152669937dabe3deb5ae98721a",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "paquete_editorial",
+ "version_cache": "1",
+ "tokens_entrada": 1821,
+ "tokens_salida": 239,
+ "creado_utc": "2026-10-08T20:18:02Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta meta de Sinaproc en simulacro nacional\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La información disponible sobre la participación ciudadana en un simulacro nacional resulta relevante para la población, que puede verse afectada por la preparación ante emergencias.\", \"afirmaciones\": [\"A4\"]}], \"preguntas\": [{\"texto\": \"¿Qué cifras de participación ciudadana aparecen en el titular de TVN Panamá y con qué dato oficial pueden contrastarse?\", \"vacio\": \"cifras_sin_dato_oficial\"}, {\"texto\": \"Existe algún dato oficial de Sinaproc u otra entidad que permita verificar la meta reportada por TVN Panamá?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"Qué otras fuentes independientes han reportado sobre el tercer simulacro nacional para alcanzar al menos dos procedencias?\", \"vacio\": \"procedencias_insuficientes\"}]}"
+}

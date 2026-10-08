@@ -16,6 +16,7 @@ from streamlit.testing.v1 import AppTest
 from src import interfaz as ui
 from src.cache import CacheLlm
 from src.configuracion import RAIZ, cargar_interfaz, cargar_temas
+from tests.navegacion_ayuda import ir_a_pantalla
 
 BASE = RAIZ / "data" / "senales.duckdb"
 APP = RAIZ / "app.py"
@@ -55,8 +56,7 @@ def textos(at: AppTest) -> str:
 
 
 def ir(at: AppTest, pantalla: str) -> AppTest:
-    at.session_state["pantalla"] = pantalla
-    return at.run()
+    return ir_a_pantalla(at, pantalla)
 
 
 def metricas(at: AppTest) -> dict[str, str]:

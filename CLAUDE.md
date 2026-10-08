@@ -52,14 +52,14 @@ poetry run python -m scripts.medir_generacion --proveedor ollama  # latencia: pr
 poetry run python -m src.validador --tasas            # tasa de rechazo por modelo y por regla (n e IC 95 %) desde outputs/rechazos.jsonl (E1-13)
 poetry run python -m src.consulta "pregunta"         # consulta en español con abstención (--metodo semantica|bm25)
 poetry run python -m eval.recuperacion               # Recall@5 y abstención, semántica vs. BM25, con n e IC
-poetry run streamlit run app.py                      # interfaz: las 7 etapas del reto (1 · Cargar … 7 · Revisar, D-128) y la Consulta aparte; ?caso=GRP-… o ?caso=CASO-… abre 5 · Explicar; 7 · Revisar es el flujo de la etapa 7 (E1-16)
+poetry run streamlit run app.py                      # interfaz: las 7 etapas del reto (1 · Cargar … 7 · Revisar, D-128) y la Consulta aparte; ?caso=GRP-… o ?caso=CASO-… abre 5 · Explicar; 7 · Revisar es el flujo de la etapa 7 (E1-16); D-133: cada pantalla tiene su URL (/, /cargar, /organizar, /contextualizar, /priorizar, /explicar, /producir, /revisar, /consulta?q=…)
 poetry run python -m src.revision --abrir GRP-… --revisor "Nombre"   # abre el grupo como CASO-… (también --estado GRP-…, --historial CASO-…); las acciones se hacen en la app (E1-16)
 poetry run python -m scripts.fichas_trazables --casos   # C-01: 5 fichas reales, una por caso de uso CU-01…CU-05 (D-118), elegidas por regla (config/fichas_trazables.yaml), trazabilidad comprobada contra los datos → outputs/fichas_trazables/ y CASO- (revisión provisional del asistente); sin --casos solo escribe en outputs/fichas_trazables/vista_previa/ (fuera de git)
 poetry run python -m src.exportar --caso CASO-001    # (--demo: rutas de la demo) Markdown + fila CSV de «Casos y evidencias» (Notion) en outputs/notion/, y outputs/fichas.jsonl; volver a exportar actualiza (E1-16)
 poetry run python -m eval.revision                   # tasas de aceptación, corrección y descarte con n e IC, motivos, tiempo por caso y % de afirmaciones editadas → outputs/revision.json (E1-16)
 poetry run python -m eval.reporte_pruebas          # corre T01–T10 por marcador y escribe outputs/pruebas.csv con las columnas de la base Pruebas de Notion; pendientes en config/pruebas.yaml (E1-17)
 .venv/bin/streamlit run app.py -- --demo            # modo demo (data/demo.duckdb, C-06) con los pasos de docs/demo.md
-poetry run python -m scripts.verificar_offline       # chequeo antes del pitch
+poetry run python -m scripts.verificar_offline       # chequeo antes del pitch, sin red ni LLM: modelo local, bases, caché de borradores (editorial y banca) y la app; sale con 1 si falla algo obligatorio (C-06)
 poetry run python -m scripts.calentar_cache          # borradores en data/cache_llm (con red; --verificar sin red) · docs/fallback.md
 poetry run python -m scripts.catalogo                # outputs/catalogo.csv (E1-04)
 poetry run python -m scripts.explorar                # docs/exploracion.md (E0-09)
@@ -69,14 +69,14 @@ poetry run python -m eval.ruido                      # precisión y recall del f
 poetry run python -m eval.validar_benchmark          # valida benchmark/benchmark_dev.jsonl (E0-06)
 poetry run python -m scripts.pagina_metricas           # página de métricas desde outputs/ (n, IC 95 %, fuente, commit y origen del juicio por métrica; falla si una proporción no lleva n e IC o si un juicio provisional se rotula humano) → outputs/pagina_metricas.md (C-02)
 poetry run python -m scripts.reproducir --verificar  # reconstruye todo desde data/raw/ y compara los hashes con el manifest; sin --verificar registra los hashes (E1-20; docs/reproducibilidad.md)
+poetry run python -m scripts.empaquetar_datos        # paquete de datos redistribuible en entrega/datos/ (ignorado por git) + outputs/entrega_manifest.json; revisa que no haya campos restringidos (C-07; --verificar revisa el existente)
+poetry run python -m scripts.auditoria_final         # condiciones previas de la sección 10: PASS / FALTA / NO VERIFICABLE por ítem → outputs/auditoria_final.md y .json (C-07; --reproducir, --estricto)
 ```
 
 Previstos (existirán cuando se implemente su spec):
 
 ```bash
-poetry run python -m scripts.verificar_offline       # chequeo antes del pitch (C-06)
 poetry run python -m eval.run_benchmark --split dev  # benchmark → outputs/metricas.json (E1-18)
-poetry run python -m scripts.auditoria_final         # condiciones previas de la sección 10 antes del cierre (C-07)
 ```
 
 ## Estructura
@@ -98,7 +98,7 @@ src/         trazabilidad (C-01: selección y comprobación de citas contra los 
              revision (E1-16: casos CASO-, acciones y transiciones, versiones, registro de solo agregar en `data/revision.duckdb`) · exportar (E1-16: Markdown, CSV de Notion, fichas.jsonl)
              cache (E1-14: caché de respuestas del LLM, `data/cache_llm/` versionada, solo cache para la interfaz) · llm/costo (tope D-98: USD 100 / 200 M tokens; `SaldoAgotado` ante HTTP 402)
 src/llm/     proveedor.py (interfaz, `UsoLlm` y `crear_proveedor`, por LLM_PROVIDER) · ollama.py · deepseek.py · costo.py (tope de costo D-67; al alcanzarlo lanza `TopeDeCostoAlcanzado`, D-95)
-scripts/     extraer.py · sbp.py (E3-02: conversión de los .xlsx de la SBP a sbp_series.csv) · conversion.py · manifest.py · validar_snapshot.py · catalogo.py · explorar.py · estimar_consultas_gdelt.py · probar_llm.py · medir_generacion.py (E1-12) · calentar_cache.py (E1-14: calienta y `--verificar` la caché de borradores) · reproducir.py (E1-20: pipeline de punta a punta y hashes contra el manifest)
+scripts/     extraer.py · sbp.py (E3-02: conversión de los .xlsx de la SBP a sbp_series.csv) · conversion.py · manifest.py · validar_snapshot.py · catalogo.py · explorar.py · estimar_consultas_gdelt.py · probar_llm.py · medir_generacion.py (E1-12) · calentar_cache.py (E1-14: calienta y `--verificar` la caché de borradores) · reproducir.py (E1-20: pipeline de punta a punta y hashes contra el manifest) · empaquetar_datos.py · auditoria_final.py (C-07: paquete de datos redistribuible y condiciones previas de la sección 10; `config/entrega.yaml`)
 eval/        revision.py (E1-16) · etiquetar.py · etiquetas/ (una hoja por persona) · etiquetas.csv · ruido.py · validar_benchmark.py · clasificacion.py · calibrar_clasificacion.py · metricas.py · recuperacion.py · puntaje.py · sensibilidad.py
 benchmark/   benchmark_dev.jsonl (solo desarrollo) · sinteticos.csv · README.md
 tests/       fixtures/ · test_t01_carga.py · test_t03_recirculada.py · test_casos_dificiles.py · test_*.py
@@ -113,7 +113,7 @@ Previsto (lo crea la spec indicada):
 data/demo.duckdb (C-06)
 config/      modalidad_banca.yaml completa (E2-01: sectores, horizonte, bandeja)
 prompts/     comparar_contradicciones.txt (E1-10) · respuesta_consulta.txt (E1-11)
-scripts/     buscar_casos.py · preparar_demo.py · capturas_demo.py · verificar_offline.py (C-06)
+scripts/     buscar_casos.py · preparar_demo.py · capturas_demo.py (C-06)
              empaquetar_datos.py · auditoria_final.py (C-07)
 eval/        run_benchmark.py (E1-18) · precision_at_5.py (E1-19) · y los módulos de métricas que pide cada spec
 tests/       test_t02_*.py, test_t04_*.py … test_t10_*.py (ver docs/protocolo_evaluacion.md)

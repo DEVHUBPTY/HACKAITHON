@@ -1,0 +1,236 @@
+{
+  "commit": "c76eb50",
+  "generado_utc": "2026-10-08T20:18:41Z",
+  "resumen": {
+    "PASS": 11,
+    "FALTA": 4,
+    "NO VERIFICABLE AUTOMÁTICAMENTE": 10
+  },
+  "items": [
+    {
+      "id": "S5-01",
+      "grupo": "Admisión (sec. 5)",
+      "requisito": "URL de Notion accesible al jurado al cierre",
+      "estado": "NO VERIFICABLE AUTOMÁTICAMENTE",
+      "evidencia": "Depende del acceso de la cuenta del jurado; no hay URL ni token de Notion en el repo.",
+      "como_verificar": "Abrir la URL del espacio en una ventana privada y con la cuenta del jurado.",
+      "depende_de": "C-05"
+    },
+    {
+      "id": "S5-02",
+      "grupo": "Admisión (sec. 5)",
+      "requisito": "Plan con al menos 8 tareas y 3 decisiones justificadas",
+      "estado": "NO VERIFICABLE AUTOMÁTICAMENTE",
+      "evidencia": "Local: 44 specs en specs/ (una por tarea). El conteo real vive en las bases Backlog y Decisiones de Notion.",
+      "como_verificar": "En Notion: Backlog ≥ 8 filas y Decisiones ≥ 3 con contexto, opciones y justificación.",
+      "depende_de": "C-05"
+    },
+    {
+      "id": "S5-03",
+      "grupo": "Admisión (sec. 5)",
+      "requisito": "Registro durante la ejecución, no solo un resumen final",
+      "estado": "NO VERIFICABLE AUTOMÁTICAMENTE",
+      "evidencia": "Las bases Bitácora y Decisiones con Fase = Evento.",
+      "como_verificar": "En Notion: filtrar Bitácora y Decisiones por Fase = Evento y comprobar fechas repartidas durante el evento.",
+      "depende_de": "C-05"
+    },
+    {
+      "id": "S5-04",
+      "grupo": "Admisión (sec. 5)",
+      "requisito": "Catálogo completo de las fuentes utilizadas (cada fuente del manifest, con licencia/condiciones)",
+      "estado": "PASS",
+      "evidencia": "outputs/catalogo.csv: 4 fuentes; fuentes del manifest (data/manifest.json): ['banco_mundial', 'gdelt', 'sbp', 'tvn_rss', 'usgs']; sin nombre de catálogo en la configuración: ninguna; sin catalogar: ninguna; sin licencia: ninguna.",
+      "como_verificar": "poetry run python -m scripts.catalogo",
+      "depende_de": ""
+    },
+    {
+      "id": "S5-05",
+      "grupo": "Admisión (sec. 5)",
+      "requisito": "Al menos 5 fichas trazables, incluyendo un caso sin evidencia suficiente",
+      "estado": "PASS",
+      "evidencia": "outputs/fichas_trazables/trazabilidad.json: 5 fichas, todo_ok=True, insuficientes=['CASO-007', 'CASO-008', 'CASO-009']. Aviso: juicio_humano=False (revisión provisional hasta C-09).",
+      "como_verificar": "poetry run python -m scripts.fichas_trazables",
+      "depende_de": "C-01"
+    },
+    {
+      "id": "S5-06",
+      "grupo": "Admisión (sec. 5)",
+      "requisito": "Matriz de los 10 casos de prueba, todos en «Pasa»",
+      "estado": "FALTA",
+      "evidencia": "outputs/pruebas.csv: 10 filas; faltan ninguna; no pasan: {'T09': 'Pendiente', 'T10': 'Pendiente'}.",
+      "como_verificar": "poetry run python -m eval.reporte_pruebas (tras terminar E2-02/C-04 para T09 y T10)",
+      "depende_de": "C-04, E2-02"
+    },
+    {
+      "id": "S5-07",
+      "grupo": "Admisión (sec. 5)",
+      "requisito": "Métricas de la ejecución final: página generada del commit vigente, sin borrador ni juicios provisionales",
+      "estado": "FALTA",
+      "evidencia": "outputs/pagina_metricas.md (commit c76eb50): la página sigue marcada «BORRADOR»; hay métricas con juicio PROVISIONAL (D-101)",
+      "como_verificar": "Tras C-09 y C-10: correr los eval/ y `poetry run python -m scripts.pagina_metricas`.",
+      "depende_de": "C-09, C-10"
+    },
+    {
+      "id": "S5-08",
+      "grupo": "Admisión (sec. 5)",
+      "requisito": "Pitch de 10 minutos presentado desde Notion",
+      "estado": "NO VERIFICABLE AUTOMÁTICAMENTE",
+      "evidencia": "No hay artefacto local que lo demuestre; se presenta en vivo desde Notion.",
+      "como_verificar": "Ensayo cronometrado desde la página de Notion (sin PDF ni PowerPoint) con enlaces al prototipo y a GitHub.",
+      "depende_de": "C-03, C-04"
+    },
+    {
+      "id": "S10-01",
+      "grupo": "Entregables (sec. 10)",
+      "requisito": "Prototipo ejecutable y demo reproducible sin fuente en vivo",
+      "estado": "PASS",
+      "evidencia": "Base de demo, guion y verificación offline presentes.",
+      "como_verificar": "poetry run python -m scripts.verificar_offline",
+      "depende_de": "C-06, C-04"
+    },
+    {
+      "id": "S10-02",
+      "grupo": "Entregables (sec. 10)",
+      "requisito": "README con instalación, comando de ejecución, pruebas y evaluación reservada",
+      "estado": "PASS",
+      "evidencia": "README.md: encabezados 10; secciones que faltan: ninguna.",
+      "como_verificar": "Editar README.md",
+      "depende_de": ""
+    },
+    {
+      "id": "S10-03",
+      "grupo": "Entregables (sec. 10)",
+      "requisito": ".env.example solo con nombres de variables, sin valores en las claves y sin nada que parezca un secreto",
+      "estado": "PASS",
+      "evidencia": ".env.example: 5 variables; claves con valor: ninguna; coincidencias con patrones de secreto: ninguna.",
+      "como_verificar": "Dejar vacíos los valores de *_KEY, *_TOKEN, *_SECRET y *_PASSWORD; el valor real va en local.env.",
+      "depende_de": ""
+    },
+    {
+      "id": "S10-04",
+      "grupo": "Entregables (sec. 10)",
+      "requisito": "Dependencias fijadas",
+      "estado": "PASS",
+      "evidencia": "poetry.lock presente.",
+      "como_verificar": "poetry lock",
+      "depende_de": ""
+    },
+    {
+      "id": "S10-05",
+      "grupo": "Entregables (sec. 10)",
+      "requisito": "Archivo LICENSE para el código (spec C-07)",
+      "estado": "PASS",
+      "evidencia": "Encontrado: ['LICENSE']",
+      "como_verificar": "El equipo elige la licencia y agrega LICENSE.",
+      "depende_de": "decisión del equipo"
+    },
+    {
+      "id": "S10-06",
+      "grupo": "Entregables (sec. 10)",
+      "requisito": "Repositorio con acceso del jurado (privado con colaboradores, o público)",
+      "estado": "NO VERIFICABLE AUTOMÁTICAMENTE",
+      "evidencia": "La visibilidad y los colaboradores viven en GitHub.",
+      "como_verificar": "`gh repo view DEVHUBPTY/HackAIthon --json visibility` y comprobar que el jurado figura como colaborador.",
+      "depende_de": "C-05"
+    },
+    {
+      "id": "S10-07",
+      "grupo": "Entregables (sec. 10)",
+      "requisito": "Espacio Notion con los artefactos de la sección 5 y la presentación final (PDF de respaldo opcional)",
+      "estado": "NO VERIFICABLE AUTOMÁTICAMENTE",
+      "evidencia": "Solo se ve en Notion.",
+      "como_verificar": "Recorrer el índice del espacio con la lista de la sección 5.",
+      "depende_de": "C-03, C-05, C-08"
+    },
+    {
+      "id": "S10-08",
+      "grupo": "Entregables (sec. 10)",
+      "requisito": "Instalación limpia en otra máquina: git clone, poetry install, comando de ejecución y pytest",
+      "estado": "NO VERIFICABLE AUTOMÁTICAMENTE",
+      "evidencia": "Requiere otra máquina.",
+      "como_verificar": "En una máquina sin el repo: seguir README.md y correr `poetry run pytest -v`.",
+      "depende_de": "C-04"
+    },
+    {
+      "id": "S10-09",
+      "grupo": "Entregables (sec. 10)",
+      "requisito": "Checklist de admisión y autoevaluación con la rúbrica completos",
+      "estado": "NO VERIFICABLE AUTOMÁTICAMENTE",
+      "evidencia": "Viven en Notion.",
+      "como_verificar": "Revisar la página de autoevaluación contra la rúbrica de 100 puntos.",
+      "depende_de": "C-08"
+    },
+    {
+      "id": "S10-10",
+      "grupo": "Entregables (sec. 10)",
+      "requisito": "Paquete de datos redistribuible: snapshot, diccionario, manifest, licencias, benchmark dev, sin campos restringidos",
+      "estado": "PASS",
+      "evidencia": "entrega/datos: checksums correctos y sin material prohibido.",
+      "como_verificar": "poetry run python -m scripts.empaquetar_datos",
+      "depende_de": ""
+    },
+    {
+      "id": "S10-11",
+      "grupo": "Entregables (sec. 10)",
+      "requisito": "SBP (D-116): autorización escrita o CSV retirado si la entrega es pública",
+      "estado": "NO VERIFICABLE AUTOMÁTICAMENTE",
+      "evidencia": "El CSV se incluye en el paquete; autorización escrita de la SBP: pendiente de pedir (docs/fuentes.md). Decisión del dueño según la visibilidad.",
+      "como_verificar": "Si el repo o el paquete son públicos: pedir la autorización o poner paquete.sbp.incluir: false y retirar data/processed/sbp_series.csv.",
+      "depende_de": "decisión del dueño"
+    },
+    {
+      "id": "P-01",
+      "grupo": "Condiciones previas",
+      "requisito": "Sin secretos en historial, archivos, capturas ni exportaciones",
+      "estado": "FALTA",
+      "evidencia": "Pendiente C-11: no existe outputs/auditoria_secretos.json (escaneo del historial de git, capturas y exportaciones). escaneo rápido de 532 archivos versionados: sin coincidencias; local.env/.env versionados: no.",
+      "como_verificar": "Correr el escaneo de C-11 y guardar su resultado.",
+      "depende_de": "C-11"
+    },
+    {
+      "id": "P-02",
+      "grupo": "Condiciones previas",
+      "requisito": "Toda afirmación de fichas.jsonl y de las exportaciones pasa el validador; ninguna cita falsa",
+      "estado": "PASS",
+      "evidencia": "outputs/fichas.jsonl: 9 fichas (CASO-001, CASO-002, CASO-003, CASO-004, CASO-005, CASO-006, CASO-007, CASO-008, CASO-009); re-verificadas con el validador contra data/senales.duckdb: 9 de 9; exportaciones revisadas: 12 archivos; problemas: ninguno; informativo: ['CASO-006: descartado · su grupo ya no está en el snapshot actual (se conserva en el historial; sus 6 citas ya no se pueden resolver)'].",
+      "como_verificar": "poetry run python -m scripts.fichas_trazables --casos; poetry run python -m src.ficha --formato jsonl",
+      "depende_de": "C-01"
+    },
+    {
+      "id": "P-03",
+      "grupo": "Condiciones previas",
+      "requisito": "Ninguna acción, botón o estado «publicar»",
+      "estado": "PASS",
+      "evidencia": "config/revision.yaml: estados ['nuevo', 'en revisión', 'requiere evidencia', 'aprobado como borrador', 'descartado']; con «publicar»: ninguno; etiquetas: ninguna; botones en app.py: ninguno.",
+      "como_verificar": "Revisar a mano la app antes de cerrar.",
+      "depende_de": ""
+    },
+    {
+      "id": "P-04",
+      "grupo": "Condiciones previas",
+      "requisito": "Nada con redistribución restringida, ni bases de datos de la sesión, ni el benchmark reservado en el repositorio (D-72)",
+      "estado": "PASS",
+      "evidencia": "`git ls-files` (532 archivos): rutas restringidas (['data/raw/rss_tvn/', 'data/raw/gdelt/', 'data/raw/sbp/']) versionadas: ninguna; bases ['data/demo.duckdb', '*.duckdb', '*.duckdb.wal'] versionadas: ninguna; benchmark reservado versionado: ninguno.",
+      "como_verificar": "git rm --cached <ruta>",
+      "depende_de": ""
+    },
+    {
+      "id": "P-05",
+      "grupo": "Condiciones previas",
+      "requisito": "Los juicios que exige una persona (sustento, Precision@5, revisión editorial) los hizo una persona (D-85, D-101)",
+      "estado": "FALTA",
+      "evidencia": "fichas trazables: revisión provisional del asistente; página de métricas: sustento y Precision@5 PROVISIONAL",
+      "como_verificar": "Una persona rehace el juicio y se regenera (C-09).",
+      "depende_de": "C-09"
+    },
+    {
+      "id": "P-06",
+      "grupo": "Condiciones previas",
+      "requisito": "Reproducibilidad de punta a punta (hashes del manifest)",
+      "estado": "NO VERIFICABLE AUTOMÁTICAMENTE",
+      "evidencia": "Hashes registrados en el manifest: sí. No se corrió aquí (≈ 1 min).",
+      "como_verificar": "poetry run python -m scripts.reproducir --verificar, o esta auditoría con --reproducir (restaurar outputs/metricas.json si solo cambió el tiempo).",
+      "depende_de": ""
+    }
+  ]
+}

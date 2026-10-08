@@ -1,0 +1,12 @@
+{
+ "clave": "0e5ad3c71dc713e17264e151f859131ef951ed822b46f2d5ba27fe9a8ea45374",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "paquete_editorial",
+ "version_cache": "1",
+ "tokens_entrada": 1806,
+ "tokens_salida": 266,
+ "creado_utc": "2026-10-08T20:18:16Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta disparos contra el vehículo del exdiputado Pedro Torres en Colón\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"Si la población de Colón conociera este reporte, el tema podría resultar relevante para su percepción de seguridad en la zona.\", \"afirmaciones\": [\"A4\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún dato oficial que permita contrastar lo reportado por TVN Panamá sobre los disparos contra el vehículo del exdiputado Pedro Torres en Colón?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras procedencias independientes han reportado los disparos contra el vehículo del exdiputado Pedro Torres en Colón?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Qué elementos permitirían evaluar si el reporte de TVN Panamá resulta relevante para la percepción de seguridad de la población de Colón?\", \"vacio\": \"procedencias_insuficientes\"}]}"
+}

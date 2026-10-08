@@ -9,6 +9,7 @@ modalidad_inicial: editorial
 pantallas:                          # orden de la barra lateral (D-128): las siete etapas del reto (PDF sección 3, con su nombre) y, aparte, la consulta
   # D-131: cada pantalla trae su `guia` (qué hace, cómo leerla, qué caso de uso demuestra, qué entra y qué sale) y, en las etapas, la cuenta viva (`medida`, la misma de `cargar.arquitectura`)
   - clave: calidad
+    url_path: cargar
     titulo: "1 · Cargar"
     descripcion: "Leer el paquete público congelado. Validar IDs, URLs, fechas, campos obligatorios y filas nulas. Emitir un reporte de calidad."
     guia:
@@ -20,6 +21,7 @@ pantallas:                          # orden de la barra lateral (D-128): las sie
       medida: registros_validos
       unidad_cuenta: "registros válidos"
   - clave: organizar
+    url_path: organizar
     titulo: "2 · Organizar"
     descripcion: "Clasificar temas: economía, logística/Canal, turismo, servicios públicos, eventos naturales y regulación. Agrupar noticias sobre el mismo evento."
     guia:
@@ -31,6 +33,7 @@ pantallas:                          # orden de la barra lateral (D-128): las sie
       medida: grupos
       unidad_cuenta: "grupos de noticias"
   - clave: contextualizar
+    url_path: contextualizar
     titulo: "3 · Contextualizar"
     descripcion: "Relacionar noticias con indicadores o eventos oficiales pertinentes. Mostrar período, unidad y limitaciones. Si no existe relación sustentada, no forzarla."
     guia:
@@ -42,6 +45,7 @@ pantallas:                          # orden de la barra lateral (D-128): las sie
       medida: vinculos
       unidad_cuenta: "vínculos con datos oficiales"
   - clave: bandeja
+    url_path: priorizar
     titulo: "4 · Priorizar"
     descripcion: "Calcular un puntaje de atención, mostrar componentes y generar una lista ordenada. Distinguir relevancia de suficiencia de evidencia."
     guia:
@@ -53,6 +57,7 @@ pantallas:                          # orden de la barra lateral (D-128): las sie
       medida: grupos_puntuados
       unidad_cuenta: "grupos puntuados"
   - clave: ficha
+    url_path: explicar
     titulo: "5 · Explicar"
     descripcion: "Abrir una ficha: qué se reporta, quién lo reporta, qué está respaldado, qué falta comprobar y qué acción se recomienda al usuario."
     guia:
@@ -64,6 +69,7 @@ pantallas:                          # orden de la barra lateral (D-128): las sie
       medida: fichas_disponibles
       unidad_cuenta: "fichas de evidencia"
   - clave: paquete
+    url_path: producir
     titulo: "6 · Producir"
     descripcion: "Redactar un borrador propio de la modalidad, con citas por afirmación. Diferenciar hechos, declaraciones, inferencias e hipótesis."
     guia:
@@ -75,6 +81,7 @@ pantallas:                          # orden de la barra lateral (D-128): las sie
       medida: borradores_en_cache
       unidad_cuenta: "respuestas del LLM guardadas"
   - clave: revision
+    url_path: revisar
     titulo: "7 · Revisar"
     descripcion: "Registrar aceptación, corrección o descarte por una persona responsable. Crear o actualizar la ficha en Notion (registro en Notion)."
     guia:
@@ -86,6 +93,7 @@ pantallas:                          # orden de la barra lateral (D-128): las sie
       medida: casos_revisados
       unidad_cuenta: "casos abiertos para revisar"
   - clave: consulta
+    url_path: consulta
     titulo: "Consulta"
     descripcion: "Herramienta aparte: preguntas en español sobre los datos, con abstención cuando no hay evidencia suficiente."
     separada: true
@@ -136,6 +144,11 @@ navegacion:                         # D-131: indicador de etapas, bloque de guí
   caso_de_uso: "Caso de uso que se demuestra aquí"
   anterior: "Etapa anterior: {titulo}"
   siguiente: "Siguiente: {titulo}"
+  url_inicio: ""                    # D-133: «Cómo funciona» es la raíz (/); cada otra pantalla tiene su `url_path` en `pantallas`
+  conservar_estado:                 # D-133: Streamlit borra el valor de un widget al salir de su página; estos se copian al estado de la sesión para que sobrevivan
+    claves: [consulta_texto, consulta_metodo, pesos_justificacion, bandeja_todas, revision_revisor, revision_comentario, revision_motivo_evidencia,
+             revision_motivo_descarte, revision_motivo_reabrir, revision_motivo_vinculo]
+    prefijos: [peso_, revision_texto_, revision_confirmar_]
 
 estilo:                             # D-131: sistema visual claro y editorial. El tema base está en .streamlit/config.toml y debe coincidir (lo vigila una prueba)
   acento: "#0E7C86"                 # petróleo: lo único con acento (secuencia, etapa actual y botones principales)
@@ -229,6 +242,9 @@ calidad:
 consulta:
   metodo_inicial: semantica
   largo_maximo_caracteres: 500      # la caja de la consulta no acepta más
+  parametro_pregunta: q             # D-133: /consulta?q=<pregunta> guarda la última pregunta en la URL; al recargar se vuelve a consultar (local, sin LLM)
+  parametro_metodo: m               # D-133: /consulta?q=<pregunta>&m=semantica|bm25 también guarda el método
+  texto_ultima_respuesta: "Respuesta a la última pregunta consultada: «{pregunta}»"
   ejemplos:                         # consultas de muestra: una útil, una de abstención (docs/demo.md)
     - "¿Cuál fue la inflación de Panamá en 2023?"
     - "¿Qué se reporta sobre la visita del presidente de Panamá a Singapur y Vietnam?"
@@ -244,7 +260,9 @@ ficha:
 demo:
   ruta_base: data/demo.duckdb       # la crea C-06; sin ella el modo demo avisa y no inventa datos
   parametro_caso: caso              # ?caso=<GRP-…|posición> abre la ficha
+  paginas_con_caso: [ficha, paquete, revision]   # D-133: ?caso= se queda en estas pantallas; desde cualquier otra abre «5 · Explicar»
   guion: docs/demo.md               # los pasos de la barra lateral salen de la tabla de este archivo
+  espera_verificacion_s: 180        # C-06: tiempo máximo de scripts.verificar_offline para dibujar la pantalla de entrada (la primera carga tarda 15–20 s)
 
 citas:
   decimales_valor: 2                # decimales del valor de un indicador en el recuadro de cita (el dato no se redondea)

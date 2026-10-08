@@ -1,0 +1,12 @@
+{
+ "clave": "51b5a8d6e7374391f76c7c723ab090ca521d5808c67b3bbf47e8672cf68dadac",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "paquete_editorial",
+ "version_cache": "1",
+ "tokens_entrada": 1881,
+ "tokens_salida": 319,
+ "creado_utc": "2026-10-08T20:17:56Z",
+ "respuesta": "{\n  \"titulo_trabajo\": {\n    \"texto\": \"TVN Panamá reporta un ataque cerca del metro de San Miguelito\",\n    \"afirmaciones\": [\"A1\"]\n  },\n  \"enfoque\": [\n    {\n      \"texto\": \"La población de la zona donde ocurrió el ataque podría sentir preocupación por su seguridad cotidiana, según una inferencia basada en el reporte de TVN Panamá.\",\n      \"afirmaciones\": [\"A3\"]\n    },\n    {\n      \"texto\": \"El tema resultaría relevante para quienes transitan por el entorno de la estación del metro de San Miguelito, de acuerdo con esa misma inferencia.\",\n      \"afirmaciones\": [\"A3\"]\n    }\n  ],\n  \"preguntas\": [\n    {\n      \"texto\": \"¿Existe algún dato oficial vinculado al ataque cerca de la estación del metro de San Miguelito reportado por TVN Panamá?\",\n      \"vacio\": \"sin_dato_oficial\"\n    },\n    {\n      \"texto\": \"¿Qué otras procedencias independientes han reportado sobre este tema?\",\n      \"vacio\": \"procedencias_insuficientes\"\n    },\n    {\n      \"texto\": \"¿Cuántos medios independientes han cubierto el ataque reportado por TVN Panamá?\",\n      \"vacio\": \"procedencias_insuficientes\"\n    }\n  ]\n}"
+}

@@ -20,7 +20,7 @@ def _nivel(*titulares: str) -> str:
     ("titular", "nivel"),
     [
         ("Policía Nacional aprehende a sospechoso en Chiriquí", "provincial"),
-        ("Guardia Nacional de Texas envía tropas", "desconocido"),
+        ("Guardia Nacional de Texas envía tropas", "exterior"),   # C-10 (D7): Texas ya está en el exterior; sigue sin ser nacional (X85)
         ("Banco Nacional recibe auditoría en Bocas del Toro", "provincial"),
         ("Policía Nacional realiza operativo", "desconocido"),
     ],
@@ -82,8 +82,6 @@ def test_d115_el_exterior_vale_lo_mismo_que_local_y_desconocido() -> None:
         "Vigilancia por peste neumónica en Rusia",
         "Obispos panameños presentan en Roma la realidad de sus diócesis",
         "AMP abre oficina en Ho Chi Minh",
-        "Panamá y Colombia firman acuerdo en Bogotá",
-        "Presidente de Panamá visita Singapur",
         "Plague surveillance in Russia",
         "Brote de dengue en MEXICO",                              # sin tildes ni mayúsculas
         "Accidente aéreo en Santiago de Chile deja heridos",       # el nombre extranjero más largo manda sobre el distrito de Santiago
@@ -101,6 +99,8 @@ def test_d115_un_pais_o_ciudad_extranjeros_sin_lugar_panameno_dan_alcance_exteri
     ("titulares", "nivel"),
     [
         (("Minsa: casos en Panamá",), "nacional"),
+        (("Panamá y Colombia firman acuerdo en Bogotá",), "nacional"),            # C-10 (D6): Panamá como parte del hecho manda sobre el exterior
+        (("Presidente de Panamá visita Singapur",), "nacional"),                  # C-10 (D6)
         (("Lluvias en Chiriquí",), "provincial"),
         (("Inundaciones en Colón y en Miami",), "provincial"),        # el lugar panameño manda sobre el exterior
         (("Cierran escuelas en David por brote en Chile",), "local"),

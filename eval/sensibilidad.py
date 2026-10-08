@@ -129,6 +129,7 @@ def ajustes(reglas: ReglasV13) -> list[Ajuste]:
 
     # D-103: R tiene una sola parte (foco, peso 1); ya no hay reparto de R que variar.
     agregar("Foco: otro país que afecta a Panamá", lambda r, c, f: (r.model_copy(update={"relevancia": r.relevancia.model_copy(update={"foco_otro_pais_afecta": _recortar(rel.foco_otro_pais_afecta * f)})}), c))
+    agregar("Foco: Panamá implícito", lambda r, c, f: (r.model_copy(update={"relevancia": r.relevancia.model_copy(update={"foco_panama_implicito": _recortar(rel.foco_panama_implicito * f)})}), c))
     agregar("Foco: Panamá sujeto", lambda r, c, f: (r.model_copy(update={"relevancia": r.relevancia.model_copy(update={"foco_panama_sujeto": _recortar(rel.foco_panama_sujeto * f)})}), c))
 
     def peso_tema(r: ReglasV13, c: ConfigPrioridad, f: float):

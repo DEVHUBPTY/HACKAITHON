@@ -69,16 +69,17 @@ Pasada ejecutada el 2026-10-06 con el snapshot real (`data/senales.duckdb`), sin
   - **Borrador (E1-12 y E1-14):** ya integrado: la pestaña *Paquete* llama a `src.generacion.generar_paquete(id_grupo, modalidad, solo_cache=True)` y muestra lo guardado en `data/cache_llm/` (ver `docs/fallback.md`). 
     La integración se configura en `config/interfaz.yaml:generacion`.
   - **`CASO-00N` y revisión (E1-16):** ya integrado. Al abrir un grupo en *Revisión* nace su `CASO-00N`; `?caso=` acepta un `GRP-…`, un `CASO-…` o la posición en la bandeja. La revisión de la demo va a `data/revision_demo.duckdb`, aparte de la real.
-  - **Base y capturas de demo (C-06):** `data/demo.duckdb` y `scripts/preparar_demo.py` ya existen (caso sintético de CU-04, ver arriba). Todavía no existen `capturas_demo`, `verificar_offline` ni `buscar_casos` (`scripts/calentar_cache.py` ya existe, E1-14); sin `data/demo.duckdb`, `--demo` cae al snapshot y lo avisa.
+  - **Base y capturas de demo (C-06):** `data/demo.duckdb` y `scripts/preparar_demo.py` ya existen (caso sintético de CU-04, ver arriba). `scripts/verificar_offline.py` también existe (pre-pitch, sin red). Todavía no existen `capturas_demo` ni `buscar_casos` (`scripts/calentar_cache.py` ya existe, E1-14); sin `data/demo.duckdb`, `--demo` cae al snapshot y lo avisa.
   - **Banca (E2-01, D-132):** la modalidad Banca funciona en toda la interfaz. La base guarda los puntajes de una sola modalidad, así que al elegir Banca la app calcula (sin LLM, ~0,3 s) una copia de sesión en el directorio temporal y la usa en todas las pantallas; el archivo vivo no se toca y *Editorial* vuelve a él. Los borradores de banca se calientan sobre esa misma copia (ver la noche anterior).
 
 ## Riesgos
 
-- **Consultas libres sobre temas de la bandeja pueden abstenerse (umbral de E1-11, 0.874).** Ejemplos medidos: «¿qué se reporta sobre la
-  vacunación contra el VSR?» (la #2 de la bandeja) da similitud 0.848 y «¿Qué pasó con MiBus?» (la #3) da 0.851: ambas se abstienen.
-  Las tres consultas de este guion sí funcionan (inflación 2023, Singapur/Vietnam con 0.922 y desempleo 2025, que se abstiene a propósito).
-  Si el jurado pregunta libremente por un tema de la bandeja, lo probable es una abstención: ensayar la explicación («el umbral prefiere
-  abstenerse a responder mal»). **Calibrar el umbral es de E1-18; no se toca en E1-15.**
+- **Consultas libres cortas pueden abstenerse todavía (umbral de similitud 0.840, D-134).** Con el umbral anterior (0.874) se abstenían
+  «¿qué se reporta sobre la vacunación contra el VSR?» (0.850), «¿Qué pasó con MiBus?» (0.851), «la mina de cobre» (0.856) y «el Canal de
+  Panamá» (0.856); con 0.840 se responden. Un tema que el corpus apenas toca sigue dando similitud baja (0.77 a 0.83 en seis consultas de
+  prueba fuera del corpus, que se rechazan). El margen es estrecho (unos 0.015 a cada lado): si el jurado pregunta algo muy genérico,
+  ensayar la explicación («el umbral prefiere abstenerse a responder mal»). La calibración original fue de E1-18 y D-134 la rehízo. Las tres consultas de este guion funcionan (inflación 2023,
+  Singapur/Vietnam con 0.922 y desempleo 2025, que se abstiene a propósito).
 - Los borradores dependen de la caché de E1-14 y de que E1-12 esté integrada; sin ellos, Paquete muestra el aviso y no inventa nada.
 
 ## Checklist
@@ -98,7 +99,9 @@ Pasada ejecutada el 2026-10-06 con el snapshot real (`data/senales.duckdb`), sin
 
 **30 minutos antes**
 - [ ] Wi-Fi apagado
-- [ ] `poetry run python -m scripts.verificar_offline` en verde (C-06)
+- [ ] `poetry run python -m scripts.verificar_offline` en verde (C-06): modelo local, bases, caché de borradores de los grupos del guion (editorial y banca) y la app sin conexiones; imprime también el comando de la demo (`.venv/bin/streamlit run app.py -- --demo`). El ensayo con el Wi-Fi apagado (T10) sigue siendo manual
 - [ ] `.venv/bin/streamlit run app.py -- --demo` abierto en «Cómo funciona», y recorridas una vez las 7 etapas: la primera carga tarda 15–20 s (carga el modelo de embeddings) y un clic hecho mientras arriba a la derecha dice «Running» se pierde
 - [ ] Notion abierto en *Presentación al jurado*
 - [ ] Con el Wi-Fi apagado (T10) los borradores salen **solo de la caché** (E1-14, calentada la noche anterior): DeepSeek es el único proveedor de generación (D-94/D-95) y no hay modelo local que arrancar
+
+Lo que debe hacer una persona antes de la entrega (ensayo sin Wi-Fi, revisión de fichas, pitch): `docs/pendientes_humanos.md`.

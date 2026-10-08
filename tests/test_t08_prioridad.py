@@ -130,7 +130,7 @@ def test_r_y_n_quedan_en_el_rango_0_1_y_n_declara_el_umbral_de_agrupacion() -> N
     grupos = [
         entrada(
             f"GRP-{i}",
-            [miembro(f"NOT-{i:010d}", f"Titular {i}", similitud=s, publicado_hace=100 + 10 * i)],
+            [miembro(f"NOT-{i:010d}", f"Panamá: titular {i}", similitud=s, publicado_hace=100 + 10 * i)],
             vectores=np.stack([vector(1.0, 0.1 * (i + 1))]),
         )
         for i, s in enumerate(sims)

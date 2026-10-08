@@ -1,0 +1,12 @@
+{
+ "clave": "820708e96d500239b1dd715a9dcd6ee70693aa1a31241a6ea14d0be1c3d2eadf",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.3",
+ "prompt": "afirmaciones_ficha",
+ "version_cache": "1",
+ "tokens_entrada": 1766,
+ "tokens_salida": 332,
+ "creado_utc": "2026-10-08T20:17:45Z",
+ "respuesta": "{\"afirmaciones\": [{\"id\": \"A1\", \"tipo\": \"declaración\", \"texto\": \"TVN Panamá reporta que Panamá mantiene vigilancia epidemiológica ante un caso sospechoso de peste neumónica en Rusia.\", \"citas\": [{\"id\": \"NOT-8ffb07170d\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A2\", \"tipo\": \"hecho\", \"texto\": \"El grupo de registros reúne 1 titular de 1 medio que reporta este tema.\", \"citas\": [{\"id\": \"GRP-29baaf270e\", \"campo\": \"n_titulares\"}, {\"id\": \"GRP-29baaf270e\", \"campo\": \"n_medios\"}]}, {\"id\": \"A3\", \"tipo\": \"hecho\", \"texto\": \"Se estima 1 procedencia independiente para este tema.\", \"citas\": [{\"id\": \"GRP-29baaf270e\", \"campo\": \"n_procedencias\"}]}, {\"id\": \"A4\", \"tipo\": \"inferencia\", \"texto\": \"La población podría seguir con atención los avisos de vigilancia epidemiológica, dado que la información disponible proviene de una sola procedencia y no cuenta con un dato oficial vinculado.\", \"base\": [\"A1\", \"A2\", \"A3\"], \"citas\": []}]}"
+}

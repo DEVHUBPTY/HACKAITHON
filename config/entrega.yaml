@@ -1,0 +1,129 @@
+# C-07 · Paquete de entrega (scripts.empaquetar_datos) y auditoría final (scripts.auditoria_final).
+# Rutas relativas a la raíz del repo. Cada número está en docs/parametros.md. Nada de aquí cambia el ranking, la clasificación ni la generación.
+version: 1
+
+paquete:
+  carpeta: entrega/datos                 # carpeta de construcción (ignorada por git); lo versionado es solo outputs/entrega_manifest.json
+  manifest_salida: outputs/entrega_manifest.json
+  archivo_checksums: CHECKSUMS.sha256
+  archivo_indice: ENTREGA.json
+  archivo_leeme: LEEME.md
+  # destino dentro del paquete -> origen en el repo. Solo lo que la sección 10 permite: snapshot, diccionario, manifest,
+  # licencias/condiciones, benchmark de desarrollo, y la receta de las fuentes restringidas (D-72).
+  archivos:
+    snapshot/noticias.csv: data/processed/noticias.csv
+    snapshot/fuentes.json: data/processed/fuentes.json
+    snapshot/indicadores.csv: data/processed/indicadores.csv
+    snapshot/eventos.geojson: data/processed/eventos.geojson
+    snapshot/conversion.json: data/processed/conversion.json
+    manifest/manifest.json: data/manifest.json
+    manifest/CHANGELOG.md: data/CHANGELOG.md
+    diccionario/diccionario.md: data/diccionario.md
+    licencias/fuentes.md: docs/fuentes.md
+    licencias/data_README.md: data/README.md
+    benchmark_dev/benchmark_dev.jsonl: benchmark/benchmark_dev.jsonl
+    benchmark_dev/README.md: benchmark/README.md
+    benchmark_dev/sinteticos.csv: benchmark/sinteticos.csv
+    receta/config/fuentes.yaml: config/fuentes.yaml
+    receta/src/consultas_gdelt.py: src/consultas_gdelt.py
+    receta/scripts/extraer.py: scripts/extraer.py
+    receta/scripts/conversion.py: scripts/conversion.py
+    receta/scripts/sbp.py: scripts/sbp.py
+    receta/scripts/manifest.py: scripts/manifest.py
+    receta/scripts/validar_snapshot.py: scripts/validar_snapshot.py
+    receta/reproducibilidad.md: docs/reproducibilidad.md
+    evidencias/catalogo.csv: outputs/catalogo.csv
+    evidencias/fichas.jsonl: outputs/fichas.jsonl
+    evidencias/pruebas.csv: outputs/pruebas.csv
+    evidencias/pagina_metricas.md: outputs/pagina_metricas.md
+    evidencias/metricas.json: outputs/metricas.json
+    evidencias/fichas_trazables/trazabilidad.json: outputs/fichas_trazables/trazabilidad.json
+    evidencias/fichas_trazables/indice.md: outputs/fichas_trazables/indice.md
+    evidencias/fichas_trazables/casos_y_evidencias.csv: outputs/fichas_trazables/casos_y_evidencias.csv
+  carpetas:                              # carpetas completas (destino -> origen); solo archivos de estas extensiones
+    evidencias/fichas_trazables: outputs/fichas_trazables
+  extensiones_carpetas: [".md", ".csv", ".json"]
+  carpetas_excluidas: ["vista_previa"]   # la vista previa de fichas_trazables (sin --casos) no se entrega
+  # D-116: el CSV agregado de la SBP se entrega con su nota de riesgo. Con incluir: false se retira (visibilidad pública sin autorización).
+  sbp:
+    incluir: true
+    origen: data/processed/sbp_series.csv
+    destino: snapshot/sbp_series.csv
+    nota_destino: licencias/NOTA_SBP_D-116.md
+    nota: >-
+      El aviso legal de la SBP prohíbe reproducir o redistribuir su contenido sin autorización escrita. Este CSV (36 valores
+      agregados, cada uno con su página de origen) se incluye por decisión del dueño (D-116), con el riesgo aceptado. Estado de la
+      autorización escrita: pendiente de pedir. Si el paquete o el repositorio se hacen públicos, hay que obtener la autorización
+      o retirar el archivo (config/entrega.yaml: paquete.sbp.incluir: false). Los .xlsx crudos no se entregan; se regeneran con
+      `poetry run python -m scripts.extraer --sbp`.
+  # Lo que NUNCA entra al paquete (se comprueba sobre el resultado, no solo sobre la lista de arriba).
+  prohibido:
+    nombres: ["local.env", ".env", "*.duckdb", "*.duckdb.wal", "*.xlsx", "*.xml", "rss_tvn*", "gdelt_*", "revision*.csv", "*reservad*.jsonl", "*reservad*benchmark*"]
+    prefijos_ruta: ["data/raw/rss_tvn", "data/raw/gdelt", "data/raw/sbp", "data/revision", "data/cache_llm"]
+    # Campos con redistribución restringida (D-31, D-72): descripción del RSS, socialimage, extractos, cuerpos, autores. Patrones fnmatch sobre el
+    # nombre de la columna o clave anidada, en minúsculas y sin tildes (así «Descripción_RSS» y «descripcion_rss» también caen).
+    campos: ["descripcion*", "*description*", "socialimage*", "extracto*", "excerpt*", "cuerpo*", "autor*", "author*"]
+    campos_permitidos: ["sin_descripcion_rss", "sin_nombres_de_autor"]   # banderas booleanas de la ficha (D-31, D-32), no texto
+    # Además de los nombres, los VALORES: las descripciones del RSS y las URLs socialimage crudas no pueden aparecer en ningún texto del paquete.
+    # Se leen de data/raw/ solo si está en esta máquina; si no, ese control se omite (los nombres y los secretos se revisan siempre).
+    valores_restringidos:
+      minimo_caracteres: 30
+      rss: {glob: "data/raw/rss_tvn/*.xml", nombres: ["description"]}
+      gdelt: {glob: "data/raw/gdelt/*.json", nombres: ["socialimage"]}
+    extensiones_estructuradas: [".csv", ".json", ".jsonl", ".geojson"]
+    patrones_secretos:
+      - "sk-[A-Za-z0-9]{20,}"
+      - "(?i)(api_key|api-key|token|secret|password)\\s*[=:]\\s*['\"]?[A-Za-z0-9_\\-]{16,}"
+      - "AKIA[0-9A-Z]{16}"
+      - "ghp_[A-Za-z0-9]{30,}"
+      - "-----BEGIN [A-Z ]*PRIVATE KEY-----"
+
+auditoria:
+  salida_md: outputs/auditoria_final.md
+  salida_json: outputs/auditoria_final.json
+  # (1) secretos: sin este archivo de resultado (lo escribe C-11) el ítem queda FALTA «pendiente C-11».
+  resultado_secretos: outputs/auditoria_secretos.json
+  minimo_fichas_trazables: 5             # PDF sección 5
+  minimo_casos_prueba: 10                # PDF sección 9 (T01–T10)
+  estado_prueba_ok: "Pasa"
+  minimo_tareas_notion: 8                # PDF sección 5 (solo se verifica a mano en Notion)
+  minimo_decisiones_notion: 3            # PDF sección 5 (solo se verifica a mano en Notion)
+  trazabilidad: outputs/fichas_trazables/trazabilidad.json
+  fichas_jsonl: outputs/fichas.jsonl
+  base_senales: data/senales.duckdb      # P-02 re-verifica contra ella cada ficha de fichas.jsonl; si no está en esta máquina, lo que no se pudo verificar queda NO VERIFICABLE
+  exportaciones: ["outputs/fichas_trazables", "outputs/notion"]
+  estados_sin_trazabilidad: ["descartado"]   # CASO-004…006 (D-118): siguen en fichas.jsonl, ya no están en trazabilidad.json, y se re-verifican igual
+  campos_fichas_jsonl: ["id_caso", "modalidad", "ids_fuente", "afirmaciones", "citas", "puntaje", "componentes", "estado_evidencia", "borrador", "estado_revision"]
+  pruebas: outputs/pruebas.csv
+  catalogo: outputs/catalogo.csv
+  columna_fuente_catalogo: "Fuente"
+  manifest: data/manifest.json
+  # Las fuentes salen de las claves `licencias` de data/manifest.json; cada una debe tener su nombre en el catálogo. Una clave nueva sin entrada aquí es FALTA.
+  nombres_fuentes_catalogo: {tvn_rss: "TVN", gdelt: "GDELT", banco_mundial: "Banco Mundial", usgs: "USGS", sbp: "SBP"}
+  pagina_metricas: outputs/pagina_metricas.md
+  sin_efecto_en_metricas: ["config/entrega.yaml"]   # configuración de esta tarea: no cambia ninguna cifra
+  marca_borrador_metricas: "BORRADOR"
+  marca_provisional_metricas: "PROVISIONAL"
+  carpetas_codigo_metricas: ["src", "eval", "config", "prompts", "data/processed"]   # un cambio aquí tras la página la deja desactualizada
+  readme: README.md
+  secciones_readme:                      # regex (sin distinguir mayúsculas) de un encabezado «## …» que debe existir
+    instalacion: "instalaci[oó]n"
+    ejecucion: "ejecuci[oó]n"
+    pruebas: "pruebas"
+    evaluacion_reservada: "evaluaci[oó]n reservada"
+  licencia_codigo: ["LICENSE", "LICENSE.md", "LICENSE.txt"]
+  env_ejemplo: .env.example
+  nombres_secretos_env: ["(?i)(_key|_token|_secret|_password)$"]   # estas variables van sin valor en .env.example
+  placeholders_env: []                                              # valores de relleno aceptados además del vacío (ninguno hoy)
+  nunca_versionados: ["data/demo.duckdb", "*.duckdb", "*.duckdb.wal"]   # P-04: se comprueba contra `git ls-files`
+  lock: poetry.lock
+  demo: {base: data/demo.duckdb, verificar_offline: scripts/verificar_offline.py, guion: docs/demo.md}
+  revision_config: config/revision.yaml
+  app: app.py
+  patron_publicar: "(?i)publicar|publicad[oa]|publish"
+  patron_reservado: "(?i)reservad.*\\.jsonl|benchmark.reservad"
+  escaneo_secretos_extensiones_omitidas: [".lock", ".duckdb", ".png", ".jpg", ".pdf", ".parquet"]
+  # contiene los propios patrones; los dos tests usan credenciales FICTICIAS a propósito (revisado a mano)
+  archivos_sin_escanear: ["config/entrega.yaml", "tests/test_c07_entrega.py", "tests/test_e3_03_notion.py"]
+  comando_reproducir: ["-m", "scripts.reproducir", "--verificar"]
+  espera_reproducir_segundos: 1800

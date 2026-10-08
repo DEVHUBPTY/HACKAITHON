@@ -1,0 +1,12 @@
+{
+ "clave": "81c355c8cc2cdc7b687b3325c3a9d89b6fbe7dc27b0d947c1c03fd9431e6c579",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.3",
+ "prompt": "afirmaciones_ficha",
+ "version_cache": "1",
+ "tokens_entrada": 1799,
+ "tokens_salida": 346,
+ "creado_utc": "2026-10-08T20:17:59Z",
+ "respuesta": "{\"afirmaciones\": [{\"id\": \"A1\", \"tipo\": \"declaración\", \"texto\": \"TVN Panamá reporta que Sinaproc busca superar el 10% de participación ciudadana en el tercer simulacro nacional.\", \"citas\": [{\"id\": \"NOT-9269f5fc9e\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A2\", \"tipo\": \"hecho\", \"texto\": \"El grupo de registros reúne 1 titular de 1 medio que reporta este tema.\", \"citas\": [{\"id\": \"GRP-03e3ef16d9\", \"campo\": \"n_titulares\"}, {\"id\": \"GRP-03e3ef16d9\", \"campo\": \"n_medios\"}]}, {\"id\": \"A3\", \"tipo\": \"hecho\", \"texto\": \"Se estima 1 procedencia independiente, ya que los titulares que replican a una misma fuente cuentan como una.\", \"citas\": [{\"id\": \"GRP-03e3ef16d9\", \"campo\": \"n_procedencias\"}]}, {\"id\": \"A4\", \"tipo\": \"inferencia\", \"texto\": \"La cobertura de un simulacro nacional importa a la población porque atañe a la preparación ante emergencias y a la participación ciudadana en ejercicios de protección civil.\", \"base\": [\"A1\", \"A2\", \"A3\"], \"citas\": []}]}"
+}

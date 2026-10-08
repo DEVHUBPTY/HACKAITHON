@@ -489,7 +489,7 @@
   "abstencion": {
     "semantica": {
       "metodo": "semantica",
-      "umbral": 0.874,
+      "umbral": 0.84,
       "por_mitad": {
         "calibracion": {
           "abstencion_correcta_sin_respuesta": {
@@ -513,28 +513,24 @@
             "fallos": []
           },
           "abstencion_incorrecta_sustentada": {
-            "n": 1,
+            "n": 0,
             "de": 10,
-            "proporcion": 0.1,
+            "proporcion": 0.0,
             "ic95": [
-              0.0179,
-              0.4042
+              0.0,
+              0.2775
             ],
-            "ids": [
-              "BDEV-004"
-            ]
+            "ids": []
           },
           "abstencion_incorrecta_todas": {
-            "n": 1,
+            "n": 0,
             "de": 15,
-            "proporcion": 0.0667,
+            "proporcion": 0.0,
             "ic95": [
-              0.0119,
-              0.2982
+              0.0,
+              0.2039
             ],
-            "ids": [
-              "BDEV-004"
-            ]
+            "ids": []
           }
         },
         "evaluacion": {
@@ -559,28 +555,24 @@
             "fallos": []
           },
           "abstencion_incorrecta_sustentada": {
-            "n": 1,
+            "n": 0,
             "de": 10,
-            "proporcion": 0.1,
+            "proporcion": 0.0,
             "ic95": [
-              0.0179,
-              0.4042
+              0.0,
+              0.2775
             ],
-            "ids": [
-              "BDEV-017"
-            ]
+            "ids": []
           },
           "abstencion_incorrecta_todas": {
-            "n": 1,
+            "n": 0,
             "de": 15,
-            "proporcion": 0.0667,
+            "proporcion": 0.0,
             "ic95": [
-              0.0119,
-              0.2982
+              0.0,
+              0.2039
             ],
-            "ids": [
-              "BDEV-017"
-            ]
+            "ids": []
           }
         },
         "total": {
@@ -605,30 +597,24 @@
             "fallos": []
           },
           "abstencion_incorrecta_sustentada": {
-            "n": 2,
+            "n": 0,
             "de": 20,
-            "proporcion": 0.1,
+            "proporcion": 0.0,
             "ic95": [
-              0.0279,
-              0.301
+              0.0,
+              0.1611
             ],
-            "ids": [
-              "BDEV-004",
-              "BDEV-017"
-            ]
+            "ids": []
           },
           "abstencion_incorrecta_todas": {
-            "n": 2,
+            "n": 0,
             "de": 30,
-            "proporcion": 0.0667,
+            "proporcion": 0.0,
             "ic95": [
-              0.0185,
-              0.2132
+              0.0,
+              0.1135
             ],
-            "ids": [
-              "BDEV-004",
-              "BDEV-017"
-            ]
+            "ids": []
           }
         }
       },
@@ -660,6 +646,7 @@
           "BDEV-001",
           "BDEV-002",
           "BDEV-003",
+          "BDEV-004",
           "BDEV-005",
           "BDEV-006",
           "BDEV-007",
@@ -672,6 +659,7 @@
           "BDEV-014",
           "BDEV-015",
           "BDEV-016",
+          "BDEV-017",
           "BDEV-018",
           "BDEV-019",
           "BDEV-020",
@@ -687,32 +675,25 @@
           "BDEV-038"
         ],
         "similitud_baja": [
-          "BDEV-004",
-          "BDEV-017",
           "BDEV-028"
         ]
       },
       "solo_umbral_sin_respuesta": {
-        "n": 6,
+        "n": 1,
         "de": 7,
-        "proporcion": 0.8571,
+        "proporcion": 0.1429,
         "ic95": [
-          0.4869,
-          0.9743
+          0.0257,
+          0.5131
         ],
         "ids": [
-          "BDEV-028",
-          "BDEV-029",
-          "BDEV-030",
-          "BDEV-031",
-          "BDEV-033",
-          "BDEV-034"
+          "BDEV-028"
         ]
       }
     },
     "bm25": {
       "metodo": "bm25",
-      "umbral": 10.765,
+      "umbral": 10.844,
       "por_mitad": {
         "calibracion": {
           "abstencion_correcta_sin_respuesta": {
@@ -935,8 +916,8 @@
     }
   },
   "umbrales_de_config": {
-    "semantica": 0.874,
-    "bm25": 10.765
+    "semantica": 0.84,
+    "bm25": 10.844
   },
   "aviso": "El umbral se calibra con la mitad de calibración y se evalúa en la otra; las reglas por patrón se escribieron viendo las 40 consultas, así que 'total' es optimista y no independiente."
 }

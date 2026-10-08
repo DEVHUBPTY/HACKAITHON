@@ -451,6 +451,12 @@ def leer_etiquetas(
     return etiquetas
 
 
+def ruta_del_pool(cfg: ConfigClasificacion) -> Path | None:
+    """CSV del que sale el pool de entrenamiento (C-12: ``etiquetas_pool``), o ``None`` si no se configuró o no existe."""
+    ruta = cfg.logistica.aprendizaje_activo.etiquetas_pool
+    return RAIZ / ruta if ruta and (RAIZ / ruta).exists() else None
+
+
 def evaluar_etiquetas(
     ruta_etiquetas: Path,
     ruta_base: Path,
@@ -461,12 +467,13 @@ def evaluar_etiquetas(
     motores: dict[str, Any] | None = None,
     origenes: Iterable[str] = oe.SOLO_HUMANOS,
     evaluacion_congelada: Path | None = None,
+    ruta_pool: Path | None = None,
 ) -> dict[str, Any]:
     """Métricas con etiquetas humanas, sin los ejemplos de ``temas.yaml``, en dos vistas.
 
     ``evaluacion_congelada`` (D-123): CSV de la muestra original. Si se da, la evaluación se limita a esos IDs y el método
-    ``logistica`` se entrena además con el pool de etiquetas humanas de los demás (``eval/aprendizaje_activo.py``); el
-    informe declara la huella y los conteos de ese pool. Sin él, la evaluación es la de siempre y el pool está vacío.
+    ``logistica`` se entrena además con el pool de etiquetas humanas de los demás (``eval/aprendizaje_activo.py``), que sale de
+    ``ruta_pool`` (C-12: el conjunto ampliado) o, sin ella, de ``ruta_etiquetas``; el informe declara la huella y los conteos de ese pool. Sin él, la evaluación es la de siempre y el pool está vacío.
 
     * **Clasificador** (``configuraciones``, ``comparaciones``): los titulares que el filtro de ruido dejó pasar. Si una
       persona los marcó ruido, la etiqueta es ``sin_tema`` y el clasificador debería abstenerse.
@@ -505,7 +512,7 @@ def evaluar_etiquetas(
     }
     pool = aa.Pool((), (), {})
     if congelados is not None and cfg.logistica.aprendizaje_activo.usar_pool:
-        pool = aa.construir_pool(ruta_etiquetas, temas, congelados, validos).solo(en_base)
+        pool = aa.construir_pool(ruta_pool or ruta_etiquetas, temas, congelados, validos).solo(en_base)
         conteo["fuera_de_la_evaluacion_congelada"] = sum(1 for i in etiquetas if i not in congelados)
     pool_textos = ([texto_de_entrada(en_base[i][1], en_base[i][2], cfg.usar_descripcion) for i in pool.ids], list(pool.temas))
     if not pasaron:
@@ -683,6 +690,7 @@ def main(argv: list[str] | None = None) -> int:
             real = evaluar_etiquetas(
                 args.etiquetas, args.base, args.columna, cfg, temas, args.modelos,
                 evaluacion_congelada=RAIZ / cfg.logistica.aprendizaje_activo.muestra_evaluacion,
+                ruta_pool=ruta_del_pool(cfg),
             )
         except (KeyError, ValueError) as exc:
             print(f"ETIQUETAS NO UTILIZABLES: {exc}. No se calcula ninguna métrica sobre datos reales.", file=sys.stderr)

@@ -22,6 +22,7 @@ from src import db, embeddings, interfaz as ui
 from src.configuracion import FORMAS_DE_PUBLICAR, RAIZ, ConfigInterfaz, cargar_interfaz, cargar_modalidad, cargar_restricciones, cargar_verificacion
 from src.ficha import a_markdown, construir_ficha, escapar_markdown, vista
 from tests import consulta_fixture, ficha_ayuda as h
+from tests.navegacion_ayuda import ir_a_pantalla
 from tests.motor_falso import MotorFalso, config_de_prueba
 
 CFG = cargar_interfaz()
@@ -379,8 +380,7 @@ def popovers(at: AppTest) -> dict[str, str]:
 
 
 def ir(at: AppTest, pantalla: str) -> AppTest:
-    at.session_state["pantalla"] = pantalla
-    return at.run()
+    return ir_a_pantalla(at, pantalla)
 
 
 def test_todas_las_pantallas_abren_sin_errores_y_cada_una_lleva_marca_y_leyenda(app) -> None:
@@ -700,7 +700,7 @@ def test_calidad_dice_que_los_titulares_de_la_bandeja_son_titulares_y_en_cuantos
 def test_la_demo_no_depende_de_ollama_y_documenta_el_riesgo_del_umbral() -> None:
     demo = (RAIZ / "docs" / "demo.md").read_text(encoding="utf-8")
     assert "Ollama" not in demo.split("## Checklist")[1] and "DeepSeek" in demo
-    assert "## Riesgos" in demo and "0.874" in demo and "E1-18" in demo
+    assert "## Riesgos" in demo and "0.840" in demo and "E1-18" in demo
 
 
 # ------------------------------------------------------------------ E3-04 · pesos editables en la bandeja
@@ -761,16 +761,17 @@ def test_e3_04_el_escenario_no_cambia_la_ficha_ni_el_registro_de_revision(app, c
     antes = filas_del_registro(registro)
     oficial = {f.id_grupo: f for f in ui.leer_bandeja(con, "editorial")}
     at = ir(app.run(), "bandeja")
-    # I 50 y R 5: el escenario sube a GRP-sinfecha del puesto 6 oficial al 4
-    at.number_input(key="peso_I").set_value(50.0)
-    at.number_input(key="peso_R").set_value(5.0)
+    # D-135: R ya no es 1 para todos (GRP-sinfecha no nombra a Panamá: foco implícito), así que el escenario también baja U y sube E:
+    # I 50 · R 5 · U 10 · N 20 · E 15 sube a GRP-sinfecha del puesto 9 oficial al 4
+    for clave, valor in (("I", 50.0), ("R", 5.0), ("U", 10.0), ("N", 20.0), ("E", 15.0)):
+        at.number_input(key=f"peso_{clave}").set_value(valor)
     at = at.run()
     at.text_area(key="pesos_justificacion").set_value("La mesa de noticias prioriza lo urgente en el cierre del día.")
     at = at.run()
     assert at.get("download_button")
     assert not [b for b in at.button if "publicar" in b.label.lower()]
     destino = "GRP-sinfecha"
-    escenario = ui.escenario_de_pesos(list(oficial.values()), {**ui.pesos_oficiales(), "I": 50.0, "R": 5.0}, cargar_modalidad("editorial"))
+    escenario = ui.escenario_de_pesos(list(oficial.values()), {**ui.pesos_oficiales(), "I": 50.0, "R": 5.0, "U": 10.0, "N": 20.0, "E": 15.0}, cargar_modalidad("editorial"))
     nuevo = next(f for f in escenario if f.id_grupo == destino)
     assert oficial[destino].posicion > 5 >= nuevo.posicion      # entra al top 5 solo en el escenario
     # se abre la ficha desde la bandeja en escenario: la ficha lleva el P y la posición OFICIALES

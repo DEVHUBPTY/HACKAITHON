@@ -1,0 +1,12 @@
+{
+ "clave": "8d92baa2246d1096b5a3380d91b3a596e09efbed97b03811349aae8c6940fcbb",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "paquete_editorial",
+ "version_cache": "1",
+ "tokens_entrada": 2054,
+ "tokens_salida": 594,
+ "creado_utc": "2026-10-08T20:17:18Z",
+ "respuesta": "{\n  \"brief\": [\n    {\n      \"texto\": \"Tres medios reportan que el presidente de Panamá viajará a Asia.\",\n      \"afirmaciones\": [\"A1\", \"A2\", \"A3\"]\n    },\n    {\n      \"texto\": \"Según prensa-latina.cu, el presidente panameño visitará Singapur y Vietnam.\",\n      \"afirmaciones\": [\"A1\"]\n    },\n    {\n      \"texto\": \"Según laestrella.com.pa, Mulino viajará a Asia y suscribirá convenios bilaterales con Singapur y Vietnam.\",\n      \"afirmaciones\": [\"A2\"]\n    },\n    {\n      \"texto\": \"Según revistaeyn.com, el presidente de Panamá visita Singapur y Vietnam en busca de inversiones.\",\n      \"afirmaciones\": [\"A3\"]\n    },\n    {\n      \"texto\": \"El grupo de registros reúne 3 titulares de 3 medios que reportan este tema.\",\n      \"afirmaciones\": [\"A4\"]\n    },\n    {\n      \"texto\": \"Se estiman 3 procedencias independientes, contando los titulares que replican a una misma fuente como una.\",\n      \"afirmaciones\": [\"A5\"]\n    },\n    {\n      \"texto\": \"La ficha no registra un dato oficial vinculado a estos reportes.\",\n      \"afirmaciones\": [\"sin_dato_oficial\"]\n    },\n    {\n      \"texto\": \"Los 3 titulares no tienen medio ni fecha de publicación conocidos.\",\n      \"afirmaciones\": [\"medios_o_fechas_desconocidos\"]\n    }\n  ],\n  \"enfoque\": [\n    {\n      \"texto\": \"Si se confirma el viaje, la búsqueda de inversiones y los convenios bilaterales reportados por los medios podría incidir en la población panameña.\",\n      \"afirmaciones\": [\"A2\", \"A3\"]\n    }\n  ],\n  \"preguntas\": [\n    {\n      \"texto\": \"¿Existe algún dato oficial que respalde o detalle el viaje del presidente panameño a Singapur y Vietnam?\",\n      \"vacio\": \"sin_dato_oficial\"\n    },\n    {\n      \"texto\": \"¿Cuáles son los medios y las fechas de publicación de los 3 titulares que reportan este tema?\",\n      \"vacio\": \"medios_o_fechas_desconocidos\"\n    },\n    {\n      \"texto\": \"¿Qué elementos permiten estimar la urgencia de esta información si no se conoce la fecha de publicación?\",\n      \"vacio\": \"urgencia_sin_publicacion\"\n    }\n  ]\n}"
+}

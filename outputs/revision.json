@@ -1,5 +1,5 @@
 {
-  "casos_abiertos": 8,
+  "casos_abiertos": 9,
   "origen_juicio": "humano",
   "juicio_humano": true,
   "casos_decididos": 0,
@@ -37,9 +37,9 @@
   },
   "casos_decididos_provisionales": 2,
   "descartes_administrativos": {
-    "n": 3,
+    "n": 4,
     "motivos": {
-      "Reemplazado por la selección por caso de uso (D-118)": 3
+      "Reemplazado por la selección por caso de uso (D-118)": 4
     },
     "nota": "Descartes administrativos (no son un juicio editorial): fuera de todas las tasas."
   },

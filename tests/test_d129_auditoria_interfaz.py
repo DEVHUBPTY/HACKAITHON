@@ -18,6 +18,7 @@ from src import contexto, db
 from src import interfaz as ui
 from src.configuracion import RAIZ, cargar_interfaz, cargar_revision, cargar_verificacion, cargar_vinculos
 from src.revision import Revisiones
+from tests.navegacion_ayuda import ir_a_pantalla
 
 BASE = RAIZ / "data" / "senales.duckdb"
 CFG, CFG_VER, VINC = cargar_interfaz(), cargar_verificacion(), cargar_vinculos()
@@ -173,9 +174,8 @@ def test_la_pantalla_revisar_muestra_el_borrador_de_la_cache_de_un_caso_sin_vers
     revisor = ui.revisores_de("editorial", cargar_revision())[0]
     caso = Revisiones(tmp_path / "revision.duckdb", BASE).abrir(elegido, "editorial", revisor)   # sin paquete: el caso nace sin versión
     assert Revisiones(tmp_path / "revision.duckdb", BASE).version_actual(caso.id_caso) is None
-    app.session_state["pantalla"] = "revision"
     app.session_state["id_grupo"] = elegido
-    at = app.run()
+    at = ir_a_pantalla(app, "revision")
     assert not at.exception
     t = _texto(at)
     assert "desde la caché" in t and "no tiene borrador" not in t
@@ -189,8 +189,7 @@ def test_la_pantalla_revisar_muestra_el_borrador_de_la_cache_de_un_caso_sin_vers
 def test_ningun_titulo_ni_rotulo_visible_lleva_un_codigo_de_tarea_o_decision(app) -> None:
     at = app.run()
     for p in CFG.pantallas:
-        at.session_state["pantalla"] = p.clave
-        at = at.run()
+        at = ir_a_pantalla(at, p.clave)
         assert not at.exception, p.clave
         visibles = [str(e.value) for e in (*at.get("header"), *at.get("subheader"), *at.get("caption"), *at.get("info"), *at.get("warning"))]
         visibles += [e.label for e in at.expander] + [b.label for b in at.button] + [m.label for m in at.metric]

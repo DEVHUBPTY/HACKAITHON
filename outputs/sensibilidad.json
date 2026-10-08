@@ -10,52 +10,52 @@
     "GRP-21ad932d54",
     "GRP-4d8b340bd9",
     "GRP-a329f4e91e",
-    "GRP-1dc52c45ff"
+    "GRP-29baaf270e"
   ],
   "empate_en_el_corte_base": null,
   "reagrupar_con_las_reglas_actuales_reproduce_la_base": true,
-  "variantes": 52,
-  "variantes_con_efecto": 49,
+  "variantes": 54,
+  "variantes_con_efecto": 51,
   "sin_efecto": [
     "Foco: Panamá sujeto +",
     "Alcance geográfico nacional +",
     "N del primer grupo +"
   ],
   "top_sin_cambio": {
-    "n": 39,
-    "de": 49,
-    "proporcion": 0.7959,
+    "n": 44,
+    "de": 51,
+    "proporcion": 0.8627,
     "ic95": [
-      0.6636,
-      0.8852
+      0.7428,
+      0.9319
     ]
   },
   "con_algun_cambio": {
-    "n": 10,
-    "de": 49,
-    "proporcion": 0.2041,
+    "n": 7,
+    "de": 51,
+    "proporcion": 0.1373,
     "ic95": [
-      0.1148,
-      0.3364
+      0.0681,
+      0.2572
     ]
   },
   "mismo_orden": {
-    "n": 34,
-    "de": 49,
-    "proporcion": 0.6939,
+    "n": 38,
+    "de": 51,
+    "proporcion": 0.7451,
     "ic95": [
-      0.5547,
-      0.8048
+      0.6113,
+      0.8445
     ]
   },
-  "maximo_de_temas_que_cambian": 3,
+  "maximo_de_temas_que_cambian": 2,
   "temas_retenidos": {
-    "n": 233,
-    "de": 245,
-    "proporcion": 0.951,
+    "n": 247,
+    "de": 255,
+    "proporcion": 0.9686,
     "ic95": [
-      0.9164,
-      0.9718
+      0.9393,
+      0.984
     ],
     "nota": "puestos del top 5 que se conservan en las variantes con efecto; los puestos de una misma variante no son independientes, el IC es orientativo"
   },
@@ -65,8 +65,8 @@
       "con_cambio": 2
     },
     "supuesto": {
-      "variantes": 42,
-      "con_cambio": 8
+      "variantes": 44,
+      "con_cambio": 5
     }
   },
   "detalle": [
@@ -81,7 +81,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -101,7 +101,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -119,18 +119,14 @@
       "top": [
         "GRP-5e6531917f",
         "GRP-21ad932d54",
+        "GRP-29baaf270e",
         "GRP-4d8b340bd9",
-        "GRP-a329f4e91e",
-        "GRP-87e128925b"
+        "GRP-a329f4e91e"
       ],
-      "cambian": 1,
-      "salen": [
-        "GRP-1dc52c45ff"
-      ],
-      "entran": [
-        "GRP-87e128925b"
-      ],
-      "mismo_conjunto": false,
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
       "mismo_orden": false,
       "parametro_con_direccion": "Peso I +"
     },
@@ -145,12 +141,16 @@
         "GRP-a329f4e91e",
         "GRP-5e6531917f",
         "GRP-21ad932d54",
-        "GRP-1dc52c45ff"
+        "GRP-7ddcf92e16"
       ],
-      "cambian": 0,
-      "salen": [],
-      "entran": [],
-      "mismo_conjunto": true,
+      "cambian": 1,
+      "salen": [
+        "GRP-29baaf270e"
+      ],
+      "entran": [
+        "GRP-7ddcf92e16"
+      ],
+      "mismo_conjunto": false,
       "mismo_orden": false,
       "parametro_con_direccion": "Peso I -"
     },
@@ -165,7 +165,7 @@
         "GRP-a329f4e91e",
         "GRP-5e6531917f",
         "GRP-21ad932d54",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -185,17 +185,13 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-87e128925b"
+        "GRP-29baaf270e"
       ],
-      "cambian": 1,
-      "salen": [
-        "GRP-1dc52c45ff"
-      ],
-      "entran": [
-        "GRP-87e128925b"
-      ],
-      "mismo_conjunto": false,
-      "mismo_orden": false,
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
       "parametro_con_direccion": "Peso U -"
     },
     {
@@ -209,13 +205,17 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-7ddcf92e16"
       ],
-      "cambian": 0,
-      "salen": [],
-      "entran": [],
-      "mismo_conjunto": true,
-      "mismo_orden": true,
+      "cambian": 1,
+      "salen": [
+        "GRP-29baaf270e"
+      ],
+      "entran": [
+        "GRP-7ddcf92e16"
+      ],
+      "mismo_conjunto": false,
+      "mismo_orden": false,
       "parametro_con_direccion": "Peso N +"
     },
     {
@@ -226,16 +226,16 @@
       "con_efecto": true,
       "top": [
         "GRP-5e6531917f",
+        "GRP-29baaf270e",
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
-        "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-a329f4e91e"
       ],
       "cambian": 0,
       "salen": [],
       "entran": [],
       "mismo_conjunto": true,
-      "mismo_orden": true,
+      "mismo_orden": false,
       "parametro_con_direccion": "Peso N -"
     },
     {
@@ -249,7 +249,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -269,7 +269,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -289,7 +289,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -309,7 +309,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -317,6 +317,46 @@
       "mismo_conjunto": true,
       "mismo_orden": true,
       "parametro_con_direccion": "Foco: otro país que afecta a Panamá -"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Foco: Panamá implícito",
+      "direccion": "+",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-5e6531917f",
+        "GRP-21ad932d54",
+        "GRP-4d8b340bd9",
+        "GRP-a329f4e91e",
+        "GRP-29baaf270e"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Foco: Panamá implícito +"
+    },
+    {
+      "grupo": "supuesto",
+      "parametro": "Foco: Panamá implícito",
+      "direccion": "-",
+      "reagrupa": false,
+      "con_efecto": true,
+      "top": [
+        "GRP-5e6531917f",
+        "GRP-21ad932d54",
+        "GRP-4d8b340bd9",
+        "GRP-a329f4e91e",
+        "GRP-29baaf270e"
+      ],
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
+      "parametro_con_direccion": "Foco: Panamá implícito -"
     },
     {
       "grupo": "supuesto",
@@ -329,7 +369,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -349,7 +389,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -369,12 +409,16 @@
         "GRP-5e6531917f",
         "GRP-a329f4e91e",
         "GRP-21ad932d54",
-        "GRP-1dc52c45ff"
+        "GRP-7ddcf92e16"
       ],
-      "cambian": 0,
-      "salen": [],
-      "entran": [],
-      "mismo_conjunto": true,
+      "cambian": 1,
+      "salen": [
+        "GRP-29baaf270e"
+      ],
+      "entran": [
+        "GRP-7ddcf92e16"
+      ],
+      "mismo_conjunto": false,
       "mismo_orden": false,
       "parametro_con_direccion": "Partes de I (tema · geográfico) +"
     },
@@ -389,17 +433,13 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-87e128925b"
+        "GRP-29baaf270e"
       ],
-      "cambian": 1,
-      "salen": [
-        "GRP-1dc52c45ff"
-      ],
-      "entran": [
-        "GRP-87e128925b"
-      ],
-      "mismo_conjunto": false,
-      "mismo_orden": false,
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
       "parametro_con_direccion": "Partes de I (tema · geográfico) -"
     },
     {
@@ -413,7 +453,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -432,13 +472,17 @@
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
         "GRP-5e6531917f",
-        "GRP-1dc52c45ff",
-        "GRP-21ad932d54"
+        "GRP-21ad932d54",
+        "GRP-7ddcf92e16"
       ],
-      "cambian": 0,
-      "salen": [],
-      "entran": [],
-      "mismo_conjunto": true,
+      "cambian": 1,
+      "salen": [
+        "GRP-29baaf270e"
+      ],
+      "entran": [
+        "GRP-7ddcf92e16"
+      ],
+      "mismo_conjunto": false,
       "mismo_orden": false,
       "parametro_con_direccion": "Alcance geográfico nacional -"
     },
@@ -457,7 +501,7 @@
       ],
       "cambian": 1,
       "salen": [
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "entran": [
         "GRP-87e128925b"
@@ -475,15 +519,15 @@
       "top": [
         "GRP-5e6531917f",
         "GRP-21ad932d54",
+        "GRP-29baaf270e",
         "GRP-4d8b340bd9",
-        "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-a329f4e91e"
       ],
       "cambian": 0,
       "salen": [],
       "entran": [],
       "mismo_conjunto": true,
-      "mismo_orden": true,
+      "mismo_orden": false,
       "parametro_con_direccion": "Alcance geográfico provincial -"
     },
     {
@@ -497,17 +541,13 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-7ddcf92e16"
+        "GRP-29baaf270e"
       ],
-      "cambian": 1,
-      "salen": [
-        "GRP-1dc52c45ff"
-      ],
-      "entran": [
-        "GRP-7ddcf92e16"
-      ],
-      "mismo_conjunto": false,
-      "mismo_orden": false,
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
       "parametro_con_direccion": "Alcance geográfico local +"
     },
     {
@@ -521,7 +561,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -541,7 +581,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -561,17 +601,13 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-7ddcf92e16"
+        "GRP-29baaf270e"
       ],
-      "cambian": 1,
-      "salen": [
-        "GRP-1dc52c45ff"
-      ],
-      "entran": [
-        "GRP-7ddcf92e16"
-      ],
-      "mismo_conjunto": false,
-      "mismo_orden": false,
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
       "parametro_con_direccion": "Alcance geográfico desconocido -"
     },
     {
@@ -585,7 +621,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -605,7 +641,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -625,16 +661,12 @@
         "GRP-21ad932d54",
         "GRP-a329f4e91e",
         "GRP-4d8b340bd9",
-        "GRP-87e128925b"
+        "GRP-29baaf270e"
       ],
-      "cambian": 1,
-      "salen": [
-        "GRP-1dc52c45ff"
-      ],
-      "entran": [
-        "GRP-87e128925b"
-      ],
-      "mismo_conjunto": false,
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
       "mismo_orden": false,
       "parametro_con_direccion": "Alcance por tema (la tabla entera) +"
     },
@@ -649,7 +681,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -669,7 +701,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -689,7 +721,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -709,17 +741,13 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-87e128925b"
+        "GRP-29baaf270e"
       ],
-      "cambian": 1,
-      "salen": [
-        "GRP-1dc52c45ff"
-      ],
-      "entran": [
-        "GRP-87e128925b"
-      ],
-      "mismo_conjunto": false,
-      "mismo_orden": false,
+      "cambian": 0,
+      "salen": [],
+      "entran": [],
+      "mismo_conjunto": true,
+      "mismo_orden": true,
       "parametro_con_direccion": "U: días con U = 0 +"
     },
     {
@@ -733,7 +761,7 @@
         "GRP-4d8b340bd9",
         "GRP-5e6531917f",
         "GRP-21ad932d54",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -753,7 +781,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -773,7 +801,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -793,7 +821,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -813,7 +841,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -833,7 +861,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -853,7 +881,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -873,7 +901,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -893,7 +921,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -909,15 +937,15 @@
       "reagrupa": false,
       "con_efecto": true,
       "top": [
+        "GRP-29baaf270e",
         "GRP-038c4f0643",
         "GRP-5e6531917f",
         "GRP-21ad932d54",
-        "GRP-4d8b340bd9",
-        "GRP-a329f4e91e"
+        "GRP-4d8b340bd9"
       ],
       "cambian": 1,
       "salen": [
-        "GRP-1dc52c45ff"
+        "GRP-a329f4e91e"
       ],
       "entran": [
         "GRP-038c4f0643"
@@ -934,21 +962,19 @@
       "con_efecto": true,
       "top": [
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff",
-        "GRP-1627d09497",
-        "GRP-8a448d1fd9",
-        "GRP-87e128925b"
-      ],
-      "cambian": 3,
-      "salen": [
-        "GRP-5e6531917f",
+        "GRP-87e128925b",
         "GRP-21ad932d54",
-        "GRP-4d8b340bd9"
+        "GRP-5e6531917f",
+        "GRP-03e3ef16d9"
+      ],
+      "cambian": 2,
+      "salen": [
+        "GRP-4d8b340bd9",
+        "GRP-29baaf270e"
       ],
       "entran": [
-        "GRP-1627d09497",
-        "GRP-8a448d1fd9",
-        "GRP-87e128925b"
+        "GRP-87e128925b",
+        "GRP-03e3ef16d9"
       ],
       "mismo_conjunto": false,
       "mismo_orden": false,
@@ -965,7 +991,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -985,7 +1011,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -1005,7 +1031,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -1025,7 +1051,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -1045,7 +1071,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -1065,7 +1091,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -1085,7 +1111,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -1105,7 +1131,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -1125,7 +1151,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -1145,7 +1171,7 @@
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
         "GRP-a329f4e91e",
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "cambian": 0,
       "salen": [],
@@ -1158,33 +1184,21 @@
   "mas_sensibles": [
     {
       "parametro": "N: ancla baja (D-124) -",
-      "cambian": 3,
+      "cambian": 2,
       "salen": [
-        "GRP-5e6531917f",
-        "GRP-21ad932d54",
-        "GRP-4d8b340bd9"
+        "GRP-4d8b340bd9",
+        "GRP-29baaf270e"
       ],
       "entran": [
-        "GRP-1627d09497",
-        "GRP-8a448d1fd9",
-        "GRP-87e128925b"
+        "GRP-87e128925b",
+        "GRP-03e3ef16d9"
       ]
     },
     {
-      "parametro": "Alcance geográfico desconocido -",
+      "parametro": "Alcance geográfico nacional -",
       "cambian": 1,
       "salen": [
-        "GRP-1dc52c45ff"
-      ],
-      "entran": [
-        "GRP-7ddcf92e16"
-      ]
-    },
-    {
-      "parametro": "Alcance geográfico local +",
-      "cambian": 1,
-      "salen": [
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "entran": [
         "GRP-7ddcf92e16"
@@ -1194,17 +1208,7 @@
       "parametro": "Alcance geográfico provincial +",
       "cambian": 1,
       "salen": [
-        "GRP-1dc52c45ff"
-      ],
-      "entran": [
-        "GRP-87e128925b"
-      ]
-    },
-    {
-      "parametro": "Alcance por tema (la tabla entera) +",
-      "cambian": 1,
-      "salen": [
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "entran": [
         "GRP-87e128925b"
@@ -1214,50 +1218,40 @@
       "parametro": "N: ancla baja (D-124) +",
       "cambian": 1,
       "salen": [
-        "GRP-1dc52c45ff"
+        "GRP-a329f4e91e"
       ],
       "entran": [
         "GRP-038c4f0643"
       ]
     },
     {
-      "parametro": "Partes de I (tema · geográfico) -",
+      "parametro": "Partes de I (tema · geográfico) +",
       "cambian": 1,
       "salen": [
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "entran": [
-        "GRP-87e128925b"
+        "GRP-7ddcf92e16"
       ]
     },
     {
-      "parametro": "Peso I +",
+      "parametro": "Peso I -",
       "cambian": 1,
       "salen": [
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "entran": [
-        "GRP-87e128925b"
+        "GRP-7ddcf92e16"
       ]
     },
     {
-      "parametro": "Peso U -",
+      "parametro": "Peso N +",
       "cambian": 1,
       "salen": [
-        "GRP-1dc52c45ff"
+        "GRP-29baaf270e"
       ],
       "entran": [
-        "GRP-87e128925b"
-      ]
-    },
-    {
-      "parametro": "U: días con U = 0 +",
-      "cambian": 1,
-      "salen": [
-        "GRP-1dc52c45ff"
-      ],
-      "entran": [
-        "GRP-87e128925b"
+        "GRP-7ddcf92e16"
       ]
     }
   ],

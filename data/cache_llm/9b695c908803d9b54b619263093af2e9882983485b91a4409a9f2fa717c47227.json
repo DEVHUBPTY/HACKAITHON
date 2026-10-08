@@ -1,0 +1,12 @@
+{
+ "clave": "9b695c908803d9b54b619263093af2e9882983485b91a4409a9f2fa717c47227",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.3",
+ "prompt": "afirmaciones_ficha",
+ "version_cache": "1",
+ "tokens_entrada": 1794,
+ "tokens_salida": 340,
+ "creado_utc": "2026-10-08T20:17:28Z",
+ "respuesta": "{\"afirmaciones\": [{\"id\": \"A1\", \"tipo\": \"declaración\", \"texto\": \"TVN Panamá reporta que más de 30 mujeres han muerto de forma violenta en Panamá este año.\", \"citas\": [{\"id\": \"NOT-0d91fa48b0\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A2\", \"tipo\": \"hecho\", \"texto\": \"El grupo de registros reúne 1 titular de 1 medio que reporta este tema.\", \"citas\": [{\"id\": \"GRP-5e6531917f\", \"campo\": \"n_titulares\"}, {\"id\": \"GRP-5e6531917f\", \"campo\": \"n_medios\"}]}, {\"id\": \"A3\", \"tipo\": \"hecho\", \"texto\": \"Se estima 1 procedencia independiente para este tema.\", \"citas\": [{\"id\": \"GRP-5e6531917f\", \"campo\": \"n_procedencias\"}]}, {\"id\": \"A4\", \"tipo\": \"inferencia\", \"texto\": \"La violencia contra las mujeres importa a la población porque afecta la seguridad y la vida cotidiana de las comunidades, y la existencia de un solo titular de un solo medio sobre el tema puede limitar la información disponible para la ciudadanía.\", \"base\": [\"A1\", \"A2\", \"A3\"], \"citas\": []}]}"
+}

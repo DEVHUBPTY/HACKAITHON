@@ -5,8 +5,9 @@ fijan, en ``config/prioridad.yaml``). Es una herramienta de **ordenamiento**: no
 y **no habilita publicación** (``Puntaje.habilita_publicacion`` es siempre falso).
 
 * **R** = ``peso_foco × foco × pertenencia`` (D-119; D-103 había quitado la parte temática porque usaba la confianza del
-  clasificador). Foco: 1 si algún titular del grupo trata a Panamá como sujeto; 0.5 si todos son notas regionales o de otro
-  país que afectan a Panamá (``alcance_regional``, D-84). Pertenencia: según la ETIQUETA, nunca la confianza (``tema_similitud``):
+  clasificador). D-135: el foco es graduado por lo que dicen los titulares y vale el del titular que más foco tiene: 1.0 si nombra
+  al país, un lugar o un actor panameño; 0.7 si solo lo publica un medio de Panamá;
+  0.5 si es regional (D-84) o de un medio de otro país. Pertenencia: según la ETIQUETA, nunca la confianza (``tema_similitud``):
   1 si algún titular tiene un tema de la modalidad como ``tema_clasificado``, 0.6 si solo como ``tema_secundario``, 0.3 si ninguno.
 * **I** = ``peso_tema × alcance(tema) + peso_geografico × alcance geográfico`` (D-125: el reto define 6 temas, sin subtemas; un grupo
   sin tema usa ``alcance_tema_desconocido``). Ni el dato oficial ni las
@@ -153,13 +154,70 @@ class Alcance:
 # ------------------------------------------------------------------ R · relevancia
 
 
-def foco_de(miembros: Sequence[Mapping[str, Any]], reglas: ReglasV13) -> tuple[float, dict[str, Any]]:
-    """Foco del grupo y su explicación: 1 si algún titular trata a Panamá como sujeto, 0.5 si todos son regionales."""
+NIVEL_PANAMA_SUJETO = "panama_sujeto"
+NIVEL_PANAMA_IMPLICITO = "panama_implicito"
+NIVEL_OTRO_PAIS = "otro_pais_afecta"
+
+
+def nivel_de_foco(m: Mapping[str, Any], reglas: ReglasV13, cfg: ConfigPrioridad) -> tuple[str, list[str]]:
+    """D-135: nivel de foco de UN titular y los nombres panameños que lo explican: ``(nivel, nombres)``.
+
+    ``panama_sujeto``: el titular nombra al país (o un nombre propio con su nombre), un lugar concreto de Panamá o un actor de
+    ``relevancia.panama_actores``. Como en el alcance de I (C-10, D6), Panamá como parte del hecho manda aunque el titular nombre
+    también un lugar o país del exterior («Panamá reforzará su presencia en Vietnam»). ``panama_implicito``: lo publica un medio de
+    Panamá, no es regional y no cumple lo anterior.
+    ``otro_pais_afecta``: es regional (D-84) o lo publica un medio de otro país. Solo lee el texto, el medio y la marca regional:
+    nunca la confianza del clasificador (D-103). Un lugar de ``panama_nombres_extranjeros`` («Panama City, Florida») no nombra al país.
+    """
+    g = reglas.geografia
+    titular = str(m.get("titulo_limpio") or "")
+    _, sin_extranjeros = exterior_en(titular, g.panama_nombres_extranjeros)
+    nombres = [
+        *terminos_sin_prefijo_excluido(sin_extranjeros, [*g.pais_terminos, *g.panama_nombres_propios], cfg.geografia.prefijos_excluidos),
+        *terminos_presentes(
+            sin_extranjeros,
+            [*g.provincias, *g.comarcas, *g.distritos],
+            cfg.geografia.prefijos_obligatorios,
+            cfg.geografia.sufijos_excluidos,
+            cfg.geografia.requieren_tilde,
+            cfg.geografia.prefijos_excluidos_lugar,
+        ),
+        *terminos_sin_prefijo_excluido(sin_extranjeros, reglas.relevancia.panama_actores, {}),
+    ]
+    nombres = list(dict.fromkeys(nombres))
+    if nombres:
+        return NIVEL_PANAMA_SUJETO, nombres
+    pais_medio = normalizar_geografia(str(m.get("pais_medio") or ""))
+    de_otro_pais = bool(pais_medio) and pais_medio not in {normalizar_geografia(t) for t in g.pais_terminos}
+    if m.get("alcance_regional") or de_otro_pais:
+        return NIVEL_OTRO_PAIS, nombres
+    return NIVEL_PANAMA_IMPLICITO, nombres
+
+
+def foco_de(miembros: Sequence[Mapping[str, Any]], reglas: ReglasV13, cfg: ConfigPrioridad) -> tuple[float, dict[str, Any]]:
+    """Foco del grupo (D-135) y su explicación: el del titular con más foco (el máximo; basta uno que trate a Panamá como sujeto).
+
+    Los niveles y sus valores están en ``relevancia`` (``panama_sujeto`` ≥ ``panama_implicito`` ≥ ``otro_pais_afecta``). La explicación
+    dice qué nivel es, qué titular y qué nombres lo causan, y cuántos titulares hay en cada nivel.
+    """
+    rel = reglas.relevancia
+    valores = {NIVEL_PANAMA_SUJETO: rel.foco_panama_sujeto, NIVEL_PANAMA_IMPLICITO: rel.foco_panama_implicito, NIVEL_OTRO_PAIS: rel.foco_otro_pais_afecta}
+    evaluados = [(m, *nivel_de_foco(m, reglas, cfg)) for m in miembros]
+    por_nivel = {nivel: sum(1 for t in evaluados if t[1] == nivel) for nivel in valores}
     regionales = sum(1 for m in miembros if m.get("alcance_regional"))
-    todos_regionales = regionales == len(miembros) and len(miembros) > 0
-    foco = reglas.relevancia.foco_otro_pais_afecta if todos_regionales else reglas.relevancia.foco_panama_sujeto
-    motivo = "otro_pais_afecta" if todos_regionales else "panama_sujeto"
-    return foco, {"foco": foco, "foco_motivo": motivo, "titulares_regionales": regionales, "titulares": len(miembros)}
+    causa: Mapping[str, Any] | None = None
+    nivel, nombres = NIVEL_OTRO_PAIS, []   # grupo sin titulares: no hay evidencia de que trate de Panamá
+    if evaluados:
+        causa, nivel, nombres = max(evaluados, key=lambda t: valores[t[1]])   # empate: el primero (los miembros vienen ordenados por ID)
+    textos = cfg.relevancia
+    titular = str(causa.get("titulo_limpio") or "") if causa else ""
+    texto = getattr(textos, nivel).format(terminos=", ".join(nombres), titular=titular)
+    detalle = {
+        "foco": valores[nivel], "foco_motivo": nivel, "foco_texto": texto, "foco_terminos": nombres,
+        "foco_titular": None if causa is None else str(causa.get("id_noticia")),
+        "titulares_por_nivel": por_nivel, "titulares_regionales": regionales, "titulares": len(miembros),
+    }
+    return valores[nivel], detalle
 
 
 def pertenencia_de(
@@ -294,12 +352,26 @@ def exterior_en(titular: str, terminos: Sequence[str]) -> tuple[list[str], str]:
     return halladas, "".join(" " if i in borrar else c for i, c in enumerate(titular))
 
 
+def nombra_al_pais(titular: str, reglas: ReglasV13, cfg: ConfigPrioridad) -> bool:
+    """C-10 (D3, D6): el titular nombra a Panamá, el país, por su nombre o por un nombre propio de ``panama_nombres_propios``.
+
+    No cuenta el gentilicio («panameños»), un prefijo excluido («Ciudad de Panamá» es el lugar, no el país) ni un lugar extranjero
+    de ``panama_nombres_extranjeros`` («Panama City, Florida»).
+    """
+    g = reglas.geografia
+    _, titular = exterior_en(titular, g.panama_nombres_extranjeros)
+    return bool(terminos_sin_prefijo_excluido(titular, [*g.pais_terminos, *g.panama_nombres_propios], cfg.geografia.prefijos_excluidos))
+
+
 def alcance_geografico(miembros: Sequence[Mapping[str, Any]], reglas: ReglasV13, cfg: ConfigPrioridad) -> Alcance:
     """Alcance más amplio que nombran los titulares: nacional, provincial (provincias y comarcas) o local (distritos).
 
     Si ningún titular nombra un término explícito ni un lugar concreto de Panamá, un país o ciudad del exterior da alcance
     ``exterior`` (D-115); si tampoco, el país nombrado o su gentilicio dan alcance nacional (E1-10c, X42); si tampoco, el alcance
     es desconocido. Precedencia: frase nacional > provincia o comarca > distrito > exterior > país nombrado > desconocido.
+
+    C-10 (D6): un titular que nombra a Panamá como parte del hecho no aporta su lugar o contraparte extranjera al exterior;
+    el grupo recibe el nivel que tendría sin ella (el país nombrado da ``nacional``).
     """
     g = reglas.geografia
     listas = {"nacional": g.nacional_terminos, "provincial": [*g.provincias, *g.comarcas], "local": g.distritos}
@@ -309,8 +381,9 @@ def alcance_geografico(miembros: Sequence[Mapping[str, Any]], reglas: ReglasV13,
     exteriores: list[str] = []
     for m in miembros:
         crudo = str(m.get("titulo_limpio") or "")
-        del_exterior, titular = exterior_en(crudo, g.exterior_terminos)
-        exteriores.extend(del_exterior)
+        del_exterior, titular = exterior_en(crudo, [*g.exterior_terminos, *g.panama_nombres_extranjeros])   # «Panama City, Florida» es exterior
+        if not nombra_al_pais(titular, reglas, cfg):   # C-10 (D6): Panamá como parte del hecho manda sobre el lugar o la contraparte extranjera
+            exteriores.extend(del_exterior)
         for nivel in NIVELES_GEOGRAFICOS:
             hallados[nivel].extend(terminos_presentes(
                     titular,
@@ -580,7 +653,7 @@ def calcular_puntajes(
     rel = reglas.relevancia
     resultado: list[Puntaje] = []
     for i, e in enumerate(entradas):
-        foco, detalle_foco = foco_de(e.miembros, reglas)
+        foco, detalle_foco = foco_de(e.miembros, reglas, cfg)
         pertenencia, detalle_pertenencia = pertenencia_de(e.miembros, temas, reglas, e.tema)
         r = Componente(rel.peso_foco * foco * pertenencia, {**detalle_foco, **detalle_pertenencia, "peso_foco": rel.peso_foco})
         c_i, vacios_i = impacto(e, reglas, cfg, modalidad)

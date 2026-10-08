@@ -21,6 +21,7 @@ from streamlit.testing.v1 import AppTest
 from src import contexto, contexto_sbp, corrida as co, db, interfaz as ui, prioridad
 from src.configuracion import RAIZ, ConfigModalidad, cargar_corrida, cargar_fuentes, cargar_modalidad, cargar_vinculos
 from src.ficha import construir_ficha, leer_datos
+from tests.navegacion_ayuda import ir_a_pantalla
 
 BASE = RAIZ / "data" / "senales.duckdb"
 APP = RAIZ / "app.py"
@@ -211,21 +212,18 @@ def textos(at: AppTest) -> str:
 def test_banca_muestra_priorizar_explicar_y_producir_con_puntajes_de_banca_y_editorial_al_volver(app) -> None:
     antes = huella(BASE)
     at = app
-    at.session_state["pantalla"] = "bandeja"
-    at.run()
+    ir_a_pantalla(at, "bandeja")
     assert not at.exception
     assert "calculados para esta sesión" not in textos(at)
     editorial = [str(f.value) for f in at.dataframe]
     at.session_state["modalidad"] = "banca"
     for pantalla in ("bandeja", "ficha", "paquete"):
-        at.session_state["pantalla"] = pantalla
         at.session_state["id_grupo"] = GRUPO
-        at.run()
+        ir_a_pantalla(at, pantalla)
         assert not at.exception, (pantalla, [e.value for e in at.exception])
         assert not [e for e in at.error], (pantalla, [e.value for e in at.error])
         assert "Puntajes de Banca calculados para esta sesión sobre una copia de la base" in textos(at)
-    at.session_state["pantalla"] = "bandeja"
-    at.run()
+    ir_a_pantalla(at, "bandeja")
     assert "Continuidad operativa" in textos(at) + " ".join(str(x.label) for x in at.get("expander") if hasattr(x, "label"))
     at.session_state["modalidad"] = "editorial"
     at.run()
@@ -254,8 +252,7 @@ def test_el_script_se_emite_al_cambiar_de_etapa_y_no_al_volver_a_dibujar(app) ->
     at = app
     at.run()
     assert not [h for h in at.get("html") if "scrollTo" in str(h.proto)]       # primera carga: no
-    at.session_state["pantalla"] = "bandeja"
-    at.run()
+    ir_a_pantalla(at, "bandeja")
     assert [h for h in at.get("html") if "ir arriba: bandeja" in str(h.proto)]
     at.run()                                                                   # mismo dibujo: no se repite
     assert not [h for h in at.get("html") if "scrollTo" in str(h.proto)]

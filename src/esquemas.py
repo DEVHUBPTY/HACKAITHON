@@ -573,7 +573,7 @@ class RegistroFichasJsonl(BaseModel):
     """Una línea de ``outputs/fichas.jsonl``: los diez campos del contrato, con sus tipos, más los que agrega el sistema.
 
     ``estado_revision`` es la última fila de la tabla ``revisiones`` del caso. ``borrador`` es siempre ``true``: nada se publica.
-    Los campos extra (``id_grupo``, ``version``, ``alcance``, ``ficha`` y ``revision_provisional``, D-112) están declarados; cualquier otro se rechaza.
+    Los campos extra (``id_grupo``, ``version``, ``alcance``, ``ficha`` y ``revision_provisional``, D-112, y ``nota_estado``) están declarados; cualquier otro se rechaza.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -594,6 +594,7 @@ class RegistroFichasJsonl(BaseModel):
     version: int | None = None
     alcance: str = Field(min_length=1)
     ficha: Ficha
+    nota_estado: str | None = None  # C-07: un caso descartado cuyo grupo ya no está en el snapshot actual se rotula aquí (el caso se conserva)
     revision_provisional: bool = False  # D-112: la fila vigente la hizo un revisor provisional (el estado_revision no cambia)
 
     @model_validator(mode="after")

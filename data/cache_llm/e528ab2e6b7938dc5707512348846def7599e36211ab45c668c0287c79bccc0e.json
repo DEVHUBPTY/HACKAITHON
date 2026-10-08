@@ -1,0 +1,12 @@
+{
+ "clave": "e528ab2e6b7938dc5707512348846def7599e36211ab45c668c0287c79bccc0e",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "paquete_editorial",
+ "version_cache": "1",
+ "tokens_entrada": 1468,
+ "tokens_salida": 198,
+ "creado_utc": "2026-10-08T20:17:24Z",
+ "respuesta": "{\"resumen_web\":[{\"texto\":\"Tres medios reportan que el presidente de Panamá viajará a Asia.\",\"afirmaciones\":[\"A4\"]},{\"texto\":\"Según prensa-latina.cu, el presidente panameño visitará Singapur y Vietnam.\",\"afirmaciones\":[\"A1\"]},{\"texto\":\"Según laestrella.com.pa, Mulino viajará a Asia y suscribirá convenios bilaterales con Singapur y Vietnam.\",\"afirmaciones\":[\"A2\"]},{\"texto\":\"Según revistaeyn.com, el presidente de Panamá visita Singapur y Vietnam en busca de inversiones.\",\"afirmaciones\":[\"A3\"]},{\"texto\":\"El grupo de registros reúne 3 titulares de 3 medios, con 3 procedencias independientes estimadas.\",\"afirmaciones\":[\"A4\",\"A5\"]}]}"
+}

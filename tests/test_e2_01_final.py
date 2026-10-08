@@ -14,6 +14,7 @@ from src.configuracion import RAIZ, cargar_interfaz, cargar_modalidad, cargar_pr
 from src.ficha import construir_ficha
 from src.revision import principal as revision_main
 from tests import ficha_ayuda as h
+from tests.navegacion_ayuda import ir_a_pantalla
 from tests.motor_falso import MotorFalso, config_de_prueba
 from tests.test_e2_01_banca import fila
 
@@ -117,8 +118,7 @@ def test_banca_se_calcula_sola_en_una_copia_de_sesion_y_el_mensaje_conserva_el_c
     assert "poetry run python -m src.puntaje --modalidad {modalidad}" in CFG_UI.textos.sin_puntajes
     at = app_editorial.run()
     at.selectbox(key="modalidad").select("banca").run()
-    at.session_state["pantalla"] = "bandeja"
-    at = at.run()
+    at = ir_a_pantalla(at, "bandeja")
     assert not at.exception
     aviso = cargar_corrida().textos.aviso_copia_modalidad.format(modalidad="Banca")
     assert any(aviso in str(c.value) for c in at.caption)

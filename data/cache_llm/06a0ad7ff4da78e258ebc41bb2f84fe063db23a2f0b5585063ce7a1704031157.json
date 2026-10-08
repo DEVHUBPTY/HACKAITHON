@@ -1,0 +1,12 @@
+{
+ "clave": "06a0ad7ff4da78e258ebc41bb2f84fe063db23a2f0b5585063ce7a1704031157",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "paquete_editorial",
+ "version_cache": "1",
+ "tokens_entrada": 1789,
+ "tokens_salida": 231,
+ "creado_utc": "2026-10-08T20:17:49Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta vigilancia epidemiológica ante caso sospechoso de peste neumónica en Rusia\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"Si la población sigue de cerca los avisos sobre enfermedades infecciosas, este tema podría resultar relevante para su información sanitaria cotidiana.\", \"afirmaciones\": [\"A4\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún indicador o dato oficial vinculado a la vigilancia epidemiológica de este tema?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras procedencias independientes han reportado sobre este tema además de TVN Panamá?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Qué fuentes oficiales podrían aportar un dato verificable sobre la vigilancia epidemiológica mencionada?\", \"vacio\": \"sin_dato_oficial\"}]}"
+}

@@ -1,0 +1,12 @@
+{
+ "clave": "d1fd4f4fa7a7ec51cd9408bf3186a4f8fd401a0de9e64ef887a7935d0fb32522",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.3",
+ "prompt": "afirmaciones_ficha",
+ "version_cache": "1",
+ "tokens_entrada": 1847,
+ "tokens_salida": 337,
+ "creado_utc": "2026-10-08T20:18:14Z",
+ "respuesta": "{\"afirmaciones\": [{\"id\": \"A1\", \"tipo\": \"declaración\", \"texto\": \"TVN Panamá reporta que dispararon contra el vehículo del exdiputado Pedro Torres en Colón.\", \"citas\": [{\"id\": \"NOT-66fdc7fa16\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A2\", \"tipo\": \"hecho\", \"texto\": \"El grupo de registros GRP-1b52bb958d contabiliza 1 titular de 1 medio que reporta este tema.\", \"citas\": [{\"id\": \"GRP-1b52bb958d\", \"campo\": \"n_titulares\"}, {\"id\": \"GRP-1b52bb958d\", \"campo\": \"n_medios\"}]}, {\"id\": \"A3\", \"tipo\": \"hecho\", \"texto\": \"El grupo de registros GRP-1b52bb958d estima 1 procedencia independiente.\", \"citas\": [{\"id\": \"GRP-1b52bb958d\", \"campo\": \"n_procedencias\"}]}, {\"id\": \"A4\", \"tipo\": \"hipótesis\", \"texto\": \"Si la población de Colón conociera este reporte, el tema podría resultar relevante para su percepción de seguridad en la zona.\", \"base\": [\"A1\", \"A2\", \"A3\"], \"citas\": []}]}"
+}
