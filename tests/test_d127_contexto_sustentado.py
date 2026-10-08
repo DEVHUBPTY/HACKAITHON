@@ -55,9 +55,8 @@ def test_un_titular_de_logistica_sin_apoyo_lexico_no_trae_ningun_vinculo_y_dice_
 @pytest.mark.parametrize(
     ("titular", "termino"),
     [
-        ("Exportaciones chinas sostienen la demanda de carga contenerizada pese a la debilidad de EE. UU.", "exportaciones"),
         ("Puerto de Balboa mueve más contenedores en septiembre", "contenedores"),
-        ("El Canal registra récord de TEU", "teu"),
+        ("El Canal de Panamá registra récord de TEU", "teu"),
         ("Panamá busca más comercio exterior por sus puertos", "comercio exterior"),
     ],
 )

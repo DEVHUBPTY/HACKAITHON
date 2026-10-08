@@ -248,7 +248,7 @@ def test_una_cita_de_noticia_separa_publicacion_y_deteccion_sin_sustituir_una_po
 def test_una_cita_de_sismo_trae_la_hora_del_evento_en_panama_y_el_estado(con) -> None:
     s = ui.detalle_cita(con, "SIS-us7000test", "magnitude", CFG, CFG_VER)
     f = etiquetas(s)
-    assert s.valor == "5.1" and f["Hora del evento"] == "2026-10-06 02:30 (hora de Panamá)" and f["Estado"] == "reviewed"
+    assert s.valor == "5.1 magnitud" and f["Hora del evento"] == "2026-10-06 02:30 (hora de Panamá)" and f["Estado"] == "reviewed"
     assert "Puerto Armuelles" in f["Lugar"] and "usgs" in s.url
 
 
@@ -317,7 +317,7 @@ def test_sin_generacion_integrada_la_interfaz_lo_dice_y_no_inventa_un_borrador()
     for cfg in (sin_funcion, sin_modulo):
         assert ui.cargar_generador(cfg) is None
         e = ui.obtener_paquete("GRP-1", "editorial", cfg)
-        assert e.estado == "sin_integrar" and e.paquete is None and e.motivo == "Generación disponible cuando se integre E1-12."
+        assert e.estado == "sin_integrar" and e.paquete is None and e.motivo == cfg.textos.sin_borrador
 
 
 def test_con_generador_se_pide_solo_cache_y_se_aplanan_las_secciones() -> None:

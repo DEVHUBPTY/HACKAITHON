@@ -26,7 +26,7 @@ cargar:                             # D-128: la arquitectura mínima del PDF (se
     - {etiqueta: "Almacenamiento", medida: filas_en_base, unidad: "filas en senales.duckdb (noticias, indicadores y sismos)", pantallas: [calidad]}
     - {etiqueta: "Búsqueda y agrupación", medida: grupos, unidad: "grupos de noticias", pantallas: [organizar, contextualizar, consulta]}
     - {etiqueta: "Motor de priorización", medida: grupos_puntuados, unidad: "grupos puntuados", pantallas: [bandeja]}
-    - {etiqueta: "Generación con evidencias", medida: borradores_en_cache, unidad: "respuestas del LLM en la caché de borradores", pantallas: [paquete]}
+    - {etiqueta: "Generación con evidencias", medida: borradores_en_cache, unidad: "respuestas del LLM guardadas (no son borradores por grupo)", pantallas: [paquete]}
     - {etiqueta: "Interfaz", medida: fichas_disponibles, unidad: "fichas de evidencia disponibles", pantallas: [ficha]}
     - {etiqueta: "Revisión humana", medida: casos_revisados, unidad: "casos abiertos para revisar", pantallas: [revision]}
     - {etiqueta: "Registro en Notion", medida: casos_exportados, unidad: "casos exportados a la fila de Notion", pantallas: [revision]}
@@ -58,7 +58,7 @@ registro_notion:                    # D-128: etapa 7, el «registro en Notion» 
   boton_exportar_huerfano: "Registro en Notion: exportar {id_caso}"
   boton_api: "Crear o actualizar la ficha en Notion por la API"
   ayuda_api: "Necesita NOTION_TOKEN en local.env y red. Primero exporta el caso; sin token o sin red queda la exportación local (docs/notion.md)."
-  sin_token: "La sincronización por la API (E3-03) no está configurada: falta NOTION_TOKEN en local.env. Con el Markdown y el CSV se registra a mano, o con `poetry run python -m src.exportar --caso {id_caso} --notion`."
+  sin_token: "La sincronización por la API no está configurada: falta NOTION_TOKEN en local.env. Con el Markdown y el CSV se registra a mano, o con `poetry run python -m src.exportar --caso {id_caso} --notion`."
   api_ok: "{id_caso}: ficha creada o actualizada en Notion."
   api_fallo: "{id_caso}: la API de Notion no respondió o rechazó la ficha ({detalle}). La exportación local quedó escrita."
 
@@ -113,6 +113,8 @@ citas:
   aviso_anual: "Dato anual del Banco Mundial: no describe la situación actual."
   etiqueta_url_api: "Fuente de datos (API)"          # fuente_url del contrato de datos: devuelve JSON crudo, se conserva como procedencia
   etiqueta_enlace_humano: "Ver en el Banco Mundial"
+  etiqueta_periodo: "Período"                # D-129: periodo de un registro SIS-
+  etiqueta_limitaciones: "Limitaciones"      # D-129: limitaciones de un registro SIS-
   plantilla_enlace_indicador: "https://datos.bancomundial.org/indicador/{indicador}?locations={iso2}"   # página legible (en español; la versión en inglés daba 504)
   iso2_por_pais: {PAN: PA, CRI: CR, COL: CO, DOM: DO, MEX: MX, GTM: GT}   # los 6 países del reto; un país sin entrada solo muestra la URL de la API
 
@@ -151,6 +153,8 @@ paquete:                            # etiquetas de los campos del paquete (docs/
 revision:                           # los cinco estados del reto (sección 8); las transiciones y el registro viven en config/revision.yaml (E1-16)
   estados: ["nuevo", "en revisión", "requiere evidencia", "aprobado como borrador", "descartado"]
   estado_inicial: "nuevo"
+  borrador_desde_cache: "desde la caché: aún no es una versión del caso; «Regenerar borrador» la guarda como versión nueva (sin LLM ni red)."
+  titulo_huerfanos: "Casos de grupos que ya no están en la base"
 
 textos:
   empate:                           # D-105: el empate en P se muestra; el orden dentro del empate es la regla del reto
@@ -160,10 +164,10 @@ textos:
   sintetico: "SINTÉTICO"
   sintetico_ayuda: "Registro de prueba creado por el equipo; no es una noticia real."
   sin_base: "No hay base de datos: ejecute primero la carga, la normalización, la clasificación y el puntaje."
-  sin_demo: "No existe la base de demo (data/demo.duckdb). La crea C-06; mientras tanto se usa el snapshot."
-  banca_parcial: "La modalidad Banca está incompleta (D-90): la ficha y la tabla de acciones existen, pero la bandeja bancaria todavía no está configurada."
+  sin_demo: "No existe la base de demo (data/demo.duckdb). Mientras tanto se usa el snapshot."
+  banca_parcial: "La modalidad Banca está incompleta: la ficha y la tabla de acciones existen, pero la bandeja bancaria todavía no está configurada."
   sin_puntajes: "Esta modalidad todavía no tiene puntajes en la base: ejecute `poetry run python -m src.puntaje --modalidad {modalidad}` (una base guarda una modalidad a la vez)."
-  sin_borrador: "Generación disponible cuando se integre E1-12."
+  sin_borrador: "La generación del borrador todavía no está disponible."
   sin_borrador_ayuda: "Aquí aparecerá el borrador de la modalidad (paquete editorial o de investigación) con su leyenda de alcance."
   borrador_no_listo: "No hay borrador en caché para este grupo: la interfaz no espera al modelo ni usa la red."
   sin_revision: "Este grupo todavía no se abrió para revisar. Al abrirlo nace su caso (CASO-…) y la revisión queda registrada fila por fila."

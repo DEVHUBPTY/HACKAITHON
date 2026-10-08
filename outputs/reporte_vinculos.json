@@ -4,37 +4,36 @@
   "grupos_del_banco_mundial": 69,
   "grupos_delegados_a_otra_fuente": 0,
   "con_vinculo": {
-    "n": 3,
+    "n": 2,
     "de": 69,
-    "proporcion": 0.0435,
+    "proporcion": 0.029,
     "ic95": [
-      0.0149,
-      0.1202
+      0.008,
+      0.0997
     ]
   },
   "sin_vinculo": {
-    "n": 66,
+    "n": 67,
     "de": 69,
-    "proporcion": 0.9565,
+    "proporcion": 0.971,
     "ic95": [
-      0.8798,
-      0.9851
+      0.9003,
+      0.992
     ]
   },
   "sin_vinculo_por_motivo": {
-    "sin_relacion_sustentada": 46,
+    "sin_relacion_sustentada": 47,
     "tema_sin_indicador": 20
   },
   "con_vinculo_por_relacion": {
-    "directa": 2,
-    "indirecta": 1
+    "directa": 2
   },
   "con_vinculo_por_indicador": {
     "FP.CPI.TOTL.ZG": 1,
-    "NE.EXP.GNFS.ZS": 2
+    "NE.EXP.GNFS.ZS": 1
   },
   "comparacion_con_cifra_del_titular": {},
-  "filas_en_vinculos": 99,
+  "filas_en_vinculos": 89,
   "usgs": {
     "nota": "Eventos de USGS como contexto; no informan daños ni pérdidas. Solo cubre el periodo extraído de USGS (fuentes.yaml).",
     "grupos_de_sismos": 1,

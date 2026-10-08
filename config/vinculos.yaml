@@ -153,7 +153,13 @@ reglas_vinculo:
   exportaciones_logistica:
     tema: logistica
     terminos: [exportacion, exportaciones, comercio exterior, contenedor, contenedores, contenerizada, contenerizadas, contenerizado, teu, teus]
+    # D-129: el indicador es de Panamá, así que el titular debe nombrar a Panamá o a un actor/lugar panameño del comercio exterior, y no
+    # atribuir las exportaciones a otro país («Exportaciones chinas sostienen la demanda de carga contenerizada pese a la debilidad de EE. UU.»).
+    requiere: [panama, panameno, panamena, panamenos, panamenas, zlc, zona libre de colon, balboa, manzanillo, puerto de cristobal,
+               autoridad del canal, acp, mici]
+    exclusiones: [exportaciones chinas, exportaciones de china, exportaciones estadounidenses, exportaciones de ee uu, exportaciones de estados unidos,
+                  exportaciones europeas, exportaciones de la ue, exportaciones japonesas, exportaciones coreanas, exportaciones indias]
     fuente: indicador
     id: NE.EXP.GNFS.ZS
     relacion: indirecta
-    limitacion: "No mide tránsitos ni carga; es solo el contexto de exportaciones como % del PIB, anual."
+    limitacion: "No mide tránsitos ni carga; es solo el contexto de exportaciones de Panamá como % del PIB, anual."

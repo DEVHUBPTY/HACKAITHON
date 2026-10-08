@@ -218,7 +218,7 @@ def test_la_pantalla_rotula_la_aprobacion_del_asistente_como_provisional_y_la_de
     asistente = "Asistente (provisional, D-101)"
     at = app.run()
     at.selectbox(key="revision_revisor").select(asistente).run()
-    assert marca in textos(at) and "una persona rehace la aprobación en C-09" in textos(at)
+    assert marca in textos(at) and "una persona rehace la aprobación." in textos(at)
     at = at.button(key="revision_abrir").click().run()
     at = at.button(key="revision_aceptar").click().run()
     assert not at.exception

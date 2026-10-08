@@ -105,6 +105,8 @@ def termino_que_dispara(titulares: Sequence[str], regla: ReglaVinculo) -> str | 
     """
     textos = [_normalizar(t) for t in titulares]
     textos = [x for x in textos if not any(m.strip() and _palabra_completa(m).search(x) for m in regla.exclusiones)]
+    if regla.requiere:   # D-129: el titular que dispara debe además nombrar a Panamá (o a un actor panameño), según `requiere`
+        textos = [x for x in textos if any(_palabra_completa(r).search(x) for r in regla.requiere)]
     for termino in regla.terminos:
         if any(_palabra_completa(termino).search(x) for x in textos):
             return termino

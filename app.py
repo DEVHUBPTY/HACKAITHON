@@ -204,7 +204,7 @@ def pantalla_calidad(ctx: ui.Contexto) -> None:
     if r["sinteticos"]:
         insignia_sintetico(ctx)
         st.caption(f"{r['sinteticos']} registros de la base son de prueba.")
-    st.subheader("Reporte de carga (E1-02)")
+    st.subheader("Reporte de carga")
     if carga:
         archivos = carga["archivos"]
         st.dataframe(
@@ -598,7 +598,7 @@ def pantalla_revision(ctx: ui.Contexto) -> None:
     revisores = ui.revisores_de(ctx.modalidad, cfg_rev)
     revisor = st.selectbox("Quién revisa", revisores, index=None, placeholder="Elija a la persona que revisa", key="revision_revisor")
     st.caption(cfg_rev.limitacion_revisor + (f" Rol: {ui.rol_de(revisor, ctx.modalidad, cfg_rev)}." if revisor else "")
-               + (f" Revisor {cfg_rev.textos.marca_provisional}: una persona rehace la aprobación en C-09." if revisor and ui.es_provisional(revisor, ctx.modalidad, cfg_rev) else ""))
+               + (f" Revisor {cfg_rev.textos.marca_provisional}: una persona rehace la aprobación." if revisor and ui.es_provisional(revisor, ctx.modalidad, cfg_rev) else ""))
     if caso is None:
         ficha = ficha_de(str(ctx.ruta_base), id_grupo, ctx.modalidad)
         _que_comprobar(ctx, ficha)
@@ -703,13 +703,14 @@ def _huerfanos(ctx: ui.Contexto) -> None:
     perdidos = [c for c in ctx.revisiones.casos() if c.modalidad == ctx.modalidad and c.id_grupo not in vivos]
     if not perdidos or not ctx.filas:
         return
-    st.warning("Casos cuyo grupo ya no está en la base actual: " + ", ".join(f"{c.id_caso} ({c.id_grupo})" for c in perdidos)
-               + ". Se conservan con su última ficha revisada; no se pueden regenerar ni cambiar sus vínculos.")
-    for i, c in enumerate(perdidos):
-        if st.button(ctx.cfg.registro_notion.boton_exportar_huerfano.format(id_caso=c.id_caso), key=f"revision_exportar_huerfano_{i}"):
-            _exportar(ctx.revisiones, c.id_caso)
-            if (x := st.session_state.get("revision_exportacion")) and x[0] == c.id_caso:
-                st.success(f"{x[0]}: {'actualizado' if x[4] else 'exportado'} en {x[2]} y {x[3]}.")
+    with st.expander(ctx.cfg.revision.titulo_huerfanos, expanded=False):   # D-129: no estorba arriba de la pantalla
+        st.warning("Casos cuyo grupo ya no está en la base actual: " + ", ".join(f"{c.id_caso} ({c.id_grupo})" for c in perdidos)
+                   + ". Se conservan con su última ficha revisada; no se pueden regenerar ni cambiar sus vínculos.")
+        for i, c in enumerate(perdidos):
+            if st.button(ctx.cfg.registro_notion.boton_exportar_huerfano.format(id_caso=c.id_caso), key=f"revision_exportar_huerfano_{i}"):
+                _exportar(ctx.revisiones, c.id_caso)
+                if (x := st.session_state.get("revision_exportacion")) and x[0] == c.id_caso:
+                    st.success(f"{x[0]}: {'actualizado' if x[4] else 'exportado'} en {x[2]} y {x[3]}.")
 
 
 def _que_comprobar(ctx: ui.Contexto, ficha: Ficha) -> None:
@@ -725,7 +726,16 @@ def _borrador(ctx: ui.Contexto, caso: Any, version: Any) -> None:
     st.subheader("Borrador")
     versiones = ctx.revisiones.versiones(caso.id_caso)
     if version is None:
-        st.info("Este caso no tiene borrador: regenere el borrador (usa solo la caché) para poder corregirlo.")
+        en_cache = ui.borrador_en_cache_de_caso(version, caso.id_grupo, caso.modalidad, ctx.cfg, ruta_base=ctx.ruta_base)
+        if en_cache is None:
+            st.info("Este caso no tiene borrador y la caché tampoco: regenere el borrador (usa solo la caché) para poder corregirlo.")
+            return
+        st.markdown(f"**{ETIQUETA_BORRADOR}** · {ctx.cfg.revision.borrador_desde_cache}")
+        with st.expander("Borrador desde la caché (solo lectura)", expanded=False):
+            for titulo, parrafos in ui.secciones_de_paquete(en_cache, ctx.cfg.paquete.etiquetas):
+                st.markdown(f"**{titulo}**")
+                for p in parrafos:
+                    linea(p)
         return
     st.markdown(f"**{ETIQUETA_BORRADOR}** · versión {version.version} ({version.origen})")
     with st.expander(f"Borrador vigente · versión {version.version}", expanded=False):

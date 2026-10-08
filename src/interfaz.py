@@ -51,6 +51,7 @@ from src.configuracion import (
     cargar_revision,
     cargar_temas,
     cargar_verificacion,
+    cargar_vinculos,
 )
 from src.esquemas import Cita, Ficha
 from src.ficha import Linea, Seccion, Vista, texto_empate
@@ -63,6 +64,8 @@ PARAMETRO_DEMO = "--demo"
 COLUMNA_COMPONENTE = {"R": "relevancia", "I": "impacto", "U": "urgencia", "N": "novedad", "E": "evidencia"}
 ORIGEN_SINTETICO = "sintetico"
 SIN_TEMA = "sin tema"
+SIN_DATO = "sin dato"
+POSICION_ANIO_CITA = 4   # ``YYYY`` al inicio de una fecha ISO 8601
 # Prefijo de ID -> (tabla, columna del ID, columna de URL, datos que acompañan a la cita como (etiqueta, columna, clase)).
 # Cada fecha lleva SU etiqueta (de qué es): nunca una «Fecha» genérica ni una por otra (publicación ≠ detección; el año ≠ la extracción).
 # Es un mapa fijo: nunca se arma SQL con texto del usuario. Clases: texto | fecha (UTC -> hora de Panamá).
@@ -402,24 +405,42 @@ def detalle_cita(con: Any, id_registro: str, campo: str, cfg: ConfigInterfaz | N
     if fila is None:
         return _no_encontrada(id_registro, campo, "El registro no existe en esta base.")
     valor, url, datos = fila[0], fila[1], fila[2 : 2 + len(extras)]
-    texto = "sin dato" if valor is None else str(valor)    # un nulo es un nulo: nunca 0
+    texto = SIN_DATO if valor is None else str(valor)    # un nulo es un nulo: nunca 0
     filas: list[tuple[str, str]] = []
     for (etiqueta, _, clase), dato in zip(extras, datos, strict=True):
         if clase == "fecha":
             filas.append((etiqueta, hora_panama(str(dato) if dato else None, cfg_ver)))
         else:
-            filas.append((etiqueta, "sin dato" if dato is None else str(dato)))
+            filas.append((etiqueta, SIN_DATO if dato is None else str(dato)))
     if tabla == "indicadores":
         unidad = dict(filas).get("Unidad", "")
         if campo == "valor" and valor is not None:
-            texto = f"{float(valor):.{cfg.citas.decimales_valor}f}" + (f" {unidad}" if unidad and unidad != "sin dato" else "")
+            texto = f"{float(valor):.{cfg.citas.decimales_valor}f}" + (f" {unidad}" if unidad and unidad != SIN_DATO else "")
         filas.append(("Aviso", cfg.citas.aviso_anual))
+    if tabla == "sismos":
+        texto, filas = _completar_sismo(con, id_registro, campo, valor, texto, filas, cfg)
     sintetico = (pide_origen and fila[-1] == ORIGEN_SINTETICO) or id_registro.startswith("SYN-")
     enlace = None
     if tabla == "indicadores":
         por_columna = {c: d for (_, c, _), d in zip(extras, datos, strict=True)}
         enlace = enlace_indicador(por_columna.get("pais_iso3"), por_columna.get("indicador_id"), cfg)
     return DetalleCita(id_registro, campo, texto, url, True, bool(sintetico), filas=tuple(filas), enlace_humano=enlace)
+
+
+def _completar_sismo(con: Any, id_registro: str, campo: str, valor: Any, texto: str, filas: list[tuple[str, str]], cfg: ConfigInterfaz) -> tuple[str, list[tuple[str, str]]]:
+    """D-129: la magnitud lleva su unidad; el panel agrega el periodo y las limitaciones que guardó el vínculo (o las fijas de la regla).
+
+    El periodo y las limitaciones salen de la fila de ``vinculos`` que cita el evento (así «no coincide con la fecha de la noticia» solo
+    aparece cuando es contexto histórico); sin vínculo, del año del evento y de las limitaciones fijas de ``vinculos.yaml``.
+    """
+    cfg_vinc = cargar_vinculos()
+    if campo == "magnitude" and valor is not None:
+        texto = f"{valor} {cfg_vinc.sismos.unidad_magnitud}"
+    fila_v = con.execute("SELECT periodo, limitacion FROM vinculos WHERE id_evidencia = ? ORDER BY id_grupo LIMIT 1", [id_registro]).fetchone()
+    hora = con.execute("SELECT time FROM sismos WHERE id = ?", [id_registro]).fetchone()
+    periodo = (fila_v[0] if fila_v and fila_v[0] else None) or (str(hora[0])[:POSICION_ANIO_CITA] if hora and hora[0] else SIN_DATO)
+    limitacion = (fila_v[1] if fila_v and fila_v[1] else None) or " ".join(cfg_vinc.sismos.limitaciones)
+    return texto, [*filas, (cfg.citas.etiqueta_periodo, periodo), (cfg.citas.etiqueta_limitaciones, limitacion)]
 
 
 # ------------------------------------------------------------------ calidad (pantalla 1)
@@ -593,14 +614,19 @@ def detalle_de_grupo(con: Any, id_grupo: str, nombres_de_tema: Mapping[str, str]
     if g is None:
         return None
     filas = con.execute(
-        "SELECT id_noticia, titulo_limpio, titulo, medio, fecha_publicacion, procedencia FROM noticias WHERE id_grupo = ? ORDER BY fecha_publicacion NULLS LAST, id_noticia",
+        "SELECT id_noticia, titulo_limpio, titulo, medio, fecha_publicacion, procedencia, fecha_deteccion FROM noticias WHERE id_grupo = ? ORDER BY fecha_publicacion NULLS LAST, id_noticia",
         [id_grupo],
     ).fetchall()
     if limite is not None:
         filas = filas[:limite]
     titulares = [
-        {"Noticia": i, "Titular": tl or t or "", "Medio": m or "", "Publicación": hora_panama(f, cfg_ver), "Procedencia": pr or ""}
-        for i, tl, t, m, f, pr in filas
+        {
+            "Noticia": i, "Titular": tl or t or "", "Medio": m or "",
+            # D-129: cada fecha con su propio rótulo; una ausente dice «sin dato» y nunca se sustituye por la otra (publicación ≠ detección).
+            "Publicación": hora_panama(f, cfg_ver) if f else SIN_DATO, "Detección": hora_panama(d, cfg_ver) if d else SIN_DATO,
+            "Procedencia": pr or "",
+        }
+        for i, tl, t, m, f, pr, d in filas
     ]
     procs = [
         {"Procedencia": e, "Titulares": n, "Medios": (ms or "").replace(",", ", "), "Reglas": r or ""}
@@ -905,6 +931,18 @@ def _texto_de_elemento(x: Any) -> str:
         if "sector" in x and "motivo" in x:  # sector del boletín bancario (E2-02)
             return f"{x['sector']}: {x['motivo']}"
     return json.dumps(x, ensure_ascii=False)
+
+
+def borrador_en_cache_de_caso(version: Any, id_grupo: str, modalidad: str, cfg: ConfigInterfaz, ruta_base: Path | None = None, generador: Callable[..., Any] | None = None) -> Any | None:
+    """D-129: el borrador de la caché de un caso que todavía no tiene versión; ``None`` si el caso ya tiene una o la caché no lo tiene.
+
+    Solo lee (``solo_cache``): nunca llama al LLM ni escribe en ``revision.duckdb``. La interfaz lo muestra de solo lectura y rotulado
+    «desde la caché»; guardarlo como versión (de solo agregar) sigue siendo una acción de una persona (``Revisiones.regenerar``).
+    """
+    if version is not None:
+        return None
+    estado = obtener_paquete(id_grupo, modalidad, cfg, generador=generador, ruta_base=ruta_base)
+    return estado.paquete if estado.estado == "disponible" else None
 
 
 def secciones_de_paquete(paquete: Any, etiquetas: Mapping[str, str] | None = None) -> list[tuple[str, list[str]]]:

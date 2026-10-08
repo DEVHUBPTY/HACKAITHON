@@ -846,10 +846,14 @@ class ReglaVinculo(Vinculo):
     terminos: list[str] = Field(min_length=1)
     patrones: list[str] = Field(default_factory=list)   # expresiones regulares sobre texto sin tildes ni mayúsculas
     exclusiones: list[str] = Field(default_factory=list)
+    # D-129: el MISMO titular que dispara el término debe además contener alguno de `requiere` (palabra completa). Sustenta que el hecho
+    # sea de Panamá (p. ej. «exportaciones» + Panamá/ZLC): un término suelto no basta cuando el indicador es de Panamá y el titular puede
+    # hablar de otro país. Vacío = sin requisito.
+    requiere: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _listas_validas(self) -> ReglaVinculo:
-        if any(not x.strip() for x in (*self.terminos, *self.exclusiones)):
+        if any(not x.strip() for x in (*self.terminos, *self.exclusiones, *self.requiere)):
             raise ValueError("terminos y exclusiones: palabras no vacías")
         if self.tema is None and self.relacion != "evento":
             raise ValueError("una regla sin tema solo puede ser de relación `evento` (contexto de USGS)")
@@ -2672,6 +2676,8 @@ class CitasInterfaz(ModeloConfig):
     aviso_anual: str = Field(min_length=1)
     etiqueta_url_api: str = Field(min_length=1)               # la URL de la API es la procedencia del dato (fuente_url), no una página legible
     etiqueta_enlace_humano: str = Field(min_length=1)
+    etiqueta_periodo: str = Field(min_length=1)               # D-129: rótulo del periodo que cubre el dato de un registro SIS-
+    etiqueta_limitaciones: str = Field(min_length=1)          # D-129: rótulo de las limitaciones del registro
     plantilla_enlace_indicador: str = Field(min_length=1)     # lleva {indicador} y {iso2}
     iso2_por_pais: dict[str, str] = Field(default_factory=dict)   # ISO3 -> ISO2; sin entrada no se arma enlace (no se adivina)
 
@@ -2698,6 +2704,8 @@ class PaqueteInterfaz(ModeloConfig):
 class RevisionInterfaz(ModeloConfig):
     estados: list[str] = Field(min_length=1)
     estado_inicial: str
+    borrador_desde_cache: str = Field(min_length=1)   # D-129: rótulo del borrador que se lee de la caché para un caso sin versión
+    titulo_huerfanos: str = Field(min_length=1)       # D-129: expander de los casos cuyo grupo ya no está en la base
 
 
 class RegistroNotionInterfaz(ModeloConfig):
