@@ -6,13 +6,13 @@ La app (DuckDB) es la fuente de verdad; Notion recibe **exportaciones manuales**
   historial completo de la revisión y la leyenda de alcance (D-51);
 * una **fila CSV** para la base *Casos y evidencias* de Notion, con las columnas **exactas** de esa base (menos las fórmulas ``P`` y
   ``Rango``, que Notion calcula). Si el caso ya se había exportado, su fila se **reemplaza** (idempotente por ``ID caso``) y la
-  página de Notion se actualiza al importarla; automatizarlo con la API es E3-03 (opcional);
+  página de Notion se actualiza al importarla; ``--notion`` lo sincroniza por la API (E3-03, ``src/notion.py``);
 * ``outputs/fichas.jsonl``: una línea por caso, con los campos del contrato y ``estado_revision`` = última fila de ``revisiones``.
 
 Todo se marca BORRADOR, también un caso «aprobado como borrador». Las fechas de los datos son ISO 8601 UTC; la hora de Panamá solo
 aparece en el texto que lee la persona (el Markdown).
 
-Uso: ``poetry run python -m src.exportar --caso CASO-001 [--revision data/revision.duckdb] [--base data/senales.duckdb]``
+Uso: ``poetry run python -m src.exportar --caso CASO-001 [--notion] [--revision data/revision.duckdb] [--base data/senales.duckdb]``
 """
 
 from __future__ import annotations
@@ -24,13 +24,16 @@ import sys
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
+from collections.abc import Mapping
 from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
-from src.configuracion import RAIZ, ConfigRevision, cargar_interfaz, cargar_revision, cargar_temas, cargar_verificacion
+from src.configuracion import RAIZ, ConfigRevision, cargar_interfaz, cargar_notion, leer_local_env, cargar_revision, cargar_temas, cargar_verificacion
 from src.esquemas import ETIQUETA_BORRADOR, Ficha, RegistroFichasJsonl
 from src.ficha import CARPETA_PLANTILLAS, a_registro, escapar_markdown, vista
+from src.notion import ClienteNotion, ErrorNotion, SincronizacionIncompleta, SinConexion
+from src.registro import redactar
 from src.interfaz import hora_panama, rotulo_de_elemento, secciones_de_paquete
 from src.revision import ErrorDeRevision, Fila, Revisiones, huellas_de_exportacion, ruta_de_revision, rutas_de_exportacion
 
@@ -232,7 +235,11 @@ def principal(argv: list[str] | None = None) -> int:
     parser.add_argument("--base", type=Path, default=None, help="senales.duckdb (ya no hace falta para exportar: se exporta la ficha guardada)")
     parser.add_argument("--salida", type=Path, default=None)
     parser.add_argument("--fichas", type=Path, default=None)
+    parser.add_argument("--notion", action="store_true", help="además sincroniza el caso con la base «Casos y evidencias» por la API (E3-03); sin token o sin red degrada a la exportación local")
     args = parser.parse_args(argv)
+    if args.notion and args.demo:
+        print("ERROR: --notion no se combina con --demo: los casos sintéticos de la demo nunca van a la base real de Notion.", file=sys.stderr)
+        return 1
     carpeta, jsonl = rutas_de_exportacion(args.demo, cfg, RAIZ)
     args.salida, args.fichas = args.salida or carpeta, args.fichas or jsonl
     rev = Revisiones(args.revision or ruta_de_revision(args.demo, cfg), args.base, cfg, demo=args.demo, huellas=huellas_de_exportacion(args.demo, cfg, RAIZ))
@@ -242,6 +249,32 @@ def principal(argv: list[str] | None = None) -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
     print(f"{e.id_caso}: {'actualizado' if e.actualizada else 'exportado'} · {e.ruta_markdown} · {e.ruta_csv} · {args.fichas}")
+    return sincronizar_con_notion(e) if args.notion else 0
+
+
+def sincronizar_con_notion(e: Exportacion, env: Mapping[str, str] | None = None, cliente: ClienteNotion | None = None, limpiar_vacias: bool = False) -> int:
+    """Envía la exportación a Notion (E3-03). ``limpiar_vacias`` (X108): también limpia en Notion las propiedades de ``sin_valor_no_se_envia``. Sin token o sin red la exportación local ya está escrita: avisa y devuelve 0.
+    Un error de la API es real y devuelve 1. El token nunca se imprime."""
+    cfg = cargar_notion()
+    if cliente is None:
+        env = leer_local_env() if env is None else env
+        token = (env.get(cfg.variable_token) or "").strip()
+        if not token:
+            print(cfg.textos.sin_token.format(variable=cfg.variable_token), file=sys.stderr)
+            return 0
+        cliente = ClienteNotion(token, cfg)
+    try:
+        s = cliente.sincronizar(e.id_caso, e.fila, e.markdown, limpiar_vacias)
+    except SincronizacionIncompleta:
+        print(cfg.textos.incompleta.format(id_caso=e.id_caso), file=sys.stderr)
+        return 1
+    except SinConexion:
+        print(cfg.textos.sin_red, file=sys.stderr)
+        return 0
+    except ErrorNotion as exc:
+        print(f"ERROR: {redactar(str(exc))}", file=sys.stderr)
+        return 1
+    print(f"{s.id_caso}: {cfg.textos.sincronizado_nuevo if s.creada else cfg.textos.sincronizado_existente} · {s.url} · {s.bloques} bloques")
     return 0
 
 

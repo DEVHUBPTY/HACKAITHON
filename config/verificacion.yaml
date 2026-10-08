@@ -129,17 +129,22 @@ presentacion:
   sufijo_zona: "hora de Panamá"
   fecha_desconocida: "desconocida"
   decimales_valor: 2              # decimales al mostrar el valor de un dato oficial
+  decimales_valor_sbp: 4          # E3-02: la morosidad es una proporción de 0 a 1 (0,1234 = 12,34 %): con 2 decimales, 0,1235 y 0,1246 se verían ambos 0,12
+  separador_miles: ","            # X109: 3628535 se muestra 3,628,535 (nunca en notación científica); el separador decimal sigue siendo el punto
+  titulo_contexto_oficial: "Contexto oficial (no mide el hecho)"   # X91: dato oficial de relación `indirecta` (hoy, la SBP); aparte de «Datos oficiales»
   origen_fecha:                   # de dónde sale la fecha de inicio y fin de la cobertura
     publicacion: "publicación"
     deteccion: "detección"
   fuentes_oficiales:              # quién publica cada tipo de dato oficial (`vinculos.fuente`)
     indicador: "Banco Mundial"
     usgs: "USGS"
+    sbp: "Superintendencia de Bancos de Panamá"
   roles:                          # `vinculos.rol`
     panama: "dato de Panamá"
     comparable: "país comparable"
     tendencia: "serie de Panamá"
     evento: "evento sísmico"
+    sistema: "sistema bancario"
   advertencia_inyeccion: "Un titular de este grupo contiene un patrón de instrucción (posible inyección): se muestra como texto, nunca se obedece; revisar antes de usarlo."
   advertencia_recirculada: "Noticia recirculada: no se presenta como nueva."
 

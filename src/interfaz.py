@@ -21,8 +21,9 @@ import json
 import logging
 import re
 import sys
+from collections import Counter
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -39,6 +40,7 @@ from src.configuracion import (
     ConfigRestricciones,
     ConfigRevision,
     ConfigVerificacion,
+    PesosEditablesInterfaz,
     ReglasV13,
     cargar_carga,
     cargar_interfaz,
@@ -52,7 +54,8 @@ from src.configuracion import (
 )
 from src.esquemas import Cita, Ficha
 from src.ficha import Linea, Seccion, Vista, texto_empate
-from src.puntaje import COMPONENTES
+from src.evidencia import accion_recomendada
+from src.puntaje import COMPONENTES, empate_en_el_corte, rango_de
 from src.sectores import horizonte_de_grupo, sector_de_tema
 
 logger = logging.getLogger(__name__)
@@ -337,7 +340,7 @@ def citas_de_ficha(ficha: Ficha) -> list[Cita]:
     """Citas únicas de «qué está respaldado», en el orden en que aparecen (las que la app vuelve clicables)."""
     r = ficha.respaldado
     vistas: dict[tuple[str, str], Cita] = {}
-    for x in (*r.reportes, *r.datos_oficiales, *r.eventos_oficiales, *r.declaraciones):
+    for x in (*r.reportes, *r.datos_oficiales, *r.contexto_oficial, *r.eventos_oficiales, *r.declaraciones):
         for c in x.citas:
             vistas.setdefault((c.id, c.campo), c)
     return list(vistas.values())
@@ -524,7 +527,7 @@ def tabla_versiones(versiones: Sequence[Any], cfg_ver: ConfigVerificacion | None
 
 def vinculos_oficiales_de(ficha: Ficha) -> list[str]:
     """Los IDs oficiales (``IND-``, ``SIS-``, ``SBP-``) que respaldan la ficha y que una persona puede rechazar."""
-    ids = [c.id for x in (*ficha.respaldado.datos_oficiales, *ficha.respaldado.eventos_oficiales) for c in x.citas]
+    ids = [c.id for x in (*ficha.respaldado.datos_oficiales, *ficha.respaldado.contexto_oficial, *ficha.respaldado.eventos_oficiales) for c in x.citas]
     return list(dict.fromkeys(ids))
 
 
@@ -696,6 +699,206 @@ def secciones_de_paquete(paquete: Any, etiquetas: Mapping[str, str] | None = Non
         if parrafos:
             salida.append(((etiquetas or {}).get(clave) or clave.replace("_", " ").capitalize(), parrafos))
     return salida
+
+
+# ------------------------------------------------------------------ pesos editables (E3-04)
+#
+# Escenario de sesión («¿y si los pesos fueran otros?»): recalcula P, rango, acción y posición de las filas ya leídas con otros
+# pesos, y los compara con el ranking oficial. No escribe en config/, ni en la base, ni en el registro de revisión; nada de lo que
+# se genera o se exporta lo usa. Los pesos oficiales y sus límites viven en ``reglas_v1.3.yaml`` e ``interfaz.yaml``.
+
+
+def pesos_oficiales(reglas: ReglasV13 | None = None) -> dict[str, float]:
+    """Los pesos de ``reglas_v1.3.yaml`` en el orden R, I, U, N, E."""
+    pesos = (reglas or cargar_reglas()).pesos
+    return {k: float(getattr(pesos, k)) for k in COMPONENTES}
+
+
+def validar_pesos(pesos: Mapping[str, float], cfg: PesosEditablesInterfaz | None = None, reglas: ReglasV13 | None = None) -> list[str]:
+    """Errores de un juego de pesos (lista vacía si es válido): cada uno dentro del rango configurado y suma igual a la oficial (100)."""
+    cfg = cfg or cargar_interfaz().pesos_editables
+    oficiales = pesos_oficiales(reglas)
+    faltan = [k for k in COMPONENTES if k not in pesos]
+    if faltan:
+        return [f"Faltan pesos: {', '.join(faltan)}."]
+    pesos = redondear_pesos(pesos, cfg)          # X94: se valida (y se muestra) el valor redondeado, no el ruido de coma flotante
+    errores = [
+        cfg.textos.rango.format(componente=k, valor=_numero(pesos[k]), minimo=_numero(cfg.minimo), maximo=_numero(cfg.maximo))
+        for k in COMPONENTES
+        if not cfg.minimo <= pesos[k] <= cfg.maximo
+    ]
+    suma, objetivo = sum(pesos[k] for k in COMPONENTES), sum(oficiales.values())
+    if abs(suma - objetivo) > TOLERANCIA_SUMA:
+        errores.append(cfg.textos.suma.format(suma=_numero(suma), objetivo=_numero(objetivo)))
+    return errores
+
+
+def redondear_pesos(pesos: Mapping[str, float], cfg: PesosEditablesInterfaz | None = None) -> dict[str, float]:
+    """Los pesos redondeados a ``pesos_editables.decimales`` (config): lo que se valida, se muestra y se usa en el escenario."""
+    cfg = cfg or cargar_interfaz().pesos_editables
+    return {k: round(float(v), cfg.decimales) for k, v in pesos.items()}
+
+
+TOLERANCIA_SUMA = 1e-9   # épsilon de la suma en coma flotante; no es un parámetro del negocio
+
+
+def _numero(valor: float) -> str:
+    """``30.0`` se muestra «30»; ``2.5``, «2.5»."""
+    return f"{valor:g}"
+
+
+def es_oficial(pesos: Mapping[str, float], reglas: ReglasV13 | None = None) -> bool:
+    """¿Son exactamente los pesos oficiales? (entonces no hay escenario)"""
+    oficiales = pesos_oficiales(reglas)
+    return all(abs(pesos[k] - oficiales[k]) <= TOLERANCIA_SUMA for k in COMPONENTES)
+
+
+def escenario_de_pesos(
+    filas: Sequence[FilaBandeja],
+    pesos: Mapping[str, float],
+    modalidad: ConfigModalidad,
+    reglas: ReglasV13 | None = None,
+    cfg_prioridad: ConfigPrioridad | None = None,
+    cfg: PesosEditablesInterfaz | None = None,
+) -> list[FilaBandeja]:
+    """Las filas de la bandeja con P, rango, acción, posición y empate recalculados con ``pesos`` (solo en memoria).
+
+    La fórmula es la de ``puntaje_total`` (P = Σ peso × componente); el rango, el desempate (P mostrado, mayor U, menor ID, D-105)
+    y la tabla de acciones son los de siempre. El estado de evidencia no depende de P, así que no cambia. Con los pesos
+    oficiales reproduce el ranking oficial. Lanza ``ValueError`` si los pesos no son válidos.
+    """
+    reglas = reglas or cargar_reglas()
+    errores = validar_pesos(pesos, cfg, reglas)
+    if errores:
+        raise ValueError(" ".join(errores))
+    recalculadas = []
+    for f in filas:
+        p = sum(pesos[k] * f.componentes[k] for k in COMPONENTES)
+        rango = rango_de(p, reglas)
+        recalculadas.append(replace(f, puntaje=p, rango=rango, accion=accion_recomendada(rango, f.estado_evidencia, modalidad).accion))
+    cfg_prioridad = cfg_prioridad or cargar_prioridad()
+    ordenadas = ordenar_bandeja(recalculadas, reglas, cfg_prioridad)
+    decimales = cfg_prioridad.comparacion.decimales_empate
+    cuantos = Counter(round(f.puntaje, decimales) for f in ordenadas)
+    return [replace(f, posicion=i, empate_con=cuantos[round(f.puntaje, decimales)] - 1) for i, f in enumerate(ordenadas, start=1)]
+
+
+@dataclass(frozen=True)
+class Movimiento:
+    """Un grupo frente al ranking oficial: cuántos puestos sube (+) o baja (−) y qué cambia en P, rango y acción."""
+
+    id_grupo: str
+    tema: str
+    titular: str
+    posicion_oficial: int
+    posicion_escenario: int
+    puestos: int                 # oficial − escenario: positivo = sube en el escenario
+    p_oficial: float
+    p_escenario: float
+    rango_oficial: str
+    rango_escenario: str
+    accion_oficial: str
+    accion_escenario: str
+
+
+@dataclass(frozen=True)
+class ComparacionPesos:
+    """Escenario frente al ranking oficial: movimientos de todos los grupos y la estabilidad del top k (como ``eval.sensibilidad``)."""
+
+    movimientos: tuple[Movimiento, ...]        # en el orden del escenario
+    se_mueven: int                             # grupos cuya posición cambia
+    cambian_rango: int
+    cambian_accion: int
+    tamano_top: int
+    entran_al_top: tuple[str, ...]             # IDs que el escenario mete en el top k
+    salen_del_top: tuple[str, ...]             # IDs oficiales del top k que el escenario saca
+    cambia_el_orden_del_top: bool
+    empate_en_el_corte: dict[str, Any] | None  # D-105: el escenario también declara si el corte del top k parte un empate
+
+    @property
+    def sin_diferencias(self) -> bool:
+        return self.se_mueven == 0 and self.cambian_rango == 0 and self.cambian_accion == 0
+
+
+def comparar_con_oficial(
+    oficial: Sequence[FilaBandeja], escenario: Sequence[FilaBandeja], tamano_top: int | None = None, cfg_prioridad: ConfigPrioridad | None = None
+) -> ComparacionPesos:
+    """Compara el escenario con la bandeja oficial (las dos con los mismos grupos). El top k sale de ``sensibilidad.tamano_ranking``."""
+    cfg_prioridad = cfg_prioridad or cargar_prioridad()
+    k = tamano_top or cfg_prioridad.sensibilidad.tamano_ranking
+    por_id = {f.id_grupo: f for f in oficial}
+    if set(por_id) != {f.id_grupo for f in escenario}:
+        raise ValueError("el escenario y la bandeja oficial deben tener los mismos grupos")
+    movimientos = tuple(
+        Movimiento(
+            id_grupo=f.id_grupo, tema=f.tema, titular=f.titular, posicion_oficial=por_id[f.id_grupo].posicion, posicion_escenario=f.posicion,
+            puestos=por_id[f.id_grupo].posicion - f.posicion, p_oficial=por_id[f.id_grupo].puntaje, p_escenario=f.puntaje,
+            rango_oficial=por_id[f.id_grupo].rango, rango_escenario=f.rango,
+            accion_oficial=por_id[f.id_grupo].accion, accion_escenario=f.accion,
+        )
+        for f in escenario
+    )
+    top_oficial = [f.id_grupo for f in sorted(oficial, key=lambda f: f.posicion)[:k]]
+    top_escenario = [f.id_grupo for f in sorted(escenario, key=lambda f: f.posicion)[:k]]
+    decimales = cfg_prioridad.comparacion.decimales_empate
+    return ComparacionPesos(
+        movimientos=movimientos,
+        se_mueven=sum(1 for m in movimientos if m.puestos != 0),
+        cambian_rango=sum(1 for m in movimientos if m.rango_oficial != m.rango_escenario),
+        cambian_accion=sum(1 for m in movimientos if m.accion_oficial != m.accion_escenario),
+        tamano_top=k,
+        entran_al_top=tuple(i for i in top_escenario if i not in top_oficial),
+        salen_del_top=tuple(i for i in top_oficial if i not in top_escenario),
+        cambia_el_orden_del_top=top_oficial != top_escenario,
+        empate_en_el_corte=empate_en_el_corte([round(f.puntaje, decimales) for f in sorted(escenario, key=lambda f: f.posicion)], k),
+    )
+
+
+def mayores_movimientos(comparacion: ComparacionPesos, cuantos: int | None = None) -> list[Movimiento]:
+    """Los grupos que más puestos se mueven (en valor absoluto), con el orden del escenario como desempate; sin los que no se mueven."""
+    cuantos = cuantos or cargar_interfaz().pesos_editables.movimientos_mostrados
+    movidos = [m for m in comparacion.movimientos if m.puestos != 0]
+    return sorted(movidos, key=lambda m: (-abs(m.puestos), m.posicion_escenario))[:cuantos]
+
+
+def propuesta_de_pesos(
+    pesos: Mapping[str, float], justificacion: str, comparacion: ComparacionPesos | None = None,
+    reglas: ReglasV13 | None = None, cfg: PesosEditablesInterfaz | None = None,
+) -> dict[str, Any]:
+    """La propuesta de pesos con su justificación, para descargarla (PDF sección 4: «justificar cambios de pesos»).
+
+    Es un documento, no un cambio: no se escribe en ``config/`` ni en el registro. Lanza ``ValueError`` si los pesos no son válidos,
+    si son los oficiales o si la justificación es más corta que ``justificacion_minima_caracteres``.
+    """
+    reglas = reglas or cargar_reglas()
+    cfg = cfg or cargar_interfaz().pesos_editables
+    errores = validar_pesos(pesos, cfg, reglas)
+    if errores:
+        raise ValueError(" ".join(errores))
+    if es_oficial(pesos, reglas):
+        raise ValueError(cfg.textos.sin_cambios)
+    texto = " ".join(justificacion.split())
+    if len(texto) < cfg.justificacion_minima_caracteres:
+        raise ValueError(cfg.textos.justificacion.format(minimo=cfg.justificacion_minima_caracteres))
+    propuesta: dict[str, Any] = {
+        "estado": cfg.textos.propuesta_estado,
+        "version_reglas_base": reglas.version,
+        "pesos_oficiales": pesos_oficiales(reglas),
+        "pesos_propuestos": {k: float(pesos[k]) for k in COMPONENTES},
+        "justificacion": texto,
+    }
+    if comparacion is not None:
+        propuesta["efecto"] = {
+            "grupos_que_se_mueven": comparacion.se_mueven, "cambian_rango": comparacion.cambian_rango, "cambian_accion": comparacion.cambian_accion,
+            "tamano_top": comparacion.tamano_top, "entran_al_top": list(comparacion.entran_al_top), "salen_del_top": list(comparacion.salen_del_top),
+            "cambia_el_orden_del_top": comparacion.cambia_el_orden_del_top,
+        }
+    return propuesta
+
+
+def propuesta_a_json(propuesta: Mapping[str, Any]) -> str:
+    """JSON legible (UTF-8, sin escapar tildes) de ``propuesta_de_pesos``."""
+    return json.dumps(propuesta, ensure_ascii=False, indent=2) + "\n"
 
 
 @dataclass

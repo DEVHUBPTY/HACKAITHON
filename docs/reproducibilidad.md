@@ -92,9 +92,11 @@ Causa probable: variabilidad entre corridas de DeepSeek. Las dos cifras de recha
 
 ## Limitaciones
 
+- **`data/processed/sbp_series.csv`** se versiona por D-116 (riesgo aceptado), pero los .xlsx de `raw/sbp/` no: el CSV se hashea siempre que existe (`salidas.archivos_locales` de `config/reproducibilidad.yaml` conserva la ruta de degradación). Si falta, `scripts.reproducir --verificar` lo declara como limitación y omite su hash y las huellas que dependen de él (`tabla:vinculos`, `fichas`, los informes de vínculos y de validación); se regenera con `scripts.extraer --sbp`.
 - **RSS y GDELT no se versionan** (redistribución restringida, D-72). En un clon sin esos crudos `scripts.reproducir` no puede reconstruir `processed/`: lo declara como limitación, omite los hashes `reconstruido:*` y sigue desde el `processed/` versionado. Para reconstruirlos, `scripts.extraer` (receta en `data/README.md`). Si un crudo presente no coincide con el SHA-256 del manifest, se detiene: `raw/` es inmutable.
 - El texto del LLM solo se reproduce desde la caché; sin ella puede variar.
 - La nota del LLM sobre un par de contradicciones no se reproduce: el paso `puntaje` corre con `--sin-llm`. Hoy no hay pares candidatos, así que no cambia nada.
 - Entre máquinas con otro hardware o librerías numéricas el ruido de flotantes puede ser distinto: el redondeo a 4 decimales lo absorbe en la práctica, pero no está medido fuera de esta máquina (macOS, Python 3.11).
 - La validez de sustento la completa una persona (`outputs/revision_sustento.csv`) y no es un resultado del pipeline: si la persona ya la revisó, `metricas.json` la conserva.
 - Las revisiones humanas (`data/revision.duckdb`) son un insumo: este script no las lee ni las regenera.
+- `outputs/revision.json` está versionado pero es una **instantánea de la base de revisión local** (`data/revision.duckdb`, ignorada por git, datos de la sesión del equipo): se regenera con `poetry run python -m eval.revision` solo en la máquina que tiene esa base, nadie puede reconstruirlo desde el repositorio, y no forma parte de los hashes de `config/reproducibilidad.yaml`. La página de métricas lo declara fuente opcional (C-02).

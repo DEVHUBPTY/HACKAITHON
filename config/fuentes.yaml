@@ -201,6 +201,13 @@ gdelt:
 
 # País de la fuente (campo sourcecountry de GDELT, en inglés) -> nombre en español. Si no está aquí,
 # el país de la fuente queda nulo en fuentes.json (no se inventa).
+# D-72 / X84: rutas que NUNCA se versionan porque su fuente restringe la redistribución. Las ignora .gitignore y un test
+# (tests/test_d72_redistribucion.py) falla si `git ls-files` lista alguna. En git queda solo la receta (script, configuración, registro sin valores).
+redistribucion_restringida:
+  rss_tvn: ["data/raw/rss_tvn/"]
+  gdelt: ["data/raw/gdelt/"]
+  sbp: ["data/raw/sbp/"]   # solo los .xlsx crudos; el CSV agregado se versiona por D-116
+
 paises_es:
   Afghanistan: "Afganistán"
   Albania: "Albania"
@@ -355,3 +362,54 @@ usgs:
   orderby: time-asc
   licencia: "Dominio público de USGS; condiciones de elementos de terceros: pendiente de verificar"
   carpeta_cruda: usgs
+
+# Fuente D (E3-02): series AGREGADAS del sistema bancario de la Superintendencia de Bancos de Panamá (SBP), solo banca.
+# Los informes son los .xlsx públicos de https://www.superbancos.gob.pa (sección de estadísticas); cada serie es UNA fila del
+# informe (la del «Sistema Bancario»), nunca una fila por banco ni por cliente. Todo número está en docs/parametros.md.
+sbp:
+  sitio: "https://www.superbancos.gob.pa"
+  carpeta_cruda: sbp
+  pausa_segundos: 5              # entre dos descargas al sitio de la SBP (cortesía; el sitio no declara un límite)
+  periodo_inicio: "2024-01"      # 12 meses de 2024 (spec E3-02); formato YYYY-MM
+  periodo_fin: "2024-12"
+  periodos_por_serie: 12
+  aviso_legal_url: "https://www.superbancos.gob.pa/documentos/aviso_legal/aviso_legal.pdf"
+  # Texto fijo de la columna `condiciones` (aviso legal de la SBP, verificado el 2026-10-07). La autorización escrita que el aviso
+  # exige para reproducir o redistribuir NO se ha pedido: queda «Pendiente de verificar» (Pregunta abierta de la spec E3-02). Versionado por decisión del dueño (D-116), con el riesgo aceptado: el aviso legal de la SBP restringe la reproducción y redistribución sin autorización escrita; el repositorio es privado; si el repositorio o el paquete de entrega se hacen públicos, hay que pedir la autorización o retirar los valores.
+  condiciones: >-
+    Aviso legal de la SBP: reproducción y redistribución restringidas sin autorización previa por escrito; información solo
+    informativa y sujeta a cambios; la SBP no responde por análisis de terceros. Autorización de reutilización: Pendiente de verificar.
+  licencia: "Pendiente de verificar: el aviso legal de la SBP restringe la reproducción y la redistribución sin autorización escrita"
+  limitacion: >-
+    Dato agregado del sistema bancario, mensual; la SBP puede revisar las cifras. El análisis es del equipo y no una opinión oficial de la SBP.
+  informes:
+    morosos:
+      nombre: "Resumen de los saldos morosos por tipo de banca"
+      pagina: "/estadisticas-financieras/cartera-credito"   # página del sitio donde se publica el enlace
+      archivo: "Morosos.xlsx"                                # nombre del archivo en ese enlace
+      hoja: "Morosos"
+    provisiones:
+      nombre: "Resumen de las provisiones para préstamos por tipo de banca"
+      pagina: "/estadisticas-financieras/cartera-credito"
+      archivo: "Provisiones.xlsx"
+      hoja: "Provisiones"
+  fila_de_encabezados: 4         # fila de la hoja con el mes de cada columna (fecha)
+  series:
+    MOROSOS-SISTEMA:
+      nombre: "Saldo moroso del sistema bancario"
+      informe: morosos
+      fila: 6
+      etiqueta_fila: "SISTEMA BANCARIO"        # la fila debe llamarse así: si la SBP mueve filas, la conversión falla
+      unidad: "millones de balboas"
+    MOROSIDAD-SISTEMA:
+      nombre: "Saldo moroso sobre la cartera del sistema bancario"
+      informe: morosos
+      fila: 14
+      etiqueta_fila: "Morosos / Sistema Bancario"
+      unidad: "proporción de la cartera del sistema (0 a 1)"
+    PROVISIONES-SISTEMA:
+      nombre: "Provisiones para préstamos del sistema bancario"
+      informe: provisiones
+      fila: 6
+      etiqueta_fila: "SISTEMA BANCARIO"
+      unidad: "millones de balboas"

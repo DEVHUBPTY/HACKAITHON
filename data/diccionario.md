@@ -46,6 +46,22 @@ No se guarda la descripción del RSS ni `socialimage` (D-31, D-72).
 
 `validar_snapshot` compara cada `valor` con el crudo: un 0 solo es válido si el crudo trae 0.
 
+## `sbp_series.csv`: series agregadas de la SBP, fuente D (3 series × 12 meses de 2024 = 36 filas)
+
+| Campo | Contenido |
+|---|---|
+| `id_serie` | `SBP-<serie>`: `SBP-MOROSOS-SISTEMA`, `SBP-MOROSIDAD-SISTEMA`, `SBP-PROVISIONES-SISTEMA`. El ID de cada dato es `<id_serie>-<periodo>` (p. ej. `SBP-MOROSOS-SISTEMA-2024-03`), estable. |
+| `nombre_serie` | Nombre legible de la serie. |
+| `periodo` | Mes del dato, `YYYY-MM`. |
+| `valor` | Valor del informe; **vacío si la SBP no lo trae** (nunca 0). |
+| `unidad` | Unidad original del informe: `millones de balboas` o `proporción de la cartera del sistema (0 a 1)` (no es un porcentaje: 0,1234 = 12,34 %). |
+| `informe`, `pagina` | Informe de origen y su «página»: hoja y celda del .xlsx (p. ej. `hoja «Morosos», celda FX6`). |
+| `url` | URL exacta del archivo descargado (sin parámetro de versión). |
+| `fecha_extraccion` | Cuándo se descargó, ISO 8601 UTC. |
+| `condiciones` | Aviso legal de la SBP: reproducción y redistribución restringidas sin autorización escrita; autorización «Pendiente de verificar». |
+
+Solo agregados del «Sistema Bancario»: nunca información de clientes ni de bancos individuales.
+
 ## `eventos.geojson`: sismos de USGS (2024, lat 5-12, lon -86 a -76, M >= 3)
 
 Cada `Feature` lleva en `properties`: `id` (`SIS-<id USGS>`), `magnitude`, `time` y `updated`
@@ -247,13 +263,13 @@ Una fila por dato (o una por grupo sin vínculo). Es **contexto, nunca prueba de
 | Campo | Tipo | Nullable | Fuente | Clase | Descripción |
 |---|---|---|---|---|---|
 | `id_grupo` | VARCHAR | no | `grupos` | derivado | Grupo contextualizado. |
-| `id_evidencia` | VARCHAR | sí | `indicadores` · `sismos` | derivado | `IND-<pais>-<indicador>-<anio>` o `SIS-<id USGS>`. Nulo si el grupo no tiene vínculo. |
+| `id_evidencia` | VARCHAR | sí | `indicadores` · `sismos` · `sbp_series.csv` | derivado | `IND-<pais>-<indicador>-<anio>`, `SIS-<id USGS>` o `SBP-<serie>-<YYYY-MM>`. Nulo si el grupo no tiene vínculo. |
 | `tipo` | VARCHAR | sí | `vinculos.yaml` | derivado | Tipo de relación: `directa`, `indirecta` o `evento`. Nulo si no hay vínculo. |
 | `regla` | VARCHAR | no | contexto | derivado | Regla que generó la fila (`vinculo_por_subtema:<subtema>`, `vinculo_por_tema:<tema>`, `sin_vinculo_en_tabla:<tema>/<subtema>`, `sin_dato_en_periodo:<indicador>`). |
 | `limitacion` | VARCHAR | sí | `vinculos.yaml` | derivado | Limitación del vínculo más la nota del dato anual (año, último año disponible, años sin valor). Nunca dice «actual». |
 | `motivo_sin_vinculo` | VARCHAR | sí | `vinculos.yaml` | derivado | `tema_sin_indicador`, `sin_dato_en_periodo` (y los de sismos de E1-09b). Sin vínculo lleva `id_evidencia` nulo; la excepción es `candidatos_ambiguos` (USGS, E1-09b), que puede traer a la vez el `SIS-` del candidato y el motivo. |
-| `fuente` | VARCHAR | no | contexto | derivado | Quién escribe la fila: `indicador` (`src.contexto`) o `usgs` (`src.contexto_sismos`). |
-| `rol` | VARCHAR | sí | contexto | derivado | `panama` (último año con valor), `comparable` (otros países, mismo año, con dato), `tendencia` (últimos años de Panamá) o `evento` (USGS). |
+| `fuente` | VARCHAR | no | contexto | derivado | Quién escribe la fila: `indicador` (`src.contexto`), `usgs` (`src.contexto_sismos`) o `sbp` (`src.contexto_sbp`, E3-02). |
+| `rol` | VARCHAR | sí | contexto | derivado | `panama` (último año con valor), `comparable` (otros países, mismo año, con dato), `tendencia` (últimos años de Panamá) `evento` (USGS) o `sistema` (serie agregada del sistema bancario, SBP). |
 | `subtema` | VARCHAR | sí | `similitud_tema` | derivado | Subtema más cercano del grupo dentro de su tema (método B) solo si lo respalda un criterio de `vinculos.subtema.criterios` (D-92; desde E1-10c solo `lexico`: un titular nombra el subtema y ningún otro del mismo tema); si no, nulo (`sin_subtema`). |
 | `pais_iso3` | VARCHAR | sí | `indicadores` | derivado | País del dato. |
 | `indicador_id` | VARCHAR | sí | `indicadores` | derivado | Indicador del Banco Mundial. |
@@ -271,6 +287,10 @@ Una fila por dato (o una por grupo sin vínculo). Es **contexto, nunca prueba de
 | `url_evento` | VARCHAR | sí | `eventos.geojson` | derivado | Solo filas `usgs`: página del evento en USGS. |
 | `diferencia_horas` | DOUBLE | sí | contexto | derivado | Solo filas `usgs`: horas entre el evento y la noticia más cercana del grupo. |
 | `criterio_subtema` | VARCHAR | sí | contexto | derivado | D-92: por qué se aceptó el subtema del grupo, `margen` (1.º − 2.º subtema ≥ mínimo; inactivo desde E1-10c) o `lexico` (un titular nombra un término del subtema). Nulo si no hay subtema. |
+| `periodo` | VARCHAR | sí | contexto | derivado | E3-02: mes del dato de la SBP, `YYYY-MM`. Solo en las filas `sbp`. |
+| `informe` | VARCHAR | sí | contexto | derivado | E3-02: informe de la SBP del que sale el dato. Solo en las filas `sbp`. |
+| `pagina` | VARCHAR | sí | contexto | derivado | E3-02: página de origen del dato (hoja y celda del .xlsx). Solo en las filas `sbp`. |
+| `url_fuente` | VARCHAR | sí | contexto | derivado | E3-02: URL del archivo descargado de la SBP. Solo en las filas `sbp`. |
 
 En las filas `usgs`, `valor` es la magnitud y `unidad` es `magnitud`. `tipo` es `evento` solo con un `SIS-` (vinculado o candidato ambiguo) y nulo si no hay vínculo; `rol` es siempre `evento`.
 

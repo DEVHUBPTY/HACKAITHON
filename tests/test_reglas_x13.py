@@ -85,6 +85,8 @@ def test_vinculos_son_exactamente_los_del_diseno() -> None:
         "comercio_exterior": ("indicador", "NE.EXP.GNFS.ZS", "directa"),
         "telecomunicaciones": ("indicador", "IT.NET.USER.ZS", "directa"),
         "sismos": ("usgs", None, "evento"),
+        # E3-02 (X89): la banca vincula las series agregadas de la SBP; no está en el diseño original.
+        "banca_calificaciones": ("sbp", None, "indirecta"),
     }
     log = v.vinculos_por_tema["logistica"]
     assert (log.id, log.relacion) == ("NE.EXP.GNFS.ZS", "indirecta") and "tránsitos" in log.limitacion

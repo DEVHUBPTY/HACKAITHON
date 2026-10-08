@@ -55,13 +55,22 @@ Verificado el 2026-10-06 en la documentación pública. **Se vuelve a verificar 
 ### [8] Estadísticas financieras · [9] Estudios e informes
 - **Dónde:** https://www.superbancos.gob.pa (sección de estadísticas y analítica, e informes publicados).
 - **Qué hay:** estadísticas mensuales del sistema (balance, resultados, cartera de crédito, crédito por actividad, tasas), en versión individual y consolidada.
-- **Condiciones (aviso de la propia SBP):** información **solo informativa**, sujeta a cambios; la SBP **no se hace responsable** de análisis de terceros; sus opiniones formales están solo en sus informes oficiales.
-- **Cómo:** manual. Seleccionar informes y columnas **antes del evento**, conservando las advertencias de uso (E3-02).
+- **Qué se extrae (E3-02, 2026-10-07):** tres series **agregadas del «Sistema Bancario»**, enero a diciembre de 2024, de dos informes .xlsx públicos de la página `/estadisticas-financieras/cartera-credito` (el enlace se toma de la página; `scripts.extraer --sbp` guarda cada descarga en `data/raw/sbp/` y su URL exacta, SHA-256 y fecha en `data/registro_extraccion/`):
+  - `SBP-MOROSOS-SISTEMA`: saldo moroso (millones de balboas) · `Morosos.xlsx`, hoja `Morosos`, fila 6.
+  - `SBP-MOROSIDAD-SISTEMA`: saldo moroso / cartera del sistema (proporción, 0 a 1) · mismo informe, fila 14.
+  - `SBP-PROVISIONES-SISTEMA`: provisiones para préstamos (millones de balboas) · `Provisiones.xlsx`, hoja `Provisiones`, fila 6.
+  Cada dato lleva período (`YYYY-MM`), unidad, informe, **página de origen** (hoja y celda) y URL. Nunca se lee una fila por banco ni por cliente: la conversión verifica la etiqueta de la fila.
+- **Cómo corre:** `poetry run python -m scripts.extraer --sbp` (explícito: no entra en `--todo`) y después la conversión (`scripts.extraer` la hace sola), que escribe `data/processed/sbp_series.csv` con las columnas de la spec. **Los .xlsx crudos se quedan en local (D-72); el CSV con los valores agregados sí se versiona.** Versionado por decisión del dueño (D-116), con el riesgo aceptado: el aviso legal de la SBP restringe la reproducción y redistribución sin autorización escrita; el repositorio es privado; si el repositorio o el paquete de entrega se hacen públicos, hay que pedir la autorización o retirar los valores. Estado de la licencia: autorización escrita de la SBP **pendiente de pedir** (acción del dueño). Respeta `robots.txt` y espera `sbp.pausa_segundos` entre descargas.
+- **Condiciones (verificado el 2026-10-07 en el [aviso legal de la SBP](https://www.superbancos.gob.pa/documentos/aviso_legal/aviso_legal.pdf)):**
+  - La SBP no responde por la exactitud, oportunidad ni uso de la información; puede actualizarla, modificarla o eliminarla sin aviso.
+  - Los textos, bases de datos y demás elementos del sitio están protegidos por propiedad intelectual: **la reproducción, redistribución, adaptación o cualquier otra explotación de todo o parte del contenido está prohibida sin autorización previa por escrito de la SBP.**
+  - Consecuencia: la licencia de reutilización queda **«Pendiente de verificar»**. Los .xlsx crudos **no se versionan** (`.gitignore`, como el RSS y GDELT, D-72); el repositorio conserva el CSV con los 36 valores agregados (`data/processed/sbp_series.csv`), cada uno con su página de origen y las condiciones. Versionado por decisión del dueño (D-116), con el riesgo aceptado: el aviso legal de la SBP restringe la reproducción y redistribución sin autorización escrita; el repositorio es privado; si el repositorio o el paquete de entrega se hacen públicos, hay que pedir la autorización o retirar los valores. La autorización escrita **no se ha pedido**: hay que pedirla antes de empaquetar el CSV en una entrega pública (C-07) o publicarlo (pregunta abierta de `specs/E3-02.md`).
+- **Cuidado:** son datos informativos y revisables (la SBP puede corregirlos); los informes cubren desde 2010 y se actualizan cada mes, así que el enlace cambia de carpeta (`2026/08/…`). Todo texto que los use dice que el análisis es del equipo y no una opinión oficial de la SBP.
 
 ## Qué se verifica al congelar el snapshot
 - [x] URL del RSS de TVN confirmada y funcionando (2026-10-06)
 - [ ] GDELT responde y la ventana pedida está dentro de su cobertura (~3 meses)
 - [ ] Banco Mundial: excepciones de licencia por indicador revisadas
 - [ ] USGS: condiciones de terceros confirmadas
-- [ ] SBP: condiciones de reutilización registradas
+- [x] SBP: condiciones de reutilización registradas (2026-10-07): restringidas sin autorización escrita; autorización pendiente
 - [ ] Todo anotado en `fuentes.json`, el manifest y el Catálogo de datos

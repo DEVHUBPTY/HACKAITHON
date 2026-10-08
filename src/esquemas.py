@@ -450,16 +450,17 @@ class Respaldado(ModeloFicha):
     datos_oficiales: list[LineaRespaldo]
     eventos_oficiales: list[LineaRespaldo]
     declaraciones: list[LineaRespaldo]
+    contexto_oficial: list[LineaRespaldo] = Field(default_factory=list)   # X91: dato oficial de relación `indirecta`; se muestra, pero no mide el hecho
 
     @model_validator(mode="after")
     def _cada_lista_con_lo_suyo(self) -> Respaldado:
-        if any(x.tipo != "hecho" for x in (*self.reportes, *self.datos_oficiales, *self.eventos_oficiales)):
+        if any(x.tipo != "hecho" for x in (*self.reportes, *self.datos_oficiales, *self.eventos_oficiales, *self.contexto_oficial)):
             raise ValueError("reportes y datos o eventos oficiales son hechos")
         if any(x.tipo != "declaración" for x in self.declaraciones):
             raise ValueError("lo que dicen los titulares son declaraciones")
         if any(not c.id.startswith("GRP-") for x in self.reportes for c in x.citas):
             raise ValueError("un conteo cita al grupo")
-        if any(not c.id.startswith(("IND-", "SBP-")) for x in self.datos_oficiales for c in x.citas):
+        if any(not c.id.startswith(("IND-", "SBP-")) for x in (*self.datos_oficiales, *self.contexto_oficial) for c in x.citas):
             raise ValueError("un dato oficial cita un indicador")
         if any(not c.id.startswith("SIS-") for x in self.eventos_oficiales for c in x.citas):
             raise ValueError("un evento oficial cita un sismo")

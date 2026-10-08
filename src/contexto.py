@@ -21,10 +21,14 @@ Cada grupo (``GRP-``) se vincula con el indicador que le corresponde **por subte
   grupos con ``eventos.geojson`` (mismo subtema, ``fuente = 'usgs'``). Si el archivo falta, se borran las filas ``usgs`` viejas
   y el reporte lo declara. Toda la reescritura de ``vinculos`` es una sola transacción (todo o nada).
 
+* **SBP (banca):** lo resuelve ``src/contexto_sbp.py`` (E3-02), igual que USGS: un subtema con ``fuente: sbp`` en ``vinculos.yaml``
+  recibe una fila por serie agregada del sistema bancario (``sbp_series.csv``, ``fuente = 'sbp'``). La CLI lo hace **por defecto**
+  (``--sbp``); si el archivo falta, se borran las filas ``sbp`` viejas y el reporte lo declara.
+
 Los datos son anuales: ningún texto de salida usa la palabra «actual» (``palabras_prohibidas``). Cada fila guarda la
 ``regla`` que la generó y ``fuente = 'indicador'``; ``src.contexto`` reemplaza solo sus propias filas al volver a correr.
 
-Uso: ``poetry run python -m src.contexto`` (después de ``src.agrupacion``; vincula Banco Mundial y USGS).
+Uso: ``poetry run python -m src.contexto`` (después de ``src.agrupacion``; vincula Banco Mundial, USGS y SBP).
 """
 
 from __future__ import annotations
@@ -40,7 +44,7 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
-from src import contexto_sismos, db
+from src import contexto_sbp, contexto_sismos, db
 from src.clasificacion import proporcion
 from src.configuracion import (
     RAIZ,
@@ -70,6 +74,7 @@ REGLA_SIN_DATO = MOTIVO_SIN_DATO
 SEPARADOR_ANIOS = ", "
 REPORTE = "reporte_vinculos.json"
 EVENTOS = Path("processed") / "eventos.geojson"   # bajo ``data/``
+SERIES_SBP = Path("processed") / "sbp_series.csv"   # bajo ``data/`` (fuente D, E3-02)
 POSICION_ANIO = slice(0, 4)      # ``YYYY`` de una fecha ISO 8601
 
 
@@ -520,6 +525,56 @@ def quitar_filas_usgs(con: Any) -> None:
     con.execute("DELETE FROM vinculos WHERE fuente = ?", [contexto_sismos.FUENTE_VINCULO])
 
 
+def aplicar_sbp(
+    ruta_base: Path, ruta_series: Path, cfg: ConfigVinculos, con: Any | None = None
+) -> tuple[list[str], list[dict[str, Any]]]:
+    """Vincula con las series de la SBP los grupos que ``vinculos.yaml`` delega a esa fuente y reemplaza solo las filas ``fuente = 'sbp'``.
+
+    Mismo subtema que los demás vínculos (``leer_grupos``). Con ``con`` escribe dentro de la transacción abierta del llamador.
+    Devuelve ``(ids de los grupos de banca, filas)``.
+    """
+    fuentes = cargar_fuentes()
+    datos = contexto_sbp.cargar_series(ruta_series)
+    propia = con is None
+    if propia:
+        con = db.conectar(ruta_base)
+    try:
+        if propia:
+            db.asegurar_esquema(con)
+        filas: list[dict[str, Any]] = []
+        grupos_banca: list[str] = []
+        for g in leer_grupos(con, cfg.subtema):
+            resultado = contexto_sbp.vincular_grupo(g["id_grupo"], g["subtema"], datos, cfg, fuentes, g["criterio_subtema"])
+            if resultado is not None:
+                grupos_banca.append(g["id_grupo"])
+                filas.extend(resultado)
+        verificar_texto(filas, cfg)
+        _reemplazar(con, contexto_sbp.FUENTE_SBP, filas, propia)
+        return grupos_banca, filas
+    finally:
+        if propia:
+            con.close()
+
+
+def quitar_filas_sbp(con: Any) -> None:
+    """Borra las filas ``fuente = 'sbp'`` (dentro de la transacción del llamador): sin ``sbp_series.csv`` no queda vínculo viejo."""
+    con.execute("DELETE FROM vinculos WHERE fuente = ?", [contexto_sbp.FUENTE_SBP])
+
+
+def construir_reporte_sbp(grupos_banca: Sequence[str], filas: Sequence[Mapping[str, Any]], z: float) -> dict[str, Any]:
+    """Grupos de banca con dato de la SBP y sin él (n e IC de Wilson), y las series vinculadas."""
+    sin = {f["id_grupo"] for f in filas if f["motivo_sin_vinculo"]}
+    con = len(grupos_banca) - len(sin)
+    return {
+        "nota": "Series agregadas mensuales de 2024 del sistema bancario (SBP) como contexto; el análisis es del equipo y no una opinión oficial de la SBP.",
+        "grupos_de_banca": len(grupos_banca),
+        "con_dato": proporcion(con, len(grupos_banca), z),
+        "sin_dato": proporcion(len(sin), len(grupos_banca), z),
+        "series_vinculadas": sorted({str(f["indicador_id"]) for f in filas if f["id_evidencia"]}),
+        "filas_en_vinculos": len(filas),
+    }
+
+
 # ------------------------------------------------------------------ reporte
 
 
@@ -560,18 +615,22 @@ def construir_reporte(filas: Sequence[Mapping[str, Any]], delegados: Sequence[st
 
 
 ESTADO_SIN_EVENTOS = "no ejecutado: falta eventos.geojson"
+ESTADO_SIN_SBP = "no ejecutado: falta sbp_series.csv"
 
 
-def ejecutar(ruta_base: Path, ruta_reporte: Path, ruta_eventos: Path | None = None) -> dict[str, Any]:
+def ejecutar(ruta_base: Path, ruta_reporte: Path, ruta_eventos: Path | None = None, ruta_sbp: Path | None = None) -> dict[str, Any]:
     """Vincula los grupos de la base y escribe ``outputs/reporte_vinculos.json``. Devuelve el reporte.
 
     Con ``ruta_eventos`` también vincula los grupos de sismos con USGS (``reporte["usgs"]``); sin ella no toca filas ``usgs``.
     Si ``ruta_eventos`` no existe se borran las filas ``usgs`` viejas y el reporte lo declara (``ESTADO_SIN_EVENTOS``).
+    Con ``ruta_sbp`` también vincula los grupos de banca con las series de la SBP (``reporte["sbp"]``); igual que USGS, sin ella no toca
+    filas ``sbp`` y si no existe se borran las viejas (``ESTADO_SIN_SBP``).
     La reescritura de ``vinculos`` es una sola transacción: si algo falla, la tabla queda como estaba y no se escribe reporte.
     """
     cfg = cargar_vinculos()
     z = cargar_carga().salida.z_intervalo_confianza
     usgs: dict[str, Any] | None = None
+    sbp: dict[str, Any] | None = None
     con = db.conectar(ruta_base)
     try:
         db.asegurar_esquema(con)
@@ -586,6 +645,14 @@ def ejecutar(ruta_base: Path, ruta_reporte: Path, ruta_eventos: Path | None = No
                     logger.warning("No existe %s: se borran las filas usgs viejas", ruta_eventos)
                     quitar_filas_usgs(con)
                     usgs = {"estado": ESTADO_SIN_EVENTOS, "filas_en_vinculos": 0}
+            if ruta_sbp is not None:
+                if ruta_sbp.exists():
+                    grupos_banca, filas_sbp = aplicar_sbp(ruta_base, ruta_sbp, cfg, con)
+                    sbp = construir_reporte_sbp(grupos_banca, filas_sbp, z)
+                else:
+                    logger.warning("No existe %s: se borran las filas sbp viejas", ruta_sbp)
+                    quitar_filas_sbp(con)
+                    sbp = {"estado": ESTADO_SIN_SBP, "filas_en_vinculos": 0}
             con.commit()
         except BaseException:
             con.rollback()
@@ -595,6 +662,8 @@ def ejecutar(ruta_base: Path, ruta_reporte: Path, ruta_eventos: Path | None = No
     reporte = construir_reporte(filas, delegados, total, z)
     if usgs is not None:
         reporte["usgs"] = usgs
+    if sbp is not None:
+        reporte["sbp"] = sbp
     ruta_reporte.parent.mkdir(parents=True, exist_ok=True)
     with ruta_reporte.open("w", encoding="utf-8") as f:
         json.dump(reporte, f, ensure_ascii=False, indent=2)
@@ -609,12 +678,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--base", type=Path, default=RAIZ / "data" / cargar_normalizacion().salida.base_de_datos)
     parser.add_argument("--reporte", type=Path, default=RAIZ / "outputs" / REPORTE)
     parser.add_argument("--eventos", type=Path, default=RAIZ / "data" / EVENTOS, help="eventos.geojson de USGS (E1-09b)")
+    parser.add_argument("--sbp", type=Path, default=RAIZ / "data" / SERIES_SBP, help="sbp_series.csv de la SBP (E3-02)")
     args = parser.parse_args(argv)
     if not args.base.exists():
         logger.error("No existe %s: ejecute primero `normalizacion`, `limpieza`, `clasificacion` y `agrupacion`", args.base)
         return 1
     try:
-        r = ejecutar(args.base, args.reporte, args.eventos)
+        r = ejecutar(args.base, args.reporte, args.eventos, args.sbp)
     except Exception as exc:  # noqa: BLE001 - CLI: reportar y salir con error
         logger.error("%s", exc)
         return 1
@@ -625,6 +695,11 @@ def main(argv: list[str] | None = None) -> int:
             logger.info("sismos (USGS): %s", r["usgs"]["estado"])
         else:
             logger.info("sismos (USGS): %d grupos; resultado: %s", r["usgs"]["grupos_de_sismos"], r["usgs"]["por_resultado"])
+    if "sbp" in r:
+        if "estado" in r["sbp"]:
+            logger.info("banca (SBP): %s", r["sbp"]["estado"])
+        else:
+            logger.info("banca (SBP): %d grupos; con dato: %d", r["sbp"]["grupos_de_banca"], r["sbp"]["con_dato"]["n"])
     return 0
 
 

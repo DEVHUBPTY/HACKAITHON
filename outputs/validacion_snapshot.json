@@ -93,18 +93,28 @@
       "estado": "ok"
     },
     {
+      "comprobacion": "sbp:series_y_periodos",
+      "detalle": "3 series con 12 períodos cada una",
+      "estado": "ok"
+    },
+    {
+      "comprobacion": "sbp:unidad_pagina_condiciones",
+      "detalle": "todas las filas llevan unidad, página, informe y condiciones",
+      "estado": "ok"
+    },
+    {
       "comprobacion": "manifest:campos_minimos",
       "detalle": "version, fecha_corte_UTC, consultas, cantidad, licencias, sha256, transformaciones",
       "estado": "ok"
     },
     {
       "comprobacion": "manifest:historial",
-      "detalle": "3 versión(es) con cambios, revisiones y excluidos",
+      "detalle": "4 versión(es) con cambios, revisiones y excluidos",
       "estado": "ok"
     },
     {
       "comprobacion": "manifest:sha256",
-      "detalle": "5 huellas verificadas",
+      "detalle": "6 huellas verificadas",
       "estado": "ok"
     },
     {
@@ -146,7 +156,7 @@
     "fuentes": 110,
     "indicadores": 540,
     "indicadores_nulos": 0,
-    "manifest_version": "1.2",
+    "manifest_version": "1.3",
     "noticias": 221,
     "noticias_gdelt": 133,
     "noticias_por_tema_de_consulta": {
@@ -155,6 +165,7 @@
       "logistica": 95,
       "turismo": 30
     },
-    "noticias_tvn": 88
+    "noticias_tvn": 88,
+    "sbp_series": 36
   }
 }

@@ -209,6 +209,57 @@ def tabla_de_bandeja(ctx: ui.Contexto, filas: Sequence[ui.FilaBandeja], modalida
     )
 
 
+def escenario_de_pesos_ui(ctx: ui.Contexto) -> list[ui.FilaBandeja]:
+    """E3-04: pesos editables. Un escenario de esta sesión; no escribe en config ni en el registro y nada que se genere o exporte lo usa."""
+    cfg = ctx.cfg.pesos_editables
+    oficiales = ui.pesos_oficiales()
+    with st.expander("Pesos editables: ¿y si los pesos fueran otros? (escenario, no oficial)", expanded=False):
+        columnas = st.columns(len(oficiales))
+        pesos = {
+            k: c.number_input(f"Peso {k}", min_value=0.0, max_value=100.0, value=oficiales[k], step=cfg.paso, key=f"peso_{k}", help=f"Oficial: {ui._numero(oficiales[k])}. Permitido: {ui._numero(cfg.minimo)} a {ui._numero(cfg.maximo)}.")
+            for (k, c) in zip(oficiales, columnas, strict=True)
+        }
+        pesos = ui.redondear_pesos(pesos, cfg)      # X94: lo que se valida, se muestra y se usa es el valor redondeado
+        st.button("Volver a los pesos oficiales", key="pesos_restablecer", on_click=lambda: [st.session_state.pop(f"peso_{k}", None) for k in oficiales])
+        st.caption(f"Suma: {ui._numero(sum(pesos.values()))} de {ui._numero(sum(oficiales.values()))}.")
+        errores = ui.validar_pesos(pesos, cfg)
+        for e in errores:
+            st.error(e)
+        if errores or ui.es_oficial(pesos):
+            if not errores:
+                st.caption(cfg.textos.sin_cambios)
+            return ctx.filas
+        modalidad = cargar_modalidad(ctx.modalidad)
+        escenario = ui.escenario_de_pesos(ctx.filas, pesos, modalidad, cfg=cfg)
+        comparacion = ui.comparar_con_oficial(ctx.filas, escenario)
+        st.markdown(f"**{comparacion.se_mueven} de {len(escenario)} grupos cambian de puesto**, {comparacion.cambian_rango} de rango y {comparacion.cambian_accion} de acción. "
+                    f"Top {comparacion.tamano_top}: entran {', '.join(comparacion.entran_al_top) or 'ninguno'}; salen {', '.join(comparacion.salen_del_top) or 'ninguno'}; "
+                    f"{'cambia' if comparacion.cambia_el_orden_del_top else 'no cambia'} el orden.")
+        if comparacion.empate_en_el_corte:
+            e = comparacion.empate_en_el_corte
+            st.caption(f"El corte del top {comparacion.tamano_top} parte un empate en P ({e['empatados']} grupos con P {e['valor']}); lo decide la regla del reto (mayor U, luego ID).")
+        movimientos = ui.mayores_movimientos(comparacion, cfg.movimientos_mostrados)
+        if movimientos:
+            st.dataframe(
+                pd.DataFrame([{"Tema": m.tema, "Titular": m.titular, "# oficial": m.posicion_oficial, "# escenario": m.posicion_escenario, "Puestos": m.puestos,
+                               "P oficial": round(m.p_oficial, ctx.cfg.bandeja.decimales_puntaje), "P escenario": round(m.p_escenario, ctx.cfg.bandeja.decimales_puntaje),
+                               "Rango": m.rango_oficial if m.rango_oficial == m.rango_escenario else f"{m.rango_oficial} → {m.rango_escenario}",
+                               "Acción": m.accion_oficial if m.accion_oficial == m.accion_escenario else f"{m.accion_oficial} → {m.accion_escenario}"} for m in movimientos]),
+                hide_index=True, width="stretch",
+            )
+        justificacion = st.text_area("Justificación del cambio de pesos", key="pesos_justificacion", help="El reto pide poder justificar los cambios de pesos.")
+        try:
+            propuesta = ui.propuesta_de_pesos(pesos, justificacion, comparacion, cfg=cfg)
+        except ValueError as exc:
+            st.caption(str(exc))
+        else:
+            st.download_button("Descargar la propuesta de pesos (JSON)", ui.propuesta_a_json(propuesta), file_name="propuesta_pesos.json", mime="application/json", key="pesos_descargar")
+            st.caption("La descarga es un documento: no cambia la configuración. Adoptar unos pesos como oficiales es una decisión del dueño (nueva versión de reglas).")
+    enc = ui.encabezado_bandeja(ctx.con, MANIFEST, ctx.cfg_ver)
+    st.warning(cfg.textos.aviso.format(version=enc["version_reglas"]), icon=":material/science:")
+    return escenario
+
+
 def pantalla_bandeja(ctx: ui.Contexto) -> None:
     st.header("Bandeja de temas priorizados")
     enc = ui.encabezado_bandeja(ctx.con, MANIFEST, ctx.cfg_ver)
@@ -220,12 +271,13 @@ def pantalla_bandeja(ctx: ui.Contexto) -> None:
         return
     if not ui.comprobar_orden(ctx.filas):
         st.warning("El orden guardado no coincide con la regla de desempate: vuelva a ejecutar `python -m src.puntaje`.")
-    total = len(ctx.filas)
+    filas = escenario_de_pesos_ui(ctx)      # E3-04: el escenario de pesos (en la sesión) o, sin él, la bandeja oficial
+    total = len(filas)
     todas = st.checkbox(f"Mostrar las {total} filas", value=False, key="bandeja_todas")
     modalidad = cargar_modalidad(ctx.modalidad)
-    bloques = ui.agrupar_por_sector(ctx.filas, modalidad)      # E2-01: solo si la modalidad declara sectores (YAML); si no, bandeja plana
+    bloques = ui.agrupar_por_sector(filas, modalidad)      # E2-01: solo si la modalidad declara sectores (YAML); si no, bandeja plana
     if bloques is None:
-        visibles = ctx.filas if todas else ctx.filas[: ctx.cfg.bandeja.filas_iniciales]
+        visibles = filas if todas else filas[: ctx.cfg.bandeja.filas_iniciales]
         tabla_de_bandeja(ctx, visibles, modalidad)
     else:
         # X40: primero se agrupa y después se limita por sector, para que ningún sector (p. ej. logística, CU-05) quede oculto
@@ -237,8 +289,8 @@ def pantalla_bandeja(ctx: ui.Contexto) -> None:
             st.caption(f"{len(bloque.filas)} de {bloque.total or len(bloque.filas)} grupos de este sector.")
         visibles = [f for b in bloques for f in b.filas]
     st.caption(f"Se muestran {len(visibles)} de {total} grupos.")
-    ids = [f.id_grupo for f in ctx.filas]
-    por_id = {f.id_grupo: f for f in ctx.filas}
+    ids = [f.id_grupo for f in filas]
+    por_id = {f.id_grupo: f for f in filas}
     elegido = st.selectbox("Abrir la ficha de", ids, key="bandeja_grupo", format_func=lambda i: f"#{por_id[i].posicion} · {por_id[i].titular[:ctx.cfg.bandeja.largo_titular_selector]}")
     st.button("Abrir ficha", on_click=ir_a, args=("ficha", elegido), key="bandeja_abrir")
     pie(ctx)

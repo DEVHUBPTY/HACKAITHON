@@ -42,6 +42,7 @@ poetry run python -m eval.validar_benchmark          # valida el benchmark de de
 poetry run python -m eval.run_benchmark --split dev  # benchmark de desarrollo (E1-18)
 poetry run python -m eval.ia_vs_baseline             # IA contra su línea base con IC (docs/ia_vs_baseline.md, E1-18)
 poetry run python -m eval.sustento                   # validez de sustento, cuando una persona completó outputs/revision_sustento.csv (E1-18)
+poetry run python -m scripts.pagina_metricas           # página de métricas generada desde outputs/ → outputs/pagina_metricas.md, lista para Notion (C-02)
 poetry run python -m scripts.reproducir --verificar  # reconstruye todo desde data/raw/ y compara con el manifest (E1-20)
 ```
 

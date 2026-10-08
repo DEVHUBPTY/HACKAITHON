@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "fecha_utc": "2026-10-07T23:48:02Z",
+  "fecha_utc": "2026-10-07T20:31:59Z",
   "benchmark": {
     "archivo": "benchmark_dev.jsonl",
     "sha256": "27c791a86055322eece5c45570b35ae4fe0f06bb89a4bed67c8d861c809f11cc",
@@ -14,7 +14,7 @@
     "split": "dev"
   },
   "entorno": {
-    "python": "3.11.3",
+    "python": "3.11.14",
     "sistema": "Darwin",
     "embeddings": "Embeddings",
     "metodo": "semantica",
@@ -147,15 +147,15 @@
     "nota": "Afirmaciones emitidas (respuestas y «último dato disponible» de las abstenciones). Cita válida = ID existente en el corpus + campo citable.",
     "borradores": {
       "factuales_con_cita_valida": {
-        "n": 9,
-        "de": 9,
+        "n": 11,
+        "de": 11,
         "proporcion": 1.0,
         "ic95": [
           1.0,
           1.0
         ],
         "ic95_wilson": [
-          0.7009,
+          0.7412,
           1.0
         ],
         "remuestreos": 2000,
@@ -163,15 +163,15 @@
         "fallos": []
       },
       "factuales_que_pasan_el_validador": {
-        "n": 9,
-        "de": 9,
+        "n": 11,
+        "de": 11,
         "proporcion": 1.0,
         "ic95": [
           1.0,
           1.0
         ],
         "ic95_wilson": [
-          0.7009,
+          0.7412,
           1.0
         ],
         "remuestreos": 2000,
@@ -179,15 +179,15 @@
         "fallos": []
       },
       "derivadas_con_base_valida": {
-        "n": 2,
-        "de": 2,
+        "n": 3,
+        "de": 3,
         "proporcion": 1.0,
         "ic95": [
           1.0,
           1.0
         ],
         "ic95_wilson": [
-          0.3424,
+          0.4385,
           1.0
         ],
         "remuestreos": 2000,
@@ -413,23 +413,23 @@
       "unidad": "s",
       "p50": {
         "n": 40,
-        "valor": 0.0132,
+        "valor": 0.0068,
         "ic95": [
           0.0003,
-          0.0136
+          0.0071
         ],
         "remuestreos": 2000
       },
       "p95": {
         "n": 40,
-        "valor": 0.0144,
+        "valor": 0.0078,
         "ic95": [
-          0.0139,
-          0.015
+          0.0073,
+          0.0083
         ],
         "remuestreos": 2000
       },
-      "arranque_modelo_s": 5.059,
+      "arranque_modelo_s": 4.08,
       "nota": "consulta de punta a punta en frío (el vector de la consulta se codifica de verdad, sin caché) con el modelo de embeddings local ya cargado; sin red. arranque_modelo_s es el arranque en frío del proceso (armar el consultor y cargar el modelo hasta el primer vector) y no entra en la latencia"
     },
     "paquete_completo": {
@@ -625,45 +625,45 @@
     "grupos": 12,
     "estados": {
       "con_vacios": 2,
-      "sin_cache": 10
+      "sin_cache": 9,
+      "completo": 1
     },
     "fallos": [
       "GRP-79f3183472",
       "GRP-21ad932d54",
       "GRP-038c4f0643",
       "GRP-5e6531917f",
-      "GRP-29baaf270e",
-      "GRP-f4a44182b1",
       "GRP-39dfe8d714",
       "GRP-1b52bb958d",
       "GRP-87e128925b",
-      "GRP-39773bed5a"
+      "GRP-39773bed5a",
+      "GRP-5ab17b45cd"
     ]
   },
   "rechazos_previos": {
     "fuente": "re-validación de las respuestas guardadas en data/cache_llm/ con el validador actual",
     "tasas": {
-      "unidades_evaluadas": 38,
+      "unidades_evaluadas": 45,
       "por_modelo": {
         "deepseek/deepseek-flash": {
-          "k": 11,
-          "n": 38,
-          "tasa": 0.2894736842105263,
+          "k": 12,
+          "n": 45,
+          "tasa": 0.26666666666666666,
           "ic95": [
-            0.17,
-            0.4476
+            0.1596,
+            0.4104
           ]
         }
       },
       "por_unidad": {
         "deepseek/deepseek-flash": {
           "afirmacion": {
-            "k": 3,
-            "n": 23,
-            "tasa": 0.13043478260869565,
+            "k": 4,
+            "n": 27,
+            "tasa": 0.14814814814814814,
             "ic95": [
-              0.0454,
-              0.3213
+              0.0592,
+              0.3248
             ]
           },
           "seccion:brief": {
@@ -686,11 +686,11 @@
           },
           "seccion:enfoque": {
             "k": 2,
-            "n": 3,
-            "tasa": 0.6666666666666666,
+            "n": 4,
+            "tasa": 0.5,
             "ic95": [
-              0.2077,
-              0.9385
+              0.15,
+              0.85
             ]
           },
           "seccion:guion": {
@@ -704,11 +704,11 @@
           },
           "seccion:preguntas": {
             "k": 0,
-            "n": 2,
+            "n": 3,
             "tasa": 0.0,
             "ic95": [
               0.0,
-              0.6576
+              0.5615
             ]
           },
           "seccion:resumen_web": {
@@ -740,11 +740,11 @@
           },
           "seccion:titulo_trabajo": {
             "k": 0,
-            "n": 1,
+            "n": 2,
             "tasa": 0.0,
             "ic95": [
               0.0,
-              0.7935
+              0.6576
             ]
           }
         }
@@ -753,21 +753,21 @@
         "causalidad": {
           "deepseek/deepseek-flash": {
             "afirmacion": {
-              "k": 2,
-              "n": 23,
-              "tasa": 0.08695652173913043,
+              "k": 3,
+              "n": 27,
+              "tasa": 0.1111111111111111,
               "ic95": [
-                0.0242,
-                0.268
+                0.0385,
+                0.2806
               ]
             },
             "seccion:enfoque": {
               "k": 1,
-              "n": 3,
-              "tasa": 0.3333333333333333,
+              "n": 4,
+              "tasa": 0.25,
               "ic95": [
-                0.0615,
-                0.7923
+                0.0456,
+                0.6994
               ]
             }
           }
@@ -789,11 +789,11 @@
           "deepseek/deepseek-flash": {
             "seccion:enfoque": {
               "k": 2,
-              "n": 3,
-              "tasa": 0.6666666666666666,
+              "n": 4,
+              "tasa": 0.5,
               "ic95": [
-                0.2077,
-                0.9385
+                0.15,
+                0.85
               ]
             }
           }
@@ -802,11 +802,11 @@
           "deepseek/deepseek-flash": {
             "afirmacion": {
               "k": 1,
-              "n": 23,
-              "tasa": 0.043478260869565216,
+              "n": 27,
+              "tasa": 0.037037037037037035,
               "ic95": [
-                0.0077,
-                0.2099
+                0.0066,
+                0.1828
               ]
             }
           }
@@ -932,12 +932,12 @@
     "archivo": "revision_sustento.csv",
     "muestra": {
       "n": 30,
-      "pool": 64,
+      "pool": 67,
       "semilla": 42,
       "estado_del_archivo": "conservada_con_veredictos",
       "origenes": {
-        "borrador": 5,
-        "consulta": 25
+        "borrador": 8,
+        "consulta": 22
       }
     },
     "aviso": "La muestra revisada ya no coincide con la que daría esta corrida (cambió el conjunto de salidas); se conserva la revisada."

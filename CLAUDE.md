@@ -30,6 +30,7 @@ poetry install                                       # instala todo desde poetry
 poetry run pytest -v                                 # todas las pruebas (hoy T01 y T03; las demás T llegan con su spec)
 poetry run python -m scripts.extraer --todo          # RSS + GDELT + Banco Mundial + USGS → data/raw/ y data/processed/ (E0-04)
 poetry run python -m scripts.extraer --rss           # solo el RSS de TVN (correr a diario)
+poetry run python -m scripts.extraer --sbp            # fuente D: informes agregados de la SBP → data/raw/sbp/ y data/processed/sbp_series.csv, el CSV se versiona (D-116, riesgo aceptado) y los .xlsx de raw/sbp/ quedan solo locales (E3-02)
 poetry run python -m scripts.manifest                # data/manifest.json + data/CHANGELOG.md
 poetry run python -m scripts.validar_snapshot        # snapshot contra la receta → outputs/validacion_snapshot.json
 poetry run python -m src.config --validar            # valida todo config/*.yaml (D-79)
@@ -53,6 +54,7 @@ poetry run python -m src.consulta "pregunta"         # consulta en español con 
 poetry run python -m eval.recuperacion               # Recall@5 y abstención, semántica vs. BM25, con n e IC
 poetry run streamlit run app.py                      # interfaz: 6 pantallas (E1-15); ?caso=GRP-… o ?caso=CASO-… abre la ficha; la pantalla Revisión es el flujo de la etapa 7 (E1-16)
 poetry run python -m src.revision --abrir GRP-… --revisor "Nombre"   # abre el grupo como CASO-… (también --estado GRP-…, --historial CASO-…); las acciones se hacen en la app (E1-16)
+poetry run python -m scripts.fichas_trazables --casos   # C-01: 5 fichas reales, una por caso de uso CU-01…CU-05 (D-118), elegidas por regla (config/fichas_trazables.yaml), trazabilidad comprobada contra los datos → outputs/fichas_trazables/ y CASO- (revisión provisional del asistente); sin --casos solo escribe en outputs/fichas_trazables/vista_previa/ (fuera de git)
 poetry run python -m src.exportar --caso CASO-001    # (--demo: rutas de la demo) Markdown + fila CSV de «Casos y evidencias» (Notion) en outputs/notion/, y outputs/fichas.jsonl; volver a exportar actualiza (E1-16)
 poetry run python -m eval.revision                   # tasas de aceptación, corrección y descarte con n e IC, motivos, tiempo por caso y % de afirmaciones editadas → outputs/revision.json (E1-16)
 poetry run python -m eval.reporte_pruebas          # corre T01–T10 por marcador y escribe outputs/pruebas.csv con las columnas de la base Pruebas de Notion; pendientes en config/pruebas.yaml (E1-17)
@@ -65,6 +67,7 @@ poetry run python -m scripts.probar_llm --modelo <tag>  # latencia, JSON válido
 poetry run streamlit run eval/etiquetar.py           # etiquetado humano (E1-06; ver docs/etiquetado.md)
 poetry run python -m eval.ruido                      # precisión y recall del filtro de ruido contra eval/etiquetas.csv
 poetry run python -m eval.validar_benchmark          # valida benchmark/benchmark_dev.jsonl (E0-06)
+poetry run python -m scripts.pagina_metricas           # página de métricas desde outputs/ (n, IC 95 %, fuente, commit y origen del juicio por métrica; falla si una proporción no lleva n e IC o si un juicio provisional se rotula humano) → outputs/pagina_metricas.md (C-02)
 poetry run python -m scripts.reproducir --verificar  # reconstruye todo desde data/raw/ y compara los hashes con el manifest; sin --verificar registra los hashes (E1-20; docs/reproducibilidad.md)
 ```
 
@@ -88,14 +91,14 @@ config/      reglas_v1.3.yaml · temas.yaml · ejemplos_excluidos.txt · vinculo
 templates/   ficha.md.j2 (E1-10b) · caso.md.j2 (E1-16: ficha + versión + historial + leyenda, para Notion)
 prompts/     afirmaciones_citadas.txt (E0-07) · comparar_contradicciones.txt (E1-10) · afirmaciones_ficha.txt · paquete_editorial.txt (E1-12) · boletin_banca.txt (E2-02: los dos pasos del boletín), versionados
 data/        raw/ (inmutable) · processed/ (validos/ fuera de git) · registro_extraccion/ · manifest.json · CHANGELOG.md · diccionario.md · README.md
-             senales.duckdb (generado, fuera de git) · revision.duckdb (E1-16: casos, versiones y `revisiones` de solo agregar; fuera de git, NO se regenera con el pipeline) · cache_llm/ (E1-14: borradores generados, SÍ versionada; docs/fallback.md)
-src/         carga · contexto (E1-09) · normalizacion · limpieza · embeddings · clasificacion · baseline · consulta · db · registro (D-75) · configuracion (D-79; config = alias de su CLI) · consultas_gdelt · esquemas (`Ficha` de E1-10b; paso 1 y paquetes de E1-12)
+             processed/sbp_series.csv (E3-02: fuente D, 3 series agregadas × 12 meses de 2024; el CSV se versiona por D-116 (riesgo aceptado: aviso legal de la SBP) y los .xlsx de raw/sbp/ no (D-72); se regeneran con `scripts.extraer --sbp`; las rutas restringidas están en `redistribucion_restringida` de config/fuentes.yaml y un test las vigila) · senales.duckdb (generado, fuera de git) · revision.duckdb (E1-16: casos, versiones y `revisiones` de solo agregar; fuera de git, NO se regenera con el pipeline) · cache_llm/ (E1-14: borradores generados, SÍ versionada; docs/fallback.md)
+src/         trazabilidad (C-01: selección y comprobación de citas contra los datos) · carga · contexto (E1-09) · contexto_sbp (E3-02: series agregadas de la SBP como vínculo del subtema de banca) · normalizacion · limpieza · embeddings · clasificacion · baseline · consulta · db · registro (D-75) · configuracion (D-79; config = alias de su CLI) · consultas_gdelt · esquemas (`Ficha` de E1-10b; paso 1 y paquetes de E1-12)
              agrupacion · procedencias · puntaje · evidencia · contradicciones · prioridad (E1-10: `python -m src.puntaje`) · ficha (E1-10b) · interfaz (E1-15: lógica de presentación de app.py, sin Streamlit)
              generacion (E1-12: dos pasos) · validador (E1-13: reglas deterministas; la generación y la corrección de la revisión solo lo llaman)
              revision (E1-16: casos CASO-, acciones y transiciones, versiones, registro de solo agregar en `data/revision.duckdb`) · exportar (E1-16: Markdown, CSV de Notion, fichas.jsonl)
              cache (E1-14: caché de respuestas del LLM, `data/cache_llm/` versionada, solo cache para la interfaz) · llm/costo (tope D-98: USD 100 / 200 M tokens; `SaldoAgotado` ante HTTP 402)
 src/llm/     proveedor.py (interfaz, `UsoLlm` y `crear_proveedor`, por LLM_PROVIDER) · ollama.py · deepseek.py · costo.py (tope de costo D-67; al alcanzarlo lanza `TopeDeCostoAlcanzado`, D-95)
-scripts/     extraer.py · conversion.py · manifest.py · validar_snapshot.py · catalogo.py · explorar.py · estimar_consultas_gdelt.py · probar_llm.py · medir_generacion.py (E1-12) · calentar_cache.py (E1-14: calienta y `--verificar` la caché de borradores) · reproducir.py (E1-20: pipeline de punta a punta y hashes contra el manifest)
+scripts/     extraer.py · sbp.py (E3-02: conversión de los .xlsx de la SBP a sbp_series.csv) · conversion.py · manifest.py · validar_snapshot.py · catalogo.py · explorar.py · estimar_consultas_gdelt.py · probar_llm.py · medir_generacion.py (E1-12) · calentar_cache.py (E1-14: calienta y `--verificar` la caché de borradores) · reproducir.py (E1-20: pipeline de punta a punta y hashes contra el manifest)
 eval/        revision.py (E1-16) · etiquetar.py · etiquetas/ (una hoja por persona) · etiquetas.csv · ruido.py · validar_benchmark.py · clasificacion.py · calibrar_clasificacion.py · metricas.py · recuperacion.py · puntaje.py · sensibilidad.py
 benchmark/   benchmark_dev.jsonl (solo desarrollo) · sinteticos.csv · README.md
 tests/       fixtures/ · test_t01_carga.py · test_t03_recirculada.py · test_casos_dificiles.py · test_*.py
@@ -177,7 +180,7 @@ El `tema` de `noticias.csv` es el **tema de origen** (consulta de GDELT o catego
 - Secretos y configuración local solo en `local.env` (ignorado por git; D-77). En el repo, solo `.env.example` con nombres de variables vacíos.
 - No imprimir ni registrar claves, tokens ni prompts con secretos en logs, tests o capturas.
 - `data/demo.duckdb` (snapshot + casos sintéticos marcados) **nunca** se usa para calcular métricas.
-- **Nada con redistribución restringida entra al repositorio ni al paquete de entrega** (descripciones del RSS, `socialimage`, extractos): de esas fuentes solo metadatos y la receta (D-72).
+- **Nada con redistribución restringida entra al repositorio ni al paquete de entrega** (descripciones del RSS, `socialimage`, extractos): de esas fuentes solo metadatos y la receta (D-72) (salvo la SBP, versionada por D-116 con riesgo aceptado).
 - **Nunca leer, abrir ni buscar el benchmark reservado** (vive fuera del repo). Solo existe `benchmark/benchmark_dev.jsonl`.
 - No crear perfiles de personas ni agrupar por persona. Las acusaciones se atribuyen como declaraciones; **nunca** como hecho, inferencia ni hipótesis (D-68).
 - Causalidad solo si está literal en la fuente o en una hipótesis condicional (D-68).
