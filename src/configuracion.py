@@ -2557,9 +2557,52 @@ def cargar_verificacion(carpeta: Path | None = None) -> ConfigVerificacion:
 # ------------------------------------------------------------------ interfaz.yaml (E1-15)
 
 
+CLAVES_DE_PANTALLA = ("calidad", "organizar", "contextualizar", "bandeja", "ficha", "paquete", "revision", "consulta")
+
+
 class PantallaInterfaz(ModeloConfig):
-    clave: Literal["calidad", "bandeja", "ficha", "consulta", "paquete", "revision"]
+    """Una pantalla de la barra lateral. Las siete etapas llevan el nombre del PDF (sección 3); ``separada`` marca la herramienta aparte."""
+
+    clave: Literal["calidad", "organizar", "contextualizar", "bandeja", "ficha", "paquete", "revision", "consulta"]
     titulo: str = Field(min_length=1)
+    descripcion: str = Field(min_length=1)
+    separada: bool = False
+
+
+class PasoArquitectura(ModeloConfig):
+    """D-128: un paso de la arquitectura mínima del PDF (sección 8) con la cuenta real que lo respalda y las pantallas donde se ve."""
+
+    etiqueta: str = Field(min_length=1)
+    medida: Literal["registros_leidos", "registros_validos", "filas_en_base", "grupos", "grupos_puntuados", "borradores_en_cache",
+                    "fichas_disponibles", "casos_revisados", "casos_exportados"]
+    unidad: str = Field(min_length=1)
+    pantallas: list[Literal["calidad", "organizar", "contextualizar", "bandeja", "ficha", "paquete", "revision", "consulta"]] = Field(min_length=1)
+
+
+class CargarInterfaz(ModeloConfig):
+    arquitectura: list[PasoArquitectura] = Field(min_length=1)
+    titulo_arquitectura: str = Field(min_length=1)
+    ayuda_arquitectura: str = Field(min_length=1)
+
+
+class OrganizarInterfaz(ModeloConfig):
+    """D-128, etapa 2: textos de los motivos de ruido y de la tabla de grupos (las cuentas salen de los datos)."""
+
+    motivos_ruido: dict[str, str]
+    ayuda_grupos: str = Field(min_length=1)
+    ayuda_procedencias: str = Field(min_length=1)
+    titulares_visibles: int = Field(ge=1)
+
+
+class ContextualizarInterfaz(ModeloConfig):
+    """D-128, etapa 3: nombres legibles de las fuentes, relaciones, papeles y motivos sin vínculo."""
+
+    fuentes: dict[str, str]
+    relaciones: dict[str, str]
+    roles: dict[str, str]
+    motivos_sin_vinculo: dict[str, str]
+    aviso_no_forzar: str = Field(min_length=1)
+    aviso_usgs: str = Field(min_length=1)
 
 
 class BandejaInterfaz(ModeloConfig):
@@ -2647,6 +2690,21 @@ class RevisionInterfaz(ModeloConfig):
     estado_inicial: str
 
 
+class RegistroNotionInterfaz(ModeloConfig):
+    """D-128, etapa 7: el paso «registro en Notion» (crear o actualizar la ficha del caso; nunca una acción de dar por definitivo)."""
+
+    subtitulo: str = Field(min_length=1)
+    explicacion: str = Field(min_length=1)
+    boton_exportar: str = Field(min_length=1)
+    ayuda_exportar: str = Field(min_length=1)
+    boton_exportar_huerfano: str = Field(min_length=1)
+    boton_api: str = Field(min_length=1)
+    ayuda_api: str = Field(min_length=1)
+    sin_token: str = Field(min_length=1)
+    api_ok: str = Field(min_length=1)
+    api_fallo: str = Field(min_length=1)
+
+
 class TextosEmpate(ModeloConfig):
     """D-105: cómo se muestra el empate en P de un grupo (bandeja, ficha y CLI)."""
 
@@ -2682,8 +2740,12 @@ class ConfigInterfaz(ModeloConfig):
     version: str
     titulo_app: str
     modalidad_inicial: Literal["editorial", "banca"]
-    pantallas: list[PantallaInterfaz] = Field(min_length=6, max_length=6)
+    pantallas: list[PantallaInterfaz] = Field(min_length=8, max_length=8)
     pantalla_inicial: str
+    cargar: CargarInterfaz
+    organizar: OrganizarInterfaz
+    contextualizar: ContextualizarInterfaz
+    registro_notion: RegistroNotionInterfaz
     bandeja: BandejaInterfaz
     pesos_editables: PesosEditablesInterfaz
     calidad: CalidadInterfaz
@@ -2699,14 +2761,23 @@ class ConfigInterfaz(ModeloConfig):
     @model_validator(mode="after")
     def _coherente(self) -> ConfigInterfaz:
         claves = [p.clave for p in self.pantallas]
-        if len(set(claves)) != 6:
-            raise ValueError("pantallas: las seis claves (calidad, bandeja, ficha, consulta, paquete, revision) deben aparecer una vez")
+        if sorted(claves) != sorted(CLAVES_DE_PANTALLA):
+            raise ValueError(f"pantallas: las ocho claves {', '.join(CLAVES_DE_PANTALLA)} deben aparecer una vez")
+        if [p.clave for p in self.pantallas if p.separada] != ["consulta"]:
+            raise ValueError("pantallas: solo la consulta va separada de las siete etapas del reto")
+        if self.pantalla_inicial in [p.clave for p in self.pantallas if p.separada]:
+            raise ValueError("pantalla_inicial: debe ser una de las siete etapas")
         if self.pantalla_inicial not in claves:
             raise ValueError("pantalla_inicial: debe ser una de las pantallas")
         if self.revision.estado_inicial not in self.revision.estados:
             raise ValueError("revision.estado_inicial: debe estar en revision.estados")
         propios = [t for v in self.textos.model_dump().values() for t in (v.values() if isinstance(v, dict) else [v])]
-        textos = [self.titulo_app, *self.consulta.ejemplos, *self.revision.estados, *propios]
+        nuevos = [self.cargar.titulo_arquitectura, self.cargar.ayuda_arquitectura, *(x.etiqueta for x in self.cargar.arquitectura),
+                  *(p.titulo for p in self.pantallas), *(p.descripcion for p in self.pantallas),
+                  *self.organizar.motivos_ruido.values(), self.organizar.ayuda_grupos, self.organizar.ayuda_procedencias,
+                  *self.contextualizar.motivos_sin_vinculo.values(), self.contextualizar.aviso_no_forzar, self.contextualizar.aviso_usgs,
+                  *self.registro_notion.model_dump().values()]
+        textos = [self.titulo_app, *self.consulta.ejemplos, *self.revision.estados, *propios, *nuevos]
         if any(FORMAS_DE_PUBLICAR.search(t) for t in textos):
             raise ValueError("ningún texto de la interfaz puede hablar de publicar")
         return self

@@ -6,14 +6,61 @@ version: "1.0"
 titulo_app: "HackIAthon · De la señal a la decisión"
 modalidad_inicial: editorial
 
-pantallas:                          # orden de la barra lateral
-  - {clave: calidad, titulo: "1 · Calidad"}
-  - {clave: bandeja, titulo: "2 · Bandeja"}
-  - {clave: ficha, titulo: "3 · Ficha"}
-  - {clave: consulta, titulo: "4 · Consulta"}
-  - {clave: paquete, titulo: "5 · Paquete"}
-  - {clave: revision, titulo: "6 · Revisión"}
+pantallas:                          # orden de la barra lateral (D-128): las siete etapas del reto (PDF sección 3, con su nombre) y, aparte, la consulta
+  - {clave: calidad, titulo: "1 · Cargar", descripcion: "Leer el paquete público congelado. Validar IDs, URLs, fechas, campos obligatorios y filas nulas. Emitir un reporte de calidad."}
+  - {clave: organizar, titulo: "2 · Organizar", descripcion: "Clasificar temas: economía, logística/Canal, turismo, servicios públicos, eventos naturales y regulación. Agrupar noticias sobre el mismo evento."}
+  - {clave: contextualizar, titulo: "3 · Contextualizar", descripcion: "Relacionar noticias con indicadores o eventos oficiales pertinentes. Mostrar período, unidad y limitaciones. Si no existe relación sustentada, no forzarla."}
+  - {clave: bandeja, titulo: "4 · Priorizar", descripcion: "Calcular un puntaje de atención, mostrar componentes y generar una lista ordenada. Distinguir relevancia de suficiencia de evidencia."}
+  - {clave: ficha, titulo: "5 · Explicar", descripcion: "Abrir una ficha: qué se reporta, quién lo reporta, qué está respaldado, qué falta comprobar y qué acción se recomienda al usuario."}
+  - {clave: paquete, titulo: "6 · Producir", descripcion: "Redactar un borrador propio de la modalidad, con citas por afirmación. Diferenciar hechos, declaraciones, inferencias e hipótesis."}
+  - {clave: revision, titulo: "7 · Revisar", descripcion: "Registrar aceptación, corrección o descarte por una persona responsable. Crear o actualizar la ficha en Notion (registro en Notion)."}
+  - {clave: consulta, titulo: "Consulta", descripcion: "Herramienta aparte: preguntas en español sobre los datos, con abstención cuando no hay evidencia suficiente.", separada: true}
 pantalla_inicial: calidad
+
+cargar:                             # D-128: la arquitectura mínima del PDF (sección 8); cada cuenta sale de los datos, nunca está escrita aquí
+  titulo_arquitectura: "Arquitectura del prototipo (PDF sección 8)"
+  ayuda_arquitectura: "Cada paso muestra su cuenta real en los datos de esta base; el botón abre la pantalla donde se ve. Una carga por lote: sin monitoreo continuo y sin internet durante el pitch."
+  arquitectura:
+    - {etiqueta: "Fuentes públicas / snapshot", medida: registros_leidos, unidad: "registros leídos", pantallas: [calidad]}
+    - {etiqueta: "Validación y normalización", medida: registros_validos, unidad: "registros válidos", pantallas: [calidad]}
+    - {etiqueta: "Almacenamiento", medida: filas_en_base, unidad: "filas en senales.duckdb (noticias, indicadores y sismos)", pantallas: [calidad]}
+    - {etiqueta: "Búsqueda y agrupación", medida: grupos, unidad: "grupos de noticias", pantallas: [organizar, contextualizar, consulta]}
+    - {etiqueta: "Motor de priorización", medida: grupos_puntuados, unidad: "grupos puntuados", pantallas: [bandeja]}
+    - {etiqueta: "Generación con evidencias", medida: borradores_en_cache, unidad: "respuestas del LLM en la caché de borradores", pantallas: [paquete]}
+    - {etiqueta: "Interfaz", medida: fichas_disponibles, unidad: "fichas de evidencia disponibles", pantallas: [ficha]}
+    - {etiqueta: "Revisión humana", medida: casos_revisados, unidad: "casos abiertos para revisar", pantallas: [revision]}
+    - {etiqueta: "Registro en Notion", medida: casos_exportados, unidad: "casos exportados a la fila de Notion", pantallas: [revision]}
+
+organizar:                          # D-128: etapa 2
+  titulares_visibles: 50            # titulares del grupo que se listan al abrirlo (el grupo más grande del snapshot tiene 20)
+  motivos_ruido:                    # el ruido se marca, no se borra: cada motivo con su nombre legible
+    no_es_panama: "No es sobre Panamá"
+    no_es_noticia: "No es una nota con contenido"
+    fuera_de_temas: "Fuera de los seis temas del reto"
+  ayuda_grupos: "Orden con un clic en el encabezado de cada columna. Repetición no es corroboración: lo que cuenta son las procedencias independientes."
+  ayuda_procedencias: "Una agencia replicada por varios medios cuenta como una sola procedencia."
+
+contextualizar:                     # D-128: etapa 3
+  fuentes: {indicador: "Banco Mundial", usgs: "USGS", sbp: "SBP"}
+  relaciones: {directa: "directa", indirecta: "indirecta", evento: "evento"}
+  roles: {panama: "Panamá", comparable: "país comparable", tendencia: "tendencia", contexto_historico: "contexto histórico"}
+  motivos_sin_vinculo:
+    sin_relacion_sustentada: "No se fuerza la relación: ningún titular sustenta un dato oficial"
+    tema_sin_indicador: "El tema no tiene indicador oficial asociado"
+  aviso_no_forzar: "Si no existe una relación sustentada, no se fuerza: el grupo queda sin vínculo oficial y la ficha lo dice."
+  aviso_usgs: "La caja de USGS no es Panamá: se muestra el lugar original y solo sirve para hechos sísmicos."
+
+registro_notion:                    # D-128: etapa 7, el «registro en Notion» del PDF (crear o actualizar la ficha del caso en la base «Casos y evidencias»)
+  subtitulo: "Registro en Notion"
+  explicacion: "Crea o actualiza la ficha de este caso en «Casos y evidencias» de Notion. La ficha conserva la marca BORRADOR: registrar no la convierte en contenido definitivo."
+  boton_exportar: "Registro en Notion: exportar la ficha"
+  ayuda_exportar: "Genera el Markdown y la fila CSV de «Casos y evidencias» desde la ficha revisada, para importarlos a mano en Notion; si el caso ya se exportó, actualiza esa fila del CSV local (en Notion hay que reemplazarla: docs/notion.md)."
+  boton_exportar_huerfano: "Registro en Notion: exportar {id_caso}"
+  boton_api: "Crear o actualizar la ficha en Notion por la API"
+  ayuda_api: "Necesita NOTION_TOKEN en local.env y red. Primero exporta el caso; sin token o sin red queda la exportación local (docs/notion.md)."
+  sin_token: "La sincronización por la API (E3-03) no está configurada: falta NOTION_TOKEN en local.env. Con el Markdown y el CSV se registra a mano, o con `poetry run python -m src.exportar --caso {id_caso} --notion`."
+  api_ok: "{id_caso}: ficha creada o actualizada en Notion."
+  api_fallo: "{id_caso}: la API de Notion no respondió o rechazó la ficha ({detalle}). La exportación local quedó escrita."
 
 bandeja:
   filas_iniciales: 10               # cuántas filas del ranking se muestran al abrir (el resto, con «Mostrar todas»)

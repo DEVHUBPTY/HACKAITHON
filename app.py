@@ -1,4 +1,5 @@
-"""Interfaz Streamlit · E1-15: las seis pantallas (Calidad, Bandeja, Ficha, Consulta, Paquete y Revisión).
+"""Interfaz Streamlit · E1-15 / D-128: las siete etapas del reto (PDF sección 3: Cargar, Organizar, Contextualizar, Priorizar, Explicar,
+Producir y Revisar) y, aparte, la Consulta.
 
 Capa de presentación delgada: toda la lógica (ranking, vista de la ficha, citas, hora de Panamá, enganche con la generación)
 vive en ``src/interfaz.py`` y se prueba sin Streamlit. Esta capa solo pinta.
@@ -20,6 +21,8 @@ import os
 os.environ.setdefault("HF_HUB_OFFLINE", "1")
 os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 
+import contextlib  # noqa: E402
+import io  # noqa: E402
 import logging  # noqa: E402
 from collections.abc import Sequence  # noqa: E402
 from typing import Any  # noqa: E402
@@ -28,7 +31,7 @@ import pandas as pd  # noqa: E402
 import streamlit as st  # noqa: E402
 
 from src import db, exportar, interfaz as ui, revision as rv  # noqa: E402
-from src.configuracion import MODALIDADES, RAIZ, cargar_modalidad, cargar_temas  # noqa: E402
+from src.configuracion import MODALIDADES, RAIZ, cargar_modalidad, cargar_temas, leer_local_env  # noqa: E402
 from src.cache import SinBorrador  # noqa: E402
 from src.consulta import RespuestaConsulta, crear_consultor  # noqa: E402
 from src.esquemas import ETIQUETA_BORRADOR, Ficha  # noqa: E402
@@ -70,6 +73,17 @@ def pie(ctx: ui.Contexto, alcance: str | None = None) -> None:
     """Toda salida lleva la marca de borrador y la leyenda de alcance (D-51): la de su propia ficha si la hay, la común si no."""
     st.divider()
     st.caption(f"**{ETIQUETA_BORRADOR}** · Alcance: {alcance or ui.leyenda_de_alcance()}")
+
+
+def encabezado(ctx: ui.Contexto, clave: str) -> None:
+    """D-128: cada pantalla lleva el nombre de su etapa del PDF y lo que el PDF pide en ella."""
+    p = next(x for x in ctx.cfg.pantallas if x.clave == clave)
+    st.header(p.titulo)
+    st.caption(p.descripcion)
+
+
+def titulo_de(ctx: ui.Contexto, clave: str) -> str:
+    return next(x.titulo for x in ctx.cfg.pantallas if x.clave == clave)
 
 
 def insignia_sintetico(ctx: ui.Contexto) -> None:
@@ -141,8 +155,31 @@ def ir_a(pantalla: str, id_grupo: str | None = None) -> None:
 # ------------------------------------------------------------------ 1 · Calidad
 
 
+def arquitectura(ctx: ui.Contexto, carga: dict[str, Any] | None) -> None:
+    """D-128: la arquitectura mínima del PDF (sección 8) con la cuenta real de cada paso y el acceso a la pantalla donde se ve."""
+    pasos = ui.pasos_de_arquitectura(ctx.con, ctx.cfg, carga, ctx.revisiones, ctx.demo)
+    st.subheader(ctx.cfg.cargar.titulo_arquitectura)
+    st.caption(ctx.cfg.cargar.ayuda_arquitectura)
+    por_fila = 3
+    for inicio in range(0, len(pasos), por_fila):
+        columnas = st.columns(por_fila)
+        for i, (paso, col) in enumerate(zip(pasos[inicio : inicio + por_fila], columnas, strict=False), start=inicio):
+            with col, st.container(border=True):
+                st.metric(f"{i + 1} · {paso.etiqueta}", "sin dato" if paso.cuenta is None else f"{paso.cuenta:,}".replace(",", " "), help=paso.unidad)
+                st.caption(paso.unidad + (" →" if i + 1 < len(pasos) else ""))
+                for destino in paso.pantallas:
+                    st.button(f"Ver en {titulo_de(ctx, destino)}", key=f"arq_{i}_{destino}", on_click=ir_a, args=(destino,), width="stretch")
+
+
 def pantalla_calidad(ctx: ui.Contexto) -> None:
-    st.header("Calidad de los datos")
+    encabezado(ctx, "calidad")
+    try:
+        carga = reporte_de_carga()
+    except Exception as exc:  # noqa: BLE001 - la pantalla debe abrir aunque falten los archivos del snapshot
+        st.warning(f"No se pudo leer el reporte de carga ({type(exc).__name__}).")
+        carga = None
+    arquitectura(ctx, carga)
+    st.subheader("Calidad de los datos")
     st.caption("Lo que no sirve se marca, no se borra: el ruido se conserva y se cuenta, pero no entra en la bandeja.")
     r = ui.resumen_de_calidad(ctx.con)
     ruido: ui.Proporcion = r["ruido"]
@@ -165,11 +202,6 @@ def pantalla_calidad(ctx: ui.Contexto) -> None:
         insignia_sintetico(ctx)
         st.caption(f"{r['sinteticos']} registros de la base son de prueba.")
     st.subheader("Reporte de carga (E1-02)")
-    try:
-        carga = reporte_de_carga()
-    except Exception as exc:  # noqa: BLE001 - la pantalla debe abrir aunque falten los archivos del snapshot
-        st.warning(f"No se pudo leer el reporte de carga ({type(exc).__name__}).")
-        carga = None
     if carga:
         archivos = carga["archivos"]
         st.dataframe(
@@ -185,7 +217,103 @@ def pantalla_calidad(ctx: ui.Contexto) -> None:
     pie(ctx)
 
 
-# ------------------------------------------------------------------ 2 · Bandeja
+# ------------------------------------------------------------------ 2 · Organizar (D-128)
+
+
+def pantalla_organizar(ctx: ui.Contexto) -> None:
+    encabezado(ctx, "organizar")
+    nombres = {k: t.nombre for k, t in cargar_temas().temas.items()}
+    r = ui.resumen_de_organizacion(ctx.con, nombres)
+    st.subheader("Titulares útiles por tema")
+    columnas = st.columns(len(r.por_tema))
+    for (tema, n), col in zip(r.por_tema.items(), columnas, strict=True):
+        col.metric(tema, n, help=f"{r.grupos_por_tema[tema]} grupos")
+    st.caption(f"{r.utiles} titulares útiles en {r.grupos} grupos; la salida son solo los seis temas del reto.")
+    st.subheader("Ruido: se marca, no se borra")
+    if r.ruido_por_motivo:
+        st.dataframe(
+            pd.DataFrame([{"Motivo": ui.nombre_de_motivo_ruido(m, ctx.cfg), "Código": m, "Titulares": n} for m, n in r.ruido_por_motivo.items()]),
+            hide_index=True, width="stretch",
+        )
+    st.caption(f"{r.ruido} titulares marcados como ruido: se conservan y se cuentan, pero no entran en la bandeja.")
+    st.subheader("Grupos de noticias sobre el mismo evento")
+    st.caption(ctx.cfg.organizar.ayuda_grupos)
+    filas = ui.tabla_de_grupos(ctx.con, nombres)
+    if not filas:
+        st.info(ctx.cfg.textos.sin_base)
+        pie(ctx)
+        return
+    st.dataframe(pd.DataFrame(filas), hide_index=True, width="stretch", column_config={"Titular central": st.column_config.TextColumn(width="large")})
+    ids = [f["Grupo"] for f in filas]
+    por_id = {f["Grupo"]: f for f in filas}
+    largo = ctx.cfg.bandeja.largo_titular_selector
+    elegido = st.selectbox(
+        "Abrir los titulares y las procedencias de un grupo", ids, key="organizar_grupo",
+        format_func=lambda i: f"{i} · {por_id[i]['Titulares']} titulares, {por_id[i]['Procedencias']} procedencias · {por_id[i]['Titular central'][:largo]}",
+    )
+    d = ui.detalle_de_grupo(ctx.con, elegido, nombres, ctx.cfg_ver, ctx.cfg.organizar.titulares_visibles)
+    if d is not None:
+        st.markdown(f"**{escapar_markdown(d.titular_central)}** · `{d.id_grupo}` · {d.tema}")
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Titulares", d.n_titulares)
+        c2.metric("Medios", d.n_medios)
+        c3.metric("Procedencias independientes", d.n_procedencias)
+        st.caption(f"{d.n_titulares} titulares, {d.n_medios} medios, {d.n_procedencias} procedencia{'s' if d.n_procedencias != 1 else ''}. " + ctx.cfg.organizar.ayuda_procedencias)
+        st.markdown("**Procedencias**")
+        st.dataframe(pd.DataFrame(d.procedencias), hide_index=True, width="stretch")
+        st.markdown("**Titulares del grupo**")
+        st.dataframe(pd.DataFrame(d.titulares), hide_index=True, width="stretch", column_config={"Titular": st.column_config.TextColumn(width="large")})
+        if d.n_titulares > len(d.titulares):
+            st.caption(f"Se muestran {len(d.titulares)} de {d.n_titulares} titulares.")
+        st.button("Abrir la ficha de este grupo", key="organizar_abrir", on_click=ir_a, args=("ficha", d.id_grupo))
+    pie(ctx)
+
+
+# ------------------------------------------------------------------ 3 · Contextualizar (D-128)
+
+
+def pantalla_contextualizar(ctx: ui.Contexto) -> None:
+    encabezado(ctx, "contextualizar")
+    nombres = {k: t.nombre for k, t in cargar_temas().temas.items()}
+    vinculos, sin = ui.vinculos_oficiales(ctx.con, nombres, ctx.cfg)
+    con_vinculo = {v.id_grupo for v in vinculos}
+    por_motivo = ui.grupos_sin_vinculo_por_motivo(sin, con_vinculo)
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Vínculos con dato oficial", len(vinculos))
+    c2.metric("Grupos con vínculo", len(con_vinculo))
+    c3.metric("Grupos sin vínculo", sum(len(g) for g in por_motivo.values()))
+    st.caption(ctx.cfg.contextualizar.aviso_no_forzar)
+    st.subheader("Noticias relacionadas con un dato oficial")
+    if vinculos:
+        st.dataframe(
+            pd.DataFrame([{
+                "Grupo": v.id_grupo, "Titular": v.titular, "Fuente": v.fuente, "Dato oficial": v.id_evidencia, "Relación": v.relacion, "Papel": v.papel,
+                "Indicador o lugar": v.indicador, "Valor": v.valor, "Período": v.periodo, "Limitaciones": v.limitacion, "Regla que lo sustenta": v.regla,
+            } for v in vinculos]),
+            hide_index=True, width="stretch",
+            column_config={"Titular": st.column_config.TextColumn(width="large"), "Limitaciones": st.column_config.TextColumn(width="large"),
+                           "Regla que lo sustenta": st.column_config.TextColumn(width="large")},
+        )
+        st.caption(ctx.cfg.citas.aviso_anual + " " + ctx.cfg.contextualizar.aviso_usgs)
+        st.markdown("**Citas (clic para ver el registro)**")
+        for g in dict.fromkeys(v.id_grupo for v in vinculos):
+            propios = [v for v in vinculos if v.id_grupo == g]
+            with st.expander(f"{g} · {propios[0].titular[:ctx.cfg.bandeja.largo_titular_selector]} ({len(propios)} vínculos)"):
+                citas_clicables(ctx, list(dict.fromkeys((v.id_evidencia, v.campo_cita) for v in propios)), "Datos oficiales")
+                st.button("Abrir la ficha de este grupo", key=f"contexto_abrir_{g}", on_click=ir_a, args=("ficha", g))
+    else:
+        st.info("Ningún grupo tiene una relación sustentada con un dato oficial en esta base.")
+    st.subheader("Grupos sin vínculo")
+    for motivo, grupos in por_motivo.items():
+        st.markdown(f"**{ctx.cfg.contextualizar.motivos_sin_vinculo.get(motivo, motivo)}** · {len(grupos)} grupos · `{motivo}`")
+        st.dataframe(
+            pd.DataFrame([{"Grupo": g.id_grupo, "Titular": g.titular, "Tema": g.tema, "Regla": g.regla} for g in grupos]),
+            hide_index=True, width="stretch", column_config={"Titular": st.column_config.TextColumn(width="large")},
+        )
+    pie(ctx)
+
+
+# ------------------------------------------------------------------ 4 · Priorizar (la bandeja)
 
 
 def tabla_de_bandeja(ctx: ui.Contexto, filas: Sequence[ui.FilaBandeja], modalidad: Any) -> None:
@@ -261,7 +389,7 @@ def escenario_de_pesos_ui(ctx: ui.Contexto) -> list[ui.FilaBandeja]:
 
 
 def pantalla_bandeja(ctx: ui.Contexto) -> None:
-    st.header("Bandeja de temas priorizados")
+    encabezado(ctx, "bandeja")
     enc = ui.encabezado_bandeja(ctx.con, MANIFEST, ctx.cfg_ver)
     st.markdown(f"**Reglas v{enc['version_reglas']}** · **Corte del snapshot:** {enc['fecha_corte']} · Modalidad: {cargar_modalidad(ctx.modalidad).nombre}")
     st.caption("P ordena la atención; no es una probabilidad de verdad ni de pérdida. " + ctx.cfg.textos.alerta)
@@ -296,11 +424,11 @@ def pantalla_bandeja(ctx: ui.Contexto) -> None:
     pie(ctx)
 
 
-# ------------------------------------------------------------------ 3 · Ficha
+# ------------------------------------------------------------------ 5 · Explicar (la ficha)
 
 
 def pantalla_ficha(ctx: ui.Contexto) -> None:
-    st.header("Ficha de evidencia")
+    encabezado(ctx, "ficha")
     id_grupo = selector_de_grupo(ctx, "ficha_grupo")
     if id_grupo is None:
         pie(ctx)
@@ -331,7 +459,7 @@ def pantalla_ficha(ctx: ui.Contexto) -> None:
     pie(ctx, ficha.alcance)
 
 
-# ------------------------------------------------------------------ 4 · Consulta
+# ------------------------------------------------------------------ Consulta (aparte de las siete etapas)
 
 
 def lanzar_ejemplo(texto: str) -> None:
@@ -363,7 +491,7 @@ def pintar_respuesta(ctx: ui.Contexto, r: RespuestaConsulta) -> None:
 
 
 def pantalla_consulta(ctx: ui.Contexto) -> None:
-    st.header("Consulta en español")
+    encabezado(ctx, "consulta")
     st.caption("Si no hay evidencia suficiente, el sistema se abstiene y dice qué haría falta. No hay modelo generativo en esta pantalla.")
     st.session_state.setdefault("consulta_texto", "")
     st.text_input("Pregunta", key="consulta_texto", max_chars=ctx.cfg.consulta.largo_maximo_caracteres)
@@ -387,11 +515,11 @@ def pantalla_consulta(ctx: ui.Contexto) -> None:
         pie(ctx)
 
 
-# ------------------------------------------------------------------ 5 · Paquete
+# ------------------------------------------------------------------ 6 · Producir (el paquete)
 
 
 def pantalla_paquete(ctx: ui.Contexto) -> None:
-    st.header("Paquete · borrador")
+    encabezado(ctx, "paquete")
     id_grupo = selector_de_grupo(ctx, "paquete_grupo")
     if id_grupo is None:
         pie(ctx)
@@ -413,7 +541,7 @@ def pantalla_paquete(ctx: ui.Contexto) -> None:
     pie(ctx, ficha.alcance)
 
 
-# ------------------------------------------------------------------ 6 · Revisión (E1-16)
+# ------------------------------------------------------------------ 7 · Revisar (E1-16)
 
 
 def avisar(clave: str = "revision_aviso") -> None:
@@ -448,7 +576,7 @@ def etiqueta(accion: str) -> str:
 
 
 def pantalla_revision(ctx: ui.Contexto) -> None:
-    st.header("Revisión humana")
+    encabezado(ctx, "revision")
     id_grupo = selector_de_grupo(ctx, "revision_grupo")
     if id_grupo is None:
         pie(ctx)
@@ -519,12 +647,15 @@ def pantalla_revision(ctx: ui.Contexto) -> None:
     st.subheader("Historial de revisión")
     st.caption(cfg_rev.textos.limitacion_historial)
     st.dataframe(pd.DataFrame(ui.tabla_historial(rev.historial(caso.id_caso), ctx.cfg_ver, caso.modalidad, cfg_rev)), hide_index=True)
-    st.subheader("Exportar")
-    if st.button("Exportar a Notion", key="revision_exportar", help="Genera el Markdown y la fila CSV de «Casos y evidencias» desde la ficha revisada; si el caso ya se exportó, actualiza esa fila del CSV local (en Notion hay que reemplazarla: docs/notion.md)."):
+    rn = ctx.cfg.registro_notion
+    st.subheader(rn.subtitulo)
+    st.caption(rn.explicacion)
+    if st.button(rn.boton_exportar, key="revision_exportar", help=rn.ayuda_exportar):
         _exportar(rev, caso.id_caso)
     if (x := st.session_state.get("revision_exportacion")) and x[0] == caso.id_caso:
         st.success(f"{x[0]}: {'actualizado' if x[4] else 'exportado'} en {x[2]} y {x[3]}.")
         st.download_button("Descargar el Markdown", x[1], file_name=f"{x[0]}.md", key="revision_descarga")
+    _sincronizar_api(ctx, rev, caso.id_caso)
     pie(ctx, ficha.alcance)
 
 
@@ -539,6 +670,30 @@ def _exportar(rev: Any, id_caso: str) -> None:
     st.session_state["revision_exportacion"] = (e.id_caso, e.markdown, str(e.ruta_markdown), str(e.ruta_csv), e.actualizada)
 
 
+def _sincronizar_api(ctx: ui.Contexto, rev: Any, id_caso: str) -> None:
+    """E3-03: crear o actualizar la ficha en Notion por la API, solo si hay token (y nunca desde la demo, que es sintética)."""
+    rn = ctx.cfg.registro_notion
+    if ctx.demo:
+        return
+    if not leer_local_env().get("NOTION_TOKEN", "").strip():
+        st.caption(rn.sin_token.format(id_caso=id_caso))
+        return
+    if not st.button(rn.boton_api, key="revision_notion_api", help=rn.ayuda_api):
+        return
+    salida, avisos = io.StringIO(), io.StringIO()      # la sincronización informa por stdout al lograrlo y por stderr al degradar o fallar
+    try:
+        e = exportar.exportar_caso(rev, id_caso)
+        with contextlib.redirect_stdout(salida), contextlib.redirect_stderr(avisos):
+            codigo = exportar.sincronizar_con_notion(e)
+    except (rv.ErrorDeRevision, LookupError, ValueError, OSError, RuntimeError) as exc:
+        st.error(rn.api_fallo.format(id_caso=id_caso, detalle=type(exc).__name__))
+        return
+    if codigo == 0 and salida.getvalue().strip():
+        st.success(rn.api_ok.format(id_caso=id_caso))
+    else:
+        st.warning(rn.api_fallo.format(id_caso=id_caso, detalle=" ".join(avisos.getvalue().split())[:200] or "sin detalle"))
+
+
 def _huerfanos(ctx: ui.Contexto) -> None:
     """Casos cuyo grupo ya no está en la base de hoy (el pipeline lo volvió a agrupar): se conservan y se pueden exportar desde su ficha guardada."""
     vivos = {f.id_grupo for f in ctx.filas}
@@ -548,7 +703,7 @@ def _huerfanos(ctx: ui.Contexto) -> None:
     st.warning("Casos cuyo grupo ya no está en la base actual: " + ", ".join(f"{c.id_caso} ({c.id_grupo})" for c in perdidos)
                + ". Se conservan con su última ficha revisada; no se pueden regenerar ni cambiar sus vínculos.")
     for i, c in enumerate(perdidos):
-        if st.button(f"Exportar {c.id_caso} a Notion", key=f"revision_exportar_huerfano_{i}"):
+        if st.button(ctx.cfg.registro_notion.boton_exportar_huerfano.format(id_caso=c.id_caso), key=f"revision_exportar_huerfano_{i}"):
             _exportar(ctx.revisiones, c.id_caso)
             if (x := st.session_state.get("revision_exportacion")) and x[0] == c.id_caso:
                 st.success(f"{x[0]}: {'actualizado' if x[4] else 'exportado'} en {x[2]} y {x[3]}.")
@@ -632,9 +787,14 @@ def _correccion(ctx: ui.Contexto, caso: Any, version: Any, revisor: str | None, 
 
 
 PANTALLAS = {
-    "calidad": pantalla_calidad, "bandeja": pantalla_bandeja, "ficha": pantalla_ficha,
-    "consulta": pantalla_consulta, "paquete": pantalla_paquete, "revision": pantalla_revision,
+    "calidad": pantalla_calidad, "organizar": pantalla_organizar, "contextualizar": pantalla_contextualizar, "bandeja": pantalla_bandeja,
+    "ficha": pantalla_ficha, "paquete": pantalla_paquete, "revision": pantalla_revision, "consulta": pantalla_consulta,
 }
+
+
+def elegir_etapa() -> None:
+    """Al elegir una etapa en la barra lateral, esa es la pantalla (la consulta tiene su propio botón)."""
+    st.session_state["pantalla"] = st.session_state["pantalla_etapa"]
 
 
 def barra_lateral(cfg: Any, demo: bool) -> str:
@@ -647,9 +807,14 @@ def barra_lateral(cfg: Any, demo: bool) -> str:
             "Modalidad", list(MODALIDADES), index=MODALIDADES.index(cfg.modalidad_inicial), key="modalidad",
             format_func=lambda m: cargar_modalidad(m).nombre + (" (parcial)" if cargar_modalidad(m).parcial else ""),
         )
-        titulos = {p.clave: p.titulo for p in cfg.pantallas}
+        etapas = {p.clave: p.titulo for p in cfg.pantallas if not p.separada}
         st.session_state.setdefault("pantalla", cfg.pantalla_inicial)
-        st.radio("Pantalla", list(titulos), format_func=titulos.get, key="pantalla")
+        actual = st.session_state["pantalla"]
+        st.session_state["pantalla_etapa"] = actual if actual in etapas else None     # en la consulta, ninguna etapa queda marcada
+        st.radio("Etapas del reto", list(etapas), format_func=etapas.get, key="pantalla_etapa", index=None, on_change=elegir_etapa)
+        st.divider()
+        for p in (x for x in cfg.pantallas if x.separada):
+            st.button(p.titulo, key=f"pantalla_{p.clave}", on_click=ir_a, args=(p.clave,), type="primary" if actual == p.clave else "secondary", width="stretch", help=p.descripcion)
         if demo:
             st.subheader("Guion de la demo")
             for p in ui.leer_guion(cfg):

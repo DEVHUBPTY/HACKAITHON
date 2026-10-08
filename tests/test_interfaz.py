@@ -74,7 +74,7 @@ def con(base):
 
 
 def test_la_configuracion_valida_y_ningun_texto_habla_de_publicar() -> None:
-    assert [p.clave for p in CFG.pantallas] == ["calidad", "bandeja", "ficha", "consulta", "paquete", "revision"]
+    assert [p.clave for p in CFG.pantallas] == ["calidad", "organizar", "contextualizar", "bandeja", "ficha", "paquete", "revision", "consulta"]
     datos = CFG.model_dump()
     datos["textos"]["sin_borrador"] = "Listo para publicar"
     with pytest.raises(ValidationError, match="publicar"):
@@ -83,7 +83,7 @@ def test_la_configuracion_valida_y_ningun_texto_habla_de_publicar() -> None:
 
 def test_la_configuracion_rechaza_pantallas_repetidas_y_claves_desconocidas() -> None:
     datos = CFG.model_dump()
-    datos["pantallas"][1]["clave"] = "calidad"
+    datos["pantallas"][1]["clave"] = "calidad"      # D-128: ocho pantallas, una vez cada clave
     with pytest.raises(ValidationError):
         ConfigInterfaz.model_validate(datos)
     with pytest.raises(ValidationError):
@@ -381,7 +381,7 @@ def ir(at: AppTest, pantalla: str) -> AppTest:
     return at.run()
 
 
-def test_las_seis_pantallas_abren_sin_errores_y_cada_una_lleva_marca_y_leyenda(app) -> None:
+def test_todas_las_pantallas_abren_sin_errores_y_cada_una_lleva_marca_y_leyenda(app) -> None:
     at = app.run()
     assert not at.exception
     for clave in PANTALLAS:
@@ -391,9 +391,10 @@ def test_las_seis_pantallas_abren_sin_errores_y_cada_una_lleva_marca_y_leyenda(a
         assert MARCA in texto and any(x in texto for x in LEYENDAS), clave
 
 
-def test_la_barra_lateral_ofrece_las_seis_pantallas_y_la_modalidad(app) -> None:
+def test_la_barra_lateral_ofrece_las_etapas_y_la_modalidad(app) -> None:
     at = app.run()
-    assert list(at.radio(key="pantalla").options) == [p.titulo for p in CFG.pantallas]
+    # D-128: las siete etapas del PDF en la barra lateral y la consulta aparte (test_d128_interfaz_etapas.py las comprueba a fondo)
+    assert list(at.radio(key="pantalla_etapa").options) == [p.titulo for p in CFG.pantallas if not p.separada]
     assert list(at.selectbox(key="modalidad").options) == ["Editorial (TVN)", "Banca"]
     assert at.session_state["pantalla"] == CFG.pantalla_inicial
 
@@ -501,7 +502,7 @@ def test_la_revision_de_un_grupo_sin_caso_muestra_los_cinco_estados_y_solo_ofrec
     at = ir(app.run(), "revision")
     assert not at.exception
     assert "Estado actual:** nuevo" in "\n".join(textos(at))
-    assert [b.label for b in at.button] == ["Abrir para revisar"] and at.button[0].disabled      # hasta elegir quién revisa (D-49)
+    assert [b.label for b in at.main.button] == ["Abrir para revisar"] and at.main.button[0].disabled      # hasta elegir quién revisa (D-49)
     assert list(at.dataframe[0].value["Estados del reto"]) == CFG.revision.estados
     assert "aprobado como borrador" in "\n".join(textos(at))
 

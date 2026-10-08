@@ -102,7 +102,7 @@ def test_abrir_crea_el_caso_y_ofrece_el_boton_aprobar_como_borrador(app) -> None
     assert "Estado actual:** en revisión · **Caso:** CASO-001" in textos(at)
     assert at.button(key="revision_aceptar").label == "Aprobar como borrador"
     assert [b.label for b in at.button if b.key in {"revision_aceptar", "revision_pedir", "revision_descartar", "revision_reabrir", "revision_regenerar", "revision_exportar"}] == [
-        "Aprobar como borrador", "Pedir evidencia", "Descartar", "Reabrir", "Regenerar borrador", "Exportar a Notion",
+        "Aprobar como borrador", "Pedir evidencia", "Descartar", "Reabrir", "Regenerar borrador", "Registro en Notion: exportar la ficha",
     ]
     assert at.button(key="revision_reabrir").disabled and not at.button(key="revision_aceptar").disabled        # las transiciones salen del yaml
     assert len(at.dataframe[-1].value) == 1 and MARCA in textos(at)

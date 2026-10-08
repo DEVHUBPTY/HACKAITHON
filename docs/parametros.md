@@ -716,3 +716,16 @@ Ninguno decide un puntaje, una acción ni un vacío: gobiernan qué fichas se mu
 | `claves_de_autor` | autor, author, byline, creator, … | D-32 | `test_una_clave_de_autor_en_la_ficha_falla` |
 | `z_intervalo_confianza` | 1.96 | Práctica (IC de Wilson al 95 %, igual que `carga.yaml`) | `test_el_informe_cuenta_n_y_pone_ic_de_wilson_a_cada_proporcion` |
 | `revision.accion_por_estado` | suficiente y parcial → aceptar; insuficiente → pedir evidencia, siempre con el revisor provisional del asistente | D-101, D-112 (provisional, la rehace una persona en C-09) | `test_la_revision_provisional_aprueba_o_pide_evidencia_segun_el_estado_y_se_ve_rotulada` |
+
+## Interfaz por etapas del reto (D-128, `config/interfaz.yaml`)
+
+Ninguno decide un puntaje ni una acción: gobiernan cómo se presentan las siete etapas del PDF (sección 3) y la arquitectura mínima (sección 8). Toda cuenta sale de los datos.
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| `pantallas[]` (`clave`, `titulo`, `descripcion`, `separada`) | Siete etapas con el nombre y el texto del PDF (1 · Cargar … 7 · Revisar) y la Consulta aparte (`separada: true`). Las claves de siempre (`calidad`, `bandeja`, `ficha`, `paquete`, `revision`) se conservan; `organizar` y `contextualizar` son nuevas | PDF sección 3 · decisión del dueño D-128 | `test_la_barra_lateral_tiene_las_siete_etapas_del_pdf_en_orden_y_la_consulta_aparte`, `test_las_etapas_llevan_los_nombres_y_las_claves_de_siempre` |
+| `cargar.arquitectura[]` (`etiqueta`, `medida`, `unidad`, `pantallas`) | Los nueve pasos del PDF sección 8, cada uno con la medida (de un conjunto cerrado) que lo cuenta y las pantallas donde se ve | PDF sección 8 («Arquitectura mínima sugerida») | `test_la_arquitectura_muestra_los_nueve_pasos_del_pdf_con_las_cuentas_de_los_datos`, `test_cada_paso_de_la_arquitectura_lleva_un_boton_a_la_pantalla_donde_se_ve` |
+| `organizar.titulares_visibles` | 50 | Supuesto (el grupo más grande del snapshot tiene 20 titulares; es solo el tope de la lista que se abre) | `test_organizar_lista_todos_los_grupos_y_abre_el_cu03_con_20_titulares_18_medios_y_1_procedencia` |
+| `organizar.motivos_ruido` | Nombre legible de `no_es_panama`, `no_es_noticia` y `fuera_de_temas` | D-87 y D-126 (los tres motivos de ruido; `sin_tema` ya no existe) | `test_organizar_muestra_el_ruido_marcado_por_motivo_con_su_cuenta` |
+| `contextualizar.fuentes`, `relaciones`, `roles`, `motivos_sin_vinculo` | Textos de presentación de la fuente, la relación (directa, indirecta, evento), el papel del dato y el motivo sin vínculo (`sin_relacion_sustentada` → «No se fuerza la relación», `tema_sin_indicador`) | PDF sección 3 («Si no existe relación sustentada, no forzarla») · D-125/D-127 | `test_contextualizar_muestra_cada_vinculo_con_periodo_unidad_y_limitaciones`, `test_contextualizar_no_fuerza_la_relacion_y_agrupa_los_grupos_sin_vinculo_por_motivo` |
+| `registro_notion.*` | Rótulos del paso «Registro en Notion» de la etapa 7 (exportar Markdown y CSV; sincronizar por la API solo con `NOTION_TOKEN`) | PDF sección 3 (etapa 7: «Crear o actualizar manualmente la ficha en Notion») y E3-03 | `test_revisar_nombra_el_paso_como_registro_en_notion_y_nunca_habla_de_publicar` |
