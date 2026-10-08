@@ -95,7 +95,7 @@
         }
       },
       "fallos": [],
-      "id_caso": "CASO-007",
+      "id_caso": "CASO-016",
       "id_grupo": "GRP-5e6531917f"
     },
     {
@@ -280,7 +280,7 @@
         }
       },
       "fallos": [],
-      "id_caso": "CASO-003",
+      "id_caso": "CASO-017",
       "id_grupo": "GRP-81a11a5998"
     },
     {
@@ -525,7 +525,7 @@
         }
       },
       "fallos": [],
-      "id_caso": "CASO-008",
+      "id_caso": "CASO-018",
       "id_grupo": "GRP-79f3183472"
     },
     {
@@ -618,7 +618,7 @@
         }
       },
       "fallos": [],
-      "id_caso": "CASO-009",
+      "id_caso": "CASO-019",
       "id_grupo": "GRP-4d8b340bd9"
     },
     {
@@ -727,11 +727,11 @@
         }
       },
       "fallos": [],
-      "id_caso": "CASO-001",
+      "id_caso": "CASO-015",
       "id_grupo": "GRP-da35c3dead"
     }
   ],
-  "generado_utc": "2026-10-08T16:04:48Z",
+  "generado_utc": "2026-10-08T22:47:39Z",
   "juicio_humano": false,
   "modalidad": "editorial",
   "n_fichas": 5,
@@ -893,7 +893,7 @@
         "elegida_por": "primero del ranking",
         "estado": "insuficiente",
         "garantia": false,
-        "id_caso": "CASO-007",
+        "id_caso": "CASO-016",
         "id_grupo": "GRP-5e6531917f",
         "modalidad": "editorial",
         "posicion": 1,
@@ -907,10 +907,10 @@
         "elegida_por": "tema=economia, con_dato_oficial=True",
         "estado": "parcial",
         "garantia": false,
-        "id_caso": "CASO-003",
+        "id_caso": "CASO-017",
         "id_grupo": "GRP-81a11a5998",
         "modalidad": "editorial",
-        "posicion": 53,
+        "posicion": 45,
         "puntaje": 70.16,
         "respaldo": false,
         "reutilizado": false
@@ -921,10 +921,10 @@
         "elegida_por": "mas_titulares_que_procedencias=True, titulares_minimos=3, tema_del_reto=True, sin_ruido=True",
         "estado": "insuficiente",
         "garantia": false,
-        "id_caso": "CASO-008",
+        "id_caso": "CASO-018",
         "id_grupo": "GRP-79f3183472",
         "modalidad": "editorial",
-        "posicion": 70,
+        "posicion": 67,
         "puntaje": 49.04,
         "respaldo": false,
         "reutilizado": false
@@ -935,7 +935,7 @@
         "elegida_por": "estado=insuficiente, vacio=cifras_sin_dato_oficial (respaldo declarado)",
         "estado": "insuficiente",
         "garantia": false,
-        "id_caso": "CASO-009",
+        "id_caso": "CASO-019",
         "id_grupo": "GRP-4d8b340bd9",
         "modalidad": "editorial",
         "posicion": 3,
@@ -949,11 +949,11 @@
         "elegida_por": "grupo fijo GRP-da35c3dead (banca)",
         "estado": "suficiente",
         "garantia": false,
-        "id_caso": "CASO-001",
+        "id_caso": "CASO-015",
         "id_grupo": "GRP-da35c3dead",
         "modalidad": "banca",
-        "posicion": 36,
-        "puntaje": 80.13,
+        "posicion": 59,
+        "puntaje": 68.17,
         "respaldo": false,
         "reutilizado": true
       }

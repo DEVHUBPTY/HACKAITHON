@@ -1,13 +1,13 @@
 > **Caso de uso CU-05** — ¿Qué señales públicas del entorno logístico debo revisar? · elegida por: grupo fijo GRP-da35c3dead (banca)
 
-# CASO-001 · Ficha de evidencia · GRP-da35c3dead
+# CASO-015 · Ficha de evidencia · GRP-da35c3dead
 **BORRADOR · requiere revisión**
 
-- Estado de revisión: aprobado como borrador · provisional (D-101)
-- Versión del borrador: versión 3 (corregida)
+- Estado de revisión: requiere evidencia · provisional (D-101)
+- Versión del borrador: versión 1 (generada)
 - Modalidad: Banca
 - Alcance: basado únicamente en titular/metadatos
-- Exportado: 2026-10-08 11:04 (hora de Panamá)
+- Exportado: 2026-10-08 17:47 (hora de Panamá)
 
 ## 1 · Qué se reporta
 - Titular central: «Mulino viajará a Asia: suscribirá convenios bilaterales con Singapur y Vietnam» — laestrella.com.pa
@@ -39,7 +39,7 @@
   - Declaración: revistaeyn.com reporta: «Presidente de Panamá visita Singapur y Vietnam en busca de inversiones» · Cita: NOT-fbc3efaa5d · titulo\_limpio
 
 ## 4 · Qué falta comprobar
-- sin dato oficial vinculado (solo vínculo indirecto: no mide el hecho) → Verificar: El indicador vinculado es contexto lejano: buscar un dato oficial que mida el hecho directamente.
+- sin dato oficial vinculado (ningún titular sustenta una relación con un dato oficial; no se fuerza la relación) → Verificar: Consultar a la institución oficial responsable del tema por un dato que mida el hecho.
 - 3 de 3 titulares sin medio o fecha de publicación conocidos → Verificar: Abrir el enlace de cada titular para identificar el medio y la fecha de publicación original.
 - urgencia estimada: fecha de publicación desconocida → Verificar: Abrir el enlace de cada titular para identificar el medio y la fecha de publicación original.
 - Fuentes sugeridas para verificar (sugerencias para quien verifica; no son evidencia del sistema ni se citan como tal)
@@ -50,57 +50,58 @@
   - Contraloría General de la República (INEC)
 
 ## 5 · Acción recomendada
-- Acción: Incluir en el boletín como observación
-- Motivo: Atención alta y evidencia suficiente: entra al boletín como observación, con sus citas.
-- Prioridad: alto (P = 80.13, posición 36, reglas 1.3) · Estado de evidencia: suficiente
-- Desglose del puntaje (ordena la atención; no es una probabilidad de verdad ni de pérdida): R 1 · I 1 · U 0.26 · N 1 · E 0.5
+- Acción: Incluir como contexto
+- Motivo: Atención media con evidencia suficiente: entra como contexto del entorno.
+- Prioridad: medio (P = 68.17, posición 59, reglas 1.3) · Estado de evidencia: suficiente
+- Desglose del puntaje (ordena la atención; no es una probabilidad de verdad ni de pérdida): R 1 · I 0.65 · U 0.1 · N 1 · E 0.5
+- Relevancia (R): Panamá es el sujeto: un titular nombra panameño (Presidente panameño visitará Singapur y Vietnam)
 - Siguientes pasos
-  - El indicador vinculado es contexto lejano: buscar un dato oficial que mida el hecho directamente.
+  - Consultar a la institución oficial responsable del tema por un dato que mida el hecho.
   - Abrir el enlace de cada titular para identificar el medio y la fecha de publicación original.
 - La acción no aprueba ningún contenido: todo sigue siendo borrador para una decisión humana.
 
-## Borrador · versión 3 (corregida)
+## Borrador · versión 1 (generada)
 
 ### Marca
 - BORRADOR · requiere revisión
 
 ### Caso
-- CASO-001
+- CASO-015
 
 ### Versión de la ficha
-- 3
+- 1
 
 ### Alcance
 - basado únicamente en titular/metadatos
 
 ### Acción recomendada
-- Incluir en el boletín como observación
+- Incluir como contexto
 
 ### Paquete completo forzado por una persona
 - No
 
 ### Afirmaciones validadas
 - A1 \[declaración\] El medio prensa-latina.cu reporta que el Presidente panameño visitará Singapur y Vietnam. (NOT-1819a7014e · titulo\_limpio)
-- A2 \[declaración\] Según el medio laestrella.com.pa, Mulino viajará a Asia y suscribirá convenios bilaterales con Singapur y Vietnam. (NOT-33032542b7 · titulo\_limpio)
+- A2 \[declaración\] El medio laestrella.com.pa reporta que Mulino viajará a Asia y suscribirá convenios bilaterales con Singapur y Vietnam. (NOT-33032542b7 · titulo\_limpio)
 - A3 \[declaración\] El medio revistaeyn.com reporta que el Presidente de Panamá visita Singapur y Vietnam en busca de inversiones. (NOT-fbc3efaa5d · titulo\_limpio)
 - A4 \[hecho\] El grupo de registros reúne 3 titulares de 3 medios que reportan este tema. (GRP-da35c3dead · n\_titulares, GRP-da35c3dead · n\_medios)
-- A5 \[hecho\] Se estiman 3 procedencias independientes, contando los titulares que replican a una misma fuente como una. (GRP-da35c3dead · n\_procedencias)
-- A6 \[inferencia\] Es posible que la cobertura de una gira presidencial por Asia resulte relevante para el entorno de sectores ligados al comercio exterior y a la atracción de inversiones, a verificar con fuentes adicionales. (base: A1, A2, A3, A4, A5)
+- A5 \[hecho\] Se estiman 3 procedencias independientes, contando los titulares que replican a una misma fuente como una sola. (GRP-da35c3dead · n\_procedencias)
+- A6 \[inferencia\] Es posible que la cobertura de una gira presidencial por Asia con fines de inversión y convenios bilaterales resulte relevante para sectores de la economía vinculados al comercio y la atracción de capital, a verificar con información adicional. (base: A1, A2, A3)
 
 ### Preguntas de investigación
-- ¿Qué dato oficial puede vincularse directamente con esta gira, más allá del vínculo indirecto registrado? (vacío: solo\_vinculo\_indirecto)
-- ¿Cuáles son los medios y las fechas de publicación de los 3 titulares que aún figuran sin ese dato? (vacío: medios\_o\_fechas\_desconocidos)
-- ¿Cómo se estimó la urgencia si la fecha de publicación es desconocida? (vacío: urgencia\_sin\_publicacion)
+- ¿Existe algún dato oficial vinculado a esta gira presidencial por Asia que permita contrastar lo reportado por los medios? (vacío: sin\_dato\_oficial)
+- ¿Cuáles son los medios y las fechas de publicación de los 3 titulares que integran el grupo de registros? (vacío: medios\_o\_fechas\_desconocidos)
+- ¿Qué elementos permiten estimar la urgencia del tema si la fecha de publicación es desconocida? (vacío: urgencia\_sin\_publicacion)
 
 ### Resumen · Observaciones
 - El medio prensa-latina.cu reporta que el Presidente panameño visitará Singapur y Vietnam. \[A1\]
-- Según laestrella.com.pa, Mulino viajará a Asia para suscribir convenios bilaterales con Singapur y Vietnam. \[A2\]
+- El medio laestrella.com.pa reporta que Mulino viajará a Asia y suscribirá convenios bilaterales con Singapur y Vietnam. \[A2\]
 - El medio revistaeyn.com reporta que el Presidente de Panamá visita Singapur y Vietnam en busca de inversiones. \[A3\]
 - El grupo de registros reúne 3 titulares de 3 medios que reportan este tema. \[A4\]
-- Se estiman 3 procedencias independientes, contando los titulares que replican a una misma fuente como una. \[A5\]
+- Se estiman 3 procedencias independientes, contando los titulares que replican a una misma fuente como una sola. \[A5\]
 
 ### Resumen · Hipótesis de impacto
-- Es posible que la cobertura de una gira presidencial por Asia sea relevante para el entorno del comercio exterior y la atracción de inversiones, a verificar con fuentes adicionales. \[A6\]
+- Es posible que la cobertura de una gira presidencial por Asia con fines de inversión y convenios bilaterales resulte relevante para sectores de la economía vinculados al comercio y la atracción de capital, a verificar con información adicional. \[A6\]
 
 ### Sectores potencialmente relacionados
 - logística: Tema principal del grupo, Logística/Canal: se relaciona con el sector logística según el mapeo tema → sector (D-11).
@@ -125,21 +126,10 @@ El historial es de solo agregar: ninguna fila se modifica ni se borra.
 
 | # | Fecha (hora de Panamá) | Acción | Estado anterior | Estado nuevo | Revisor | Versión | Motivo | Comentario |
 |---|---|---|---|---|---|---|---|---|
-| 1 | 2026-10-07 13:12 | abrir | nuevo | en revisión | Asistente (provisional, D-101) (Analista) · provisional (D-101) |  |  |  |
-| 2 | 2026-10-07 13:12 | regenerar | en revisión | en revisión | Asistente (provisional, D-101) (Analista) · provisional (D-101) | 1 |  | Borrador tomado de la caché de E1-14 (sin LLM ni red) |
-| 3 | 2026-10-07 13:13 | aceptar | en revisión | aprobado como borrador | Asistente (provisional, D-101) (Analista) · provisional (D-101) | 1 |  | Aprobación PROVISIONAL del asistente (D-112): una persona la rehace en C-09 |
-| 4 | 2026-10-07 13:55 | reabrir | aprobado como borrador | en revisión | Asistente (provisional, D-101) (Analista) · provisional (D-101) | 1 | Corregir la redacción de una observación y de la hipótesis de impacto (recorrido E2-04, D-112) |  |
-| 5 | 2026-10-07 13:55 | corregir | en revisión | en revisión | Asistente (provisional, D-101) (Analista) · provisional (D-101) | 2 |  |  |
-| 6 | 2026-10-07 13:55 | corregir | en revisión | en revisión | Asistente (provisional, D-101) (Analista) · provisional (D-101) | 3 |  |  |
-| 7 | 2026-10-07 13:55 | aceptar | en revisión | aprobado como borrador | Asistente (provisional, D-101) (Analista) · provisional (D-101) | 3 |  | Re-aprobado como borrador tras corregir un bloque de cada tipo (provisional, D-112) |
-
-### Correcciones (antes y después)
-- Versión 2 · Resumen · Observaciones · 2
-  - Antes: Según el medio laestrella.com.pa, Mulino viajará a Asia y suscribirá convenios bilaterales con Singapur y Vietnam.
-  - Después: Según laestrella.com.pa, Mulino viajará a Asia para suscribir convenios bilaterales con Singapur y Vietnam.
-- Versión 3 · Resumen · Hipótesis de impacto · 1
-  - Antes: Es posible que la cobertura de una gira presidencial por Asia resulte relevante para el entorno de sectores ligados al comercio exterior y a la atracción de inversiones, a verificar con fuentes adicionales.
-  - Después: Es posible que la cobertura de una gira presidencial por Asia sea relevante para el entorno del comercio exterior y la atracción de inversiones, a verificar con fuentes adicionales.
+| 2 | 2026-10-08 17:17 | abrir | nuevo | en revisión | David Feng (Analista) | 1 |  |  |
+| 3 | 2026-10-08 17:18 | pedir\_evidencia | en revisión | requiere evidencia | David Feng (Analista) | 1 |  | Se solicita confirmar las fechas de publicación originales y el calendario oficial del viaje y de los convenios. El boletín fija un horizonte inmediato aunque la ficha declara fecha de publicación desconocida. Mantener las declaraciones atribuidas y la hipótesis de impacto como inferencia; no hay evidencia para afirmar inversiones concretadas. No se descarta el tema: reúne tres procedencias estimadas y es pertinente como contexto. |
+| 21 | 2026-10-08 17:47 | reabrir | requiere evidencia | en revisión | Asistente (provisional, D-101) (Analista) · provisional (D-101) | 1 | Corrección de origen (C-09): la decisión anterior la redactó un asistente y David Feng la confirmó sin revisión independiente; se registra como revisión asistida y provisional (D-101), no como juicio humano. |  |
+| 22 | 2026-10-08 17:47 | pedir\_evidencia | en revisión | requiere evidencia | Asistente (provisional, D-101) (Analista) · provisional (D-101) | 1 |  | Misma decisión que la fila anterior: redactada por un asistente y confirmada por David Feng sin revisión independiente (D-101). |
 
 ---
 **BORRADOR · requiere revisión** · Alcance: basado únicamente en titular/metadatos
