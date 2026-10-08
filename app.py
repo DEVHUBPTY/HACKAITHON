@@ -155,6 +155,25 @@ def insignia_sintetico(ctx: ui.Contexto) -> None:
     st.markdown(f":orange-badge[{ctx.cfg.textos.sintetico}]", help=ctx.cfg.textos.sintetico_ayuda)
 
 
+def grupos_sinteticos(ctx: ui.Contexto) -> set[str]:
+    """Grupos con algún titular sintético (``origen = sintetico``): solo existen en la base de la demo (C-06)."""
+    return {f.id_grupo for f in ctx.filas if f.sintetico}
+
+
+def insignia_de_grupo(ctx: ui.Contexto, id_grupo: str | None) -> None:
+    """La insignia SINTÉTICO si el grupo lo es (Organizar, Contextualizar, Priorizar, Explicar, Producir y Revisar)."""
+    if id_grupo and id_grupo in grupos_sinteticos(ctx):
+        insignia_sintetico(ctx)
+
+
+def con_origen(ctx: ui.Contexto, filas: list[dict[str, Any]], clave: str = "Grupo") -> list[dict[str, Any]]:
+    """Agrega la columna «Origen» (SINTÉTICO) a las filas de un grupo; si la base no tiene sintéticos, las deja como están."""
+    sinteticos = grupos_sinteticos(ctx)
+    if not sinteticos:
+        return filas
+    return [{**f, "Origen": ctx.cfg.textos.sintetico if f[clave] in sinteticos else ""} for f in filas]
+
+
 def linea(texto: str, nivel: int = 0) -> None:
     """Un texto de los datos se pinta escapado: se ve igual, pero no se interpreta como Markdown ni HTML."""
     st.markdown("    " * nivel + "- " + escapar_markdown(texto))
@@ -202,7 +221,7 @@ def selector_de_grupo(ctx: ui.Contexto, clave: str) -> str | None:
 
     def etiqueta(i: str) -> str:
         f = por_id[i]
-        return f"#{f.posicion} · {f.titular[:ctx.cfg.bandeja.largo_titular_selector]}"
+        return f"#{f.posicion} · {ctx.cfg.textos.sintetico + ' · ' if f.sintetico else ''}{f.titular[:ctx.cfg.bandeja.largo_titular_selector]}"
 
     # El valor del widget parte del grupo compartido; al elegir otro, on_change (que corre ANTES de volver a ejecutar el script)
     # actualiza el grupo compartido, así que lo de arriba ya no pisa la elección.
@@ -499,17 +518,19 @@ def pantalla_organizar(ctx: ui.Contexto) -> None:
         st.info(ctx.cfg.textos.sin_base)
         pie(ctx)
         return
-    st.dataframe(pd.DataFrame(filas), hide_index=True, width="stretch", column_config={"Titular central": st.column_config.TextColumn(width="large")})
+    st.dataframe(pd.DataFrame(con_origen(ctx, filas)), hide_index=True, width="stretch", column_config={"Titular central": st.column_config.TextColumn(width="large")})
     ids = [f["Grupo"] for f in filas]
+    sinteticos = grupos_sinteticos(ctx)
     por_id = {f["Grupo"]: f for f in filas}
     largo = ctx.cfg.bandeja.largo_titular_selector
     elegido = st.selectbox(
         "Abrir los titulares y las procedencias de un grupo", ids, key="organizar_grupo",
-        format_func=lambda i: f"{i} · {por_id[i]['Titulares']} titulares, {por_id[i]['Procedencias']} procedencias · {por_id[i]['Titular central'][:largo]}",
+        format_func=lambda i: f"{i} · {ctx.cfg.textos.sintetico + ' · ' if i in sinteticos else ''}{por_id[i]['Titulares']} titulares, {por_id[i]['Procedencias']} procedencias · {por_id[i]['Titular central'][:largo]}",
     )
     d = ui.detalle_de_grupo(ctx.con, elegido, nombres, ctx.cfg_ver, ctx.cfg.organizar.titulares_visibles)
     if d is not None:
         st.markdown(f"**{escapar_markdown(d.titular_central)}** · `{d.id_grupo}` · {d.tema}")
+        insignia_de_grupo(ctx, d.id_grupo)
         c1, c2, c3 = st.columns(3)
         c1.metric("Titulares", d.n_titulares)
         c2.metric("Medios", d.n_medios)
@@ -518,7 +539,11 @@ def pantalla_organizar(ctx: ui.Contexto) -> None:
         st.markdown("**Procedencias**")
         st.dataframe(pd.DataFrame(d.procedencias), hide_index=True, width="stretch")
         st.markdown("**Titulares del grupo**")
-        st.dataframe(pd.DataFrame(d.titulares), hide_index=True, width="stretch", column_config={"Titular": st.column_config.TextColumn(width="large")})
+        titulares = d.titulares
+        marcados = ui.ids_sinteticos(ctx.con, [t["Noticia"] for t in titulares])
+        if marcados:
+            titulares = [{**t, "Origen": ctx.cfg.textos.sintetico if t["Noticia"] in marcados else ""} for t in titulares]
+        st.dataframe(pd.DataFrame(titulares), hide_index=True, width="stretch", column_config={"Titular": st.column_config.TextColumn(width="large")})
         if d.n_titulares > len(d.titulares):
             st.caption(f"Se muestran {len(d.titulares)} de {d.n_titulares} titulares.")
         st.button("Abrir la ficha de este grupo", key="organizar_abrir", on_click=ir_a, args=("ficha", d.id_grupo))
@@ -542,10 +567,10 @@ def pantalla_contextualizar(ctx: ui.Contexto) -> None:
     st.subheader("Noticias relacionadas con un dato oficial")
     if vinculos:
         st.dataframe(
-            pd.DataFrame([{
+            pd.DataFrame(con_origen(ctx, [{
                 "Grupo": v.id_grupo, "Titular": v.titular, "Fuente": v.fuente, "Dato oficial": v.id_evidencia, "Relación": v.relacion, "Papel": v.papel,
                 "Indicador o lugar": v.indicador, "Valor": v.valor, "Período": v.periodo, "Limitaciones": v.limitacion, "Regla que lo sustenta": v.regla,
-            } for v in vinculos]),
+            } for v in vinculos])),
             hide_index=True, width="stretch",
             column_config={"Titular": st.column_config.TextColumn(width="large"), "Limitaciones": st.column_config.TextColumn(width="large"),
                            "Regla que lo sustenta": st.column_config.TextColumn(width="large")},
@@ -554,7 +579,8 @@ def pantalla_contextualizar(ctx: ui.Contexto) -> None:
         st.markdown("**Citas (clic para ver el registro)**")
         for g in dict.fromkeys(v.id_grupo for v in vinculos):
             propios = [v for v in vinculos if v.id_grupo == g]
-            with st.expander(f"{g} · {propios[0].titular[:ctx.cfg.bandeja.largo_titular_selector]} ({len(propios)} vínculos)"):
+            with st.expander(f"{g} · {ctx.cfg.textos.sintetico + ' · ' if g in grupos_sinteticos(ctx) else ''}{propios[0].titular[:ctx.cfg.bandeja.largo_titular_selector]} ({len(propios)} vínculos)"):
+                insignia_de_grupo(ctx, g)
                 citas_clicables(ctx, list(dict.fromkeys((v.id_evidencia, v.campo_cita) for v in propios)), "Datos oficiales")
                 st.button("Abrir la ficha de este grupo", key=f"contexto_abrir_{g}", on_click=ir_a, args=("ficha", g))
     else:
@@ -563,7 +589,7 @@ def pantalla_contextualizar(ctx: ui.Contexto) -> None:
     for motivo, grupos in por_motivo.items():
         st.markdown(f"**{ctx.cfg.contextualizar.motivos_sin_vinculo.get(motivo, motivo)}** · {len(grupos)} grupos · `{motivo}`")
         st.dataframe(
-            pd.DataFrame([{"Grupo": g.id_grupo, "Titular": g.titular, "Tema": g.tema, "Regla": g.regla} for g in grupos]),
+            pd.DataFrame(con_origen(ctx, [{"Grupo": g.id_grupo, "Titular": g.titular, "Tema": g.tema, "Regla": g.regla} for g in grupos])),
             hide_index=True, width="stretch", column_config={"Titular": st.column_config.TextColumn(width="large")},
         )
     pie(ctx)
@@ -682,7 +708,8 @@ def pantalla_bandeja(ctx: ui.Contexto) -> None:
     st.caption(f"Se muestran {len(visibles)} de {total} grupos.")
     ids = [f.id_grupo for f in filas]
     por_id = {f.id_grupo: f for f in filas}
-    elegido = st.selectbox("Abrir la ficha de", ids, key="bandeja_grupo", format_func=lambda i: f"#{por_id[i].posicion} · {por_id[i].titular[:ctx.cfg.bandeja.largo_titular_selector]}")
+    elegido = st.selectbox("Abrir la ficha de", ids, key="bandeja_grupo", format_func=lambda i: f"#{por_id[i].posicion} · {ctx.cfg.textos.sintetico + ' · ' if por_id[i].sintetico else ''}{por_id[i].titular[:ctx.cfg.bandeja.largo_titular_selector]}")
+    insignia_de_grupo(ctx, elegido)
     st.button("Abrir ficha", on_click=ir_a, args=("ficha", elegido), key="bandeja_abrir")
     pie(ctx)
 
@@ -705,8 +732,7 @@ def pantalla_ficha(ctx: ui.Contexto) -> None:
     v = vista(ficha, ctx.cfg_ver)
     plan = ui.plan_de_ficha(v, ctx.cfg)
     st.markdown(f"**{v.marca}** · `{v.id_grupo}`")
-    if any(f.sintetico for f in ctx.filas if f.id_grupo == id_grupo):
-        insignia_sintetico(ctx)
+    insignia_de_grupo(ctx, id_grupo)
     for s in plan.resumen:                                   # resumen: qué se reporta, estado y acción
         st.subheader(s.titulo)
         lineas(s.lineas)
@@ -788,6 +814,7 @@ def pantalla_paquete(ctx: ui.Contexto) -> None:
         pie(ctx)
         return
     ficha = ficha_de(str(ctx.ruta_base), id_grupo, ctx.modalidad)
+    insignia_de_grupo(ctx, id_grupo)
     a = ficha.accion_recomendada
     st.markdown(f"**Acción recomendada:** {escapar_markdown(a.accion)} · prioridad {a.rango} · evidencia {a.estado_evidencia}")
     estado = ui.obtener_paquete(id_grupo, ctx.modalidad, ctx.cfg, ruta_base=ctx.ruta_base)
@@ -848,6 +875,7 @@ def pantalla_revision(ctx: ui.Contexto) -> None:
         pie(ctx)
         return
     rev, cfg_rev = ctx.revisiones, ui.cargar_revision()
+    insignia_de_grupo(ctx, id_grupo)
     _huerfanos(ctx)
     caso = rev.caso_de_grupo(id_grupo, ctx.modalidad)
     actual = ui.estado_de_revision(ctx.con, id_grupo, ctx.cfg, rev, ctx.modalidad)

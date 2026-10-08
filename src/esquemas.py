@@ -314,7 +314,7 @@ class BoletinBanca(PaqueteBase):
 # ======================================================================================================================
 
 PREFIJOS_DE_HECHO = ("GRP-", "IND-", "SIS-", "SBP-")        # un hecho es un conteo o un dato oficial (CLAUDE.md)
-PREFIJO_DE_DECLARACION = "NOT-"                            # un titular es lo que un medio reporta: declaración, nunca hecho
+PREFIJOS_DE_DECLARACION = ("NOT-", "SYN-")                     # un titular (real o sintético, C-06) es lo que un medio reporta: declaración, nunca hecho
 ETIQUETA_BORRADOR = "BORRADOR · requiere revisión"
 
 
@@ -449,8 +449,8 @@ class LineaRespaldo(ModeloFicha):
         if self.tipo == "declaración":
             if not self.atribucion:
                 raise ValueError("una declaración se atribuye a un medio")
-            if not all(c.id.startswith(PREFIJO_DE_DECLARACION) for c in self.citas):
-                raise ValueError("una declaración cita el titular (NOT-)")
+            if not all(c.id.startswith(PREFIJOS_DE_DECLARACION) for c in self.citas):
+                raise ValueError("una declaración cita el titular (NOT- o SYN-)")
         return self
 
 

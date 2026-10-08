@@ -148,6 +148,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--columna", default="ruido", help="columna de ruido en el CSV de etiquetas")
     parser.add_argument("--base", type=Path, default=RAIZ / "data" / cargar_normalizacion().salida.base_de_datos)
     args = parser.parse_args(argv)
+    db.base_real_o_salir(args.base)    # C-06: la base de la demo nunca entra en una métrica
     if not args.etiquetas.exists():
         print(
             f"SIN ETIQUETAS: no existe {args.etiquetas}. Las crea E1-06 (etiquetado humano); "

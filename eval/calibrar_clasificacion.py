@@ -94,6 +94,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="E1-07: valores provisionales de umbrales (no escribe config/)")
     parser.add_argument("--base", type=Path, default=RAIZ / "data" / cargar_normalizacion().salida.base_de_datos)
     args = parser.parse_args(argv)
+    db.base_real_o_salir(args.base)    # C-06: la base de la demo nunca entra en una métrica
     if not args.base.exists():
         print(f"No existe {args.base}: ejecute normalización y limpieza primero.", file=sys.stderr)
         return 1

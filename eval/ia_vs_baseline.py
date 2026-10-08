@@ -632,6 +632,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--base", type=Path, default=RAIZ / "data" / cargar_normalizacion().salida.base_de_datos)
     parser.add_argument("--salida", type=Path, default=SALIDA)
     args = parser.parse_args(argv)
+    from src import db
+    db.base_real_o_salir(args.base)    # C-06: la base de la demo nunca entra en una métrica
     if not args.base.exists():
         print(f"No existe {args.base}: ejecute normalización, limpieza, clasificación y prioridad primero.", file=sys.stderr)
         return 1

@@ -29,7 +29,7 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
-from src.configuracion import RAIZ, ConfigRevision, cargar_interfaz, cargar_notion, leer_local_env, cargar_revision, cargar_temas, cargar_verificacion
+from src.configuracion import RAIZ, ConfigRevision, cargar_interfaz, cargar_normalizacion, cargar_notion, leer_local_env, cargar_revision, cargar_temas, cargar_verificacion
 from src.esquemas import ETIQUETA_BORRADOR, Ficha, RegistroFichasJsonl
 from src.ficha import CARPETA_PLANTILLAS, a_registro, escapar_markdown, vista
 from src.notion import ClienteNotion, ErrorNotion, SincronizacionIncompleta, SinConexion
@@ -49,6 +49,18 @@ class Exportacion:
     markdown: str
     fila: dict[str, str]
     actualizada: bool
+
+
+def es_ficha_sintetica(ficha: Ficha) -> bool:
+    """¿La ficha cita algún registro sintético (ID ``SYN-``, C-06)? Solo pasa con los casos de la demo."""
+    prefijos = tuple(cargar_normalizacion().noticias.prefijos_sinteticos)
+    return any(i.startswith(prefijos) for i in a_registro(ficha)["ids_fuente"])
+
+
+def _rotulo_sintetico() -> str:
+    """«SINTÉTICO · Registro de prueba creado por el equipo; no es una noticia real.» (el mismo texto de la insignia de la app)."""
+    t = cargar_interfaz().textos
+    return f"{t.sintetico} · {t.sintetico_ayuda}"
 
 
 def _version_texto(rev: Revisiones, id_caso: str) -> str:
@@ -89,7 +101,7 @@ def fila_notion(rev: Revisiones, id_caso: str, ficha: Ficha, ahora: datetime | N
         "Versión de reglas": ficha.puntaje.version_reglas,
         "Versión del borrador": _version_texto(rev, id_caso),
         "Alcance del texto": ficha.alcance,
-        "Qué se reporta": _texto_plano(secciones["que_se_reporta"].lineas),
+        "Qué se reporta": (f"{_rotulo_sintetico()}\n" if es_ficha_sintetica(ficha) else "") + _texto_plano(secciones["que_se_reporta"].lineas),
         "Quién lo reporta": _texto_plano(secciones["quien_lo_reporta"].lineas),
         "Qué está respaldado": _texto_plano(secciones["respaldado"].lineas),
         "Qué falta comprobar": _texto_plano(secciones["falta_comprobar"].lineas),
@@ -135,6 +147,7 @@ def a_markdown(rev: Revisiones, id_caso: str, ficha: Ficha, ahora: datetime | No
         "id_caso": escapar_markdown(id_caso),
         "id_grupo": escapar_markdown(caso.id_grupo),
         "marca": ETIQUETA_BORRADOR,
+        "sintetico": _rotulo_sintetico() if es_ficha_sintetica(ficha) else "",
         "estado": escapar_markdown(rev.estado_rotulado(id_caso)),
         "version_texto": _version_texto(rev, id_caso),
         "modalidad": rev.cfg.exportacion.modalidades[caso.modalidad],

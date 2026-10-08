@@ -119,6 +119,7 @@ def cargar_excluidos(ruta: Path) -> set[str]:
 def leer_noticias(ruta_base: Path) -> list[dict[str, Any]]:
     """Campos de las noticias. La descripción del RSS no se lee (D-31). ``es_ruido`` sirve solo para estratificar:
     la interfaz no lo muestra (no sesgar a la persona). Falla si la limpieza (E1-03b) no se ha corrido."""
+    db.exigir_base_real(ruta_base)    # C-06: las etiquetas de evaluación nunca salen de la base de la demo
     con = db.conectar(ruta_base, solo_lectura=True)
     try:
         cur = con.execute(

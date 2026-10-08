@@ -149,6 +149,7 @@ def principal(argv: list[str] | None = None) -> int:
     parser.add_argument("--salida", type=Path, default=None, help=f"por defecto {cfg.archivos.carpeta}")
     parser.add_argument("--notion", action="store_true", help="con --casos: además sincroniza cada caso con «Casos y evidencias» por la API (E3-03; necesita NOTION_TOKEN en local.env; sin él solo avisa)")
     args = parser.parse_args(argv)
+    db.base_real_o_salir(args.base)    # C-06: las fichas trazables salen de la base real, nunca de la demo
     if args.notion and not args.casos:
         parser.error("--notion exige --casos")
     if not args.base.exists():

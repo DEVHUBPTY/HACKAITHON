@@ -297,7 +297,8 @@ def test_el_guion_de_la_demo_sale_de_la_tabla_de_docs_demo_md() -> None:
     assert ui.pasos_de_demo(texto) == [ui.PasoDemo("0:00–0:15", "Calidad", "Se muestra el reporte", "Se marca, no se borra")]
 
 
-def test_el_modo_demo_sin_base_de_demo_cae_al_snapshot_y_avisa(tmp_path) -> None:
+def test_el_modo_demo_sin_base_de_demo_cae_al_snapshot_y_avisa(tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr(ui, "RAIZ", tmp_path)      # C-06: ya existe data/demo.duckdb en el repo; aquí no hay ninguna
     assert ui.modo_demo(["--demo"]) is True and ui.modo_demo([]) is False
     ruta, aviso = ui.elegir_base(True, CFG, base_normal=tmp_path / "senales.duckdb")
     assert ruta == tmp_path / "senales.duckdb" and aviso == CFG.textos.sin_demo

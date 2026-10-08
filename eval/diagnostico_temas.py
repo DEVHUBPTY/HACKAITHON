@@ -576,6 +576,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--base", type=Path, default=RAIZ / "data" / cargar_normalizacion().salida.base_de_datos)
     parser.add_argument("--salida", type=Path, default=SALIDA)
     args = parser.parse_args(argv)
+    db.base_real_o_salir(args.base)    # C-06: la base de la demo nunca entra en una métrica
     if not args.etiquetas.exists() or not args.base.exists():
         print(f"Faltan {args.etiquetas} o {args.base}: no se calcula nada (no se inventan métricas).", file=sys.stderr)
         return evalclas.CODIGO_SIN_ETIQUETAS

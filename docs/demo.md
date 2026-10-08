@@ -34,6 +34,17 @@ En **1 · Cargar**, bajo la arquitectura (cada tarjeta 1 a 3 tiene un enlace que
 
 *Qué se dice:* "Esta es la etapa 1 corriendo ahora, no una captura: lee el paquete congelado, verifica sus hashes, valida, normaliza y guarda; y las etapas siguientes corren sobre esa carga y dan lo mismo que la base de la app." *Plan B:* captura de la pantalla, o `poetry run python -m scripts.reproducir --verificar`.
 
+## CU-04 · contradicción (caso sintético, C-06)
+
+El PDF pide para CU-04 «preguntar por una cifra inexistente o por una contradicción»: abstenerse o mostrar las versiones y la verificación pendiente. Las dos mitades se muestran así:
+
+| Mitad de CU-04 | Caso | Origen | Cómo se abre |
+|---|---|---|---|
+| Cifra inexistente | Consulta «¿Cuál fue el desempleo de Panamá en 2025?» → abstención con el último dato (2024) | **Real** (snapshot) | Consulta (guion, 3:20–4:00) |
+| Contradicción | `GRP-55e0774b97`: `SYN-C06-001` (Medio Sintético C: «36 tránsitos diarios») frente a `SYN-C06-002` (Medio Sintético D: «28 tránsitos diarios») | **SINTÉTICO** (`tests/fixtures/c06_contradiccion_demo.csv`) | `poetry run streamlit run app.py -- --demo` y `http://localhost:8501/?caso=GRP-55e0774b97` |
+
+El snapshot real no tiene ninguna contradicción abierta, así que ese caso se agrega a una **copia** de la base (`poetry run python -m scripts.preparar_demo` → `data/demo.duckdb`, fuera de git). Lleva la insignia **SINTÉTICO** en cada pantalla donde aparece (Organizar, Contextualizar, Priorizar, Explicar, Producir y Revisar) y en la exportación a Notion (Markdown y CSV). En 5 · Explicar la ficha muestra *Versión A* y *Versión B* con su medio, su ID y su cita, la etiqueta «posible contradicción, verificar» y, en *Qué falta comprobar*, la verificación pendiente; **nunca elige cuál es la verdadera** ni cierra el par. *Qué se dice:* "Dos medios dan cifras incompatibles: mostramos las dos versiones con su fuente y dejamos la verificación a una persona. Este caso es sintético y está marcado." La base de la demo **nunca** se usa para métricas: toda métrica se niega a leerla.
+
 ## Pruebas dinámicas del jurado
 
 | Pregunta | Dónde ir |
@@ -58,7 +69,7 @@ Pasada ejecutada el 2026-10-06 con el snapshot real (`data/senales.duckdb`), sin
   - **Borrador (E1-12 y E1-14):** ya integrado: la pestaña *Paquete* llama a `src.generacion.generar_paquete(id_grupo, modalidad, solo_cache=True)` y muestra lo guardado en `data/cache_llm/` (ver `docs/fallback.md`). 
     La integración se configura en `config/interfaz.yaml:generacion`.
   - **`CASO-00N` y revisión (E1-16):** ya integrado. Al abrir un grupo en *Revisión* nace su `CASO-00N`; `?caso=` acepta un `GRP-…`, un `CASO-…` o la posición en la bandeja. La revisión de la demo va a `data/revision_demo.duckdb`, aparte de la real.
-  - **Base y capturas de demo (C-06):** `data/demo.duckdb`, `preparar_demo`, y `capturas_demo` todavía no existen (`scripts/calentar_cache.py` ya existe, E1-14); `--demo` cae al snapshot y lo avisa.
+  - **Base y capturas de demo (C-06):** `data/demo.duckdb` y `scripts/preparar_demo.py` ya existen (caso sintético de CU-04, ver arriba). Todavía no existen `capturas_demo`, `verificar_offline` ni `buscar_casos` (`scripts/calentar_cache.py` ya existe, E1-14); sin `data/demo.duckdb`, `--demo` cae al snapshot y lo avisa.
   - **Banca (E2-01, D-132):** la modalidad Banca funciona en toda la interfaz. La base guarda los puntajes de una sola modalidad, así que al elegir Banca la app calcula (sin LLM, ~0,3 s) una copia de sesión en el directorio temporal y la usa en todas las pantallas; el archivo vivo no se toca y *Editorial* vuelve a él. Los borradores de banca se calientan sobre esa misma copia (ver la noche anterior).
 
 ## Riesgos
@@ -73,7 +84,7 @@ Pasada ejecutada el 2026-10-06 con el snapshot real (`data/senales.duckdb`), sin
 ## Checklist
 
 **La noche anterior**
-- [ ] `poetry run python -m scripts.preparar_demo` (base de demo; C-06, aún no existe)
+- [ ] `poetry run python -m scripts.preparar_demo` (base de demo con el caso sintético de CU-04; C-06; sin red ni LLM, ~15 s)
 - [ ] `poetry run python -m scripts.calentar_cache` (borradores en caché, E1-14; volver a correrlo tras cambiar prompt, modelo o validador) y `--verificar`
 - [ ] Borradores de **banca** en caché (D-132; con red): la base viva tiene los puntajes de editorial, así que se calienta sobre la copia de sesión:
   ```bash
