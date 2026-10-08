@@ -20,7 +20,7 @@ Qué NO usa un LLM: el puntaje, el estado de evidencia, la ficha, el validador y
 - **Limitaciones observadas:**
   - La similitud entre un titular y su propio tema está comprimida: casi todo cae entre 0.80 y 0.91, por lo que no separa bien paráfrasis de no paráfrasis (`config/clasificacion.yaml`).
   - Clasificación de tema con las etiquetas humanas: macro-F1 0.401 (IC 0.243–0.516, n = 63), sin diferencia demostrable frente a las palabras clave (`docs/ia_vs_baseline.md`).
-  - Consultas cortas y genéricas puntúan 0.85 contra su documento correcto y se abstienen con el umbral 0.874 (`docs/ia_vs_baseline.md`, sección 5).
+  - Consultas cortas y genéricas puntúan 0.85 contra su documento correcto y se abstenían con el umbral 0.874; D-134 lo recalibró a 0.840 (`docs/consulta.md`, sección D-134).
 
 ## 2 · `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`
 

@@ -294,12 +294,26 @@ def exterior_en(titular: str, terminos: Sequence[str]) -> tuple[list[str], str]:
     return halladas, "".join(" " if i in borrar else c for i, c in enumerate(titular))
 
 
+def nombra_al_pais(titular: str, reglas: ReglasV13, cfg: ConfigPrioridad) -> bool:
+    """C-10 (D3, D6): el titular nombra a Panamá, el país, por su nombre o por un nombre propio de ``panama_nombres_propios``.
+
+    No cuenta el gentilicio («panameños»), un prefijo excluido («Ciudad de Panamá» es el lugar, no el país) ni un lugar extranjero
+    de ``panama_nombres_extranjeros`` («Panama City, Florida»).
+    """
+    g = reglas.geografia
+    _, titular = exterior_en(titular, g.panama_nombres_extranjeros)
+    return bool(terminos_sin_prefijo_excluido(titular, [*g.pais_terminos, *g.panama_nombres_propios], cfg.geografia.prefijos_excluidos))
+
+
 def alcance_geografico(miembros: Sequence[Mapping[str, Any]], reglas: ReglasV13, cfg: ConfigPrioridad) -> Alcance:
     """Alcance más amplio que nombran los titulares: nacional, provincial (provincias y comarcas) o local (distritos).
 
     Si ningún titular nombra un término explícito ni un lugar concreto de Panamá, un país o ciudad del exterior da alcance
     ``exterior`` (D-115); si tampoco, el país nombrado o su gentilicio dan alcance nacional (E1-10c, X42); si tampoco, el alcance
     es desconocido. Precedencia: frase nacional > provincia o comarca > distrito > exterior > país nombrado > desconocido.
+
+    C-10 (D6): un titular que nombra a Panamá como parte del hecho no aporta su lugar o contraparte extranjera al exterior;
+    el grupo recibe el nivel que tendría sin ella (el país nombrado da ``nacional``).
     """
     g = reglas.geografia
     listas = {"nacional": g.nacional_terminos, "provincial": [*g.provincias, *g.comarcas], "local": g.distritos}
@@ -309,8 +323,9 @@ def alcance_geografico(miembros: Sequence[Mapping[str, Any]], reglas: ReglasV13,
     exteriores: list[str] = []
     for m in miembros:
         crudo = str(m.get("titulo_limpio") or "")
-        del_exterior, titular = exterior_en(crudo, g.exterior_terminos)
-        exteriores.extend(del_exterior)
+        del_exterior, titular = exterior_en(crudo, [*g.exterior_terminos, *g.panama_nombres_extranjeros])   # «Panama City, Florida» es exterior
+        if not nombra_al_pais(titular, reglas, cfg):   # C-10 (D6): Panamá como parte del hecho manda sobre el lugar o la contraparte extranjera
+            exteriores.extend(del_exterior)
         for nivel in NIVELES_GEOGRAFICOS:
             hallados[nivel].extend(terminos_presentes(
                     titular,

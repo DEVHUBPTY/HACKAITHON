@@ -92,6 +92,15 @@ poetry run pytest -v
 
 Fuentes: TVN RSS, GDELT, Banco Mundial, USGS y SBP. Solo se usan **metadatos** de noticias; no se descargan cuerpos de artículos, imágenes ni videos. `data/raw/` es inmutable y cada transformación se registra en `data/manifest.json`. Origen, URLs y condiciones de cada fuente: `docs/fuentes.md`.
 
+## Entrega y auditoría final (C-07)
+
+```bash
+poetry run python -m scripts.empaquetar_datos   # entrega/datos/: snapshot, manifest, diccionario, licencias, benchmark de desarrollo, receta y evidencias; revisa que no haya material restringido (D-72)
+poetry run python -m scripts.auditoria_final    # PASS / FALTA / NO VERIFICABLE por cada condición de la sección 10 → outputs/auditoria_final.md
+```
+
+`entrega/` no se versiona; solo `outputs/entrega_manifest.json` (los SHA-256 del paquete). Qué entra y qué nunca entra: `config/entrega.yaml`.
+
 ## Licencias
 
 Las licencias y condiciones de uso de los datos están en `docs/fuentes.md` y en el manifest (`data/manifest.json`). La licencia del código está pendiente de decisión del equipo.

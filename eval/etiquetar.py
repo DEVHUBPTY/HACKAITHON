@@ -7,6 +7,7 @@ La herramienta **no etiqueta**: arma la muestra, muestra los titulares y guarda 
 * Validar:    ``poetry run python -m eval.etiquetar --validar``
 * Acuerdo:    ``poetry run python -m eval.etiquetar --acuerdo`` (kappa de Cohen sobre los titulares dobles, D-71)
 * Consolidar: ``poetry run python -m eval.etiquetar --consolidar`` (escribe ``eval/etiquetas.csv``)
+* Ampliar:    ``poetry run python -m eval.etiquetar --incorporar-hoja --hoja RUTA`` (C-12; escribe ``eval/etiquetas_ampliadas.csv``)
 
 Cada persona escribe su propia hoja ``eval/etiquetas/<nombre>.csv`` (así no se pisan en git). La muestra es
 aleatoria con la semilla de ``config/etiquetado.yaml``; los primeros ``tamano_acuerdo`` titulares los etiquetan dos
@@ -38,8 +39,10 @@ from src.carga import intervalo_wilson  # noqa: E402
 from src.configuracion import (  # noqa: E402
     RAIZ,
     ConfigEtiquetado,
+    ConjuntoAmpliado,
     ConfigTemas,
     cargar_carga,
+    cargar_clasificacion,
     cargar_etiquetado,
     cargar_normalizacion,
     cargar_temas,
@@ -62,6 +65,13 @@ SI = "si"  # valor de alcance_regional marcado; vacío = no
 PATRON_GRUPO = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
 PATRON_NOMBRE = re.compile(r"^[^\W\d_]+(?:[ .'-][^\W\d_]+)*\.?$")
 GUIA = RAIZ / "docs" / "guia_temas.md"
+ARCHIVO_AMPLIADO = Path("eval") / "etiquetas_ampliadas.csv"     # C-12: salida de --incorporar-hoja
+SIN_TEMA = "sin_tema"       # convención de la hoja de confirmación (D-87) para un titular que una persona marcó como ruido
+CAMPOS_HOJA = (
+    "id_noticia", "titulo", "tema_humano", "ruido_humano", "tema_secundario", "grupo", "alcance_regional", "nota",
+    "etiquetado_por", "fecha_etiquetado",
+)
+FORMATO_DIA = "%Y-%m-%d"    # la hoja fecha la decisión con el día; el consolidado la guarda en ISO 8601 UTC con Z
 DECIMALES = 3  # presentación de los reportes, no un parámetro de decisión
 
 Fila = dict[str, str]
@@ -539,6 +549,100 @@ def renombrar_grupo(ruta: Path, viejo: str, nuevo: str) -> int:
     return n
 
 
+# ------------------------------------------------------------------ conjunto ampliado (C-12)
+
+
+def _fecha_consolidada(texto: str) -> str:
+    """Una fecha de la hoja (``AAAA-MM-DD``) pasa a ISO 8601 UTC a medianoche; una que ya es ISO con Z se conserva; otra, tal cual."""
+    formato = cargar_normalizacion().fechas.formato_salida
+    for f in (formato, FORMATO_DIA):
+        try:
+            return datetime.strptime(texto, f).strftime(formato)
+        except ValueError:
+            continue
+    return texto
+
+
+def _fila_de_la_hoja(h: Fila, cfg: ConfigEtiquetado, ampliado: ConjuntoAmpliado) -> Fila:
+    """Una fila decidida de la hoja, con las columnas del consolidado (la convención ``sin_tema`` pasa a ``ruido`` + tema vacío)."""
+    limpia = {k: re.sub(r"\s+", " ", h.get(k, "")).strip() for k in CAMPOS_HOJA}
+    ruido = limpia["ruido_humano"]
+    return {
+        "id_noticia": limpia["id_noticia"],
+        "titulo": h.get("titulo", ""),
+        "tema_principal": "" if ruido or limpia["tema_humano"] == SIN_TEMA else limpia["tema_humano"],
+        "tema_secundario": limpia["tema_secundario"],
+        "ruido": ruido or cfg.ruido.sin_ruido,
+        "grupo": limpia["grupo"],
+        "alcance_regional": limpia["alcance_regional"],
+        "nota": limpia["nota"],
+        "etiquetado_por": limpia["etiquetado_por"],
+        "fecha_etiquetado": _fecha_consolidada(limpia["fecha_etiquetado"]),
+        "estrato": ampliado.estrato_hoja,
+        "peso_muestreo": "",      # sin peso propio: no salen de la muestra estratificada (los lectores le dan 1; ver docs/etiquetado.md)
+        "n_etiquetadores": str(ampliado.n_etiquetadores_hoja),
+        oe.COLUMNA_ORIGEN: oe.HUMANO,
+    }
+
+
+def incorporar_hoja(
+    ruta_hoja: Path,
+    ruta_etiquetas: Path,
+    cfg: ConfigEtiquetado,
+    temas: ConfigTemas,
+    ampliado: ConjuntoAmpliado,
+    avisos: list[str] | None = None,
+) -> list[Fila]:
+    """Filas de ``eval/etiquetas_ampliadas.csv``: las ``origen = humano`` de ``ruta_etiquetas`` y, detrás, las de la hoja.
+
+    Todo o nada: cada fila de la hoja debe estar decidida (``tema_humano``, ``etiquetado_por`` y fecha ISO) y ser válida según
+    ``validar_fila`` (D-87); si una no lo es, se lanza ``ErrorEtiquetado`` con TODOS los problemas y no se devuelve nada. Las
+    ``asistente_provisional`` de ``ruta_etiquetas`` nunca entran: una provisional solo aparece si la hoja la decidió. Las filas
+    nuevas van ordenadas por ``id_noticia`` (la salida no depende del orden de la hoja). No escribe ni modifica nada.
+
+    Un titular de ruido no lleva grupo en el consolidado (``validar_fila``): si la hoja le puso uno, se descarta y se deja
+    constancia en ``avisos`` (no se calla ni se rechaza toda la hoja por eso).
+    """
+    with ruta_hoja.open(encoding="utf-8", newline="") as f:
+        campos = tuple(csv.DictReader(f).fieldnames or ())
+    faltan = [c for c in CAMPOS_HOJA if c not in campos]
+    if faltan:
+        raise ErrorEtiquetado(f"{ruta_hoja.name}: faltan las columnas {faltan}")
+    hoja = leer_csv(ruta_hoja)
+    if not hoja:
+        raise ErrorEtiquetado(f"{ruta_hoja.name}: no tiene filas")
+    humanas = [{c: f.get(c, "") or "" for c in COLUMNAS_CONSOLIDADO} for f in oe.leer_filas(ruta_etiquetas, oe.SOLO_HUMANOS)]
+    ids_humanos = {f["id_noticia"] for f in humanas}
+    vistos: Counter[str] = Counter(h["id_noticia"].strip() for h in hoja)
+    problemas: list[str] = []
+    nuevas: list[Fila] = []
+    for n, h in enumerate(hoja, start=2):
+        i = h["id_noticia"].strip() or "?"
+        errores: list[str] = []
+        tema, ruido = h["tema_humano"].strip(), h["ruido_humano"].strip()
+        if not tema:
+            errores.append("sin decidir (tema_humano vacío)")
+        elif ruido and tema != SIN_TEMA:
+            errores.append(f"con ruido {ruido!r} el tema_humano es {SIN_TEMA!r} (D-87), no {tema!r}")
+        elif not ruido and tema == SIN_TEMA:
+            errores.append(f"{SIN_TEMA!r} sin motivo de ruido (ruido_humano vacío)")
+        if vistos[h["id_noticia"].strip()] > 1:
+            errores.append("id repetido en la hoja")
+        if i in ids_humanos:
+            errores.append("ya tiene una etiqueta humana en el archivo base")
+        fila = _fila_de_la_hoja(h, cfg, ampliado)
+        if ruido and fila["grupo"]:
+            if avisos is not None:
+                avisos.append(f"{ruta_hoja.name}:{n} ({i}): titular de ruido con grupo {fila['grupo']!r}: el grupo se descarta (un ruido no lleva grupo)")
+            fila["grupo"] = ""
+        errores += [m for m in validar_fila(fila, cfg, temas) if not (not tema and "tema_principal" in m)]
+        problemas += [f"{ruta_hoja.name}:{n} ({i}): {m}" for m in errores]
+        nuevas.append(fila)
+    if problemas:
+        raise ErrorEtiquetado("\n".join(problemas))
+    return [*humanas, *sorted(nuevas, key=lambda f: f["id_noticia"])]
+
+
 # ------------------------------------------------------------------ CLI
 
 
@@ -646,6 +750,38 @@ def _texto_disputas(disputas: dict[str, list[str]], titulos: dict[str, str]) -> 
     return [f"  {i} · {titulos.get(i, '')[:100]} (etiquetaron: {', '.join(p)})" for i, p in disputas.items()]
 
 
+def _incorporar_hoja_cli(args: argparse.Namespace, cfg: ConfigEtiquetado, temas: ConfigTemas) -> int:
+    """``--incorporar-hoja``: valida la hoja y escribe el conjunto ampliado. No comprueba la muestra de E1-06 (ver docs/etiquetado.md)."""
+    if args.hoja is None:
+        print("--incorporar-hoja necesita --hoja RUTA", file=sys.stderr)
+        return 1
+    consolidado = args.raiz / cfg.archivos.consolidado
+    etiquetas = args.etiquetas or consolidado
+    salida = args.salida or args.raiz / ARCHIVO_AMPLIADO
+    protegidos = {p.resolve() for p in (consolidado, etiquetas, args.hoja)}
+    if salida.resolve() in protegidos:
+        print(f"Se niega a escribir sobre {salida}: la salida no puede ser el consolidado, la base ni la hoja.", file=sys.stderr)
+        return 1
+    for ruta in (args.hoja, etiquetas):
+        if not ruta.exists():
+            print(f"No existe {ruta}", file=sys.stderr)
+            return 1
+    avisos: list[str] = []
+    try:
+        filas = incorporar_hoja(args.hoja, etiquetas, cfg, temas, cargar_clasificacion().ampliado, avisos)
+    except (ErrorEtiquetado, ValueError, KeyError) as exc:
+        print(str(exc), file=sys.stderr)
+        print("No se escribió nada: corrija la hoja y vuelva a correr --incorporar-hoja.", file=sys.stderr)
+        return 1
+    escribir_csv(salida, filas, COLUMNAS_CONSOLIDADO)
+    for aviso in avisos:
+        print(f"AVISO: {aviso}", file=sys.stderr)
+    nuevas = sum(1 for f in filas if f["estrato"] == cargar_clasificacion().ampliado.estrato_hoja)
+    print(f"Escrito {salida}: {len(filas)} titulares humanos ({len(filas) - nuevas} de {etiquetas.name} + {nuevas} de la hoja)")
+    print("AVISO: las filas de la hoja no vienen de la muestra estratificada y no llevan peso_muestreo: no se mezclan en estimaciones ponderadas.")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="E1-06: etiquetado humano (la interfaz es `streamlit run eval/etiquetar.py`)")
     modo = parser.add_mutually_exclusive_group(required=True)
@@ -656,6 +792,10 @@ def main(argv: list[str] | None = None) -> int:
     modo.add_argument("--renombrar", nargs=2, metavar=("VIEJO", "NUEVO"), help="renombra un grupo en la hoja de --persona")
     modo.add_argument("--desempate", action="store_true", help="lista los titulares en disputa (los etiqueta una tercera persona en la interfaz)")
     modo.add_argument("--consolidar", action="store_true", help="escribe eval/etiquetas.csv")
+    modo.add_argument("--incorporar-hoja", action="store_true", help="C-12: escribe eval/etiquetas_ampliadas.csv = humanas + filas decididas de --hoja")
+    parser.add_argument("--hoja", type=Path, help="con --incorporar-hoja: CSV con las decisiones de una persona (obligatorio)")
+    parser.add_argument("--etiquetas", type=Path, help="con --incorporar-hoja: consolidado base (por defecto eval/etiquetas.csv)")
+    parser.add_argument("--salida", type=Path, help=f"con --incorporar-hoja: archivo a escribir (por defecto {ARCHIVO_AMPLIADO})")
     parser.add_argument("--persona", help="con --renombrar: nombre de la persona dueña de la hoja")
     parser.add_argument("--base", type=Path, default=_base_por_defecto())
     parser.add_argument("--raiz", type=Path, default=RAIZ, help="carpeta que contiene eval/etiquetas (por defecto, el repo)")
@@ -678,6 +818,9 @@ def main(argv: list[str] | None = None) -> int:
         for m in muestra:
             print(f"{m['orden']}\t{'si' if m['doble'] else 'no'}\t{m['estrato']}\t{m['peso']:.3f}\t{m['id_noticia']}\t{m['medio']}")
         return 0
+
+    if args.incorporar_hoja:
+        return _incorporar_hoja_cli(args, cfg, temas)
 
     carpeta_hojas = args.raiz / cfg.archivos.carpeta_personas
     if args.renombrar:
@@ -812,7 +955,10 @@ def _cola_de_incertidumbre(ruta_base: Path, ids: list[str], raiz: Path, _cfg: Co
 
     ccl = cargar_clasificacion()
     emb = crear(ccl, ccl.modelo_activo)
-    ruta_consolidado = raiz / _cfg.archivos.consolidado
+    ruta_pool = ccl.logistica.aprendizaje_activo.etiquetas_pool
+    ruta_consolidado = raiz / (ruta_pool or _cfg.archivos.consolidado)
+    if not ruta_consolidado.exists():
+        ruta_consolidado = raiz / _cfg.archivos.consolidado
     pool = (
         aa.pool_desde_config(ruta_consolidado, cargar_temas(), ccl.logistica.aprendizaje_activo.muestra_evaluacion, raiz)
         if ccl.logistica.aprendizaje_activo.usar_pool and ruta_consolidado.exists()

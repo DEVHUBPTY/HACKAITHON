@@ -700,7 +700,7 @@ def test_calidad_dice_que_los_titulares_de_la_bandeja_son_titulares_y_en_cuantos
 def test_la_demo_no_depende_de_ollama_y_documenta_el_riesgo_del_umbral() -> None:
     demo = (RAIZ / "docs" / "demo.md").read_text(encoding="utf-8")
     assert "Ollama" not in demo.split("## Checklist")[1] and "DeepSeek" in demo
-    assert "## Riesgos" in demo and "0.874" in demo and "E1-18" in demo
+    assert "## Riesgos" in demo and "0.840" in demo and "E1-18" in demo
 
 
 # ------------------------------------------------------------------ E3-04 · pesos editables en la bandeja

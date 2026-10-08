@@ -59,6 +59,18 @@ def test_con_las_etiquetas_reales_ningun_id_de_la_muestra_original_esta_en_el_po
     assert not set(pool.ids) & congelados
 
 
+def test_el_pool_configurado_sale_del_conjunto_ampliado_y_nunca_toca_la_evaluacion(temas):
+    """C-12: las 61 filas que una persona confirmó alimentan el pool (D-123); los 100 IDs de la evaluación siguen fuera."""
+    cfg = cargar_clasificacion().logistica.aprendizaje_activo
+    assert cfg.etiquetas_pool == "eval/etiquetas_ampliadas.csv"
+    congelados = aa.ids_congelados(RAIZ / cfg.muestra_evaluacion)
+    pool = aa.pool_desde_config(RAIZ / cfg.etiquetas_pool, temas, cfg.muestra_evaluacion)
+    assert pool.n > 0 and not set(pool.ids) & congelados
+    assert pool.descartadas["en_la_evaluacion"] == len(congelados)
+    assert pool.n + pool.descartadas["ruido"] == 61            # las 61 nuevas: o entran con tema o son ruido
+    assert aa.pool_desde_config(RAIZ / "eval" / "etiquetas.csv", temas, cfg.muestra_evaluacion).n == 0   # sin las 61, el pool seguía vacío
+
+
 def test_solo_entran_etiquetas_humanas_con_tema_y_sin_ruido(tmp_path, temas):
     etiquetas = _csv(
         tmp_path / "e.csv",

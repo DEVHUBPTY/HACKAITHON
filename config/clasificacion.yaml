@@ -144,3 +144,8 @@ logistica:
   aprendizaje_activo:
     usar_pool: true
     muestra_evaluacion: eval/muestra_original.csv
+    etiquetas_pool: eval/etiquetas_ampliadas.csv   # C-12: 100 de la evaluación (se excluyen) + las filas que una persona confirmó
+
+ampliado:                   # C-12: conjunto ampliado (eval/etiquetas_ampliadas.csv = humanas + filas confirmadas de la hoja)
+  estrato_hoja: preetiquetado_c11   # `estrato` de las filas de la hoja: no vienen de la muestra estratificada, no se ponderan con ella
+  n_etiquetadores_hoja: 1   # una sola persona decidió cada fila

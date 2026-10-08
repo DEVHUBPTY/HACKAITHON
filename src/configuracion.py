@@ -17,7 +17,7 @@ from typing import Any, Literal, TypeVar, get_args
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, ValidationInfo, field_validator, model_validator
 
 from src import consultas_gdelt
 
@@ -722,6 +722,22 @@ class Geografia(ModeloConfig):
     distritos: list[str]
     exterior_terminos: list[str] = Field(min_length=1)   # D-115 (E1-10d): países y ciudades grandes, en español e inglés, sin tildes obligatorias
 
+    pais_terminos: list[str] = Field(min_length=1)   # C-10 (D6): cómo se nombra al país; nombrado como parte del hecho manda sobre el exterior
+    panama_nombres_propios: list[str] = Field(min_length=1)   # C-10 (D3): nombres propios con «Panamá» que cuentan como mención del país
+
+    panama_nombres_extranjeros: list[str] = Field(min_length=1)   # C-10 (D6): lugares extranjeros con el nombre del país («Panama City»); no son mención del país
+
+    @field_validator("pais_terminos", "panama_nombres_propios", "panama_nombres_extranjeros")
+    @classmethod
+    def _menciones_sin_vacios_ni_repetidos(cls, terminos: list[str], info: ValidationInfo) -> list[str]:
+        normalizados = [_sin_tildes(t) for t in terminos]
+        if any(not n for n in normalizados):
+            raise ValueError(f"{info.field_name}: un término no puede estar vacío")
+        repetidos = sorted({n for n in normalizados if normalizados.count(n) > 1})
+        if repetidos:
+            raise ValueError(f"{info.field_name}: términos repetidos (sin tildes ni mayúsculas): {repetidos}")
+        return terminos
+
     @field_validator("exterior_terminos")
     @classmethod
     def _exterior_sin_vacios_ni_repetidos(cls, terminos: list[str]) -> list[str]:
@@ -732,6 +748,15 @@ class Geografia(ModeloConfig):
         if repetidos:
             raise ValueError(f"exterior_terminos: términos repetidos (sin tildes ni mayúsculas): {repetidos}")
         return terminos
+
+    @model_validator(mode="after")
+    def _nombres_propios_contienen_al_pais(self) -> Geografia:
+        pais = [_sin_tildes(t) for t in self.pais_terminos]
+        for campo in ("panama_nombres_propios", "panama_nombres_extranjeros"):
+            sin_pais = sorted(n for n in getattr(self, campo) if not any(p in _sin_tildes(n) for p in pais))
+            if sin_pais:
+                raise ValueError(f"{campo}: no contiene el país ({', '.join(self.pais_terminos)}): {sin_pais}")
+        return self
 
     @model_validator(mode="after")
     def _exterior_no_es_un_lugar_de_panama(self) -> Geografia:
@@ -1611,6 +1636,21 @@ class ModeloEmbeddings(ModeloConfig):
         return self
 
 
+class ConjuntoAmpliado(ModeloConfig):
+    """C-12: cómo se marcan las filas de la hoja de confirmación al armar ``eval/etiquetas_ampliadas.csv``."""
+
+    estrato_hoja: str            # valor de ``estrato`` de esas filas (no vienen de la muestra estratificada de E1-06)
+    n_etiquetadores_hoja: int    # cuántas personas decidieron cada una
+
+    @model_validator(mode="after")
+    def _rangos(self) -> ConjuntoAmpliado:
+        if not self.estrato_hoja.strip():
+            raise ValueError("ampliado.estrato_hoja: no puede ir vacío")
+        if self.n_etiquetadores_hoja < 1:
+            raise ValueError("ampliado.n_etiquetadores_hoja: al menos 1")
+        return self
+
+
 class ConfigAprendizajeActivo(ModeloConfig):
     """Ciclo de aprendizaje activo con una persona en el circuito (D-123).
 
@@ -1620,6 +1660,7 @@ class ConfigAprendizajeActivo(ModeloConfig):
 
     usar_pool: bool                  # si el método `logistica` también se entrena con el pool de etiquetas humanas
     muestra_evaluacion: str = Field(min_length=1)   # CSV con la columna id_noticia: la evaluación congelada
+    etiquetas_pool: str | None = None               # CSV humano del que sale el pool (C-12: el ampliado); None = el de la evaluación
 
 
 class ConfigLogistica(ModeloConfig):
@@ -1754,6 +1795,7 @@ class ConfigClasificacion(ModeloConfig):
     fuga_semantica: FugaSemantica
     baseline: BaselineClasificacion
     logistica: ConfigLogistica
+    ampliado: ConjuntoAmpliado     # C-12: marca de las filas de la hoja de confirmación
 
     @model_validator(mode="after")
     def _coherente(self) -> ConfigClasificacion:
@@ -1989,13 +2031,24 @@ class RecuperacionConsulta(ModeloConfig):
 
 
 class AbstencionConsulta(ModeloConfig):
+    """Umbral de similitud por método y la regla con que se calibró (D-134).
+
+    ``regla_umbral`` dice cómo se calibra cada método: ``percentil`` (``percentil_umbral`` de la similitud máxima de las
+    respondibles; rechaza a propósito ese porcentaje de ellas) o ``margen_maximo`` (el punto medio del intervalo de umbrales que
+    rechaza todo lo que no tiene respuesta y deja pasar la mayor cantidad de respondibles; ``meta_abstencion`` es la fracción
+    mínima de las consultas sin respuesta que debe rechazar, la meta del PDF 9.1).
+    """
+
     umbral_similitud: dict[str, float]
     percentil_umbral: float = Field(gt=0, lt=100)
+    regla_umbral: dict[str, Literal["percentil", "margen_maximo"]]
+    meta_abstencion: float = Field(gt=0, le=1)
 
     @model_validator(mode="after")
     def _metodos(self) -> AbstencionConsulta:
-        if set(self.umbral_similitud) != {"semantica", "bm25"}:
-            raise ValueError("umbral_similitud: deben estar exactamente 'semantica' y 'bm25'")
+        for campo, valor in (("umbral_similitud", self.umbral_similitud), ("regla_umbral", self.regla_umbral)):
+            if set(valor) != {"semantica", "bm25"}:
+                raise ValueError(f"{campo}: deben estar exactamente 'semantica' y 'bm25'")
         return self
 
 
@@ -3756,6 +3809,124 @@ def cargar_pagina_metricas(carpeta: Path | None = None) -> ConfigPaginaMetricas:
     return cargar_config("pagina_metricas", ConfigPaginaMetricas, carpeta)
 
 
+# ------------------------------------------------------------------ entrega.yaml (C-07)
+
+
+class SbpEntrega(ModeloConfig):
+    incluir: bool
+    origen: str = Field(min_length=1)
+    destino: str = Field(min_length=1)
+    nota_destino: str = Field(min_length=1)
+    nota: str = Field(min_length=1)
+
+
+class OrigenValoresRestringidos(ModeloConfig):
+    glob: str = Field(min_length=1)
+    nombres: list[str] = Field(min_length=1)       # etiquetas XML o claves JSON cuyo valor es texto con redistribución restringida
+
+
+class ValoresRestringidos(ModeloConfig):
+    """Valores crudos que no pueden aparecer en ningún texto del paquete (D-31, D-72). Se leen de data/raw/ solo si existe en local."""
+
+    minimo_caracteres: int = Field(ge=1)           # los valores más cortos (p. ej. «Portada») no se buscan: serían falsos positivos
+    rss: OrigenValoresRestringidos
+    gdelt: OrigenValoresRestringidos
+
+
+class ProhibidoEntrega(ModeloConfig):
+    nombres: list[str] = Field(min_length=1)
+    prefijos_ruta: list[str] = Field(min_length=1)
+    campos: list[str] = Field(min_length=1)            # patrones fnmatch sobre el nombre normalizado (minúsculas, sin tildes) de columna o clave
+    campos_permitidos: list[str]                       # banderas booleanas legítimas que el patrón de campos alcanzaría
+    valores_restringidos: ValoresRestringidos
+    extensiones_estructuradas: list[str] = Field(min_length=1)
+    patrones_secretos: list[str] = Field(min_length=1)
+
+
+class PaqueteEntrega(ModeloConfig):
+    carpeta: str = Field(min_length=1)
+    manifest_salida: str = Field(min_length=1)
+    archivo_checksums: str = Field(min_length=1)
+    archivo_indice: str = Field(min_length=1)
+    archivo_leeme: str = Field(min_length=1)
+    archivos: dict[str, str]
+    carpetas: dict[str, str]
+    extensiones_carpetas: list[str]
+    carpetas_excluidas: list[str]                       # subcarpetas que nunca se copian de una carpeta completa (p. ej. la vista previa fuera de git)
+    sbp: SbpEntrega
+    prohibido: ProhibidoEntrega
+
+
+class DemoAuditoria(ModeloConfig):
+    base: str
+    verificar_offline: str
+    guion: str
+
+
+class AuditoriaEntrega(ModeloConfig):
+    salida_md: str
+    salida_json: str
+    resultado_secretos: str
+    minimo_fichas_trazables: int = Field(ge=1)
+    minimo_casos_prueba: int = Field(ge=1)
+    estado_prueba_ok: str
+    minimo_tareas_notion: int = Field(ge=1)
+    minimo_decisiones_notion: int = Field(ge=1)
+    trazabilidad: str
+    fichas_jsonl: str
+    base_senales: str = Field(min_length=1)
+    exportaciones: list[str]                            # carpetas con CASO-*.md y CSV que se entregan o se suben a Notion
+    estados_sin_trazabilidad: list[str]                 # casos que fichas.jsonl conserva pero trazabilidad.json ya no incluye (se re-verifican igual)
+    campos_fichas_jsonl: list[str] = Field(min_length=1)
+    pruebas: str
+    catalogo: str
+    columna_fuente_catalogo: str
+    manifest: str = Field(min_length=1)
+    nombres_fuentes_catalogo: dict[str, str] = Field(min_length=1)   # clave de data/manifest.json -> nombre que debe aparecer en el catálogo
+    pagina_metricas: str
+    sin_efecto_en_metricas: list[str]
+    marca_borrador_metricas: str
+    marca_provisional_metricas: str
+    carpetas_codigo_metricas: list[str] = Field(min_length=1)
+    readme: str
+    secciones_readme: dict[str, str] = Field(min_length=1)
+    licencia_codigo: list[str] = Field(min_length=1)
+    env_ejemplo: str
+    nombres_secretos_env: list[str] = Field(min_length=1)   # regex de nombres de variable que nunca llevan valor en .env.example
+    placeholders_env: list[str]                              # únicos valores aceptados para esas variables (además del vacío)
+    nunca_versionados: list[str] = Field(min_length=1)       # fnmatch sobre la ruta de `git ls-files` o su nombre
+    lock: str
+    demo: DemoAuditoria
+    revision_config: str
+    app: str
+    patron_publicar: str
+    patron_reservado: str
+    escaneo_secretos_extensiones_omitidas: list[str]
+    archivos_sin_escanear: list[str]
+    comando_reproducir: list[str] = Field(min_length=1)
+    espera_reproducir_segundos: int = Field(gt=0)
+
+
+class ConfigEntrega(ModeloConfig):
+    """Qué entra al paquete de datos, qué nunca entra y qué revisa la auditoría final (C-07)."""
+
+    version: int
+    paquete: PaqueteEntrega
+    auditoria: AuditoriaEntrega
+
+    @model_validator(mode="after")
+    def _sin_prohibidos_en_la_lista(self) -> ConfigEntrega:
+        for origen in self.paquete.archivos.values():
+            if any(origen.startswith(pre) for pre in self.paquete.prohibido.prefijos_ruta):
+                raise ValueError(f"archivos: el origen {origen} está en una ruta prohibida (D-72)")
+        return self
+
+
+def cargar_entrega(carpeta: Path | None = None) -> ConfigEntrega:
+    """Atajo para ``config/entrega.yaml``."""
+    return cargar_config("entrega", ConfigEntrega, carpeta)
+
+
 CODIGO_URGENCIA_SIN_PUBLICACION ="urgencia_sin_publicacion"   # el único vacío de E1-10 cuyo texto vive en reglas_v1.3.yaml
 MODALIDADES = ("editorial", "banca")
 OPCIONALES = {"modalidad_banca"}  # el esquema la admite aunque todavía no exista
@@ -3796,6 +3967,7 @@ CARGADORES = {
     "pruebas": cargar_pruebas,
     "reproducibilidad": cargar_reproducibilidad,
     "pagina_metricas": cargar_pagina_metricas,
+    "entrega": cargar_entrega,
 }
 
 
