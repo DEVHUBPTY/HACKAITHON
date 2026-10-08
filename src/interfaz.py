@@ -22,7 +22,7 @@ import logging
 import re
 import sys
 from collections import Counter
-from collections.abc import Callable, Collection, Mapping, Sequence
+from collections.abc import Callable, Collection, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from datetime import datetime
 from pathlib import Path
@@ -33,6 +33,7 @@ from src import db
 from src.cache import SinBorrador
 from src.carga import intervalo_wilson
 from src.configuracion import (
+    CLAVE_INICIO,
     RAIZ,
     ConfigInterfaz,
     ConfigModalidad,
@@ -1283,6 +1284,24 @@ def script_ir_arriba(pantalla: str) -> str:
         f"<script>/* ir arriba: {pantalla} */(function(){{const subir=()=>{{[{contenedores}].forEach(s=>{{const e=document.querySelector(s);"
         "if(e){e.scrollTo({top:0});}});window.scrollTo(0,0);};subir();requestAnimationFrame(subir);})();</script>"
     )
+
+
+def url_de_pantalla(cfg: ConfigInterfaz, clave: str) -> str:
+    """D-133: la ruta de una pantalla (``""`` es la raíz, «Cómo funciona»). Una clave desconocida es un error, no una URL inventada."""
+    if clave == CLAVE_INICIO:
+        return cfg.navegacion.url_inicio
+    return next(p.url_path for p in cfg.pantallas if p.clave == clave)
+
+
+def clave_de_url(cfg: ConfigInterfaz, url_path: str) -> str:
+    """D-133: la pantalla que sirve una ruta (la inversa de ``url_de_pantalla``); una ruta que no existe cae en «Cómo funciona»."""
+    return next((p.clave for p in cfg.pantallas if p.url_path == url_path), CLAVE_INICIO)
+
+
+def claves_a_conservar(cfg: ConfigInterfaz, presentes: Iterable[str]) -> list[str]:
+    """D-133: de las claves de la sesión, las que son valores de widgets que deben sobrevivir al cambio de página."""
+    c = cfg.navegacion.conservar_estado
+    return [k for k in presentes if k in c.claves or k.startswith(tuple(c.prefijos))]
 
 
 def etapa_cambio(previa: str | None, actual: str) -> bool:

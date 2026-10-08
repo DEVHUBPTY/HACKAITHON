@@ -18,6 +18,7 @@ from tests import ficha_ayuda as h
 from tests import generacion_ayuda as ga
 from tests.motor_falso import MotorFalso, config_de_prueba
 from tests.test_e1_16_revision import AFIRMACIONES, ID_OFICIAL
+from tests.navegacion_ayuda import ir_a_pantalla
 
 APP = RAIZ / "app.py"
 CFG_REV = cargar_revision()
@@ -66,8 +67,7 @@ def app(monkeypatch, base, emb, tmp_path):
     st.cache_data.clear()
     at = AppTest.from_file(str(APP), default_timeout=60)
     at.session_state["id_grupo"] = h.G_COMPLETO
-    at.session_state["pantalla"] = "revision"
-    return at
+    return ir_a_pantalla(at, "revision")      # D-133: la pantalla es una URL; se abre por su ruta
 
 
 def ruta_de(app: AppTest) -> Path:

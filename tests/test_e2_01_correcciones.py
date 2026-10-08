@@ -15,6 +15,7 @@ from src.configuracion import RAIZ, ErrorDeConfiguracion, cargar_interfaz, carga
 from src.ficha import construir_ficha
 from src.revision import Revisiones
 from tests import ficha_ayuda as h
+from tests.navegacion_ayuda import ir_a_pantalla
 from tests.motor_falso import MotorFalso, config_de_prueba
 from tests.test_e2_01_banca import cargar_variante, datos_banca, fila
 
@@ -115,8 +116,7 @@ def app_banca(monkeypatch, base_banca, emb, tmp_path):
 def test_la_pantalla_agrupa_primero_y_limita_despues_por_sector(app_banca) -> None:
     at = app_banca.run()
     at.selectbox(key="modalidad").select("banca").run()
-    at.session_state["pantalla"] = "bandeja"
-    at = at.run()
+    at = ir_a_pantalla(at, "bandeja")
     assert not at.exception
     etiquetas = {BANCA.bandeja.etiquetas_sector[s] for s in ("economía", "logística", "continuidad operativa")}
     assert etiquetas <= {s.value for s in at.subheader}

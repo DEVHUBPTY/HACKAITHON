@@ -18,6 +18,7 @@ from streamlit.testing.v1 import AppTest
 
 from src import interfaz as ui
 from src.configuracion import RAIZ, ConfigInterfaz, cargar_interfaz
+from tests.navegacion_ayuda import ir_a_pantalla
 
 BASE = RAIZ / "data" / "senales.duckdb"
 APP = RAIZ / "app.py"
@@ -39,8 +40,7 @@ def app(monkeypatch, tmp_path):
 
 
 def ir(at: AppTest, pantalla: str) -> AppTest:
-    at.session_state["pantalla"] = pantalla
-    return at.run()
+    return ir_a_pantalla(at, pantalla)
 
 
 def datos_de_config() -> dict:

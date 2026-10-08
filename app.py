@@ -8,6 +8,7 @@ Uso:
     poetry run streamlit run app.py              # snapshot (data/senales.duckdb)
     poetry run streamlit run app.py -- --demo    # base de demo (data/demo.duckdb, la crea C-06) y pasos del guion
     http://localhost:8501/?caso=GRP-…            # atajo: abre la ficha del grupo (o de la posición N de la bandeja)
+    http://localhost:8501/consulta?q=…           # D-133: cada pantalla tiene su URL (/cargar … /revisar, /consulta); la pregunta va en ?q=
 
 Todo lo que se ve es BORRADOR para una decisión humana. No existe ninguna acción de publicar: el estado máximo es
 «aprobado como borrador» (E1-16). Funciona sin red: los embeddings y la caché son locales y la generación solo lee caché.
@@ -225,17 +226,39 @@ def selector_de_grupo(ctx: ui.Contexto, clave: str) -> str | None:
     # El valor del widget parte del grupo compartido; al elegir otro, on_change (que corre ANTES de volver a ejecutar el script)
     # actualiza el grupo compartido, así que lo de arriba ya no pisa la elección.
     st.session_state[clave] = st.session_state["id_grupo"]
-    return st.selectbox("Grupo", ids, key=clave, format_func=etiqueta, on_change=sincronizar_grupo, args=(clave,))
+    elegido = st.selectbox("Grupo", ids, key=clave, format_func=etiqueta, on_change=sincronizar_grupo, args=(clave,))
+    fijar_caso_en_url(ctx.cfg, elegido)
+    return elegido
 
 
 def sincronizar_grupo(clave: str) -> None:
     st.session_state["id_grupo"] = st.session_state[clave]
 
 
+PAGINAS: dict[str, Any] = {}      # D-133: clave de pantalla -> ``st.Page``; ``main`` lo llena en cada ejecución y ``ir_a`` lo usa desde los callbacks
+
+
 def ir_a(pantalla: str, id_grupo: str | None = None) -> None:
-    st.session_state["pantalla"] = pantalla
+    """D-133: ir a una pantalla es ir a su URL (``st.switch_page``): el historial del navegador, la recarga y los enlaces funcionan.
+    El grupo elegido y el resto del estado viven en la sesión y sobreviven al cambio."""
     if id_grupo:
         st.session_state["id_grupo"] = id_grupo
+    st.session_state["pantalla"] = pantalla
+    st.switch_page(PAGINAS[pantalla])
+
+
+def conservar_estado(cfg: Any) -> None:
+    """D-133: Streamlit borra el valor de un widget con ``key`` cuando su página deja de pintarlo; copiarlo a sí mismo lo vuelve estado de la sesión."""
+    for clave in ui.claves_a_conservar(cfg, list(st.session_state.keys())):
+        st.session_state[clave] = st.session_state[clave]
+
+
+def fijar_caso_en_url(cfg: Any, id_grupo: str | None) -> None:
+    """D-133: la URL de Explicar, Producir y Revisar lleva el grupo elegido (``?caso=GRP-…``): recargar o compartir abre el mismo grupo."""
+    parametro = cfg.demo.parametro_caso
+    if id_grupo and st.query_params.get(parametro) != id_grupo:
+        st.session_state["caso_aplicado"] = id_grupo
+        st.query_params[parametro] = id_grupo
 
 
 # ------------------------------------------------------------------ 1 · Calidad
@@ -781,6 +804,11 @@ def pintar_respuesta(ctx: ui.Contexto, r: RespuestaConsulta) -> None:
 def pantalla_consulta(ctx: ui.Contexto) -> None:
     encabezado(ctx, "consulta")
     st.caption("Si no hay evidencia suficiente, el sistema se abstiene y dice qué haría falta. No hay modelo generativo en esta pantalla.")
+    parametro = ctx.cfg.consulta.parametro_pregunta
+    en_url = st.query_params.get(parametro)
+    if en_url and st.session_state.get("consulta_en_url") != en_url:      # D-133: /consulta?q=… vuelve a consultar (local, sin LLM)
+        st.session_state["consulta_texto"] = en_url[:ctx.cfg.consulta.largo_maximo_caracteres]
+        st.session_state["consulta_lanzar"] = True
     st.session_state.setdefault("consulta_texto", "")
     st.text_input("Pregunta", key="consulta_texto", max_chars=ctx.cfg.consulta.largo_maximo_caracteres)
     metodos = ["semantica", "bm25"]
@@ -792,6 +820,15 @@ def pantalla_consulta(ctx: ui.Contexto) -> None:
     pedido = lanzar or st.session_state.pop("consulta_lanzar", False)
     texto = st.session_state.get("consulta_texto", "").strip()
     if pedido and texto:
+        st.session_state["consulta_ultima"] = (texto, metodo)      # D-133: la última pregunta sobrevive al cambio de pantalla
+    ultima = st.session_state.get("consulta_ultima")
+    if ultima:
+        texto, metodo = ultima
+        st.session_state["consulta_en_url"] = texto
+        if st.query_params.get(parametro) != texto:
+            st.query_params[parametro] = texto
+        if not pedido and texto != st.session_state.get("consulta_texto", "").strip():
+            st.caption(f"Respuesta a la última pregunta consultada: «{escapar_markdown(texto)}»")
         try:
             respuesta = abrir_consultor(str(ctx.ruta_base)).responder(texto, metodo)
         except Exception as exc:  # noqa: BLE001 - sin el modelo local no hay consulta, pero la app sigue viva
@@ -1096,12 +1133,14 @@ PANTALLAS = {
 
 
 def elegir_etapa() -> None:
-    """Al elegir una etapa en la barra lateral, esa es la pantalla (la consulta tiene su propio botón)."""
-    st.session_state["pantalla"] = st.session_state["pantalla_etapa"]
+    """Al elegir una etapa en la barra lateral se va a su URL (la consulta tiene su propio botón)."""
+    ir_a(st.session_state["pantalla_etapa"])
 
 
-def barra_lateral(cfg: Any, demo: bool) -> str:
-    """Modalidad y pantalla (más, en modo demo, los pasos del guion)."""
+def barra_lateral(cfg: Any, demo: bool, actual: str) -> str:
+    """Modalidad y pantalla (más, en modo demo, los pasos del guion). D-133: la navegación nativa va oculta y esta barra, que conserva su
+    forma (Cómo funciona, etapas del reto, consulta), cambia de página con ``st.switch_page``; la nativa es una lista plana y no puede
+    separar la herramienta aparte ni marcar «ninguna etapa» en la consulta."""
     with st.sidebar:
         st.title(cfg.titulo_app)
         if demo:
@@ -1111,8 +1150,6 @@ def barra_lateral(cfg: Any, demo: bool) -> str:
             format_func=lambda m: cargar_modalidad(m).nombre + (" (parcial)" if cargar_modalidad(m).parcial else ""),
         )
         etapas = {p.clave: p.titulo for p in cfg.pantallas if not p.separada}
-        st.session_state.setdefault("pantalla", cfg.pantalla_inicial)
-        actual = st.session_state["pantalla"]
         st.button(cfg.inicio.titulo, key="pantalla_inicio", on_click=ir_a, args=(CLAVE_INICIO,), type="primary" if actual == CLAVE_INICIO else "secondary", width="stretch")
         st.session_state["pantalla_etapa"] = actual if actual in etapas else None     # en la consulta, ninguna etapa queda marcada
         st.radio("Etapas del reto", list(etapas), format_func=etapas.get, key="pantalla_etapa", index=None, on_change=elegir_etapa)
@@ -1126,20 +1163,53 @@ def barra_lateral(cfg: Any, demo: bool) -> str:
     return modalidad
 
 
-def aplicar_atajo(cfg: Any, filas: list[ui.FilaBandeja], revisiones: Any) -> None:
-    """``?caso=`` (un ``GRP-…``, una posición o un ``CASO-…``) abre la ficha una sola vez por valor: después manda la persona."""
+def aplicar_atajo(cfg: Any, filas: list[ui.FilaBandeja], revisiones: Any, actual: str) -> None:
+    """``?caso=`` (un ``GRP-…``, una posición o un ``CASO-…``) abre el grupo una sola vez por valor: después manda la persona.
+    D-133: se queda en Explicar, Producir o Revisar si la URL es una de ellas; desde cualquier otra abre Explicar (``/explicar?caso=…``)."""
     valor = st.query_params.get(cfg.demo.parametro_caso)
     if valor and st.session_state.get("caso_aplicado") != valor:
         st.session_state["caso_aplicado"] = valor
         grupo = ui.resolver_caso(valor, filas, {c.id_caso: c.id_grupo for c in revisiones.casos()})
         if grupo:
             st.session_state["id_grupo"] = grupo
-            st.session_state["pantalla"] = "ficha"
+            if actual not in cfg.demo.paginas_con_caso:
+                st.session_state["pantalla"] = "ficha"
+                st.switch_page(PAGINAS["ficha"], query_params={cfg.demo.parametro_caso: valor})
+
+
+def ejecutar_pantalla(clave: str, contexto: dict[str, ui.Contexto]) -> None:
+    """Lo que corre una página: su pantalla, los botones de etapa anterior y siguiente y la subida al inicio al cambiar de etapa (D-132)."""
+    ctx = contexto["ctx"]
+    PANTALLAS[clave](ctx)
+    navegacion_inferior(ctx, clave)
+    vista = st.session_state.get("pantalla_vista")      # D-132: al cambiar de etapa se sube al inicio; en la primera carga y con enlaces directos, no
+    st.session_state["pantalla_vista"] = clave
+    if ui.etapa_cambio(vista, clave):
+        st.html(ui.script_ir_arriba(clave), unsafe_allow_javascript=True)
+
+
+def crear_paginas(cfg: Any, contexto: dict[str, ui.Contexto]) -> dict[str, Any]:
+    """D-133: una ``st.Page`` por pantalla, cada una con su ``url_path`` (la de «Cómo funciona» es la raíz y la de entrada)."""
+    titulos = {CLAVE_INICIO: cfg.inicio.titulo, **{p.clave: p.titulo for p in cfg.pantallas}}
+
+    def pagina(clave: str) -> Any:
+        def correr() -> None:
+            ejecutar_pantalla(clave, contexto)
+        return st.Page(correr, title=titulos[clave], url_path=ui.url_de_pantalla(cfg, clave), default=clave == CLAVE_INICIO)
+
+    return {clave: pagina(clave) for clave in titulos}
 
 
 def main() -> None:
     cfg = ui.cargar_interfaz()
     st.set_page_config(page_title=cfg.titulo_app, layout="wide")
+    contexto: dict[str, ui.Contexto] = {}
+    PAGINAS.clear()
+    PAGINAS.update(crear_paginas(cfg, contexto))
+    pagina = st.navigation(list(PAGINAS.values()), position="hidden")       # D-133: la navegación nativa solo resuelve la URL; la barra lateral es propia
+    actual = ui.clave_de_url(cfg, pagina.url_path)
+    st.session_state["pantalla"] = actual
+    conservar_estado(cfg)
     st.html(f"<style>{ui.css_de_la_interfaz(cfg)}</style>")      # D-131: CSS mínimo y local, sin recursos externos
     demo = ui.modo_demo()
     ruta, aviso = ui.elegir_base(demo, cfg)
@@ -1169,20 +1239,15 @@ def main() -> None:
             st.warning(cfg.textos.sin_puntajes.format(modalidad=previa))
     con = abrir_base(str(ruta)).cursor()
     revisiones = rv.Revisiones(ruta_rev, ruta, demo=demo, huellas=rv.huellas_de_exportacion(demo))  # aparte: la base de las pantallas es de solo lectura
-    aplicar_atajo(cfg, ui.leer_bandeja(con, previa, nombres), revisiones)      # antes de crear los widgets: así puede fijar la pantalla
-    modalidad = barra_lateral(cfg, demo)
+    aplicar_atajo(cfg, ui.leer_bandeja(con, previa, nombres), revisiones, actual)      # antes de crear los widgets: así puede fijar la pantalla
+    modalidad = barra_lateral(cfg, demo, actual)
     if modalidad != previa:      # no debería pasar (el selector ya fijó el valor al empezar la ejecución): se repite con la base correcta
         st.rerun()
     if ruta != origen:
         st.caption(cargar_corrida().textos.aviso_copia_modalidad.format(modalidad=cargar_modalidad(modalidad).nombre))
     ctx = ui.Contexto(cfg, ui.cargar_verificacion(), con, modalidad, demo, aviso, ui.leer_bandeja(con, modalidad, nombres), ruta, revisiones)
-    pantalla = st.session_state["pantalla"]
-    PANTALLAS[pantalla](ctx)
-    navegacion_inferior(ctx, pantalla)
-    vista = st.session_state.get("pantalla_vista")      # D-132: al cambiar de etapa se sube al inicio; en la primera carga y con enlaces directos, no
-    st.session_state["pantalla_vista"] = pantalla
-    if ui.etapa_cambio(vista, pantalla):
-        st.html(ui.script_ir_arriba(pantalla), unsafe_allow_javascript=True)
+    contexto["ctx"] = ctx
+    pagina.run()
 
 
 main()

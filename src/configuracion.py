@@ -2618,6 +2618,7 @@ class PantallaInterfaz(ModeloConfig):
     titulo: str = Field(min_length=1)
     descripcion: str = Field(min_length=1)
     separada: bool = False
+    url_path: str = Field(pattern=r"^[a-z0-9-]+$")      # D-133: la URL propia de la pantalla (/consulta, /priorizar…)
     guia: GuiaEtapa
 
 
@@ -2702,6 +2703,7 @@ class CalidadInterfaz(ModeloConfig):
 class ConsultaInterfaz(ModeloConfig):
     metodo_inicial: Literal["semantica", "bm25"]
     largo_maximo_caracteres: int = Field(ge=1)
+    parametro_pregunta: str = Field(min_length=1)
     ejemplos: list[str] = Field(min_length=1)
 
 
@@ -2716,6 +2718,7 @@ class FichaInterfaz(ModeloConfig):
 class DemoInterfaz(ModeloConfig):
     ruta_base: str = Field(min_length=1)
     parametro_caso: str = Field(min_length=1)
+    paginas_con_caso: list[Literal["ficha", "paquete", "revision"]] = Field(min_length=1)
     guion: str = Field(min_length=1)
 
 
@@ -2856,14 +2859,24 @@ class InicioInterfaz(ModeloConfig):
         return self
 
 
+class ConservarEstado(ModeloConfig):
+    """D-133: valores de widgets que deben sobrevivir al cambio de página (Streamlit los borra al salir de la página que los pinta)."""
+
+    claves: list[str]
+    prefijos: list[str]
+
+
 class NavegacionInterfaz(ModeloConfig):
-    """D-131: rótulos del recorrido por etapas (indicador de etapas, bloque de guía y botones de etapa anterior y siguiente)."""
+    """D-131: rótulos del recorrido por etapas (indicador de etapas, bloque de guía y botones de etapa anterior y siguiente).
+    D-133: la URL de «Cómo funciona» y el estado que se conserva entre páginas."""
 
     que_hace: str = Field(min_length=1)
     como_leer: str = Field(min_length=1)
     caso_de_uso: str = Field(min_length=1)
     anterior: str = Field(min_length=1)
     siguiente: str = Field(min_length=1)
+    url_inicio: str = Field(pattern=r"^[a-z0-9-]*$")
+    conservar_estado: ConservarEstado
 
     @model_validator(mode="after")
     def _marcadores(self) -> NavegacionInterfaz:
@@ -2933,6 +2946,9 @@ class ConfigInterfaz(ModeloConfig):
             raise ValueError(f"pantallas: las ocho claves {', '.join(CLAVES_DE_PANTALLA)} deben aparecer una vez")
         if [p.clave for p in self.pantallas if p.separada] != ["consulta"]:
             raise ValueError("pantallas: solo la consulta va separada de las siete etapas del reto")
+        urls = [self.navegacion.url_inicio, *(p.url_path for p in self.pantallas)]
+        if len(set(urls)) != len(urls):
+            raise ValueError("pantallas: cada pantalla lleva una URL distinta (url_path) y ninguna repite la de «Cómo funciona»")
         if self.pantalla_inicial != CLAVE_INICIO:
             raise ValueError(f"pantalla_inicial: la aplicación abre en «{CLAVE_INICIO}» (Cómo funciona, D-131)")
         for p in self.pantallas:
