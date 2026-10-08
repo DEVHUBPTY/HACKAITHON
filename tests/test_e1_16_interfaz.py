@@ -91,7 +91,7 @@ def test_el_revisor_sale_de_la_lista_del_yaml_y_no_hay_ninguno_elegido(app) -> N
     at = app.run()
     assert not at.exception
     caja = at.selectbox(key="revision_revisor")
-    assert list(caja.options) == ui.revisores_de("editorial", CFG_REV) == ["David Fen", "Javier Acosta", "Juan Zhou", "Asistente (provisional, D-101)"] and caja.value is None   # D-112: el asistente va en la lista, rotulado
+    assert list(caja.options) == ui.revisores_de("editorial", CFG_REV) == ["David Feng", "Javier Acosta", "Juan Zhou", "Asistente (provisional, D-101)"] and caja.value is None   # D-112: el asistente va en la lista, rotulado
     assert "Sin autenticación" in textos(at)                                       # la limitación declarada (D-49)
     assert at.button(key="revision_abrir").disabled
 

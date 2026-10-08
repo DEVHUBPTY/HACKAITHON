@@ -510,9 +510,9 @@ def test_los_casos_que_c01_abrio_y_ya_no_elige_se_reabren_y_se_descartan_con_el_
 
 def test_un_caso_con_una_fila_de_una_persona_o_que_no_abrio_c01_no_se_descarta(rev, base, tmp_path) -> None:
     de_persona = _abrir_como_c01(rev, base, h.G_COMPLETO, "suficiente", tmp_path)
-    rev.reabrir(de_persona, "David Fen", "una persona lo retoma")
-    rev.aceptar(de_persona, "David Fen")                       # ya no es la fila provisional la vigente
-    ajeno = rev.abrir(h.G_CIFRAS, "editorial", "David Fen").id_caso     # lo abrió una persona, no esta tarea
+    rev.reabrir(de_persona, "David Feng", "una persona lo retoma")
+    rev.aceptar(de_persona, "David Feng")                       # ya no es la fila provisional la vigente
+    ajeno = rev.abrir(h.G_CIFRAS, "editorial", "David Feng").id_caso     # lo abrió una persona, no esta tarea
     assert cli.retirar_reemplazadas(rev, set(), CFG) == []
     assert rev.estado(de_persona) == "aprobado como borrador" and rev.estado(ajeno) == "en revisión"
 

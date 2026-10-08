@@ -5,7 +5,7 @@ Para usar una: abre Claude Code y escribe *"Lee specs/<ID>.md y propón un plan"
 
 ## Specs disponibles
 
-La columna **Rol** indica el área de la tarea (D = datos, IA, P = producto), no una persona: el equipo (David Fen, Javier Acosta, Juan Zhou) hace de todo y el responsable de cada tarea está en el Backlog de Notion.
+La columna **Rol** indica el área de la tarea (D = datos, IA, P = producto), no una persona: el equipo (David Feng, Javier Acosta, Juan Zhou) hace de todo y el responsable de cada tarea está en el Backlog de Notion.
 
 | ID | Tarea | Rol | Depende de | Spec |
 |---|---|---|---|---|

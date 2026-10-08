@@ -19,7 +19,7 @@ El enunciado oficial está en `docs/reto_TVN.pdf`. Toda referencia "PDF sección
 7. Tramos del evento y punto de corte: `docs/cronograma.md`.
 8. Flujo: una tarea = un worktree → una rama (ej. `e1-02-carga`) → un PR a `main` con la plantilla de `.github/`. Cada PR lo revisa un agente revisor independiente, que deja su veredicto escrito en el PR y en Notion; con veredicto favorable, el asistente integra el PR (D-78).
 
-**Equipo:** David Fen, Javier Acosta y Juan Zhou. Todos hacen de todo; el responsable de cada tarea está en el Backlog de Notion. El evento ya empezó (fase *Evento* en Notion). La demo corre **en local**: no hay despliegue.
+**Equipo:** David Feng, Javier Acosta y Juan Zhou. Todos hacen de todo; el responsable de cada tarea está en el Backlog de Notion. El evento ya empezó (fase *Evento* en Notion). La demo corre **en local**: no hay despliegue.
 
 ## Comandos
 
