@@ -1,0 +1,12 @@
+{
+ "clave": "b025e752ab9273dbd21f7f927c8cbf571ce12465013c9d1bbdb00f1ac0450dec",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2226,
+ "tokens_salida": 40,
+ "creado_utc": "2026-10-08T01:45:44Z",
+ "respuesta": "{\"tema\": \"sin_tema\", \"confianza\": \"alta\", \"motivo\": \"Noticia de otro país sin vínculo con Panamá ni con la región.\"}"
+}

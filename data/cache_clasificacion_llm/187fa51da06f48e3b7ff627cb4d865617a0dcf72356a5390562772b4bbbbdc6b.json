@@ -1,0 +1,12 @@
+{
+ "clave": "187fa51da06f48e3b7ff627cb4d865617a0dcf72356a5390562772b4bbbbdc6b",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2214,
+ "tokens_salida": 45,
+ "creado_utc": "2026-10-08T01:45:43Z",
+ "respuesta": "{\"tema\": \"sin_tema\", \"confianza\": \"baja\", \"motivo\": \"Titular de opinión o análisis sin un hecho noticioso claro que encaje en los temas.\"}"
+}

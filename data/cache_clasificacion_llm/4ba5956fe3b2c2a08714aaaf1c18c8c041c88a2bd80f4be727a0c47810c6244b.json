@@ -1,0 +1,12 @@
+{
+ "clave": "4ba5956fe3b2c2a08714aaaf1c18c8c041c88a2bd80f4be727a0c47810c6244b",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2216,
+ "tokens_salida": 38,
+ "creado_utc": "2026-10-08T01:45:49Z",
+ "respuesta": "{\"tema\": \"sin_tema\", \"confianza\": \"alta\", \"motivo\": \"Evento empresarial sobre responsabilidad social, sin relación con los seis temas.\"}"
+}

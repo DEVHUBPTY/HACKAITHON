@@ -1,0 +1,12 @@
+{
+ "clave": "af4163a04a058cd82abc5f2ac8a3705fbb2b96e34875eec4a2e3b44932dffc54",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2218,
+ "tokens_salida": 46,
+ "creado_utc": "2026-10-08T01:45:59Z",
+ "respuesta": "{\"tema\": \"sin_tema\", \"confianza\": \"alta\", \"motivo\": \"Noticia internacional sobre exportaciones de gas natural licuado que no trata sobre Panamá ni lo afecta.\"}"
+}

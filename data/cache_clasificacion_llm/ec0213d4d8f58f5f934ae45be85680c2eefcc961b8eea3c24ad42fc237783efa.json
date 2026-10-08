@@ -1,0 +1,12 @@
+{
+ "clave": "ec0213d4d8f58f5f934ae45be85680c2eefcc961b8eea3c24ad42fc237783efa",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2249,
+ "tokens_salida": 39,
+ "creado_utc": "2026-10-08T01:45:28Z",
+ "respuesta": "{\"tema\": \"sin_tema\", \"confianza\": \"alta\", \"motivo\": \"Es un perfil o crónica de sucesos sin relación con los seis temas.\"}"
+}

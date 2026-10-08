@@ -1,0 +1,12 @@
+{
+ "clave": "9806ef365555868e42439084f02d5a44206049c39533b2b9b76d1e86fdd70c70",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2224,
+ "tokens_salida": 46,
+ "creado_utc": "2026-10-08T01:45:38Z",
+ "respuesta": "{\"tema\": \"economia\", \"confianza\": \"alta\", \"motivo\": \"Precios de combustibles, tema macroeconómico de inflación y precios (regla 7).\"}"
+}

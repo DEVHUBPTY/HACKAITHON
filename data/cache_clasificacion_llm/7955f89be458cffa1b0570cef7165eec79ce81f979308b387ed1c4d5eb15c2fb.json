@@ -1,0 +1,12 @@
+{
+ "clave": "7955f89be458cffa1b0570cef7165eec79ce81f979308b387ed1c4d5eb15c2fb",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2207,
+ "tokens_salida": 51,
+ "creado_utc": "2026-10-08T01:45:39Z",
+ "respuesta": "{\"tema\": \"sin_tema\", \"confianza\": \"baja\", \"motivo\": \"Titular genérico sobre inversión extranjera en la región sin hecho nuevo ni vínculo claro con Panamá.\"}"
+}

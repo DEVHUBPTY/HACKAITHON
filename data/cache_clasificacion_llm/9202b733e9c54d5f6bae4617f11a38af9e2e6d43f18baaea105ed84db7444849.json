@@ -1,0 +1,12 @@
+{
+ "clave": "9202b733e9c54d5f6bae4617f11a38af9e2e6d43f18baaea105ed84db7444849",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2223,
+ "tokens_salida": 48,
+ "creado_utc": "2026-10-08T01:45:41Z",
+ "respuesta": "{\"tema\": \"sin_tema\", \"confianza\": \"alta\", \"motivo\": \"Proceso judicial por corrupción contra un exfuncionario; no es el hecho central de un tema de la lista.\"}"
+}

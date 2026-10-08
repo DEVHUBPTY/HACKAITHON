@@ -1,0 +1,12 @@
+{
+ "clave": "2c69ca609f9a46946d32a418caf54c6cb802feb81e7626bd8a895a9d663664ad",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2224,
+ "tokens_salida": 52,
+ "creado_utc": "2026-10-08T01:45:48Z",
+ "respuesta": "{\"tema\": \"regulacion\", \"confianza\": \"media\", \"motivo\": \"Decomiso de mercancía falsificada por una autoridad aduanera: sanción o control de una entidad reguladora.\"}"
+}

@@ -1,0 +1,12 @@
+{
+ "clave": "a6e1fa0095d68d106a7825b21d9f998b05cf0881b13eb8b170a99a725b2b4f85",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2222,
+ "tokens_salida": 63,
+ "creado_utc": "2026-10-08T01:45:46Z",
+ "respuesta": "{\"tema\": \"servicios_publicos\", \"confianza\": \"media\", \"motivo\": \"Daño a vehículos en un hospital; el hecho no es el fenómeno natural en sí ni una interrupción del servicio, pero ocurre en infraestructura de salud pública.\"}"
+}

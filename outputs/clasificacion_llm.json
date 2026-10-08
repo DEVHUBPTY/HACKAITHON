@@ -1,0 +1,934 @@
+{
+  "tarea": "C-10c",
+  "exploratorio": true,
+  "conectado_a_produccion": false,
+  "advertencia": "EXPLORATORIO: ≈ 30 eventos y una sola persona etiquetó (D-85); las etiquetas son un censo del estrato «no ruido» del snapshot anterior, no datos de prueba independientes. Medición única de un LLM con un prompt congelado antes de medir.",
+  "fuga_declarada": "La regla de alcance regional D-84 de docs/guia_temas.md, que está en el prompt, salió en parte de analizar estas mismas etiquetas: el LLM recibe ese criterio ya informado por ellas, así que su medición no es de datos nunca vistos por quien escribió la regla. El prompt no contiene ningún titular etiquetado (comprobado antes de llamar).",
+  "corrida": {
+    "proveedor": "deepseek",
+    "modelo": "deepseek-flash",
+    "version_prompt": "1.0",
+    "huella_prompt": "d2cd983d62687c60125ea356b40e852491d1276c8b6070476896d31828d44f5b",
+    "temperatura": 0.0,
+    "max_tokens": 256,
+    "llamadas": 64,
+    "llamadas_reales": 37,
+    "llamadas_de_cache": 27,
+    "respuestas_mal_formadas": 0,
+    "tokens_entrada": 142006,
+    "tokens_salida": 2959,
+    "costo_usd_estimado": 0.0461526,
+    "precios_usd_por_millon_tokens": {
+      "entrada": 0.3,
+      "salida": 1.2
+    },
+    "nota_costo": "El contador del repositorio multiplica los tokens por la tarifa pico sin descuento por caché y sobreestima ≈ 2,6 veces frente a la consola de DeepSeek (D-97): el costo real es menor que el estimado."
+  },
+  "tokens": {
+    "entrada": 142006,
+    "salida": 2959,
+    "costo_usd_estimado": 0.0461526
+  },
+  "conjunto": {
+    "origenes": [
+      "humano"
+    ],
+    "usa_etiquetas_provisionales": false,
+    "etiquetados_humanos_en_csv": 100,
+    "ejemplos_excluidos_descartados": 0,
+    "filas": 64,
+    "eventos": 30,
+    "filas_por_tema": {
+      "economia": 26,
+      "eventos_naturales": 20,
+      "servicios_publicos": 9,
+      "turismo": 1,
+      "sin_tema": 5,
+      "regulacion": 1,
+      "logistica": 2
+    },
+    "mejor_baseline": "baseline_ampliado",
+    "nota_mejor_baseline": "elegido por exactitud por evento con las mismas etiquetas: favorece al baseline"
+  },
+  "metricas": {
+    "exactitud_por_fila": {
+      "n": 35,
+      "de": 64,
+      "proporcion": 0.5469,
+      "ic95": [
+        0.4257,
+        0.6627
+      ],
+      "aproximado": false
+    },
+    "exactitud_por_evento": {
+      "valor": 0.5111,
+      "ic95": [
+        0.3333,
+        0.6892
+      ],
+      "eventos": 30,
+      "remuestreos": 1000
+    },
+    "macro_f1_por_evento": {
+      "valor": 0.393,
+      "ic95": [
+        0.1987,
+        0.6426
+      ],
+      "eventos": 30,
+      "filas": 64,
+      "remuestreos": 1000
+    },
+    "cobertura_por_fila": {
+      "n": 39,
+      "de": 64,
+      "proporcion": 0.6094,
+      "ic95": [
+        0.4869,
+        0.7194
+      ],
+      "aproximado": false
+    },
+    "cobertura_por_evento": {
+      "valor": 0.5889,
+      "ic95": [
+        0.4222,
+        0.7667
+      ],
+      "eventos": 30,
+      "remuestreos": 1000
+    },
+    "exactitud_entre_cubiertas_por_fila": {
+      "n": 31,
+      "de": 39,
+      "proporcion": 0.7949,
+      "ic95": [
+        0.6447,
+        0.8922
+      ],
+      "aproximado": false
+    },
+    "exactitud_entre_cubiertas_por_evento": {
+      "valor": 0.6389,
+      "ic95": [
+        0.3889,
+        0.8611
+      ],
+      "eventos": 18,
+      "remuestreos": 1000
+    },
+    "abstenciones": 25,
+    "recall_por_tema": {
+      "economia": {
+        "filas": {
+          "n": 3,
+          "de": 26,
+          "proporcion": 0.1154,
+          "ic95": [
+            0.04,
+            0.2898
+          ],
+          "aproximado": false
+        },
+        "eventos": 11,
+        "recall_por_evento": 0.2121212121212121,
+        "ic95": [
+          0.0,
+          0.4545
+        ],
+        "nota_ic": null
+      },
+      "logistica": {
+        "filas": {
+          "n": 1,
+          "de": 2,
+          "proporcion": 0.5,
+          "ic95": [
+            0.0945,
+            0.9055
+          ],
+          "aproximado": false
+        },
+        "eventos": 2,
+        "recall_por_evento": 0.5,
+        "ic95": [
+          0.0,
+          1.0
+        ],
+        "nota_ic": null
+      },
+      "turismo": {
+        "filas": {
+          "n": 0,
+          "de": 1,
+          "proporcion": 0.0,
+          "ic95": [
+            0.0,
+            0.7935
+          ],
+          "aproximado": false
+        },
+        "eventos": 1,
+        "recall_por_evento": 0.0,
+        "ic95": null,
+        "nota_ic": "menos de 2 eventos: el IC por evento no es estimable"
+      },
+      "servicios_publicos": {
+        "filas": {
+          "n": 7,
+          "de": 9,
+          "proporcion": 0.7778,
+          "ic95": [
+            0.4526,
+            0.9368
+          ],
+          "aproximado": false
+        },
+        "eventos": 9,
+        "recall_por_evento": 0.7777777777777778,
+        "ic95": [
+          0.4444,
+          1.0
+        ],
+        "nota_ic": null
+      },
+      "eventos_naturales": {
+        "filas": {
+          "n": 20,
+          "de": 20,
+          "proporcion": 1.0,
+          "ic95": [
+            0.8389,
+            1.0
+          ],
+          "aproximado": false
+        },
+        "eventos": 1,
+        "recall_por_evento": 1.0,
+        "ic95": null,
+        "nota_ic": "menos de 2 eventos: el IC por evento no es estimable"
+      },
+      "regulacion": {
+        "filas": {
+          "n": 0,
+          "de": 1,
+          "proporcion": 0.0,
+          "ic95": [
+            0.0,
+            0.7935
+          ],
+          "aproximado": false
+        },
+        "eventos": 1,
+        "recall_por_evento": 0.0,
+        "ic95": null,
+        "nota_ic": "menos de 2 eventos: el IC por evento no es estimable"
+      },
+      "sin_tema": {
+        "filas": {
+          "n": 4,
+          "de": 5,
+          "proporcion": 0.8,
+          "ic95": [
+            0.3755,
+            0.9638
+          ],
+          "aproximado": false
+        },
+        "eventos": 5,
+        "recall_por_evento": 0.8,
+        "ic95": [
+          0.4,
+          1.0
+        ],
+        "nota_ic": null
+      }
+    },
+    "macro_f1_por_fila": {
+      "n": 64,
+      "macro_f1": 0.393,
+      "ic95": [
+        0.2842,
+        0.5408
+      ],
+      "ic95_exacto": [
+        0.2841611682154121,
+        0.5407721780135573
+      ],
+      "remuestreos": 1000,
+      "ponderado": false
+    },
+    "matriz_confusion": {
+      "clases": [
+        "economia",
+        "logistica",
+        "turismo",
+        "servicios_publicos",
+        "eventos_naturales",
+        "regulacion",
+        "sin_tema"
+      ],
+      "filas_real_columnas_predicho": [
+        [
+          3,
+          0,
+          0,
+          1,
+          0,
+          4,
+          18
+        ],
+        [
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          7,
+          0,
+          1,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          20,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          4
+        ]
+      ]
+    },
+    "respuestas_mal_formadas": 0,
+    "por_confianza": {
+      "media": {
+        "filas": 44,
+        "aciertos": {
+          "n": 25,
+          "de": 44,
+          "proporcion": 0.5682,
+          "ic95": [
+            0.4222,
+            0.7032
+          ]
+        }
+      },
+      "alta": {
+        "filas": 17,
+        "aciertos": {
+          "n": 10,
+          "de": 17,
+          "proporcion": 0.5882,
+          "ic95": [
+            0.3601,
+            0.7839
+          ]
+        }
+      },
+      "baja": {
+        "filas": 3,
+        "aciertos": {
+          "n": 0,
+          "de": 3,
+          "proporcion": 0.0,
+          "ic95": [
+            0.0,
+            0.5615
+          ]
+        }
+      }
+    },
+    "bootstrap": {
+      "remuestreos": 1000,
+      "confianza": 0.95,
+      "semilla": 42,
+      "unidad_por_evento": "evento"
+    },
+    "sistemas_comparados": {
+      "metodo_A_activo": {
+        "exactitud_por_fila": {
+          "n": 35,
+          "de": 64,
+          "proporcion": 0.5469,
+          "ic95": [
+            0.4257,
+            0.6627
+          ],
+          "aproximado": false
+        },
+        "exactitud_por_evento": {
+          "valor": 0.5167,
+          "ic95": [
+            0.35,
+            0.6833
+          ],
+          "eventos": 30,
+          "remuestreos": 1000
+        },
+        "macro_f1_por_evento": {
+          "valor": 0.4296,
+          "ic95": [
+            0.2482,
+            0.6187
+          ],
+          "eventos": 30,
+          "filas": 64,
+          "remuestreos": 1000
+        },
+        "cobertura_por_fila": {
+          "n": 52,
+          "de": 64,
+          "proporcion": 0.8125,
+          "ic95": [
+            0.7003,
+            0.8894
+          ],
+          "aproximado": false
+        },
+        "cobertura_por_evento": {
+          "valor": 0.9692,
+          "ic95": [
+            0.9077,
+            1.0
+          ],
+          "eventos": 30,
+          "remuestreos": 1000
+        },
+        "exactitud_entre_cubiertas_por_fila": {
+          "n": 35,
+          "de": 52,
+          "proporcion": 0.6731,
+          "ic95": [
+            0.5376,
+            0.7848
+          ],
+          "aproximado": false
+        },
+        "exactitud_entre_cubiertas_por_evento": {
+          "valor": 0.5167,
+          "ic95": [
+            0.35,
+            0.6833
+          ],
+          "eventos": 30,
+          "remuestreos": 1000
+        },
+        "abstenciones": 12,
+        "recall_por_tema": {
+          "economia": {
+            "filas": {
+              "n": 4,
+              "de": 26,
+              "proporcion": 0.1538,
+              "ic95": [
+                0.0615,
+                0.3353
+              ],
+              "aproximado": false
+            },
+            "eventos": 11,
+            "recall_por_evento": 0.3181818181818182,
+            "ic95": [
+              0.0909,
+              0.5909
+            ],
+            "nota_ic": null
+          },
+          "logistica": {
+            "filas": {
+              "n": 2,
+              "de": 2,
+              "proporcion": 1.0,
+              "ic95": [
+                0.3424,
+                1.0
+              ],
+              "aproximado": false
+            },
+            "eventos": 2,
+            "recall_por_evento": 1.0,
+            "ic95": [
+              1.0,
+              1.0
+            ],
+            "nota_ic": null
+          },
+          "turismo": {
+            "filas": {
+              "n": 0,
+              "de": 1,
+              "proporcion": 0.0,
+              "ic95": [
+                0.0,
+                0.7935
+              ],
+              "aproximado": false
+            },
+            "eventos": 1,
+            "recall_por_evento": 0.0,
+            "ic95": null,
+            "nota_ic": "menos de 2 eventos: el IC por evento no es estimable"
+          },
+          "servicios_publicos": {
+            "filas": {
+              "n": 8,
+              "de": 9,
+              "proporcion": 0.8889,
+              "ic95": [
+                0.565,
+                0.9801
+              ],
+              "aproximado": false
+            },
+            "eventos": 9,
+            "recall_por_evento": 0.8888888888888888,
+            "ic95": [
+              0.6667,
+              1.0
+            ],
+            "nota_ic": null
+          },
+          "eventos_naturales": {
+            "filas": {
+              "n": 20,
+              "de": 20,
+              "proporcion": 1.0,
+              "ic95": [
+                0.8389,
+                1.0
+              ],
+              "aproximado": false
+            },
+            "eventos": 1,
+            "recall_por_evento": 1.0,
+            "ic95": null,
+            "nota_ic": "menos de 2 eventos: el IC por evento no es estimable"
+          },
+          "regulacion": {
+            "filas": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ],
+              "aproximado": false
+            },
+            "eventos": 1,
+            "recall_por_evento": 1.0,
+            "ic95": null,
+            "nota_ic": "menos de 2 eventos: el IC por evento no es estimable"
+          },
+          "sin_tema": {
+            "filas": {
+              "n": 0,
+              "de": 5,
+              "proporcion": 0.0,
+              "ic95": [
+                0.0,
+                0.4345
+              ],
+              "aproximado": false
+            },
+            "eventos": 5,
+            "recall_por_evento": 0.0,
+            "ic95": [
+              0.0,
+              0.0
+            ],
+            "nota_ic": null
+          }
+        }
+      },
+      "baseline_ampliado": {
+        "exactitud_por_fila": {
+          "n": 30,
+          "de": 64,
+          "proporcion": 0.4688,
+          "ic95": [
+            0.3518,
+            0.5893
+          ],
+          "aproximado": false
+        },
+        "exactitud_por_evento": {
+          "valor": 0.3444,
+          "ic95": [
+            0.1775,
+            0.5111
+          ],
+          "eventos": 30,
+          "remuestreos": 1000
+        },
+        "macro_f1_por_evento": {
+          "valor": 0.4766,
+          "ic95": [
+            0.1657,
+            0.6287
+          ],
+          "eventos": 30,
+          "filas": 64,
+          "remuestreos": 1000
+        },
+        "cobertura_por_fila": {
+          "n": 30,
+          "de": 64,
+          "proporcion": 0.4688,
+          "ic95": [
+            0.3518,
+            0.5893
+          ],
+          "aproximado": false
+        },
+        "cobertura_por_evento": {
+          "valor": 0.3444,
+          "ic95": [
+            0.1778,
+            0.5111
+          ],
+          "eventos": 30,
+          "remuestreos": 1000
+        },
+        "exactitud_entre_cubiertas_por_fila": {
+          "n": 27,
+          "de": 30,
+          "proporcion": 0.9,
+          "ic95": [
+            0.7438,
+            0.9654
+          ],
+          "aproximado": false
+        },
+        "exactitud_entre_cubiertas_por_evento": {
+          "valor": 0.7273,
+          "ic95": [
+            0.4545,
+            1.0
+          ],
+          "eventos": 11,
+          "remuestreos": 1000
+        },
+        "abstenciones": 34,
+        "recall_por_tema": {
+          "economia": {
+            "filas": {
+              "n": 3,
+              "de": 26,
+              "proporcion": 0.1154,
+              "ic95": [
+                0.04,
+                0.2898
+              ],
+              "aproximado": false
+            },
+            "eventos": 11,
+            "recall_por_evento": 0.21212121212121213,
+            "ic95": [
+              0.0303,
+              0.4545
+            ],
+            "nota_ic": null
+          },
+          "logistica": {
+            "filas": {
+              "n": 1,
+              "de": 2,
+              "proporcion": 0.5,
+              "ic95": [
+                0.0945,
+                0.9055
+              ],
+              "aproximado": false
+            },
+            "eventos": 2,
+            "recall_por_evento": 0.5,
+            "ic95": [
+              0.0,
+              1.0
+            ],
+            "nota_ic": null
+          },
+          "turismo": {
+            "filas": {
+              "n": 1,
+              "de": 1,
+              "proporcion": 1.0,
+              "ic95": [
+                0.2065,
+                1.0
+              ],
+              "aproximado": false
+            },
+            "eventos": 1,
+            "recall_por_evento": 1.0,
+            "ic95": null,
+            "nota_ic": "menos de 2 eventos: el IC por evento no es estimable"
+          },
+          "servicios_publicos": {
+            "filas": {
+              "n": 2,
+              "de": 9,
+              "proporcion": 0.2222,
+              "ic95": [
+                0.0632,
+                0.5474
+              ],
+              "aproximado": false
+            },
+            "eventos": 9,
+            "recall_por_evento": 0.2222222222222222,
+            "ic95": [
+              0.0,
+              0.5556
+            ],
+            "nota_ic": null
+          },
+          "eventos_naturales": {
+            "filas": {
+              "n": 20,
+              "de": 20,
+              "proporcion": 1.0,
+              "ic95": [
+                0.8389,
+                1.0
+              ],
+              "aproximado": false
+            },
+            "eventos": 1,
+            "recall_por_evento": 1.0,
+            "ic95": null,
+            "nota_ic": "menos de 2 eventos: el IC por evento no es estimable"
+          },
+          "regulacion": {
+            "filas": {
+              "n": 0,
+              "de": 1,
+              "proporcion": 0.0,
+              "ic95": [
+                0.0,
+                0.7935
+              ],
+              "aproximado": false
+            },
+            "eventos": 1,
+            "recall_por_evento": 0.0,
+            "ic95": null,
+            "nota_ic": "menos de 2 eventos: el IC por evento no es estimable"
+          },
+          "sin_tema": {
+            "filas": {
+              "n": 3,
+              "de": 5,
+              "proporcion": 0.6,
+              "ic95": [
+                0.2307,
+                0.8824
+              ],
+              "aproximado": false
+            },
+            "eventos": 5,
+            "recall_por_evento": 0.6,
+            "ic95": [
+              0.2,
+              1.0
+            ],
+            "nota_ic": null
+          }
+        }
+      }
+    },
+    "comparaciones": {
+      "metodo_A_activo": {
+        "diferencia": "LLM − metodo_A_activo",
+        "exactitud_por_evento": {
+          "diferencia": -0.0056,
+          "ic95": [
+            -0.2333,
+            0.2278
+          ],
+          "excluye_cero": false,
+          "eventos": 30,
+          "eventos_que_cambian": 14
+        },
+        "macro_f1": {
+          "diferencia": -0.0365,
+          "ic95": [
+            -0.2256,
+            0.171
+          ],
+          "excluye_cero": false,
+          "a_favor": false,
+          "eventos": 30
+        },
+        "recall_por_tema": {
+          "economia": {
+            "diferencia": -0.1061,
+            "ic95": [
+              -0.4545,
+              0.2273
+            ],
+            "excluye_cero": false,
+            "eventos": 11,
+            "eventos_que_cambian": 5
+          },
+          "logistica": {
+            "diferencia": -0.5,
+            "ic95": [
+              -1.0,
+              0.0
+            ],
+            "excluye_cero": false,
+            "eventos": 2,
+            "eventos_que_cambian": 1
+          },
+          "turismo": null,
+          "servicios_publicos": {
+            "diferencia": -0.1111,
+            "ic95": [
+              -0.4444,
+              0.2222
+            ],
+            "excluye_cero": false,
+            "eventos": 9,
+            "eventos_que_cambian": 3
+          },
+          "eventos_naturales": null,
+          "regulacion": null,
+          "sin_tema": {
+            "diferencia": 0.8,
+            "ic95": [
+              0.4,
+              1.0
+            ],
+            "excluye_cero": true,
+            "eventos": 5,
+            "eventos_que_cambian": 4
+          }
+        },
+        "criterio_d57": {
+          "cumplido": false,
+          "motivo": "el IC 95 % de la diferencia de macro-F1 [-0.2256, 0.171] no excluye el cero a favor",
+          "temas_que_empeoran": []
+        },
+        "ic_se_solapan": {
+          "exactitud_por_evento": true,
+          "macro_f1": true
+        }
+      },
+      "baseline_ampliado": {
+        "diferencia": "LLM − baseline_ampliado",
+        "exactitud_por_evento": {
+          "diferencia": 0.1667,
+          "ic95": [
+            -0.0333,
+            0.3667
+          ],
+          "excluye_cero": false,
+          "eventos": 30,
+          "eventos_que_cambian": 11
+        },
+        "macro_f1": {
+          "diferencia": -0.0836,
+          "ic95": [
+            -0.1823,
+            0.2028
+          ],
+          "excluye_cero": false,
+          "a_favor": false,
+          "eventos": 30
+        },
+        "recall_por_tema": {
+          "economia": {
+            "diferencia": 0.0,
+            "ic95": [
+              -0.2727,
+              0.2727
+            ],
+            "excluye_cero": false,
+            "eventos": 11,
+            "eventos_que_cambian": 2
+          },
+          "logistica": {
+            "diferencia": 0.0,
+            "ic95": [
+              0.0,
+              0.0
+            ],
+            "excluye_cero": false,
+            "eventos": 2,
+            "eventos_que_cambian": 0
+          },
+          "turismo": null,
+          "servicios_publicos": {
+            "diferencia": 0.5556,
+            "ic95": [
+              0.1111,
+              0.8917
+            ],
+            "excluye_cero": true,
+            "eventos": 9,
+            "eventos_que_cambian": 7
+          },
+          "eventos_naturales": null,
+          "regulacion": null,
+          "sin_tema": {
+            "diferencia": 0.2,
+            "ic95": [
+              0.0,
+              0.6
+            ],
+            "excluye_cero": false,
+            "eventos": 5,
+            "eventos_que_cambian": 1
+          }
+        },
+        "criterio_d57": {
+          "cumplido": false,
+          "motivo": "el IC 95 % de la diferencia de macro-F1 [-0.1823, 0.2028] no excluye el cero a favor",
+          "temas_que_empeoran": []
+        },
+        "ic_se_solapan": {
+          "exactitud_por_evento": true,
+          "macro_f1": true
+        }
+      }
+    }
+  }
+}

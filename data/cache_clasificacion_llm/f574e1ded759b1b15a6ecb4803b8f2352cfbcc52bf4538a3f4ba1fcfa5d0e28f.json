@@ -1,0 +1,12 @@
+{
+ "clave": "f574e1ded759b1b15a6ecb4803b8f2352cfbcc52bf4538a3f4ba1fcfa5d0e28f",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2224,
+ "tokens_salida": 56,
+ "creado_utc": "2026-10-08T01:45:47Z",
+ "respuesta": "{\"tema\": \"regulacion\", \"confianza\": \"media\", \"motivo\": \"Proyecto de asignación de fondos a juntas comunales, acto de autoridad que encaja en la regla de norma o contrato nuevo.\"}"
+}

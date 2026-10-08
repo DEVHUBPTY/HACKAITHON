@@ -1,0 +1,12 @@
+{
+ "clave": "8c20fa2600e70cca5af0464905f19f862f4fe02bd3810daacb1b479987dc1859",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2230,
+ "tokens_salida": 39,
+ "creado_utc": "2026-10-08T01:45:32Z",
+ "respuesta": "{\"tema\": \"sin_tema\", \"confianza\": \"alta\", \"motivo\": \"Política electoral y partidista sin una norma aprobada de por medio.\"}"
+}

@@ -1,0 +1,12 @@
+{
+ "clave": "cdc7fb01147306b1ea8e6a20917562ca9923d52135e5c48acc5f8577c8045a26",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2226,
+ "tokens_salida": 50,
+ "creado_utc": "2026-10-08T01:45:25Z",
+ "respuesta": "{\"tema\": \"servicios_publicos\", \"confianza\": \"media\", \"motivo\": \"Hecho de salud pública y custodia penitenciaria, cubierto por servicios públicos (salud y cárceles).\"}"
+}

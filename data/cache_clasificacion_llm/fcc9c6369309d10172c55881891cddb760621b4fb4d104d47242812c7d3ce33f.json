@@ -1,0 +1,12 @@
+{
+ "clave": "fcc9c6369309d10172c55881891cddb760621b4fb4d104d47242812c7d3ce33f",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2222,
+ "tokens_salida": 50,
+ "creado_utc": "2026-10-08T01:45:27Z",
+ "respuesta": "{\"tema\": \"regulacion\", \"confianza\": \"media\", \"motivo\": \"Suscripción de convenios bilaterales: acto de autoridad que se clasifica como regulación (regla 2).\"}"
+}

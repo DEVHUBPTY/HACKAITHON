@@ -1,0 +1,12 @@
+{
+ "clave": "696a5ec98552caf506d97230007737ca6c09b5955eb7ff30724a1a0b855471b9",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2227,
+ "tokens_salida": 45,
+ "creado_utc": "2026-10-08T01:45:36Z",
+ "respuesta": "{\"tema\": \"regulacion\", \"confianza\": \"media\", \"motivo\": \"El hecho central gira en torno al cierre de una concesión minera y sus implicaciones regulatorias.\"}"
+}

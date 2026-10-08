@@ -1,0 +1,12 @@
+{
+ "clave": "4ae5e58daca8cde965057730967dbd89c2b51125914bc2a840d55ae134ec13f9",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2219,
+ "tokens_salida": 51,
+ "creado_utc": "2026-10-08T01:45:56Z",
+ "respuesta": "{\"tema\": \"regulacion\", \"confianza\": \"media\", \"motivo\": \"Reapertura de una operación minera condicionada a un modelo de contrato o concesión, regla 2.\"}"
+}

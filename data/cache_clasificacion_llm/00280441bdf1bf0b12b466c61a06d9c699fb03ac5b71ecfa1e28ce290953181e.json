@@ -1,0 +1,12 @@
+{
+ "clave": "00280441bdf1bf0b12b466c61a06d9c699fb03ac5b71ecfa1e28ce290953181e",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2219,
+ "tokens_salida": 45,
+ "creado_utc": "2026-10-08T01:45:52Z",
+ "respuesta": "{\"tema\": \"sin_tema\", \"confianza\": \"media\", \"motivo\": \"Ranking internacional de ciudades sin hecho nuevo que afecte a Panamá ni encaje en los seis temas.\"}"
+}

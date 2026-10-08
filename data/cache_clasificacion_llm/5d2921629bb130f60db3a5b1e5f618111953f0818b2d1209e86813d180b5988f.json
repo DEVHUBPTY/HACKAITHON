@@ -1,0 +1,12 @@
+{
+ "clave": "5d2921629bb130f60db3a5b1e5f618111953f0818b2d1209e86813d180b5988f",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2217,
+ "tokens_salida": 48,
+ "creado_utc": "2026-10-08T01:45:17Z",
+ "respuesta": "{\"tema\": \"eventos_naturales\", \"confianza\": \"media\", \"motivo\": \"El fenómeno físico de El Niño es el hecho central, con alcance regional que afecta a Panamá.\"}"
+}

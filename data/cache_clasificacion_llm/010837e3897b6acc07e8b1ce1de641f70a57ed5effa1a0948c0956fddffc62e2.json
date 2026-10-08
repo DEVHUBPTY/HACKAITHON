@@ -1,0 +1,12 @@
+{
+ "clave": "010837e3897b6acc07e8b1ce1de641f70a57ed5effa1a0948c0956fddffc62e2",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2222,
+ "tokens_salida": 46,
+ "creado_utc": "2026-10-08T01:45:29Z",
+ "respuesta": "{\"tema\": \"servicios_publicos\", \"confianza\": \"alta\", \"motivo\": \"Seguridad ciudadana: hecho delictivo reportado por la policía, subtema de servicios públicos.\"}"
+}

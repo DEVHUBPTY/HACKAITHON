@@ -1,0 +1,12 @@
+{
+ "clave": "820f7206ebd52a5587e5e48dc4d2c08566ab0e17a9d699bf6302e8a215b078bf",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2216,
+ "tokens_salida": 51,
+ "creado_utc": "2026-10-08T01:45:31Z",
+ "respuesta": "{\"tema\": \"logistica\", \"confianza\": \"media\", \"motivo\": \"Convenio de un aeropuerto con una empresa, relacionado con operación aeroportuaria y carga; regla 6.\"}"
+}

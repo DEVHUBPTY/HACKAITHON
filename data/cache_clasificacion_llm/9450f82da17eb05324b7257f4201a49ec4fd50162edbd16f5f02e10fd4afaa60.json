@@ -1,0 +1,12 @@
+{
+ "clave": "9450f82da17eb05324b7257f4201a49ec4fd50162edbd16f5f02e10fd4afaa60",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2222,
+ "tokens_salida": 48,
+ "creado_utc": "2026-10-08T01:45:37Z",
+ "respuesta": "{\"tema\": \"servicios_publicos\", \"confianza\": \"media\", \"motivo\": \"Cierre temporal de una instalación recreativa pública por obras de reparación, criterio de obra o servicio público.\"}"
+}

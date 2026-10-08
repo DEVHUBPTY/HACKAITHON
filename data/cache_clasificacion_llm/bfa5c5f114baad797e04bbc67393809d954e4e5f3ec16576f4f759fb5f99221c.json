@@ -1,0 +1,12 @@
+{
+ "clave": "bfa5c5f114baad797e04bbc67393809d954e4e5f3ec16576f4f759fb5f99221c",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2207,
+ "tokens_salida": 46,
+ "creado_utc": "2026-10-08T01:45:54Z",
+ "respuesta": "{\"tema\": \"sin_tema\", \"confianza\": \"baja\", \"motivo\": \"Titular genérico sin hecho ni mención de Panamá; no encaja en ningún tema.\"}"
+}

@@ -1,0 +1,12 @@
+{
+ "clave": "aaacdeef2db470013bd8cb5827902788f30e5944fc38d46ed6a0e788b1881adb",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2227,
+ "tokens_salida": 50,
+ "creado_utc": "2026-10-08T01:45:42Z",
+ "respuesta": "{\"tema\": \"servicios_publicos\", \"confianza\": \"media\", \"motivo\": \"Obra pública de renovación de un parque, subtema de servicios públicos; no es el acto de contratación.\"}"
+}

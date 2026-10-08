@@ -1,0 +1,12 @@
+{
+ "clave": "83fba2f0d49a3086d508f0e1b1e528b297bb2993f7e4e72682a66ff28780a602",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2237,
+ "tokens_salida": 46,
+ "creado_utc": "2026-10-08T01:45:16Z",
+ "respuesta": "{\"tema\": \"economia\", \"confianza\": \"media\", \"motivo\": \"Cifras macroeconómicas y financiamiento regional que afecta a Panamá (regla 7).\"}"
+}

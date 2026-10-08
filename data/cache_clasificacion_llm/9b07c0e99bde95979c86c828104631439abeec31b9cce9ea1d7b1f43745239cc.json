@@ -1,0 +1,12 @@
+{
+ "clave": "9b07c0e99bde95979c86c828104631439abeec31b9cce9ea1d7b1f43745239cc",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2222,
+ "tokens_salida": 43,
+ "creado_utc": "2026-10-08T01:45:35Z",
+ "respuesta": "{\"tema\": \"logistica\", \"confianza\": \"alta\", \"motivo\": \"El sujeto es el Canal de Panamá, por lo que aplica la regla 3.\"}"
+}

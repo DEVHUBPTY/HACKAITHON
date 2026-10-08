@@ -1,0 +1,12 @@
+{
+ "clave": "953b00130383e7523e5ea83161ba3f2bc2ba2ec741dd6d8b4031f4cb743ed043",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2222,
+ "tokens_salida": 41,
+ "creado_utc": "2026-10-08T01:45:30Z",
+ "respuesta": "{\"tema\": \"servicios_publicos\", \"confianza\": \"alta\", \"motivo\": \"Salud pública: aumento de muertes por enfermedades, tema de servicios de salud.\"}"
+}

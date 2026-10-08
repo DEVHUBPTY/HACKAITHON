@@ -1,0 +1,12 @@
+{
+ "clave": "9b098d3c18dd0900068e3e3144c1fc82b1ea9709647eb451312c1817b82082fa",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2217,
+ "tokens_salida": 43,
+ "creado_utc": "2026-10-08T01:45:58Z",
+ "respuesta": "{\"tema\": \"economia\", \"confianza\": \"media\", \"motivo\": \"Búsqueda de inversiones, criterio de inversión y comercio exterior (regla 7).\"}"
+}

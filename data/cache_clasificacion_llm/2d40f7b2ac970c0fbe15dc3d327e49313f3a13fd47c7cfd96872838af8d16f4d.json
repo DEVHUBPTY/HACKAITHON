@@ -1,0 +1,12 @@
+{
+ "clave": "2d40f7b2ac970c0fbe15dc3d327e49313f3a13fd47c7cfd96872838af8d16f4d",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2220,
+ "tokens_salida": 45,
+ "creado_utc": "2026-10-08T01:45:18Z",
+ "respuesta": "{\"tema\": \"servicios_publicos\", \"confianza\": \"alta\", \"motivo\": \"Seguridad ciudadana: cifras de muertes violentas corresponden a sucesos y seguridad pública.\"}"
+}

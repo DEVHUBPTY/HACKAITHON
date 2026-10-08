@@ -1,0 +1,18 @@
+# C-10c · Clasificación del tema de un titular con un LLM (medición única; NO está conectada a producción).
+# Cada valor está en docs/parametros.md (sección «Clasificación con LLM (C-10c)»). El bootstrap (remuestreos, confianza y semilla) es el
+# `criterio_ab` de config/clasificacion.yaml: no hay valores propios, para que la comparación con el método A use el mismo remuestreo.
+version: "1.0"
+
+proveedor: deepseek               # LLM_PROVIDER de local.env debe coincidir; la clave sale de local.env (DEEPSEEK_API_KEY), nunca de aquí
+modelo: "deepseek-flash"          # fijado aquí: DEEPSEEK_MODEL de local.env NO lo sobrescribe, para que la medición sea de un solo modelo
+prompt: clasificar_tema           # prompts/clasificar_tema.txt
+version_prompt: "1.0"             # debe coincidir con `# version:` del prompt
+huella_prompt: "d2cd983d62687c60125ea356b40e852491d1276c8b6070476896d31828d44f5b"   # SHA-256 del cuerpo del prompt (congelado antes de medir)
+temperatura: 0.0
+max_tokens: 256                   # el JSON de salida es corto (tema, confianza y una frase)
+
+cache:
+  ruta: data/cache_clasificacion_llm   # una respuesta por archivo <clave>.json; versionada en git; sin prompts, titulares ni claves
+  version_cache: "1"                   # subirla invalida toda la caché
+
+salida: outputs/clasificacion_llm.json

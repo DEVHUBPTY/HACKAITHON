@@ -1,0 +1,12 @@
+{
+ "clave": "26c6cfcd9084f79de4246d536a2484bc4782560f3b15becdc574ecee32549531",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2213,
+ "tokens_salida": 42,
+ "creado_utc": "2026-10-08T01:45:20Z",
+ "respuesta": "{\"tema\": \"sin_tema\", \"confianza\": \"alta\", \"motivo\": \"Titular promocional o de sección, sin hecho noticioso que clasificar.\"}"
+}

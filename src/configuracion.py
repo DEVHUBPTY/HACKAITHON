@@ -1721,6 +1721,47 @@ class ConfigClasificacion(ModeloConfig):
 def cargar_clasificacion(carpeta: Path | None = None) -> ConfigClasificacion:
     """Atajo para ``config/clasificacion.yaml``."""
     return cargar_config("clasificacion", ConfigClasificacion, carpeta)
+
+
+# ------------------------------------------------------------------ clasificacion_llm.yaml (C-10c)
+
+
+class CacheClasificacionLlm(ModeloConfig):
+    """Dónde se guardan las respuestas del LLM de C-10c y qué las invalida a mano."""
+
+    ruta: str = Field(min_length=1)            # carpeta versionada, una respuesta por archivo; nunca claves ni prompts
+    version_cache: str = Field(min_length=1)   # entra en la clave de cada respuesta: subirla invalida toda la caché
+
+
+class ConfigClasificacionLlm(ModeloConfig):
+    """Modelo de ``config/clasificacion_llm.yaml`` (C-10c): clasificar el tema de un titular con un LLM, medido una sola vez.
+
+    ``version_prompt`` y ``huella_prompt`` congelan el prompt: si ``prompts/<prompt>.txt`` cambia sin actualizarlos, la carga falla.
+    """
+
+    version: str
+    proveedor: Literal["deepseek"]
+    modelo: str = Field(min_length=1)
+    prompt: str = Field(min_length=1)
+    version_prompt: str = Field(min_length=1)
+    huella_prompt: str = Field(pattern=r"^[0-9a-f]{64}$")
+    temperatura: float
+    max_tokens: int = Field(gt=0)
+    cache: CacheClasificacionLlm
+    salida: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _rangos(self) -> ConfigClasificacionLlm:
+        if self.temperatura != 0.0:
+            raise ValueError("temperatura: 0.0 (CLAUDE.md: la salida del LLM se pide con temperatura 0)")
+        return self
+
+
+def cargar_clasificacion_llm(carpeta: Path | None = None) -> ConfigClasificacionLlm:
+    """Atajo para ``config/clasificacion_llm.yaml``."""
+    return cargar_config("clasificacion_llm", ConfigClasificacionLlm, carpeta)
+
+
 TipoConsulta = Literal[
     "respuesta_sustentada", "contradiccion_ambiguedad", "sin_respuesta", "adversarial"
 ]
@@ -3362,6 +3403,7 @@ CARGADORES = {
     "llm": cargar_llm,
     "normalizacion": cargar_normalizacion,
     "clasificacion": cargar_clasificacion,
+    "clasificacion_llm": cargar_clasificacion_llm,
     "etiquetado": cargar_etiquetado,
     "procedencias": cargar_procedencias,
     "consulta": cargar_consulta,

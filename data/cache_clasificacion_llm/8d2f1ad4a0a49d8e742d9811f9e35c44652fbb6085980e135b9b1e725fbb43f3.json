@@ -1,0 +1,12 @@
+{
+ "clave": "8d2f1ad4a0a49d8e742d9811f9e35c44652fbb6085980e135b9b1e725fbb43f3",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2226,
+ "tokens_salida": 40,
+ "creado_utc": "2026-10-08T01:45:51Z",
+ "respuesta": "{\"tema\": \"servicios_publicos\", \"confianza\": \"media\", \"motivo\": \"Alerta de seguridad ciudadana por desaparición, tema de servicios públicos.\"}"
+}

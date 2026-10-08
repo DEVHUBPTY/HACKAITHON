@@ -1,0 +1,12 @@
+{
+ "clave": "66d4831297cfeb2b631592f87fa7c104d4e3f381fb2a490403f1f48bf89d9807",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2212,
+ "tokens_salida": 39,
+ "creado_utc": "2026-10-08T01:45:21Z",
+ "respuesta": "{\"tema\": \"sin_tema\", \"confianza\": \"alta\", \"motivo\": \"Visita diplomática del presidente, área no cubierta por los seis temas.\"}"
+}

@@ -635,6 +635,116 @@ comparadores. (4) Las etiquetas no son un muestreo de la población (son un cens
 estas cifras justifican cambiar el clasificador de producción**; para decidir hace falta lo de `docs/revision_etiquetas.md`
 (confirmar las 61, un segundo etiquetador y ≥ 10–20 eventos por tema).
 
+## C-10c · Clasificación con LLM (medición única) (2026-10-07)
+
+**Resultado: el LLM (deepseek-flash, prompt `clasificar_tema` 1.0) NO supera al método A de forma distinguible; el criterio D-57 NO se
+cumple ni contra el método A ni contra el mejor baseline, y los IC por evento se solapan en todo.** Acierta lo mismo por fila
+(35/64, como el método A) con otro perfil de errores: se abstiene mucho más (25 de 64) y falla casi toda Economía. **No está conectado
+a producción**: la canalización sigue clasificando con e5 · método A (`src/clasificacion.py`, sin cambios, igual que sus umbrales,
+`config/temas.yaml` y `eval/etiquetas.csv`); pasar a un LLM cambia el diseño (hoy la clasificación es solo de embeddings locales) y lo
+decide el dueño (tarea T4). Todo lo de esta sección es **EXPLORATORIO**: 64 filas, 30 eventos, una sola persona etiquetó (D-85), y las
+etiquetas son un censo del estrato «no ruido» del snapshot anterior. Solo se usan etiquetas `origen = humano` (D-101): las 61
+provisionales ni se leyeron ni se clasificaron; ningún titular etiquetado se cita aquí ni en `outputs/clasificacion_llm.json`.
+
+**Fuga declarada.** La regla de alcance regional D-84 de `docs/guia_temas.md`, que está en el prompt, salió en parte de analizar estas
+mismas etiquetas: el LLM recibe un criterio ya informado por ellas, así que esta medición no es de datos que quien
+escribió la regla nunca vio. El prompt se escribió desde la guía y `config/temas.yaml` (descripciones, reglas de frontera, la regla de
+obras públicas D-111 y los 15 «casos difíciles» ilustrativos de la guía, que no vienen del corpus) y **no contiene ningún titular
+etiquetado**: antes de llamar, la corrida comprueba que ninguno de los 64 titulares evaluados aparece en él.
+
+**Diseño (fijado antes de medir).** `src/clasificacion_llm.py` · `prompts/clasificar_tema.txt` (versión 1.0, huella SHA-256 `d2cd983d…`
+congelada en `config/clasificacion_llm.yaml`: si el texto cambia sin subir versión y huella, la carga falla) · modelo `deepseek-flash`,
+temperatura 0, `max_tokens` 256. Al proveedor llega **solo el texto del titular**, dentro de `<titular>…</titular>` en el mensaje de
+usuario (dato, nunca instrucción; los `<` y `>` del titular se escapan para que no cierre la etiqueta); las reglas van en el system
+prompt. Ningún id, URL, etiqueta, medio ni descripción del RSS. La salida es un JSON validado con pydantic (`tema`: uno de los 6 o
+`sin_tema`; `confianza`: alta, media o baja; `motivo`); una respuesta mal formada contaría como `sin_tema` marcada y se reportaría
+(hubo 0). Las respuestas se guardan en `data/cache_clasificacion_llm/` (versionada; la clave mezcla modelo, versión y huella del
+prompt, temperatura y titular), y el tope de costo es el existente (D-67, D-98). Se corrió **una sola vez**; después no se tocó el
+prompt, el modelo ni ningún parámetro. Reproducir sin red: `HF_HUB_OFFLINE=1 poetry run python -m eval.clasificacion_llm --verificar`
+(reproduce las métricas desde la caché y las compara con el JSON; la corrida real no se repite: se niega si el JSON ya existe).
+
+### 1 · Métricas (64 filas, 30 eventos; IC 95 %: Wilson por fila, bootstrap sobre eventos con 1.000 remuestreos y semilla 42, `criterio_ab`)
+
+| Sistema | Exactitud por fila (n = 64) | Exactitud por evento [IC 95 %] | Macro-F1 por evento [IC 95 %] | Cobertura (filas) | Exactitud entre cubiertas (filas) |
+|---|---|---|---|---|---|
+| **LLM** (deepseek-flash, prompt 1.0) | 35/64 = 54.7 % [42.6–66.3] | 0.511 [0.333–0.689] | 0.393 [0.199–0.643] | 39/64 = 60.9 % [48.7–71.9] | 31/39 = 79.5 % [64.5–89.2] |
+| e5 · A, activo (C-10b) | 35/64 = 54.7 % [42.6–66.3] | 0.517 [0.350–0.683] | 0.430 [0.248–0.619] | 52/64 = 81.2 % [70.0–88.9] | 35/52 = 67.3 % [53.8–78.5] |
+| Baseline ampliado (el mejor baseline) | 30/64 = 46.9 % [35.2–58.9] | 0.344 [0.177–0.511] | 0.477 [0.166–0.629] | 30/64 = 46.9 % [35.2–58.9] | 27/30 = 90.0 % [74.4–96.5] |
+
+Macro-F1 del LLM **por fila**: 0.393 [0.284–0.541] (bootstrap por fila, n = 64). Respuestas mal formadas: 0. **Abstenciones** (`sin_tema`
+predicho): 25 de 64.
+
+**Recall por tema** (filas con IC de Wilson; por evento con IC de bootstrap, que no existe con un solo evento):
+
+| Tema (humano) | LLM, filas | LLM, por evento [IC 95 %] | Método A, filas | Observación |
+|---|---|---|---|---|
+| Economía | 3/26 = 11.5 % [4.0–29.0] | 0.212 [0.000–0.455] (11 eventos) | 4/26 | 18 de las 26 filas pasaron a `sin_tema`, 4 a Regulación y 1 a Servicios públicos |
+| Eventos naturales | 20/20 = 100 % [83.9–100] | 1.000, sin IC (1 evento) | 20/20 | todo un solo evento |
+| Servicios públicos | 7/9 = 77.8 % [45.3–93.7] | 0.778 [0.444–1.000] (9 eventos) | 8/9 | |
+| Logística/Canal | 1/2 | 0.500 [0.000–1.000] (2 eventos) | 2/2 | n muy pequeño |
+| Turismo | 0/1 | 0.000, sin IC (1 evento) | 0/1 | n muy pequeño |
+| Regulación | 0/1 | 0.000, sin IC (1 evento) | 1/1 | n muy pequeño |
+| `sin_tema` (humano) | 4/5 = 80.0 % [37.5–96.4] | 0.800 [0.400–1.000] (5 eventos) | 0/5 | |
+
+**Confusión por tema** (filas = tema humano, columnas = predicho; solo conteos; orden: Economía, Logística, Turismo, Servicios
+públicos, Eventos naturales, Regulación, `sin_tema`):
+
+| | Eco | Log | Tur | SP | EN | Reg | sin_tema |
+|---|---|---|---|---|---|---|---|
+| Economía | 3 | 0 | 0 | 1 | 0 | 4 | 18 |
+| Logística/Canal | 0 | 1 | 0 | 0 | 0 | 0 | 1 |
+| Turismo | 0 | 0 | 0 | 0 | 0 | 0 | 1 |
+| Servicios públicos | 0 | 0 | 0 | 7 | 0 | 1 | 1 |
+| Eventos naturales | 0 | 0 | 0 | 0 | 20 | 0 | 0 |
+| Regulación | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
+| `sin_tema` | 0 | 0 | 0 | 1 | 0 | 0 | 4 |
+
+**Confianza declarada.** Media: 25/44 = 56.8 % [42.2–70.3]; alta: 10/17 = 58.8 % [36.0–78.4]; baja: 0/3 [0.0–56.1]. La confianza que
+declara el LLM casi no separa aciertos de errores (alta y media se parecen).
+
+### 2 · Comparación pareada por evento y criterio D-57
+
+Diferencia LLM − comparador, pareada (los mismos eventos remuestreados en los dos sistemas), IC 95 % de bootstrap sobre los 30 eventos:
+
+| Diferencia (LLM − otro) | Exactitud por evento [IC 95 %] | Macro-F1 [IC 95 %] | ¿IC solapados? | D-57 |
+|---|---|---|---|---|
+| − método A activo (35/64, macro-F1 0.430) | −0.006 [−0.233, +0.228] | −0.037 [−0.226, +0.171] | Sí (exactitud y macro-F1) | **No se cumple**: el IC de macro-F1 no excluye el cero a favor |
+| − mejor baseline (ampliado) | +0.167 [−0.033, +0.367] | −0.084 [−0.182, +0.203] | Sí (exactitud y macro-F1) | **No se cumple**: el IC de macro-F1 no excluye el cero a favor |
+
+D-57 adaptado a eventos (como en C-10b): el IC 95 % de la diferencia de macro-F1 debe quedar sobre cero y ningún tema puede empeorar de
+forma significativa. **No se cumple en ninguna de las dos comparaciones** (los dos IC incluyen el cero y el punto estimado de macro-F1 es
+incluso negativo). Por tema, contra el método A solo `sin_tema` mejora de forma que excluye el cero (+0.800 [+0.400, +1.000], 5
+eventos: el LLM se abstiene donde las personas dijeron «sin tema» y el método A no); Economía −0.106 [−0.455, +0.227] y Servicios
+públicos −0.111 [−0.444, +0.222] no excluyen el cero; Logística −0.500 [−1.000, 0.000] (2 eventos) tampoco. Contra el baseline
+ampliado, Servicios públicos mejora +0.556 [+0.111, +0.892] (9 eventos) y el resto no excluye el cero. Con 30 eventos el IC de una
+diferencia mide ≈ ±0.2: **no se puede afirmar que el LLM sea mejor ni peor** que el método A.
+
+### 3 · Costo, tokens y caché
+
+Modelo `deepseek-flash`, prompt 1.0, temperatura 0. 142.006 tokens de entrada y 2.959 de salida en total; **costo estimado USD 0.0462**
+(tarifa pico sin descuento por caché; el contador **sobreestima ≈ 2.6 ×** frente a la consola de DeepSeek, D-97, así que el costo real
+es menor, del orden de USD 0.02). Cada llamada real consume ≈ 3.800 tokens de entrada (casi todo es el system prompt). 37 llamadas reales (los 37 titulares
+distintos; los 64 titulares evaluados incluyen 27 repetidos, que se sirvieron de la caché dentro de la misma corrida porque el
+texto es idéntico), 0 errores de transporte, 0 respuestas mal formadas, tope de costo sin alcanzar. La réplica con `--verificar` sirve
+las 64 de la caché, sin red, y reproduce **exactamente** las mismas métricas.
+
+### 4 · Limitaciones (los fallos no se ocultan)
+
+1. **Una medición, ≈ 30 eventos, una sola persona etiquetó.** Los IC por evento son anchos; las conclusiones son exploratorias. Tres
+   temas (Turismo, Regulación, Logística) tienen 1 o 2 eventos y no admiten comparación útil.
+2. **Fuga declarada:** la regla D-84 del prompt viene en parte de estas etiquetas (arriba). Aun así el LLM falla Economía: 18 de sus
+   26 filas terminaron en `sin_tema`, es decir, el prompt con la guía no lleva al modelo a tratar esas notas como de Economía.
+3. **Un solo prompt, un solo modelo, una sola corrida.** No se probó otra redacción del prompt, otro modelo ni otra temperatura, y no se
+   hará mirando esta métrica (sería ajustar con las mismas etiquetas). Un resultado peor o igual al del método A se reporta tal cual.
+4. **Temperatura 0 no garantiza determinismo del proveedor** en llamadas futuras; por eso la medición se reproduce desde la caché y no
+   volviendo a llamar.
+5. **Privacidad y caché.** Salieron hacia el servicio solo titulares (metadatos públicos), nunca descripciones, ids ni etiquetas. La
+   caché guarda la respuesta del LLM, que incluye una frase de `motivo`: en 1 de las 37 respuestas esa frase repite 4 o más palabras
+   seguidas del titular. El JSON de resultados no incluye los motivos.
+6. **Estas cifras no justifican cambiar el clasificador de producción.** Para decidir hace falta lo de
+   `docs/revision_etiquetas.md` (confirmar las 61, un segundo etiquetador y ≥ 10–20 eventos por tema); la decisión de conectar un LLM
+   a la canalización (T4) es del dueño.
+
 ## Pendiente
 
 1. **Más etiquetas y más personas:** las 100 etiquetas actuales son de una sola persona y repiten titulares. Reetiquetar con

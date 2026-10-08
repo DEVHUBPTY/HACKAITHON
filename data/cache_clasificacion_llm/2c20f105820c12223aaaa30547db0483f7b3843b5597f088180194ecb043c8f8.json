@@ -1,0 +1,12 @@
+{
+ "clave": "2c20f105820c12223aaaa30547db0483f7b3843b5597f088180194ecb043c8f8",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.0",
+ "prompt": "clasificar_tema",
+ "version_cache": "1",
+ "tokens_entrada": 2220,
+ "tokens_salida": 46,
+ "creado_utc": "2026-10-08T01:45:34Z",
+ "respuesta": "{\"tema\": \"servicios_publicos\", \"confianza\": \"alta\", \"motivo\": \"Hecho de seguridad ciudadana (ataque con arma de fuego), cubierto por servicios públicos.\"}"
+}
