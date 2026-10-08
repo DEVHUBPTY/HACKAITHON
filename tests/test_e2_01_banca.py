@@ -32,6 +32,7 @@ from src.configuracion import (
 from src.puntaje import calcular_puntajes, impacto
 from src.sectores import HORIZONTES, horizonte_de, horizonte_de_grupo, sector_de_tema
 from tests import ficha_ayuda as h
+from tests.navegacion_ayuda import ir_a_pantalla
 from tests import prioridad_ayuda as pa
 from tests.motor_falso import MotorFalso, config_de_prueba
 
@@ -336,8 +337,7 @@ def app_banca(monkeypatch, base_banca, emb, tmp_path):
 def test_la_pantalla_bandeja_de_banca_muestra_un_bloque_por_sector_con_horizonte(app_banca) -> None:
     at = app_banca.run()
     at.selectbox(key="modalidad").select("banca").run()
-    at.session_state["pantalla"] = "bandeja"
-    at = at.run()
+    at = ir_a_pantalla(at, "bandeja")
     assert not at.exception, [e.value for e in at.exception]
     subtitulos = [s.value for s in at.subheader]
     for sector in ("Economía", "Logística", "Continuidad operativa"):

@@ -22,6 +22,7 @@ from src import db, embeddings, interfaz as ui
 from src.configuracion import FORMAS_DE_PUBLICAR, RAIZ, ConfigInterfaz, cargar_interfaz, cargar_modalidad, cargar_restricciones, cargar_verificacion
 from src.ficha import a_markdown, construir_ficha, escapar_markdown, vista
 from tests import consulta_fixture, ficha_ayuda as h
+from tests.navegacion_ayuda import ir_a_pantalla
 from tests.motor_falso import MotorFalso, config_de_prueba
 
 CFG = cargar_interfaz()
@@ -379,8 +380,7 @@ def popovers(at: AppTest) -> dict[str, str]:
 
 
 def ir(at: AppTest, pantalla: str) -> AppTest:
-    at.session_state["pantalla"] = pantalla
-    return at.run()
+    return ir_a_pantalla(at, pantalla)
 
 
 def test_todas_las_pantallas_abren_sin_errores_y_cada_una_lleva_marca_y_leyenda(app) -> None:

@@ -24,6 +24,7 @@ from src.configuracion import RAIZ, cargar_revision
 from src.esquemas import Ficha
 from src.revision import ErrorDeRevision, MotivoObligatorio, Revisiones
 from tests import ficha_ayuda as h
+from tests.navegacion_ayuda import ir_a_pantalla
 from tests.test_e1_16_revision import (  # noqa: F401 - fixtures compartidas
     EDITORIAL,
     _reloj,
@@ -281,8 +282,7 @@ def app(monkeypatch, base, emb, tmp_path, raiz_falsa):
 
 def _abrir_en_ui(at: AppTest) -> AppTest:
     at.session_state["id_grupo"] = h.G_COMPLETO
-    at.session_state["pantalla"] = "revision"
-    at = at.run()
+    at = ir_a_pantalla(at, "revision")
     at.selectbox(key="revision_revisor").select(EDITORIAL).run()
     return at.button(key="revision_abrir").click().run()
 
@@ -312,6 +312,5 @@ def test_la_pantalla_abre_un_caso_huerfano_con_su_ficha_guardada(app, monkeypatc
     r = Revisiones(tmp_path / "revision.duckdb", base)
     r.abrir(h.G_SISMO, "editorial", EDITORIAL)
     monkeypatch.setattr(ui, "elegir_base", lambda demo, cfg, base_normal=None: (base_huerfana, None))
-    app.session_state["pantalla"] = "revision"
-    at = app.run()
+    at = ir_a_pantalla(app, "revision")
     assert not at.exception and "CASO-001" in "\n".join(str(w.value) for w in list(at.warning) + list(at.info))

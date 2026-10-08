@@ -22,6 +22,7 @@ from streamlit.testing.v1 import AppTest
 from src import corrida as co
 from src import db, interfaz as ui
 from src.configuracion import RAIZ, cargar_corrida
+from tests.navegacion_ayuda import ir_a_pantalla
 
 FIXTURES = RAIZ / "tests" / "fixtures"
 BASE_REAL = RAIZ / "data" / "senales.duckdb"
@@ -304,8 +305,7 @@ def test_la_pantalla_carga_en_vivo_explora_la_corrida_y_vuelve_a_la_base(monkeyp
     st.cache_data.clear()
     antes = vivos()
     at = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=180).run()
-    at.session_state["pantalla"] = "calidad"      # D-131: la aplicación abre en «Cómo funciona»
-    at.run()
+    ir_a_pantalla(at, "calidad")      # D-131: la aplicación abre en «Cómo funciona»; D-133: cada pantalla tiene su URL
     assert not at.exception
     assert "Pendiente" in "\n".join(str(c.value) for c in at.caption)         # antes de pulsar, cada paso dice que está pendiente
     at.button(key="corrida_cargar").click().run()
@@ -318,8 +318,7 @@ def test_la_pantalla_carga_en_vivo_explora_la_corrida_y_vuelve_a_la_base(monkeyp
     assert not at.exception and base.is_file() and base.parent.parent == tmp_path / CFG.corridas.carpeta
     assert any(CFG.textos.aviso_explorando == str(w.value) for w in at.warning)          # el aviso de que no es la base de la app
     for pantalla in ("organizar", "bandeja", "revision"):                                # las demás pantallas leen la base de la corrida
-        at.session_state["pantalla"] = pantalla
-        at.run()
+        ir_a_pantalla(at, pantalla)
         assert not at.exception, pantalla
     at.button(key="volver_a_la_base").click().run()
     assert "base_explorada" not in at.session_state and not at.exception
@@ -335,8 +334,7 @@ def test_la_pantalla_valida_un_archivo_propio_sin_tocar_la_base(monkeypatch: pyt
     st.cache_data.clear()
     antes = vivos()
     at = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=120).run()
-    at.session_state["pantalla"] = "calidad"      # D-131: la aplicación abre en «Cómo funciona»
-    at.run()
+    ir_a_pantalla(at, "calidad")      # D-131: la aplicación abre en «Cómo funciona»; D-133: cada pantalla tiene su URL
     assert not at.exception and [b for b in at.button if b.key == "t01_validar"][0].disabled   # sin archivo no hay nada que validar
     assert any(d for d in at.get("download_button"))                                          # el ejemplo con errores se puede descargar
     assert vivos() == antes

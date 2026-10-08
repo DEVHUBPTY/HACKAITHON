@@ -23,6 +23,7 @@ from src import db, exportar
 from src import interfaz as ui
 from src.configuracion import RAIZ, cargar_interfaz, cargar_normalizacion
 from src.revision import Revisiones
+from tests.navegacion_ayuda import ir_a_pantalla
 
 os.environ.setdefault("HF_HUB_OFFLINE", "1")
 os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
@@ -198,9 +199,8 @@ def app_demo(monkeypatch, tmp_path, demo):
     def abrir(pantalla: str, grupo: str) -> AppTest:
         at = AppTest.from_file(str(APP), default_timeout=180)
         at.session_state["caso_aplicado"] = "x"          # sin atajo ?caso=: manda la pantalla elegida
-        at.session_state["pantalla"] = pantalla
         at.session_state["id_grupo"] = grupo
-        return at.run()
+        return ir_a_pantalla(at, pantalla)
 
     return abrir
 
@@ -271,8 +271,7 @@ def test_el_snapshot_real_no_muestra_ninguna_insignia(monkeypatch, tmp_path) -> 
     st.cache_resource.clear()
     st.cache_data.clear()
     at = AppTest.from_file(str(APP), default_timeout=180)
-    at.session_state["pantalla"] = "ficha"
-    at.run()
+    ir_a_pantalla(at, "ficha")
     assert not at.exception and insignias(at) == 0
     assert all("Origen" not in d.value.columns or not (d.value["Origen"] == SINTETICO).any() for d in at.dataframe)
 
