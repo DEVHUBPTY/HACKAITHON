@@ -51,7 +51,9 @@ def base(tmp_path, emb) -> Path:
     con = db.conectar(ruta)
     db.insertar(con, "indicadores", _indicadores([2022, 2023, 2024]))
     db.insertar(con, "sismos", [{"id": "SIS-us7000test", "magnitude": 5.1, "time": "2026-10-06T07:30:00Z", "updated": "2026-10-06T08:00:00Z", "longitude": -82.9, "latitude": 8.2,
-                                 "depth": 10.0, "place": "12 km S of Puerto Armuelles, Panama", "status": "automatic", "url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000test"}])
+                                 "depth": 10.0, "place": "12 km S of Puerto Armuelles, Panama", "status": "automatic", "url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000test"},
+                                {"id": "SIS-us7000rev1", "magnitude": 4.2, "time": "2026-10-06T06:00:00Z", "updated": "2026-10-06T09:00:00Z", "longitude": -77.9, "latitude": 8.4,
+                                 "depth": None, "place": "30 km N of Yaviza, Panama", "status": "reviewed", "url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000rev1"}])
     con.close()
     return ruta
 
