@@ -2031,13 +2031,24 @@ class RecuperacionConsulta(ModeloConfig):
 
 
 class AbstencionConsulta(ModeloConfig):
+    """Umbral de similitud por método y la regla con que se calibró (D-134).
+
+    ``regla_umbral`` dice cómo se calibra cada método: ``percentil`` (``percentil_umbral`` de la similitud máxima de las
+    respondibles; rechaza a propósito ese porcentaje de ellas) o ``margen_maximo`` (el punto medio del intervalo de umbrales que
+    rechaza todo lo que no tiene respuesta y deja pasar la mayor cantidad de respondibles; ``meta_abstencion`` es la fracción
+    mínima de las consultas sin respuesta que debe rechazar, la meta del PDF 9.1).
+    """
+
     umbral_similitud: dict[str, float]
     percentil_umbral: float = Field(gt=0, lt=100)
+    regla_umbral: dict[str, Literal["percentil", "margen_maximo"]]
+    meta_abstencion: float = Field(gt=0, le=1)
 
     @model_validator(mode="after")
     def _metodos(self) -> AbstencionConsulta:
-        if set(self.umbral_similitud) != {"semantica", "bm25"}:
-            raise ValueError("umbral_similitud: deben estar exactamente 'semantica' y 'bm25'")
+        for campo, valor in (("umbral_similitud", self.umbral_similitud), ("regla_umbral", self.regla_umbral)):
+            if set(valor) != {"semantica", "bm25"}:
+                raise ValueError(f"{campo}: deben estar exactamente 'semantica' y 'bm25'")
         return self
 
 

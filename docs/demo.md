@@ -74,11 +74,12 @@ Pasada ejecutada el 2026-10-06 con el snapshot real (`data/senales.duckdb`), sin
 
 ## Riesgos
 
-- **Consultas libres sobre temas de la bandeja pueden abstenerse (umbral de E1-11, 0.874).** Ejemplos medidos: «¿qué se reporta sobre la
-  vacunación contra el VSR?» (la #2 de la bandeja) da similitud 0.848 y «¿Qué pasó con MiBus?» (la #3) da 0.851: ambas se abstienen.
-  Las tres consultas de este guion sí funcionan (inflación 2023, Singapur/Vietnam con 0.922 y desempleo 2025, que se abstiene a propósito).
-  Si el jurado pregunta libremente por un tema de la bandeja, lo probable es una abstención: ensayar la explicación («el umbral prefiere
-  abstenerse a responder mal»). **Calibrar el umbral es de E1-18; no se toca en E1-15.**
+- **Consultas libres cortas pueden abstenerse todavía (umbral de similitud 0.840, D-134).** Con el umbral anterior (0.874) se abstenían
+  «¿qué se reporta sobre la vacunación contra el VSR?» (0.850), «¿Qué pasó con MiBus?» (0.851), «la mina de cobre» (0.856) y «el Canal de
+  Panamá» (0.856); con 0.840 se responden. Un tema que el corpus apenas toca sigue dando similitud baja (0.77 a 0.83 en seis consultas de
+  prueba fuera del corpus, que se rechazan). El margen es estrecho (unos 0.015 a cada lado): si el jurado pregunta algo muy genérico,
+  ensayar la explicación («el umbral prefiere abstenerse a responder mal»). Las tres consultas de este guion funcionan (inflación 2023,
+  Singapur/Vietnam con 0.922 y desempleo 2025, que se abstiene a propósito).
 - Los borradores dependen de la caché de E1-14 y de que E1-12 esté integrada; sin ellos, Paquete muestra el aviso y no inventa nada.
 
 ## Checklist

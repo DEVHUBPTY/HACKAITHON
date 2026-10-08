@@ -16,12 +16,19 @@ recuperacion:
 abstencion:
   # Abstención ANTES de cualquier llamada a un LLM: si la similitud máxima de la consulta con el corpus queda bajo el
   # umbral de su método, no se responde. La escala es distinta en cada método (coseno de e5 frente a puntaje BM25).
-  # CALIBRADO: percentil `percentil` de la similitud máxima de las consultas respondibles de la mitad de calibración
-  # del benchmark de desarrollo (`python -m eval.recuperacion --calibrar`; docs/parametros.md).
+  # CALIBRADO con el benchmark de desarrollo (`python -m eval.recuperacion --calibrar`; docs/parametros.md, D-134):
+  #   semantica -> `margen_maximo`: punto medio del intervalo de umbrales que rechaza TODA consulta sin respuesta que llega
+  #                a la puerta y deja pasar todas las respondibles de la mitad de calibración (antes: percentil 5, que
+  #                rechazaba a propósito el 5 % de las respondibles y dejó fuera «mina de cobre» y «Canal de Panamá»).
+  #   bm25      -> `percentil`: sin cambio (baseline de D-66; sus puntajes de respondibles y no respondibles se solapan).
   umbral_similitud:
-    semantica: 0.874
-    bm25: 10.765
-  percentil_umbral: 5
+    semantica: 0.840
+    bm25: 10.844
+  percentil_umbral: 5       # solo lo usa la regla `percentil`
+  regla_umbral:
+    semantica: margen_maximo
+    bm25: percentil
+  meta_abstencion: 0.8      # PDF 9.1: abstención correcta >= 80 % en las consultas sin respuesta
 
 # Reglas de abstención por patrón (sin LLM). Una regla se activa si coincide ALGUNO de `patrones` y, cuando `ademas` no
 # está vacío, también alguno de `ademas`. Se evalúan en orden; gana la primera. `necesita` explica qué información

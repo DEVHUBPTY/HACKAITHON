@@ -91,24 +91,111 @@ def llega_a_la_similitud(consultor: Consultor, consulta: str) -> bool:
     return previa is None and not (oficial and oficial.registros)
 
 
-def calibrar(consultor: Consultor, consultas: list[dict[str, Any]]) -> dict[str, Any]:
-    """Umbral por método = percentil ``percentil_umbral`` de la similitud máxima de las consultas respondibles de la
-    mitad de calibración que llegan a la puerta de similitud (las de cifra oficial exacta no la cruzan)."""
+def umbral_margen_maximo(positivas: list[float], negativas: list[float], meta: float) -> dict[str, Any]:
+    """Umbral de máximo margen (D-134) para la puerta de similitud.
+
+    ``positivas`` son las similitudes máximas de las consultas con respuesta que llegan a la puerta; ``negativas``, las de
+    las que NO deben responderse. Un umbral ``t`` deja pasar una consulta si su similitud es ``>= t``. Entre dos valores
+    consecutivos de lo observado, cualquier ``t`` produce el mismo resultado, así que se evalúa cada intervalo
+    ``(a, b]``: se queda con los que rechazan al menos ``meta`` de las negativas, de ellos con los que dejan pasar más
+    positivas y, a igualdad, con el intervalo más ancho (el más bajo si empatan). El umbral es el punto medio de ese
+    intervalo, truncado a ``DECIMALES_UMBRAL`` (nunca queda sobre el límite de las positivas). Sin positivas o sin
+    negativas no hay con qué decidir y devuelve ``None``: no se inventa un umbral.
+    """
+    if not positivas or not negativas:
+        return {"umbral": None, "motivo": "sin positivas" if not positivas else "sin negativas"}
+    valores = sorted({*positivas, *negativas})
+    mejor: tuple[int, float, float] | None = None       # (positivas que pasan, ancho, -a): se maximiza
+    elegido: tuple[float, float] | None = None
+    for a, b in zip(valores, valores[1:], strict=False):
+        rechazadas = sum(1 for n in negativas if n <= a)
+        if rechazadas / len(negativas) < meta:
+            continue
+        pasan = sum(1 for p in positivas if p >= b)
+        clave = (pasan, b - a, -a)
+        if mejor is None or clave > mejor:
+            mejor, elegido = clave, (a, b)
+    if elegido is None:
+        return {"umbral": None, "motivo": "ningún umbral cumple la meta de abstención"}
+    a, b = elegido
+    return {
+        "umbral": truncar((a + b) / 2), "intervalo": [round(a, DECIMALES), round(b, DECIMALES)],
+        "positivas_que_pasan": mejor[0] if mejor else 0, "n_positivas": len(positivas),
+        "n_negativas": len(negativas), "negativa_mas_alta": round(max(negativas), DECIMALES),
+        "positiva_mas_baja": round(min(positivas), DECIMALES),
+    }
+
+
+def consultas_en_la_puerta(consultor: Consultor, consultas: list[dict[str, Any]], mitad: str | None) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """``(positivas, negativas)`` que llegan a la puerta de similitud: con respuesta (``tipos_con_respuesta``) y que deben
+    rechazarse (``debe_abstenerse``). ``mitad`` ``None`` toma todo el benchmark."""
     cfg = consultor.cfg
-    base = [
+    en_puerta = [
         c for c in consultas
-        if c["tipo"] in cfg.evaluacion.tipos_con_respuesta and mitad_de(c["id"], cfg) == "calibracion"
-        and llega_a_la_similitud(consultor, c["consulta"])
+        if (mitad is None or mitad_de(c["id"], cfg) == mitad) and llega_a_la_similitud(consultor, c["consulta"])
     ]
-    salida: dict[str, Any] = {"n_calibracion": len(base), "ids": [c["id"] for c in base],
-                              "percentil": cfg.abstencion.percentil_umbral, "umbrales": {}}
+    return ([c for c in en_puerta if c["tipo"] in cfg.evaluacion.tipos_con_respuesta],
+            [c for c in en_puerta if c["debe_abstenerse"]])
+
+
+def validacion_dejando_uno_fuera(positivas: dict[str, float], negativas: dict[str, float], meta: float, z: float) -> dict[str, Any]:
+    """Dejando una consulta fuera (LOO): se recalibra sin ella y se ve qué hace el umbral con ella.
+
+    Una positiva fuera se evalúa con las demás positivas y todas las negativas. Una negativa fuera se evalúa con las demás
+    negativas; si era la única no hay con qué calibrar y se dice (``no_estimable``), en vez de contarla como acierto.
+    """
+    pasan, sin_umbral = [], []
+    for i, v in positivas.items():
+        u = umbral_margen_maximo([x for j, x in positivas.items() if j != i], list(negativas.values()), meta)["umbral"]
+        (sin_umbral if u is None else pasan).append((i, v >= u if u is not None else None))
+    rechazan, no_estimables = [], []
+    for i, v in negativas.items():
+        u = umbral_margen_maximo(list(positivas.values()), [x for j, x in negativas.items() if j != i], meta)["umbral"]
+        if u is None:
+            no_estimables.append(i)
+        else:
+            rechazan.append((i, v < u))
+    return {
+        "positivas_respondidas": {**proporcion(sum(1 for _, ok in pasan if ok), len(pasan), z),
+                                  "abstenciones_incorrectas": [i for i, ok in pasan if not ok]},
+        "negativas_rechazadas": {**proporcion(sum(1 for _, ok in rechazan if ok), len(rechazan), z),
+                                 "no_estimables": no_estimables},
+        "positivas_sin_umbral": [i for i, _ in sin_umbral],
+    }
+
+
+def calibrar(consultor: Consultor, consultas: list[dict[str, Any]]) -> dict[str, Any]:
+    """Umbral por método según su regla (``abstencion.regla_umbral``), con la mitad de calibración.
+
+    ``percentil``: percentil ``percentil_umbral`` de la similitud máxima de las respondibles que llegan a la puerta
+    (las de cifra oficial exacta no la cruzan). ``margen_maximo`` (D-134): ``umbral_margen_maximo`` con esas respondibles
+    y las consultas sin respuesta que también llegan a la puerta. Con ``margen_maximo`` se agrega la validación dejando una
+    consulta fuera sobre todo el benchmark.
+    """
+    cfg = consultor.cfg
+    z = cargar_carga().salida.z_intervalo_confianza
+    pos, neg = consultas_en_la_puerta(consultor, consultas, "calibracion")
+    salida: dict[str, Any] = {
+        "n_calibracion": len(pos), "ids": [c["id"] for c in pos], "ids_negativas": [c["id"] for c in neg],
+        "percentil": cfg.abstencion.percentil_umbral, "meta_abstencion": cfg.abstencion.meta_abstencion, "umbrales": {},
+    }
+    todas_pos, todas_neg = consultas_en_la_puerta(consultor, consultas, None)
     for metodo in METODOS:
-        sims = similitudes_maximas(consultor, base, metodo)
+        sims = similitudes_maximas(consultor, pos, metodo)
         valores = np.array(list(sims.values()))
-        salida["umbrales"][metodo] = {
-            "umbral": truncar(float(np.percentile(valores, cfg.abstencion.percentil_umbral))),
-            "minimo": round(float(valores.min()), DECIMALES), "mediana": round(float(np.median(valores)), DECIMALES),
+        regla = cfg.abstencion.regla_umbral[metodo]
+        fila: dict[str, Any] = {
+            "regla": regla, "minimo": round(float(valores.min()), DECIMALES), "mediana": round(float(np.median(valores)), DECIMALES),
         }
+        if regla == "percentil":
+            fila["umbral"] = truncar(float(np.percentile(valores, cfg.abstencion.percentil_umbral)))
+        else:
+            fila.update(umbral_margen_maximo(list(sims.values()), list(similitudes_maximas(consultor, neg, metodo).values()),
+                                             cfg.abstencion.meta_abstencion))
+            fila["dejando_uno_fuera"] = validacion_dejando_uno_fuera(
+                similitudes_maximas(consultor, todas_pos, metodo), similitudes_maximas(consultor, todas_neg, metodo),
+                cfg.abstencion.meta_abstencion, z)
+        salida["umbrales"][metodo] = fila
     return salida
 
 

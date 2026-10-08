@@ -116,7 +116,7 @@ Lo que sí se puede decir, descriptivo (58 grupos): el top 5 de la bandeja y el 
 
 ## 5 · Análisis de abstención: ¿abstención correcta o fallo de recall?
 
-El umbral de similitud de la consulta es **0.874** (`config/consulta.yaml`; percentil 5 de las consultas respondibles de la mitad de calibración, E1-11). Reproducible con `poetry run python -m src.consulta "<pregunta>"` y con el análisis del umbral de `outputs/metricas.json` (`analisis_umbral`).
+**Histórico (E1-11 a E1-18):** el umbral de similitud de la consulta era **0.874** (percentil 5 de las consultas respondibles de la mitad de calibración). D-134 lo recalibró a **0.840** por margen máximo (`docs/consulta.md`, sección D-134); lo que sigue describe el análisis que motivó el cambio y sus cifras son las del umbral anterior. Reproducible con `poetry run python -m src.consulta "<pregunta>"` y con el análisis del umbral de `outputs/metricas.json` (`analisis_umbral`).
 
 **Caso de las consultas de la demo** (`docs/demo.md`, «Riesgos»): «¿Qué se reporta sobre la vacunación contra el VSR?» y «¿Qué pasó con MiBus?» se abstienen. Medido ahora, con el índice del snapshot:
 
