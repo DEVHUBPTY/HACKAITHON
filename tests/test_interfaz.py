@@ -537,6 +537,37 @@ def test_la_modalidad_banca_sin_puntajes_en_la_base_no_inventa_una_bandeja(app, 
     assert not at.dataframe
 
 
+def test_si_la_copia_de_sesion_de_banca_falla_la_app_sigue_y_dice_que_falta(app, monkeypatch) -> None:
+    """Auditoría: un fallo al armar la copia de la modalidad no tumba la app: se muestra `sin_puntajes` con el comando exacto."""
+    def falla(*a: Any, **k: Any) -> None:
+        raise RuntimeError("copia imposible")
+
+    monkeypatch.setattr("src.corrida.base_de_modalidad", falla)
+    at = app.run()
+    at.selectbox(key="modalidad").select("banca").run()
+    at = ir(at, "bandeja")
+    mensaje = CFG.textos.sin_puntajes.format(modalidad="banca")
+    assert not at.exception
+    assert "poetry run python -m src.puntaje --modalidad banca" in mensaje
+    assert any(mensaje == str(w.value) for w in at.warning) and any(mensaje == str(i.value) for i in at.info)
+    assert not at.dataframe
+
+
+def test_los_botones_de_etapa_no_dejan_un_globo_de_ayuda_colgado(app) -> None:
+    """Auditoría: «Ir a 6 · Producir» aparecía al pie tras el clic; es el `help` del botón. Ningún botón de navegación lo lleva."""
+    at = ir(app.run(), "paquete")
+    navegacion = [b for b in at.button if str(b.key).startswith(("paso_", "nav_", "pantalla_"))]
+    assert navegacion and all(not b.help for b in navegacion)
+    assert not any(str(b.label).startswith("Ir a ") for b in at.button)
+
+
+def test_el_guion_de_la_demo_muestra_su_markdown_sin_asteriscos_escapados(monkeypatch, app) -> None:
+    monkeypatch.setattr("sys.argv", ["app.py", "--demo"])
+    at = app.run()
+    lateral = "\n".join(str(m.value) for m in at.sidebar.markdown)
+    assert not at.exception and "\\*" not in lateral and "**Cómo funciona**" in lateral
+
+
 def test_ninguna_pantalla_muestra_la_descripcion_del_rss_ni_un_boton_de_publicar(app) -> None:
     at = app.run()
     for clave in PANTALLAS:

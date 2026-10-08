@@ -152,6 +152,19 @@ def test_el_resultado_no_depende_del_orden_de_las_filas(tmp_path) -> None:
     assert [(g.id_grupo, g.ids_noticia) for g in a] == [(g.id_grupo, g.ids_noticia) for g in b]
 
 
+def test_un_titular_sintetico_nunca_se_agrupa_con_uno_real(tmp_path) -> None:
+    """C-06: aunque el texto sea idéntico, ``SYN-`` y ``NOT-`` quedan en grupos distintos (la agrupación real no cambia)."""
+    filas = [fila("NOT-1", SISMO, deteccion="2026-10-01T08:00:00Z"), fila("SYN-1", SISMO, deteccion="2026-10-01T08:00:00Z"),
+             fila("NOT-2", SISMO, deteccion="2026-10-01T09:00:00Z")]
+    vectores = vectores_de(filas, tmp_path)
+    mezclados = ag.construir_grupos(filas, vectores, reglas_con(), PROC)
+    separados = ag.construir_grupos(filas, vectores, reglas_con(), PROC, ("SYN-",))
+    assert any({"NOT-1", "SYN-1"} <= set(g.ids_noticia) for g in mezclados)
+    assert sorted(g.ids_noticia for g in separados) == [("NOT-1", "NOT-2"), ("SYN-1",)]
+    reales = ag.construir_grupos([filas[0], filas[2]], vectores[[0, 2]], reglas_con(), PROC)
+    assert [g.id_grupo for g in reales] == [g.id_grupo for g in separados if g.ids_noticia[0].startswith("NOT-")]
+
+
 # ------------------------------------------------------------------ grupos completos
 
 
