@@ -1,13 +1,13 @@
-"""Evaluación de la clasificación temática (E1-07): baseline vs. embeddings (A y B), con n e IC (D-21, D-57, D-66).
+"""Evaluación de la clasificación temática (E1-07): baseline vs. embeddings (A y logística), con n e IC (D-21, D-57, D-66).
 
 Dos fuentes de verdad, nunca mezcladas:
 
 1. **Casos difíciles** de ``docs/guia_temas.md``: 15 titulares escritos para fijar el criterio, con tema principal y
-   secundario esperados. Es un conjunto de **prueba**, no de entrenamiento: ninguno puede ser un ejemplo ni un
-   prototipo de ``config/temas.yaml`` (``casos_en_referencias`` lo comprueba). n = 15 es muy poco: los IC son anchos y
+   secundario esperados. Es un conjunto de **prueba**, no de entrenamiento: ninguno puede ser un ejemplo de
+   ``config/temas.yaml`` (``casos_en_referencias`` lo comprueba). n = 15 es muy poco: los IC son anchos y
    no alcanzan para elegir modelo ni método; sirven como prueba de regresión y de los límites del criterio.
 2. **Etiquetas humanas** (``eval/etiquetas.csv``, E1-06): macro-F1, F1/precisión/recall por tema, matriz de confusión
-   y criterio A vs. B. Si el archivo no existe, **no se calcula ni se inventa ninguna métrica** sobre datos reales.
+   y diferencia con el baseline. Si el archivo no existe, **no se calcula ni se inventa ninguna métrica** sobre datos reales.
 
 Nunca se usa el ``tema`` de origen del contrato (D-62) ni como etiqueta ni como entrada, y se excluyen de la evaluación
 los titulares de ``config/ejemplos_excluidos.txt``. Uso: ``poetry run python -m eval.clasificacion``.
@@ -32,7 +32,6 @@ from src import db
 from src.baseline import SIN_TEMA, Baseline
 from src.clasificacion import (
     METODO_A,
-    METODO_B,
     Decision,
     construir_referencias,
     proporcion,
@@ -128,7 +127,7 @@ def _palabras(texto: str) -> set[str]:
 
 
 def casos_en_referencias(casos: list[CasoDificil], temas: ConfigTemas, reglas: Reglas) -> list[str]:
-    """Casos difíciles que son (o casi son) un ejemplo, un prototipo o una descripción de ``temas.yaml``.
+    """Casos difíciles que son (o casi son) un ejemplo o una descripción de ``temas.yaml``.
 
     Un caso de prueba que sirve de referencia al clasificador es una fuga: devuelve ``["CD-03: ..."]`` con cada
     coincidencia exacta (sin tildes ni mayúsculas) o con solapamiento de palabras (Jaccard) de ``BASE_JACCARD`` o más.
@@ -137,7 +136,6 @@ def casos_en_referencias(casos: list[CasoDificil], temas: ConfigTemas, reglas: R
     for id_tema, tema in temas.temas.items():
         referencias.append((f"{id_tema}.descripcion", tema.descripcion))
         referencias += [(f"{id_tema}.ejemplo", limpiar_titulo(e.titulo, None, None, reglas)) for e in tema.ejemplos]
-        referencias += [(f"{id_tema}.{sub}.prototipo", s.prototipo) for sub, s in tema.subtemas.items()]
     problemas = []
     for caso in casos:
         mias = _palabras(caso.titular)
@@ -174,7 +172,7 @@ def predecir(
     reglas: Reglas,
     pool: tuple[list[str], list[str]] | None = None,
 ) -> dict[str, list[Prediccion]]:
-    """Predicciones de ``baseline`` (variante activa), ``baseline_ampliado`` y del modelo con A, B y ``logistica`` (D-121).
+    """Predicciones de ``baseline`` (variante activa), ``baseline_ampliado`` y del modelo con A y ``logistica`` (D-121).
 
     ``pool`` = (textos, temas) de las etiquetas humanas de entrenamiento (D-123); solo las usa ``logistica``.
     """
@@ -185,7 +183,7 @@ def predecir(
     vectores_pool = (emb.codificar(pool[0], "titular"), pool[1]) if pool and pool[0] else None
     ref = construir_referencias(emb, temas, reglas, cfg.logistica, vectores_pool)
     vectores = emb.codificar(textos, "titular")
-    for metodo in (METODO_A, METODO_B, METODO_LOGISTICO):
+    for metodo in (METODO_A, METODO_LOGISTICO):
         decisiones: list[Decision] = decidir_todos(
             puntuar(vectores, ref, metodo), ref.temas, umbrales_de(cfg, nombre_modelo, metodo)
         )
@@ -199,7 +197,6 @@ def configuraciones_de(nombre: str, pred: dict[str, list[Prediccion]]) -> list[t
         ("baseline", pred["baseline"]),
         ("baseline_ampliado", pred["baseline_ampliado"]),
         (f"{nombre}/A", pred[METODO_A]),
-        (f"{nombre}/B", pred[METODO_B]),
     ]
 
 
@@ -208,7 +205,7 @@ def configuraciones_de(nombre: str, pred: dict[str, list[Prediccion]]) -> list[t
 
 @dataclass(frozen=True)
 class Hallazgo:
-    """Un caso difícil demasiado parecido a un ejemplo o prototipo de ``temas.yaml``."""
+    """Un caso difícil demasiado parecido a un ejemplo de ``temas.yaml``."""
 
     caso: str
     referencia: str
@@ -222,7 +219,7 @@ def _sin_palabras(texto: str, ignoradas: set[str]) -> str:
 def pares_mas_parecidos(
     casos: list[CasoDificil], temas: ConfigTemas, reglas: Reglas, emb: Embeddings, ignoradas: list[str], n: int | None = None
 ) -> list[Hallazgo]:
-    """Todos los pares (caso, ejemplo o prototipo) ordenados por coseno descendente (los ``n`` primeros si se pide).
+    """Todos los pares (caso, ejemplo) ordenados por coseno descendente (los ``n`` primeros si se pide).
 
     Se ignoran las palabras de ``ignoradas`` (por ejemplo «Panamá», que comparten casi todos los titulares).
     """
@@ -230,7 +227,6 @@ def pares_mas_parecidos(
     referencias: list[tuple[str, str]] = []
     for id_tema, tema in temas.temas.items():
         referencias += [(f"{id_tema}.ejemplo[{i}]", limpiar_titulo(e.titulo, None, None, reglas)) for i, e in enumerate(tema.ejemplos)]
-        referencias += [(f"{id_tema}.{sub}", s.prototipo) for sub, s in tema.subtemas.items()]
     vc = emb.codificar([_sin_palabras(c.titular, omitir) for c in casos], "titular")
     vr = emb.codificar([_sin_palabras(texto, omitir) for _, texto in referencias], "tema")
     cos = vc @ vr.T
@@ -250,7 +246,7 @@ def fuga_semantica(
     ignoradas: list[str],
     aceptadas: list[str] | None = None,
 ) -> list[Hallazgo]:
-    """Pares (caso, ejemplo o prototipo) con coseno >= ``umbral``: una paráfrasis de un caso de prueba es una fuga.
+    """Pares (caso, ejemplo) con coseno >= ``umbral``: una paráfrasis de un caso de prueba es una fuga.
 
     ``aceptadas`` (``"CD-02~eventos_naturales.ejemplo[0]"``) son excepciones aceptadas de forma explícita en la
     configuración, para un ejemplo REAL del snapshot que no se puede reescribir.
@@ -326,12 +322,10 @@ def evaluar_configuracion(
 def comparar(
     reales: list[str], predicciones: dict[str, list[Prediccion]], clases: list[str], cfg: ConfigClasificacion
 ) -> dict[str, Any]:
-    """Criterio A vs. B (D-57) y diferencias con el baseline, sobre las mismas etiquetas."""
+    """Diferencia del método A con el baseline, sobre las mismas etiquetas (D-125 quitó el criterio A vs. B)."""
     principal = {k: [p.principal for p in v] for k, v in predicciones.items()}
     return {
-        "criterio_A_vs_B": metricas.aplicar_criterio(reales, principal[METODO_A], principal[METODO_B], clases, cfg.criterio_ab),
         "A_menos_baseline": metricas.diferencia_con_ic(reales, principal["baseline"], principal[METODO_A], clases, cfg.criterio_ab),
-        "B_menos_baseline": metricas.diferencia_con_ic(reales, principal["baseline"], principal[METODO_B], clases, cfg.criterio_ab),
     }
 
 
@@ -357,7 +351,7 @@ def evaluar_casos_dificiles(
     motores: dict[str, Any] | None = None,
     verificar_fuga: bool = True,
 ) -> dict[str, Any]:
-    """Baseline (con y sin la extensión) y, por modelo, A y B sobre los casos difíciles.
+    """Baseline (con y sin la extensión) y, por modelo, A sobre los casos difíciles.
 
     ``motores`` permite inyectar un codificador de prueba. Se niega a correr si algún caso es una referencia del
     clasificador, literal (``casos_en_referencias``) o por paráfrasis (``fuga_semantica``).
@@ -380,7 +374,7 @@ def evaluar_casos_dificiles(
         "fuente": "docs/guia_temas.md, sección 'Casos difíciles' (titulares ilustrativos, no del corpus)",
         "nota": (
             "n = 15: los IC son anchos y NO bastan para elegir modelo (D-20) ni método (D-21); es una prueba de "
-            "regresión del criterio de frontera. Ningún caso es ejemplo ni prototipo de temas.yaml, ni literal ni por "
+            "regresión del criterio de frontera. Ningún caso es ejemplo de temas.yaml, ni literal ni por "
             "paráfrasis (coseno con MiniLM < umbral de fuga_semantica; comprobado)."
         ),
         "baseline_ampliado_nota": "baseline_ampliado agrega vocabulario escrito después de leer los casos difíciles: no es independiente de ellos.",
@@ -537,7 +531,7 @@ def evaluar_etiquetas(
         "logistica": {
             "metodo": METODO_LOGISTICO,
             "entrenamiento": (
-                "textos de referencia de config/temas.yaml (descripción, ejemplos, prototipos) + pool de etiquetas humanas "
+                "textos de referencia de config/temas.yaml (descripción, ejemplos) + pool de etiquetas humanas "
                 "fuera de la evaluación congelada (D-123); la evaluación nunca entra al entrenamiento"
             ),
             "pool": {
@@ -618,11 +612,7 @@ def imprimir(titulo: str, bloque: dict[str, Any], clases: list[str]) -> list[str
         for fallo in c["fallos"]:
             lineas.append(f"  FALLO {fallo['id']}: «{fallo['titular']}» esperado {fallo['esperado']}, predicho {fallo['predicho']}")
     for modelo, comp in bloque.get("comparaciones", {}).items():
-        crit = comp["criterio_A_vs_B"]
-        lineas.append(f"\n[{modelo}] criterio A vs. B (D-57): se elige {crit['decision']}. {crit['motivo']}.")
-        lineas.append(f"  B − A macro-F1: {crit['diferencia_macro_f1']} IC 95 %: {crit['ic95']}; temas que empeoran: {crit['temas_que_empeoran'] or 'ninguno'}")
-        for nombre in ("A_menos_baseline", "B_menos_baseline"):
-            lineas.append(f"  {nombre}: macro-F1 {comp[nombre]['diferencia_macro_f1']} IC 95 %: {comp[nombre]['ic95']}")
+        lineas.append(f"\n[{modelo}] A − baseline: macro-F1 {comp['A_menos_baseline']['diferencia_macro_f1']} IC 95 %: {comp['A_menos_baseline']['ic95']}")
     if "pipeline" in bloque:
         lineas.append(f"\n== Pipeline completo (filtro de ruido + clasificador; n = {bloque['pipeline']['conteo']['evaluados']}) ==")
         for nombre, c in bloque["pipeline"]["configuraciones"].items():
@@ -681,7 +671,7 @@ def main(argv: list[str] | None = None) -> int:
         informe["datos_reales"] = {"estado": "PENDIENTE_ETIQUETAS", "detalle": f"no existe {args.etiquetas.name} (E1-06)"}
         print(
             f"\nDATOS REALES: PENDIENTE. No existe {args.etiquetas}. Las crea E1-06 (etiquetado humano); sin ellas no se "
-            "calcula exactitud, macro-F1 ni se aplica el criterio A vs. B sobre datos reales (no se inventan números).",
+            "calcula exactitud, macro-F1 ni se compara con el baseline sobre datos reales (no se inventan números).",
             file=sys.stderr,
         )
         codigo = CODIGO_SIN_ETIQUETAS

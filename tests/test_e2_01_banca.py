@@ -184,8 +184,8 @@ def test_el_horizonte_de_un_grupo_usa_la_publicacion_mas_reciente_y_su_deteccion
 # ------------------------------------------------------------------ I por sector
 
 
-def con_tema(id_grupo: str, tema: str | None, subtema: str | None = "inflacion_precios"):
-    return dataclasses.replace(pa.entrada(id_grupo, subtema=subtema), tema=tema)
+def con_tema(id_grupo: str, tema: str | None):
+    return pa.entrada(id_grupo, tema=tema)
 
 
 def test_d102_todos_los_sectores_valen_lo_mismo_en_i_y_el_sector_solo_agrupa() -> None:
@@ -205,7 +205,7 @@ def test_con_alcance_por_sector_i_cambia_solo_por_el_sector(banca_con_alcances_d
     geo = impacto(con_tema("GRP-a", "economia"), pa.REGLAS, pa.CFG, BANCA)[0].explicacion["alcance_geografico"]
     for tema, sector in (("economia", "economía"), ("turismo", "turismo"), ("eventos_naturales", "continuidad operativa")):
         comp, vacios = impacto(con_tema("GRP-a", tema), pa.REGLAS, pa.CFG, BANCA)
-        esperado = pa.REGLAS.impacto.peso_subtema * BANCA.alcance_por_sector[sector] + pa.REGLAS.impacto.peso_geografico * geo
+        esperado = pa.REGLAS.impacto.peso_tema * BANCA.alcance_por_sector[sector] + pa.REGLAS.impacto.peso_geografico * geo
         assert comp.valor == pytest.approx(esperado)
         assert comp.explicacion["sector"] == sector and comp.explicacion["alcance_sector"] == BANCA.alcance_por_sector[sector]
         assert not vacios
@@ -213,16 +213,18 @@ def test_con_alcance_por_sector_i_cambia_solo_por_el_sector(banca_con_alcances_d
     assert len(distintos) == 2
 
 
-def test_con_alcance_por_sector_el_subtema_ya_no_decide_i(banca_con_alcances_distintos) -> None:
-    a = impacto(con_tema("GRP-a", "economia", "inflacion_precios"), pa.REGLAS, pa.CFG, banca_con_alcances_distintos)[0].valor
-    b = impacto(con_tema("GRP-a", "economia", "inversion"), pa.REGLAS, pa.CFG, banca_con_alcances_distintos)[0].valor
-    assert a == pytest.approx(b)
+def test_con_alcance_por_sector_el_alcance_del_tema_ya_no_decide_i(banca_con_alcances_distintos) -> None:
+    # economía y regulación tienen alcances de tema distintos en reglas_v1.3.yaml, pero comparten sector en la variante: I coincide
+    a = impacto(con_tema("GRP-a", "economia"), pa.REGLAS, pa.CFG, banca_con_alcances_distintos)[0].valor
+    b = impacto(con_tema("GRP-a", "regulacion"), pa.REGLAS, pa.CFG, banca_con_alcances_distintos)[0].valor
+    assert pa.REGLAS.impacto.alcance_tema["economia"] != pa.REGLAS.impacto.alcance_tema["regulacion"]
+    assert a != pytest.approx(b)                                  # el sector (economía 1.0, regulación 0.8) decide, no el tema
 
 
 def test_un_grupo_sin_tema_o_sin_sector_usa_el_alcance_neutro_y_lo_dice() -> None:
     for tema in (None, "sin_tema"):
-        comp, vacios = impacto(con_tema("GRP-a", tema, None), pa.REGLAS, pa.CFG, BANCA)
-        assert comp.explicacion["sector"] is None and comp.explicacion["alcance_sector"] == pa.CFG.impacto.alcance_subtema_desconocido
+        comp, vacios = impacto(con_tema("GRP-a", tema), pa.REGLAS, pa.CFG, BANCA)
+        assert comp.explicacion["sector"] is None and comp.explicacion["alcance_sector"] == pa.CFG.impacto.alcance_tema_desconocido
         assert [v.codigo for v in vacios] == ["sector_desconocido"]
 
 
@@ -230,11 +232,11 @@ def test_sin_alcance_por_sector_i_es_el_de_siempre() -> None:
     entrada = con_tema("GRP-a", "economia")
     sin_modalidad, con_editorial = impacto(entrada, pa.REGLAS, pa.CFG), impacto(entrada, pa.REGLAS, pa.CFG, EDITORIAL)
     assert sin_modalidad[0] == con_editorial[0]
-    assert sin_modalidad[0].explicacion["alcance_subtema"] == pa.REGLAS.impacto.alcance_subtema["inflacion_precios"]
+    assert sin_modalidad[0].explicacion["alcance_tema"] == pa.REGLAS.impacto.alcance_tema["economia"]
 
 
 def test_el_ranking_de_la_editorial_no_cambia_por_existir_la_banca() -> None:
-    entradas = [pa.entrada("GRP-a"), pa.entrada("GRP-b", subtema="empleo")]
+    entradas = [pa.entrada("GRP-a"), pa.entrada("GRP-b", tema="turismo")]
     a = calcular_puntajes(entradas, pa.REGLAS, pa.CFG, pa.AHORA)
     b = calcular_puntajes(entradas, pa.REGLAS, pa.CFG, pa.AHORA, EDITORIAL)
     assert [(p.id_grupo, p.puntaje) for p in a] == [(p.id_grupo, p.puntaje) for p in b]
@@ -297,7 +299,7 @@ def test_la_bandeja_bancaria_trae_sector_y_horizonte_de_cada_grupo(con_banca) ->
     filas = {f.id_grupo: f for f in ui.leer_bandeja(con_banca, "banca")}
     assert filas[h.G_COMPLETO].sector == "economía" and filas[h.G_COMPLETO].horizonte == "inmediato"
     assert filas[h.G_SISMO].sector == "continuidad operativa"
-    assert filas[h.G_CIFRAS].sector == "continuidad operativa"
+    assert filas[h.G_CIFRAS].sector is None                                    # sin tema (sin_tema) no hay sector
     assert filas[h.G_INDIRECTO].sector == "logística"
     assert filas[h.G_RECIRCULADA].horizonte == "estructural"                   # publicada en junio, corte en octubre
     assert filas[h.G_SIN_FECHA].horizonte == "inmediato"                        # sin publicación: la detección más reciente

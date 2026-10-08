@@ -76,9 +76,8 @@
           "alcance_sector": 1.0,
           "nivel_geografico": "nacional",
           "peso_geografico": 0.5,
-          "peso_subtema": 0.5,
+          "peso_tema": 0.5,
           "sector": "logística",
-          "subtema": null,
           "terminos_geograficos": [
             "Panamá"
           ]
@@ -135,9 +134,7 @@
       "origen_fecha_inicio": "publicacion"
     },
     "contradicciones": [],
-    "criterio_subtema": null,
     "recirculada": false,
-    "subtema": null,
     "tema": "logistica",
     "tema_secundario": null,
     "titular_central": {

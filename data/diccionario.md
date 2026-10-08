@@ -150,7 +150,7 @@ se sustituyen entre sí. El nombre de la persona que firma **no se guarda** (D-3
 | `ruido_similitud` | BOOLEAN | sí | clasificación | derivado | Verdadero si el registro se marcó `no_es_panama` por esa similitud (nunca una nota con `alcance_regional`). Nulo si no se marcó. |
 | `tema_clasificado` | VARCHAR | sí | clasificación | derivado | Salida del clasificador (E1-07): uno de los 6 temas de `temas.yaml` o `sin_tema`. **No es el `tema` de origen** (D-62) y nunca se usan una como etiqueta de la otra. Nulo en el ruido. |
 | `tema_similitud` | DOUBLE | sí | clasificación | derivado | Mayor similitud coseno con un tema (también si el resultado es `sin_tema`). |
-| `subtema_clasificado` | VARCHAR | sí | clasificación | derivado | Solo con el método B: subtema más parecido dentro del tema (por ejemplo `agua_potable`). Nulo con A. |
+| `subtema_clasificado` | VARCHAR | sí | clasificación | derivado | **Obsoleta desde D-125** (el reto define 6 temas y ningún subtema): ya no se llena; se conserva nula para que las bases y salidas viejas carguen. Antes: solo con el método B. |
 | `tema_secundario` | VARCHAR | sí | clasificación | derivado | Segundo tema, solo si está a menos de `margen_secundario` del principal. |
 | `tema_secundario_similitud` | DOUBLE | sí | clasificación | derivado | Similitud del tema secundario. |
 | `tema_baseline` | VARCHAR | sí | clasificación | derivado | Tema del baseline de palabras clave (D-66), con las mismas categorías: 6 temas o `sin_tema`. |
@@ -213,11 +213,11 @@ Explicabilidad de la clasificación: una fila por noticia clasificada (no ruido)
 | Campo | Tipo | Nullable | Fuente | Clase | Descripción |
 |---|---|---|---|---|---|
 | `id_noticia` | VARCHAR | no | `noticias` | derivado | Noticia clasificada. |
-| `metodo` | VARCHAR | no | clasificación | derivado | `A` (descripción + ejemplos) o `B` (prototipos por subtema), D-21. |
+| `metodo` | VARCHAR | no | clasificación | derivado | `A` (descripción + ejemplos) o `logistica` (D-121). Antes también `B` (prototipos por subtema), retirado por D-125. |
 | `tema` | VARCHAR | no | `temas.yaml` | derivado | Uno de los 6 temas. |
-| `similitud` | DOUBLE | no | clasificación | derivado | Coseno entre el titular y el tema (A: centroide; B: el subtema más parecido del tema). |
-| `subtema` | VARCHAR | sí | `temas.yaml` | derivado | Solo con B: el subtema que dio esa similitud. |
-| `margen_subtema` | DOUBLE | sí | clasificación | derivado | Solo con B (D-92): similitud del 1.º subtema menos la del 2.º dentro del tema. Nulo con A. |
+| `similitud` | DOUBLE | no | clasificación | derivado | Similitud entre el titular y el tema (A: coseno con el centroide; `logistica`: probabilidad). |
+| `subtema` | VARCHAR | sí | `temas.yaml` | derivado | **Obsoleta desde D-125:** nula. Antes: solo con B, el subtema que dio esa similitud. |
+| `margen_subtema` | DOUBLE | sí | clasificación | derivado | **Obsoleta desde D-125:** nula. Antes: solo con B (D-92), similitud del 1.º subtema menos la del 2.º dentro del tema. |
 
 ### `grupos`: un grupo por evento (E1-08)
 
@@ -237,11 +237,11 @@ cinco medios que replican una agencia son una procedencia. Los reemplaza `python
 | `fecha_fin` | VARCHAR | sí | `noticias` | derivado | La más reciente, con el mismo criterio. |
 | `fecha_fin_origen` | VARCHAR | sí | `noticias` | derivado | `publicacion` o `deteccion`: de qué campo sale `fecha_fin`. |
 | `idiomas` | VARCHAR | sí | `noticias` | derivado | Idiomas de los titulares, ordenados, separados por coma. |
-| `tema_clasificado` | VARCHAR | sí | `noticias` | derivado | Tema más frecuente de sus titulares (empate: orden alfabético); nulo si ninguno está clasificado. Con D-122 puede ser el tema de un subtema que los titulares nombran (ver `tema_origen_clasificador`). |
+| `tema_clasificado` | VARCHAR | sí | `noticias` | derivado | Tema más frecuente de sus titulares (empate: orden alfabético); nulo si ninguno está clasificado. Desde D-125 es siempre el dominante entre los titulares (D-122 quitada). |
 | `ids_noticia` | VARCHAR | no | `noticias` | derivado | Los `NOT-` del grupo, ordenados y separados por coma. |
 | `estimado` | BOOLEAN | no | agrupación | derivado | Siempre verdadero: el conteo de procedencias es una estimación y se presenta así. |
-| `tema_origen_clasificador` | VARCHAR | sí | agrupación | derivado | D-122: tema que dio el clasificador (el más frecuente de los titulares) cuando un subtema nombrado por los titulares lo corrigió. Nulo si el tema no se corrigió. |
-| `criterio_tema` | VARCHAR | sí | agrupación | derivado | D-122: por qué se corrigió el tema, `subtema_nombrado` (los titulares nombran subtemas de un único tema distinto al clasificado; `vinculos.subtema.correccion_tema`). Nulo si el tema es el del clasificador. |
+| `tema_origen_clasificador` | VARCHAR | sí | agrupación | derivado | **Obsoleta desde D-125:** nula (D-122 quitada). Antes: tema que dio el clasificador cuando un subtema nombrado por los titulares lo corrigió. |
+| `criterio_tema` | VARCHAR | sí | agrupación | derivado | **Obsoleta desde D-125:** nula (D-122 quitada). Antes: `subtema_nombrado` cuando se corregía el tema. |
 
 ### `procedencias`: procedencias independientes de cada grupo (E1-08)
 
@@ -267,12 +267,12 @@ Una fila por dato (o una por grupo sin vínculo). Es **contexto, nunca prueba de
 | `id_grupo` | VARCHAR | no | `grupos` | derivado | Grupo contextualizado. |
 | `id_evidencia` | VARCHAR | sí | `indicadores` · `sismos` · `sbp_series.csv` | derivado | `IND-<pais>-<indicador>-<anio>`, `SIS-<id USGS>` o `SBP-<serie>-<YYYY-MM>`. Nulo si el grupo no tiene vínculo. |
 | `tipo` | VARCHAR | sí | `vinculos.yaml` | derivado | Tipo de relación: `directa`, `indirecta` o `evento`. Nulo si no hay vínculo. |
-| `regla` | VARCHAR | no | contexto | derivado | Regla que generó la fila (`vinculo_por_subtema:<subtema>`, `vinculo_por_tema:<tema>`, `sin_vinculo_en_tabla:<tema>/<subtema>`, `sin_dato_en_periodo:<indicador>`). |
+| `regla` | VARCHAR | no | contexto | derivado | Regla que generó la fila (D-125): `regla <nombre>: término «<término>» en el titular` (regla interna de `vinculos.yaml: reglas_vinculo`), `vinculo_por_tema:<tema>`, `sin_vinculo_en_tabla:<tema>`, `reglas … disparadas a la vez` (ambiguo) o `sin_dato_en_periodo:<indicador>`. Los datos de USGS y de la SBP llevan su texto fijo. |
 | `limitacion` | VARCHAR | sí | `vinculos.yaml` | derivado | Limitación del vínculo más la nota del dato anual (año, último año disponible, años sin valor). Nunca dice «actual». |
 | `motivo_sin_vinculo` | VARCHAR | sí | `vinculos.yaml` | derivado | `tema_sin_indicador`, `sin_dato_en_periodo` (y los de sismos de E1-09b). Sin vínculo lleva `id_evidencia` nulo; la excepción es `candidatos_ambiguos` (USGS, E1-09b), que puede traer a la vez el `SIS-` del candidato y el motivo. |
 | `fuente` | VARCHAR | no | contexto | derivado | Quién escribe la fila: `indicador` (`src.contexto`), `usgs` (`src.contexto_sismos`) o `sbp` (`src.contexto_sbp`, E3-02). |
 | `rol` | VARCHAR | sí | contexto | derivado | `panama` (último año con valor), `comparable` (otros países, mismo año, con dato), `tendencia` (últimos años de Panamá) `evento` (USGS) o `sistema` (serie agregada del sistema bancario, SBP). |
-| `subtema` | VARCHAR | sí | `similitud_tema` | derivado | Subtema más cercano del grupo dentro de su tema (método B) solo si lo respalda un criterio de `vinculos.subtema.criterios` (D-92; desde E1-10c solo `lexico`: un titular nombra el subtema y ningún otro del mismo tema); si no, nulo (`sin_subtema`). |
+| `subtema` | VARCHAR | sí | `similitud_tema` | derivado | **Obsoleta desde D-125:** nula. Antes: subtema del grupo (D-92, E1-10c). |
 | `pais_iso3` | VARCHAR | sí | `indicadores` | derivado | País del dato. |
 | `indicador_id` | VARCHAR | sí | `indicadores` | derivado | Indicador del Banco Mundial. |
 | `anio` | INTEGER | sí | `indicadores` | derivado | Año del dato. |
@@ -288,7 +288,7 @@ Una fila por dato (o una por grupo sin vínculo). Es **contexto, nunca prueba de
 | `estado_evento` | VARCHAR | sí | `eventos.geojson` | derivado | Solo filas `usgs`: `automatic` o `reviewed`; un evento automático puede cambiar. |
 | `url_evento` | VARCHAR | sí | `eventos.geojson` | derivado | Solo filas `usgs`: página del evento en USGS. |
 | `diferencia_horas` | DOUBLE | sí | contexto | derivado | Solo filas `usgs`: horas entre el evento y la noticia más cercana del grupo. |
-| `criterio_subtema` | VARCHAR | sí | contexto | derivado | D-92: por qué se aceptó el subtema del grupo, `margen` (1.º − 2.º subtema ≥ mínimo; inactivo desde E1-10c) o `lexico` (un titular nombra un término del subtema). Nulo si no hay subtema. |
+| `criterio_subtema` | VARCHAR | sí | contexto | derivado | **Obsoleta desde D-125:** nula. Antes: por qué se aceptó el subtema del grupo (`margen` o `lexico`, D-92). |
 | `periodo` | VARCHAR | sí | contexto | derivado | E3-02: mes del dato de la SBP, `YYYY-MM`. Solo en las filas `sbp`. |
 | `informe` | VARCHAR | sí | contexto | derivado | E3-02: informe de la SBP del que sale el dato. Solo en las filas `sbp`. |
 | `pagina` | VARCHAR | sí | contexto | derivado | E3-02: página de origen del dato (hoja y celda del .xlsx). Solo en las filas `sbp`. |
@@ -308,14 +308,14 @@ Los reemplaza `python -m src.puntaje`. Cada componente guarda de qué valores sa
 | `version_reglas` | VARCHAR | no | `reglas_v1.3.yaml` | derivado | Versión de las reglas con que se calculó (`1.3`). |
 | `fecha_referencia` | VARCHAR | no | `manifest.json` | derivado | ISO 8601 UTC contra la que se midió U: el corte del snapshot, no el reloj. |
 | `relevancia` | DOUBLE | no | puntaje | derivado | R en [0, 1]: foco (1 Panamá sujeto · 0.5 otro país que afecta). D-103 quitó el percentil de la similitud temática. |
-| `impacto` | DOUBLE | no | puntaje | derivado | I en [0, 1]: alcance del subtema y alcance geográfico. Ni el dato oficial ni las procedencias suman (D-15, D-35). |
+| `impacto` | DOUBLE | no | puntaje | derivado | I en [0, 1]: alcance del tema (D-125; antes del subtema) y alcance geográfico. Ni el dato oficial ni las procedencias suman (D-15, D-35). |
 | `urgencia` | DOUBLE | no | puntaje | derivado | U en [0, 1] sobre la publicación original más reciente del grupo (o la detección más reciente, con el vacío correspondiente). |
 | `novedad` | DOUBLE | no | puntaje | derivado | N en [0, 1] (D-103): 1 si la similitud máxima con un grupo anterior no llega al umbral de agrupación `u`; si llega, (1 − s)/(1 − u). |
 | `evidencia` | DOUBLE | no | puntaje | derivado | E en [0, 1]: procedencias independientes (no titulares), dato oficial y titulares identificables (D-56). |
 | `puntaje` | DOUBLE | no | puntaje | derivado | P = 30R + 25I + 20U + 15N + 10E, de 0 a 100. |
 | `rango` | VARCHAR | no | `reglas_v1.3.yaml` | derivado | `bajo` [0, 40) · `medio` [40, 70) · `alto` [70, 100]. |
 | `componentes` | VARCHAR | no | puntaje | derivado | JSON: por componente, su valor y la explicación (los valores de los que sale). |
-| `vacios` | VARCHAR | no | puntaje | derivado | JSON: vacíos que nacen del puntaje («urgencia estimada: fecha de publicación desconocida», noticia recirculada, subtema no determinado). |
+| `vacios` | VARCHAR | no | puntaje | derivado | JSON: vacíos que nacen del puntaje («urgencia estimada: fecha de publicación desconocida», noticia recirculada, tema no determinado). |
 | `recirculada` | BOOLEAN | no | `noticias` | derivado | Verdadero si todos los titulares del grupo son noticias recirculadas (publicación muy anterior a la detección). |
 | `es_nueva` | BOOLEAN | no | `noticias` | derivado | Falso si el grupo es una noticia recirculada: no se presenta como nueva. |
 | `empate_con` | INTEGER | sí | puntaje | derivado | D-105: cuántos otros grupos tienen el mismo P tal como se muestra (`comparacion.decimales_empate`); 0 = sin empate. Nulo en una base anterior a D-105. |

@@ -8,7 +8,8 @@ y **no habilita publicación** (``Puntaje.habilita_publicacion`` es siempre fals
   clasificador). Foco: 1 si algún titular del grupo trata a Panamá como sujeto; 0.5 si todos son notas regionales o de otro
   país que afectan a Panamá (``alcance_regional``, D-84). Pertenencia: según la ETIQUETA, nunca la confianza (``tema_similitud``):
   1 si algún titular tiene un tema de la modalidad como ``tema_clasificado``, 0.6 si solo como ``tema_secundario``, 0.3 si ninguno.
-* **I** = ``peso_subtema × alcance(subtema) + peso_geografico × alcance geográfico``. Ni el dato oficial ni las
+* **I** = ``peso_tema × alcance(tema) + peso_geografico × alcance geográfico`` (D-125: el reto define 6 temas, sin subtemas; un grupo
+  sin tema usa ``alcance_tema_desconocido``). Ni el dato oficial ni las
   procedencias suman aquí (D-15, D-35). El alcance geográfico es el más amplio que nombren los titulares; sin término
   explícito ni lugar concreto de Panamá, un país o ciudad del exterior lo hace ``exterior`` (D-115) y, si no hay, el país
   nombrado o su gentilicio lo hacen nacional (E1-10c, X42).
@@ -82,7 +83,6 @@ class EntradaGrupo:
     id_grupo: str
     miembros: tuple[Mapping[str, Any], ...]     # id_noticia, titulo_limpio, medio, fecha_publicacion, fecha_deteccion, es_recirculada, alcance_regional, tema_clasificado, tema_secundario
     vectores: np.ndarray | None                 # embeddings normalizados de los miembros (misma posición); necesarios para N
-    subtema: str | None
     n_procedencias: int
     tiene_oficial: bool
     motivo_sin_oficial: str | None = None
@@ -170,7 +170,7 @@ def pertenencia_de(
     """
     valores = reglas.relevancia.pertenencia_tematica
     principales = sorted({str(m["tema_clasificado"]) for m in miembros if m.get("tema_clasificado") in temas})
-    if tema_grupo in temas:   # D-122: el tema del grupo (corregido por un subtema nombrado) cuenta como principal
+    if tema_grupo in temas:   # el tema del grupo cuenta como principal
         principales = sorted({*principales, str(tema_grupo)})
     secundarios = sorted({str(m["tema_secundario"]) for m in miembros if m.get("tema_secundario") in temas} - set(principales))
     if principales:
@@ -338,27 +338,27 @@ def impacto(
 ) -> tuple[Componente, list[Vacio]]:
     """I del grupo. Ni el dato oficial ni las procedencias entran (D-15, D-35).
 
-    Si la modalidad declara ``alcance_por_sector`` (banca, E2-01), el alcance sale del sector del tema y sustituye al del subtema.
+    Si la modalidad declara ``alcance_por_sector`` (banca, E2-01), el alcance sale del sector del tema y sustituye al del tema.
     """
     vacios: list[Vacio] = []
     explicacion_alcance: dict[str, Any]
     if modalidad is not None and modalidad.alcance_por_sector:
         sector = sector_de_tema(entrada.tema, modalidad)
         if sector is None:
-            alcance_subtema = cfg.impacto.alcance_subtema_desconocido
+            alcance_tema = cfg.impacto.alcance_tema_desconocido
             vacios.append(Vacio("sector_desconocido", cfg.vacios.sector_desconocido))
         else:
-            alcance_subtema = modalidad.alcance_por_sector[sector]
-        explicacion_alcance = {"subtema": entrada.subtema, "sector": sector, "alcance_sector": alcance_subtema}   # el subtema se conserva: la ficha lo usa para las fuentes sugeridas
-    elif entrada.subtema is None:
-        alcance_subtema = cfg.impacto.alcance_subtema_desconocido
-        vacios.append(Vacio("subtema_desconocido", cfg.vacios.subtema_desconocido))
-        explicacion_alcance = {"subtema": entrada.subtema, "alcance_subtema": alcance_subtema}
+            alcance_tema = modalidad.alcance_por_sector[sector]
+        explicacion_alcance = {"sector": sector, "alcance_sector": alcance_tema}
+    elif entrada.tema not in reglas.impacto.alcance_tema:
+        alcance_tema = cfg.impacto.alcance_tema_desconocido
+        vacios.append(Vacio("tema_desconocido", cfg.vacios.tema_desconocido))
+        explicacion_alcance = {"tema": entrada.tema, "alcance_tema": alcance_tema}
     else:
-        alcance_subtema = reglas.impacto.alcance_subtema[entrada.subtema]
-        explicacion_alcance = {"subtema": entrada.subtema, "alcance_subtema": alcance_subtema}
+        alcance_tema = reglas.impacto.alcance_tema[entrada.tema]
+        explicacion_alcance = {"tema": entrada.tema, "alcance_tema": alcance_tema}
     geo = alcance_geografico(entrada.miembros, reglas, cfg)
-    valor = reglas.impacto.peso_subtema * alcance_subtema + reglas.impacto.peso_geografico * geo.valor
+    valor = reglas.impacto.peso_tema * alcance_tema + reglas.impacto.peso_geografico * geo.valor
     return Componente(
         valor,
         {
@@ -366,7 +366,7 @@ def impacto(
             "nivel_geografico": geo.nivel,
             "alcance_geografico": geo.valor,
             "terminos_geograficos": list(geo.terminos),
-            "peso_subtema": reglas.impacto.peso_subtema,
+            "peso_tema": reglas.impacto.peso_tema,
             "peso_geografico": reglas.impacto.peso_geografico,
         },
     ), vacios

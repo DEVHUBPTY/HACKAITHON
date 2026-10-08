@@ -1,4 +1,4 @@
-"""T04 · Contexto del Banco Mundial por subtema (E1-09, CU-02).
+"""T04 · Contexto del Banco Mundial por tema y regla de vínculo (E1-09, CU-02; D-125 quitó los subtemas).
 
 Datos sintéticos mínimos (una cuadrícula chica de indicadores), sin red y sin la base real. La configuración es la real
 (``config/vinculos.yaml``): los tests verifican que el módulo la cumple, no una copia.
@@ -54,8 +54,10 @@ def inflacion_2024_nula() -> list[dict[str, Any]]:
     )
 
 
-def vincular(subtema: str | None, tema: str, titular: str | None = None, anio_pub: int | None = 2026, ind=None):
-    return contexto.vincular_grupo("GRP-0000000001", tema, subtema, titular, anio_pub, ind if ind is not None else inflacion_2024_nula(), CFG)
+def vincular(regla: str | None, tema: str, titular: str | None = None, anio_pub: int | None = 2026, ind=None):
+    """``regla`` es el nombre de la regla de vínculo disparada (``None``: ninguna); su término es su propio nombre."""
+    disparadas = {regla: regla} if regla else {}
+    return contexto.vincular_grupo("GRP-0000000001", tema, disparadas, titular, anio_pub, ind if ind is not None else inflacion_2024_nula(), CFG)
 
 
 def por_rol(filas: list[dict[str, Any]], rol: str) -> list[dict[str, Any]]:
@@ -66,7 +68,7 @@ def por_rol(filas: list[dict[str, Any]], rol: str) -> list[dict[str, Any]]:
 
 
 def test_el_dato_trae_pais_anio_unidad_id_tipo_y_limitacion_y_nunca_actual() -> None:
-    filas = vincular("inflacion_precios", "economia")
+    filas = vincular("inflacion", "economia")
     assert filas
     for f in filas:
         for campo in ("pais_iso3", "indicador_id", "anio", "unidad", "id_evidencia", "tipo", "limitacion", "fecha_extraccion", "regla"):
@@ -78,41 +80,41 @@ def test_el_dato_trae_pais_anio_unidad_id_tipo_y_limitacion_y_nunca_actual() -> 
 
 
 def test_ningun_texto_de_la_configuracion_dice_actual() -> None:
-    textos = [v.limitacion for v in (*CFG.vinculos.values(), *CFG.vinculos_por_tema.values())] + list(CFG.notas.model_dump().values())
+    textos = [v.limitacion for v in (*CFG.reglas_vinculo.values(), *CFG.vinculos_por_tema.values())] + list(CFG.notas.model_dump().values())
     assert not [t for t in textos if PALABRA_PROHIBIDA.search(t)]
 
 
 def test_la_configuracion_rechaza_la_palabra_actual() -> None:
     datos = CFG.model_dump()
-    datos["vinculos"]["empleo"]["limitacion"] = "Refleja el estado actual del empleo."
+    datos["reglas_vinculo"]["empleo"]["limitacion"] = "Refleja el estado actual del empleo."
     with pytest.raises(ValidationError, match="prohibida"):
         ConfigVinculos.model_validate(datos)
 
 
 def test_la_poblacion_no_se_vincula_sola() -> None:
     datos = CFG.model_dump()
-    datos["vinculos"]["empleo"]["id"] = "SP.POP.TOTL"
+    datos["reglas_vinculo"]["empleo"]["id"] = "SP.POP.TOTL"
     with pytest.raises(ValidationError, match="solo de contexto"):
         ConfigVinculos.model_validate(datos)
 
 
 def test_los_indicadores_vinculados_existen_en_las_fuentes() -> None:
     declarados = set(cargar_fuentes().banco_mundial.indicadores)
-    ids = {v.id for v in (*CFG.vinculos.values(), *CFG.vinculos_por_tema.values()) if v.id}
+    ids = {v.id for v in (*CFG.reglas_vinculo.values(), *CFG.vinculos_por_tema.values()) if v.id}
     assert ids <= declarados
 
 
 def test_la_cifra_del_titular_solo_usa_indicadores_vinculados() -> None:
-    ids = {v.id for v in (*CFG.vinculos.values(), *CFG.vinculos_por_tema.values()) if v.id}
+    ids = {v.id for v in (*CFG.reglas_vinculo.values(), *CFG.vinculos_por_tema.values()) if v.id}
     assert set(CFG.cifra_titular.palabras_clave) <= ids
 
 
 # ------------------------------------------------------------------ sin vínculo
 
 
-@pytest.mark.parametrize(("tema", "subtema"), [("turismo", "hoteleria"), ("regulacion", "leyes_decretos"), ("turismo", None), (None, None)])
-def test_turismo_o_regulacion_devuelven_tema_sin_indicador(tema: str | None, subtema: str | None) -> None:
-    (fila,) = vincular(subtema, tema)  # type: ignore[arg-type]
+@pytest.mark.parametrize("tema", ["turismo", "regulacion", "servicios_publicos", "sin_tema", None])
+def test_un_tema_sin_regla_ni_vinculo_por_tema_devuelve_tema_sin_indicador(tema: str | None) -> None:
+    (fila,) = vincular(None, tema)  # type: ignore[arg-type]
     assert fila["motivo_sin_vinculo"] == "tema_sin_indicador"
     assert fila["id_evidencia"] is None and fila["valor"] is None
     assert fila["regla"].startswith(contexto.REGLA_SIN_ENTRADA)
@@ -120,7 +122,7 @@ def test_turismo_o_regulacion_devuelven_tema_sin_indicador(tema: str | None, sub
 
 def test_indicador_sin_ningun_valor_es_sin_dato_en_periodo() -> None:
     ind = grilla(IND_INFLACION, {"PAN": {2023: None, 2024: None}, "COL": {2024: 6.6}})
-    (fila,) = vincular("inflacion_precios", "economia", ind=ind)
+    (fila,) = vincular("inflacion", "economia", ind=ind)
     assert fila["motivo_sin_vinculo"] == "sin_dato_en_periodo"
     assert fila["id_evidencia"] is None and fila["valor"] is None
     assert fila["regla"].startswith(contexto.REGLA_SIN_DATO)
@@ -135,7 +137,7 @@ def test_sismos_no_se_vinculan_con_el_banco_mundial() -> None:
 
 
 def test_con_2024_nulo_se_usa_el_ultimo_anio_no_nulo_y_se_declara() -> None:
-    (panama,) = por_rol(vincular("inflacion_precios", "economia"), contexto.ROL_PANAMA)
+    (panama,) = por_rol(vincular("inflacion", "economia"), contexto.ROL_PANAMA)
     assert (panama["anio"], panama["valor"]) == (2023, 1.5)
     assert panama["id_evidencia"] == f"IND-PAN-{IND_INFLACION}-2023"
     assert "2023" in panama["limitacion"] and "último año disponible" in panama["limitacion"]
@@ -143,18 +145,18 @@ def test_con_2024_nulo_se_usa_el_ultimo_anio_no_nulo_y_se_declara() -> None:
 
 
 def test_los_comparables_son_del_mismo_anio_que_panama_y_solo_con_dato() -> None:
-    filas = vincular("inflacion_precios", "economia")
+    filas = vincular("inflacion", "economia")
     comparables = por_rol(filas, contexto.ROL_COMPARABLE)
     assert {f["anio"] for f in comparables} == {2023}
     assert {f["pais_iso3"] for f in comparables} == {"COL", "CRI", "MEX"}
     sin_dato = grilla(IND_INFLACION, {"PAN": {2023: 1.5}, "COL": {2023: 11.7}, "CRI": {2023: None}})
-    assert {f["pais_iso3"] for f in por_rol(vincular("inflacion_precios", "economia", ind=sin_dato), contexto.ROL_COMPARABLE)} == {"COL"}
+    assert {f["pais_iso3"] for f in por_rol(vincular("inflacion", "economia", ind=sin_dato), contexto.ROL_COMPARABLE)} == {"COL"}
     assert all(f["valor"] is not None for f in comparables)
 
 
 def test_la_tendencia_son_los_ultimos_cinco_anios_de_panama_y_los_nulos_siguen_nulos() -> None:
     ind = grilla(IND_INFLACION, {"PAN": {2018: 0.8, 2019: -0.4, 2020: -1.6, 2021: None, 2022: 2.9, 2023: 1.5, 2024: None}})
-    tendencia = por_rol(vincular("inflacion_precios", "economia", ind=ind), contexto.ROL_TENDENCIA)
+    tendencia = por_rol(vincular("inflacion", "economia", ind=ind), contexto.ROL_TENDENCIA)
     assert [f["anio"] for f in tendencia] == [2019, 2020, 2021, 2022, 2023]
     assert len(tendencia) == CFG.tendencia_anios
     assert [f["valor"] for f in tendencia] == [-0.4, -1.6, None, 2.9, 1.5]  # nunca se rellena con 0
@@ -162,7 +164,7 @@ def test_la_tendencia_son_los_ultimos_cinco_anios_de_panama_y_los_nulos_siguen_n
 
 def test_el_vinculo_por_tema_es_indirecto_y_declara_su_regla() -> None:
     ind = grilla(IND_EXPORTACIONES, {"PAN": {2024: 44.4}, "COL": {2024: 17.0}}, unidad="% del PIB")
-    filas = vincular("puertos", "logistica", ind=ind)
+    filas = vincular(None, "logistica", ind=ind)
     assert {f["tipo"] for f in filas} == {"indirecta"}
     assert {f["regla"] for f in filas} == {f"{contexto.REGLA_TEMA}:logistica"}
 
@@ -175,7 +177,7 @@ def titular_con(cifra: str, anio: str = "") -> str:
 
 
 def comparacion(titular: str, anio_pub: int | None = 2026) -> dict[str, Any]:
-    (panama,) = por_rol(vincular("inflacion_precios", "economia", titular, anio_pub), contexto.ROL_PANAMA)
+    (panama,) = por_rol(vincular("inflacion", "economia", titular, anio_pub), contexto.ROL_PANAMA)
     return panama
 
 
@@ -205,7 +207,7 @@ def test_x17_un_verbo_de_baja_conserva_el_signo_negativo_de_la_cifra() -> None:
     """X17: «El PIB cae 2 % en 2024» es -2, no +2; contra la oficial -2.0 coincide."""
     assert contexto.extraer_cifra_titular("El PIB cae 2 % en 2024", "NY.GDP.MKTP.KD.ZG", CFG) == (-2.0, 2024)
     ind = grilla("NY.GDP.MKTP.KD.ZG", {"PAN": {2024: -2.0}})
-    (p,) = por_rol(vincular("crecimiento_pib", "economia", "El PIB cae 2 % en 2024", ind=ind), contexto.ROL_PANAMA)
+    (p,) = por_rol(vincular("pib", "economia", "El PIB cae 2 % en 2024", ind=ind), contexto.ROL_PANAMA)
     assert p["cifra_titular"] == -2.0
     assert p["comparacion_titular"] == CFG.cifra_titular.etiquetas.coincide
 
@@ -221,24 +223,24 @@ def test_x17_un_signo_explicito_no_se_invierte_dos_veces() -> None:
 PIB, DESEMPLEO = "NY.GDP.MKTP.KD.ZG", "SL.UEM.TOTL.ZS"
 
 
-def _comparar_x19(titular: str, subtema: str, indicador: str, oficial: float) -> str | None:
+def _comparar_x19(titular: str, regla: str, indicador: str, oficial: float) -> str | None:
     ind = grilla(indicador, {"PAN": {2024: oficial}})
-    (p,) = por_rol(vincular(subtema, "economia", titular, ind=ind), contexto.ROL_PANAMA)
+    (p,) = por_rol(vincular(regla, "economia", titular, ind=ind), contexto.ROL_PANAMA)
     return p["comparacion_titular"]
 
 
 @pytest.mark.parametrize(
-    ("titular", "subtema", "indicador", "oficial"),
+    ("titular", "regla", "indicador", "oficial"),
     [
-        ("La inflación cae a 0,7 % en 2024", "inflacion_precios", IND_INFLACION, 0.7),
+        ("La inflación cae a 0,7 % en 2024", "inflacion", IND_INFLACION, 0.7),
         ("El desempleo baja a 9,5 % en 2024", "empleo", DESEMPLEO, 9.5),
-        ("Crecimiento económico se reduce a 2,5 % en 2024", "crecimiento_pib", PIB, 2.5),
-        ("La inflación sube a 3 % en 2024", "inflacion_precios", IND_INFLACION, 3.0),
+        ("Crecimiento económico se reduce a 2,5 % en 2024", "pib", PIB, 2.5),
+        ("La inflación sube a 3 % en 2024", "inflacion", IND_INFLACION, 3.0),
     ],
 )
-def test_x19_el_nivel_alcanzado_tras_un_verbo_de_cambio_conserva_su_signo(titular, subtema, indicador, oficial) -> None:
+def test_x19_el_nivel_alcanzado_tras_un_verbo_de_cambio_conserva_su_signo(titular, regla, indicador, oficial) -> None:
     """X19: «cae a 0,7 %» es el nivel alcanzado (0,7), no una variación de -0,7."""
-    assert _comparar_x19(titular, subtema, indicador, oficial) == CFG.cifra_titular.etiquetas.coincide
+    assert _comparar_x19(titular, regla, indicador, oficial) == CFG.cifra_titular.etiquetas.coincide
 
 
 @pytest.mark.parametrize(
@@ -253,12 +255,12 @@ def test_x19_el_nivel_alcanzado_tras_un_verbo_de_cambio_conserva_su_signo(titula
     ],
 )
 def test_x19_una_cifra_con_palabra_de_cota_no_se_compara(titular: str) -> None:
-    assert _comparar_x19(titular, "inflacion_precios", IND_INFLACION, 0.7) is None
+    assert _comparar_x19(titular, "inflacion", IND_INFLACION, 0.7) is None
 
 
 @pytest.mark.parametrize("titular", ["La inflación cae 2 % en 2024", "La inflación sube 2 % en 2024", "La inflación baja 2 % en 2024"])
 def test_x19_una_variacion_de_un_indicador_de_nivel_no_se_compara(titular: str) -> None:
-    assert _comparar_x19(titular, "inflacion_precios", IND_INFLACION, 2.0) is None
+    assert _comparar_x19(titular, "inflacion", IND_INFLACION, 2.0) is None
 
 
 @pytest.mark.parametrize(
@@ -276,7 +278,7 @@ def test_x19_una_variacion_de_un_indicador_de_nivel_no_se_compara(titular: str) 
 def test_seguimiento_x19_verbo_no_listado_o_proyeccion_no_se_compara(titular: str) -> None:
     """Seguimiento PR #19: sin verbo reconocido o con proyección no se puede afirmar el signo: no se compara."""
     assert contexto.extraer_cifra_titular(titular, PIB, CFG) is None
-    assert _comparar_x19(titular, "crecimiento_pib", PIB, -2.0) is None
+    assert _comparar_x19(titular, "pib", PIB, -2.0) is None
 
 
 @pytest.mark.parametrize(
@@ -294,18 +296,18 @@ def test_seguimiento_x19_verbo_no_listado_o_proyeccion_no_se_compara(titular: st
     ],
 )
 def test_seguimiento_x19_aproximaciones_y_cotas_con_contraccion_no_se_comparan(titular: str) -> None:
-    assert _comparar_x19(titular, "inflacion_precios", IND_INFLACION, 2.0) is None
+    assert _comparar_x19(titular, "inflacion", IND_INFLACION, 2.0) is None
 
 
 @pytest.mark.parametrize(
-    ("titular", "subtema", "indicador", "oficial"),
+    ("titular", "regla", "indicador", "oficial"),
     [
-        ("La inflación cae al 0,7 % en 2024", "inflacion_precios", IND_INFLACION, 0.7),
+        ("La inflación cae al 0,7 % en 2024", "inflacion", IND_INFLACION, 0.7),
         ("El desempleo baja al 9,5 % en 2024", "empleo", DESEMPLEO, 9.5),
     ],
 )
-def test_seguimiento_x19_cae_al_es_nivel_alcanzado(titular, subtema, indicador, oficial) -> None:
-    assert _comparar_x19(titular, subtema, indicador, oficial) == CFG.cifra_titular.etiquetas.coincide
+def test_seguimiento_x19_cae_al_es_nivel_alcanzado(titular, regla, indicador, oficial) -> None:
+    assert _comparar_x19(titular, regla, indicador, oficial) == CFG.cifra_titular.etiquetas.coincide
 
 
 def test_seguimiento_x19_las_listas_nuevas_estan_en_la_configuracion() -> None:
@@ -316,9 +318,9 @@ def test_seguimiento_x19_las_listas_nuevas_estan_en_la_configuracion() -> None:
 
 
 def test_x19_la_variacion_del_pib_si_se_compara_con_signo() -> None:
-    assert _comparar_x19("El PIB cae 2 % en 2024", "crecimiento_pib", PIB, -2.0) == CFG.cifra_titular.etiquetas.coincide
-    assert _comparar_x19("El PIB sube 2 % en 2024", "crecimiento_pib", PIB, 2.0) == CFG.cifra_titular.etiquetas.coincide
-    assert _comparar_x19("El PIB baja 2 % en 2024", "crecimiento_pib", PIB, -2.0) is None  # «baja» es ambigua (verbo o adjetivo)
+    assert _comparar_x19("El PIB cae 2 % en 2024", "pib", PIB, -2.0) == CFG.cifra_titular.etiquetas.coincide
+    assert _comparar_x19("El PIB sube 2 % en 2024", "pib", PIB, 2.0) == CFG.cifra_titular.etiquetas.coincide
+    assert _comparar_x19("El PIB baja 2 % en 2024", "pib", PIB, -2.0) is None  # «baja» es ambigua (verbo o adjetivo)
 
 
 def test_x19_las_listas_de_palabras_estan_en_la_configuracion() -> None:
@@ -333,7 +335,7 @@ def test_la_palabra_prohibida_incluye_sus_formas_derivadas(palabra: str) -> None
     with pytest.raises(ValueError, match="prohibida"):
         contexto.verificar_texto([fila], CFG)
     datos = CFG.model_dump()
-    datos["vinculos"]["empleo"]["limitacion"] = f"Refleja la situación {palabra}."
+    datos["reglas_vinculo"]["empleo"]["limitacion"] = f"Refleja la situación {palabra}."
     with pytest.raises(ValidationError, match="prohibida"):
         ConfigVinculos.model_validate(datos)
 
@@ -356,30 +358,23 @@ def test_la_cifra_de_otro_indicador_no_se_compara_con_este() -> None:
     assert contexto.extraer_cifra_titular("El PIB crece 3.1% en 2023", "NY.GDP.MKTP.KD.ZG", CFG) == (3.1, 2023)
 
 
-# ------------------------------------------------------------------ regla y subtema
+# ------------------------------------------------------------------ regla de vínculo
 
 
 def test_cada_vinculo_guarda_la_regla_que_lo_genero() -> None:
     casos = [
-        vincular("inflacion_precios", "economia"),                       # por subtema
-        vincular("puertos", "logistica", ind=grilla(IND_EXPORTACIONES, {"PAN": {2024: 44.4}})),  # por tema
-        vincular("hoteleria", "turismo"),                                # sin entrada
-        vincular("empleo", "economia", ind=[]),                          # sin dato
+        vincular("inflacion", "economia"),                                                       # por regla de vínculo
+        vincular(None, "logistica", ind=grilla(IND_EXPORTACIONES, {"PAN": {2024: 44.4}})),        # por tema
+        vincular(None, "turismo"),                                                               # sin entrada
+        vincular("empleo", "economia", ind=[]),                                                  # sin dato
     ]
     reglas = [{f["regla"] for f in filas} for filas in casos]
     assert reglas == [
-        {"vinculo_por_subtema:inflacion_precios"},
+        {CFG.textos_regla.disparada.format(regla="inflacion", termino="inflacion")},
         {"vinculo_por_tema:logistica"},
-        {"sin_vinculo_en_tabla:turismo/hoteleria"},
+        {"sin_vinculo_en_tabla:turismo"},
         {f"sin_dato_en_periodo:{'SL.UEM.TOTL.ZS'}"},
     ]
-
-
-def test_el_subtema_gana_por_votos_luego_por_similitud_y_es_determinista() -> None:
-    assert contexto.subtema_del_grupo([]) is None
-    assert contexto.subtema_del_grupo([("empleo", 0.5), ("crecimiento_pib", 0.4), ("empleo", 0.3)]) == "empleo"
-    assert contexto.subtema_del_grupo([("empleo", 0.3), ("crecimiento_pib", 0.6)]) == "crecimiento_pib"
-    assert contexto.subtema_del_grupo([("b", 0.5), ("a", 0.5)]) == "a"
 
 
 # ------------------------------------------------------------------ base y reporte
@@ -412,10 +407,6 @@ def _grupo(id_grupo: str, id_noticia: str, titular: str, tema: str) -> dict[str,
     }
 
 
-def _sim(id_noticia: str, tema: str, subtema: str) -> dict[str, Any]:
-    return {"id_noticia": id_noticia, "metodo": "B", "tema": tema, "similitud": 0.7, "subtema": subtema, "margen_subtema": 0.05}
-
-
 @pytest.fixture
 def base(tmp_path):
     titular = titular_con("3.2%", "2023")
@@ -432,11 +423,6 @@ def base(tmp_path):
                 _grupo("GRP-1", "NOT-1", titular, "economia"),
                 _grupo("GRP-2", "NOT-2", "Hoteles reportan alta ocupación", "turismo"),
                 _grupo("GRP-3", "NOT-3", "Sismo de magnitud 4 sacude Chiriquí", "eventos_naturales"),
-            ],
-            "similitud_tema": [
-                _sim("NOT-1", "economia", "inflacion_precios"),
-                _sim("NOT-2", "turismo", "hoteleria"),
-                _sim("NOT-3", "eventos_naturales", "sismos"),
             ],
             "indicadores": inflacion_2024_nula(),
         },
@@ -464,7 +450,8 @@ def test_la_base_guarda_vinculos_con_su_regla_y_delega_los_sismos(base) -> None:
     assert all(f["regla"] and f["fuente"] == "indicador" for f in guardadas)
     assert [f["motivo_sin_vinculo"] for f in guardadas if f["id_grupo"] == "GRP-2"] == ["tema_sin_indicador"]
     (panama,) = [f for f in guardadas if f["id_grupo"] == "GRP-1" and f["rol"] == "panama"]
-    assert (panama["subtema"], panama["anio"], panama["comparacion_titular"]) == ("inflacion_precios", 2023, "posible discrepancia, verificar")
+    assert (panama["subtema"], panama["anio"], panama["comparacion_titular"]) == (None, 2023, "posible discrepancia, verificar")   # D-125: sin subtema
+    assert panama["regla"] == CFG.textos_regla.disparada.format(regla="inflacion", termino="inflacion")
 
 
 def test_volver_a_correr_reemplaza_sus_filas_y_respeta_las_de_usgs(base) -> None:
@@ -493,7 +480,7 @@ def test_el_reporte_cuenta_con_y_sin_vinculo_por_motivo(base, tmp_path) -> None:
 
 def test_t04_aceptacion_mantiene_pais_anio_unidad_cita_el_dato_y_no_lo_describe_como_de_hoy() -> None:
     """PDF T04: mantener país, año y unidad; citar el dato y no describirlo como cifra de hoy."""
-    filas = vincular("inflacion_precios", "economia")
+    filas = vincular("inflacion", "economia")
     (panama,) = por_rol(filas, contexto.ROL_PANAMA)
     assert (panama["pais_iso3"], panama["anio"], panama["unidad"]) == ("PAN", 2023, "% anual")
     assert panama["id_evidencia"] == f"IND-PAN-{IND_INFLACION}-2023"           # cita válida: ID del dato

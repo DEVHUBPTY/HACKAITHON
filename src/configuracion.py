@@ -626,17 +626,19 @@ class AlcanceGeografico(ModeloConfig):
 
 
 class Impacto(ModeloConfig):
-    peso_subtema: float = Unidad
+    """I = ``peso_tema`` × alcance del tema + ``peso_geografico`` × alcance geográfico (D-125: sin subtemas)."""
+
+    peso_tema: float = Unidad
     peso_geografico: float = Unidad
     alcance_geografico: AlcanceGeografico
-    alcance_subtema: dict[str, float]
+    alcance_tema: dict[str, float]   # un valor por tema del reto (6)
 
     @model_validator(mode="after")
     def _partes(self) -> Impacto:
-        _suma_es([self.peso_subtema, self.peso_geografico], 1, "las partes de I")
-        malos = [k for k, v in self.alcance_subtema.items() if not 0 <= v <= 1]
+        _suma_es([self.peso_tema, self.peso_geografico], 1, "las partes de I")
+        malos = [k for k, v in self.alcance_tema.items() if not 0 <= v <= 1]
         if malos:
-            raise ValueError(f"alcance_subtema fuera de [0, 1]: {malos}")
+            raise ValueError(f"alcance_tema fuera de [0, 1]: {malos}")
         return self
 
 
@@ -784,16 +786,10 @@ class EjemploTema(ModeloConfig):
         return self
 
 
-class Subtema(ModeloConfig):
-    nombre: str
-    prototipo: str
-
-
 class Tema(ModeloConfig):
     nombre: str
     descripcion: str
     ejemplos: list[EjemploTema]
-    subtemas: dict[str, Subtema]
 
 
 class FueraDeTemas(ModeloConfig):
@@ -814,9 +810,6 @@ class ConfigTemas(ModeloConfig):
     def _cantidad_de_temas(self) -> ConfigTemas:
         if len(self.temas) != self.cantidad_temas:
             raise ValueError(f"cantidad_temas: son {self.cantidad_temas} y hay {len(self.temas)} temas")
-        ids = [s for t in self.temas.values() for s in t.subtemas]
-        if len(ids) != len(set(ids)):
-            raise ValueError("un subtema se repite entre temas")
         return self
 
 
@@ -841,43 +834,43 @@ class Vinculo(ModeloConfig):
         return self
 
 
-class CorreccionTema(ModeloConfig):
-    """D-122: un subtema nombrado corrige el tema del grupo (determinista, sin embeddings; ver ``contexto.tema_por_subtema_nombrado``)."""
+class ReglaVinculo(Vinculo):
+    """D-125: regla interna que dispara un vínculo. No es una categoría: el reto solo define los 6 temas.
 
-    activa: bool
-    corregir_sin_tema: bool   # si el clasificador no asignó tema (``sin_tema`` o nulo), un único tema nombrado lo asigna
-    criterio: str = Field(min_length=1)   # valor que se guarda en ``grupos.criterio_tema`` cuando el tema se corrige
-
-
-class SubtemaVinculo(ModeloConfig):
-    """D-92 y E1-10c (X41): el grupo toma el subtema más cercano solo si un criterio de ``criterios`` lo respalda.
-
-    ``margen``: supera al segundo por ``margen_minimo``; ``lexico``: un titular nombra un término del subtema. En ambos
-    casos, si un titular nombra un término de OTRO subtema del mismo tema, el subtema es ambiguo y no se afirma.
+    Se dispara si el tema del grupo es ``tema`` y algún titular contiene un término de ``terminos`` (palabra completa, sin
+    distinguir mayúsculas ni acentos) o coincide con un patrón de ``patrones``, salvo que ese titular lleve un marcador de
+    ``exclusiones``.
     """
 
-    criterios: list[Literal["margen", "lexico"]] = Field(min_length=1)   # en este orden; E1-10c: solo ``lexico``
-    margen_minimo: float = Field(ge=0)
-    terminos_por_subtema: dict[str, list[str]]   # apoyo léxico: un término en el titular respalda el subtema
-    # E1-07c (X77): expresiones regulares (sobre texto sin tildes ni mayúsculas) que también respaldan el subtema; sirven para
-    # las formas de una frase («construcción del/de un acueducto») que una lista literal no cubre.
-    patrones_por_subtema: dict[str, list[str]] = Field(default_factory=dict)
-    # E1-07c (X78, D-111): marcadores (palabra o frase completa) que, en un titular, impiden que ese titular respalde el subtema
-    # («juez imputa a funcionarios del MOP» es un proceso judicial, no una obra). No lo vuelven ruido: el tema se decide aparte.
-    exclusiones_por_subtema: dict[str, list[str]] = Field(default_factory=dict)
-    # D-122: si los titulares nombran subtemas de un único tema distinto al clasificado, ese tema gana.
-    correccion_tema: CorreccionTema = Field(default_factory=lambda: CorreccionTema(activa=False, corregir_sin_tema=False, criterio="subtema_nombrado"))
+    tema: str
+    terminos: list[str] = Field(min_length=1)
+    patrones: list[str] = Field(default_factory=list)   # expresiones regulares sobre texto sin tildes ni mayúsculas
+    exclusiones: list[str] = Field(default_factory=list)
 
-    @field_validator("patrones_por_subtema")
-    @classmethod
-    def _patrones_validos(cls, v: dict[str, list[str]]) -> dict[str, list[str]]:
-        for subtema, patrones in v.items():
-            for patron in patrones:
-                try:
-                    re.compile(patron)
-                except re.error as e:
-                    raise ValueError(f"patrones_por_subtema[{subtema}]: {patron!r} no es una expresión regular válida ({e})") from e
-        return v
+    @model_validator(mode="after")
+    def _listas_validas(self) -> ReglaVinculo:
+        if any(not x.strip() for x in (*self.terminos, *self.exclusiones)):
+            raise ValueError("terminos y exclusiones: palabras no vacías")
+        for patron in self.patrones:
+            try:
+                re.compile(patron)
+            except re.error as e:
+                raise ValueError(f"patrones: {patron!r} no es una expresión regular válida ({e})") from e
+        return self
+
+
+class TextosReglaVinculo(ModeloConfig):
+    """Textos de la columna ``vinculos.regla`` cuando el vínculo lo decide una regla interna (D-125)."""
+
+    disparada: str    # lleva {regla} y {termino}
+    ambigua: str      # lleva {tema} y {reglas}
+
+    @model_validator(mode="after")
+    def _marcadores(self) -> TextosReglaVinculo:
+        for texto, marcas in ((self.disparada, ("{regla}", "{termino}")), (self.ambigua, ("{tema}", "{reglas}"))):
+            if any(m not in texto for m in marcas):
+                raise ValueError(f"textos_regla: falta alguno de {marcas} en {texto!r}")
+        return self
 
 
 class SismosVinculo(ModeloConfig):
@@ -910,9 +903,9 @@ class SbpVinculo(ModeloConfig):
 
     @field_validator("plantilla_regla")
     @classmethod
-    def _con_subtema(cls, v: str) -> str:
-        if "{subtema}" not in v:
-            raise ValueError("plantilla_regla debe llevar {subtema}")
+    def _con_regla(cls, v: str) -> str:
+        if "{regla}" not in v:
+            raise ValueError("plantilla_regla debe llevar {regla}")
         return v
 
     @field_validator("nota_periodo")
@@ -993,11 +986,11 @@ class ConfigVinculos(ModeloConfig):
     motivo_por_defecto: str
     ventana_coincidencia_dias: int = Field(ge=0)
     pais_por_defecto: str
-    subtema: SubtemaVinculo
+    textos_regla: TextosReglaVinculo
     sismos: SismosVinculo
     sbp: SbpVinculo
-    vinculos: dict[str, Vinculo]  # por subtema
-    vinculos_por_tema: dict[str, Vinculo]  # cualquier subtema del tema
+    reglas_vinculo: dict[str, ReglaVinculo]  # D-125: tema + términos; el nombre es solo un identificador
+    vinculos_por_tema: dict[str, Vinculo]  # sin regla disparada, el vínculo del tema
     tendencia_anios: int = Field(ge=1)
     indicadores_solo_contexto: list[str]
     palabras_prohibidas: list[str]
@@ -1008,14 +1001,14 @@ class ConfigVinculos(ModeloConfig):
     def _relaciones_declaradas(self) -> ConfigVinculos:
         if self.motivo_por_defecto not in self.motivos_sin_vinculo:
             raise ValueError("motivo_por_defecto debe estar en motivos_sin_vinculo")
-        malas = {v.relacion for v in (*self.vinculos.values(), *self.vinculos_por_tema.values())} - set(self.tipos_relacion)
+        malas = {v.relacion for v in (*self.reglas_vinculo.values(), *self.vinculos_por_tema.values())} - set(self.tipos_relacion)
         if malas:
             raise ValueError(f"relaciones no declaradas en tipos_relacion: {sorted(malas)}")
         return self
 
     @model_validator(mode="after")
     def _poblacion_no_va_sola(self) -> ConfigVinculos:
-        todos = (*self.vinculos.values(), *self.vinculos_por_tema.values())
+        todos = (*self.reglas_vinculo.values(), *self.vinculos_por_tema.values())
         solos = {v.id for v in todos} & set(self.indicadores_solo_contexto)
         if solos:
             raise ValueError(f"indicadores solo de contexto no pueden vincularse solos: {sorted(solos)}")
@@ -1023,7 +1016,7 @@ class ConfigVinculos(ModeloConfig):
 
     @model_validator(mode="after")
     def _textos_sin_palabras_prohibidas(self) -> ConfigVinculos:
-        textos = [v.limitacion for v in (*self.vinculos.values(), *self.vinculos_por_tema.values())]
+        textos = [v.limitacion for v in (*self.reglas_vinculo.values(), *self.vinculos_por_tema.values())]
         textos += [*self.notas.model_dump().values(), *self.cifra_titular.etiquetas.model_dump().values()]
         for palabra in self.palabras_prohibidas:
             patron = re.compile(rf"\b{re.escape(palabra)}\b", re.IGNORECASE)
@@ -1119,7 +1112,7 @@ class ConfigModalidad(ModeloConfig):
     tabla_acciones: TablaAcciones
     fuentes_sugeridas_extra: list[str]
     parcial: bool = False  # true: el archivo solo trae lo que necesita la ficha (D-90); la etapa que lo completa lo apaga
-    # Banca (D-11): tema -> sector; el alcance de I se mide por sector en lugar de subtema (diseño, reglas v1.3).
+    # Banca (D-11): tema -> sector; el alcance de I se mide por sector en lugar de tema (diseño, reglas v1.3).
     sectores_por_tema: dict[str, str] = Field(default_factory=dict)
     alcance_por_sector: dict[str, float] = Field(default_factory=dict)
     horizonte: HorizonteTemporal | None = None
@@ -1270,20 +1263,19 @@ def validar_coherencia(carpeta: Path | None = None) -> list[str]:
     carpeta = carpeta or CARPETA_CONFIG
     problemas: list[str] = []
     reglas, temas, vinculos = cargar_reglas(carpeta), cargar_temas(carpeta), cargar_vinculos(carpeta)
-    subtemas = {s for t in temas.temas.values() for s in t.subtemas}
-    if set(reglas.impacto.alcance_subtema) != subtemas:
-        dif = set(reglas.impacto.alcance_subtema) ^ subtemas
-        problemas.append(f"alcance_subtema y subtemas de temas.yaml difieren: {sorted(dif)}")
-    desconocidos = set(vinculos.vinculos) - subtemas
-    if desconocidos:
-        problemas.append(f"vinculos.yaml: subtemas inexistentes: {sorted(desconocidos)}")
+    if set(reglas.impacto.alcance_tema) != set(temas.temas):
+        dif = set(reglas.impacto.alcance_tema) ^ set(temas.temas)
+        problemas.append(f"alcance_tema y temas de temas.yaml difieren: {sorted(dif)}")
+    ajenas = {r.tema for r in vinculos.reglas_vinculo.values()} - set(temas.temas)
+    if ajenas:
+        problemas.append(f"vinculos.yaml: temas inexistentes en reglas_vinculo: {sorted(ajenas)}")
     sin_tema = set(vinculos.vinculos_por_tema) - set(temas.temas)
     if sin_tema:
         problemas.append(f"vinculos.yaml: temas inexistentes en vinculos_por_tema: {sorted(sin_tema)}")
     indicadores = set(cargar_fuentes(carpeta).banco_mundial.indicadores)
-    for sub, v in (*vinculos.vinculos.items(), *vinculos.vinculos_por_tema.items()):
+    for nombre, v in (*vinculos.reglas_vinculo.items(), *vinculos.vinculos_por_tema.items()):
         if v.fuente == "indicador" and v.id not in indicadores:
-            problemas.append(f"vinculos.yaml: {sub} usa el indicador {v.id}, que no está en fuentes.yaml")
+            problemas.append(f"vinculos.yaml: {nombre} usa el indicador {v.id}, que no está en fuentes.yaml")
     if (carpeta / "prioridad.yaml").exists() and (carpeta / "interfaz.yaml").exists():
         mostrados = cargar_interfaz(carpeta).bandeja.decimales_puntaje
         comparados = cargar_prioridad(carpeta).comparacion.decimales_empate
@@ -1329,10 +1321,10 @@ def validar_coherencia(carpeta: Path | None = None) -> list[str]:
             problemas.append("consulta.yaml: datos_oficiales.paises y banco_mundial.paises de fuentes.yaml difieren")
     if (carpeta / "verificacion.yaml").exists():
         ver = cargar_verificacion(carpeta)
-        problemas += [f"verificacion.yaml: subtema inexistente en fuentes.por_subtema: {s}" for s in sorted(set(ver.fuentes.por_subtema) - subtemas)]
+        problemas += [f"verificacion.yaml: regla de vínculo inexistente en fuentes.por_regla_vinculo: {r}" for r in sorted(set(ver.fuentes.por_regla_vinculo) - set(vinculos.reglas_vinculo))]
         problemas += [f"verificacion.yaml: tema inexistente en fuentes.por_tema: {t}" for t in sorted(set(ver.fuentes.por_tema) - set(temas.temas))]
         problemas += [f"verificacion.yaml: sin fuentes sugeridas para el tema {t}" for t in sorted(set(temas.temas) - set(ver.fuentes.por_tema))]
-        problemas += [f"verificacion.yaml: sin fuentes sugeridas para el subtema {s}" for s in sorted(subtemas - set(ver.fuentes.por_subtema))]
+        problemas += [f"verificacion.yaml: sin fuentes sugeridas para la regla de vínculo {r}" for r in sorted(set(vinculos.reglas_vinculo) - set(ver.fuentes.por_regla_vinculo))]
         codigos = set(ver.vacios.catalogo)
         emitidos = (set(VaciosPrioridad.model_fields) - {"motivo_sin_dato_oficial_por_defecto", "motivos_sin_vinculo"}) | {CODIGO_URGENCIA_SIN_PUBLICACION}
         faltan = emitidos - codigos
@@ -1528,14 +1520,14 @@ def cargar_ruido(carpeta: Path | None = None) -> ConfigRuido:
 
 # ------------------------------------------------------------------ clasificacion.yaml (E1-07)
 
-METODOS_CLASIFICACION = ("A", "B")
+METODOS_CLASIFICACION = ("A",)   # D-125 quitó el método B (prototipos por subtema)
 MIN_REMUESTREOS_PAREADOS = 2000   # mínimo exigido al bootstrap pareado (D-121)
 METODO_LOGISTICO = "logistica"      # D-121: regresión logística sobre los mismos embeddings; no lleva umbrales por modelo (ver ConfigLogistica)
 METODOS_ACTIVABLES = (*METODOS_CLASIFICACION, METODO_LOGISTICO)
 
 
 class UmbralesMetodo(ModeloConfig):
-    """Umbrales de un método (A o B) para un modelo: la similitud coseno no tiene la misma escala en cada uno."""
+    """Umbrales del método A para un modelo: la similitud coseno no tiene la misma escala en cada uno."""
 
     umbral_sin_tema: float
     margen_secundario: float
@@ -1585,7 +1577,7 @@ class ConfigAprendizajeActivo(ModeloConfig):
 
 class ConfigLogistica(ModeloConfig):
     """Clasificador por regresión logística (D-121). Se entrena SOLO con los textos de referencia de ``temas.yaml``
-    (descripción, ejemplos y prototipos de subtema); las etiquetas humanas no entran nunca en el entrenamiento.
+    (descripción y ejemplos); las etiquetas humanas no entran nunca en el entrenamiento.
 
     ``regularizacion_c`` y ``umbral_sin_tema`` son el RESULTADO de ``python -m eval.calibrar_logistico`` (validación
     cruzada estratificada sobre esos textos): el primero maximiza el macro-F1 de la validación cruzada de la
@@ -2067,7 +2059,7 @@ class ComparacionPrioridad(ModeloConfig):
 
 
 class ImpactoPrioridad(ModeloConfig):
-    alcance_subtema_desconocido: float = Unidad
+    alcance_tema_desconocido: float = Unidad
 
 
 class DatoOficialPrioridad(ModeloConfig):
@@ -2149,7 +2141,7 @@ class VaciosPrioridad(ModeloConfig):
     contradiccion_abierta: str
     medios_o_fechas_desconocidos: str
     noticia_recirculada: str
-    subtema_desconocido: str
+    tema_desconocido: str
     sector_desconocido: str
     motivo_sin_dato_oficial_por_defecto: str
     motivos_sin_vinculo: dict[str, str]
@@ -2447,12 +2439,11 @@ class VaciosVerificacion(ModeloConfig):
 
 
 class FuentesVerificacion(ModeloConfig):
-    subtema_desconocido: str
     nota: str
-    por_subtema: dict[str, list[str]]
+    por_regla_vinculo: dict[str, list[str]]   # D-125: por regla interna de vínculo (vinculos.yaml: reglas_vinculo)
     por_tema: dict[str, list[str]]
 
-    @field_validator("por_subtema", "por_tema")
+    @field_validator("por_regla_vinculo", "por_tema")
     @classmethod
     def _fuentes_con_nombre(cls, v: dict[str, list[str]]) -> dict[str, list[str]]:
         if any(not fuentes or any(not f.strip() for f in fuentes) for fuentes in v.values()):

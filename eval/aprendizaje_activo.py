@@ -88,8 +88,8 @@ def huella_de(pares: Iterable[tuple[str, str]]) -> str:
 
 
 def referencias_por_clase(temas: ConfigTemas) -> dict[str, int]:
-    """Textos de referencia por tema (descripción + ejemplos + prototipos de subtema) con que entrena el logístico."""
-    return {t: 1 + len(tema.ejemplos) + len(tema.subtemas) for t, tema in temas.temas.items()}
+    """Textos de referencia por tema (descripción + ejemplos) con que entrena el logístico."""
+    return {t: 1 + len(tema.ejemplos) for t, tema in temas.temas.items()}
 
 
 def ids_congelados(ruta: Path) -> set[str]:

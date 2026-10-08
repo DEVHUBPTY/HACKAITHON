@@ -26,8 +26,8 @@ def noticia(publicacion="2024-05-10T15:00:00Z", deteccion=None, id_="NOT-0000000
     return {"id_noticia": id_, "fecha_publicacion": publicacion, "fecha_deteccion": deteccion}
 
 
-def vincular(noticias, eventos, subtema="sismos"):
-    return cs.vincular_grupo("GRP-test", subtema, noticias, eventos, VINCULOS, FUENTES, CAMPOS)
+def vincular(noticias, eventos, regla="sismos"):
+    return cs.vincular_grupo("GRP-test", regla, noticias, eventos, VINCULOS, FUENTES, CAMPOS)
 
 
 def test_un_evento_coincidente_da_vinculo_sis_con_todos_los_campos():
@@ -46,7 +46,7 @@ def test_un_evento_coincidente_da_vinculo_sis_con_todos_los_campos():
         assert parte in r.limitacion
     (fila,) = cs.a_filas_vinculo(r, VINCULOS)
     assert fila["id_grupo"] == "GRP-test" and fila["id_evidencia"] == "SIS-us0001" and fila["motivo_sin_vinculo"] is None
-    assert (fila["fuente"], fila["rol"], fila["tipo"], fila["subtema"]) == ("usgs", "evento", "evento", "sismos")
+    assert (fila["fuente"], fila["rol"], fila["tipo"]) == ("usgs", "evento", "evento") and "subtema" not in fila   # D-125
     assert (fila["valor"], fila["unidad"], fila["profundidad_km"], fila["estado_evento"]) == (4.5, "magnitud", 35.2, "reviewed")
     assert fila["place"] == "22 km S of Puerto Armuelles, Panama" and fila["hora_utc"] == "2024-05-10T12:00:00Z"
     assert fila["regla"] == r.regla and fila["limitacion"] == r.limitacion
@@ -63,10 +63,14 @@ def test_dos_candidatos_se_listan_todos_y_ninguno_se_elige():
     assert {f["motivo_sin_vinculo"] for f in filas} == {"candidatos_ambiguos"} and {f["tipo"] for f in filas} == {"evento"}
 
 
-@pytest.mark.parametrize("subtema", ["inundaciones_lluvias", "deslizamientos", "alertas_proteccion_civil", "sequia_nino", None])
-def test_lluvias_inundaciones_y_danos_nunca_se_vinculan_a_usgs(subtema):
-    # hay un evento perfecto el mismo día: aun así, el subtema no lo permite
-    assert vincular([noticia()], [evento()], subtema=subtema) is None
+@pytest.mark.parametrize("regla", ["pib", "inflacion", "empleo", "telecomunicaciones", "banca", "regla_inexistente", None])
+def test_lluvias_inundaciones_y_danos_nunca_se_vinculan_a_usgs(regla):
+    # hay un evento perfecto el mismo día: aun así, solo la regla `sismos` (fuente usgs) lo permite
+    assert vincular([noticia()], [evento()], regla=regla) is None
+
+
+def test_solo_la_regla_de_sismos_se_vincula_a_usgs():
+    assert [n for n in VINCULOS.reglas_vinculo if cs.aplica(n, VINCULOS)] == ["sismos"]
 
 
 def test_noticia_de_2025_es_fuera_de_cobertura():
@@ -143,11 +147,11 @@ def test_eventos_reales_del_snapshot_se_cargan_ordenados():
 
 
 def base_metodo_a(tmp_path: Path) -> Path:
-    """Base clasificada como el método A activo: ``subtema_clasificado`` nulo; el subtema solo está en ``similitud_tema`` (B)."""
+    """Base clasificada con el método A (D-125: sin subtemas): el vínculo sale del tema del grupo y de los términos de sus titulares."""
     ruta = tmp_path / "senales.duckdb"
-    base = {"titulo": "t", "url": "u", "url_canonica": "u", "medio": "m", "tipo_firma": "sin firma", "es_ruido": False, "subtema_clasificado": None}
+    base = {"titulo": "t", "url": "u", "url_canonica": "u", "medio": "m", "tipo_firma": "sin firma", "es_ruido": False}
     noticias = [
-        # E1-10c (X41): el subtema exige que el titular lo nombre (el margen solo ya no basta)
+        # D-125: la regla `sismos` exige el tema eventos_naturales y que el titular nombre un sismo
         {**base, "titulo": "Sismo de 4,5 sacude Chiriquí", "id_noticia": "NOT-a", "fecha_publicacion": "2024-05-10T15:00:00Z", "id_grupo": "GRP-sismo"},
         {**base, "titulo": "Lluvias inundan calles de Colón", "id_noticia": "NOT-b", "fecha_publicacion": "2024-05-10T16:00:00Z", "id_grupo": "GRP-lluvia"},
     ]
@@ -156,11 +160,7 @@ def base_metodo_a(tmp_path: Path) -> Path:
         {**grupo, "id_grupo": "GRP-sismo", "id_noticia_central": "NOT-a", "ids_noticia": "NOT-a"},
         {**grupo, "id_grupo": "GRP-lluvia", "id_noticia_central": "NOT-b", "ids_noticia": "NOT-b"},
     ]
-    sim = [
-        {"id_noticia": "NOT-a", "metodo": "B", "tema": "eventos_naturales", "similitud": 0.7, "subtema": "sismos", "margen_subtema": 0.05},
-        {"id_noticia": "NOT-b", "metodo": "B", "tema": "eventos_naturales", "similitud": 0.7, "subtema": "inundaciones_lluvias", "margen_subtema": 0.05},
-    ]
-    db.guardar_todo(ruta, {"noticias": noticias, "grupos": grupos, "similitud_tema": sim})
+    db.guardar_todo(ruta, {"noticias": noticias, "grupos": grupos})
     return ruta
 
 
@@ -177,7 +177,7 @@ def escribir_eventos(ruta: Path, eventos: list[dict]) -> Path:
 def test_x18_un_grupo_de_sismos_se_vincula_con_la_base_del_metodo_a(tmp_path: Path):
     geojson = escribir_eventos(tmp_path / "eventos.geojson", [{"id": "SIS-us0001", "magnitude": 4.5, "time": "2024-05-10T12:00:00Z"}])
     resultados, filas, _ = contexto.aplicar_sismos(base_metodo_a(tmp_path), geojson, VINCULOS)
-    assert [(r.id_grupo, r.subtema, r.estado) for r in resultados] == [("GRP-sismo", "sismos", cs.VINCULADO)]   # lluvias: ausente
+    assert [(r.id_grupo, r.estado) for r in resultados] == [("GRP-sismo", cs.VINCULADO)]   # lluvias: ausente
     assert [f["id_evidencia"] for f in filas] == ["SIS-us0001"]
 
 
@@ -196,7 +196,7 @@ def test_las_filas_de_usgs_entran_en_el_esquema_y_el_reproceso_respeta_las_de_in
         con.close()
     assert [(f["fuente"], f["id_grupo"]) for f in filas] == [("indicador", "GRP-x"), ("usgs", "GRP-sismo")]
     usgs = filas[1]
-    assert (usgs["id_evidencia"], usgs["rol"], usgs["tipo"], usgs["subtema"], usgs["valor"], usgs["place"]) == ("SIS-us0001", "evento", "evento", "sismos", 4.5, "Panama")
+    assert (usgs["id_evidencia"], usgs["rol"], usgs["tipo"], usgs["subtema"], usgs["valor"], usgs["place"]) == ("SIS-us0001", "evento", "evento", None, 4.5, "Panama")
 
 
 def test_el_cli_escribe_los_resultados_de_usgs_en_el_reporte(tmp_path: Path):

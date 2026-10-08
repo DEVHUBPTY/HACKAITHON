@@ -1,4 +1,4 @@
-"""E1-10c: subtema con sustento (X41), alcance nacional (X42), ruido regional (X44) y D-103 (N y R)."""
+"""E1-10c: alcance nacional (X42), ruido regional (X44) y D-103 (N y R)."""
 
 from __future__ import annotations
 
@@ -7,67 +7,8 @@ import math
 import numpy as np
 import pytest
 
-from src import contexto, limpieza, puntaje
-from src.configuracion import cargar_temas, cargar_vinculos
+from src import limpieza, puntaje
 from tests.prioridad_ayuda import AHORA, CFG, REGLAS, entrada, miembro, vector
-
-SUB = cargar_vinculos().subtema
-TEMAS = cargar_temas().temas
-SERVICIOS = list(TEMAS["servicios_publicos"].subtemas)
-
-
-def decidir(subtema: str, margen: float, titular: str, tema: str = "servicios_publicos") -> tuple[str | None, str | None]:
-    return contexto.decidir_subtema([(subtema, 0.83, margen)], [titular], SUB, list(TEMAS[tema].subtemas))
-
-
-# ------------------------------------------------------------------ X41 · subtema con sustento
-
-
-@pytest.mark.parametrize(
-    ("subtema", "margen", "titular"),
-    [
-        # el margen pasa (D-92), pero el titular no nombra nada del subtema. (E1-07c, D-111: el pedido de fondos del MOP ya no
-        # es un caso sin sustento: nombra obras públicas, ver tests/test_e1_07c_obras.py)
-        ("agua_potable", 0.0444, "La Chorrera proyecta renovar el parque Tomás Martín Feuillet con una inversión de 620 mil dólares"),
-    ],
-)
-def test_x41_el_margen_solo_no_basta_para_afirmar_un_subtema(subtema: str, margen: float, titular: str) -> None:
-    assert decidir(subtema, margen, titular) == (None, None)
-
-
-@pytest.mark.parametrize(
-    "titular",
-    [
-        # nombran a la vez la salud (CSS, hospital) y la seguridad (aprehensión, reclusión): el subtema es ambiguo
-        "Aprehenden a Enrique Lau, exdirector de la CSS, por supuesto enriquecimiento injustificado",
-        "César Caicedo ahora está recluido en el Hospital Santo Tomás; había sido trasladado a Coiba",
-    ],
-)
-def test_x41_un_titular_que_nombra_dos_subtemas_del_tema_queda_sin_subtema(titular: str) -> None:
-    assert decidir("salud_publica", 0.0386, titular) == (None, None)
-
-
-@pytest.mark.parametrize(
-    ("subtema", "titular"),
-    [
-        ("salud_publica", "Hospital reporta falta de medicamentos"),                      # casos difíciles de docs/guia_temas.md
-        ("educacion_publica", "Paro docente deja sin clases a escuelas"),
-        ("seguridad_ciudadana", "Policía reporta aumento de homicidios"),
-        ("transporte_publico", "Usuarios del Metro y MiBus reportan retrasos"),          # prototipo de temas.yaml
-        ("seguridad_ciudadana", "Mujer es aprehendida en Santiago tras hallazgo de 162 paquetes de presunta droga en el vehículo que conducía"),
-    ],
-)
-def test_x41_un_titular_que_nombra_el_subtema_lo_conserva(subtema: str, titular: str) -> None:
-    assert decidir(subtema, 0.001, titular) == (subtema, "lexico")
-
-
-def test_x41_la_configuracion_ya_no_acepta_el_subtema_solo_por_margen() -> None:
-    assert SUB.criterios == ["lexico"]
-
-
-def test_x41_todo_subtema_del_catalogo_tiene_terminos_de_apoyo() -> None:
-    faltan = [s for t in TEMAS.values() for s in t.subtemas if not SUB.terminos_por_subtema.get(s)]
-    assert faltan == []
 
 
 # ------------------------------------------------------------------ X42 · alcance nacional
@@ -320,50 +261,6 @@ def test_x66_cristobal_colon_no_tapa_a_la_provincia_en_el_mismo_titular() -> Non
 )
 def test_x52_la_ciudad_o_el_distrito_de_panama_son_un_lugar_concreto(titular: str) -> None:
     assert _nivel(titular) == "local"
-
-
-# ------------------------------------------------------------------ X53 · el léxico elige el subtema, no solo confirma
-
-
-@pytest.mark.parametrize(
-    ("mas_cercano", "titular", "tema", "esperado"),
-    [
-        ("agua_potable", "Minsa: Adelantan vacunación contra VSR en embarazadas", "servicios_publicos", "salud_publica"),
-        ("agua_potable", "Contenido Exclusivo: El metro por la Tumba Muerto", "servicios_publicos", "transporte_publico"),
-        ("inversion", "Fitch mantiene el grado de inversión de Panamá", "economia", "banca_calificaciones"),   # «inversión» va dentro del término más largo
-    ],
-)
-def test_x53_el_subtema_cuyo_termino_aparece_se_asigna_aunque_no_sea_el_mas_cercano(mas_cercano: str, titular: str, tema: str, esperado: str) -> None:
-    assert decidir(mas_cercano, 0.001, titular, tema) == (esperado, "lexico")
-
-
-def test_x53_dos_subtemas_nombrados_siguen_sin_subtema() -> None:
-    assert decidir("agua_potable", 0.001, "Aprehenden a Enrique Lau, exdirector de la CSS, por supuesto enriquecimiento injustificado") == (None, None)
-
-
-@pytest.mark.parametrize(
-    ("subtema", "titular", "tema"),
-    [
-        ("sequia_nino", "Contenido Exclusivo: Coclé, se seca el campo", "eventos_naturales"),         # «seca» no está en la guía
-        ("agua_potable", "Lluvias: el agua arrastró vehículos en la vía", "servicios_publicos"),       # «agua» suelta no es el servicio
-        ("alertas_proteccion_civil", "Minsa enciende alertas por el dengue", "eventos_naturales"),    # «alerta» suelta no es protección civil
-        ("leyes_decretos", "Cumplir la ley de tránsito, piden autoridades", "regulacion"),            # «ley» suelta no es una norma nueva
-    ],
-)
-def test_x53_palabras_sueltas_ambiguas_no_respaldan_el_subtema(subtema: str, titular: str, tema: str) -> None:
-    assert decidir(subtema, 0.001, titular, tema) == (None, None)
-
-
-@pytest.mark.parametrize(
-    ("subtema", "titular", "tema"),
-    [
-        ("agua_potable", "Lluvias dejan sin agua a sectores de San Miguelito", "servicios_publicos"),   # caso difícil de la guía
-        ("alertas_proteccion_civil", "Protección Civil declara alerta en Chiriquí", "eventos_naturales"),
-        ("leyes_decretos", "Asamblea aprueba proyecto de ley de APP", "regulacion"),
-    ],
-)
-def test_x53_con_contexto_las_mismas_palabras_si_respaldan(subtema: str, titular: str, tema: str) -> None:
-    assert decidir(subtema, 0.001, titular, tema) == (subtema, "lexico")
 
 
 # ------------------------------------------------------------------ X54 · las reglas regionales se quedan dentro de D-84

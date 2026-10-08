@@ -3,8 +3,7 @@
 El método A (centroides) no puede aprender las fronteras entre economía, regulación y servicios públicos: cada tema es
 un promedio. Este método ajusta una ``LogisticRegression`` de scikit-learn sobre los MISMOS embeddings e5.
 
-* **Datos de entrenamiento:** solo los textos de referencia de ``config/temas.yaml`` (descripción, titulares de ejemplo
-  y prototipos de subtema), codificados con el rol ``tema``. Esos titulares están en ``config/ejemplos_excluidos.txt``,
+* **Datos de entrenamiento:** solo los textos de referencia de ``config/temas.yaml`` (descripción y titulares de ejemplo), codificados con el rol ``tema``. Esos titulares están en ``config/ejemplos_excluidos.txt``,
   así que nunca entran en la evaluación. Las etiquetas humanas (``eval/etiquetas.csv``) NO se usan para entrenar,
   ni para elegir C, ni para fijar el umbral: no hay fuga.
 * **Abstención:** si la probabilidad máxima no llega a ``umbral_sin_tema``, el resultado es ``sin_tema``.

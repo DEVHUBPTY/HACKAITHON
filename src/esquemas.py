@@ -359,16 +359,25 @@ class Cobertura(ModeloFicha):
     origen_fecha_fin: str | None = None
 
 
+CAMPOS_OBSOLETOS_QUE_SE_REPORTA = ("subtema", "criterio_subtema")   # D-125: el reto no define subtemas; una ficha vieja los trae
+
+
 class QueSeReporta(ModeloFicha):
     tema: str | None = None
     tema_secundario: str | None = None       # E2-02: el boletín bancario muestra el sector del tema principal y del secundario
-    subtema: str | None = None
-    criterio_subtema: str | None = None      # D-92: por qué se aceptó el subtema (`margen` o `lexico`); nulo si no hay subtema
     titular_central: TitularCentral
     cobertura: Cobertura
     contradicciones: list[ContradiccionFicha]
     advertencias: list[str]
     recirculada: bool
+
+    @model_validator(mode="before")
+    @classmethod
+    def _sin_campos_obsoletos(cls, datos: Any) -> Any:
+        """Una ficha guardada antes de D-125 (``fichas_revisadas``, ``fichas.jsonl``) trae ``subtema``: se ignora al leerla."""
+        if isinstance(datos, dict):
+            return {k: v for k, v in datos.items() if k not in CAMPOS_OBSOLETOS_QUE_SE_REPORTA}
+        return datos
 
 
 class TitularReportado(ModeloFicha):
@@ -477,7 +486,7 @@ class FuenteSugerida(ModeloFicha):
     """Sugerencia para verificar (D-37): nunca evidencia ni con formato de cita."""
 
     nombre: str = Field(min_length=1)
-    origen: Literal["subtema", "tema", "modalidad"]
+    origen: Literal["regla", "tema", "modalidad"]   # D-125: «regla» = regla interna de vínculo (antes «subtema»)
 
     @field_validator("nombre")
     @classmethod

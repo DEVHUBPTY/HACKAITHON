@@ -5,7 +5,7 @@ Recalcula el top 5 (CU-01) variando **un parámetro a la vez**:
 * **Cada peso (R, I, U, N, E) en ±``variacion_peso`` puntos**: los otros cuatro se reescalan proporcionalmente para que los
   pesos sigan sumando 100 (``Pesos`` lo exige).
 * **Cada parámetro supuesto de ``docs/parametros.md`` que cambia P, en ±``variacion_supuesto`` (20 %)**: partes de R, foco,
-  partes de I, alcance por subtema (la tabla entera), alcance geográfico (cada nivel), alcance sin subtema, ventana de U (horas y
+  partes de I, alcance por tema (la tabla entera), alcance geográfico (cada nivel), alcance sin tema, ventana de U (horas y
   días), partes de E, tope de procedencias, N del primer grupo y los dos supuestos de la agrupación que cambian los grupos
   (``ventana_dias`` y ``umbral_mismo_texto``; con ellos se **vuelve a agrupar** y se vuelve a vincular el dato oficial del
   Banco Mundial). Una parte que forma un par se reescala para que el par siga sumando 1; un valor en [0, 1] se recorta a 1.
@@ -17,7 +17,7 @@ Para cada variante se reporta qué temas entran y salen del top 5 y si cambia el
 5 de las reglas v1.3 y ya no está.** La estabilidad se resume con n e IC de Wilson al 95 % (variantes cuyo top 5 no cambia).
 El estado de evidencia no depende de P, así que no entra aquí.
 
-**Lo que no se mueve, y por qué:** supuestos que no afectan a P (cifra del titular, voto del subtema para el contexto, los
+**Lo que no se mueve, y por qué:** supuestos que no afectan a P (cifra del titular, las reglas internas de vínculo del contexto, los
 umbrales de contradicción: solo afectan al estado de evidencia o al contexto), la coincidencia de sismos (± 2 días; el snapshot
 no tiene grupos de sismos) y los de banca (modalidad_banca.yaml es parcial hasta E2-01, D-90). El detalle va en el JSON (``fuera_del_alcance``).
 
@@ -62,10 +62,9 @@ logger = logging.getLogger(__name__)
 SALIDA = RAIZ / "outputs" / "sensibilidad.json"
 ARRIBA, ABAJO = "+", "-"
 GRUPO_PESO, GRUPO_SUPUESTO = "peso", "supuesto"
-METODO_SUBTEMA = "B"
 FUERA_DEL_ALCANCE = {
     "cifra_titular.* (ventana, palabras, patrones)": "solo cambia la etiqueta de comparación del contexto, no P ni el estado",
-    "subtema del grupo (voto)": "método de contexto; I usa el subtema ya elegido",
+    "reglas de vínculo (tema + términos)": "método de contexto (D-125); I usa el tema, no la regla",
     "coincidencia de sismos (± 2 días)": "el snapshot no tiene grupos de sismos con vínculo de USGS que dependan de ella",
     "alcance por sector (banca)": "modalidad_banca.yaml es parcial (D-90): no define el alcance por sector hasta E2-01",
     "contradicciones.* (tope, verbos, solo_entre_procedencias)": "cambian el estado de evidencia y la acción, no P ni el ranking",
@@ -132,11 +131,11 @@ def ajustes(reglas: ReglasV13) -> list[Ajuste]:
     agregar("Foco: otro país que afecta a Panamá", lambda r, c, f: (r.model_copy(update={"relevancia": r.relevancia.model_copy(update={"foco_otro_pais_afecta": _recortar(rel.foco_otro_pais_afecta * f)})}), c))
     agregar("Foco: Panamá sujeto", lambda r, c, f: (r.model_copy(update={"relevancia": r.relevancia.model_copy(update={"foco_panama_sujeto": _recortar(rel.foco_panama_sujeto * f)})}), c))
 
-    def peso_subtema(r: ReglasV13, c: ConfigPrioridad, f: float):
-        subtema, geo = _par(imp.peso_subtema, imp.peso_geografico, f)
-        return r.model_copy(update={"impacto": r.impacto.model_copy(update={"peso_subtema": subtema, "peso_geografico": geo})}), c
+    def peso_tema(r: ReglasV13, c: ConfigPrioridad, f: float):
+        tema, geo = _par(imp.peso_tema, imp.peso_geografico, f)
+        return r.model_copy(update={"impacto": r.impacto.model_copy(update={"peso_tema": tema, "peso_geografico": geo})}), c
 
-    agregar("Partes de I (subtema · geográfico)", peso_subtema)
+    agregar("Partes de I (tema · geográfico)", peso_tema)
     for nivel in ("nacional", "provincial", "local", "desconocido", "exterior"):
         def alcance(r: ReglasV13, c: ConfigPrioridad, f: float, nivel: str = nivel):
             nuevo = r.impacto.alcance_geografico.model_copy(update={nivel: _recortar(getattr(imp.alcance_geografico, nivel) * f)})
@@ -144,14 +143,14 @@ def ajustes(reglas: ReglasV13) -> list[Ajuste]:
 
         agregar(f"Alcance geográfico {nivel}", alcance)
 
-    def tabla_subtemas(r: ReglasV13, c: ConfigPrioridad, f: float):
-        nueva = {k: _recortar(v * f) for k, v in imp.alcance_subtema.items()}
-        return r.model_copy(update={"impacto": r.impacto.model_copy(update={"alcance_subtema": nueva})}), c
+    def tabla_temas(r: ReglasV13, c: ConfigPrioridad, f: float):
+        nueva = {k: _recortar(v * f) for k, v in imp.alcance_tema.items()}
+        return r.model_copy(update={"impacto": r.impacto.model_copy(update={"alcance_tema": nueva})}), c
 
-    agregar("Alcance por subtema (la tabla entera)", tabla_subtemas)
+    agregar("Alcance por tema (la tabla entera)", tabla_temas)
     agregar(
-        "Alcance de I sin subtema",
-        lambda r, c, f: (r, c.model_copy(update={"impacto": c.impacto.model_copy(update={"alcance_subtema_desconocido": _recortar(c.impacto.alcance_subtema_desconocido * f)})})),
+        "Alcance de I sin tema",
+        lambda r, c, f: (r, c.model_copy(update={"impacto": c.impacto.model_copy(update={"alcance_tema_desconocido": _recortar(c.impacto.alcance_tema_desconocido * f)})})),
     )
     # D-106: «horas con U = 1» es 0 por decisión (sin meseta), no un supuesto: no se varía.
     agregar("U: días con U = 0", lambda r, c, f: (r.model_copy(update={"urgencia": r.urgencia.model_copy(update={"dias_nulo": urg.dias_nulo * f})}), c))
@@ -209,7 +208,6 @@ class Insumos:
     entradas: list[EntradaGrupo]
     filas: list[dict[str, Any]]                      # titulares que no son ruido, con ``titulo_limpio``
     vectores: np.ndarray
-    subtema_de_noticia: dict[str, dict[str, tuple[str, float, float | None]]]   # id_noticia -> tema -> (subtema, similitud, margen) del método B (D-92)
     indicadores: list[dict[str, Any]]
     oficial_en_base: dict[str, bool]                 # id_grupo (de la base) -> había dato oficial
     vinculos: ConfigVinculos
@@ -220,18 +218,12 @@ def leer_insumos(ruta_base: Path, reglas: ReglasV13, emb: Embeddings) -> Insumos
     try:
         entradas, _, _ = prioridad.leer_entradas(con, reglas, emb)
         filas = [n for n in db.leer_tabla(con, "noticias", "id_noticia") if n.get("id_grupo")]
-        similitudes: dict[str, dict[str, tuple[str, float, float | None]]] = {}
-        for id_noticia, tema, subtema, similitud, margen in con.execute(
-            "SELECT id_noticia, tema, subtema, similitud, margen_subtema FROM similitud_tema WHERE metodo = ? AND subtema IS NOT NULL",
-            [METODO_SUBTEMA],
-        ).fetchall():
-            similitudes.setdefault(id_noticia, {})[tema] = (subtema, similitud, margen)
         indicadores = db.leer_tabla(con, "indicadores")
     finally:
         con.close()
     return Insumos(
         entradas=entradas, filas=filas, vectores=codificar_titulares(filas, emb, reglas.agrupacion.usar_descripcion),
-        subtema_de_noticia=similitudes, indicadores=indicadores,
+        indicadores=indicadores,
         oficial_en_base={e.id_grupo: e.tiene_oficial for e in entradas}, vinculos=cargar_vinculos(),
     )
 
@@ -241,7 +233,7 @@ def _anio_de(fecha: str | None) -> int | None:
 
 
 def entradas_reagrupadas(insumos: Insumos, reglas: ReglasV13) -> list[EntradaGrupo]:
-    """Vuelve a agrupar con ``reglas`` y recalcula procedencias, subtema y dato oficial del Banco Mundial de cada grupo nuevo.
+    """Vuelve a agrupar con ``reglas`` y recalcula procedencias, reglas de vínculo y dato oficial del Banco Mundial de cada grupo nuevo.
 
     Un grupo con los mismos titulares conserva su ID, y entonces su dato oficial de USGS (si lo tiene) se toma de la base.
     """
@@ -250,16 +242,11 @@ def entradas_reagrupadas(insumos: Insumos, reglas: ReglasV13) -> list[EntradaGru
     vinculables = []
     for g in grupos:
         miembros = [insumos.filas[por_id[i]] for i in g.ids_noticia]
-        candidatos = [insumos.subtema_de_noticia.get(str(m["id_noticia"]), {}).get(g.tema_clasificado) for m in miembros]
         titulares = [str(m.get("titulo_limpio") or m.get("titulo") or "") for m in miembros]
-        subtema, criterio = (
-            contexto.decidir_subtema([c for c in candidatos if c is not None], titulares, insumos.vinculos.subtema)
-            if g.tema_clasificado
-            else (None, None)
-        )
+        reglas_del_grupo = contexto.reglas_disparadas(titulares, g.tema_clasificado, insumos.vinculos)
         central = insumos.filas[por_id[g.id_noticia_central]]
         fecha = central.get("fecha_publicacion") or central.get("fecha_deteccion")
-        vinculables.append({"id_grupo": g.id_grupo, "tema": g.tema_clasificado, "subtema": subtema, "criterio_subtema": criterio, "titular": g.titular_central, "anio_publicacion": _anio_de(fecha)})
+        vinculables.append({"id_grupo": g.id_grupo, "tema": g.tema_clasificado, "reglas": reglas_del_grupo, "titular": g.titular_central, "anio_publicacion": _anio_de(fecha)})
     filas_vinculo, _ = contexto.construir_vinculos(vinculables, insumos.indicadores, insumos.vinculos)
     aceptadas = cargar_prioridad().dato_oficial.relaciones_aceptadas
     oficial = {f["id_grupo"] for f in filas_vinculo if f["id_evidencia"] and f["tipo"] in aceptadas and not f["motivo_sin_vinculo"] and f["valor"] is not None}
@@ -271,7 +258,7 @@ def entradas_reagrupadas(insumos: Insumos, reglas: ReglasV13) -> list[EntradaGru
                 id_grupo=g.id_grupo,
                 miembros=tuple(insumos.filas[i] for i in indices),
                 vectores=insumos.vectores[indices],
-                subtema=v["subtema"],
+                tema=g.tema_clasificado,
                 n_procedencias=g.n_procedencias,
                 tiene_oficial=g.id_grupo in oficial or insumos.oficial_en_base.get(g.id_grupo, False),
             )

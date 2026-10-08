@@ -1,6 +1,6 @@
 """Calibración del clasificador logístico (D-121): C, umbral ``sin_tema`` y margen por validación cruzada.
 
-Usa SOLO los textos de referencia de ``config/temas.yaml`` (descripción, ejemplos y prototipos de subtema); no lee
+Usa SOLO los textos de referencia de ``config/temas.yaml`` (descripción y ejemplos); no lee
 ``eval/etiquetas.csv``, así que el conjunto de evaluación no interviene en ninguna elección. No escribe ``config/``:
 imprime los valores y una persona los pega en ``logistica`` de ``config/clasificacion.yaml``; un test los recalcula.
 

@@ -115,7 +115,7 @@ def test_los_casos_dificiles_se_leen_de_la_guia() -> None:
     assert {c.principal for c in casos} == {*cargar_temas().temas, SIN_TEMA}
 
 
-def test_ningun_caso_dificil_es_ejemplo_ni_prototipo_ni_descripcion() -> None:
+def test_ningun_caso_dificil_es_ejemplo_ni_descripcion() -> None:
     """Son casos de prueba: si sirven de referencia al clasificador, la medición es una fuga."""
     from src.limpieza import Reglas
 
@@ -152,7 +152,7 @@ def test_tema_a_id_acepta_nombres_ids_y_fuera_de_temas() -> None:
 def test_la_evaluacion_de_casos_dificiles_reporta_todo_lo_que_pide_la_spec(tmp_path) -> None:
     cfg = config_de_prueba()
     r = evalclas.evaluar_casos_dificiles(cfg, cargar_temas(), ["e5"], {"e5": MotorFalso()}, verificar_fuga=False)
-    assert set(r["configuraciones"]) == {"baseline", "baseline_ampliado", "e5/A", "e5/B"} and r["n"] == 15
+    assert set(r["configuraciones"]) == {"baseline", "baseline_ampliado", "e5/A"} and r["n"] == 15
     for c in r["configuraciones"].values():
         assert c["exactitud_principal"]["de"] == 15 and len(c["exactitud_principal"]["ic95"]) == 2
         assert c["macro_f1"]["n"] == 15 and c["macro_f1"]["ic95"] is not None and c["macro_f1"]["remuestreos"] == cfg.criterio_ab.remuestreos
@@ -161,9 +161,8 @@ def test_la_evaluacion_de_casos_dificiles_reporta_todo_lo_que_pide_la_spec(tmp_p
             assert {"precision", "recall", "f1", "soporte"} <= set(v) and "de" in v["precision"] and "ic95" in v["recall"]
         m = np.array(c["matriz_confusion"]["filas_real_columnas_predicho"])
         assert m.shape == (7, 7) and m.sum() == 15
-    crit = r["comparaciones"]["e5"]["criterio_A_vs_B"]
-    assert crit["decision"] in {"A", "B"} and "motivo" in crit and "ic95" in crit
-    assert {"A_menos_baseline", "B_menos_baseline"} <= set(r["comparaciones"]["e5"])
+    assert set(r["comparaciones"]["e5"]) == {"A_menos_baseline"}              # D-125: sin método B no hay criterio A vs. B
+    assert "ic95" in r["comparaciones"]["e5"]["A_menos_baseline"]
 
 
 # ------------------------------------------------------------------ etiquetas humanas
@@ -204,7 +203,7 @@ def test_con_etiquetas_se_evalua_solo_lo_que_no_es_ruido_y_se_cuenta_lo_demas(tm
     assert r["estado"] == "EVALUADO"
     assert r["conteo"] == {"etiquetados": 7, "ejemplos_excluidos": 0, "no_estan_en_la_base": 0, "marcados_como_ruido_por_el_sistema": 1, "evaluados": 6}
     assert r["configuraciones"]["baseline"]["exactitud_principal"]["de"] == 6
-    assert set(r["configuraciones"]) == {"baseline", "baseline_ampliado", "e5/A", "e5/B"}
+    assert set(r["configuraciones"]) == {"baseline", "baseline_ampliado", "e5/A"}
 
 
 def test_los_ejemplos_excluidos_no_entran_en_la_evaluacion(tmp_path, monkeypatch) -> None:

@@ -1,14 +1,14 @@
 """Contextualización de grupos con indicadores del Banco Mundial · E1-09, etapa 3, CU-02, T04.
 
-Cada grupo (``GRP-``) se vincula con el indicador que le corresponde **por subtema** y solo según
-``config/vinculos.yaml``; nada fuera de esa tabla. El resultado va a la tabla ``vinculos`` (``src/db.py``).
+Cada grupo (``GRP-``) se vincula con el indicador que le corresponde según su **tema** y las **reglas internas de vínculo**
+de ``config/vinculos.yaml``; nada fuera de esa tabla. El resultado va a la tabla ``vinculos`` (``src/db.py``).
 
-* **Subtema:** el subtema más cercano dentro del tema asignado al grupo (método B de ``src/clasificacion.py``, tabla
-  ``similitud_tema``), aunque el método activo sea el A. Voto de los titulares del grupo; desempata la suma de similitudes.
-  **Solo si** lo respalda un criterio de ``vinculos.subtema.criterios``: el único subtema del tema que nombran los titulares
-  (``terminos_por_subtema``, criterio ``lexico``, X53: aunque no sea el más cercano) o, si se activa, el más cercano con margen
-  ``margen_minimo`` (criterio ``margen``, D-92; inactivo desde E1-10c). Si los titulares nombran dos subtemas del tema, es ambiguo. Sin respaldo, el grupo queda sin subtema y recibe el vínculo por tema o ``tema_sin_indicador``.
-* **Vínculo:** primero ``vinculos`` (por subtema), después ``vinculos_por_tema``; si no hay, ``tema_sin_indicador``.
+* **Reglas de vínculo (D-125):** el reto define 6 temas y ningún subtema. Una regla (``reglas_vinculo``) se dispara si el tema del
+  grupo es el suyo y algún titular contiene uno de sus términos (palabra completa, sin mayúsculas ni acentos) o patrones, salvo
+  que lleve una exclusión. Las reglas NO son categorías: no se guardan en la base como tema ni subtema y la ficha no las muestra
+  como tales; solo dejan su texto en ``vinculos.regla``. Si se disparan dos o más del mismo tema, el vínculo es ambiguo: no se
+  elige ninguno (``candidatos_ambiguos``).
+* **Vínculo:** primero la regla disparada, después ``vinculos_por_tema``; si no hay, ``tema_sin_indicador``.
   Un indicador sin ningún valor no nulo de Panamá es ``sin_dato_en_periodo``.
 * **Panamá:** el último año con valor no nulo, declarado en la limitación junto con los años posteriores sin valor.
   **Comparables:** los demás países de la cuadrícula en **ese mismo año**, solo los que tienen dato. **Tendencia:** los
@@ -18,10 +18,10 @@ Cada grupo (``GRP-``) se vincula con el indicador que le corresponde **por subte
 * **USGS (sismos):** lo resuelve ``src/contexto_sismos.py`` (E1-09b). Aquí un vínculo cuya ``fuente`` no es ``indicador`` se
   deja pasar y se cuenta como ``delegados``: no se inventa un vínculo del Banco Mundial para un sismo. La CLI también
   vincula USGS **por defecto** (``--eventos``, por defecto ``data/processed/eventos.geojson``): ``aplicar_sismos`` vincula esos
-  grupos con ``eventos.geojson`` (mismo subtema, ``fuente = 'usgs'``). Si el archivo falta, se borran las filas ``usgs`` viejas
+  grupos con ``eventos.geojson`` (misma regla de vínculo, ``fuente = 'usgs'``). Si el archivo falta, se borran las filas ``usgs`` viejas
   y el reporte lo declara. Toda la reescritura de ``vinculos`` es una sola transacción (todo o nada).
 
-* **SBP (banca):** lo resuelve ``src/contexto_sbp.py`` (E3-02), igual que USGS: un subtema con ``fuente: sbp`` en ``vinculos.yaml``
+* **SBP (banca):** lo resuelve ``src/contexto_sbp.py`` (E3-02), igual que USGS: una regla de vínculo con ``fuente: sbp`` en ``vinculos.yaml``
   recibe una fila por serie agregada del sistema bancario (``sbp_series.csv``, ``fuente = 'sbp'``). La CLI lo hace **por defecto**
   (``--sbp``); si el archivo falta, se borran las filas ``sbp`` viejas y el reporte lo declara.
 
@@ -49,7 +49,7 @@ from src.clasificacion import proporcion
 from src.configuracion import (
     RAIZ,
     ConfigVinculos,
-    SubtemaVinculo,
+    ReglaVinculo,
     Vinculo,
     cargar_carga,
     cargar_fuentes,
@@ -63,10 +63,9 @@ from src.registro import configurar_logging
 logger = logging.getLogger(__name__)
 
 FUENTE_INDICADOR = "indicador"   # valor de ``vinculos.fuente`` de las filas que escribe este módulo
-METODO_SUBTEMA = "B"             # el subtema solo existe en el método B (prototipos por subtema)
 ROL_PANAMA, ROL_COMPARABLE, ROL_TENDENCIA = "panama", "comparable", "tendencia"
-CRITERIO_MARGEN, CRITERIO_LEXICO = "margen", "lexico"   # D-92: por qué se aceptó el subtema
-REGLA_SUBTEMA = "vinculo_por_subtema"
+MOTIVO_AMBIGUO = "candidatos_ambiguos"
+REGLA_VINCULO = "vinculo_por_regla"
 REGLA_TEMA = "vinculo_por_tema"
 REGLA_SIN_ENTRADA = "sin_vinculo_en_tabla"
 MOTIVO_SIN_DATO = "sin_dato_en_periodo"
@@ -78,21 +77,7 @@ SERIES_SBP = Path("processed") / "sbp_series.csv"   # bajo ``data/`` (fuente D, 
 POSICION_ANIO = slice(0, 4)      # ``YYYY`` de una fecha ISO 8601
 
 
-# ------------------------------------------------------------------ subtema
-
-
-def subtema_del_grupo(candidatos: Sequence[tuple[str, float]]) -> str | None:
-    """Subtema más cercano de un grupo a partir de ``(subtema, similitud)`` de sus titulares (método B, tema del grupo).
-
-    Gana el subtema con más titulares; empata la suma de similitudes y, si sigue el empate, el nombre (determinista).
-    """
-    if not candidatos:
-        return None
-    votos: Counter[str] = Counter(s for s, _ in candidatos)
-    suma: defaultdict[str, float] = defaultdict(float)
-    for subtema, similitud in candidatos:
-        suma[subtema] += similitud
-    return min(votos, key=lambda s: (-votos[s], -suma[s], s))
+# ------------------------------------------------------------------ reglas de vínculo (D-125)
 
 
 def _normalizar(texto: str) -> str:
@@ -101,114 +86,43 @@ def _normalizar(texto: str) -> str:
     return " ".join(sin_acentos.casefold().split())
 
 
+def _palabra_completa(termino: str) -> re.Pattern[str]:
+    return re.compile(r"(?<!\w)" + re.escape(_normalizar(termino)) + r"(?!\w)")
+
+
 def menciona_termino(titular: str, terminos: Sequence[str]) -> bool:
     """``True`` si ``titular`` contiene alguno de ``terminos`` como palabra completa, sin importar mayúsculas ni acentos."""
     texto = _normalizar(titular)
-    return any(re.search(r"(?<!\w)" + re.escape(_normalizar(t)) + r"(?!\w)", texto) for t in terminos if t.strip())
+    return any(_palabra_completa(t).search(texto) for t in terminos if t.strip())
 
 
-def subtemas_nombrados(
-    titulares: Sequence[str],
-    subtemas: Sequence[str],
-    terminos: Mapping[str, Sequence[str]],
-    patrones: Mapping[str, Sequence[str]] | None = None,
-    exclusiones: Mapping[str, Sequence[str]] | None = None,
-) -> set[str]:
-    """Subtemas de ``subtemas`` que algún titular nombra (palabra completa, sin mayúsculas ni acentos).
+def termino_que_dispara(titulares: Sequence[str], regla: ReglaVinculo) -> str | None:
+    """Primer término (o patrón) de ``regla`` que algún titular contiene, o ``None`` si no se dispara.
 
-    X53: una coincidencia contenida dentro de otra más larga del mismo titular no cuenta («inversión» dentro de «grado de
-    inversión» no nombra el subtema de inversión). X77: ``patrones`` son expresiones regulares que también nombran el subtema
-    («construcción del acueducto») y, por ser más largas, mandan sobre el término suelto («acueducto»). X78: si el titular
-    contiene un marcador de ``exclusiones`` de un subtema, ese titular no lo nombra («juez imputa a funcionarios del MOP»).
+    Un titular con un marcador de ``exclusiones`` no cuenta («juez imputa a funcionarios del MOP»). El orden de la lista de
+    términos manda, así que el resultado es determinista.
     """
-    patrones = patrones or {}
-    exclusiones = exclusiones or {}
-    nombrados: set[str] = set()
-    for titular in titulares:
-        texto = _normalizar(titular)
-        excluidos = {
-            s for s in subtemas
-            if any(m.strip() and re.search(r"(?<!\w)" + re.escape(_normalizar(m)) + r"(?!\w)", texto) for m in exclusiones.get(s, []))
-        }
-        tramos = [
-            (m.start(), m.end(), s)
-            for s in subtemas
-            for t in terminos.get(s, [])
-            if t.strip()
-            for m in re.finditer(r"(?<!\w)" + re.escape(_normalizar(t)) + r"(?!\w)", texto)
-        ] + [
-            (m.start(), m.end(), s)
-            for s in subtemas
-            for p in patrones.get(s, [])
-            for m in re.finditer(p, texto)
-        ]
-        for ini, fin, s in tramos:
-            contenido = any(i <= ini and fin <= f and (f - i) > (fin - ini) for i, f, _ in tramos)
-            if not contenido and s not in excluidos:
-                nombrados.add(s)
-    return nombrados
+    textos = [_normalizar(t) for t in titulares]
+    textos = [x for x in textos if not any(m.strip() and _palabra_completa(m).search(x) for m in regla.exclusiones)]
+    for termino in regla.terminos:
+        if any(_palabra_completa(termino).search(x) for x in textos):
+            return termino
+    for patron in regla.patrones:
+        if any(re.search(patron, x) for x in textos):
+            return patron
+    return None
 
 
-def tema_por_subtema_nombrado(
-    titulares: Sequence[str],
-    tema_actual: str | None,
-    subtemas_por_tema: Mapping[str, Sequence[str]],
-    cfg: SubtemaVinculo,
-) -> str | None:
-    """Tema que corrige al ``tema_actual`` del grupo (D-122), o ``None`` si no hay corrección.
+def reglas_disparadas(titulares: Sequence[str], tema: str | None, cfg: ConfigVinculos) -> dict[str, str]:
+    """Reglas de vínculo del ``tema`` que dispara algún titular, con el término que las disparó (ordenadas por nombre).
 
-    Busca en los titulares los subtemas de TODOS los temas con la misma regla léxica de ``subtemas_nombrados`` (términos,
-    patrones y exclusiones). Corrige solo si todos los subtemas nombrados pertenecen a un único tema distinto del actual.
-    Si nombran subtemas de dos o más temas, o ninguno, no cambia nada. Sin tema (nulo o ``sin_tema``) corrige solo si
-    ``correccion_tema.corregir_sin_tema``. No usa embeddings (X41: el subtema por margen sigue desactivado).
+    Sin tema (nulo o ``sin_tema``) ninguna regla se dispara: una regla exige el tema del grupo.
     """
-    corr = cfg.correccion_tema
-    if not corr.activa:
-        return None
-    if tema_actual not in subtemas_por_tema and not corr.corregir_sin_tema:
-        return None
-    universo = sorted({s for subs in subtemas_por_tema.values() for s in subs})
-    nombrados = subtemas_nombrados(titulares, universo, cfg.terminos_por_subtema, cfg.patrones_por_subtema, cfg.exclusiones_por_subtema)
-    temas = {t for t, subs in subtemas_por_tema.items() if nombrados & set(subs)}
-    if len(temas) != 1:
-        return None
-    (tema,) = temas
-    return tema if tema != tema_actual else None
-
-
-def decidir_subtema(
-    candidatos: Sequence[tuple[str, float, float | None]],
-    titulares: Sequence[str],
-    cfg: SubtemaVinculo,
-    subtemas_del_tema: Sequence[str] = (),
-) -> tuple[str | None, str | None]:
-    """``(subtema, criterio)`` del grupo, o ``(None, None)`` si el subtema es dudoso (D-92, E1-10c).
-
-    Se buscan en los titulares los términos (``terminos_por_subtema``) de los subtemas de ``subtemas_del_tema`` (el tema del
-    grupo); sin tema conocido, solo los del subtema más cercano (``subtema_del_grupo``). Si los titulares nombran **dos o más**
-    subtemas, el subtema es ambiguo y no se afirma (X41: «exdirector de la CSS» aprehendido nombra salud y seguridad). Si no,
-    se acepta por el primero de ``cfg.criterios`` que lo respalde:
-
-    * ``lexico`` (X53): el **único** subtema nombrado, sea o no el más cercano por embeddings («Minsa: vacunación…» → salud
-      pública aunque el más cercano sea agua potable).
-    * ``margen`` (D-92, inactivo desde E1-10c): el más cercano, si el margen promedio de los titulares (1.º − 2.º subtema del
-      tema) alcanza ``margen_minimo`` y ningún titular nombra otro subtema. Un titular sin margen guardado no lo respalda.
-    """
-    elegido = subtema_del_grupo([(s, sim) for s, sim, _ in candidatos])
-    universo = list(subtemas_del_tema) or ([elegido] if elegido else [])
-    nombrados = subtemas_nombrados(titulares, universo, cfg.terminos_por_subtema, cfg.patrones_por_subtema, cfg.exclusiones_por_subtema)
-    if len(nombrados) > 1:
-        return None, None
-    margenes = [m for _, _, m in candidatos]
-    for criterio in cfg.criterios:
-        if criterio == CRITERIO_LEXICO and nombrados:
-            return next(iter(nombrados)), CRITERIO_LEXICO
-        if (
-            criterio == CRITERIO_MARGEN and elegido is not None and nombrados <= {elegido}
-            and all(m is not None for m in margenes) and sum(margenes) / len(margenes) >= cfg.margen_minimo   # type: ignore[arg-type]
-        ):
-            return elegido, CRITERIO_MARGEN
-    return None, None
+    disparadas = {}
+    for nombre, regla in sorted(cfg.reglas_vinculo.items()):
+        if regla.tema == tema and (termino := termino_que_dispara(titulares, regla)) is not None:
+            disparadas[nombre] = termino
+    return disparadas
 
 
 # ------------------------------------------------------------------ cifra del titular
@@ -314,13 +228,23 @@ def comparar_cifra(
 # ------------------------------------------------------------------ vínculo de un grupo
 
 
-def elegir_vinculo(tema: str | None, subtema: str | None, cfg: ConfigVinculos) -> tuple[Vinculo | None, str]:
-    """Vínculo definido en la tabla para (tema, subtema) y la regla que lo eligió; sin entrada -> ``(None, regla)``."""
-    if subtema and subtema in cfg.vinculos:
-        return cfg.vinculos[subtema], f"{REGLA_SUBTEMA}:{subtema}"
+def elegir_vinculo(
+    tema: str | None, disparadas: Mapping[str, str], cfg: ConfigVinculos
+) -> tuple[Vinculo | None, str, str | None, str | None]:
+    """Vínculo de un grupo, el texto de la regla que lo eligió, el motivo si no hay vínculo y el nombre de la regla de vínculo.
+
+    Una regla disparada gana; dos o más del tema son ambiguas (sin vínculo, ``candidatos_ambiguos``); sin regla, el vínculo del
+    tema; sin nada, ``tema_sin_indicador``. Devuelve ``(vinculo, regla, motivo, nombre_de_regla)``.
+    """
+    textos = cfg.textos_regla
+    if len(disparadas) > 1:
+        return None, textos.ambigua.format(tema=tema, reglas=", ".join(sorted(disparadas))), MOTIVO_AMBIGUO, None
+    if disparadas:
+        ((nombre, termino),) = disparadas.items()
+        return cfg.reglas_vinculo[nombre], textos.disparada.format(regla=nombre, termino=termino), None, nombre
     if tema and tema in cfg.vinculos_por_tema:
-        return cfg.vinculos_por_tema[tema], f"{REGLA_TEMA}:{tema}"
-    return None, f"{REGLA_SIN_ENTRADA}:{tema or 'sin_tema'}/{subtema or 'sin_subtema'}"
+        return cfg.vinculos_por_tema[tema], f"{REGLA_TEMA}:{tema}", None, None
+    return None, f"{REGLA_SIN_ENTRADA}:{tema or 'sin_tema'}", cfg.motivo_por_defecto, None
 
 
 def _fila(id_grupo: str, **campos: Any) -> dict[str, Any]:
@@ -330,9 +254,7 @@ def _fila(id_grupo: str, **campos: Any) -> dict[str, Any]:
     return fila
 
 
-def _fila_dato(
-    id_grupo: str, dato: Mapping[str, Any], vinculo: Vinculo, regla: str, rol: str, subtema: str | None, nota: str, criterio: str | None = None
-) -> dict[str, Any]:
+def _fila_dato(id_grupo: str, dato: Mapping[str, Any], vinculo: Vinculo, regla: str, rol: str, nota: str) -> dict[str, Any]:
     return _fila(
         id_grupo,
         id_evidencia=dato["id_indicador"],
@@ -340,8 +262,6 @@ def _fila_dato(
         regla=regla,
         limitacion=f"{vinculo.limitacion} {nota}",
         rol=rol,
-        subtema=subtema,
-        criterio_subtema=criterio,
         pais_iso3=dato["pais_iso3"],
         indicador_id=dato["indicador_id"],
         anio=dato["anio"],
@@ -354,34 +274,34 @@ def _fila_dato(
 def vincular_grupo(
     id_grupo: str,
     tema: str | None,
-    subtema: str | None,
+    disparadas: Mapping[str, str],
     titular: str | None,
     anio_publicacion: int | None,
     indicadores: Sequence[Mapping[str, Any]],
     cfg: ConfigVinculos,
-    criterio_subtema: str | None = None,
 ) -> list[dict[str, Any]] | None:
     """Filas de ``vinculos`` de un grupo; ``None`` si el vínculo no es del Banco Mundial (lo resuelve otro módulo).
 
-    ``indicadores`` son las filas de la tabla ``indicadores`` (la cuadrícula completa, con nulos explícitos).
+    ``disparadas`` son las reglas de vínculo del grupo (``reglas_disparadas``). ``indicadores`` son las filas de la tabla
+    ``indicadores`` (la cuadrícula completa, con nulos explícitos).
     """
-    vinculo, regla = elegir_vinculo(tema, subtema, cfg)
+    vinculo, regla, motivo, _ = elegir_vinculo(tema, disparadas, cfg)
     if vinculo is not None and vinculo.fuente != FUENTE_INDICADOR:
         return None  # gancho E1-09b: sismos y demás fuentes no son del Banco Mundial
     if vinculo is None:
-        return [_fila(id_grupo, regla=regla, motivo_sin_vinculo=cfg.motivo_por_defecto, subtema=subtema, criterio_subtema=criterio_subtema)]
+        return [_fila(id_grupo, regla=regla, motivo_sin_vinculo=motivo)]
     serie = {
         d["anio"]: d for d in indicadores if d["indicador_id"] == vinculo.id and d["pais_iso3"] == cfg.pais_por_defecto
     }
     con_valor = sorted(a for a, d in serie.items() if d["valor"] is not None)
     if not con_valor:
-        return [_fila(id_grupo, regla=f"{REGLA_SIN_DATO}:{vinculo.id}", motivo_sin_vinculo=MOTIVO_SIN_DATO, subtema=subtema, criterio_subtema=criterio_subtema)]
+        return [_fila(id_grupo, regla=f"{REGLA_SIN_DATO}:{vinculo.id}", motivo_sin_vinculo=MOTIVO_SIN_DATO)]
     ultimo = con_valor[-1]
     sin_valor = sorted(a for a in serie if a > ultimo)
     nota = cfg.notas.ultimo_anio.format(anio=ultimo)
     if sin_valor:
         nota += " " + cfg.notas.anios_sin_valor.format(anios=SEPARADOR_ANIOS.join(map(str, sin_valor)))
-    principal = _fila_dato(id_grupo, serie[ultimo], vinculo, regla, ROL_PANAMA, subtema, nota, criterio_subtema)
+    principal = _fila_dato(id_grupo, serie[ultimo], vinculo, regla, ROL_PANAMA, nota)
     if titular:
         cifra = extraer_cifra_titular(titular, vinculo.id or "", cfg)
         if cifra is not None:
@@ -391,10 +311,10 @@ def vincular_grupo(
     filas = [principal]
     for d in sorted((d for d in indicadores if d["indicador_id"] == vinculo.id and d["anio"] == ultimo), key=lambda d: d["pais_iso3"]):
         if d["pais_iso3"] != cfg.pais_por_defecto and d["valor"] is not None:  # solo los que tienen dato, el mismo año
-            filas.append(_fila_dato(id_grupo, d, vinculo, regla, ROL_COMPARABLE, subtema, nota, criterio_subtema))
+            filas.append(_fila_dato(id_grupo, d, vinculo, regla, ROL_COMPARABLE, nota))
     for anio in sorted(a for a in serie if ultimo - cfg.tendencia_anios < a <= ultimo):
         filas.append(
-            _fila_dato(id_grupo, serie[anio], vinculo, regla, ROL_TENDENCIA, subtema, cfg.notas.serie.format(anio=anio, n=cfg.tendencia_anios), criterio_subtema)
+            _fila_dato(id_grupo, serie[anio], vinculo, regla, ROL_TENDENCIA, cfg.notas.serie.format(anio=anio, n=cfg.tendencia_anios))
         )
     return filas
 
@@ -416,40 +336,26 @@ def _anio_de(fecha: str | None) -> int | None:
     return int(fecha[POSICION_ANIO]) if fecha and fecha[POSICION_ANIO].isdigit() else None
 
 
-def leer_grupos(con: Any, cfg: SubtemaVinculo | None = None) -> list[dict[str, Any]]:
-    """Cada grupo con su tema, el subtema más cercano (método B) si lo respalda un criterio (D-92, E1-10c), su criterio,
-    el titular central y el año. Sin ``cfg`` usa ``vinculos.subtema`` de la configuración."""
-    cfg = cfg or cargar_vinculos().subtema
-    catalogo = {t: list(d.subtemas) for t, d in cargar_temas().temas.items()}
+def leer_grupos(con: Any, cfg: ConfigVinculos | None = None) -> list[dict[str, Any]]:
+    """Cada grupo con su tema, las reglas de vínculo que disparan sus titulares (D-125), el titular central y el año.
+
+    Sin ``cfg`` usa la configuración de ``vinculos.yaml``.
+    """
+    cfg = cfg or cargar_vinculos()
     titulares: defaultdict[str, list[str]] = defaultdict(list)
     for id_grupo, titulo in con.execute("SELECT id_grupo, COALESCE(titulo_limpio, titulo) FROM noticias WHERE id_grupo IS NOT NULL").fetchall():
         if titulo:
             titulares[id_grupo].append(titulo)
-    votos: defaultdict[str, list[tuple[str, float, float | None]]] = defaultdict(list)
-    columnas = {f[0] for f in con.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'similitud_tema'").fetchall()}
-    if "margen_subtema" not in columnas:
-        logger.warning("similitud_tema no tiene margen_subtema (base anterior a D-92): ningún grupo se acepta por margen; ejecute `python -m src.clasificacion`")
-    margen_sql = "s.margen_subtema" if "margen_subtema" in columnas else "NULL"
-    for id_grupo, subtema, similitud, margen in con.execute(
-        f"""SELECT n.id_grupo, s.subtema, s.similitud, {margen_sql} FROM noticias n
-           JOIN grupos g ON g.id_grupo = n.id_grupo
-           JOIN similitud_tema s ON s.id_noticia = n.id_noticia AND s.tema = g.tema_clasificado AND s.metodo = ?
-           WHERE s.subtema IS NOT NULL""",
-        [METODO_SUBTEMA],
-    ).fetchall():
-        votos[id_grupo].append((subtema, similitud, margen))
     grupos = []
     for id_grupo, tema, titular, publicacion, deteccion in con.execute(
         """SELECT g.id_grupo, g.tema_clasificado, g.titular_central, n.fecha_publicacion, n.fecha_deteccion
            FROM grupos g LEFT JOIN noticias n ON n.id_noticia = g.id_noticia_central ORDER BY g.id_grupo"""
     ).fetchall():
-        subtema, criterio = decidir_subtema(votos.get(id_grupo, []), titulares.get(id_grupo, []), cfg, catalogo.get(tema, []))
         grupos.append(
             {
                 "id_grupo": id_grupo,
                 "tema": tema,
-                "subtema": subtema,
-                "criterio_subtema": criterio,
+                "reglas": reglas_disparadas(titulares.get(id_grupo, []), tema, cfg),
                 "titular": titular,
                 "anio_publicacion": _anio_de(publicacion or deteccion),
             }
@@ -464,7 +370,7 @@ def construir_vinculos(
     filas: list[dict[str, Any]] = []
     delegados: list[str] = []
     for g in grupos:
-        resultado = vincular_grupo(g["id_grupo"], g["tema"], g["subtema"], g["titular"], g["anio_publicacion"], indicadores, cfg, g.get("criterio_subtema"))
+        resultado = vincular_grupo(g["id_grupo"], g["tema"], g["reglas"], g["titular"], g["anio_publicacion"], indicadores, cfg)
         if resultado is None:
             delegados.append(g["id_grupo"])
             continue
@@ -485,7 +391,7 @@ def aplicar_a_base(ruta_base: Path, cfg: ConfigVinculos, con: Any | None = None)
     try:
         if propia:
             db.asegurar_esquema(con)
-        grupos = leer_grupos(con, cfg.subtema)
+        grupos = leer_grupos(con, cfg)
         indicadores = db.leer_tabla(con, "indicadores")
         filas, delegados = construir_vinculos(grupos, indicadores, cfg)
         _reemplazar(con, FUENTE_INDICADOR, filas, propia)
@@ -515,7 +421,7 @@ def aplicar_sismos(
 ) -> tuple[list[contexto_sismos.ResultadoSismos], list[dict[str, Any]], int]:
     """Vincula con USGS los grupos que ``vinculos.yaml`` delega a esa fuente y reemplaza solo las filas ``fuente = 'usgs'``.
 
-    El subtema es el de ``leer_grupos`` (el mismo de los vínculos del Banco Mundial). Con ``con`` escribe dentro de la
+    La regla de vínculo es la de ``leer_grupos`` (la misma de los vínculos del Banco Mundial). Con ``con`` escribe dentro de la
     transacción abierta del llamador (ver ``aplicar_a_base``). Devuelve ``(resultados, filas, eventos_sin_magnitud)``.
     """
     fuentes, campos_fecha = cargar_fuentes(), cargar_reglas().agrupacion.campos_fecha
@@ -529,16 +435,14 @@ def aplicar_sismos(
             db.asegurar_esquema(con)
         fechas = contexto_sismos.leer_noticias_por_grupo(con)
         resultados = []
-        criterios: dict[str, str | None] = {}
-        for g in leer_grupos(con, cfg.subtema):
-            vinculo, _ = elegir_vinculo(g["tema"], g["subtema"], cfg)
+        for g in leer_grupos(con, cfg):
+            vinculo, _, _, nombre = elegir_vinculo(g["tema"], g["reglas"], cfg)
             if vinculo is None or vinculo.fuente != contexto_sismos.FUENTE_USGS:
                 continue
-            r = contexto_sismos.vincular_grupo(g["id_grupo"], g["subtema"], fechas.get(g["id_grupo"], []), eventos, cfg, fuentes, campos_fecha)
+            r = contexto_sismos.vincular_grupo(g["id_grupo"], nombre, fechas.get(g["id_grupo"], []), eventos, cfg, fuentes, campos_fecha)
             if r is not None:
                 resultados.append(r)
-                criterios[g["id_grupo"]] = g["criterio_subtema"]
-        filas = [{**f, "criterio_subtema": criterios[r.id_grupo]} for r in resultados for f in contexto_sismos.a_filas_vinculo(r, cfg)]
+        filas = [f for r in resultados for f in contexto_sismos.a_filas_vinculo(r, cfg)]
         verificar_texto(filas, cfg)
         _reemplazar(con, contexto_sismos.FUENTE_VINCULO, filas, propia)
         return resultados, filas, sin_magnitud
@@ -557,7 +461,7 @@ def aplicar_sbp(
 ) -> tuple[list[str], list[dict[str, Any]]]:
     """Vincula con las series de la SBP los grupos que ``vinculos.yaml`` delega a esa fuente y reemplaza solo las filas ``fuente = 'sbp'``.
 
-    Mismo subtema que los demás vínculos (``leer_grupos``). Con ``con`` escribe dentro de la transacción abierta del llamador.
+    Misma regla de vínculo que los demás vínculos (``leer_grupos``). Con ``con`` escribe dentro de la transacción abierta del llamador.
     Devuelve ``(ids de los grupos de banca, filas)``.
     """
     fuentes = cargar_fuentes()
@@ -570,8 +474,9 @@ def aplicar_sbp(
             db.asegurar_esquema(con)
         filas: list[dict[str, Any]] = []
         grupos_banca: list[str] = []
-        for g in leer_grupos(con, cfg.subtema):
-            resultado = contexto_sbp.vincular_grupo(g["id_grupo"], g["subtema"], datos, cfg, fuentes, g["criterio_subtema"])
+        for g in leer_grupos(con, cfg):
+            _, _, _, nombre = elegir_vinculo(g["tema"], g["reglas"], cfg)
+            resultado = contexto_sbp.vincular_grupo(g["id_grupo"], nombre, datos, cfg, fuentes)
             if resultado is not None:
                 grupos_banca.append(g["id_grupo"])
                 filas.extend(resultado)
@@ -634,7 +539,6 @@ def construir_reporte(filas: Sequence[Mapping[str, Any]], delegados: Sequence[st
         "sin_vinculo": proporcion(len(sin), propios, z),
         "sin_vinculo_por_motivo": dict(sorted(Counter(sin.values()).items())),
         "con_vinculo_por_relacion": dict(sorted(Counter(f["tipo"] for f in con.values()).items())),
-        "con_vinculo_por_subtema": dict(sorted(Counter(f["subtema"] or "sin_subtema" for f in con.values()).items())),
         "con_vinculo_por_indicador": dict(sorted(Counter(f["indicador_id"] for f in con.values()).items())),
         "comparacion_con_cifra_del_titular": dict(sorted(Counter(f["comparacion_titular"] for f in con.values() if f["comparacion_titular"]).items())),
         "filas_en_vinculos": len(filas),
@@ -701,7 +605,7 @@ def ejecutar(ruta_base: Path, ruta_reporte: Path, ruta_eventos: Path | None = No
 def main(argv: list[str] | None = None) -> int:
     """CLI: vincula los grupos de ``data/senales.duckdb`` y escribe ``outputs/reporte_vinculos.json``."""
     configurar_logging()
-    parser = argparse.ArgumentParser(description="E1-09/E1-09b: contexto por subtema con el Banco Mundial y, por defecto, los sismos de USGS (--eventos)")
+    parser = argparse.ArgumentParser(description="E1-09/E1-09b: contexto por tema y regla de vínculo con el Banco Mundial y, por defecto, los sismos de USGS (--eventos)")
     parser.add_argument("--base", type=Path, default=RAIZ / "data" / cargar_normalizacion().salida.base_de_datos)
     parser.add_argument("--reporte", type=Path, default=RAIZ / "outputs" / REPORTE)
     parser.add_argument("--eventos", type=Path, default=RAIZ / "data" / EVENTOS, help="eventos.geojson de USGS (E1-09b)")

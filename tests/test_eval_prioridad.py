@@ -65,9 +65,9 @@ def test_el_reparto_de_un_par_mantiene_la_suma() -> None:
 
 
 NOMBRES_ESPERADOS = {
-    "Foco: otro país que afecta a Panamá", "Foco: Panamá sujeto", "Partes de I (subtema · geográfico)",
+    "Foco: otro país que afecta a Panamá", "Foco: Panamá sujeto", "Partes de I (tema · geográfico)",
     "Alcance geográfico nacional", "Alcance geográfico provincial", "Alcance geográfico local", "Alcance geográfico desconocido", "Alcance geográfico exterior",
-    "Alcance por subtema (la tabla entera)", "Alcance de I sin subtema", "U: días con U = 0",
+    "Alcance por tema (la tabla entera)", "Alcance de I sin tema", "U: días con U = 0",
     "Partes de E: procedencias", "Partes de E: oficial", "Partes de E: identificable", "Tope de procedencias en E", "N del primer grupo",
     "Ventana de agrupación (días)", "Umbral de «mismo texto» (procedencias)",
     "N: ancla baja (D-124)", "N: ventana de comparación (días, D-124)", "U: tope con fecha imputada (D-124)",   # D-124
@@ -96,10 +96,11 @@ def test_los_supuestos_se_mueven_un_veinte_por_ciento() -> None:
     assert por_nombre[("Tope de procedencias en E", "-")].reglas.evidencia.tope_procedencias == 2
     assert por_nombre[("Ventana de agrupación (días)", "+")].reglas.agrupacion.ventana_dias == 8
     assert por_nombre[("Ventana de agrupación (días)", "-")].reglas.agrupacion.ventana_dias == 6
-    tabla = por_nombre[("Alcance por subtema (la tabla entera)", "-")].reglas.impacto.alcance_subtema
-    assert tabla["sismos"] == pytest.approx(0.8) and tabla["destinos_promocion"] == pytest.approx(0.32)
-    sin_subtema = por_nombre[("Alcance de I sin subtema", "+")].cfg.impacto.alcance_subtema_desconocido
-    assert sin_subtema == pytest.approx(0.6)
+    tabla = por_nombre[("Alcance por tema (la tabla entera)", "-")].reglas.impacto.alcance_tema
+    assert tabla["eventos_naturales"] == pytest.approx(REGLAS.impacto.alcance_tema["eventos_naturales"] * 0.8)
+    assert tabla["turismo"] == pytest.approx(REGLAS.impacto.alcance_tema["turismo"] * 0.8)
+    sin_tema = por_nombre[("Alcance de I sin tema", "+")].cfg.impacto.alcance_tema_desconocido
+    assert sin_tema == pytest.approx(0.6)
 
 
 def test_comparar_cuenta_cuantos_temas_del_top_cambian() -> None:

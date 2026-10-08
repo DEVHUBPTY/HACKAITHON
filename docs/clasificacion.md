@@ -1,4 +1,6 @@
-# Clasificación temática: embeddings, método A/B y baseline (E1-07)
+# Clasificación temática: embeddings, método A (y logística) y baseline (E1-07)
+
+> **D-125 (2026-10-08):** el reto define 6 temas y ningún subtema. Se retiraron los subtemas y el **método B** (prototipos por subtema); las mediciones de B de abajo son **históricas** y ya no se pueden reproducir con el código vigente. Ver la sección «D-125 · Sin subtemas» al final.
 
 Estado al **2026-10-06** (con las correcciones de la revisión X15): implementado y medido sobre los **casos difíciles** de
 `docs/guia_temas.md` (n = 15). **La exactitud y el macro-F1 sobre datos reales están pendientes de `eval/etiquetas.csv`**
@@ -32,11 +34,11 @@ intacta.
 |---|---|---|
 | `noticias` | `tema_clasificado` | Uno de los 6 temas o `sin_tema` (la mayor similitud no llega al umbral). Nulo en el ruido |
 | | `tema_similitud` | Mayor similitud coseno (también cuando es `sin_tema`, para explicar la abstención) |
-| | `subtema_clasificado` | Solo con el método B: el subtema más parecido dentro del tema |
+| | `subtema_clasificado` | Obsoleta desde D-125: ya no se llena (nula); se conserva para que las bases viejas carguen |
 | | `tema_secundario`, `tema_secundario_similitud` | Segundo tema, solo si está a menos de `margen_secundario` y supera el umbral |
 | | `tema_baseline` | Tema del baseline de palabras clave de la variante `guia` (las mismas categorías) |
 | | `similitud_panama`, `ruido_similitud` | Señal del filtro de ruido por prototipo (revisión X14 de E1-03b) y marca si lo aplicó |
-| `similitud_tema` | `id_noticia, metodo, tema, similitud, subtema` | Similitud con **cada** tema, por método A y B (explicabilidad) |
+| `similitud_tema` | `id_noticia, metodo, tema, similitud, subtema` | Similitud con **cada** tema, por método (A, y `logistica` si está activo; explicabilidad). `subtema` y `margen_subtema` son obsoletas desde D-125 |
 
 Solo se clasifica `titulo_limpio` de los registros con `es_ruido = false` (más la descripción del RSS como texto interno si
 existiera; el snapshot actual no la trae). Los embeddings se cachean en disco por modelo y revisión (`.cache/embeddings/`,
@@ -52,19 +54,20 @@ ignorada por git); la caché guarda el hash del texto, **nunca el texto**.
 - **Locales siempre** (D-03): `sentence-transformers` en CPU, sin API. Primera descarga con internet a `models/` (ignorada
   por git, ≈ 930 MB las dos); después funciona **sin internet** (`local_files_only`; con `HF_HUB_OFFLINE=1` nunca
   descarga). Lo verifica `test_el_modelo_funciona_sin_internet_despues_de_la_primera_descarga`.
-- **Prefijos de e5:** el titular es la consulta (`query: `) y la descripción, los ejemplos y los prototipos de cada tema son
+- **Prefijos de e5:** el titular es la consulta (`query: `) y la descripción y los ejemplos de cada tema son
   los pasajes (`passage: `). La ficha del modelo (README en Hugging Face) pide `query: ` y `passage: ` para tareas asimétricas
   (recuperación) y solo `query: ` para clasificación o clustering con embeddings como características; la spec pide los dos
   prefijos y se tomó la lectura asimétrica. **No se midió la alternativa `query: ` en ambos lados**: es una elección de
   diseño, no un resultado.
 - Semilla 42 (torch, numpy y bootstrap), CPU: dos corridas dan los mismos vectores y las mismas decisiones.
 
-## Los dos métodos y el baseline
+## Los métodos y el baseline
 
 - **A (descripción + ejemplos):** cada tema es el centroide de los embeddings de su descripción y sus titulares de ejemplo
   (los ejemplos se limpian igual que los titulares reales). Similitud con un tema = coseno con su centroide.
-- **B (prototipos por subtema):** cada subtema tiene un prototipo; la similitud con un tema es la del subtema más parecido,
-  y el resultado sube a su tema. La salida de A y B son solo los 6 temas.
+- ~~**B (prototipos por subtema)**~~ **Retirado por D-125** (ver la sección final). Antes: cada subtema tenía un prototipo; la
+  similitud con un tema era la del subtema más parecido.
+- **`logistica` (D-121):** regresión logística sobre los mismos embeddings, entrenada con los textos de referencia de `temas.yaml`.
 - **Baseline por palabras clave (D-66), en dos variantes** (revisión X15). Ambas usan las mismas categorías y el mismo
   puntaje (términos distintos que coinciden; empate = el primero de `temas.yaml`; sin coincidencias = `sin_tema`):
   - **`baseline` (variante `guia`, la principal):** solo términos que aparecen literalmente en `docs/guia_temas.md` fuera de los
@@ -74,7 +77,7 @@ ignorada por git); la caché guarda el hash del texto, **nunca el texto**.
     `asamblea`, `homicidio`, `aerolinea`) coinciden con ellos; por eso **no es independiente de los casos difíciles** y se reporta
     aparte. Una versión anterior de este documento afirmaba que el baseline era independiente de los casos difíciles:
     no era demostrable y se retiró.
-- **Criterio A vs. B (D-21/D-57), fijado en el YAML antes de medir:** B solo si el IC 95 % (bootstrap pareado, 1.000
+- **Criterio A vs. B (D-21/D-57), fijado en el YAML antes de medir** (desde D-125 se aplica igual a `logistica` frente a A, con el bootstrap pareado de `logistica.bootstrap_pareado`): B solo si el IC 95 % (bootstrap pareado, 1.000
   remuestreos, semilla 42) de la diferencia de macro-F1 B − A **excluye el cero a favor de B** y **ningún tema con soporte
   empeora de forma significativa** (IC 95 % de su diferencia de F1 enteramente por debajo de cero). Se decide con los límites
   **sin redondear**. Si no, A. `metodo_activo: A`.
@@ -513,3 +516,32 @@ Lectura honesta:
    5. **Salud y vivienda.** Enfermedades respiratorias en una comarca y un incendio de vivienda no tienen un tema claro:
       el primero se etiquetó `servicios_publicos` y el segundo `fuera_de_temas` («no es incendio forestal ni alerta de
       protección civil»); el clasificador dice `eventos_naturales` para los dos. ¿Dónde acaba Eventos naturales?
+
+
+## D-125 · Sin subtemas: solo los 6 temas del reto (2026-10-08)
+
+**Decisión del dueño.** El PDF nombra seis temas y no define subtemas. Los subtemas producían asignaciones discutibles (p. ej. el
+riesgo de aves en un aeropuerto caía en turismo por la regla de aviación de pasajeros). Se retiró todo lo que dependía de ellos:
+
+- `temas.yaml` sin `subtemas` (39 prototipos menos); el método A usa descripción + ejemplos como siempre.
+- **Método B retirado**, con sus umbrales por modelo, `similitud_tema.margen_subtema` y el criterio A vs. B de `eval.clasificacion`.
+- **D-122 retirada** (la corrección del tema por subtema nombrado). El tema de un grupo es el dominante entre sus titulares.
+- `logistica` se vuelve a entrenar y a calibrar **sin los prototipos de subtema** (60 textos de referencia en lugar de 99):
+  C = 100, umbral 0.287, margen 0.113 (antes 1000 · 0.472 · 0.462).
+- I = 0.5 × alcance del tema + 0.5 × alcance geográfico (`impacto.alcance_tema`, promedio de los alcances por subtema anteriores).
+- Los vínculos oficiales los dispara una regla interna (tema + términos): ver `config/vinculos.yaml: reglas_vinculo`.
+
+Medición sobre las mismas 46 etiquetas humanas (n = 46; IC 95 % bootstrap, 1.000 remuestreos), antes y después:
+
+| Método | Antes (con prototipos) | Después (D-125) |
+|---|---|---|
+| A (macro-F1 · exactitud) | 0.492 [0.313, 0.615] · 33/46 | 0.492 [0.313, 0.615] · 33/46 (sin cambio: A nunca usó los prototipos) |
+| `logistica` (macro-F1 · exactitud) | 0.576 [0.334, 0.766] · 34/46 | 0.485 [0.299, 0.615] · 32/46 |
+| `logistica` − A (bootstrap pareado, 5.000 remuestreos) | +0.085 [−0.137, 0.276] | −0.007 [−0.041, 0.012] |
+
+**Lectura.** Los 39 prototipos eran la mitad de los textos con que entrenaba `logistica`; sin ellos pierde su ventaja (que ya no
+era significativa: el IC incluía el cero) y queda igual que A. Se mantiene `metodo_activo: A`. `logistica` no se descartó: hay 60 textos
+de referencia (8 a 13 por tema) y el pool de etiquetas humanas (D-123) está vacío; cuando las 47 etiquetas de `tvn_20261008` entren al
+pool habrá que volver a medirlo. Pipeline completo (filtro de ruido + clasificador, n = 100): A 0.630 [0.427, 0.774] · 87/100;
+`logistica` 0.621 [0.416, 0.768] · 86/100 (antes 0.667 [0.432, 0.845] · 88/100).
+

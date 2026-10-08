@@ -108,7 +108,7 @@ def test_cambiar_un_peso_en_un_yaml_temporal_cambia_p_sin_tocar_codigo(tmp_path:
 
 
 def test_partes_de_r_i_y_e_deben_sumar_uno(tmp_path: Path) -> None:
-    for seccion, clave in (("relevancia", "peso_foco"), ("impacto", "peso_subtema"), ("evidencia", "peso_oficial")):
+    for seccion, clave in (("relevancia", "peso_foco"), ("impacto", "peso_tema"), ("evidencia", "peso_oficial")):
         datos = leer("reglas_v1.3")
         datos[seccion][clave] = 0.9
         with pytest.raises(ErrorDeConfiguracion, match="deben sumar"):
@@ -145,12 +145,19 @@ def test_geografia_tiene_provincias_comarcas_y_distritos_sin_repetir() -> None:
     assert len(todos) == len(set(todos))
 
 
-def test_temas_son_seis_con_subtemas_y_ejemplos() -> None:
+def test_temas_son_seis_con_ejemplos_y_sin_subtemas() -> None:
     t = cargar_temas()
     assert set(t.temas) == {"economia", "logistica", "turismo", "servicios_publicos", "eventos_naturales", "regulacion"}
     for tema in t.temas.values():
-        assert tema.descripcion and tema.subtemas and len(tema.ejemplos) >= 7
-        assert all(s.prototipo for s in tema.subtemas.values())
+        assert tema.descripcion and len(tema.ejemplos) >= 7
+        assert not hasattr(tema, "subtemas")           # D-125: el reto define 6 temas y ningún subtema
+
+
+def test_un_subtema_en_temas_yaml_se_rechaza(tmp_path: Path) -> None:
+    datos = leer("temas")
+    datos["temas"]["turismo"]["subtemas"] = {"cruceros": {"nombre": "Cruceros", "prototipo": "x"}}
+    with pytest.raises(ErrorDeConfiguracion):
+        cargar_temas(escribir(tmp_path, "temas", datos))
 
 
 def test_un_septimo_tema_se_rechaza(tmp_path: Path) -> None:
@@ -174,31 +181,32 @@ def test_ejemplos_reales_son_exactamente_los_excluidos_de_la_evaluacion() -> Non
     assert reales == {linea.split("\t")[0] for linea in texto.splitlines() if linea and not linea.startswith("#")}
 
 
-def test_la_coherencia_detecta_un_subtema_sin_alcance_y_un_indicador_inexistente(tmp_path: Path) -> None:
+def test_la_coherencia_detecta_un_tema_sin_alcance_y_un_indicador_inexistente(tmp_path: Path) -> None:
     for nombre in ("fuentes", "reglas_v1.3", "temas", "vinculos", "modalidad_editorial", "restricciones"):
         escribir(tmp_path, nombre, leer(nombre))
     (tmp_path / "ejemplos_excluidos.txt").write_text((CARPETA_CONFIG / "ejemplos_excluidos.txt").read_text("utf-8"), encoding="utf-8")
     assert validar_coherencia(tmp_path) == []
     reglas = leer("reglas_v1.3")
-    del reglas["impacto"]["alcance_subtema"]["sismos"]
+    del reglas["impacto"]["alcance_tema"]["turismo"]
     escribir(tmp_path, "reglas_v1.3", reglas)
     vinc = leer("vinculos")
-    vinc["vinculos"]["empleo"]["id"] = "XX.NO.EXISTE"
+    vinc["reglas_vinculo"]["empleo"]["id"] = "XX.NO.EXISTE"
     escribir(tmp_path, "vinculos", vinc)
     problemas = " | ".join(validar_coherencia(tmp_path))
-    assert "sismos" in problemas and "XX.NO.EXISTE" in problemas
+    assert "turismo" in problemas and "XX.NO.EXISTE" in problemas
 
 
 def test_vinculos_apuntan_a_indicadores_de_fuentes_y_a_usgs() -> None:
     v = cargar_vinculos()
-    assert v.vinculos["sismos"].fuente == "usgs" and v.vinculos["sismos"].id is None
-    assert v.vinculos["inflacion_precios"].id == "FP.CPI.TOTL.ZG"
-    assert all(x.limitacion for x in v.vinculos.values())
+    assert v.reglas_vinculo["sismos"].fuente == "usgs" and v.reglas_vinculo["sismos"].id is None
+    assert v.reglas_vinculo["inflacion"].id == "FP.CPI.TOTL.ZG"
+    assert all(x.limitacion for x in v.reglas_vinculo.values())
+    assert all(x.terminos and x.tema in cargar_temas().temas for x in v.reglas_vinculo.values())
 
 
 def test_vinculo_con_relacion_no_declarada_falla(tmp_path: Path) -> None:
     datos = leer("vinculos")
-    datos["vinculos"]["empleo"]["relacion"] = "causa"
+    datos["reglas_vinculo"]["empleo"]["relacion"] = "causa"
     with pytest.raises(ErrorDeConfiguracion, match="relaciones no declaradas"):
         cargar_vinculos(escribir(tmp_path, "vinculos", datos))
 

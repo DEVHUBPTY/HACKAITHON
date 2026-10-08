@@ -30,7 +30,7 @@ tabla_acciones:
     parcial: {accion: "Archivar", motivo: "Atención baja con evidencia parcial: se conserva como registro."}
     insuficiente: {accion: "Archivar", motivo: "Atención baja con evidencia insuficiente: se conserva como registro."}
 
-# Fuentes que el analista suele consultar además de las del subtema (sugerencia, nunca evidencia; D-37).
+# Fuentes que el analista suele consultar además de las del tema y de la regla de vínculo (sugerencia, nunca evidencia; D-37).
 fuentes_sugeridas_extra:
   - "Superintendencia de Bancos de Panamá"
   - "Ministerio de Economía y Finanzas"
@@ -46,7 +46,7 @@ sectores_por_tema:
   servicios_publicos: continuidad operativa
   eventos_naturales: continuidad operativa
 
-# Alcance por sector para I (0 a 1): sustituye al alcance del subtema de reglas_v1.3.yaml. D-102: el mismo valor (1.0) para todos los
+# Alcance por sector para I (0 a 1): sustituye al alcance del tema de reglas_v1.3.yaml. D-102: el mismo valor (1.0) para todos los
 # sectores, así que el sector agrupa la bandeja pero no cambia I ni el orden. El mecanismo sigue siendo configurable.
 alcance_por_sector:
   economía: 1.0

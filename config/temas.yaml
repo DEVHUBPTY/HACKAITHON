@@ -1,7 +1,7 @@
-# Los 6 temas del reto: descripción ("Incluye" de docs/guia_temas.md), titulares de ejemplo y subtemas con prototipo.
+# Los 6 temas del reto: descripción ("Incluye" de docs/guia_temas.md), titulares de ejemplo. D-125: el reto define 6 temas y ningún subtema.
 # Ejemplos: real=true viene del snapshot (su id_noticia está en config/ejemplos_excluidos.txt y NUNCA entra en la evaluación);
 # real=false es ilustrativo, escrito para fijar el criterio, y NO se presenta como real (docs/exploracion.md, recomendaciones E1-05).
-# Opción A (D-21) usa descripción + ejemplos; opción B usa los prototipos de los subtemas. Ambas devuelven solo estos 6 temas.
+# El método A (D-21) usa descripción + ejemplos; la regresión logística (D-121) entrena con los mismos textos.
 version: "1.0"
 cantidad_temas: 6        # los 6 temas del reto (PDF sección 3, etapa 2)
 # Sectores del boletín de banca (D-11, propuesta): servicios públicos y eventos naturales -> continuidad operativa.
@@ -19,28 +19,6 @@ temas:
       - {titulo: "Banca panameña reporta crecimiento de los depósitos", real: false}
       - {titulo: "Calificadora mantiene la nota de riesgo de Panamá", real: false}
       - {titulo: "Precio de la canasta básica sube por tercer mes", real: false}
-    subtemas:
-      crecimiento_pib:
-        nombre: "Crecimiento y PIB"
-        prototipo: "La economía panameña crece según el último dato del PIB"
-      inflacion_precios:
-        nombre: "Inflación y precios (canasta básica, combustibles)"
-        prototipo: "Sube el precio de la canasta básica y de los combustibles"
-      empleo:
-        nombre: "Empleo"
-        prototipo: "Aumenta el desempleo en el país"
-      finanzas_publicas:
-        nombre: "Finanzas públicas (deuda, presupuesto, recaudación)"
-        prototipo: "Gobierno presenta presupuesto y nivel de deuda pública"
-      inversion:
-        nombre: "Inversión"
-        prototipo: "Anuncian nueva inversión extranjera en Panamá"
-      comercio_exterior:
-        nombre: "Comercio exterior"
-        prototipo: "Exportaciones panameñas caen o crecen en el trimestre"
-      banca_calificaciones:
-        nombre: "Banca y calificaciones de riesgo"
-        prototipo: "Agencia calificadora cambia la nota de riesgo soberano de Panamá"
   logistica:
     nombre: "Logística/Canal"
     descripcion: "Operación del Canal (tránsitos, calado, reservas, niveles del lago Gatún), puertos, Zona Libre de Colón, carga aérea, transporte de carga y cadenas de suministro. No incluye vuelos de pasajeros (Turismo) ni reglas nuevas de la ACP (Regulación)."
@@ -52,25 +30,6 @@ temas:
       - {titulo: "Puerto de Manzanillo amplía su capacidad de contenedores", real: false}
       - {titulo: "Naviera anuncia nueva ruta de carga por el Canal", real: false}
       - {titulo: "Canal habilita cupos adicionales para buques", real: false}
-    subtemas:
-      operacion_canal:
-        nombre: "Operación del Canal (tránsitos, calado, reservas, lago Gatún)"
-        prototipo: "Buques esperan varios días en las áreas de fondeo antes de cruzar las esclusas"
-      puertos:
-        nombre: "Puertos"
-        prototipo: "Los puertos de Balboa y Manzanillo mueven más contenedores"
-      zona_libre:
-        nombre: "Zona Libre de Colón"
-        prototipo: "La Zona Libre de Colón reporta caída de reexportaciones"
-      carga_aerea:
-        nombre: "Carga aérea"
-        prototipo: "Exportadores de flores y mariscos envían más toneladas en aviones cargueros"
-      transporte_carga:
-        nombre: "Transporte de carga"
-        prototipo: "Transportistas anuncian paro del transporte de carga"
-      cadenas_suministro:
-        nombre: "Cadenas de suministro"
-        prototipo: "Interrupción en la cadena de suministro de mercancías"
   turismo:
     nombre: "Turismo"
     descripcion: "Llegada de visitantes, cruceros, hotelería y ocupación, aviación de pasajeros y conectividad, destinos y promoción. No incluye carga aérea (Logística/Canal)."
@@ -85,22 +44,6 @@ temas:
       - {titulo: "Turistas extranjeros eligen Boquete para sus vacaciones", real: false}
       - {titulo: "Nuevo crucero inaugura la ruta del Caribe hacia Panamá", real: false}
       - {titulo: "Feria de turismo en Madrid promueve a Panamá como destino", real: false}
-    subtemas:
-      llegada_visitantes:
-        nombre: "Llegada de visitantes"
-        prototipo: "Panamá recibe más visitantes extranjeros que el año pasado"
-      cruceros:
-        nombre: "Cruceros"
-        prototipo: "Temporada de cruceros trae miles de turistas a Colón"
-      hoteleria:
-        nombre: "Hotelería y ocupación"
-        prototipo: "Ocupación hotelera sube durante el feriado"
-      aviacion_pasajeros:
-        nombre: "Aviación de pasajeros y conectividad"
-        prototipo: "Suman conexiones semanales hacia ciudades de Sudamérica y el Caribe desde el hub panameño"
-      destinos_promocion:
-        nombre: "Destinos y promoción"
-        prototipo: "Autoridad de Turismo promociona Bocas del Toro en feria internacional"
   servicios_publicos:
     nombre: "Servicios públicos"
     descripcion: "Agua potable, electricidad, telecomunicaciones e internet, transporte público, recolección de basura, salud pública, educación pública, seguridad ciudadana y obras públicas (carreteras, puentes, acueductos, licitaciones y contratos de obra, sobrecostos de obra). Una ley o reforma nueva sobre el servicio va a Regulación."
@@ -117,34 +60,6 @@ temas:
       - {titulo: "Aumentan los robos a comercios en el centro de la ciudad", real: false}
       - {titulo: "Retrasos en la rehabilitación de la carretera dejan incomunicadas a varias comunidades", real: false}
       - {titulo: "Contraloría detecta sobrecostos en la construcción de un puente en el interior", real: false}
-    subtemas:
-      agua_potable:
-        nombre: "Agua potable"
-        prototipo: "Idaan anuncia obras para garantizar el suministro de agua potable en La Chorrera"
-      electricidad:
-        nombre: "Electricidad"
-        prototipo: "Apagón deja sin luz a varios barrios"
-      telecomunicaciones:
-        nombre: "Telecomunicaciones e internet"
-        prototipo: "Falla en el servicio de internet afecta a miles de usuarios"
-      transporte_publico:
-        nombre: "Transporte público"
-        prototipo: "Usuarios del Metro y MiBus reportan retrasos"
-      recoleccion_basura:
-        nombre: "Recolección de basura"
-        prototipo: "Se acumula la basura por falta de recolección"
-      salud_publica:
-        nombre: "Salud pública (hospitales, CSS, MINSA, medicamentos)"
-        prototipo: "La CSS inaugura una nueva sala de urgencias para atender a los asegurados"
-      educacion_publica:
-        nombre: "Educación pública (escuelas, clases, docentes)"
-        prototipo: "Meduca anuncia la entrega de útiles y textos a alumnos del sector oficial"
-      seguridad_ciudadana:
-        nombre: "Seguridad ciudadana (policía, operativos, cárceles, delitos)"
-        prototipo: "Operativo conjunto desarticula una banda dedicada al robo de vehículos"
-      obras_publicas:
-        nombre: "Obras públicas (carreteras, puentes, acueductos, licitaciones y contratos de obra, sobrecostos de obra)"
-        prototipo: "El Ministerio de Obras Públicas avanza la construcción de una carretera y un puente"
   eventos_naturales:
     nombre: "Eventos naturales"
     descripcion: "Sismos, inundaciones y lluvias, deslizamientos, sequía y El Niño, incendios forestales y alertas de protección civil. La interrupción de un servicio causada por el fenómeno va a Servicios públicos."
@@ -159,25 +74,6 @@ temas:
       - {titulo: "Río se desborda y deja familias afectadas en Darién", real: false}
       - {titulo: "Alerta por tormentas eléctricas en el Pacífico", real: false}
       - {titulo: "Aguacero inunda calles de Colón", real: false}
-    subtemas:
-      sismos:
-        nombre: "Sismos"
-        prototipo: "Réplicas se sienten tras un movimiento telúrico de magnitud 5 en Darién"
-      inundaciones_lluvias:
-        nombre: "Inundaciones y lluvias"
-        prototipo: "El desbordamiento del río Juan Díaz obliga a evacuar a decenas de familias"
-      deslizamientos:
-        nombre: "Deslizamientos"
-        prototipo: "Deslizamiento de tierra bloquea la vía principal"
-      sequia_nino:
-        nombre: "Sequía y El Niño"
-        prototipo: "Sequía por El Niño seca el campo en el Arco Seco"
-      incendios_forestales:
-        nombre: "Incendios forestales"
-        prototipo: "Incendio forestal consume hectáreas de bosque"
-      alertas_proteccion_civil:
-        nombre: "Alertas de protección civil"
-        prototipo: "Sinaproc emite alerta por tormentas eléctricas"
   regulacion:
     nombre: "Regulación"
     descripcion: "Leyes y decretos, resoluciones de entes reguladores, reformas, listas internacionales (listas grises, GAFI), contratos y concesiones públicas y sanciones."
@@ -190,25 +86,6 @@ temas:
       - {titulo: "Panamá ratifica convenio internacional sobre transporte marítimo", real: false}
       - {titulo: "Asamblea discute proyecto de ley sobre contratación pública", real: false}
       - {titulo: "Superintendencia emite acuerdo sobre prevención de blanqueo de capitales", real: false}
-    subtemas:
-      leyes_decretos:
-        nombre: "Leyes y decretos"
-        prototipo: "Ejecutivo sanciona una nueva ley"
-      resoluciones_entes:
-        nombre: "Resoluciones de entes reguladores"
-        prototipo: "El ente regulador publica una resolución con nuevos requisitos para los operadores"
-      reformas:
-        nombre: "Reformas"
-        prototipo: "Asamblea debate una reforma al sistema de pensiones"
-      listas_internacionales:
-        nombre: "Listas internacionales (listas grises, GAFI)"
-        prototipo: "Organismo internacional revisa el estatus de Panamá en listas de cumplimiento"
-      contratos_concesiones:
-        nombre: "Contratos y concesiones públicas"
-        prototipo: "Gobierno otorga una concesión pública a una empresa"
-      sanciones:
-        nombre: "Sanciones"
-        prototipo: "Autoridad sanciona a una empresa con multa"
 
 fuera_de_temas:
   no_es_panama: "La noticia no trata sobre Panamá ni lo afecta (Panama City de Florida, sombreros Panamá)."

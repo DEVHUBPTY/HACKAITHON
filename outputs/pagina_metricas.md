@@ -2,7 +2,7 @@
 
 > **BORRADOR — métricas provisionales** · JUICIO PROVISIONAL DEL ASISTENTE, NO HUMANO (D-101): se rehace a mano en C-09; no reportar como juicio de una persona.
 
-Generada el 2026-10-07T22:19:07Z desde el commit `b4dc6ca` con `poetry run python -m scripts.pagina_metricas`. Ninguna cifra está escrita a mano: cada una sale del archivo que se indica. Toda proporción lleva numerador, denominador e IC 95 %.
+Generada el 2026-10-08T15:56:13Z desde el commit `e807b85` con `poetry run python -m scripts.pagina_metricas`. Ninguna cifra está escrita a mano: cada una sale del archivo que se indica. Toda proporción lleva numerador, denominador e IC 95 %.
 
 **Origen del juicio:** `humano` = lo decidió una persona (las etiquetas de clasificación y agrupación las propone el asistente y una persona las revisa y aprueba una por una, D-85) · **PROVISIONAL** = lo decidió el asistente (D-101) y se rehace en C-09 · `automático` = automático (sin juicio humano: lo calcula el código contra una referencia).
 
@@ -16,11 +16,11 @@ Generada el 2026-10-07T22:19:07Z desde el commit `b4dc6ca` con `poetry run pytho
 | Recall@5 por evidencias esperadas · semántica (IA) | 64.0 % | 32 de 50 | 42.6 % – 100.0 % | automático | `metricas.json` | — |
 | Recall@5 por evidencias esperadas · BM25 (baseline) | 48.0 % | 24 de 50 | 32.1 % – 80.0 % | automático | `metricas.json` | — |
 | Afirmaciones sustentadas | 96.7 % | 29 de 30 | 90.0 % – 100.0 % (Wilson 83.3 % – 99.4 %) | **PROVISIONAL** · asistente_provisional (D-101) | `metricas.json` | fallos: GRP-39773bed5a/A4 · meta 90 % sobre la estimación puntual |
-| Macro-F1 de clasificación · IA (e5/A) | 0.545 | n = 100 | 0.380 – 0.669 | humano | `ia_vs_baseline.json` | — |
-| Macro-F1 de clasificación · baseline | 0.545 | n = 100 | 0.338 – 0.666 | humano | `ia_vs_baseline.json` | — |
+| Macro-F1 de clasificación · IA (e5/A) | 0.629 | n = 100 | 0.427 – 0.774 | humano | `ia_vs_baseline.json` | — |
+| Macro-F1 de clasificación · baseline | 0.601 | n = 100 | 0.399 – 0.749 | humano | `ia_vs_baseline.json` | — |
 | Precision@5 · sistema | 20.0 % | 1 de 5 | 3.6 % – 62.5 % | **PROVISIONAL** · asistente_provisional (D-101) | `precision_at_5.json` | fallos: GRP-21ad932d54, GRP-038c4f0643, GRP-84a6b3a04b, GRP-39dfe8d714 |
 | Precision@5 · baseline por fecha de publicación | 0.0 % | 0 de 5 | 0.0 % – 43.5 % | **PROVISIONAL** · asistente_provisional (D-101) | `precision_at_5.json` | fallos: GRP-f9e3ba0bd2, GRP-87e128925b, GRP-0c210ad795, GRP-1df3ab1e22, GRP-0f8fb5a5bb |
-| Variantes cuyo top 5 no cambia de temas | 60.5 % | 26 de 43 | 45.6 % – 73.6 % | automático | `sensibilidad.json` | cada peso ±5 puntos y cada supuesto ±20 % |
+| Variantes cuyo top 5 no cambia de temas | 79.6 % | 39 de 49 | 66.4 % – 88.5 % | automático | `sensibilidad.json` | cada peso ±5 puntos y cada supuesto ±20 % |
 | Latencia p50 · Consulta (punta a punta, local, sin LLM) | 0.0068 s | n = 40 | 0.0003 – 0.0071 s | automático | `metricas.json` | — |
 | Latencia p50 · Paquete completo de borrador | 6.36 s | n = 12 | 5.04 – 7.69 s | automático | `metricas.json` | — |
 | Costo por paquete (mediana, cota superior) | 0.0031 USD | n = 12 | 0.0024 – 0.0038 USD | automático | `metricas.json` | deepseek/deepseek-flash, medido 2026-10-07T04:20:13Z |
@@ -81,20 +81,20 @@ Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de 
 
 | Métrica | Valor | Numerador / denominador | IC 95 % | Origen del juicio | Fuente | Fallos (IDs) · nota |
 |---|---|---|---|---|---|---|
-| Macro-F1 de clasificación · IA (e5/A) | 0.545 | n = 100 | 0.380 – 0.669 | humano | `ia_vs_baseline.json` | — |
-| Macro-F1 de clasificación · baseline | 0.545 | n = 100 | 0.338 – 0.666 | humano | `ia_vs_baseline.json` | — |
-| Macro-F1: diferencia IA − baseline | 0.000 | n = 100 | -0.214 – 0.267 | humano | `ia_vs_baseline.json` | — |
-| Exactitud del clasificador · IA (e5/A) | 54.7 % | 35 de 64 | 42.6 % – 66.3 % | humano | `ia_vs_baseline.json` | — |
-| Exactitud del clasificador · baseline | 45.3 % | 29 de 64 | 33.7 % – 57.4 % | humano | `ia_vs_baseline.json` | — |
-| Precisión de pares (validación cruzada) · IA | 88.0 % | 125 de 142 | 68.0 % – 100.0 % | humano | `ia_vs_baseline.json` | IC por remuestreo de titulares |
-| Recall de pares (validación cruzada) · IA | 95.4 % | 125 de 131 | 83.0 % – 100.0 % | humano | `ia_vs_baseline.json` | IC por remuestreo de titulares |
-| Precisión de pares (validación cruzada) · baseline | 100.0 % | 86 de 86 | 100.0 % – 100.0 % | humano | `ia_vs_baseline.json` | IC por remuestreo de titulares |
-| Recall de pares (validación cruzada) · baseline | 65.6 % | 86 de 131 | 44.3 % – 86.8 % | humano | `ia_vs_baseline.json` | IC por remuestreo de titulares |
+| Macro-F1 de clasificación · IA (e5/A) | 0.629 | n = 100 | 0.427 – 0.774 | humano | `ia_vs_baseline.json` | — |
+| Macro-F1 de clasificación · baseline | 0.601 | n = 100 | 0.399 – 0.749 | humano | `ia_vs_baseline.json` | — |
+| Macro-F1: diferencia IA − baseline | 0.028 | n = 100 | -0.244 – 0.310 | humano | `ia_vs_baseline.json` | — |
+| Exactitud del clasificador · IA (e5/A) | 71.7 % | 33 de 46 | 57.5 % – 82.7 % | humano | `ia_vs_baseline.json` | — |
+| Exactitud del clasificador · baseline | 60.9 % | 28 de 46 | 46.5 % – 73.6 % | humano | `ia_vs_baseline.json` | — |
+| Precisión de pares (validación cruzada) · IA | 100.0 % | 91 de 91 | 100.0 % – 100.0 % | humano | `ia_vs_baseline.json` | IC por remuestreo de titulares |
+| Recall de pares (validación cruzada) · IA | 97.9 % | 91 de 93 | 86.6 % – 100.0 % | humano | `ia_vs_baseline.json` | IC por remuestreo de titulares |
+| Precisión de pares (validación cruzada) · baseline | 100.0 % | 65 de 65 | 100.0 % – 100.0 % | humano | `ia_vs_baseline.json` | IC por remuestreo de titulares |
+| Recall de pares (validación cruzada) · baseline | 69.9 % | 65 de 93 | 44.6 % – 95.0 % | humano | `ia_vs_baseline.json` | IC por remuestreo de titulares |
 
-- Clasificación (macro-F1): **sin diferencia demostrable**; discordantes: solo IA 12, solo baseline 6 (n = 100).
-- Agrupación, diferencia IA − baseline en precision (n = 100 titulares): -0.120, IC 95 % -0.320 – 0.000 → **sin diferencia demostrable**.
-- Agrupación, diferencia IA − baseline en recall (n = 100 titulares): 0.298, IC 95 % 0.091 – 0.504 → **gana la IA**.
-- Agrupación, diferencia IA − baseline en f1 (n = 100 titulares): 0.123, IC 95 % -0.038 – 0.308 → **sin diferencia demostrable**.
+- Clasificación (macro-F1): **sin diferencia demostrable**; discordantes: solo IA 10, solo baseline 5 (n = 100).
+- Agrupación, diferencia IA − baseline en precision (n = 100 titulares): 0.000, IC 95 % 0.000 – 0.000 → **sin diferencia demostrable**.
+- Agrupación, diferencia IA − baseline en recall (n = 100 titulares): 0.280, IC 95 % 0.011 – 0.521 → **gana la IA**.
+- Agrupación, diferencia IA − baseline en f1 (n = 100 titulares): 0.166, IC 95 % 0.005 – 0.357 → **gana la IA**.
 
 ## Ranking: Precision@5, estabilidad y distribución
 
@@ -102,15 +102,15 @@ Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de 
 |---|---|---|---|---|---|---|
 | Precision@5 · sistema | 20.0 % | 1 de 5 | 3.6 % – 62.5 % | **PROVISIONAL** · asistente_provisional (D-101) | `precision_at_5.json` | fallos: GRP-21ad932d54, GRP-038c4f0643, GRP-84a6b3a04b, GRP-39dfe8d714 |
 | Precision@5 · baseline por fecha de publicación | 0.0 % | 0 de 5 | 0.0 % – 43.5 % | **PROVISIONAL** · asistente_provisional (D-101) | `precision_at_5.json` | fallos: GRP-f9e3ba0bd2, GRP-87e128925b, GRP-0c210ad795, GRP-1df3ab1e22, GRP-0f8fb5a5bb |
-| Variantes cuyo top 5 no cambia de temas | 60.5 % | 26 de 43 | 45.6 % – 73.6 % | automático | `sensibilidad.json` | cada peso ±5 puntos y cada supuesto ±20 % |
-| Variantes que conservan el mismo orden | 41.9 % | 18 de 43 | 28.4 % – 56.7 % | automático | `sensibilidad.json` | — |
-| Temas del top 5 que se conservan (sobre todas las variantes) | 90.7 % | 195 de 215 | 86.1 % – 93.9 % | automático | `sensibilidad.json` | — |
-| Grupos con rango de prioridad «alto» | 70.0 % | 42 de 60 | 57.5 % – 80.1 % | automático | `puntaje.json` | — |
-| Grupos con rango de prioridad «medio» | 30.0 % | 18 de 60 | 19.9 % – 42.5 % | automático | `puntaje.json` | — |
-| Grupos con rango de prioridad «bajo» | 0.0 % | 0 de 60 | 0.0 % – 6.0 % | automático | `puntaje.json` | — |
+| Variantes cuyo top 5 no cambia de temas | 79.6 % | 39 de 49 | 66.4 % – 88.5 % | automático | `sensibilidad.json` | cada peso ±5 puntos y cada supuesto ±20 % |
+| Variantes que conservan el mismo orden | 69.4 % | 34 de 49 | 55.5 % – 80.5 % | automático | `sensibilidad.json` | — |
+| Temas del top 5 que se conservan (sobre todas las variantes) | 95.1 % | 233 de 245 | 91.6 % – 97.2 % | automático | `sensibilidad.json` | — |
+| Grupos con rango de prioridad «alto» | 75.0 % | 54 de 72 | 63.9 % – 83.6 % | automático | `puntaje.json` | — |
+| Grupos con rango de prioridad «medio» | 25.0 % | 18 de 72 | 16.4 % – 36.1 % | automático | `puntaje.json` | — |
+| Grupos con rango de prioridad «bajo» | 0.0 % | 0 de 72 | 0.0 % – 5.1 % | automático | `puntaje.json` | — |
 
 - Precision@5: sistema 1 de 5, baseline 0 de 5; los IC se solapan: **sin diferencia demostrable**. Pruebas: 1 (fecha de corte 2026-10-07T00:41:03Z, 60 candidatos); exploratoria; especialista: no.
-- Distribución del puntaje P (n = 60 grupos): mínimo 46.645, mediana 77.215, máximo 90.448, desviación 11.476. Componentes casi constantes: N.
+- Distribución del puntaje P (n = 72 grupos): mínimo 46.358, mediana 76.935, máximo 86.079, desviación 8.957. Componentes casi constantes: ninguno.
 
 ## Eficiencia, tokens y costo
 
@@ -133,7 +133,7 @@ Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de 
 - Meta sugerida: mediana ≤ 15 s. Consulta: cumple; paquete por tipo: editorial no cumple, investigacion cumple.
 - Costo total estimado de la corrida de 12 paquetes: USD 0.0408; tokens totales 76825 de entrada y 14759 de salida.
 - **Supuesto del proyecto (D-97):** el contador de costo sobreestima ≈ 2.6 × respecto de la consola del proveedor (una comparación puntual); las cifras de USD son una cota superior conservadora, no la factura.
-- Contador acumulado del proyecto: 1603871 tokens y USD 0.7552 (local, ignorado por git).
+- Contador acumulado del proyecto: 1667233 tokens y USD 0.7911 (local, ignorado por git).
 
 ## Rechazos del validador
 
@@ -159,18 +159,18 @@ Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de 
 | Tasa de corrección · personas | sin datos | n = 0 | — | humano | `revision.json` | — |
 | Tasa de descarte · personas | sin datos | n = 0 | — | humano | `revision.json` | — |
 | Afirmaciones editadas · personas | sin datos | n = 0 | — | humano | `revision.json` | — |
-| Tasa de aceptación (aprobados como borrador) · PROVISIONAL (asistente) | 100.0 % | 1 de 1 | 20.7 % – 100.0 % | **PROVISIONAL** · asistente_provisional (D-101) | `revision.json` | — |
-| Tasa de corrección · PROVISIONAL (asistente) | 100.0 % | 1 de 1 | 20.7 % – 100.0 % | **PROVISIONAL** · asistente_provisional (D-101) | `revision.json` | — |
-| Tasa de descarte · PROVISIONAL (asistente) | 0.0 % | 0 de 1 | 0.0 % – 79.3 % | **PROVISIONAL** · asistente_provisional (D-101) | `revision.json` | — |
+| Tasa de aceptación (aprobados como borrador) · PROVISIONAL (asistente) | 100.0 % | 2 de 2 | 34.2 % – 100.0 % | **PROVISIONAL** · asistente_provisional (D-101) | `revision.json` | — |
+| Tasa de corrección · PROVISIONAL (asistente) | 50.0 % | 1 de 2 | 9.5 % – 90.5 % | **PROVISIONAL** · asistente_provisional (D-101) | `revision.json` | — |
+| Tasa de descarte · PROVISIONAL (asistente) | 0.0 % | 0 de 2 | 0.0 % – 65.8 % | **PROVISIONAL** · asistente_provisional (D-101) | `revision.json` | — |
 | Afirmaciones editadas · PROVISIONAL (asistente) | 0.0 % | 0 de 6 | 0.0 % – 39.0 % | **PROVISIONAL** · asistente_provisional (D-101) | `revision.json` | — |
 
-- Casos abiertos: 1. Decididos por una persona: 0. Decididos por el revisor provisional: 1.
+- Casos abiertos: 8. Decididos por una persona: 0. Decididos por el revisor provisional: 2.
 - **JUICIO PROVISIONAL DEL ASISTENTE, NO HUMANO (D-101): se rehace a mano en C-09; no reportar como juicio de una persona.**
 
 ## Reproducibilidad
 
-- Registro del manifest: commit `3df0978`, árbol con cambios al registrar: **sí**; corte del snapshot 2026-10-07T00:41:03Z; hash del snapshot `d0ae54537df7`.
-- Commit desde el que se generó: `b4dc6ca`. El registro es de otro commit: confirmar con `--verificar` antes de afirmar que se reproduce.
+- Registro del manifest: commit `3df0978`, árbol con cambios al registrar: **sí**; corte del snapshot 2026-10-08T03:35:18Z; hash del snapshot `4503952d97fb`.
+- Commit desde el que se generó: `e807b85` (árbol con cambios sin commitear). El registro es de otro commit: confirmar con `--verificar` antes de afirmar que se reproduce.
 - LLM: deepseek/deepseek-flash, temperatura 0.0, semilla 0; embeddings minilm y e5 con revisión fijada.
 - Salidas deterministas con hash: 33. Borradores en caché: sin_cache 9, completo 1, con_vacios 2.
 - Comprobación: `HF_HUB_OFFLINE=1 poetry run python -m scripts.reproducir --verificar` (sale con 1 si algo difiere).
@@ -178,24 +178,26 @@ Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de 
 
 ## Coherencia entre fuentes
 
-- Sin discrepancias entre las fuentes revisadas.
+- Distinto número de grupos entre fuentes: puntaje.json (grupos) = 72; ia_vs_baseline.json (ranking.grupos) = 72; precision_at_5.json (candidatos) = 60. Alguna salida es anterior a un cambio de la base: volver a correrla antes de citarla.
+- Fecha de corte distinta: sensibilidad.json 2026-10-08T03:35:18Z contra precision_at_5.json 2026-10-07T00:41:03Z.
+- El top 5 del sistema difiere entre precision_at_5.json e ia_vs_baseline.json: una de las dos salidas es anterior a un cambio del ranking.
 
 ## Fuentes
 
 | Archivo | Commit | Fecha del commit | Fecha dentro del archivo |
 |---|---|---|---|
 | `outputs/metricas.json` | 3df0978 | 2026-10-07T15:37:09-05:00 | 2026-10-07T20:31:59Z |
-| `outputs/ia_vs_baseline.json` | 260a72d | 2026-10-07T16:55:30-05:00 | — |
+| `outputs/ia_vs_baseline.json` | e807b85 + cambios sin commitear | 2026-10-08T10:25:10-05:00 | — |
 | `outputs/precision_at_5.json` | 40253af | 2026-10-07T15:16:18-05:00 | 2026-10-07T00:41:03Z |
-| `outputs/clasificacion.json` | aca0356 | 2026-10-07T14:00:52-05:00 | — |
+| `outputs/clasificacion.json` | ff29099 + cambios sin commitear | 2026-10-08T10:04:48-05:00 | — |
 | `outputs/agrupacion.json` | a479628 | 2026-10-06T19:49:01-05:00 | — |
-| `outputs/sensibilidad.json` | 40253af | 2026-10-07T15:16:18-05:00 | 2026-10-07T00:41:03Z |
-| `outputs/puntaje.json` | 40253af | 2026-10-07T15:16:18-05:00 | — |
+| `outputs/sensibilidad.json` | 985fce8 + cambios sin commitear | 2026-10-08T10:13:29-05:00 | 2026-10-08T03:35:18Z |
+| `outputs/puntaje.json` | 985fce8 + cambios sin commitear | 2026-10-08T10:13:29-05:00 | — |
 | `outputs/pruebas.csv` | e9bf8a3 | 2026-10-07T06:46:06-05:00 | — |
-| `data/manifest.json` | 15b86f1 | 2026-10-07T15:50:44-05:00 | 2026-10-07T00:41:03Z |
-| `eval/etiquetas.csv` | 993beaa | 2026-10-07T07:35:27-05:00 | — |
+| `data/manifest.json` | ccb2a8e | 2026-10-07T23:07:47-05:00 | 2026-10-08T03:35:18Z |
+| `eval/etiquetas.csv` | fdfe422 | 2026-10-08T09:59:37-05:00 | — |
 | `docs/prueba_tiempo.md` | 0f9accb | 2026-10-07T07:09:49-05:00 | — |
-| `outputs/revision.json` | 9311df2 | 2026-10-07T16:45:15-05:00 | — |
+| `outputs/revision.json` | b8d32b2 | 2026-10-07T17:35:58-05:00 | — |
 | `outputs/costo_llm.json` | sin versionar (generado en local) | — | — |
 
 ## Limitaciones
