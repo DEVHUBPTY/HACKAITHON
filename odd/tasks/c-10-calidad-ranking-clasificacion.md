@@ -92,7 +92,18 @@ exactitud de tema en 35/64 (54,7 %). Fuera de alcance por ahora: generación (ca
   crudos de `data/raw/` ausentes (RSS y GDELT no se versionan, D-72). El criterio de terminado del Backlog sobre ranking
   («Precision@5 mejora frente a la línea base por fecha») NO se cumple: la medición es de n = 5 y no distingue.
 
+- Merge de `main` (C-01, C-02; `f50eba9`): conflictos solo en `data/manifest.json` y `outputs/metricas.json`; se tomaron los de `main` y se
+  regeneraron los hashes (27 salidas, `8459869`). Primero los resolví con mi lado y fallaron 4 tests; confirmé en un worktree limpio
+  de `main` que pasaban allí, y el origen eran esos dos archivos. Suite final: 2940 passed, 1 failed, 3 skipped, 6 xfailed.
+  El fallo es `test_la_latencia_de_la_consulta_conserva_resolucion` (C-02): exige literalmente `0.0068`, la latencia medida que hay
+  en `outputs/metricas.json` de `main`; `scripts.reproducir` la vuelve a medir y reescribe ese archivo, así que el test falla tras
+  cada reproducción. Decisión del dueño: B, commitear solo el manifest y dejar `metricas.json` como en `main`. Con esa versión el
+  test de C-02 pasa (54). Defecto abierto del test de C-02, no resuelto aquí. `--verificar`: REPRODUCIBLE (27) y reescribe `metricas.json`.
+- Revisión nativa: no corresponde otra; desde el límite del merge (`f50eba9`) son 39 líneas (`under_budget`). Lo traído de `main` ya
+  se revisó en sus PR (#48 y #49).
+
 ## Próximo paso
+Nueva rama para la clasificación (evaluación por evento y modelo supervisado exploratorio; el dueño amplía etiquetas en paralelo).
 T5 (PR con revisión independiente, D-78) solo con pedido del dueño. Los reviews nativos por tramos ya están aprobados y reconocidos
 (hasta `c74cc41`). Pendientes abiertos: 11 crudos de `data/raw/` ausentes (el tramo crudo → procesado no se verifica), borradores
 de 10 grupos del top sin caché (generación, fuera de alcance) y el criterio de Precision@5 del Backlog sin cumplir (1/5 contra 0/5,
