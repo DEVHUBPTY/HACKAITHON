@@ -1,9 +1,9 @@
 {
-  "commit": "103355b",
-  "generado_utc": "2026-10-08T19:24:50Z",
+  "commit": "3098068",
+  "generado_utc": "2026-10-08T20:10:38Z",
   "resumen": {
-    "PASS": 8,
-    "FALTA": 7,
+    "PASS": 10,
+    "FALTA": 5,
     "NO VERIFICABLE AUTOMÁTICAMENTE": 10
   },
   "items": [
@@ -66,7 +66,7 @@
       "grupo": "Admisión (sec. 5)",
       "requisito": "Métricas de la ejecución final: página generada del commit vigente, sin borrador ni juicios provisionales",
       "estado": "FALTA",
-      "evidencia": "outputs/pagina_metricas.md (commit 2307de0): 38 archivos de ['src', 'eval', 'config', 'prompts', 'data/processed'] cambiaron desde el commit 2307de0 (p. ej. ['config/clasificacion.yaml', 'config/corrida.yaml', 'config/interfaz.yaml']): regenerar las métricas; la página sigue marcada «BORRADOR»; hay métricas con juicio PROVISIONAL (D-101)",
+      "evidencia": "outputs/pagina_metricas.md (commit 3098068): la página sigue marcada «BORRADOR»; hay métricas con juicio PROVISIONAL (D-101)",
       "como_verificar": "Tras C-09 y C-10: correr los eval/ y `poetry run python -m scripts.pagina_metricas`.",
       "depende_de": "C-09, C-10"
     },
@@ -83,8 +83,8 @@
       "id": "S10-01",
       "grupo": "Entregables (sec. 10)",
       "requisito": "Prototipo ejecutable y demo reproducible sin fuente en vivo",
-      "estado": "FALTA",
-      "evidencia": "Faltan: ['scripts/verificar_offline.py']",
+      "estado": "PASS",
+      "evidencia": "Base de demo, guion y verificación offline presentes.",
       "como_verificar": "poetry run python -m scripts.verificar_offline",
       "depende_de": "C-06, C-04"
     },
@@ -119,8 +119,8 @@
       "id": "S10-05",
       "grupo": "Entregables (sec. 10)",
       "requisito": "Archivo LICENSE para el código (spec C-07)",
-      "estado": "FALTA",
-      "evidencia": "No existe ninguno de ['LICENSE', 'LICENSE.md', 'LICENSE.txt']; el README dice «licencia pendiente de decisión del equipo».",
+      "estado": "PASS",
+      "evidencia": "Encontrado: ['LICENSE']",
       "como_verificar": "El equipo elige la licencia y agrega LICENSE.",
       "depende_de": "decisión del equipo"
     },
@@ -164,8 +164,8 @@
       "id": "S10-10",
       "grupo": "Entregables (sec. 10)",
       "requisito": "Paquete de datos redistribuible: snapshot, diccionario, manifest, licencias, benchmark dev, sin campos restringidos",
-      "estado": "PASS",
-      "evidencia": "entrega/datos: checksums correctos y sin material prohibido.",
+      "estado": "FALTA",
+      "evidencia": "entrega/datos: [paquete_ausente] /Users/sparrow/Development/PROJECTS/HackAIthon/entrega/datos: no existe: correr `poetry run python -m scripts.empaquetar_datos`",
       "como_verificar": "poetry run python -m scripts.empaquetar_datos",
       "depende_de": ""
     },
@@ -183,7 +183,7 @@
       "grupo": "Condiciones previas",
       "requisito": "Sin secretos en historial, archivos, capturas ni exportaciones",
       "estado": "FALTA",
-      "evidencia": "Pendiente C-11: no existe outputs/auditoria_secretos.json (escaneo del historial de git, capturas y exportaciones). escaneo rápido de 520 archivos versionados: sin coincidencias; local.env/.env versionados: no.",
+      "evidencia": "Pendiente C-11: no existe outputs/auditoria_secretos.json (escaneo del historial de git, capturas y exportaciones). escaneo rápido de 530 archivos versionados: sin coincidencias; local.env/.env versionados: no.",
       "como_verificar": "Correr el escaneo de C-11 y guardar su resultado.",
       "depende_de": "C-11"
     },
@@ -191,8 +191,8 @@
       "id": "P-02",
       "grupo": "Condiciones previas",
       "requisito": "Toda afirmación de fichas.jsonl y de las exportaciones pasa el validador; ninguna cita falsa",
-      "estado": "FALTA",
-      "evidencia": "outputs/fichas.jsonl: 9 fichas (CASO-001, CASO-002, CASO-003, CASO-004, CASO-005, CASO-006, CASO-007, CASO-008, CASO-009); re-verificadas con el validador contra data/senales.duckdb: 9 de 9; exportaciones revisadas: 12 archivos; problemas: ['CASO-006: 6 fallos del validador (cita_con_id_en_datos: GRP-0dfdd5a021)'].",
+      "estado": "PASS",
+      "evidencia": "outputs/fichas.jsonl: 9 fichas (CASO-001, CASO-002, CASO-003, CASO-004, CASO-005, CASO-006, CASO-007, CASO-008, CASO-009); re-verificadas con el validador contra data/senales.duckdb: 9 de 9; exportaciones revisadas: 12 archivos; problemas: ninguno; informativo: ['CASO-006: descartado · su grupo ya no está en el snapshot actual (se conserva en el historial; sus 6 citas ya no se pueden resolver)'].",
       "como_verificar": "poetry run python -m scripts.fichas_trazables --casos; poetry run python -m src.ficha --formato jsonl",
       "depende_de": "C-01"
     },
@@ -210,7 +210,7 @@
       "grupo": "Condiciones previas",
       "requisito": "Nada con redistribución restringida, ni bases de datos de la sesión, ni el benchmark reservado en el repositorio (D-72)",
       "estado": "PASS",
-      "evidencia": "`git ls-files` (520 archivos): rutas restringidas (['data/raw/rss_tvn/', 'data/raw/gdelt/', 'data/raw/sbp/']) versionadas: ninguna; bases ['data/demo.duckdb', '*.duckdb', '*.duckdb.wal'] versionadas: ninguna; benchmark reservado versionado: ninguno.",
+      "evidencia": "`git ls-files` (530 archivos): rutas restringidas (['data/raw/rss_tvn/', 'data/raw/gdelt/', 'data/raw/sbp/']) versionadas: ninguna; bases ['data/demo.duckdb', '*.duckdb', '*.duckdb.wal'] versionadas: ninguna; benchmark reservado versionado: ninguno.",
       "como_verificar": "git rm --cached <ruta>",
       "depende_de": ""
     },

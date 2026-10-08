@@ -385,6 +385,7 @@ def validador(c: Contexto) -> None:
         problemas.append(f"exportaciones de casos que no están en fichas.jsonl: {huerfanos}")
     vivo = reverificar_fichas(c, registros, exportados) if registros else None
     sin_verificar: list[str] = []
+    informativos: list[str] = []
     if vivo is not None:
         for r in registros:
             id_caso = str(r.get("id_caso"))
@@ -392,7 +393,9 @@ def validador(c: Contexto) -> None:
             if v is None:
                 sin_verificar.append(id_caso)
                 continue
-            if v["fallos"]:
+            if v["fallos"] and r.get("nota_estado") and all(f.startswith(("cita_con_id_en_datos", "cita_con_campo_y_valor")) and str(r.get("id_grupo")) in f for f in v["fallos"]):
+                informativos.append(f"{id_caso}: {r['nota_estado']} (se conserva en el historial; sus {len(v['fallos'])} citas ya no se pueden resolver)")
+            elif v["fallos"]:
                 problemas.append(f"{id_caso}: {len(v['fallos'])} fallos del validador ({v['fallos'][0][:80]})")
             guardadas = sorted((ci.get("id"), ci.get("campo"), bool(ci.get("existe_en_datos"))) for ci in por_caso.get(id_caso, {}).get("citas", []))
             if id_caso in por_caso and guardadas != [tuple(x) for x in v["citas"]]:
@@ -403,7 +406,7 @@ def validador(c: Contexto) -> None:
     cobertura = (f"re-verificadas con el validador contra {a.base_senales}: {len(vivo)} de {len(registros)}" if vivo is not None
                  else f"sin {a.base_senales} en esta máquina: solo cubiertas por trazabilidad.json {len(registros) - len(sin_cubrir)} de {len(registros)}")
     detalle = (f"{a.fichas_jsonl}: {len(registros)} fichas ({', '.join(ids)}); {cobertura}; exportaciones revisadas: {len(leidas)} archivos; "
-               f"problemas: {problemas or 'ninguno'}.")
+               f"problemas: {problemas or 'ninguno'}; informativo: {informativos or 'ninguno'}.")
     if problemas:
         estado = FALTA
     elif vivo is None:

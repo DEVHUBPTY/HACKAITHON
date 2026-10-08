@@ -3319,6 +3319,7 @@ class ExportacionRevision(ModeloConfig):
     carpeta_demo: str = Field(min_length=1)
     fichas_jsonl_demo: str = Field(min_length=1)
     max_caracteres_texto: int = Field(ge=100)
+    nota_grupo_ausente: str = Field(min_length=1)
     marca_recorte: str
     columnas: list[str] = Field(min_length=1)
     modalidades: dict[str, str]
@@ -3787,6 +3788,7 @@ class ConfigPaginaMetricas(ModeloConfig):
     salida: str = Field(min_length=1)
     titulo: str = Field(min_length=1)
     etiqueta_borrador: str = Field(min_length=1)
+    limitacion_umbral_consulta: str = Field(min_length=1)
     fuentes: dict[str, str] = Field(min_length=1)
     opcionales: dict[str, OpcionalMetricas]
     presentacion: PresentacionMetricas

@@ -29,6 +29,7 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
+from src import db
 from src.configuracion import RAIZ, ConfigRevision, cargar_interfaz, cargar_normalizacion, cargar_notion, leer_local_env, cargar_revision, cargar_temas, cargar_verificacion
 from src.esquemas import ETIQUETA_BORRADOR, Ficha, RegistroFichasJsonl
 from src.ficha import CARPETA_PLANTILLAS, a_registro, escapar_markdown, vista
@@ -185,6 +186,20 @@ def escribir_csv(ruta: Path, fila: dict[str, str], columnas: list[str]) -> bool:
     return existia
 
 
+def grupo_en_snapshot(rev: Revisiones, id_grupo: str) -> bool:
+    """``False`` solo si hay base de señales y el grupo ya no está en ella; sin base no se sabe, y se asume que sigue."""
+    if not rev.base_fichas.is_file():
+        return True
+    try:
+        con = db.conectar(rev.base_fichas, solo_lectura=True)
+        try:
+            return bool(con.execute("SELECT COUNT(*) FROM grupos WHERE id_grupo = ?", [id_grupo]).fetchone()[0])
+        finally:
+            con.close()
+    except Exception:  # noqa: BLE001 - si la base no se puede leer, no se rotula nada
+        return True
+
+
 def registro_jsonl(rev: Revisiones, id_caso: str, ficha: Ficha) -> dict[str, Any]:
     """El registro de ``fichas.jsonl`` de un caso, validado contra el esquema del contrato."""
     caso = rev.caso(id_caso)
@@ -192,6 +207,8 @@ def registro_jsonl(rev: Revisiones, id_caso: str, ficha: Ficha) -> dict[str, Any
     r = a_registro(ficha, id_caso, rev.estado(id_caso))
     r["version"] = actual.version if actual else None
     r["revision_provisional"] = rev.vigente_provisional(id_caso)  # D-112: el estado_revision del contrato no cambia; la marca va aparte
+    if r["estado_revision"] == "descartado" and not grupo_en_snapshot(rev, ficha.id_grupo):
+        r["nota_estado"] = rev.cfg.exportacion.nota_grupo_ausente
     RegistroFichasJsonl.model_validate({**r, "modalidad": caso.modalidad})
     return r
 

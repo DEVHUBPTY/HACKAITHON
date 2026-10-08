@@ -1,6 +1,6 @@
 # Auditoría final · condiciones previas (C-07)
 
-Generada el 2026-10-08T19:24:50Z desde el commit `103355b` con `poetry run python -m scripts.auditoria_final`. PASS: 8 · FALTA: 7 · NO VERIFICABLE AUTOMÁTICAMENTE: 10.
+Generada el 2026-10-08T20:10:38Z desde el commit `3098068` con `poetry run python -m scripts.auditoria_final`. PASS: 10 · FALTA: 5 · NO VERIFICABLE AUTOMÁTICAMENTE: 10.
 
 | ID | Requisito | Estado | Depende de |
 |---|---|---|---|
@@ -12,19 +12,19 @@ Generada el 2026-10-08T19:24:50Z desde el commit `103355b` con `poetry run pytho
 | S5-06 | Matriz de los 10 casos de prueba, todos en «Pasa» | **FALTA** | C-04, E2-02 |
 | S5-07 | Métricas de la ejecución final: página generada del commit vigente, sin borrador ni juicios provisionales | **FALTA** | C-09, C-10 |
 | S5-08 | Pitch de 10 minutos presentado desde Notion | **NO VERIFICABLE AUTOMÁTICAMENTE** | C-03, C-04 |
-| S10-01 | Prototipo ejecutable y demo reproducible sin fuente en vivo | **FALTA** | C-06, C-04 |
+| S10-01 | Prototipo ejecutable y demo reproducible sin fuente en vivo | **PASS** | C-06, C-04 |
 | S10-02 | README con instalación, comando de ejecución, pruebas y evaluación reservada | **PASS** | — |
 | S10-03 | .env.example solo con nombres de variables, sin valores en las claves y sin nada que parezca un secreto | **PASS** | — |
 | S10-04 | Dependencias fijadas | **PASS** | — |
-| S10-05 | Archivo LICENSE para el código (spec C-07) | **FALTA** | decisión del equipo |
+| S10-05 | Archivo LICENSE para el código (spec C-07) | **PASS** | decisión del equipo |
 | S10-06 | Repositorio con acceso del jurado (privado con colaboradores, o público) | **NO VERIFICABLE AUTOMÁTICAMENTE** | C-05 |
 | S10-07 | Espacio Notion con los artefactos de la sección 5 y la presentación final (PDF de respaldo opcional) | **NO VERIFICABLE AUTOMÁTICAMENTE** | C-03, C-05, C-08 |
 | S10-08 | Instalación limpia en otra máquina: git clone, poetry install, comando de ejecución y pytest | **NO VERIFICABLE AUTOMÁTICAMENTE** | C-04 |
 | S10-09 | Checklist de admisión y autoevaluación con la rúbrica completos | **NO VERIFICABLE AUTOMÁTICAMENTE** | C-08 |
-| S10-10 | Paquete de datos redistribuible: snapshot, diccionario, manifest, licencias, benchmark dev, sin campos restringidos | **PASS** | — |
+| S10-10 | Paquete de datos redistribuible: snapshot, diccionario, manifest, licencias, benchmark dev, sin campos restringidos | **FALTA** | — |
 | S10-11 | SBP (D-116): autorización escrita o CSV retirado si la entrega es pública | **NO VERIFICABLE AUTOMÁTICAMENTE** | decisión del dueño |
 | P-01 | Sin secretos en historial, archivos, capturas ni exportaciones | **FALTA** | C-11 |
-| P-02 | Toda afirmación de fichas.jsonl y de las exportaciones pasa el validador; ninguna cita falsa | **FALTA** | C-01 |
+| P-02 | Toda afirmación de fichas.jsonl y de las exportaciones pasa el validador; ninguna cita falsa | **PASS** | C-01 |
 | P-03 | Ninguna acción, botón o estado «publicar» | **PASS** | — |
 | P-04 | Nada con redistribución restringida, ni bases de datos de la sesión, ni el benchmark reservado en el repositorio (D-72) | **PASS** | — |
 | P-05 | Los juicios que exige una persona (sustento, Precision@5, revisión editorial) los hizo una persona (D-85, D-101) | **FALTA** | C-09 |
@@ -71,7 +71,7 @@ Generada el 2026-10-08T19:24:50Z desde el commit `103355b` con `poetry run pytho
 ### S5-07 · FALTA
 
 - **Requisito:** Métricas de la ejecución final: página generada del commit vigente, sin borrador ni juicios provisionales
-- **Evidencia:** outputs/pagina_metricas.md (commit 2307de0): 38 archivos de ['src', 'eval', 'config', 'prompts', 'data/processed'] cambiaron desde el commit 2307de0 (p. ej. ['config/clasificacion.yaml', 'config/corrida.yaml', 'config/interfaz.yaml']): regenerar las métricas; la página sigue marcada «BORRADOR»; hay métricas con juicio PROVISIONAL (D-101)
+- **Evidencia:** outputs/pagina_metricas.md (commit 3098068): la página sigue marcada «BORRADOR»; hay métricas con juicio PROVISIONAL (D-101)
 - **Cómo verificar o corregir:** Tras C-09 y C-10: correr los eval/ y `poetry run python -m scripts.pagina_metricas`.
 
 ### S5-08 · NO VERIFICABLE AUTOMÁTICAMENTE
@@ -80,10 +80,10 @@ Generada el 2026-10-08T19:24:50Z desde el commit `103355b` con `poetry run pytho
 - **Evidencia:** No hay artefacto local que lo demuestre; se presenta en vivo desde Notion.
 - **Cómo verificar o corregir:** Ensayo cronometrado desde la página de Notion (sin PDF ni PowerPoint) con enlaces al prototipo y a GitHub.
 
-### S10-01 · FALTA
+### S10-01 · PASS
 
 - **Requisito:** Prototipo ejecutable y demo reproducible sin fuente en vivo
-- **Evidencia:** Faltan: ['scripts/verificar_offline.py']
+- **Evidencia:** Base de demo, guion y verificación offline presentes.
 - **Cómo verificar o corregir:** poetry run python -m scripts.verificar_offline
 
 ### S10-02 · PASS
@@ -104,10 +104,10 @@ Generada el 2026-10-08T19:24:50Z desde el commit `103355b` con `poetry run pytho
 - **Evidencia:** poetry.lock presente.
 - **Cómo verificar o corregir:** poetry lock
 
-### S10-05 · FALTA
+### S10-05 · PASS
 
 - **Requisito:** Archivo LICENSE para el código (spec C-07)
-- **Evidencia:** No existe ninguno de ['LICENSE', 'LICENSE.md', 'LICENSE.txt']; el README dice «licencia pendiente de decisión del equipo».
+- **Evidencia:** Encontrado: ['LICENSE']
 - **Cómo verificar o corregir:** El equipo elige la licencia y agrega LICENSE.
 
 ### S10-06 · NO VERIFICABLE AUTOMÁTICAMENTE
@@ -134,10 +134,10 @@ Generada el 2026-10-08T19:24:50Z desde el commit `103355b` con `poetry run pytho
 - **Evidencia:** Viven en Notion.
 - **Cómo verificar o corregir:** Revisar la página de autoevaluación contra la rúbrica de 100 puntos.
 
-### S10-10 · PASS
+### S10-10 · FALTA
 
 - **Requisito:** Paquete de datos redistribuible: snapshot, diccionario, manifest, licencias, benchmark dev, sin campos restringidos
-- **Evidencia:** entrega/datos: checksums correctos y sin material prohibido.
+- **Evidencia:** entrega/datos: [paquete_ausente] /Users/sparrow/Development/PROJECTS/HackAIthon/entrega/datos: no existe: correr `poetry run python -m scripts.empaquetar_datos`
 - **Cómo verificar o corregir:** poetry run python -m scripts.empaquetar_datos
 
 ### S10-11 · NO VERIFICABLE AUTOMÁTICAMENTE
@@ -149,13 +149,13 @@ Generada el 2026-10-08T19:24:50Z desde el commit `103355b` con `poetry run pytho
 ### P-01 · FALTA
 
 - **Requisito:** Sin secretos en historial, archivos, capturas ni exportaciones
-- **Evidencia:** Pendiente C-11: no existe outputs/auditoria_secretos.json (escaneo del historial de git, capturas y exportaciones). escaneo rápido de 520 archivos versionados: sin coincidencias; local.env/.env versionados: no.
+- **Evidencia:** Pendiente C-11: no existe outputs/auditoria_secretos.json (escaneo del historial de git, capturas y exportaciones). escaneo rápido de 530 archivos versionados: sin coincidencias; local.env/.env versionados: no.
 - **Cómo verificar o corregir:** Correr el escaneo de C-11 y guardar su resultado.
 
-### P-02 · FALTA
+### P-02 · PASS
 
 - **Requisito:** Toda afirmación de fichas.jsonl y de las exportaciones pasa el validador; ninguna cita falsa
-- **Evidencia:** outputs/fichas.jsonl: 9 fichas (CASO-001, CASO-002, CASO-003, CASO-004, CASO-005, CASO-006, CASO-007, CASO-008, CASO-009); re-verificadas con el validador contra data/senales.duckdb: 9 de 9; exportaciones revisadas: 12 archivos; problemas: ['CASO-006: 6 fallos del validador (cita_con_id_en_datos: GRP-0dfdd5a021)'].
+- **Evidencia:** outputs/fichas.jsonl: 9 fichas (CASO-001, CASO-002, CASO-003, CASO-004, CASO-005, CASO-006, CASO-007, CASO-008, CASO-009); re-verificadas con el validador contra data/senales.duckdb: 9 de 9; exportaciones revisadas: 12 archivos; problemas: ninguno; informativo: ['CASO-006: descartado · su grupo ya no está en el snapshot actual (se conserva en el historial; sus 6 citas ya no se pueden resolver)'].
 - **Cómo verificar o corregir:** poetry run python -m scripts.fichas_trazables --casos; poetry run python -m src.ficha --formato jsonl
 
 ### P-03 · PASS
@@ -167,7 +167,7 @@ Generada el 2026-10-08T19:24:50Z desde el commit `103355b` con `poetry run pytho
 ### P-04 · PASS
 
 - **Requisito:** Nada con redistribución restringida, ni bases de datos de la sesión, ni el benchmark reservado en el repositorio (D-72)
-- **Evidencia:** `git ls-files` (520 archivos): rutas restringidas (['data/raw/rss_tvn/', 'data/raw/gdelt/', 'data/raw/sbp/']) versionadas: ninguna; bases ['data/demo.duckdb', '*.duckdb', '*.duckdb.wal'] versionadas: ninguna; benchmark reservado versionado: ninguno.
+- **Evidencia:** `git ls-files` (530 archivos): rutas restringidas (['data/raw/rss_tvn/', 'data/raw/gdelt/', 'data/raw/sbp/']) versionadas: ninguna; bases ['data/demo.duckdb', '*.duckdb', '*.duckdb.wal'] versionadas: ninguna; benchmark reservado versionado: ninguno.
 - **Cómo verificar o corregir:** git rm --cached <ruta>
 
 ### P-05 · FALTA

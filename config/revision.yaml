@@ -77,6 +77,7 @@ exportacion:
   fichas_jsonl: outputs/fichas.jsonl
   carpeta_demo: outputs/demo/notion   # la demo exporta aparte: nunca pisa lo real (X31)
   fichas_jsonl_demo: outputs/demo/fichas.jsonl
+  nota_grupo_ausente: "descartado · su grupo ya no está en el snapshot actual"   # fichas.jsonl: un caso descartado cuyo grupo el pipeline volvió a agrupar se rotula, no falla
   max_caracteres_texto: 2000          # una propiedad de texto de Notion admite 2000 caracteres por bloque
   marca_recorte: "… (completo en el cuerpo de la página)"
   # Columnas EXACTAS de la base «Casos y evidencias» de Notion, menos las fórmulas (P y Rango), que Notion calcula.
