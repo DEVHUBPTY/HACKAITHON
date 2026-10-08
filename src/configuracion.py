@@ -1662,6 +1662,21 @@ class EvaluacionPorEvento(ModeloConfig):
         return self
 
 
+class ConjuntoAmpliado(ModeloConfig):
+    """C-12: cómo se marcan las filas de la hoja de confirmación al armar ``eval/etiquetas_ampliadas.csv``."""
+
+    estrato_hoja: str            # valor de ``estrato`` de esas filas (no vienen de la muestra estratificada de E1-06)
+    n_etiquetadores_hoja: int    # cuántas personas decidieron cada una
+
+    @model_validator(mode="after")
+    def _rangos(self) -> ConjuntoAmpliado:
+        if not self.estrato_hoja.strip():
+            raise ValueError("ampliado.estrato_hoja: no puede ir vacío")
+        if self.n_etiquetadores_hoja < 1:
+            raise ValueError("ampliado.n_etiquetadores_hoja: al menos 1")
+        return self
+
+
 class SupervisadoClasificacion(ModeloConfig):
     """C-10b: regresión logística exploratoria sobre embeddings con validación cruzada agrupada por evento."""
 
@@ -1703,6 +1718,7 @@ class ConfigClasificacion(ModeloConfig):
     fuga_semantica: FugaSemantica
     baseline: BaselineClasificacion
     por_evento: EvaluacionPorEvento
+    ampliado: ConjuntoAmpliado
     supervisado: SupervisadoClasificacion
 
     @model_validator(mode="after")

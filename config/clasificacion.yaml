@@ -127,8 +127,12 @@ por_evento:
   eventos_dominantes: 5     # cuántos eventos con más filas se listan (qué pesa en la exactitud por fila)
   min_eventos_ic: 2         # un recall por tema con menos eventos que esto se reporta sin IC (no es estimable)
 
+ampliado:                   # C-12: conjunto ampliado (eval/etiquetas_ampliadas.csv = humanas + filas confirmadas de la hoja)
+  estrato_hoja: preetiquetado_c11   # `estrato` de las filas de la hoja: no vienen de la muestra estratificada, no se ponderan con ella
+  n_etiquetadores_hoja: 1   # una sola persona decidió cada fila
+
 supervisado:
-  pliegues: 5               # validación cruzada agrupada por evento (mismo procedimiento que eval/diagnostico_temas.py)
+  pliegues: 5              # validación cruzada agrupada por evento (mismo procedimiento que eval/diagnostico_temas.py)
   repeticiones: 20          # particiones aleatorias distintas por evento
   semilla: 20261007
   C: 1.0                    # inverso de la regularización L2 de la regresión logística

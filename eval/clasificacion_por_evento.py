@@ -326,8 +326,38 @@ def predicciones_de_sistemas(conj: Conjunto, cfg: ConfigClasificacion, temas: Co
     return salida
 
 
-def evaluar(conj: Conjunto, cfg: ConfigClasificacion, temas: ConfigTemas, z: float) -> dict[str, Any]:
-    """Todo el informe por evento (sin escribir nada)."""
+def evaluar_subconjuntos(
+    conj: Conjunto, preds: dict[str, np.ndarray], nuevas: set[str], criterio: CriterioAB, z: float, min_eventos_ic: int
+) -> dict[str, Any]:
+    """C-12: las mismas predicciones, separadas en filas ``originales`` y ``nuevas`` (``nuevas`` = ids de la hoja incorporada).
+
+    Cada subconjunto se mide con sus propios eventos: el evento de una fila nueva se cuenta aparte aunque comparta nombre de grupo
+    con uno original. No se vuelve a predecir ni a calibrar nada (las predicciones por fila no dependen de las demás filas).
+    ``eventos_nuevos`` = eventos del conjunto ampliado que no existían en el original. Es una descripción de composición, no una
+    comparación de métodos ni de versiones del sistema.
+    """
+    esta = np.array([i in nuevas for i in conj.ids], dtype=bool)
+    salida: dict[str, Any] = {}
+    for nombre, mascara in (("originales", ~esta), ("nuevas", esta)):
+        filas = np.flatnonzero(mascara)
+        y, eventos = conj.y[filas], [conj.eventos[k] for k in filas]
+        salida[nombre] = {
+            "filas": len(filas),
+            "eventos": len(set(eventos)),
+            "filas_por_tema": dict(Counter(y)),
+            "sistemas": (
+                {n: evaluar_sistema(y, p[filas][None, :], eventos, conj.clases, criterio, z, min_eventos_ic) for n, p in preds.items()}
+                if len(filas)
+                else {}
+            ),
+        }
+    de_originales = {conj.eventos[k] for k in np.flatnonzero(~esta)}
+    salida["eventos_nuevos"] = len({conj.eventos[k] for k in np.flatnonzero(esta)} - de_originales)
+    return salida
+
+
+def evaluar(conj: Conjunto, cfg: ConfigClasificacion, temas: ConfigTemas, z: float, nuevas: set[str] | None = None) -> dict[str, Any]:
+    """Todo el informe por evento (sin escribir nada). Con ``nuevas`` agrega ``por_subconjunto`` (originales y nuevas, C-12)."""
     criterio, min_ic = cfg.criterio_ab, cfg.por_evento.min_eventos_ic
     preds = predicciones_de_sistemas(conj, cfg, temas)
     sistemas = {n: evaluar_sistema(conj.y, p[None, :], conj.eventos, conj.clases, criterio, z, min_ic) for n, p in preds.items()}
@@ -347,7 +377,7 @@ def evaluar(conj: Conjunto, cfg: ConfigClasificacion, temas: ConfigTemas, z: flo
         }
     ev_dom = eventos_dominantes(conj.y, conj.eventos, preds[activo] == conj.y, cfg.por_evento.eventos_dominantes)
     sin_dominante = np.array([e not in {d["evento"] for d in ev_dom[:1]} for e in conj.eventos])
-    return {
+    informe: dict[str, Any] = {
         "modelo": cfg.modelo_activo,
         "metodo": cfg.metodo_activo,
         "sistema_activo": activo,
@@ -372,6 +402,9 @@ def evaluar(conj: Conjunto, cfg: ConfigClasificacion, temas: ConfigTemas, z: flo
             "exactitud_por_fila": proporcion(int((preds[activo] == conj.y)[sin_dominante].sum()), int(sin_dominante.sum()), z),
         },
     }
+    if nuevas is not None:
+        informe["por_subconjunto"] = evaluar_subconjuntos(conj, preds, nuevas, criterio, z, min_ic)
+    return informe
 
 
 # ------------------------------------------------------------------ impresión (solo cifras)
@@ -385,10 +418,9 @@ def _p(d: dict[str, Any]) -> str:
     return f"{d['n']}/{d['de']} = {100 * d['proporcion']:.1f} % [{100 * d['ic95'][0]:.1f}–{100 * d['ic95'][1]:.1f}]"
 
 
-def imprimir(r: dict[str, Any]) -> list[str]:
-    c = r["conjunto"]
-    lineas = [f"== Clasificación por evento · {r['modelo']}/{r['metodo']} · {c['filas']} filas, {c['eventos']} eventos (solo etiquetas humanas) ==", r["advertencia"]]
-    for n, s in r["sistemas"].items():
+def _lineas_sistemas(sistemas: dict[str, Any]) -> list[str]:
+    lineas: list[str] = []
+    for n, s in sistemas.items():
         m = s["macro_f1_por_evento"]
         lineas += [
             f"\n[{n}]",
@@ -400,6 +432,21 @@ def imprimir(r: dict[str, Any]) -> list[str]:
         for t, v in s["recall_por_tema"].items():
             ic = "sin IC (un evento)" if v["ic95"] is None else f"IC95 {v['ic95']}"
             lineas.append(f"  recall {t}: filas {v['filas']['n']}/{v['filas']['de']}; por evento {v['recall_por_evento']:.3f} {ic} ({v['eventos']} eventos)")
+    return lineas
+
+
+def _lineas_subconjuntos(sub: dict[str, Any]) -> list[str]:
+    lineas = [f"\n== C-12 · por subconjunto (descripción de composición, no comparación de métodos) · eventos nuevos: {sub['eventos_nuevos']} =="]
+    for nombre in ("originales", "nuevas"):
+        s = sub[nombre]
+        lineas += [f"\n-- {nombre}: {s['filas']} filas, {s['eventos']} eventos; filas por tema: {s['filas_por_tema']}", *_lineas_sistemas(s["sistemas"])]
+    return lineas
+
+
+def imprimir(r: dict[str, Any]) -> list[str]:
+    c = r["conjunto"]
+    lineas = [f"== Clasificación por evento · {r['modelo']}/{r['metodo']} · {c['filas']} filas, {c['eventos']} eventos (solo etiquetas humanas) ==", r["advertencia"]]
+    lineas += _lineas_sistemas(r["sistemas"])
     lineas.append("\nComparaciones con el sistema activo (b − activo, pareadas por evento):")
     for n, k in r["comparaciones_con_el_activo"].items():
         e, f = k["exactitud_por_evento_menos_activo"], k["macro_f1_menos_activo"]
@@ -411,6 +458,8 @@ def imprimir(r: dict[str, Any]) -> list[str]:
     lineas.append("Concentración por tema: " + "; ".join(f"{t} {v['filas']} filas/{v['eventos']} eventos (mayor {v['filas_del_evento_mayor']})" for t, v in r["concentracion_por_tema"].items()))
     s = r["activo_sin_el_evento_mayor"]
     lineas.append(f"Activo sin el evento mayor: {_p(s['exactitud_por_fila'])}")
+    if "por_subconjunto" in r:
+        lineas += _lineas_subconjuntos(r["por_subconjunto"])
     return lineas
 
 
@@ -420,12 +469,20 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--etiquetas", type=Path, default=evalclas.ETIQUETAS)
     parser.add_argument("--base", type=Path, default=RAIZ / "data" / cargar_normalizacion().salida.base_de_datos)
     parser.add_argument("--salida", type=Path, default=SALIDA)
+    parser.add_argument(
+        "--subconjuntos", action="store_true",
+        help="C-12: además del total, mide por separado las filas del estrato de la hoja incorporada (ampliado.estrato_hoja) y las demás",
+    )
     args = parser.parse_args(argv)
     if not args.etiquetas.exists() or not args.base.exists():
         print(f"Faltan {args.etiquetas} o {args.base}: no se calcula nada (no se inventan métricas).", file=sys.stderr)
         return evalclas.CODIGO_SIN_ETIQUETAS
     cfg, temas = cargar_clasificacion(), cargar_temas()
-    informe = evaluar(cargar_conjunto(args.etiquetas, args.base, cfg, temas), cfg, temas, cargar_carga().salida.z_intervalo_confianza)
+    nuevas: set[str] | None = None
+    if args.subconjuntos:
+        etiquetas, _ = leer_etiquetas_y_grupos(args.etiquetas, temas)
+        nuevas = {i for i, e in etiquetas.items() if e.estrato == cfg.ampliado.estrato_hoja}
+    informe = evaluar(cargar_conjunto(args.etiquetas, args.base, cfg, temas), cfg, temas, cargar_carga().salida.z_intervalo_confianza, nuevas)
     print("\n".join(imprimir(informe)))
     args.salida.parent.mkdir(parents=True, exist_ok=True)
     with args.salida.open("w", encoding="utf-8") as f:
