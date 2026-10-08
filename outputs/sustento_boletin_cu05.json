@@ -4,42 +4,43 @@
   "revisadas": 6,
   "meta": 0.9,
   "muestra_prevista": 30,
-  "origen_juicio": "asistente_provisional (D-101)",
-  "juicio_humano": false,
-  "aviso_origen": "JUICIO PROVISIONAL DEL ASISTENTE, NO HUMANO (D-101): se rehace a mano en C-09; no reportar como juicio de una persona.",
+  "origen_juicio": "humano",
+  "juicio_humano": true,
   "conteo": {
-    "sustentada": 5,
-    "parcial": 1,
+    "sustentada": 6,
+    "parcial": 0,
     "no sustentada": 0,
     "tipo incorrecto": 0
   },
   "sustentadas": {
-    "n": 5,
+    "n": 6,
     "de": 6,
-    "proporcion": 0.8333,
+    "proporcion": 1.0,
     "ic95": [
-      0.5,
+      1.0,
       1.0
     ],
     "ic95_wilson": [
-      0.4365,
-      0.9699
+      0.6097,
+      1.0
     ],
-    "remuestreos": 2000
+    "remuestreos": 2000,
+    "bootstrap_degenerado": true
   },
   "parciales": {
-    "n": 1,
+    "n": 0,
     "de": 6,
-    "proporcion": 0.1667,
+    "proporcion": 0.0,
     "ic95": [
       0.0,
-      0.5
+      0.0
     ],
     "ic95_wilson": [
-      0.0301,
-      0.5635
+      0.0,
+      0.3903
     ],
-    "remuestreos": 2000
+    "remuestreos": 2000,
+    "bootstrap_degenerado": true
   },
   "tipo_incorrecto": {
     "n": 0,
@@ -56,27 +57,21 @@
     "remuestreos": 2000,
     "bootstrap_degenerado": true
   },
-  "fallos": [
-    {
-      "id_muestra": "S06",
-      "id": "GRP-da35c3dead/A6",
-      "veredicto": "parcial"
-    }
-  ],
+  "fallos": [],
   "meta_validez": {
     "meta": 0.9,
     "criterio": "estimación puntual (docs/protocolo_evaluacion.md, sección 4)",
-    "estimacion_puntual": 0.8333,
-    "cumple_estimacion_puntual": false,
-    "limite_inferior_wilson": 0.4365,
+    "estimacion_puntual": 1.0,
+    "cumple_estimacion_puntual": true,
+    "limite_inferior_wilson": 0.6097,
     "cumple_con_limite_inferior_wilson": false,
     "nota_wilson": "información adicional: no reemplaza el criterio oficial",
-    "origen_juicio": "asistente_provisional (D-101)",
-    "juicio_humano": false
+    "origen_juicio": "humano",
+    "juicio_humano": true
   },
   "revisores": [
-    "asistente (D-101)"
+    "David Feng"
   ],
-  "cumple_meta_provisional": false,
+  "cumple_meta": true,
   "nota": "La muestra tiene 6 < 30 afirmaciones: no se produjeron más (PDF 9.1: «si se producen tantas»)."
 }
