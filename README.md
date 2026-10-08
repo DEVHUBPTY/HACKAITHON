@@ -1,5 +1,7 @@
 # HackIAthon · De la señal a la decisión
 
+> **Licencia.** El archivo `LICENSE` (MIT) cubre **solo el código**. Los datos conservan la licencia de su fuente (`docs/fuentes.md`): Banco Mundial CC BY 4.0; USGS dominio público; TVN y GDELT, solo metadatos y bajo sus condiciones; SBP de uso restringido (D-116), no para redistribución pública.
+
 ## Descripción
 
 Copiloto que convierte titulares públicos (TVN RSS y GDELT) y datos oficiales (Banco Mundial, USGS, SBP) en una bandeja de temas priorizados, fichas de evidencia y borradores para una decisión humana.
@@ -103,4 +105,6 @@ poetry run python -m scripts.auditoria_final    # PASS / FALTA / NO VERIFICABLE 
 
 ## Licencias
 
-Las licencias y condiciones de uso de los datos están en `docs/fuentes.md` y en el manifest (`data/manifest.json`). La licencia del código está pendiente de decisión del equipo.
+Las licencias y condiciones de uso de los datos están en `docs/fuentes.md` y en el manifest (`data/manifest.json`). El código se publica bajo licencia MIT (`LICENSE`), que no cubre los datos.
+
+Lo que debe hacer una persona antes de la entrega está en `docs/pendientes_humanos.md`.
