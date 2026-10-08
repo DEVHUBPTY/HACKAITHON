@@ -90,7 +90,7 @@ CORTE = datetime(2025, 9, 28, 12, 0, tzinfo=UTC)   # el snapshot del fixture se 
 
 def _grupo_de(fila: dict) -> puntaje.EntradaGrupo:
     limpia = limpieza.limpiar_filas([fila], limpieza.Reglas.desde_config())[0] | {"tema_similitud": 0.8}
-    return puntaje.EntradaGrupo("GRP-t03", (limpia,), np.array([[1.0, 0.0]], dtype=np.float32), "operacion_canal", 1, False)
+    return puntaje.EntradaGrupo("GRP-t03", (limpia,), np.array([[1.0, 0.0]], dtype=np.float32), 1, False)
 
 
 def test_la_noticia_recirculada_tiene_urgencia_baja_y_no_se_marca_como_nueva() -> None:
