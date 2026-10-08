@@ -721,12 +721,12 @@ diferencia mide ≈ ±0.2: **no se puede afirmar que el LLM sea mejor ni peor** 
 
 ### 3 · Costo, tokens y caché
 
-Modelo `deepseek-flash`, prompt 1.0, temperatura 0. 142.006 tokens de entrada y 2.959 de salida en total; **costo estimado USD 0.0462**
+Modelo `deepseek-flash`, prompt 1.0, temperatura 0. 82.204 tokens de entrada y 1.699 de salida en las 37 llamadas reales; **costo estimado USD 0.0267**
 (tarifa pico sin descuento por caché; el contador **sobreestima ≈ 2.6 ×** frente a la consola de DeepSeek, D-97, así que el costo real
-es menor, del orden de USD 0.02). Cada llamada real consume ≈ 3.800 tokens de entrada (casi todo es el system prompt). 37 llamadas reales (los 37 titulares
+es menor, del orden de USD 0.01). Cada llamada real consume ≈ 2.220 tokens de entrada (casi todo es el system prompt). 37 llamadas reales (los 37 titulares
 distintos; los 64 titulares evaluados incluyen 27 repetidos, que se sirvieron de la caché dentro de la misma corrida porque el
 texto es idéntico), 0 errores de transporte, 0 respuestas mal formadas, tope de costo sin alcanzar. La réplica con `--verificar` sirve
-las 64 de la caché, sin red, y reproduce **exactamente** las mismas métricas.
+las 64 de la caché, sin red, y reproduce **exactamente** las mismas métricas. Las 27 repeticiones reprodujeron desde la caché 59.802 tokens de entrada y 1.260 de salida que **no** se cobraron y no cuentan en las cifras de arriba (una primera versión del informe los sumó y mostraba 142.006 y 2.959, un total de 64 llamadas; se corrigió sin repetir la corrida, desde las 37 entradas de la caché).
 
 ### 4 · Limitaciones (los fallos no se ocultan)
 

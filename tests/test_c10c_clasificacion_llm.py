@@ -404,10 +404,32 @@ def test_el_resumen_de_la_corrida_cuenta_tokens_cache_malformadas_y_costo() -> N
     resultados = [_res("economia"), _res(SIN_TEMA, malformada=True, confianza=None), _res("turismo", cache=True)]
     r = ev.resumen_de_corrida(resultados, CFG, _PROMPT, PreciosDeepSeek(entrada=1.0, salida=2.0))
     assert (r["llamadas"], r["llamadas_reales"], r["llamadas_de_cache"], r["respuestas_mal_formadas"]) == (3, 2, 1, 1)
-    assert (r["tokens_entrada"], r["tokens_salida"]) == (30, 12)
-    assert r["costo_usd_estimado"] == pytest.approx((30 * 1.0 + 12 * 2.0) / 1_000_000)
+    assert (r["tokens_entrada"], r["tokens_salida"]) == (20, 8)                  # solo las 2 llamadas reales
+    assert r["costo_usd_estimado"] == pytest.approx((20 * 1.0 + 8 * 2.0) / 1_000_000)
+    assert r["tokens_reproducidos_de_cache"] == {"entrada": 10, "salida": 4}     # lo repetido se cuenta aparte
     assert r["modelo"] == CFG.modelo and r["version_prompt"] == CFG.version_prompt and r["huella_prompt"] == CFG.huella_prompt
     assert "2,6" in r["nota_costo"]
+
+
+def test_los_tokens_y_el_costo_cuentan_solo_las_llamadas_reales_no_los_aciertos_de_cache() -> None:
+    resultados = [_res("economia"), _res("economia", cache=True), _res("turismo"), _res("turismo", cache=True), _res("turismo", cache=True)]
+    r = ev.resumen_de_corrida(resultados, CFG, _PROMPT, PreciosDeepSeek(entrada=1.0, salida=2.0))
+    assert (r["llamadas_reales"], r["llamadas_de_cache"]) == (2, 3)
+    assert (r["tokens_entrada"], r["tokens_salida"]) == (20, 8)
+    assert r["costo_usd_estimado"] == pytest.approx((20 * 1.0 + 8 * 2.0) / 1_000_000)
+    assert r["tokens_reproducidos_de_cache"] == {"entrada": 30, "salida": 12}
+    todas_de_cache = ev.resumen_de_corrida([_res("economia", cache=True)], CFG, _PROMPT, PreciosDeepSeek(entrada=1.0, salida=2.0))
+    assert (todas_de_cache["tokens_entrada"], todas_de_cache["costo_usd_estimado"]) == (0, 0.0)
+
+
+def test_los_tokens_comparables_cuentan_una_vez_cada_titular_distinto_sea_corrida_real_o_replica() -> None:
+    titulares = ["uno", "dos", "uno", "tres", "dos"]
+    real = [_res("economia"), _res("turismo"), _res("economia", cache=True), _res("turismo"), _res("turismo", cache=True)]
+    replica = [_res(r.tema, cache=True) for r in real]
+    precios = PreciosDeepSeek(entrada=1.0, salida=2.0)
+    esperado = {"entrada": 30, "salida": 12, "costo_usd_estimado": pytest.approx((30 * 1.0 + 12 * 2.0) / 1_000_000)}
+    assert ev.tokens_de_titulares_distintos(titulares, real, precios) == esperado
+    assert ev.tokens_de_titulares_distintos(titulares, replica, precios) == esperado   # la réplica reproduce lo mismo
 
 
 def test_las_metricas_llevan_n_ic_abstenciones_confusion_y_la_comparacion_pareada() -> None:
@@ -440,3 +462,73 @@ def test_verificar_compara_solo_las_metricas_y_reporta_la_diferencia() -> None:
     assert ev.diferencias_de_metricas(a, b) == []
     c = {"corrida": {}, "metricas": {"x": 2, "y": [1, 2]}, "tokens": {"entrada": 5}}
     assert ev.diferencias_de_metricas(a, c) == ["metricas.x: 1 != 2"]
+
+
+# ------------------------------------------------------------------ CLI: las guardas de la medición única (sin red, sin clave)
+
+
+def _no_debe_llamarse(nombre: str):  # type: ignore[no-untyped-def]
+    def _falla(*_a: Any, **_k: Any) -> None:
+        pytest.fail(f"{nombre} no debía llamarse")
+
+    return _falla
+
+
+def _cli_con_stub(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, informe: dict[str, Any] | None = None) -> tuple[list[str], Path]:
+    """Argumentos de la CLI sobre archivos de mentira y todo lo costoso sustituido; ningún proveedor puede crearse."""
+    import numpy as np
+
+    etiquetas, base = tmp_path / "e.csv", tmp_path / "base.duckdb"
+    etiquetas.write_text("x", encoding="utf-8")
+    base.write_text("x", encoding="utf-8")
+    salida = tmp_path / "salida.json"
+    filas = ev.FilasLlm(["NOT-1"], ["Titular ilustrativo de prueba uno"], np.array(["economia"], dtype=object), ["ev"], 1, 0)
+    monkeypatch.setattr(ev, "cargar_filas", lambda *a, **k: filas)
+    monkeypatch.setattr(ev, "crear_proveedor_clasificacion", _no_debe_llamarse("crear_proveedor_clasificacion"))
+    if informe is not None:
+        conj = type("Conj", (), {"ids": ["NOT-1"], "y": filas.y, "eventos": filas.eventos})()
+        monkeypatch.setattr(ev.pe, "cargar_conjunto", lambda *a, **k: conj)
+        monkeypatch.setattr(ev.pe, "predicciones_de_sistemas", lambda *a, **k: {"A (activo)": filas.y, "baseline_b": filas.y})
+        monkeypatch.setattr(ev.sup, "mejor_baseline", lambda *a, **k: "baseline_b")
+        monkeypatch.setattr(ev, "clasificar_filas", lambda *a, **k: [])
+        monkeypatch.setattr(ev, "construir_informe", lambda *a, **k: informe)
+        monkeypatch.setattr(ev, "imprimir", lambda *_a: ["(informe de prueba)"])
+    return ["--etiquetas", str(etiquetas), "--base", str(base), "--salida", str(salida)], salida
+
+
+def test_una_segunda_corrida_real_se_rechaza_si_el_json_ya_existe_y_no_llama_a_nadie(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    args, salida = _cli_con_stub(tmp_path, monkeypatch)
+    salida.write_text('{"intacto": true}', encoding="utf-8")
+    monkeypatch.setattr(ev, "cargar_filas", _no_debe_llamarse("cargar_filas"))     # ni siquiera llega a leer las filas
+    assert ev.main(args) == ev.CODIGO_DIFERENCIAS == 1
+    assert "única" in capsys.readouterr().err
+    assert salida.read_text(encoding="utf-8") == '{"intacto": true}'               # no se pisa la medición
+
+
+def test_una_fuga_en_el_prompt_aborta_antes_de_llamar_al_proveedor(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    args, salida = _cli_con_stub(tmp_path, monkeypatch)
+    con_fuga = cl.PromptClasificacion(_PROMPT.version, _PROMPT.texto + "\nEjemplo: Titular ilustrativo de prueba uno", _PROMPT.huella)
+    monkeypatch.setattr(ev, "cargar_prompt_clasificacion", lambda *a, **k: con_fuga)
+    monkeypatch.setattr(ev.pe, "cargar_conjunto", _no_debe_llamarse("cargar_conjunto"))
+    monkeypatch.setattr(ev, "ClasificadorLlm", _no_debe_llamarse("ClasificadorLlm"))
+    assert ev.main(args) == ev.CODIGO_DIFERENCIAS == 1
+    assert "FUGA" in capsys.readouterr().err
+    assert not salida.exists()
+
+
+def test_verificar_sin_json_guardado_sale_con_el_codigo_de_faltantes(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    args, salida = _cli_con_stub(tmp_path, monkeypatch, informe={"metricas": {"x": 1}})
+    assert ev.main([*args, "--verificar"]) == ev.evalclas.CODIGO_SIN_ETIQUETAS == 2
+    assert "nada que verificar" in capsys.readouterr().err
+    assert not salida.exists()
+
+
+def test_verificar_con_metricas_distintas_sale_con_1_y_con_metricas_iguales_con_0(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    informe = {"conjunto": {"filas": 1}, "metricas": {"x": 1}, "corrida": {"llamadas_de_cache": 1, "llamadas": 1}}
+    args, salida = _cli_con_stub(tmp_path, monkeypatch, informe=informe)
+    salida.write_text(json.dumps({**informe, "metricas": {"x": 2}}), encoding="utf-8")
+    assert ev.main([*args, "--verificar"]) == ev.CODIGO_DIFERENCIAS == 1
+    assert "NO coinciden" in capsys.readouterr().err
+    salida.write_text(json.dumps(informe), encoding="utf-8")
+    assert ev.main([*args, "--verificar"]) == 0
+    assert json.loads(salida.read_text(encoding="utf-8")) == informe               # --verificar no escribe nada

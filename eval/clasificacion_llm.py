@@ -122,10 +122,16 @@ def clasificar_filas(filas: FilasLlm, clasificador: ClasificadorLlm) -> list[Cla
 def resumen_de_corrida(
     resultados: Sequence[Clasificacion], cfg: ConfigClasificacionLlm, prompt: PromptClasificacion, precios: PreciosDeepSeek
 ) -> dict[str, Any]:
-    """Modelo, versión del prompt, llamadas (reales y de caché), tokens y costo estimado (cota superior: ver ``NOTA_COSTO``)."""
-    entrada = sum(r.tokens_entrada for r in resultados)
-    salida = sum(r.tokens_salida for r in resultados)
-    de_cache = sum(1 for r in resultados if r.desde_cache)
+    """Modelo, versión del prompt, llamadas (reales y de caché), tokens y costo estimado (cota superior: ver ``NOTA_COSTO``).
+
+    Tokens y costo suman **solo las llamadas reales** (``desde_cache`` falso): un acierto de caché repite las cifras guardadas y no gasta nada;
+    esas cifras repetidas van aparte en ``tokens_reproducidos_de_cache``.
+    """
+    reales = [r for r in resultados if not r.desde_cache]
+    repetidas = [r for r in resultados if r.desde_cache]
+    entrada = sum(r.tokens_entrada for r in reales)
+    salida = sum(r.tokens_salida for r in reales)
+    de_cache = len(repetidas)
     return {
         "proveedor": cfg.proveedor,
         "modelo": cfg.modelo,
@@ -139,10 +145,26 @@ def resumen_de_corrida(
         "respuestas_mal_formadas": sum(1 for r in resultados if r.malformada),
         "tokens_entrada": entrada,
         "tokens_salida": salida,
+        "tokens_reproducidos_de_cache": {"entrada": sum(r.tokens_entrada for r in repetidas), "salida": sum(r.tokens_salida for r in repetidas)},
         "costo_usd_estimado": (entrada * precios.entrada + salida * precios.salida) / UN_MILLON,
         "precios_usd_por_millon_tokens": {"entrada": precios.entrada, "salida": precios.salida},
         "nota_costo": NOTA_COSTO,
     }
+
+
+def tokens_de_titulares_distintos(titulares: Sequence[str], resultados: Sequence[Clasificacion], precios: PreciosDeepSeek) -> dict[str, Any]:
+    """Tokens y costo de **una llamada por titular distinto** (la primera vez que aparece).
+
+    En la corrida real esa primera vez es la llamada real; en la réplica ``--verificar`` es la entrada guardada de la caché. Por eso la cifra
+    es la misma en ambas y puede compararse; los titulares repetidos no suman (se sirven de la caché).
+    """
+    vistos: set[str] = set()
+    entrada = salida = 0
+    for titular, r in zip(titulares, resultados, strict=True):
+        if titular not in vistos:
+            vistos.add(titular)
+            entrada, salida = entrada + r.tokens_entrada, salida + r.tokens_salida
+    return {"entrada": entrada, "salida": salida, "costo_usd_estimado": (entrada * precios.entrada + salida * precios.salida) / UN_MILLON}
 
 
 # ------------------------------------------------------------------ métricas
@@ -214,7 +236,7 @@ def construir_informe(
     filas: FilasLlm, resultados: Sequence[Clasificacion], comparadores: dict[str, np.ndarray], mejor_baseline: str,
     cfg: ConfigClasificacionLlm, prompt: PromptClasificacion, clas: ConfigClasificacion, temas: ConfigTemas, z: float, precios: PreciosDeepSeek,
 ) -> dict[str, Any]:
-    """Todo el informe (sin escribirlo). ``tokens`` y ``conjunto`` salen de los datos y de la caché, así que la réplica los reproduce."""
+    """Todo el informe (sin escribirlo). ``tokens`` (una llamada por titular distinto) y ``conjunto`` salen de los datos y de la caché, así que la réplica los reproduce."""
     preds = np.array([r.tema for r in resultados], dtype=object)
     corrida = resumen_de_corrida(resultados, cfg, prompt, precios)
     return {
@@ -224,7 +246,7 @@ def construir_informe(
         "advertencia": ADVERTENCIA,
         "fuga_declarada": FUGA_DECLARADA,
         "corrida": corrida,
-        "tokens": {"entrada": corrida["tokens_entrada"], "salida": corrida["tokens_salida"], "costo_usd_estimado": corrida["costo_usd_estimado"]},
+        "tokens": tokens_de_titulares_distintos(filas.titulares, resultados, precios),
         "conjunto": {
             "origenes": ["humano"],
             "usa_etiquetas_provisionales": False,
@@ -279,7 +301,9 @@ def imprimir(r: dict[str, Any]) -> list[str]:
         f"Fuga declarada: {r['fuga_declarada']}",
         f"Modelo {k['modelo']} · prompt {k['version_prompt']} (huella {k['huella_prompt'][:12]}…) · temperatura {k['temperatura']} · max_tokens {k['max_tokens']}",
         f"Llamadas {k['llamadas']}: reales {k['llamadas_reales']}, de la caché {k['llamadas_de_cache']}; respuestas mal formadas {k['respuestas_mal_formadas']}",
-        f"Tokens: entrada {k['tokens_entrada']}, salida {k['tokens_salida']}; costo estimado USD {k['costo_usd_estimado']:.4f} (cota superior: {k['nota_costo']})",
+        f"Tokens de las llamadas reales: entrada {k['tokens_entrada']}, salida {k['tokens_salida']}; costo estimado USD {k['costo_usd_estimado']:.4f} (cota superior: {k['nota_costo']})",
+        f"Tokens de una llamada por titular distinto (comparables con la réplica): entrada {r['tokens']['entrada']}, salida {r['tokens']['salida']}; "
+        f"repetidos desde la caché (no se cobran): entrada {k['tokens_reproducidos_de_cache']['entrada']}, salida {k['tokens_reproducidos_de_cache']['salida']}",
         f"\nExactitud por fila: {_p(m['exactitud_por_fila'])}",
         f"Exactitud por evento: {pe._ic(m['exactitud_por_evento'])}",
         f"Macro-F1 por fila: {f1_fila['macro_f1']} IC95 {f1_fila['ic95']} (n = {f1_fila['n']}, {f1_fila['remuestreos']} remuestreos)",

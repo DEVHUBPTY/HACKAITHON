@@ -45,7 +45,9 @@ clasificación más exacta. Se prueba un LLM que lee el titular con la guía de 
   contra el método A: exactitud −0,006 [−0,233; +0,228], macro-F1 −0,037 [−0,226; +0,171]. IC solapados, D-57 NO se cumple.
 - Comportamiento: 25 de 64 filas a `sin_tema` (cobertura 60,9 %); exactitud entre cubiertas 31/39 = 79,5 % [64,5–89,2]. Economía 3/26 (18
   pasaron a `sin_tema`), Eventos naturales 20/20 (un solo evento), Servicios públicos 7/9, `sin_tema` 4/5 (el método A: 0/5).
-- Costo: 142 006 tokens de entrada y 2 959 de salida, ≈ USD 0,046 estimado (el contador sobreestima ≈ 2,6×). 37 llamadas reales (hay 37
+- Costo (corregido tras la revisión: solo las llamadas reales): 82 204 tokens de entrada y 1 699 de salida, ≈ USD 0,027 estimado (el
+  contador sobreestima ≈ 2,6×); los 59 802 y 1 260 repetidos desde la caché van aparte. La primera versión sumaba las 64 respuestas
+  (142 006 y 2 959, USD 0,046). 37 llamadas reales (hay 37
   titulares distintos); `--verificar` reproduce las métricas desde la caché sin red (64/64).
 - Pendiente de decidir: 1 de 37 respuestas guardadas repite en `motivo` un fragmento del titular (4 o más palabras seguidas); el caché
   de `data/cache_clasificacion_llm/` guarda la respuesta cruda. Los titulares son metadatos permitidos; no hay descripciones.
@@ -53,3 +55,9 @@ clasificación más exacta. Se prueba un LLM que lee el titular con la guía de 
 ## Próximo paso
 T4: decisión del dueño. El LLM no mejora la exactitud de forma demostrable con las etiquetas actuales y NO se conecta a producción.
 Reproducibilidad: el prompt nuevo cambia hashes de `scripts.reproducir` (no se corrió).
+
+## Revisión nativa de C-10c
+- Aprobada y reconocida (lente `review-reliability`, 48 archivos, 2898 líneas). Dos advertencias, corregidas después por pedido del dueño
+  (ruta delegada, un writer): los tokens y el costo sumaban también los aciertos de caché (ahora solo las 37 llamadas reales; las
+  métricas no cambian, verificado con `cmp` sobre el JSON sin tokens) y se agregaron 4 tests de las guardas de la CLI (ya se cumplían:
+  guardas de regresión) más 2 de tokens. Suite completa 3024 passed, 3 skipped, 6 xfailed; `--validar` OK; `--verificar` rc 0.

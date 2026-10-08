@@ -15,9 +15,13 @@
     "llamadas_reales": 37,
     "llamadas_de_cache": 27,
     "respuestas_mal_formadas": 0,
-    "tokens_entrada": 142006,
-    "tokens_salida": 2959,
-    "costo_usd_estimado": 0.0461526,
+    "tokens_entrada": 82204,
+    "tokens_salida": 1699,
+    "tokens_reproducidos_de_cache": {
+      "entrada": 59802,
+      "salida": 1260
+    },
+    "costo_usd_estimado": 0.0267,
     "precios_usd_por_millon_tokens": {
       "entrada": 0.3,
       "salida": 1.2
@@ -25,9 +29,9 @@
     "nota_costo": "El contador del repositorio multiplica los tokens por la tarifa pico sin descuento por caché y sobreestima ≈ 2,6 veces frente a la consola de DeepSeek (D-97): el costo real es menor que el estimado."
   },
   "tokens": {
-    "entrada": 142006,
-    "salida": 2959,
-    "costo_usd_estimado": 0.0461526
+    "entrada": 82204,
+    "salida": 1699,
+    "costo_usd_estimado": 0.0267
   },
   "conjunto": {
     "origenes": [
