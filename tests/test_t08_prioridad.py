@@ -248,7 +248,9 @@ def test_sin_fecha_de_publicacion_u_usa_la_deteccion_y_agrega_el_vacio() -> None
     c = p.componentes["U"]
     assert c.explicacion["fecha_origen"] == "deteccion"
     assert c.explicacion["fecha"] == iso(10)            # la más reciente
-    assert c.valor == pytest.approx(1 - 10 / (REGLAS.urgencia.dias_nulo * 24))   # D-106: la de 10 h, sin meseta
+    sin_tope = 1 - 10 / (REGLAS.urgencia.dias_nulo * 24)                          # D-106: la de 10 h, sin meseta
+    assert c.explicacion["valor_sin_tope"] == pytest.approx(sin_tope)
+    assert c.valor == pytest.approx(min(sin_tope, REGLAS.urgencia.tope_fecha_imputada))   # D-124: fecha imputada -> tope
     assert [v.texto for v in p.vacios if v.codigo == "urgencia_sin_publicacion"] == [REGLAS.urgencia.vacio_sin_publicacion]
 
 
@@ -286,7 +288,7 @@ def test_la_duplicacion_no_incrementa_el_puntaje_un_grupo_casi_igual_a_uno_anter
             entrada("GRP-a", [miembro("NOT-a", publicado_hace=200)], vectores=np.stack([vector(1, 0)])),
             entrada("GRP-b", [miembro("NOT-b", publicado_hace=150)], vectores=np.stack([vector(0, 1)])),
             entrada("GRP-copia", [miembro("NOT-c", publicado_hace=100)], vectores=np.stack([vector(1, 0.01)])),   # casi igual a GRP-a
-            entrada("GRP-nuevo", [miembro("NOT-n", publicado_hace=50)], vectores=np.stack([vector(1, 1)])),
+            entrada("GRP-nuevo", [miembro("NOT-n", publicado_hace=50)], vectores=np.stack([vector(-1, 0)])),   # D-124: lejos de los anteriores
         ]
     )
     assert r["GRP-copia"].componentes["N"].valor < r["GRP-nuevo"].componentes["N"].valor
@@ -296,7 +298,7 @@ def test_la_duplicacion_no_incrementa_el_puntaje_un_grupo_casi_igual_a_uno_anter
 def test_n_compara_solo_con_grupos_anteriores_por_fecha_de_publicacion() -> None:
     r = _calcular(
         [
-            entrada("GRP-viejo", [miembro("NOT-v", publicado_hace=300)], vectores=np.stack([vector(1, 0)])),
+            entrada("GRP-viejo", [miembro("NOT-v", publicado_hace=100)], vectores=np.stack([vector(1, 0)])),
             entrada("GRP-reciente", [miembro("NOT-r", publicado_hace=10)], vectores=np.stack([vector(1, 0.01)])),
         ]
     )

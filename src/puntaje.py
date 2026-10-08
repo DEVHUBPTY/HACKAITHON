@@ -15,10 +15,11 @@ y **no habilita publicación** (``Puntaje.habilita_publicacion`` es siempre fals
 * **U**: lineal entre ``horas_pleno`` (U = 1; D-106: 0 h, sin meseta) y ``dias_nulo`` (U = 0) desde la publicación ORIGINAL más reciente del grupo,
   medida contra la fecha de referencia (el corte del snapshot). Si ningún titular trae ``fecha_publicacion`` se usa la
   detección como cota y se agrega el vacío «urgencia estimada: fecha de publicación desconocida»; nunca se sustituye en silencio.
-* **N** (D-103): ``s`` = similitud máxima entre un titular del grupo y uno de un grupo anterior (empezó antes:
-  ``fecha_publicacion`` y, si falta, ``fecha_deteccion``); ``u`` = ``agrupacion.umbral_similitud``, el mismo umbral con que
-  se agrupa. Si ``s < u`` no es el mismo evento y N = 1; si ``s ≥ u``, N = ``(1 − s) / (1 − u)`` (1 en el umbral, 0 un
-  duplicado). El primer grupo no tiene con qué compararse (``novedad.sin_grupos_previos``). La duplicación no sube N.
+  D-124: con esa fecha imputada U no pasa de ``urgencia.tope_fecha_imputada`` y la explicación lleva ``fecha_imputada: true``.
+* **N** (D-124, reemplaza a D-103): ``s`` = similitud coseno entre el CENTROIDE del grupo y el de cada grupo que empezó
+  antes (``fecha_publicacion`` y, si falta, ``fecha_deteccion``) y dentro de ``novedad.ventana_dias``; se toma la máxima.
+  N = 1 si ``s <= ancla_baja``, 0 si ``s >= ancla_alta`` (= ``agrupacion.umbral_similitud``, el umbral con que se agrupa) y
+  lineal entre ambas. Sin grupos previos en la ventana, ``novedad.sin_grupos_previos``. La duplicación no sube N.
 * **E** = ``peso_procedencias × min(n, tope)/tope + peso_oficial × (hay dato oficial directo o evento) + peso_identificables × (titulares con
   medio y fecha de publicación conocidos / titulares)``. Cuenta **procedencias**, nunca titulares (``procedencias.fraccion_de_procedencias``).
 
@@ -35,7 +36,7 @@ import sys
 from collections import Counter
 from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass, field, replace
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from functools import lru_cache
 from typing import Any
 
@@ -399,9 +400,16 @@ def urgencia(
     edad_horas = (ahora - fecha).total_seconds() / SEGUNDOS_POR_HORA
     limite = u.dias_nulo * HORAS_POR_DIA
     valor = 1.0 if edad_horas <= u.horas_pleno else 0.0 if edad_horas >= limite else (limite - edad_horas) / (limite - u.horas_pleno)
+    imputada = origen != "publicacion"
+    sin_tope = valor
+    if imputada:    # D-124: la detección no es la publicación; U no pasa del tope
+        valor = min(valor, u.tope_fecha_imputada)
     return Componente(
         valor,
-        {"fecha": texto, "fecha_origen": origen, "edad_horas": edad_horas, "horas_pleno": u.horas_pleno, "dias_nulo": u.dias_nulo},
+        {
+            "fecha": texto, "fecha_origen": origen, "edad_horas": edad_horas, "horas_pleno": u.horas_pleno, "dias_nulo": u.dias_nulo,
+            "fecha_imputada": imputada, "tope_fecha_imputada": u.tope_fecha_imputada if imputada else None, "valor_sin_tope": sin_tope,
+        },
     ), vacios
 
 
@@ -413,40 +421,56 @@ def _fecha_de_inicio(entrada: EntradaGrupo, reglas: ReglasV13) -> datetime | Non
     return min(fechas) if fechas else None
 
 
-def _similitudes_maximas(entradas: Sequence[EntradaGrupo], reglas: ReglasV13) -> list[tuple[float, str, int] | None]:
-    """Por grupo: (similitud máxima con un titular de un grupo anterior, ese grupo, cuántos grupos anteriores); ``None`` si no hay."""
-    sin_fecha = datetime.max.replace(tzinfo=UTC)
-    inicio = [_fecha_de_inicio(e, reglas) or sin_fecha for e in entradas]
-    orden = sorted(range(len(entradas)), key=lambda i: (inicio[i], entradas[i].id_grupo))
+def _centroide(entrada: EntradaGrupo) -> np.ndarray:
+    """Centroide normalizado de los vectores del grupo (la media de vectores unitarios no es unitaria: se normaliza)."""
+    if entrada.vectores is None:
+        raise ValueError("novedad: faltan los vectores de un grupo")
+    media = entrada.vectores.mean(axis=0)
+    norma = float(np.linalg.norm(media))
+    return media / norma if norma else media
+
+
+def _similitudes_maximas(
+    entradas: Sequence[EntradaGrupo], reglas: ReglasV13
+) -> list[tuple[float, str, int] | None]:
+    """Por grupo: (similitud máxima entre centroides con un grupo que empezó ANTES y dentro de ``novedad.ventana_dias``, ese
+    grupo, cuántos grupos había en la ventana); ``None`` si no hay ninguno (o el grupo no tiene fecha)."""
+    inicio = [_fecha_de_inicio(e, reglas) for e in entradas]
+    ventana = timedelta(days=reglas.novedad.ventana_dias)
+    centroides = [_centroide(e) for e in entradas]
     resultado: list[tuple[float, str, int] | None] = [None] * len(entradas)
-    for pos, i in enumerate(orden):
-        mejor: tuple[float, str] | None = None
-        for j in orden[:pos]:
-            a, b = entradas[i].vectores, entradas[j].vectores
-            if a is None or b is None:
-                raise ValueError("novedad: faltan los vectores de un grupo")
-            s = float((a @ b.T).max())
-            if mejor is None or s > mejor[0]:
-                mejor = (s, entradas[j].id_grupo)
-        resultado[i] = None if mejor is None else (mejor[0], mejor[1], pos)
+    for i, e in enumerate(entradas):
+        if inicio[i] is None:
+            continue
+        # «antes» = (inicio, id) estrictamente menor: dos grupos con el mismo inicio no se descuentan entre sí a la vez
+        anteriores = [
+            j for j, otro in enumerate(entradas)
+            if inicio[j] is not None and (inicio[j], otro.id_grupo) < (inicio[i], e.id_grupo) and inicio[i] - inicio[j] <= ventana
+        ]
+        if not anteriores:
+            continue
+        sims = [(float(centroides[i] @ centroides[j]), entradas[j].id_grupo) for j in anteriores]
+        mejor = max(sims, key=lambda t: (t[0], t[1]))
+        resultado[i] = (mejor[0], mejor[1], len(anteriores))
     return resultado
 
 
 def umbral_novedad(reglas: ReglasV13) -> float:
-    """El umbral desde el que N descuenta: ``agrupacion.umbral_similitud``, el mismo con que se agrupa (D-103)."""
+    """``ancla_alta`` de N: ``agrupacion.umbral_similitud``, el mismo con que se agrupa (D-103, D-124)."""
     umbral = reglas.agrupacion.umbral_similitud
     if umbral is None:
         raise ValueError("agrupacion.umbral_similitud sin calibrar: N lo necesita (D-103); ejecute `python -m eval.agrupacion`")
     return umbral
 
 
-def novedad_de(similitud: float, umbral: float) -> float:
-    """N (D-103): 1 si ``similitud < umbral``; si no, ``(1 − similitud) / (1 − umbral)`` en [0, 1] (1 en el umbral, 0 un duplicado)."""
-    if similitud < umbral:
+def novedad_de(similitud: float, ancla_baja: float, ancla_alta: float) -> float:
+    """N (D-124): 1 si ``similitud <= ancla_baja``, 0 si ``>= ancla_alta`` y lineal entre ambas (si ``ancla_alta <= ancla_baja``
+    no hay tramo lineal: N salta de 1 a 0 en ``ancla_baja``)."""
+    if similitud <= ancla_baja:
         return 1.0
-    if umbral >= 1.0:   # umbral 1: solo un duplicado exacto lo alcanza
+    if similitud >= ancla_alta:
         return 0.0
-    return min(1.0, max(0.0, (1.0 - similitud) / (1.0 - umbral)))
+    return (ancla_alta - similitud) / (ancla_alta - ancla_baja)
 
 
 # ------------------------------------------------------------------ E · evidencia
@@ -562,13 +586,16 @@ def calcular_puntajes(
         if maximas[i] is None:
             c_n = Componente(
                 reglas.novedad.sin_grupos_previos,
-                {"grupos_previos": 0, "similitud_maxima": None, "umbral_similitud": umbral, "descuenta": False, "grupo_mas_parecido": None},
+                {"grupos_previos": 0, "similitud_maxima": None, "umbral_similitud": umbral, "descuenta": False, "grupo_mas_parecido": None,
+                 "ancla_baja": reglas.novedad.ancla_baja, "ancla_alta": umbral, "ventana_dias": reglas.novedad.ventana_dias},
             )
         else:
             sim, parecido, previos = maximas[i]  # type: ignore[misc]
             c_n = Componente(
-                novedad_de(sim, umbral),
-                {"grupos_previos": previos, "similitud_maxima": sim, "umbral_similitud": umbral, "descuenta": sim >= umbral, "grupo_mas_parecido": parecido},
+                novedad_de(sim, reglas.novedad.ancla_baja, umbral),
+                {"grupos_previos": previos, "similitud_maxima": sim, "umbral_similitud": umbral, "descuenta": sim > reglas.novedad.ancla_baja,
+                 "grupo_mas_parecido": parecido, "ancla_baja": reglas.novedad.ancla_baja, "ancla_alta": umbral,
+                 "ventana_dias": reglas.novedad.ventana_dias},
             )
         componentes = {"R": r, "I": c_i, "U": c_u, "N": c_n, "E": evidencia_e(e, reglas, cfg)}
         total = puntaje_total({k: c.valor for k, c in componentes.items()}, reglas)

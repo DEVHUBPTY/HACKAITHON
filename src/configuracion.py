@@ -645,6 +645,9 @@ class Urgencia(ModeloConfig):
     dias_nulo: float = Field(gt=0)
     fecha_sin_publicacion: Literal["fecha_deteccion"]
     vacio_sin_publicacion: str
+    # D-124: con la fecha de detección en lugar de la de publicación (imputada), U no pasa de este tope: la detección es
+    # igual o posterior a la publicación, así que el grupo puede ser más viejo de lo que parece.
+    tope_fecha_imputada: float = Unidad
 
     @model_validator(mode="after")
     def _ventana(self) -> Urgencia:
@@ -655,6 +658,10 @@ class Urgencia(ModeloConfig):
 
 class Novedad(ModeloConfig):
     sin_grupos_previos: float = Unidad
+    # D-124: N continua a partir de la similitud del centroide del grupo con el de los grupos que EMPEZARON antes dentro de
+    # esta ventana (días). N = 1 si la similitud <= ancla_baja y 0 si >= ancla_alta (= agrupacion.umbral_similitud, no se copia).
+    ventana_dias: float = Field(gt=0)
+    ancla_baja: float = Unidad
 
 
 class EvidenciaReglas(ModeloConfig):

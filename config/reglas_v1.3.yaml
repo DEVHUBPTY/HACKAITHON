@@ -81,11 +81,18 @@ urgencia:                   # U usa la publicación original MÁS RECIENTE del g
   # Sin fecha_publicacion en ningún titular (todo GDELT): se usa fecha_deteccion como cota y se agrega este vacío.
   fecha_sin_publicacion: fecha_deteccion
   vacio_sin_publicacion: "urgencia estimada: fecha de publicación desconocida"
+  # D-124: la detección es igual o posterior a la publicación; con ella el grupo se ve más nuevo de lo que es. U se topa en este valor
+  # (supuesto conservador: la mitad de la escala) y la explicación marca `fecha_imputada`. Nunca se presenta como publicación.
+  tope_fecha_imputada: 0.5
 
-novedad:                    # D-103: s = similitud máxima con un titular de un grupo anterior; u = agrupacion.umbral_similitud
-  # N = 1 si s < u (no es el mismo evento: no se descuenta); si s ≥ u, N = (1 − s) / (1 − u), lineal de 1 (en el umbral)
-  # a 0 (duplicado exacto). El umbral es el MISMO con que se agrupa (no se copia aquí).
-  sin_grupos_previos: 1.0   # el primer grupo no tiene con qué compararse
+novedad:                    # D-124 (reemplaza a D-103): N continua entre dos anclas a priori
+  # s = similitud coseno entre el CENTROIDE del grupo y el de cada grupo que empezó ANTES y dentro de `ventana_dias` (la
+  # fecha de inicio es la del titular más antiguo: publicación y, si falta, detección). Se toma la máxima.
+  # N = 1 si s <= ancla_baja; N = 0 si s >= ancla_alta; lineal entre ambas. ancla_alta = agrupacion.umbral_similitud (arriba
+  # de él el agrupamiento habría unido los dos grupos: sería el mismo evento); no se copia aquí. Una duplicación nunca sube N.
+  sin_grupos_previos: 1.0   # sin ningún grupo anterior dentro de la ventana, N = este valor
+  ventana_dias: 7           # supuesto: la misma ventana con que se agrupa (agrupacion.ventana_dias); más lejos ya no es repetición
+  ancla_baja: 0.50          # supuesto a priori: extremo inferior del barrido de calibración (agrupacion.calibracion.barrido_desde); por debajo no es candidato a mismo evento. NO se ajustó para que N se vea distribuido
 
 evidencia:                  # E (v1.3, D-56)
   peso_procedencias: 0.5

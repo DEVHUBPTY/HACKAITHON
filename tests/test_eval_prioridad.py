@@ -70,6 +70,7 @@ NOMBRES_ESPERADOS = {
     "Alcance por subtema (la tabla entera)", "Alcance de I sin subtema", "U: días con U = 0",
     "Partes de E: procedencias", "Partes de E: oficial", "Partes de E: identificable", "Tope de procedencias en E", "N del primer grupo",
     "Ventana de agrupación (días)", "Umbral de «mismo texto» (procedencias)",
+    "N: ancla baja (D-124)", "N: ventana de comparación (días, D-124)", "U: tope con fecha imputada (D-124)",   # D-124
 }
 
 

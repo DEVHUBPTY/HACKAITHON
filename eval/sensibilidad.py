@@ -163,6 +163,9 @@ def ajustes(reglas: ReglasV13) -> list[Ajuste]:
 
         agregar(f"Partes de E: {nombre}", parte)
     agregar("Tope de procedencias en E", lambda r, c, f: (r.model_copy(update={"evidencia": r.evidencia.model_copy(update={"tope_procedencias": _redondeado(evi.tope_procedencias, f)})}), c))
+    agregar("N: ancla baja (D-124)", lambda r, c, f: (r.model_copy(update={"novedad": r.novedad.model_copy(update={"ancla_baja": _recortar(nov.ancla_baja * f)})}), c))
+    agregar("N: ventana de comparación (días, D-124)", lambda r, c, f: (r.model_copy(update={"novedad": r.novedad.model_copy(update={"ventana_dias": nov.ventana_dias * f})}), c))
+    agregar("U: tope con fecha imputada (D-124)", lambda r, c, f: (r.model_copy(update={"urgencia": r.urgencia.model_copy(update={"tope_fecha_imputada": _recortar(urg.tope_fecha_imputada * f)})}), c))
     agregar("N del primer grupo", lambda r, c, f: (r.model_copy(update={"novedad": r.novedad.model_copy(update={"sin_grupos_previos": _recortar(nov.sin_grupos_previos * f)})}), c))
     agregar("Ventana de agrupación (días)", lambda r, c, f: (r.model_copy(update={"agrupacion": r.agrupacion.model_copy(update={"ventana_dias": _redondeado(agr.ventana_dias, f)})}), c), reagrupa=True)
     agregar("Umbral de «mismo texto» (procedencias)", lambda r, c, f: (r.model_copy(update={"agrupacion": r.agrupacion.model_copy(update={"umbral_mismo_texto": _recortar(agr.umbral_mismo_texto * f)})}), c), reagrupa=True)
