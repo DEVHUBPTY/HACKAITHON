@@ -12,10 +12,22 @@ muestra:
   estratos:
     no_ruido: {cuota: 70, dobles: 14}
     ruido: {cuota: 30, dobles: 6}
+  # Muestra original FIJA (las 100 etiquetas de D-85). No se vuelve a sortear: desde entonces cambió el filtro de ruido
+  # (5 titulares cambiarían) y la base creció. Se generó reproduciendo la semilla sobre la población y los estratos de
+  # entonces (docs/etiquetado.md, "Muestra congelada").
+  congelada: eval/muestra_original.csv
+  # Ampliaciones: titulares nuevos que se agregan DESPUÉS de los 100, cada uno con su estrato y su peso. No alteran la
+  # muestra original. Un censo de la captura nueva pesa 1.0 (docs/etiquetado.md, "Ampliación 2026-10-08").
+  ampliaciones:
+    - nombre: tvn_20261008
+      ids_desde: eval/propuestas/llm_20261008.csv
+      estrato: ampliacion_tvn_20261008
+      peso_muestreo: 1.0
 
 archivos:
   carpeta_personas: eval/etiquetas      # una hoja por persona: <nombre>.csv
   consolidado: eval/etiquetas.csv       # una fila por titular; lo genera --consolidar
+  carpeta_propuestas: eval/propuestas   # propuestas de un LLM (id_noticia, ruido, temas...): rellenan el formulario, nunca cuentan como etiqueta
   ejemplos_excluidos: config/ejemplos_excluidos.txt
 
 ruido:

@@ -834,6 +834,14 @@ class Vinculo(ModeloConfig):
         return self
 
 
+class CorreccionTema(ModeloConfig):
+    """D-122: un subtema nombrado corrige el tema del grupo (determinista, sin embeddings; ver ``contexto.tema_por_subtema_nombrado``)."""
+
+    activa: bool
+    corregir_sin_tema: bool   # si el clasificador no asignó tema (``sin_tema`` o nulo), un único tema nombrado lo asigna
+    criterio: str = Field(min_length=1)   # valor que se guarda en ``grupos.criterio_tema`` cuando el tema se corrige
+
+
 class SubtemaVinculo(ModeloConfig):
     """D-92 y E1-10c (X41): el grupo toma el subtema más cercano solo si un criterio de ``criterios`` lo respalda.
 
@@ -850,6 +858,8 @@ class SubtemaVinculo(ModeloConfig):
     # E1-07c (X78, D-111): marcadores (palabra o frase completa) que, en un titular, impiden que ese titular respalde el subtema
     # («juez imputa a funcionarios del MOP» es un proceso judicial, no una obra). No lo vuelven ruido: el tema se decide aparte.
     exclusiones_por_subtema: dict[str, list[str]] = Field(default_factory=dict)
+    # D-122: si los titulares nombran subtemas de un único tema distinto al clasificado, ese tema gana.
+    correccion_tema: CorreccionTema = Field(default_factory=lambda: CorreccionTema(activa=False, corregir_sin_tema=False, criterio="subtema_nombrado"))
 
     @field_validator("patrones_por_subtema")
     @classmethod
@@ -1447,6 +1457,7 @@ class PanamaRuido(ModeloConfig):
     origenes_exentos: list[str]
     paises_medio_exentos: list[str]
     regionales: list[str]
+    fenomenos_regionales_con_impacto: list[str]  # D-120
     dominio_con_seccion: str
     secciones_dudosas: list[str]
 
@@ -1764,6 +1775,7 @@ class MuestraEtiquetado(ModeloConfig):
 
 class ArchivosEtiquetado(ModeloConfig):
     carpeta_personas: str
+    carpeta_propuestas: str = "eval/propuestas"   # propuestas de un LLM: solo rellenan el formulario, nunca son etiquetas
     consolidado: str
     ejemplos_excluidos: str
 

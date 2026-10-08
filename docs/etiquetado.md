@@ -100,6 +100,23 @@ Lo que sí se mide es la **coincidencia entre la propuesta del asistente y la re
 
 Los 4 titulares quedaron como ruido, sin tema, grupo ni alcance regional (esquema de la herramienta). Los 20 titulares "dobles" de la muestra quedaron con una sola etiqueta.
 
+## Muestra congelada
+
+Las 100 etiquetas de D-85 se hicieron sobre una población de 170 titulares elegibles. Desde entonces la base creció (capturas del 2026-10-07 y del 2026-10-08) y el filtro de ruido se recalculó: volver a sortear con la misma semilla daría **otra** muestra (5 titulares distintos incluso sobre la población original). Por eso la muestra original está **fijada** en `eval/muestra_original.csv` (`muestra.congelada` en `config/etiquetado.yaml`): orden, estrato, población, peso y marca de doble de cada uno de los 100 titulares. Se generó reproduciendo la semilla sobre la población y los estratos de entonces (los estratos salen de `eval/etiquetas.csv`) y coincide con las 100 etiquetas de `eval/etiquetas/javier_acosta.csv`. Sin `congelada` la herramienta sortea como antes (las pruebas sintéticas lo usan).
+
+## Ampliación 2026-10-08
+
+| | |
+|---|---|
+| Qué es | Los **47 titulares nuevos** de la captura del RSS de TVN del 2026-10-08. Se agregan **después** de los 100 (órdenes 101 a 147); la muestra original no cambia (mismos IDs, orden, estratos, pesos y dobles) |
+| Dónde se declara | `muestra.ampliaciones` en `config/etiquetado.yaml` (nombre, archivo del que salen los IDs, estrato y peso), validado por `src/configuracion.py` (sin claves desconocidas) |
+| Estrato y peso | Estrato propio `ampliacion_tvn_20261008`, **censo** de esa captura: población 47, muestra 47, peso **1.0**, ningún doble. No representa a las capturas anteriores: el n efectivo de Kish de toda la muestra es 112.3 de 147 y cualquier métrica que mezcle estratos lo declara |
+| Método | **Propuesto por un LLM y revisado por una persona**, el mismo método de las 100 originales (D-85, que las propuso el asistente). La propuesta (`eval/propuestas/llm_20261008.csv`, columna `propuesto_por`, aquí `llm:deepseek:deepseek-flash`) solo **rellena el formulario**, con el rótulo «Propuesta de LLM (deepseek) — revísala: confirma o corrige» y el texto de `duda` si lo hay |
+| Qué cuenta como etiqueta | Solo lo que una persona guarda con **«Guardar y seguir»**, una por titular, en su hoja `eval/etiquetas/<nombre>.csv` (`etiquetado_por` = la persona, `origen` = `humano`; `nota` es de la persona y nunca se rellena). **Una propuesta sin revisar nunca es una etiqueta ni cuenta como humana** (D-85, D-101): ningún lector de `eval/` abre `eval/propuestas/` |
+| Cómo revisarlos | `poetry run streamlit run eval/etiquetar.py` y, en la barra lateral, tu nombre y **«Qué titulares ver» → `tvn_20261008`** (muestra los 47 completos, sin repartir por «parte»). Después, los comandos de «Después de etiquetar» |
+
+`--validar` y `--consolidar` aceptan estas filas (con su `estrato` y `peso_muestreo` 1 en el consolidado); las 61 filas `asistente_provisional` se siguen conservando. Los lectores de `eval/` usan `peso_muestreo` como un número por fila (`eval/metricas.py`), así que el estrato nuevo no los rompe: es un censo, peso 1.
+
 ## Límites
 
 - `fuera_de_ventana` no se etiqueta (es un hecho de fecha, no de contenido); `eval.ruido` compara los motivos que el filtro marca con los cuatro valores humanos.
