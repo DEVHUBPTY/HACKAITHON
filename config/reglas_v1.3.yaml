@@ -20,8 +20,17 @@ desempate: [u_desc, id_asc]  # mayor U; si empatan, menor ID
 
 relevancia:                 # R = peso_foco × foco × pertenencia temática. D-103 quitó la parte temática basada en la CONFIANZA del clasificador;
   peso_foco: 1.0            # D-119 la restituye de otra forma: pertenencia DISCRETA según la ETIQUETA (nunca la confianza) a los temas de la modalidad
+  # D-135: el foco es GRADUADO por lo que dicen los titulares (nunca por la confianza del clasificador). Un titular es:
+  #   · panama_sujeto  (1.0): nombra al país (Panamá, Canal de Panamá…), un lugar concreto de Panamá (provincia, comarca, distrito) o un actor
+  #     panameño de `panama_actores`, y no nombra a un país o ciudad del exterior en el mismo titular;
+  #   · panama_implicito (0.7): no nombra nada de lo anterior (o lo comparte con el exterior) pero lo publica un medio de Panamá y no es regional;
+  #   · otro_pais_afecta (0.5): nota regional (D-84) o de un medio de otro país que no nombra a Panamá como sujeto.
+  # El foco del grupo es el del titular que más foco tiene (el máximo): basta un titular que trate a Panamá como sujeto.
   foco_panama_sujeto: 1.0
+  foco_panama_implicito: 0.7
   foco_otro_pais_afecta: 0.5
+  # D-135: gentilicios e instituciones de Panamá que cuentan como actor panameño además del país y de los lugares de `geografia`.
+  panama_actores: [panameño, panameña, panameños, panameñas, ACP, AMP, Minsa, CSS, Caja de Seguro Social, MOP, Meduca, MIDES, MEF, Mici, Miviot, Idaan, Etesa, Sinaproc, Tocumen, Autoridad del Canal, Asamblea Nacional, Órgano Judicial, Ministerio Público, Contraloría, Defensoría del Pueblo, Policía Nacional, Senafront, Senniaf, Aeronáutica Civil, Tribunal Electoral, Unachi, Universidad de Panamá]
   pertenencia_tematica:     # "Relación con Panamá y con los temas de la modalidad" (PDF sección 4). Temas = los 6 de config/temas.yaml
     tema_principal: 1.0     # algún titular del grupo tiene un tema de la modalidad como tema_clasificado
     solo_secundario: 0.6    # ninguno lo tiene como principal, pero alguno lo tiene como tema_secundario

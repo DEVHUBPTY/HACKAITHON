@@ -90,6 +90,12 @@ contradicciones:
       a: [condena, condenan, condeno, condenaron, convicts, convicted]
       b: [absuelve, absuelven, absolvio, absolvieron, acquits, acquitted]
 
+relevancia:                       # D-135: cómo se dice en palabras el nivel de foco de R (plantillas con {campos}); lo ve la persona en la ficha
+  panama_sujeto: "Panamá es el sujeto: un titular nombra {terminos} ({titular})"
+  panama_implicito: "Panamá es implícito: ningún titular nombra al país, un lugar o un actor panameño, pero los publica un medio de Panamá ({titular})"
+  otro_pais_afecta: "Panamá es contexto: nota regional o de un medio de otro país que no nombra a Panamá como sujeto ({titular})"
+  prefijo_ficha: "Relevancia (R)"
+
 vacios:                           # textos de los vacíos de verificación (plantillas con {campos})
   procedencias_insuficientes: "{procedencias}; se necesitan al menos {minimo} para evidencia suficiente"
   cifras_sin_dato_oficial: "los titulares traen cifras y no hay dato oficial vinculado"

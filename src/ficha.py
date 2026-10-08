@@ -719,6 +719,9 @@ def vista(ficha: Ficha, cfg: ConfigVerificacion | None = None) -> Vista:
         Linea(f"Prioridad: {ar.rango} (P = {_numero(p.puntaje, cfg)}, posición {p.posicion}, reglas {p.version_reglas}) · Estado de evidencia: {ar.estado_evidencia}"),
         Linea(f"Desglose del puntaje (ordena la atención; no es una probabilidad de verdad ni de pérdida): {desglose}"),
     ]
+    texto_foco = (p.componentes.get("R").explicacion.get("foco_texto") if "R" in p.componentes else None)   # D-135: por qué R vale lo que vale
+    if texto_foco:
+        s5.append(Linea(f"{cargar_prioridad().relevancia.prefijo_ficha}: {texto_foco}"))
     if p.empate_con:
         s5.append(Linea(texto_empate(p.empate_con)))   # D-105
     if ar.siguientes_pasos:

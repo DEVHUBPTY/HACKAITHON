@@ -11,10 +11,19 @@ import pytest
 
 from src import puntaje
 from src.configuracion import PertenenciaTematica, Relevancia, cargar_temas
-from tests.prioridad_ayuda import AHORA, CFG, REGLAS, entrada, miembro, vector
+from tests.prioridad_ayuda import AHORA, CFG, REGLAS, entrada, vector
+from tests.prioridad_ayuda import miembro as _miembro
 
 TEMAS = frozenset(cargar_temas().temas)
 VALORES = REGLAS.relevancia.pertenencia_tematica
+
+REGIONAL = "El Niño golpea Centroamérica"   # nota regional que no nombra a Panamá: foco otro_pais_afecta (D-84, D-135)
+
+
+def miembro(*args, **campos):
+    """Un titular que nombra a Panamá (foco 1): estas pruebas miden la pertenencia, no el foco graduado de D-135."""
+    campos.setdefault("titulo", "Panamá anuncia una medida")
+    return _miembro(*args, **campos)
 
 
 def _r(miembros, reglas=REGLAS, temas=None):
@@ -48,13 +57,13 @@ def test_basta_un_titular_con_tema_principal_aunque_otros_no_lo_tengan() -> None
 
 
 def test_r_es_foco_por_pertenencia() -> None:
-    regional = [miembro(regional=True, tema=None)]
+    regional = [miembro(regional=True, tema=None, titulo=REGIONAL)]
     c = _r(regional)
     assert c.valor == pytest.approx(REGLAS.relevancia.foco_otro_pais_afecta * VALORES.sin_tema) == pytest.approx(0.5 * 0.3)
     assert c.explicacion["foco"] == 0.5 and c.explicacion["pertenencia"] == 0.3
     assert _r([miembro(regional=False, tema="economia")]).valor == pytest.approx(1.0)
     assert _r([miembro(regional=False, tema=None)]).valor == pytest.approx(0.3)
-    assert _r([miembro(regional=True, tema="no_es_panama", tema_secundario="economia")]).valor == pytest.approx(0.5 * 0.6)
+    assert _r([miembro(regional=True, tema="no_es_panama", tema_secundario="economia", titulo=REGIONAL)]).valor == pytest.approx(0.5 * 0.6)
 
 
 def test_r_no_lee_la_confianza_del_clasificador() -> None:
@@ -87,4 +96,4 @@ def test_la_configuracion_exige_valores_en_0_1_y_monotonos() -> None:
     with pytest.raises(ValueError):
         PertenenciaTematica(tema_principal=1.0, solo_secundario=0.6, sin_tema=0.3, confianza=0.5)
     with pytest.raises(ValueError):
-        Relevancia(peso_foco=1.0, foco_panama_sujeto=1.0, foco_otro_pais_afecta=0.5)  # falta pertenencia_tematica
+        Relevancia(peso_foco=1.0, foco_panama_sujeto=1.0, foco_panama_implicito=0.7, foco_otro_pais_afecta=0.5, panama_actores=["ACP"])  # falta pertenencia_tematica
