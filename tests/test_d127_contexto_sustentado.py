@@ -244,7 +244,14 @@ def test_cada_vinculo_de_la_ficha_lleva_periodo_unidad_y_limitacion(tmp_path: Pa
     prioridad.ejecutar(base, base.with_name("prioridad.json"), h.CORTE, None, "editorial", emb=emb)
     con = db.conectar(base, solo_lectura=True)
     try:
-        fichas = {g: construir_ficha(g, "editorial", con, emb=emb) for g in casos}
+        fichas = {g: construir_ficha(g, "editorial", con, emb=emb) for g in casos if g != "GRP-banca"}
+    finally:
+        con.close()
+    # D-132: la fuente D (SBP) es solo de banca; su ficha se arma con los puntajes de esa modalidad
+    prioridad.ejecutar(base, base.with_name("prioridad.json"), h.CORTE, None, "banca", emb=emb)
+    con = db.conectar(base, solo_lectura=True)
+    try:
+        fichas["GRP-banca"] = construir_ficha("GRP-banca", "banca", con, emb=emb)
     finally:
         con.close()
     lineas = {g: [*f.respaldado.datos_oficiales, *f.respaldado.contexto_oficial, *f.respaldado.eventos_oficiales] for g, f in fichas.items()}
