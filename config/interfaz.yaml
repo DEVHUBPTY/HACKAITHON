@@ -243,6 +243,8 @@ consulta:
   metodo_inicial: semantica
   largo_maximo_caracteres: 500      # la caja de la consulta no acepta más
   parametro_pregunta: q             # D-133: /consulta?q=<pregunta> guarda la última pregunta en la URL; al recargar se vuelve a consultar (local, sin LLM)
+  parametro_metodo: m               # D-133: /consulta?q=<pregunta>&m=semantica|bm25 también guarda el método
+  texto_ultima_respuesta: "Respuesta a la última pregunta consultada: «{pregunta}»"
   ejemplos:                         # consultas de muestra: una útil, una de abstención (docs/demo.md)
     - "¿Cuál fue la inflación de Panamá en 2023?"
     - "¿Qué se reporta sobre la visita del presidente de Panamá a Singapur y Vietnam?"

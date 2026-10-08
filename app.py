@@ -801,9 +801,12 @@ def pantalla_consulta(ctx: ui.Contexto) -> None:
     if en_url and st.session_state.get("consulta_en_url") != en_url:      # D-133: /consulta?q=… vuelve a consultar (local, sin LLM)
         st.session_state["consulta_texto"] = en_url[:ctx.cfg.consulta.largo_maximo_caracteres]
         st.session_state["consulta_lanzar"] = True
+    metodos = ["semantica", "bm25"]
+    metodo_url = st.query_params.get(ctx.cfg.consulta.parametro_metodo)
+    if en_url and metodo_url in metodos:      # D-133: el método de la URL solo se aplica junto con la pregunta de la URL
+        st.session_state["consulta_metodo"] = metodo_url
     st.session_state.setdefault("consulta_texto", "")
     st.text_input("Pregunta", key="consulta_texto", max_chars=ctx.cfg.consulta.largo_maximo_caracteres)
-    metodos = ["semantica", "bm25"]
     metodo = st.selectbox("Método", metodos, index=metodos.index(ctx.cfg.consulta.metodo_inicial), key="consulta_metodo")
     lanzar = st.button("Consultar", type="primary", key="consulta_boton")
     st.caption("Ejemplos")
@@ -819,8 +822,10 @@ def pantalla_consulta(ctx: ui.Contexto) -> None:
         st.session_state["consulta_en_url"] = texto
         if st.query_params.get(parametro) != texto:
             st.query_params[parametro] = texto
+        if st.query_params.get(ctx.cfg.consulta.parametro_metodo) != metodo:
+            st.query_params[ctx.cfg.consulta.parametro_metodo] = metodo
         if not pedido and texto != st.session_state.get("consulta_texto", "").strip():
-            st.caption(f"Respuesta a la última pregunta consultada: «{escapar_markdown(texto)}»")
+            st.caption(ctx.cfg.consulta.texto_ultima_respuesta.format(pregunta=escapar_markdown(texto)))
         try:
             respuesta = abrir_consultor(str(ctx.ruta_base)).responder(texto, metodo)
         except Exception as exc:  # noqa: BLE001 - sin el modelo local no hay consulta, pero la app sigue viva

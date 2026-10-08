@@ -2757,6 +2757,8 @@ class ConsultaInterfaz(ModeloConfig):
     metodo_inicial: Literal["semantica", "bm25"]
     largo_maximo_caracteres: int = Field(ge=1)
     parametro_pregunta: str = Field(min_length=1)
+    parametro_metodo: str = Field(min_length=1)
+    texto_ultima_respuesta: str = Field(min_length=1)
     ejemplos: list[str] = Field(min_length=1)
 
 

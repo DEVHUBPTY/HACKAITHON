@@ -195,6 +195,25 @@ def test_consultar_guarda_la_pregunta_en_la_url_y_los_ejemplos_siguen(app) -> No
     assert at.query_params["q"] in (PREGUNTA, [PREGUNTA])
 
 
+def test_la_consulta_guarda_y_restaura_el_metodo_en_la_url(app) -> None:
+    at = ir_a_pantalla(app, "consulta")
+    at.text_input(key="consulta_texto").input(PREGUNTA)
+    at.selectbox(key="consulta_metodo").select("bm25")
+    at = at.button(key="consulta_boton").click().run()
+    assert at.query_params["m"] in ("bm25", ["bm25"])
+    otro = ir_a_pantalla(app, "consulta")
+    otro.query_params["q"] = PREGUNTA
+    otro.query_params["m"] = "bm25"
+    otro = otro.run()
+    assert not otro.exception and otro.selectbox(key="consulta_metodo").value == "bm25"
+    assert any("bm25" in str(c.value) for c in otro.caption)
+
+
+def test_el_texto_de_la_ultima_respuesta_viene_de_la_configuracion() -> None:
+    assert "{pregunta}" in CFG.consulta.texto_ultima_respuesta
+    assert "Respuesta a la última pregunta consultada" not in (RAIZ / "app.py").read_text(encoding="utf-8")
+
+
 # ------------------------------------------------------------------ el estado sobrevive al cambio de página
 
 
