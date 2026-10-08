@@ -47,6 +47,8 @@ Escaneo completo, incluido el historial de git (por ejemplo con `gitleaks detect
 
 ## C-12 · Umbral de Consulta (0.840)
 
+**Hecho (2026-10-08):** 40 preguntas escritas por David Feng; abstención correcta 24/30 = 80 % (IC95 62.7 %–90.5 %), incorrecta 0/10; el umbral se mantiene en 0.840 (detalle y recalibración probada en `docs/consulta.md`, sección C-12).
+
 Escribir unas 30 preguntas fuera del corpus (D-134) y medir cuántas se abstienen:
 ```bash
 poetry run python -m eval.recuperacion

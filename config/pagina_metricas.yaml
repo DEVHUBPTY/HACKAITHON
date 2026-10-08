@@ -4,7 +4,7 @@ version: 1
 
 salida: outputs/pagina_metricas.md
 titulo: "Métricas del sistema"
-limitacion_umbral_consulta: "Umbral de Consulta (0.840): margen estrecho, validado con n = 1 negativo del benchmark; pendiente: ~30 preguntas fuera del corpus escritas por una persona (C-12, docs/pendientes_humanos.md)."
+limitacion_umbral_consulta: "Umbral de Consulta (0.840): con 30 preguntas fuera del corpus escritas por una persona (C-12) la abstención correcta es 24/30 = 80 % (IC95 62.7 %–90.5 %, cumple la meta justo) y la abstención incorrecta 0/10; recalibrar a 0.857 rechaza preguntas legítimas del corpus y no se adoptó (docs/consulta.md, C-12)."
 etiqueta_borrador: "BORRADOR — métricas provisionales"
 
 fuentes:                                   # rutas relativas a la raíz del repo

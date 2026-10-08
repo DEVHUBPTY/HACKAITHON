@@ -2,7 +2,7 @@
 
 > **BORRADOR — métricas provisionales** · JUICIO PROVISIONAL DEL ASISTENTE, NO HUMANO (D-101): se rehace a mano en C-09; no reportar como juicio de una persona.
 
-Generada el 2026-10-08T22:51:56Z desde el commit `458f4f0` con `poetry run python -m scripts.pagina_metricas`. Ninguna cifra está escrita a mano: cada una sale del archivo que se indica. Toda proporción lleva numerador, denominador e IC 95 %.
+Generada el 2026-10-08T23:28:14Z desde el commit `4931bbf` con `poetry run python -m scripts.pagina_metricas`. Ninguna cifra está escrita a mano: cada una sale del archivo que se indica. Toda proporción lleva numerador, denominador e IC 95 %.
 
 **Origen del juicio:** `humano` = lo decidió una persona (las etiquetas de clasificación y agrupación las propone el asistente y una persona las revisa y aprueba una por una, D-85) · **PROVISIONAL** = lo decidió el asistente (D-101) y se rehace en C-09 · `automático` = automático (sin juicio humano: lo calcula el código contra una referencia).
 
@@ -56,7 +56,7 @@ Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de 
 | Borradores: afirmaciones factuales que pasan el validador | 100.0 % | 43 de 43 | 100.0 % – 100.0 % (Wilson 91.8 % – 100.0 %) | automático | `metricas.json` | fallos: ninguno |
 | Borradores: inferencias e hipótesis con base válida | 100.0 % | 11 de 11 | 100.0 % – 100.0 % (Wilson 74.1 % – 100.0 %) | automático | `metricas.json` | fallos: ninguno |
 
-- Umbral de Consulta (0.840): margen estrecho, validado con n = 1 negativo del benchmark; pendiente: ~30 preguntas fuera del corpus escritas por una persona (C-12, docs/pendientes_humanos.md).
+- Umbral de Consulta (0.840): con 30 preguntas fuera del corpus escritas por una persona (C-12) la abstención correcta es 24/30 = 80 % (IC95 62.7 %–90.5 %, cumple la meta justo) y la abstención incorrecta 0/10; recalibrar a 0.857 rechaza preguntas legítimas del corpus y no se adoptó (docs/consulta.md, C-12).
 
 ## Búsqueda: semántica contra BM25
 
@@ -178,7 +178,7 @@ Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de 
 ## Reproducibilidad
 
 - Registro del manifest: commit `3df0978`, árbol con cambios al registrar: **sí**; corte del snapshot 2026-10-08T03:35:18Z; hash del snapshot `4503952d97fb`.
-- Commit desde el que se generó: `458f4f0` (árbol con cambios sin commitear). El registro es de otro commit: confirmar con `--verificar` antes de afirmar que se reproduce.
+- Commit desde el que se generó: `4931bbf`. El registro es de otro commit: confirmar con `--verificar` antes de afirmar que se reproduce.
 - LLM: deepseek/deepseek-flash, temperatura 0.0, semilla 0; embeddings minilm y e5 con revisión fijada.
 - Salidas deterministas con hash: 33. Borradores en caché: sin_cache 9, completo 1, con_vacios 2.
 - Comprobación: `HF_HUB_OFFLINE=1 poetry run python -m scripts.reproducir --verificar` (sale con 1 si algo difiere).
@@ -192,7 +192,7 @@ Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de 
 
 | Archivo | Commit | Fecha del commit | Fecha dentro del archivo |
 |---|---|---|---|
-| `outputs/metricas.json` | 3df0978 + cambios sin commitear | 2026-10-07T15:37:09-05:00 | 2026-10-08T22:51:50Z |
+| `outputs/metricas.json` | bf39099 | 2026-10-08T17:52:00-05:00 | 2026-10-08T22:51:50Z |
 | `outputs/ia_vs_baseline.json` | 88de277 | 2026-10-08T15:13:26-05:00 | — |
 | `outputs/precision_at_5.json` | e512db2 | 2026-10-08T16:28:48-05:00 | 2026-10-08T03:35:18Z |
 | `outputs/clasificacion.json` | 737f8f2 | 2026-10-08T14:21:50-05:00 | — |
@@ -202,7 +202,7 @@ Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de 
 | `outputs/pruebas.csv` | e9bf8a3 | 2026-10-07T06:46:06-05:00 | — |
 | `data/manifest.json` | ccb2a8e | 2026-10-07T23:07:47-05:00 | 2026-10-08T03:35:18Z |
 | `eval/etiquetas.csv` | fdfe422 | 2026-10-08T09:59:37-05:00 | — |
-| `docs/prueba_tiempo.md` | 0f9accb + cambios sin commitear | 2026-10-07T07:09:49-05:00 | — |
+| `docs/prueba_tiempo.md` | bf39099 | 2026-10-08T17:52:00-05:00 | — |
 | `outputs/revision.json` | 458f4f0 | 2026-10-08T17:47:45-05:00 | — |
 | `outputs/costo_llm.json` | sin versionar (generado en local) | — | — |
 
