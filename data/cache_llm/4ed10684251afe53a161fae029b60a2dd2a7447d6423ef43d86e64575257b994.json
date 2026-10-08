@@ -1,0 +1,12 @@
+{
+ "clave": "4ed10684251afe53a161fae029b60a2dd2a7447d6423ef43d86e64575257b994",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "paquete_editorial",
+ "version_cache": "1",
+ "tokens_entrada": 1982,
+ "tokens_salida": 262,
+ "creado_utc": "2026-10-08T16:10:14Z",
+ "respuesta": "{\n  \"titulo_trabajo\": {\n    \"texto\": \"TVN Panamá reporta aprehensiones por presunta minería ilegal en Coclé del Norte\",\n    \"afirmaciones\": [\"A1\"]\n  },\n  \"enfoque\": [\n    {\n      \"texto\": \"Si el caso avanzara, la población podría prestar más atención a los efectos ambientales y a las actuaciones de las autoridades en su comunidad.\",\n      \"afirmaciones\": [\"A5\"]\n    }\n  ],\n  \"preguntas\": [\n    {\n      \"texto\": \"¿Qué cifras oficiales existen sobre aprehensiones y delitos ambientales en Coclé del Norte?\",\n      \"vacio\": \"cifras_sin_dato_oficial\"\n    },\n    {\n      \"texto\": \"¿Qué indicador oficial está asignado a los delitos ambientales y la minería ilegal en Panamá?\",\n      \"vacio\": \"sin_dato_oficial\"\n    },\n    {\n      \"texto\": \"¿Qué fuentes independientes distintas de TVN Panamá han reportado este caso?\",\n      \"vacio\": \"procedencias_insuficientes\"\n    }\n  ]\n}"
+}

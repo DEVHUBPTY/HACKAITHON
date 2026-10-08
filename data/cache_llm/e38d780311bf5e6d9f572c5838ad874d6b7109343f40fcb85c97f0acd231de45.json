@@ -1,0 +1,12 @@
+{
+ "clave": "e38d780311bf5e6d9f572c5838ad874d6b7109343f40fcb85c97f0acd231de45",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "paquete_editorial",
+ "version_cache": "1",
+ "tokens_entrada": 1796,
+ "tokens_salida": 416,
+ "creado_utc": "2026-10-08T16:09:44Z",
+ "respuesta": "{\"titulo\": {\"texto\": \"Medios reportan viaje del presidente panameño a Singapur y Vietnam\", \"afirmaciones\": [\"A1\", \"A2\", \"A3\"]}, \"titulares\": [{\"texto\": \"Prensa Latina reporta que el presidente panameño visitará Singapur y Vietnam\", \"afirmaciones\": [\"A1\"]}, {\"texto\": \"La Estrella reporta que Mulino viajará a Asia y suscribirá convenios bilaterales\", \"afirmaciones\": [\"A2\"]}, {\"texto\": \"Revista EY reporta que el presidente de Panamá visita Singapur y Vietnam\", \"afirmaciones\": [\"A3\"]}], \"copy_digital\": [{\"texto\": \"Tres medios reportan el viaje del presidente panameño a Singapur y Vietnam.\", \"afirmaciones\": [\"A1\", \"A2\", \"A3\"]}, {\"texto\": \"Prensa Latina reporta que visitará Singapur y Vietnam.\", \"afirmaciones\": [\"A1\"]}, {\"texto\": \"La Estrella reporta que Mulino viajará a Asia y suscribirá convenios bilaterales con Singapur y Vietnam.\", \"afirmaciones\": [\"A2\"]}, {\"texto\": \"Revista EY reporta que el presidente de Panamá visita Singapur y Vietnam en busca de inversiones.\", \"afirmaciones\": [\"A3\"]}, {\"texto\": \"El grupo reúne 3 titulares de 3 medios, con 3 procedencias independientes estimadas.\", \"afirmaciones\": [\"A4\", \"A5\"]}, {\"texto\": \"De concretarse los convenios y la búsqueda de inversiones, el tema podría resultar relevante para la población panameña interesada en la actividad económica y las relaciones exteriores.\", \"afirmaciones\": [\"A6\"]}]}"
+}

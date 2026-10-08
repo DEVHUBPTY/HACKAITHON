@@ -1,0 +1,12 @@
+{
+ "clave": "6ca5f60ef4e63a8d98fb70ed30fb9cd59547ae33b415458cc892aa4b82a51e4b",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "paquete_editorial",
+ "version_cache": "1",
+ "tokens_entrada": 1808,
+ "tokens_salida": 244,
+ "creado_utc": "2026-10-08T16:10:24Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta que César Caicedo regresa a Coiba\", \"afirmaciones\": [\"A2\"]}, \"enfoque\": [{\"texto\": \"El caso reúne dos titulares de un solo medio, con una única procedencia independiente estimada, por lo que la verificación independiente quedaría pendiente.\", \"afirmaciones\": [\"A3\", \"A4\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún dato oficial que permita contrastar lo que TVN Panamá reporta sobre el traslado de César Caicedo?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras procedencias independientes podrían confirmar de forma separada lo reportado por TVN Panamá?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Cómo se relacionan entre sí los dos titulares del grupo que reportan este tema?\", \"vacio\": \"procedencias_insuficientes\"}]}"
+}

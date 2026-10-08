@@ -1,0 +1,12 @@
+{
+ "clave": "0554da1511079edd0d1a04cef13c331a2db3caeec912088bf386dd2cbef9441a",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "paquete_editorial",
+ "version_cache": "1",
+ "tokens_entrada": 1897,
+ "tokens_salida": 415,
+ "creado_utc": "2026-10-08T16:11:07Z",
+ "respuesta": "{\"titulo\": {\"texto\": \"MEF explica la fórmula quincenal del combustible, reporta panamaamerica.com.pa\", \"afirmaciones\": [\"A1\"]}, \"titulares\": [{\"texto\": \"panamaamerica.com.pa reporta que el MEF explica la fórmula quincenal del combustible\", \"afirmaciones\": [\"A1\"]}, {\"texto\": \"El MEF explica la fórmula quincenal del combustible tras un nuevo subsidio, según panamaamerica.com.pa\", \"afirmaciones\": [\"A1\"]}, {\"texto\": \"panamaamerica.com.pa: el MEF explica la fórmula quincenal del precio del combustible\", \"afirmaciones\": [\"A2\"]}], \"copy_digital\": [{\"texto\": \"El medio panamaamerica.com.pa reporta que el MEF explica la fórmula quincenal para fijar el precio del combustible en Panamá tras aprobarse un nuevo subsidio.\", \"afirmaciones\": [\"A1\"]}, {\"texto\": \"El grupo de registros sobre este tema reúne 2 titulares de 1 medio, con 1 procedencia independiente estimada.\", \"afirmaciones\": [\"A3\", \"A4\"]}, {\"texto\": \"En Panamá, la inflación anual fue de 2.86 % en 2022, 1.49 % en 2023 y 0.69 % en 2024.\", \"afirmaciones\": [\"A5\", \"A6\", \"A7\"]}, {\"texto\": \"Si el precio del combustible y su fórmula quincenal forman parte del debate público, la población panameña podría seguir con interés las explicaciones oficiales y las medidas de subsidio.\", \"afirmaciones\": [\"A8\"]}, {\"texto\": \"#Combustible #Panamá\", \"afirmaciones\": [\"A1\"]}]}"
+}

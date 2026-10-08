@@ -1,0 +1,12 @@
+{
+ "clave": "bd4a635a7adecbcbb6caa17704dd46571e4737da0c7b0bbbf1990124f3b6cce8",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.3",
+ "prompt": "afirmaciones_ficha",
+ "version_cache": "1",
+ "tokens_entrada": 1934,
+ "tokens_salida": 452,
+ "creado_utc": "2026-10-08T16:10:23Z",
+ "respuesta": "{\"afirmaciones\": [{\"id\": \"A1\", \"tipo\": \"declaración\", \"texto\": \"TVN Panamá reporta que César Caicedo ahora está recluido en el Hospital Santo Tomás y que había sido trasladado a Coiba.\", \"citas\": [{\"id\": \"NOT-220be165b5\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A2\", \"tipo\": \"declaración\", \"texto\": \"TVN Panamá reporta que César Caicedo regresa a Coiba tras decisión de las autoridades.\", \"citas\": [{\"id\": \"NOT-35875c046f\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A3\", \"tipo\": \"hecho\", \"texto\": \"El grupo de registros GRP-1dc52c45ff reúne 2 titulares de 1 medio que reportan este tema.\", \"citas\": [{\"id\": \"GRP-1dc52c45ff\", \"campo\": \"n_titulares\"}, {\"id\": \"GRP-1dc52c45ff\", \"campo\": \"n_medios\"}]}, {\"id\": \"A4\", \"tipo\": \"hecho\", \"texto\": \"El grupo de registros GRP-1dc52c45ff tiene 1 procedencia independiente estimada.\", \"citas\": [{\"id\": \"GRP-1dc52c45ff\", \"campo\": \"n_procedencias\"}]}, {\"id\": \"A5\", \"tipo\": \"hipótesis\", \"texto\": \"Si la cobertura sobre el paradero y los traslados de César Caicedo se mantuviera limitada a una sola procedencia independiente, la población interesada en el caso tendría menos versiones contrastables para seguir el tema.\", \"base\": [\"A1\", \"A2\", \"A3\", \"A4\"], \"citas\": []}]}"
+}

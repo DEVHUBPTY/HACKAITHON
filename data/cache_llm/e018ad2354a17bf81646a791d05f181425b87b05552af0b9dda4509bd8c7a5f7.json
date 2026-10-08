@@ -1,0 +1,12 @@
+{
+ "clave": "e018ad2354a17bf81646a791d05f181425b87b05552af0b9dda4509bd8c7a5f7",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.3",
+ "prompt": "afirmaciones_ficha",
+ "version_cache": "1",
+ "tokens_entrada": 1853,
+ "tokens_salida": 465,
+ "creado_utc": "2026-10-08T16:10:43Z",
+ "respuesta": "{\"afirmaciones\": [{\"id\": \"A1\", \"tipo\": \"declaración\", \"texto\": \"TVN Panamá reporta que aumentan las enfermedades respiratorias entre menores en la comarca Ngäbe Buglé.\", \"citas\": [{\"id\": \"NOT-46c7fec582\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A2\", \"tipo\": \"declaración\", \"texto\": \"TVN Panamá reporta preocupación en Veraguas por el aumento de muertes por enfermedades transmisibles y respiratorias.\", \"citas\": [{\"id\": \"NOT-549c8211e8\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A3\", \"tipo\": \"hecho\", \"texto\": \"El grupo reúne 2 titulares de 1 medio que reportan este tema.\", \"citas\": [{\"id\": \"GRP-87e128925b\", \"campo\": \"n_titulares\"}, {\"id\": \"GRP-87e128925b\", \"campo\": \"n_medios\"}]}, {\"id\": \"A4\", \"tipo\": \"hecho\", \"texto\": \"Se estima 1 procedencia independiente para este tema.\", \"citas\": [{\"id\": \"GRP-87e128925b\", \"campo\": \"n_procedencias\"}]}, {\"id\": \"A5\", \"tipo\": \"inferencia\", \"texto\": \"La evolución de las enfermedades respiratorias y transmisibles en distintas regiones del país importa a la población, en particular a las familias con menores y a las comunidades afectadas.\", \"base\": [\"A1\", \"A2\"], \"citas\": []}, {\"id\": \"A6\", \"tipo\": \"hipótesis\", \"texto\": \"Si la cobertura se ampliara a más procedencias independientes, el tema podría cobrar mayor relevancia para la población.\", \"base\": [\"A3\", \"A4\"], \"citas\": []}]}"
+}

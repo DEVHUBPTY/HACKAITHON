@@ -1,0 +1,12 @@
+{
+ "clave": "732784fd595ec258500cf0711a7825a1ff8f3e9bc926f937d62f70ba8041494b",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "paquete_editorial",
+ "version_cache": "1",
+ "tokens_entrada": 1797,
+ "tokens_salida": 277,
+ "creado_utc": "2026-10-08T16:10:38Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta un ataque cerca del metro de San Miguelito\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La seguridad en el entorno del transporte público y los hechos de violencia con víctimas mortales importan a quienes usan a diario esas estaciones y sus alrededores.\", \"afirmaciones\": [\"A4\"]}, {\"texto\": \"La cobertura se sostiene en una sola procedencia independiente estimada, por lo que la verificación con otras fuentes sigue pendiente.\", \"afirmaciones\": [\"A3\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún registro o indicador oficial sobre hechos de violencia en el entorno del metro de San Miguelito?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras fuentes independientes han reportado el ataque cerca de la estación del metro de San Miguelito?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Qué datos oficiales permitirían contrastar lo reportado por TVN Panamá sobre el ataque?\", \"vacio\": \"sin_dato_oficial\"}]}"
+}

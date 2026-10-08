@@ -1,0 +1,12 @@
+{
+ "clave": "afae0c4c069dfe137f4cec2dfbf19497c439076c03a89b6ff7cabe53f27f9364",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "paquete_editorial",
+ "version_cache": "1",
+ "tokens_entrada": 1795,
+ "tokens_salida": 213,
+ "creado_utc": "2026-10-08T16:10:08Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta que el Minsa alerta por cáncer de mama en hombres\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La visibilidad pública del tema podría incidir en el acceso a información y a servicios de salud, según una inferencia del caso.\", \"afirmaciones\": [\"A4\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún indicador oficial sobre diagnósticos de cáncer de mama en hombres en Panamá?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué entidad pública lleva registros o estadísticas de estos diagnósticos en el país?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras procedencias independientes han reportado este tema además de TVN Panamá?\", \"vacio\": \"procedencias_insuficientes\"}]}"
+}

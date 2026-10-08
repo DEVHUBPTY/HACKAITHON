@@ -1,0 +1,12 @@
+{
+ "clave": "a86f4fb0d0466267acaa8ca2f8ba1346e5d06fc9a4121e77df1f941cf5bb114f",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.3",
+ "prompt": "afirmaciones_ficha",
+ "version_cache": "1",
+ "tokens_entrada": 1783,
+ "tokens_salida": 358,
+ "creado_utc": "2026-10-08T16:10:28Z",
+ "respuesta": "{\"afirmaciones\":[{\"id\":\"A1\",\"tipo\":\"declaración\",\"texto\":\"TVN Panamá reporta un contenido exclusivo titulado \\\"Dietilenglicol, 20 años de dolor\\\".\",\"citas\":[{\"id\":\"NOT-54f514f1fa\",\"campo\":\"titulo_limpio\"}]},{\"id\":\"A2\",\"tipo\":\"hecho\",\"texto\":\"El grupo de registros reúne 1 titular de 1 medio que reporta este tema.\",\"citas\":[{\"id\":\"GRP-1627d09497\",\"campo\":\"n_titulares\"},{\"id\":\"GRP-1627d09497\",\"campo\":\"n_medios\"}]},{\"id\":\"A3\",\"tipo\":\"hecho\",\"texto\":\"Se estima 1 procedencia independiente, contando los titulares que replican a una misma fuente como una sola.\",\"citas\":[{\"id\":\"GRP-1627d09497\",\"campo\":\"n_procedencias\"}]},{\"id\":\"A4\",\"tipo\":\"inferencia\",\"texto\":\"La cobertura disponible sobre este tema es limitada, con una sola procedencia independiente estimada, lo que puede restringir la variedad de perspectivas a las que accede la población.\",\"citas\":[],\"base\":[\"A2\",\"A3\"]},{\"id\":\"A5\",\"tipo\":\"hipótesis\",\"texto\":\"Si la población solo cuenta con un titular de un único medio sobre este tema, podría tener dificultades para contrastar la información disponible.\",\"citas\":[],\"base\":[\"A1\",\"A2\",\"A3\"]}]}"
+}

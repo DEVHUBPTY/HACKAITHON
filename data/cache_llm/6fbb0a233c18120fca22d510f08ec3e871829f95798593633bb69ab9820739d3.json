@@ -1,0 +1,12 @@
+{
+ "clave": "6fbb0a233c18120fca22d510f08ec3e871829f95798593633bb69ab9820739d3",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.3",
+ "prompt": "afirmaciones_ficha",
+ "version_cache": "1",
+ "tokens_entrada": 1950,
+ "tokens_salida": 512,
+ "creado_utc": "2026-10-08T16:09:40Z",
+ "respuesta": "{\"afirmaciones\": [{\"id\": \"A1\", \"tipo\": \"declaración\", \"texto\": \"El medio prensa-latina.cu reporta que el presidente panameño visitará Singapur y Vietnam.\", \"citas\": [{\"id\": \"NOT-1819a7014e\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A2\", \"tipo\": \"declaración\", \"texto\": \"El medio laestrella.com.pa reporta que Mulino viajará a Asia y suscribirá convenios bilaterales con Singapur y Vietnam.\", \"citas\": [{\"id\": \"NOT-33032542b7\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A3\", \"tipo\": \"declaración\", \"texto\": \"El medio revistaeyn.com reporta que el presidente de Panamá visita Singapur y Vietnam en busca de inversiones.\", \"citas\": [{\"id\": \"NOT-fbc3efaa5d\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A4\", \"tipo\": \"hecho\", \"texto\": \"El grupo de registros reúne 3 titulares de 3 medios que reportan este tema.\", \"citas\": [{\"id\": \"GRP-da35c3dead\", \"campo\": \"n_titulares\"}, {\"id\": \"GRP-da35c3dead\", \"campo\": \"n_medios\"}]}, {\"id\": \"A5\", \"tipo\": \"hecho\", \"texto\": \"Se estiman 3 procedencias independientes, contando los titulares que replican a una misma fuente como una.\", \"citas\": [{\"id\": \"GRP-da35c3dead\", \"campo\": \"n_procedencias\"}]}, {\"id\": \"A6\", \"tipo\": \"hipótesis\", \"texto\": \"Si los viajes presidenciales a Singapur y Vietnam se concretaran con convenios bilaterales y búsqueda de inversiones, el tema podría resultar relevante para la población panameña interesada en la actividad económica y las relaciones exteriores del país.\", \"base\": [\"A1\", \"A2\", \"A3\"], \"citas\": []}]}"
+}

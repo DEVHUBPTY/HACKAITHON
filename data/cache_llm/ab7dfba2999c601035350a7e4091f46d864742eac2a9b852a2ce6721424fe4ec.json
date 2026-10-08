@@ -1,0 +1,12 @@
+{
+ "clave": "ab7dfba2999c601035350a7e4091f46d864742eac2a9b852a2ce6721424fe4ec",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "paquete_editorial",
+ "version_cache": "1",
+ "tokens_entrada": 1824,
+ "tokens_salida": 231,
+ "creado_utc": "2026-10-08T16:10:49Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta que Sinaproc busca superar el 10% en simulacro nacional\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La población podría otorgar relevancia a este tema en la medida en que se refiere a la preparación y la respuesta ante emergencias a escala nacional.\", \"afirmaciones\": [\"A4\"]}], \"preguntas\": [{\"texto\": \"¿Qué cifras oficiales de participación ciudadana en simulacros nacionales existen y con qué año se corresponden?\", \"vacio\": \"cifras_sin_dato_oficial\"}, {\"texto\": \"¿Qué indicador oficial está asignado a la preparación y respuesta ante emergencias a escala nacional?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras fuentes independientes reportan este tema y cuántas procedencias se pueden estimar?\", \"vacio\": \"procedencias_insuficientes\"}]}"
+}

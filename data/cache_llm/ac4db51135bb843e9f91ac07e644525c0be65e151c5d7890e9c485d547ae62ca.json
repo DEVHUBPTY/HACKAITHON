@@ -1,0 +1,12 @@
+{
+ "clave": "ac4db51135bb843e9f91ac07e644525c0be65e151c5d7890e9c485d547ae62ca",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.3",
+ "prompt": "afirmaciones_ficha",
+ "version_cache": "1",
+ "tokens_entrada": 2514,
+ "tokens_salida": 676,
+ "creado_utc": "2026-10-08T16:10:59Z",
+ "respuesta": "{\"afirmaciones\": [{\"id\": \"A1\", \"tipo\": \"declaración\", \"texto\": \"El medio panamaamerica.com.pa reporta que el MEF explica la fórmula quincenal para fijar el precio del combustible en Panamá tras aprobarse un nuevo subsidio.\", \"citas\": [{\"id\": \"NOT-1710ce462f\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A2\", \"tipo\": \"declaración\", \"texto\": \"El medio panamaamerica.com.pa reporta que el MEF explica la fórmula quincenal para fijar el precio del combustible en Panamá.\", \"citas\": [{\"id\": \"NOT-96d1ecac7d\", \"campo\": \"titulo_limpio\"}]}, {\"id\": \"A3\", \"tipo\": \"hecho\", \"texto\": \"El grupo de titulares sobre este tema reúne 2 titulares de 1 medio.\", \"citas\": [{\"id\": \"GRP-81a11a5998\", \"campo\": \"n_titulares\"}, {\"id\": \"GRP-81a11a5998\", \"campo\": \"n_medios\"}]}, {\"id\": \"A4\", \"tipo\": \"hecho\", \"texto\": \"El grupo de titulares sobre este tema cuenta con 1 procedencia independiente estimada.\", \"citas\": [{\"id\": \"GRP-81a11a5998\", \"campo\": \"n_procedencias\"}]}, {\"id\": \"A5\", \"tipo\": \"hecho\", \"texto\": \"En 2024, la inflación (precios al consumidor) de Panamá fue de 0.69 % anual.\", \"citas\": [{\"id\": \"IND-PAN-FP.CPI.TOTL.ZG-2024\", \"campo\": \"valor\"}]}, {\"id\": \"A6\", \"tipo\": \"hecho\", \"texto\": \"En 2023, la inflación (precios al consumidor) de Panamá fue de 1.49 % anual.\", \"citas\": [{\"id\": \"IND-PAN-FP.CPI.TOTL.ZG-2023\", \"campo\": \"valor\"}]}, {\"id\": \"A7\", \"tipo\": \"hecho\", \"texto\": \"En 2022, la inflación (precios al consumidor) de Panamá fue de 2.86 % anual.\", \"citas\": [{\"id\": \"IND-PAN-FP.CPI.TOTL.ZG-2022\", \"campo\": \"valor\"}]}, {\"id\": \"A8\", \"tipo\": \"inferencia\", \"texto\": \"El tema importa a la población porque el precio del combustible y la inflación inciden en el costo de vida de los hogares.\", \"base\": [\"A1\", \"A2\", \"A5\", \"A6\", \"A7\"], \"citas\": []}]}"
+}

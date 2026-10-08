@@ -1,0 +1,12 @@
+{
+ "clave": "6ac3c08e72fd1ec2ad47b2aa951e2f742f27cd0d395bb70da2e84acb8e4a5615",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "paquete_editorial",
+ "version_cache": "1",
+ "tokens_entrada": 1899,
+ "tokens_salida": 301,
+ "creado_utc": "2026-10-08T16:10:45Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta aumento de enfermedades respiratorias en Ngäbe Buglé y Veraguas\", \"afirmaciones\": [\"A1\", \"A2\"]}, \"enfoque\": [{\"texto\": \"La evolución de las enfermedades respiratorias y transmisibles en distintas regiones del país importa a la población, en particular a las familias con menores y a las comunidades afectadas.\", \"afirmaciones\": [\"A5\"]}, {\"texto\": \"Si la cobertura se ampliara a más procedencias independientes, el tema podría cobrar mayor relevancia para la población.\", \"afirmaciones\": [\"A6\"]}], \"preguntas\": [{\"texto\": \"¿Existe un indicador oficial asignado a las enfermedades respiratorias y transmisibles en las regiones mencionadas por TVN Panamá?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué dato oficial anual permite dimensionar el aumento de enfermedades respiratorias entre menores en la comarca Ngäbe Buglé?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué procedencias independientes distintas de TVN Panamá reportan el aumento de enfermedades respiratorias y transmisibles en el país?\", \"vacio\": \"procedencias_insuficientes\"}]}"
+}

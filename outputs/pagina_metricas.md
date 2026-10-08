@@ -2,7 +2,7 @@
 
 > **BORRADOR — métricas provisionales** · JUICIO PROVISIONAL DEL ASISTENTE, NO HUMANO (D-101): se rehace a mano en C-09; no reportar como juicio de una persona.
 
-Generada el 2026-10-08T15:56:13Z desde el commit `e807b85` con `poetry run python -m scripts.pagina_metricas`. Ninguna cifra está escrita a mano: cada una sale del archivo que se indica. Toda proporción lleva numerador, denominador e IC 95 %.
+Generada el 2026-10-08T16:07:06Z desde el commit `2307de0` con `poetry run python -m scripts.pagina_metricas`. Ninguna cifra está escrita a mano: cada una sale del archivo que se indica. Toda proporción lleva numerador, denominador e IC 95 %.
 
 **Origen del juicio:** `humano` = lo decidió una persona (las etiquetas de clasificación y agrupación las propone el asistente y una persona las revisa y aprueba una por una, D-85) · **PROVISIONAL** = lo decidió el asistente (D-101) y se rehace en C-09 · `automático` = automático (sin juicio humano: lo calcula el código contra una referencia).
 
@@ -170,7 +170,7 @@ Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de 
 ## Reproducibilidad
 
 - Registro del manifest: commit `3df0978`, árbol con cambios al registrar: **sí**; corte del snapshot 2026-10-08T03:35:18Z; hash del snapshot `4503952d97fb`.
-- Commit desde el que se generó: `e807b85` (árbol con cambios sin commitear). El registro es de otro commit: confirmar con `--verificar` antes de afirmar que se reproduce.
+- Commit desde el que se generó: `2307de0`. El registro es de otro commit: confirmar con `--verificar` antes de afirmar que se reproduce.
 - LLM: deepseek/deepseek-flash, temperatura 0.0, semilla 0; embeddings minilm y e5 con revisión fijada.
 - Salidas deterministas con hash: 33. Borradores en caché: sin_cache 9, completo 1, con_vacios 2.
 - Comprobación: `HF_HUB_OFFLINE=1 poetry run python -m scripts.reproducir --verificar` (sale con 1 si algo difiere).
@@ -187,12 +187,12 @@ Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de 
 | Archivo | Commit | Fecha del commit | Fecha dentro del archivo |
 |---|---|---|---|
 | `outputs/metricas.json` | 3df0978 | 2026-10-07T15:37:09-05:00 | 2026-10-07T20:31:59Z |
-| `outputs/ia_vs_baseline.json` | e807b85 + cambios sin commitear | 2026-10-08T10:25:10-05:00 | — |
+| `outputs/ia_vs_baseline.json` | 61d9589 | 2026-10-08T11:02:26-05:00 | — |
 | `outputs/precision_at_5.json` | 40253af | 2026-10-07T15:16:18-05:00 | 2026-10-07T00:41:03Z |
-| `outputs/clasificacion.json` | ff29099 + cambios sin commitear | 2026-10-08T10:04:48-05:00 | — |
+| `outputs/clasificacion.json` | 61d9589 | 2026-10-08T11:02:26-05:00 | — |
 | `outputs/agrupacion.json` | a479628 | 2026-10-06T19:49:01-05:00 | — |
-| `outputs/sensibilidad.json` | 985fce8 + cambios sin commitear | 2026-10-08T10:13:29-05:00 | 2026-10-08T03:35:18Z |
-| `outputs/puntaje.json` | 985fce8 + cambios sin commitear | 2026-10-08T10:13:29-05:00 | — |
+| `outputs/sensibilidad.json` | 61d9589 | 2026-10-08T11:02:26-05:00 | 2026-10-08T03:35:18Z |
+| `outputs/puntaje.json` | 61d9589 | 2026-10-08T11:02:26-05:00 | — |
 | `outputs/pruebas.csv` | e9bf8a3 | 2026-10-07T06:46:06-05:00 | — |
 | `data/manifest.json` | ccb2a8e | 2026-10-07T23:07:47-05:00 | 2026-10-08T03:35:18Z |
 | `eval/etiquetas.csv` | fdfe422 | 2026-10-08T09:59:37-05:00 | — |

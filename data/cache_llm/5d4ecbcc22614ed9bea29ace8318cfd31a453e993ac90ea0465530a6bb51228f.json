@@ -1,0 +1,12 @@
+{
+ "clave": "5d4ecbcc22614ed9bea29ace8318cfd31a453e993ac90ea0465530a6bb51228f",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "paquete_editorial",
+ "version_cache": "1",
+ "tokens_entrada": 2165,
+ "tokens_salida": 297,
+ "creado_utc": "2026-10-08T16:10:00Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"Medios reportan que El Niño profundiza riesgos económicos en América Latina\", \"afirmaciones\": [\"A1\", \"A2\", \"A3\", \"A4\", \"A5\", \"A6\"]}, \"enfoque\": [{\"texto\": \"El grupo de registros reúne 20 titulares de 18 medios que reportan este tema, según los datos del grupo.\", \"afirmaciones\": [\"A7\"]}, {\"texto\": \"El grupo de registros estima 1 procedencia independiente, contando los titulares que replican a una misma fuente como una sola.\", \"afirmaciones\": [\"A8\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún indicador oficial asignado a este tema que permita contrastar lo que reportan los medios?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué fuentes independientes distintas de la estimada en el grupo de registros pueden identificarse para este tema?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Cuáles son los medios y las fechas de publicación de los 20 titulares que el grupo de registros no tiene documentados?\", \"vacio\": \"medios_o_fechas_desconocidos\"}]}"
+}

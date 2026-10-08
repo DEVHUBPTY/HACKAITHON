@@ -1,0 +1,12 @@
+{
+ "clave": "34dacab998f336ee9b40dc8d7bee250f06df6713d5137a4e2244953396695fe9",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "paquete_editorial",
+ "version_cache": "1",
+ "tokens_entrada": 1845,
+ "tokens_salida": 273,
+ "creado_utc": "2026-10-08T16:10:18Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta investigación por incendio en sastrería de David\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La cobertura de un incendio en un negocio local importa a la población de la zona, que puede verse afectada en su seguridad y en su actividad cotidiana.\", \"afirmaciones\": [\"A4\"]}, {\"texto\": \"Si la investigación avanza, podrían conocerse más detalles sobre lo ocurrido en la sastrería.\", \"afirmaciones\": [\"A5\"]}], \"preguntas\": [{\"texto\": \"¿Existe algún dato oficial vinculado al incendio en la sastrería de la calle Quinta en David?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras procedencias independientes han reportado sobre el incendio en la sastrería de David?\", \"vacio\": \"procedencias_insuficientes\"}, {\"texto\": \"¿Qué información adicional puede aportar una segunda procedencia independiente sobre lo ocurrido en la sastrería?\", \"vacio\": \"procedencias_insuficientes\"}]}"
+}

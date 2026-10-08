@@ -1,0 +1,12 @@
+{
+ "clave": "cc9e63eac5cb86ca3dd09bc84cb5e82914f368a9d3970998585ecebee790bb68",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "paquete_editorial",
+ "version_cache": "1",
+ "tokens_entrada": 1913,
+ "tokens_salida": 310,
+ "creado_utc": "2026-10-08T16:10:40Z",
+ "respuesta": "{\n  \"titulo_trabajo\": {\n    \"texto\": \"TVN Panamá reporta un ataque cerca del metro de San Miguelito\",\n    \"afirmaciones\": [\"A1\"]\n  },\n  \"enfoque\": [\n    {\n      \"texto\": \"La seguridad en el entorno del transporte público y los hechos de violencia con víctimas mortales importan a la población que usa a diario esas estaciones y sus alrededores, según una inferencia a partir de la evidencia disponible.\",\n      \"afirmaciones\": [\"A4\"]\n    },\n    {\n      \"texto\": \"Si la evidencia se sostiene en una sola procedencia independiente estimada, la verificación con otras fuentes seguiría pendiente.\",\n      \"afirmaciones\": [\"A3\"]\n    }\n  ],\n  \"preguntas\": [\n    {\n      \"texto\": \"¿Existe algún dato oficial vinculado a este tema que permita contrastar lo reportado?\",\n      \"vacio\": \"sin_dato_oficial\"\n    },\n    {\n      \"texto\": \"¿Qué otras procedencias independientes han reportado sobre este tema?\",\n      \"vacio\": \"procedencias_insuficientes\"\n    },\n    {\n      \"texto\": \"¿Qué indicadores oficiales podrían asignarse a este tema para darle seguimiento?\",\n      \"vacio\": \"sin_dato_oficial\"\n    }\n  ]\n}"
+}

@@ -1,0 +1,12 @@
+{
+ "clave": "12a602bdcd02aac8451b4592b5a228c24bd4d8c12d3567d7187cd2a2f40a2363",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "paquete_editorial",
+ "version_cache": "1",
+ "tokens_entrada": 1881,
+ "tokens_salida": 281,
+ "creado_utc": "2026-10-08T16:10:30Z",
+ "respuesta": "{\"titulo_trabajo\": {\"texto\": \"TVN Panamá reporta un contenido exclusivo sobre dietilenglicol y 20 años de dolor\", \"afirmaciones\": [\"A1\"]}, \"enfoque\": [{\"texto\": \"La cobertura disponible sobre este tema es limitada, con una sola procedencia independiente estimada, lo que puede restringir la variedad de perspectivas a las que accede la población.\", \"afirmaciones\": [\"A4\"]}, {\"texto\": \"Si la población solo cuenta con un titular de un único medio sobre este tema, podría tener dificultades para contrastar la información disponible.\", \"afirmaciones\": [\"A5\"]}], \"preguntas\": [{\"texto\": \"¿Qué cifras aparecen en el titular de TVN Panamá y con qué dato oficial pueden contrastarse?\", \"vacio\": \"cifras_sin_dato_oficial\"}, {\"texto\": \"¿Existe algún indicador oficial asignado al tema del dietilenglicol en Panamá?\", \"vacio\": \"sin_dato_oficial\"}, {\"texto\": \"¿Qué otras procedencias independientes han reportado este tema además de TVN Panamá?\", \"vacio\": \"procedencias_insuficientes\"}]}"
+}
