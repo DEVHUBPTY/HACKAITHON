@@ -91,6 +91,26 @@ Al consolidar, la fila humana de un `id_noticia` **reemplaza** a la provisional 
 (`eval/etiquetar.py`, líneas 659-665). Después, `HF_HUB_OFFLINE=1 poetry run python -m eval.clasificacion_por_evento` muestra cómo cambian
 los conteos por evento.
 
+## Incorporar la hoja confirmada (C-12): `--incorporar-hoja`
+
+Con las 61 filas confirmadas por la persona (David, 2026-10-07; 19 una a una, 42 aprobadas en bloque, lo dice su `nota`), C-12 agregó un modo
+que **no pasa por las hojas por persona ni por la muestra** y por eso no sufre la limitación de abajo:
+
+```bash
+poetry run python -m eval.etiquetar --incorporar-hoja --hoja <ruta de la hoja>   # escribe eval/etiquetas_ampliadas.csv
+```
+
+- Valida cada fila con `validar_fila` (D-87) y exige que esté decidida (`tema_humano`, `etiquetado_por` y fecha ISO). Si **una** no lo
+  está, no escribe nada, lista todos los problemas y termina con código 1. `--hoja` es obligatorio (ningún módulo de `src/`, `eval/` ni
+  `scripts/` nombra la ruta de la hoja: lo vigila `tests/test_c11_preetiquetado.py`).
+- `tema_humano = sin_tema` pasa a `ruido` + `tema_principal` vacío (la convención de `eval/etiquetas.csv`); la fecha del día pasa a medianoche UTC.
+  Un titular de ruido que traía `grupo` lo pierde y el modo lo avisa (en esta hoja pasó con 5 filas; un ruido no lleva grupo).
+- Escribe `eval/etiquetas_ampliadas.csv` = las filas `origen = humano` de `eval/etiquetas.csv` + las de la hoja (`estrato` y `n_etiquetadores` salen
+  de `clasificacion.yaml:ampliado`). Las `asistente_provisional` nunca entran por su cuenta: solo están las que la hoja decidió. No modifica
+  `eval/etiquetas.csv` ni la hoja y se niega a escribir sobre ellos; dos corridas dan los mismos bytes.
+- El chequeo «el id está en la muestra» de `--validar` y `--consolidar` **no aplica** a este modo: aquellos validan hojas por persona contra la
+  muestra estratificada de E1-06 recalculada, y estas filas no salen de esa muestra.
+
 ## Limitación conocida: `--validar` rechaza ids fuera de su muestra
 
 Lo que **verifiqué leyendo el código** (`eval/etiquetar.py`) y ejecutando solo lecturas:

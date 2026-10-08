@@ -745,6 +745,66 @@ las 64 de la caché, sin red, y reproduce **exactamente** las mismas métricas. 
    `docs/revision_etiquetas.md` (confirmar las 61, un segundo etiquetador y ≥ 10–20 eventos por tema); la decisión de conectar un LLM
    a la canalización (T4) es del dueño.
 
+## C-12 · Conjunto ampliado (medición única) (2026-10-07)
+
+**Qué se hizo.** Las 61 filas de la hoja de confirmación (C-11) quedaron decididas por una persona (David, 2026-10-07). Se armó
+`eval/etiquetas_ampliadas.csv` (161 filas `origen = humano`: las 100 de `eval/etiquetas.csv` + las 61; `poetry run python -m eval.etiquetar
+--incorporar-hoja`, ver `docs/preetiquetado.md`) **sin tocar** `eval/etiquetas.csv`, el clasificador ni ningún umbral. Se corrió **una vez**
+cada comando, sin red ni LLM de pago (`HF_HUB_OFFLINE=1`), y no se ajustó nada después:
+
+```bash
+HF_HUB_OFFLINE=1 poetry run python -m eval.clasificacion --etiquetas eval/etiquetas_ampliadas.csv --salida outputs/clasificacion_ampliada.json
+HF_HUB_OFFLINE=1 poetry run python -m eval.clasificacion_por_evento --etiquetas eval/etiquetas_ampliadas.csv --subconjuntos --salida outputs/clasificacion_por_evento_ampliada.json
+```
+
+`--subconjuntos` (nuevo, opcional) separa las filas del estrato `clasificacion.yaml:ampliado.estrato_hoja` de las demás con las **mismas predicciones**.
+`outputs/clasificacion.json` y `outputs/clasificacion_por_evento.json` no cambiaron.
+
+### 1 · Qué cambió en el conjunto evaluado (descripción, no resultado)
+
+- Las 61 filas nuevas **no son todas evaluables**: el filtro de ruido del sistema ya había marcado 45 (81 marcadas en total frente a 36 antes), y el clasificador no las ve.
+  **El conjunto de clasificación pasa de 64 a 80 filas (+16) y de 30 a 44 eventos (+14, ninguno comparte grupo con uno original).**
+- Las 16 son 8 Servicios públicos, 3 Economía y 5 `sin_tema` (ruido humano que el filtro dejó pasar: 4 `fuera_de_temas`, 1 `no_es_panama`). No agregan
+  Turismo, Logística, Regulación ni Eventos naturales. Por tema, el conjunto pasa de Economía 26, Servicios públicos 9, `sin_tema` 5 a **29, 17 y 10**
+  (Eventos naturales sigue en 20 filas de un solo evento; Turismo, Regulación y Logística: 1, 1 y 2).
+- De las 16, 9 se aprobaron **en bloque** (nota «Aprobado en bloque por la persona») y 7 una a una; de las 61, 42 y 19.
+
+### 2 · Cifras (e5 · método A con su umbral actual 0.824, y baselines por palabras clave; IC 95 %: Wilson por fila, bootstrap sobre eventos con 1.000 remuestreos y semilla 42)
+
+| Conjunto | Filas · eventos | Sistema | Exactitud por fila | Exactitud por evento | Macro-F1 por evento | Cobertura | Exactitud entre cubiertas |
+|---|---|---|---|---|---|---|---|
+| Original (reproduce C-10b) | 64 · 30 | e5/A | 35/64 = 54,7 % [42,6–66,3] | 0,517 [0,350–0,683] | 0,430 [0,248–0,619] | 52/64 = 81,2 % [70,0–88,9] | 35/52 = 67,3 % [53,8–78,5] |
+| | | mejor baseline (ampliado) | 30/64 = 46,9 % [35,2–58,9] | 0,344 [0,178–0,511] | 0,477 [0,166–0,629] | 30/64 = 46,9 % [35,2–58,9] | 27/30 = 90,0 % [74,4–96,5] |
+| Ampliado | 80 · 44 | e5/A | 39/80 = 48,7 % [38,1–59,5] | 0,443 [0,307–0,591] | 0,376 [0,223–0,546] | 68/80 = 85,0 % [75,6–91,2] | 39/68 = 57,4 % [45,5–68,4] |
+| | | mejor baseline (ampliado) | 35/80 = 43,8 % [33,4–54,7] | 0,333 [0,197–0,477] | 0,473 [0,160–0,621] | 34/80 = 42,5 % [32,3–53,4] | 28/34 = 82,4 % [66,5–91,6] |
+| Solo las filas nuevas | 16 · 14 | e5/A | 4/16 = 25,0 % [10,2–49,5] | 0,286 [0,071–0,571] | 0,205 [0,083–0,438] | 16/16 = 100 % [80,6–100] | 4/16 = 25,0 % [10,2–49,5] |
+| | | mejor baseline (guía) | 6/16 = 37,5 % [18,5–61,4] | 0,381 [0,143–0,619] | 0,333 [0,177–0,399] | 1/16 = 6,2 % [1,1–28,3] | 1/1 |
+
+«Mejor baseline» = el de mayor macro-F1 por evento en ese conjunto (en las filas nuevas es `baseline_guia`; `baseline_ampliado` saca 5/16 = 31,2 %).
+Con las filas nuevas, e5/A **no se abstiene en ninguna de las 5 `sin_tema`** (0/5, 5 eventos) y acierta 4/8 de Servicios públicos y 0/3 de Economía.
+
+Recall por tema de e5/A (filas; eventos entre paréntesis): original: Economía 4/26 (11), Servicios públicos 8/9 (9), Eventos naturales 20/20 (1), Logística 2/2 (2),
+Turismo 0/1, Regulación 1/1, `sin_tema` 0/5 (5). Ampliado: Economía 4/29 (12), Servicios públicos 12/17 (17), Eventos naturales 20/20 (1), Logística 2/2,
+Turismo 0/1, Regulación 1/1, `sin_tema` 0/10 (10). Solo nuevas: Servicios públicos 4/8 (8), Economía 0/3 (1), `sin_tema` 0/5 (5).
+
+Con `eval.clasificacion` sobre las 80 filas (por fila, sin eventos): e5/A 39/80 = 48,7 % [38,1–59,5], macro-F1 0,376 [0,252–0,456]; baseline 35/80 = 43,8 %.
+Vista de canalización (filtro + clasificador, las 161 filas): e5/A 116/161 = 72,1 % [64,7–78,4]; no hay cifra original comparable en este informe.
+
+### 3 · Cómo leerlo (y cómo no)
+
+- **El porcentaje se movió porque el conjunto evaluado cambió, no porque el sistema cambiara.** El sistema, sus umbrales y su configuración son los mismos que midieron
+  54,7 %. Las 16 filas nuevas son sobre todo Servicios públicos y Economía, más 5 `sin_tema` en las que e5/A no se abstuvo; esa mezcla baja el porcentaje por fila
+  (de 54,7 % a 48,7 %) y estas cifras **no permiten concluir que la clasificación mejoró ni empeoró**. Los IC de original y ampliado se solapan casi por completo y el
+  ampliado incluye a las mismas 64 filas.
+- La diferencia entre el original y el ampliado **no compara métodos ni versiones**: es el mismo sistema sobre otro conjunto. Solo describe cómo cambió la composición.
+- **Con 16 filas y 14 eventos los IC de las filas nuevas son muy anchos**; sirven para ver qué temas se agregan, no para estimar su exactitud.
+- **42 de las 61 se aprobaron en bloque**, no una a una: su calidad como etiqueta de oro es la de una revisión rápida de una sola persona (D-85), sin segundo etiquetador.
+- **Ponderación:** las filas nuevas no vienen de la muestra estratificada de E1-06 (son la hoja de revisión por evento), llevan `peso_muestreo` vacío y el lector les da 1. El bloque
+  `ponderado` de `outputs/clasificacion_ampliada.json` mezcla pesos de población con 1 y **no es interpretable**; no se debe usar el archivo ampliado para estimar sobre la población.
+- Sigue siendo exploratorio: una sola persona etiquetó y los eventos de un tema (Eventos naturales: 1; Turismo, Regulación: 1 cada uno) no alcanzan para recalibrar umbrales ni decidir
+  modelo o método (D-20, D-21). La advertencia «≈ 29 eventos» dentro de `outputs/clasificacion_por_evento_ampliada.json` es texto fijo del módulo: aquí son 44.
+- Cambiar umbrales, el modelo o el criterio de frontera después de ver esto sería ajustar sobre el mismo conjunto que se mide: no se hizo.
+
 ## Pendiente
 
 1. **Más etiquetas y más personas:** las 100 etiquetas actuales son de una sola persona y repiten titulares. Reetiquetar con
