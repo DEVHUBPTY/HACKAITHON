@@ -2702,7 +2702,8 @@
       "ejemplos_excluidos": 0,
       "no_estan_en_la_base": 0,
       "marcados_como_ruido_por_el_sistema": 54,
-      "evaluados": 46
+      "evaluados": 46,
+      "fuera_de_la_evaluacion_congelada": 0
     },
     "nota": "Sin ponderar y ponderado (peso_muestreo) se reportan juntos; los IC de precisión y recall son sin ponderar.",
     "configuraciones": {
@@ -6295,24 +6296,24 @@
         "baseline": {
           "sin_ponderar": {
             "exactitud_principal": {
-              "n": 78,
+              "n": 82,
               "de": 100,
-              "proporcion": 0.78,
+              "proporcion": 0.82,
               "ic95": [
-                0.6893,
-                0.85
+                0.7333,
+                0.883
               ]
             },
             "macro_f1": {
               "n": 100,
-              "macro_f1": 0.582,
+              "macro_f1": 0.6011,
               "ic95": [
-                0.3827,
-                0.7217
+                0.3986,
+                0.749
               ],
               "ic95_exacto": [
-                0.38266056726515757,
-                0.7216591435185185
+                0.3985799731734691,
+                0.7490330487033522
               ],
               "remuestreos": 1000,
               "ponderado": false
@@ -6328,7 +6329,7 @@
             ],
             "por_tema": {
               "economia": {
-                "soporte": 13,
+                "soporte": 9,
                 "predichos": 2,
                 "precision": {
                   "n": 2,
@@ -6341,14 +6342,14 @@
                 },
                 "recall": {
                   "n": 2,
-                  "de": 13,
-                  "proporcion": 0.1538,
+                  "de": 9,
+                  "proporcion": 0.2222,
                   "ic95": [
-                    0.0433,
-                    0.4224
+                    0.0632,
+                    0.5474
                   ]
                 },
-                "f1": 0.2667
+                "f1": 0.3636
               },
               "logistica": {
                 "soporte": 2,
@@ -6466,27 +6467,27 @@
                 "f1": 0.0
               },
               "sin_tema": {
-                "soporte": 54,
+                "soporte": 58,
                 "predichos": 71,
                 "precision": {
-                  "n": 52,
+                  "n": 56,
                   "de": 71,
-                  "proporcion": 0.7324,
+                  "proporcion": 0.7887,
                   "ic95": [
-                    0.6195,
-                    0.8215
+                    0.6802,
+                    0.8676
                   ]
                 },
                 "recall": {
-                  "n": 52,
-                  "de": 54,
-                  "proporcion": 0.963,
+                  "n": 56,
+                  "de": 58,
+                  "proporcion": 0.9655,
                   "ic95": [
-                    0.8746,
-                    0.9898
+                    0.8827,
+                    0.9905
                   ]
                 },
-                "f1": 0.832
+                "f1": 0.8682
               }
             },
             "matriz_confusion": {
@@ -6507,7 +6508,7 @@
                   0,
                   0,
                   0,
-                  11
+                  7
                 ],
                 [
                   0,
@@ -6561,7 +6562,7 @@
                   1,
                   0,
                   1,
-                  52
+                  56
                 ]
               ]
             },
@@ -6587,15 +6588,6 @@
               ]
             },
             "fallos": [
-              {
-                "id": "NOT-05ae3da7e3",
-                "titular": "NOT-05ae3da7e3",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
               {
                 "id": "NOT-0d91fa48b0",
                 "titular": "NOT-0d91fa48b0",
@@ -6696,15 +6688,6 @@
                 "similitud": null
               },
               {
-                "id": "NOT-a71293e7e8",
-                "titular": "NOT-a71293e7e8",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
-              {
                 "id": "NOT-ba54c3921d",
                 "titular": "NOT-ba54c3921d",
                 "esperado": "economia",
@@ -6750,24 +6733,6 @@
                 "similitud": null
               },
               {
-                "id": "NOT-e1ef662816",
-                "titular": "NOT-e1ef662816",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
-              {
-                "id": "NOT-f01abb1ca2",
-                "titular": "NOT-f01abb1ca2",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
-              {
                 "id": "NOT-f1f1f6e600",
                 "titular": "NOT-f1f1f6e600",
                 "esperado": "economia",
@@ -6789,21 +6754,21 @@
           },
           "ponderado": {
             "exactitud_principal": {
-              "suma_pesos_aciertos": 146.108,
+              "suma_pesos_aciertos": 150.108,
               "suma_pesos": 169.9999,
-              "proporcion": 0.8595,
+              "proporcion": 0.883,
               "n": 100
             },
             "macro_f1": {
               "n": 100,
-              "macro_f1": 0.5568,
+              "macro_f1": 0.573,
               "ic95": [
-                0.3874,
-                0.718
+                0.3985,
+                0.739
               ],
               "ic95_exacto": [
-                0.38736368353080347,
-                0.7179558679389398
+                0.3984655499309105,
+                0.7389946345015912
               ],
               "remuestreos": 1000,
               "ponderado": true
@@ -6813,24 +6778,24 @@
         "baseline_ampliado": {
           "sin_ponderar": {
             "exactitud_principal": {
-              "n": 79,
+              "n": 83,
               "de": 100,
-              "proporcion": 0.79,
+              "proporcion": 0.83,
               "ic95": [
-                0.7002,
-                0.8583
+                0.7445,
+                0.8911
               ]
             },
             "macro_f1": {
               "n": 100,
-              "macro_f1": 0.5985,
+              "macro_f1": 0.6215,
               "ic95": [
-                0.3945,
-                0.735
+                0.4211,
+                0.7636
               ],
               "ic95_exacto": [
-                0.3945149611152781,
-                0.7349674822622583
+                0.4210586341862269,
+                0.7636416101622433
               ],
               "remuestreos": 1000,
               "ponderado": false
@@ -6846,7 +6811,7 @@
             ],
             "por_tema": {
               "economia": {
-                "soporte": 13,
+                "soporte": 9,
                 "predichos": 3,
                 "precision": {
                   "n": 3,
@@ -6859,14 +6824,14 @@
                 },
                 "recall": {
                   "n": 3,
-                  "de": 13,
-                  "proporcion": 0.2308,
+                  "de": 9,
+                  "proporcion": 0.3333,
                   "ic95": [
-                    0.0818,
-                    0.5026
+                    0.1206,
+                    0.6458
                   ]
                 },
-                "f1": 0.375
+                "f1": 0.5
               },
               "logistica": {
                 "soporte": 2,
@@ -6984,27 +6949,27 @@
                 "f1": 0.0
               },
               "sin_tema": {
-                "soporte": 54,
+                "soporte": 58,
                 "predichos": 70,
                 "precision": {
-                  "n": 52,
+                  "n": 56,
                   "de": 70,
-                  "proporcion": 0.7429,
+                  "proporcion": 0.8,
                   "ic95": [
-                    0.6297,
-                    0.8307
+                    0.6918,
+                    0.877
                   ]
                 },
                 "recall": {
-                  "n": 52,
-                  "de": 54,
-                  "proporcion": 0.963,
+                  "n": 56,
+                  "de": 58,
+                  "proporcion": 0.9655,
                   "ic95": [
-                    0.8746,
-                    0.9898
+                    0.8827,
+                    0.9905
                   ]
                 },
-                "f1": 0.8387
+                "f1": 0.875
               }
             },
             "matriz_confusion": {
@@ -7025,7 +6990,7 @@
                   0,
                   0,
                   0,
-                  10
+                  6
                 ],
                 [
                   0,
@@ -7079,7 +7044,7 @@
                   1,
                   0,
                   1,
-                  52
+                  56
                 ]
               ]
             },
@@ -7105,15 +7070,6 @@
               ]
             },
             "fallos": [
-              {
-                "id": "NOT-05ae3da7e3",
-                "titular": "NOT-05ae3da7e3",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
               {
                 "id": "NOT-0d91fa48b0",
                 "titular": "NOT-0d91fa48b0",
@@ -7205,15 +7161,6 @@
                 "similitud": null
               },
               {
-                "id": "NOT-a71293e7e8",
-                "titular": "NOT-a71293e7e8",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
-              {
                 "id": "NOT-ba54c3921d",
                 "titular": "NOT-ba54c3921d",
                 "esperado": "economia",
@@ -7259,24 +7206,6 @@
                 "similitud": null
               },
               {
-                "id": "NOT-e1ef662816",
-                "titular": "NOT-e1ef662816",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
-              {
-                "id": "NOT-f01abb1ca2",
-                "titular": "NOT-f01abb1ca2",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
-              {
                 "id": "NOT-f1f1f6e600",
                 "titular": "NOT-f1f1f6e600",
                 "esperado": "economia",
@@ -7298,21 +7227,21 @@
           },
           "ponderado": {
             "exactitud_principal": {
-              "suma_pesos_aciertos": 147.108,
+              "suma_pesos_aciertos": 151.108,
               "suma_pesos": 169.9999,
-              "proporcion": 0.8653,
+              "proporcion": 0.8889,
               "n": 100
             },
             "macro_f1": {
               "n": 100,
-              "macro_f1": 0.5728,
+              "macro_f1": 0.5929,
               "ic95": [
-                0.4005,
-                0.7409
+                0.4145,
+                0.7615
               ],
               "ic95_exacto": [
-                0.40050723421707135,
-                0.7408885790864573
+                0.41453642318989187,
+                0.7615347126139083
               ],
               "remuestreos": 1000,
               "ponderado": true
@@ -7322,24 +7251,24 @@
         "e5/A": {
           "sin_ponderar": {
             "exactitud_principal": {
-              "n": 83,
+              "n": 87,
               "de": 100,
-              "proporcion": 0.83,
+              "proporcion": 0.87,
               "ic95": [
-                0.7445,
-                0.8911
+                0.7902,
+                0.9224
               ]
             },
             "macro_f1": {
               "n": 100,
-              "macro_f1": 0.6121,
+              "macro_f1": 0.6295,
               "ic95": [
-                0.4195,
-                0.7452
+                0.4266,
+                0.7737
               ],
               "ic95_exacto": [
-                0.41952438030309686,
-                0.7451953864067559
+                0.42661889755902366,
+                0.7737193240966915
               ],
               "remuestreos": 1000,
               "ponderado": false
@@ -7355,7 +7284,7 @@
             ],
             "por_tema": {
               "economia": {
-                "soporte": 13,
+                "soporte": 9,
                 "predichos": 3,
                 "precision": {
                   "n": 2,
@@ -7368,14 +7297,14 @@
                 },
                 "recall": {
                   "n": 2,
-                  "de": 13,
-                  "proporcion": 0.1538,
+                  "de": 9,
+                  "proporcion": 0.2222,
                   "ic95": [
-                    0.0433,
-                    0.4224
+                    0.0632,
+                    0.5474
                   ]
                 },
-                "f1": 0.25
+                "f1": 0.3333
               },
               "logistica": {
                 "soporte": 2,
@@ -7493,27 +7422,27 @@
                 "f1": 0.6667
               },
               "sin_tema": {
-                "soporte": 54,
+                "soporte": 58,
                 "predichos": 54,
                 "precision": {
-                  "n": 50,
+                  "n": 54,
                   "de": 54,
-                  "proporcion": 0.9259,
+                  "proporcion": 1.0,
                   "ic95": [
-                    0.8245,
-                    0.9708
+                    0.9336,
+                    1.0
                   ]
                 },
                 "recall": {
-                  "n": 50,
-                  "de": 54,
-                  "proporcion": 0.9259,
+                  "n": 54,
+                  "de": 58,
+                  "proporcion": 0.931,
                   "ic95": [
-                    0.8245,
-                    0.9708
+                    0.8357,
+                    0.9729
                   ]
                 },
-                "f1": 0.9259
+                "f1": 0.9643
               }
             },
             "matriz_confusion": {
@@ -7534,7 +7463,7 @@
                   4,
                   0,
                   1,
-                  4
+                  0
                 ],
                 [
                   0,
@@ -7588,7 +7517,7 @@
                   2,
                   0,
                   0,
-                  50
+                  54
                 ]
               ]
             },
@@ -7614,15 +7543,6 @@
               ]
             },
             "fallos": [
-              {
-                "id": "NOT-05ae3da7e3",
-                "titular": "NOT-05ae3da7e3",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
               {
                 "id": "NOT-14dcb8e259",
                 "titular": "NOT-14dcb8e259",
@@ -7687,15 +7607,6 @@
                 "similitud": 0.8471
               },
               {
-                "id": "NOT-a71293e7e8",
-                "titular": "NOT-a71293e7e8",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
-              {
                 "id": "NOT-aacff154c6",
                 "titular": "NOT-aacff154c6",
                 "esperado": "economia",
@@ -7741,24 +7652,6 @@
                 "similitud": 0.8374
               },
               {
-                "id": "NOT-e1ef662816",
-                "titular": "NOT-e1ef662816",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
-              {
-                "id": "NOT-f01abb1ca2",
-                "titular": "NOT-f01abb1ca2",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
-              {
                 "id": "NOT-fbc3efaa5d",
                 "titular": "NOT-fbc3efaa5d",
                 "esperado": "economia",
@@ -7771,21 +7664,21 @@
           },
           "ponderado": {
             "exactitud_principal": {
-              "suma_pesos_aciertos": 152.9999,
+              "suma_pesos_aciertos": 156.9999,
               "suma_pesos": 169.9999,
-              "proporcion": 0.9,
+              "proporcion": 0.9235,
               "n": 100
             },
             "macro_f1": {
               "n": 100,
-              "macro_f1": 0.6303,
+              "macro_f1": 0.6446,
               "ic95": [
-                0.4286,
-                0.7521
+                0.4399,
+                0.7826
               ],
               "ic95_exacto": [
-                0.42858867536653517,
-                0.7520809849513488
+                0.4398670950803114,
+                0.7826406094230348
               ],
               "remuestreos": 1000,
               "ponderado": true
@@ -7795,24 +7688,24 @@
         "e5/B": {
           "sin_ponderar": {
             "exactitud_principal": {
-              "n": 63,
+              "n": 67,
               "de": 100,
-              "proporcion": 0.63,
+              "proporcion": 0.67,
               "ic95": [
-                0.5322,
-                0.7182
+                0.5731,
+                0.7544
               ]
             },
             "macro_f1": {
               "n": 100,
-              "macro_f1": 0.3751,
+              "macro_f1": 0.3838,
               "ic95": [
-                0.2418,
-                0.5179
+                0.2505,
+                0.5264
               ],
               "ic95_exacto": [
-                0.24181338128328309,
-                0.5179321260506797
+                0.2505368285525592,
+                0.5264484187133477
               ],
               "remuestreos": 1000,
               "ponderado": false
@@ -7828,7 +7721,7 @@
             ],
             "por_tema": {
               "economia": {
-                "soporte": 13,
+                "soporte": 9,
                 "predichos": 27,
                 "precision": {
                   "n": 4,
@@ -7841,14 +7734,14 @@
                 },
                 "recall": {
                   "n": 4,
-                  "de": 13,
-                  "proporcion": 0.3077,
+                  "de": 9,
+                  "proporcion": 0.4444,
                   "ic95": [
-                    0.1268,
-                    0.5763
+                    0.1888,
+                    0.7334
                   ]
                 },
-                "f1": 0.2
+                "f1": 0.2222
               },
               "logistica": {
                 "soporte": 2,
@@ -7963,27 +7856,27 @@
                 "f1": 0.0
               },
               "sin_tema": {
-                "soporte": 54,
+                "soporte": 58,
                 "predichos": 54,
                 "precision": {
-                  "n": 50,
+                  "n": 54,
                   "de": 54,
-                  "proporcion": 0.9259,
+                  "proporcion": 1.0,
                   "ic95": [
-                    0.8245,
-                    0.9708
+                    0.9336,
+                    1.0
                   ]
                 },
                 "recall": {
-                  "n": 50,
-                  "de": 54,
-                  "proporcion": 0.9259,
+                  "n": 54,
+                  "de": 58,
+                  "proporcion": 0.931,
                   "ic95": [
-                    0.8245,
-                    0.9708
+                    0.8357,
+                    0.9729
                   ]
                 },
-                "f1": 0.9259
+                "f1": 0.9643
               }
             },
             "matriz_confusion": {
@@ -8004,7 +7897,7 @@
                   2,
                   0,
                   0,
-                  4
+                  0
                 ],
                 [
                   1,
@@ -8058,7 +7951,7 @@
                   2,
                   0,
                   1,
-                  50
+                  54
                 ]
               ]
             },
@@ -8084,15 +7977,6 @@
               ]
             },
             "fallos": [
-              {
-                "id": "NOT-05ae3da7e3",
-                "titular": "NOT-05ae3da7e3",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
               {
                 "id": "NOT-0969f86532",
                 "titular": "NOT-0969f86532",
@@ -8256,15 +8140,6 @@
                 "similitud": 0.8159
               },
               {
-                "id": "NOT-a71293e7e8",
-                "titular": "NOT-a71293e7e8",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
-              {
                 "id": "NOT-aacff154c6",
                 "titular": "NOT-aacff154c6",
                 "esperado": "economia",
@@ -8391,15 +8266,6 @@
                 "similitud": 0.8159
               },
               {
-                "id": "NOT-e1ef662816",
-                "titular": "NOT-e1ef662816",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
-              {
                 "id": "NOT-e795e93c9d",
                 "titular": "NOT-e795e93c9d",
                 "esperado": "eventos_naturales",
@@ -8407,35 +8273,26 @@
                 "secundario_esperado": null,
                 "secundario_predicho": null,
                 "similitud": 0.8159
-              },
-              {
-                "id": "NOT-f01abb1ca2",
-                "titular": "NOT-f01abb1ca2",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
               }
             ]
           },
           "ponderado": {
             "exactitud_principal": {
-              "suma_pesos_aciertos": 132.9999,
+              "suma_pesos_aciertos": 136.9999,
               "suma_pesos": 169.9999,
-              "proporcion": 0.7824,
+              "proporcion": 0.8059,
               "n": 100
             },
             "macro_f1": {
               "n": 100,
-              "macro_f1": 0.418,
+              "macro_f1": 0.4235,
               "ic95": [
-                0.2495,
-                0.5421
+                0.2552,
+                0.5484
               ],
               "ic95_exacto": [
-                0.2494980756995444,
-                0.5421173051191565
+                0.255159081221226,
+                0.548376097435643
               ],
               "remuestreos": 1000,
               "ponderado": true
@@ -8445,24 +8302,24 @@
         "minilm/A": {
           "sin_ponderar": {
             "exactitud_principal": {
-              "n": 78,
+              "n": 82,
               "de": 100,
-              "proporcion": 0.78,
+              "proporcion": 0.82,
               "ic95": [
-                0.6893,
-                0.85
+                0.7333,
+                0.883
               ]
             },
             "macro_f1": {
               "n": 100,
-              "macro_f1": 0.5077,
+              "macro_f1": 0.5191,
               "ic95": [
-                0.358,
-                0.6518
+                0.3682,
+                0.6704
               ],
               "ic95_exacto": [
-                0.3579702355043383,
-                0.6517577303860856
+                0.36818813229416947,
+                0.6704084917538529
               ],
               "remuestreos": 1000,
               "ponderado": false
@@ -8478,7 +8335,7 @@
             ],
             "por_tema": {
               "economia": {
-                "soporte": 13,
+                "soporte": 9,
                 "predichos": 3,
                 "precision": {
                   "n": 1,
@@ -8491,14 +8348,14 @@
                 },
                 "recall": {
                   "n": 1,
-                  "de": 13,
-                  "proporcion": 0.0769,
+                  "de": 9,
+                  "proporcion": 0.1111,
                   "ic95": [
-                    0.0137,
-                    0.3331
+                    0.0199,
+                    0.435
                   ]
                 },
-                "f1": 0.125
+                "f1": 0.1667
               },
               "logistica": {
                 "soporte": 2,
@@ -8616,27 +8473,27 @@
                 "f1": 0.0
               },
               "sin_tema": {
-                "soporte": 54,
+                "soporte": 58,
                 "predichos": 57,
                 "precision": {
-                  "n": 50,
+                  "n": 54,
                   "de": 57,
-                  "proporcion": 0.8772,
+                  "proporcion": 0.9474,
                   "ic95": [
-                    0.7675,
-                    0.9392
+                    0.8563,
+                    0.9819
                   ]
                 },
                 "recall": {
-                  "n": 50,
-                  "de": 54,
-                  "proporcion": 0.9259,
+                  "n": 54,
+                  "de": 58,
+                  "proporcion": 0.931,
                   "ic95": [
-                    0.8245,
-                    0.9708
+                    0.8357,
+                    0.9729
                   ]
                 },
-                "f1": 0.9009
+                "f1": 0.9391
               }
             },
             "matriz_confusion": {
@@ -8657,7 +8514,7 @@
                   1,
                   1,
                   1,
-                  5
+                  1
                 ],
                 [
                   0,
@@ -8711,7 +8568,7 @@
                   1,
                   1,
                   0,
-                  50
+                  54
                 ]
               ]
             },
@@ -8737,15 +8594,6 @@
               ]
             },
             "fallos": [
-              {
-                "id": "NOT-05ae3da7e3",
-                "titular": "NOT-05ae3da7e3",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
               {
                 "id": "NOT-0d91fa48b0",
                 "titular": "NOT-0d91fa48b0",
@@ -8846,15 +8694,6 @@
                 "similitud": 0.3223
               },
               {
-                "id": "NOT-a71293e7e8",
-                "titular": "NOT-a71293e7e8",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
-              {
                 "id": "NOT-aacff154c6",
                 "titular": "NOT-aacff154c6",
                 "esperado": "economia",
@@ -8900,24 +8739,6 @@
                 "similitud": 0.3297
               },
               {
-                "id": "NOT-e1ef662816",
-                "titular": "NOT-e1ef662816",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
-              {
-                "id": "NOT-f01abb1ca2",
-                "titular": "NOT-f01abb1ca2",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
-              {
                 "id": "NOT-f1f1f6e600",
                 "titular": "NOT-f1f1f6e600",
                 "esperado": "economia",
@@ -8939,21 +8760,21 @@
           },
           "ponderado": {
             "exactitud_principal": {
-              "suma_pesos_aciertos": 147.9999,
+              "suma_pesos_aciertos": 151.9999,
               "suma_pesos": 169.9999,
-              "proporcion": 0.8706,
+              "proporcion": 0.8941,
               "n": 100
             },
             "macro_f1": {
               "n": 100,
-              "macro_f1": 0.5278,
+              "macro_f1": 0.5362,
               "ic95": [
-                0.3672,
-                0.6625
+                0.3733,
+                0.6794
               ],
               "ic95_exacto": [
-                0.36722294173128167,
-                0.6625320727949018
+                0.3732643901758293,
+                0.6793845068346296
               ],
               "remuestreos": 1000,
               "ponderado": true
@@ -8963,24 +8784,24 @@
         "minilm/B": {
           "sin_ponderar": {
             "exactitud_principal": {
-              "n": 76,
+              "n": 80,
               "de": 100,
-              "proporcion": 0.76,
+              "proporcion": 0.8,
               "ic95": [
-                0.6677,
-                0.8331
+                0.7112,
+                0.8666
               ]
             },
             "macro_f1": {
               "n": 100,
-              "macro_f1": 0.4648,
+              "macro_f1": 0.4822,
               "ic95": [
-                0.2983,
-                0.5825
+                0.3106,
+                0.602
               ],
               "ic95_exacto": [
-                0.2983179129705094,
-                0.5825013369531576
+                0.31060630489706587,
+                0.6019566194461152
               ],
               "remuestreos": 1000,
               "ponderado": false
@@ -8996,7 +8817,7 @@
             ],
             "por_tema": {
               "economia": {
-                "soporte": 13,
+                "soporte": 9,
                 "predichos": 3,
                 "precision": {
                   "n": 2,
@@ -9009,14 +8830,14 @@
                 },
                 "recall": {
                   "n": 2,
-                  "de": 13,
-                  "proporcion": 0.1538,
+                  "de": 9,
+                  "proporcion": 0.2222,
                   "ic95": [
-                    0.0433,
-                    0.4224
+                    0.0632,
+                    0.5474
                   ]
                 },
-                "f1": 0.25
+                "f1": 0.3333
               },
               "logistica": {
                 "soporte": 2,
@@ -9134,27 +8955,27 @@
                 "f1": 0.2857
               },
               "sin_tema": {
-                "soporte": 54,
+                "soporte": 58,
                 "predichos": 56,
                 "precision": {
-                  "n": 50,
+                  "n": 54,
                   "de": 56,
-                  "proporcion": 0.8929,
+                  "proporcion": 0.9643,
                   "ic95": [
-                    0.7853,
-                    0.95
+                    0.8788,
+                    0.9902
                   ]
                 },
                 "recall": {
-                  "n": 50,
-                  "de": 54,
-                  "proporcion": 0.9259,
+                  "n": 54,
+                  "de": 58,
+                  "proporcion": 0.931,
                   "ic95": [
-                    0.8245,
-                    0.9708
+                    0.8357,
+                    0.9729
                   ]
                 },
-                "f1": 0.9091
+                "f1": 0.9474
               }
             },
             "matriz_confusion": {
@@ -9175,7 +8996,7 @@
                   1,
                   0,
                   2,
-                  5
+                  1
                 ],
                 [
                   1,
@@ -9229,7 +9050,7 @@
                   1,
                   1,
                   2,
-                  50
+                  54
                 ]
               ]
             },
@@ -9255,15 +9076,6 @@
               ]
             },
             "fallos": [
-              {
-                "id": "NOT-05ae3da7e3",
-                "titular": "NOT-05ae3da7e3",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
               {
                 "id": "NOT-0d91fa48b0",
                 "titular": "NOT-0d91fa48b0",
@@ -9373,15 +9185,6 @@
                 "similitud": 0.3294
               },
               {
-                "id": "NOT-a71293e7e8",
-                "titular": "NOT-a71293e7e8",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
-              {
                 "id": "NOT-a76fe48ec6",
                 "titular": "NOT-a76fe48ec6",
                 "esperado": "servicios_publicos",
@@ -9445,24 +9248,6 @@
                 "similitud": 0.327
               },
               {
-                "id": "NOT-e1ef662816",
-                "titular": "NOT-e1ef662816",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
-              {
-                "id": "NOT-f01abb1ca2",
-                "titular": "NOT-f01abb1ca2",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
-              {
                 "id": "NOT-f1f1f6e600",
                 "titular": "NOT-f1f1f6e600",
                 "esperado": "economia",
@@ -9475,21 +9260,21 @@
           },
           "ponderado": {
             "exactitud_principal": {
-              "suma_pesos_aciertos": 145.9999,
+              "suma_pesos_aciertos": 149.9999,
               "suma_pesos": 169.9999,
-              "proporcion": 0.8588,
+              "proporcion": 0.8824,
               "n": 100
             },
             "macro_f1": {
               "n": 100,
-              "macro_f1": 0.509,
+              "macro_f1": 0.5232,
               "ic95": [
-                0.3084,
-                0.6147
+                0.3176,
+                0.6306
               ],
               "ic95_exacto": [
-                0.308367353334203,
-                0.6146827955943579
+                0.3175689119978422,
+                0.630632860045879
               ],
               "remuestreos": 1000,
               "ponderado": true
@@ -9500,7 +9285,32 @@
     },
     "logistica": {
       "metodo": "logistica",
-      "entrenamiento": "solo textos de referencia de config/temas.yaml (descripción, ejemplos, prototipos); las etiquetas humanas no entran",
+      "entrenamiento": "textos de referencia de config/temas.yaml (descripción, ejemplos, prototipos) + pool de etiquetas humanas fuera de la evaluación congelada (D-123); la evaluación nunca entra al entrenamiento",
+      "pool": {
+        "n_pool": 0,
+        "por_clase_pool": {},
+        "huella_pool": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "descartadas": {
+          "en_la_evaluacion": 100
+        },
+        "n_referencias": 99,
+        "referencias_por_clase": {
+          "economia": 15,
+          "logistica": 14,
+          "turismo": 16,
+          "servicios_publicos": 22,
+          "eventos_naturales": 17,
+          "regulacion": 15
+        },
+        "total_por_clase": {
+          "economia": 15,
+          "logistica": 14,
+          "turismo": 16,
+          "servicios_publicos": 22,
+          "eventos_naturales": 17,
+          "regulacion": 15
+        }
+      },
       "configuraciones": {
         "e5/logistica": {
           "exactitud_principal": {
@@ -10624,24 +10434,24 @@
         "sin_ponderar": {
           "e5/logistica": {
             "exactitud_principal": {
-              "n": 84,
+              "n": 88,
               "de": 100,
-              "proporcion": 0.84,
+              "proporcion": 0.88,
               "ic95": [
-                0.7558,
-                0.899
+                0.8019,
+                0.93
               ]
             },
             "macro_f1": {
               "n": 100,
-              "macro_f1": 0.6474,
+              "macro_f1": 0.6666,
               "ic95": [
-                0.4236,
-                0.8091
+                0.4324,
+                0.8447
               ],
               "ic95_exacto": [
-                0.42364656656369964,
-                0.8090726716003878
+                0.43241033359607334,
+                0.8447294280743595
               ],
               "remuestreos": 1000,
               "ponderado": false
@@ -10657,7 +10467,7 @@
             ],
             "por_tema": {
               "economia": {
-                "soporte": 13,
+                "soporte": 9,
                 "predichos": 2,
                 "precision": {
                   "n": 2,
@@ -10670,14 +10480,14 @@
                 },
                 "recall": {
                   "n": 2,
-                  "de": 13,
-                  "proporcion": 0.1538,
+                  "de": 9,
+                  "proporcion": 0.2222,
                   "ic95": [
-                    0.0433,
-                    0.4224
+                    0.0632,
+                    0.5474
                   ]
                 },
-                "f1": 0.2667
+                "f1": 0.3636
               },
               "logistica": {
                 "soporte": 2,
@@ -10795,27 +10605,27 @@
                 "f1": 0.5
               },
               "sin_tema": {
-                "soporte": 54,
+                "soporte": 58,
                 "predichos": 56,
                 "precision": {
-                  "n": 51,
+                  "n": 55,
                   "de": 56,
-                  "proporcion": 0.9107,
+                  "proporcion": 0.9821,
                   "ic95": [
-                    0.8074,
-                    0.9613
+                    0.9055,
+                    0.9968
                   ]
                 },
                 "recall": {
-                  "n": 51,
-                  "de": 54,
-                  "proporcion": 0.9444,
+                  "n": 55,
+                  "de": 58,
+                  "proporcion": 0.9483,
                   "ic95": [
-                    0.8489,
-                    0.9809
+                    0.8586,
+                    0.9823
                   ]
                 },
-                "f1": 0.9273
+                "f1": 0.9649
               }
             },
             "matriz_confusion": {
@@ -10836,7 +10646,7 @@
                   4,
                   0,
                   1,
-                  5
+                  1
                 ],
                 [
                   0,
@@ -10890,7 +10700,7 @@
                   2,
                   0,
                   0,
-                  51
+                  55
                 ]
               ]
             },
@@ -10916,15 +10726,6 @@
               ]
             },
             "fallos": [
-              {
-                "id": "NOT-05ae3da7e3",
-                "titular": "NOT-05ae3da7e3",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
               {
                 "id": "NOT-1819a7014e",
                 "titular": "NOT-1819a7014e",
@@ -10980,15 +10781,6 @@
                 "similitud": 0.5685
               },
               {
-                "id": "NOT-a71293e7e8",
-                "titular": "NOT-a71293e7e8",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
-              {
                 "id": "NOT-aacff154c6",
                 "titular": "NOT-aacff154c6",
                 "esperado": "economia",
@@ -11034,24 +10826,6 @@
                 "similitud": 0.5709
               },
               {
-                "id": "NOT-e1ef662816",
-                "titular": "NOT-e1ef662816",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
-              {
-                "id": "NOT-f01abb1ca2",
-                "titular": "NOT-f01abb1ca2",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
-              {
                 "id": "NOT-fbc3efaa5d",
                 "titular": "NOT-fbc3efaa5d",
                 "esperado": "economia",
@@ -11064,24 +10838,24 @@
           },
           "minilm/logistica": {
             "exactitud_principal": {
-              "n": 79,
+              "n": 83,
               "de": 100,
-              "proporcion": 0.79,
+              "proporcion": 0.83,
               "ic95": [
-                0.7002,
-                0.8583
+                0.7445,
+                0.8911
               ]
             },
             "macro_f1": {
               "n": 100,
-              "macro_f1": 0.5611,
+              "macro_f1": 0.5725,
               "ic95": [
-                0.356,
-                0.7041
+                0.3618,
+                0.7226
               ],
               "ic95_exacto": [
-                0.3559874047984801,
-                0.7041265454608814
+                0.36178165140829477,
+                0.7226479452281305
               ],
               "remuestreos": 1000,
               "ponderado": false
@@ -11097,7 +10871,7 @@
             ],
             "por_tema": {
               "economia": {
-                "soporte": 13,
+                "soporte": 9,
                 "predichos": 3,
                 "precision": {
                   "n": 1,
@@ -11110,14 +10884,14 @@
                 },
                 "recall": {
                   "n": 1,
-                  "de": 13,
-                  "proporcion": 0.0769,
+                  "de": 9,
+                  "proporcion": 0.1111,
                   "ic95": [
-                    0.0137,
-                    0.3331
+                    0.0199,
+                    0.435
                   ]
                 },
-                "f1": 0.125
+                "f1": 0.1667
               },
               "logistica": {
                 "soporte": 2,
@@ -11235,27 +11009,27 @@
                 "f1": 0.4
               },
               "sin_tema": {
-                "soporte": 54,
+                "soporte": 58,
                 "predichos": 57,
                 "precision": {
-                  "n": 50,
+                  "n": 54,
                   "de": 57,
-                  "proporcion": 0.8772,
+                  "proporcion": 0.9474,
                   "ic95": [
-                    0.7675,
-                    0.9392
+                    0.8563,
+                    0.9819
                   ]
                 },
                 "recall": {
-                  "n": 50,
-                  "de": 54,
-                  "proporcion": 0.9259,
+                  "n": 54,
+                  "de": 58,
+                  "proporcion": 0.931,
                   "ic95": [
-                    0.8245,
-                    0.9708
+                    0.8357,
+                    0.9729
                   ]
                 },
-                "f1": 0.9009
+                "f1": 0.9391
               }
             },
             "matriz_confusion": {
@@ -11276,7 +11050,7 @@
                   2,
                   0,
                   2,
-                  7
+                  3
                 ],
                 [
                   0,
@@ -11330,7 +11104,7 @@
                   3,
                   0,
                   0,
-                  50
+                  54
                 ]
               ]
             },
@@ -11356,15 +11130,6 @@
               ]
             },
             "fallos": [
-              {
-                "id": "NOT-05ae3da7e3",
-                "titular": "NOT-05ae3da7e3",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
               {
                 "id": "NOT-0d91fa48b0",
                 "titular": "NOT-0d91fa48b0",
@@ -11456,15 +11221,6 @@
                 "similitud": 0.5461
               },
               {
-                "id": "NOT-a71293e7e8",
-                "titular": "NOT-a71293e7e8",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
-              {
                 "id": "NOT-aacff154c6",
                 "titular": "NOT-aacff154c6",
                 "esperado": "economia",
@@ -11508,24 +11264,6 @@
                 "secundario_esperado": null,
                 "secundario_predicho": null,
                 "similitud": 0.798
-              },
-              {
-                "id": "NOT-e1ef662816",
-                "titular": "NOT-e1ef662816",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
-              },
-              {
-                "id": "NOT-f01abb1ca2",
-                "titular": "NOT-f01abb1ca2",
-                "esperado": "economia",
-                "predicho": "sin_tema",
-                "secundario_esperado": null,
-                "secundario_predicho": null,
-                "similitud": null
               },
               {
                 "id": "NOT-f1f1f6e600",
