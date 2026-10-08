@@ -161,7 +161,7 @@ def foco_de(miembros: Sequence[Mapping[str, Any]], reglas: ReglasV13) -> tuple[f
 
 
 def pertenencia_de(
-    miembros: Sequence[Mapping[str, Any]], temas: Collection[str], reglas: ReglasV13
+    miembros: Sequence[Mapping[str, Any]], temas: Collection[str], reglas: ReglasV13, tema_grupo: str | None = None
 ) -> tuple[float, dict[str, Any]]:
     """Pertenencia temática del grupo (D-119) y su explicación. Lee solo las etiquetas, jamás la confianza del clasificador.
 
@@ -169,6 +169,8 @@ def pertenencia_de(
     """
     valores = reglas.relevancia.pertenencia_tematica
     principales = sorted({str(m["tema_clasificado"]) for m in miembros if m.get("tema_clasificado") in temas})
+    if tema_grupo in temas:   # D-122: el tema del grupo (corregido por un subtema nombrado) cuenta como principal
+        principales = sorted({*principales, str(tema_grupo)})
     secundarios = sorted({str(m["tema_secundario"]) for m in miembros if m.get("tema_secundario") in temas} - set(principales))
     if principales:
         valor, motivo, coinciden = valores.tema_principal, "tema_principal", principales
@@ -553,7 +555,7 @@ def calcular_puntajes(
     resultado: list[Puntaje] = []
     for i, e in enumerate(entradas):
         foco, detalle_foco = foco_de(e.miembros, reglas)
-        pertenencia, detalle_pertenencia = pertenencia_de(e.miembros, temas, reglas)
+        pertenencia, detalle_pertenencia = pertenencia_de(e.miembros, temas, reglas, e.tema)
         r = Componente(rel.peso_foco * foco * pertenencia, {**detalle_foco, **detalle_pertenencia, "peso_foco": rel.peso_foco})
         c_i, vacios_i = impacto(e, reglas, cfg, modalidad)
         c_u, vacios_u = urgencia(e.miembros, ahora, reglas)

@@ -149,6 +149,33 @@ def subtemas_nombrados(
     return nombrados
 
 
+def tema_por_subtema_nombrado(
+    titulares: Sequence[str],
+    tema_actual: str | None,
+    subtemas_por_tema: Mapping[str, Sequence[str]],
+    cfg: SubtemaVinculo,
+) -> str | None:
+    """Tema que corrige al ``tema_actual`` del grupo (D-122), o ``None`` si no hay corrección.
+
+    Busca en los titulares los subtemas de TODOS los temas con la misma regla léxica de ``subtemas_nombrados`` (términos,
+    patrones y exclusiones). Corrige solo si todos los subtemas nombrados pertenecen a un único tema distinto del actual.
+    Si nombran subtemas de dos o más temas, o ninguno, no cambia nada. Sin tema (nulo o ``sin_tema``) corrige solo si
+    ``correccion_tema.corregir_sin_tema``. No usa embeddings (X41: el subtema por margen sigue desactivado).
+    """
+    corr = cfg.correccion_tema
+    if not corr.activa:
+        return None
+    if tema_actual not in subtemas_por_tema and not corr.corregir_sin_tema:
+        return None
+    universo = sorted({s for subs in subtemas_por_tema.values() for s in subs})
+    nombrados = subtemas_nombrados(titulares, universo, cfg.terminos_por_subtema, cfg.patrones_por_subtema, cfg.exclusiones_por_subtema)
+    temas = {t for t, subs in subtemas_por_tema.items() if nombrados & set(subs)}
+    if len(temas) != 1:
+        return None
+    (tema,) = temas
+    return tema if tema != tema_actual else None
+
+
 def decidir_subtema(
     candidatos: Sequence[tuple[str, float, float | None]],
     titulares: Sequence[str],

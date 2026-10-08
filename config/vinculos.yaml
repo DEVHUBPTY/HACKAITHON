@@ -27,6 +27,13 @@ subtema:                            # D-92 (enmienda a E1-09) y E1-10c (X41): el
   # y seguridad y las reglas de frontera) y de las formas léxicas directas de esas palabras; seguridad ciudadana agrega
   # los nombres de los delitos y actos de un operativo (aprehensión, detención, reclusión) que la guía incluye en él.
   # Todo subtema del catálogo tiene lista: sin término no hay subtema (alcance neutro de I).
+  # D-122: el subtema nombrado corrige el tema. Si los titulares del grupo nombran (con estos mismos términos, patrones y
+  # exclusiones) subtemas que pertenecen todos a UN solo tema distinto al clasificado, ese tema pasa a ser el del grupo y se
+  # conserva el del clasificador en `grupos.tema_origen_clasificador`. Dos o más temas nombrados, o ninguno: no cambia nada.
+  correccion_tema:
+    activa: true
+    corregir_sin_tema: true         # sin tema del clasificador, un único tema nombrado se asigna (evidencia léxica explícita)
+    criterio: subtema_nombrado      # valor de `grupos.criterio_tema` cuando se corrige
   terminos_por_subtema:
     crecimiento_pib: [pib, producto interno bruto, crecimiento economico]
     # «precio(s)» suelto no es un término (confirmaría un vínculo directo con el IPC para «precio del cobre»): solo frases
