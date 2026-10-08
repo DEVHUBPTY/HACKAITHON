@@ -112,10 +112,30 @@ def test_tema_y_ruido_son_coherentes(filas: list[dict[str, str]]) -> None:
             assert f["propuesta_tema"] in TEMAS, i
 
 
-def test_columnas_de_decision_humana_vacias(filas: list[dict[str, str]]) -> None:
+def test_columnas_de_decision_humana_vacias_o_confirmadas_por_una_persona(filas: list[dict[str, str]]) -> None:
+    """Una fila sin decidir lleva TODAS las columnas de decisión vacías; una decidida es válida, firmada y fechada (D-85).
+
+    «Decidida» = `tema_humano` lleno. Nada de la hoja cuenta como etiqueta humana hasta que una persona la confirma
+    y se consolida (D-101); aquí solo se vigila que lo que ya confirmó sea consistente con la convención de D-87.
+    """
     for f in filas:
-        for c in COLUMNAS_DE_DECISION:
-            assert f[c] == "", f"{f['id_noticia']}: {c} debe ir vacía hasta que una persona confirme"
+        i = f["id_noticia"]
+        if not f["tema_humano"]:
+            for c in COLUMNAS_DE_DECISION:
+                assert f[c] == "", f"{i}: {c} debe ir vacía hasta que una persona decida"
+            continue
+        assert f["tema_humano"] in TEMAS | {"sin_tema"}, i
+        assert f["ruido_humano"] in RUIDOS | {""}, i
+        assert f["tema_secundario"] in TEMAS | {""}, i
+        assert f["tema_secundario"] != f["tema_humano"], i
+        assert f["etiquetado_por"].strip(), f"{i}: una fila decidida debe llevar quién la etiquetó"
+        assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", f["fecha_etiquetado"]), f"{i}: fecha ISO obligatoria"
+        if f["ruido_humano"]:
+            assert f["tema_humano"] == "sin_tema" and not f["tema_secundario"] and not f["alcance_regional"], (
+                f"{i}: con ruido va `sin_tema` sin secundario ni alcance regional (D-87)"
+            )
+        else:
+            assert f["tema_humano"] in TEMAS, i
 
 
 def test_ordenada_por_bloque_y_evento(filas: list[dict[str, str]]) -> None:

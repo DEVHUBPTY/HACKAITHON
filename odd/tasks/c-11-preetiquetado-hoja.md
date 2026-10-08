@@ -34,5 +34,15 @@ ni entra en ninguna métrica hasta que lo confirme una persona (D-101).
 - Límite verificado: `--validar` rechaza ids fuera de la muestra recalculada; solo 23 de las 61 caen en ella (el estado previo ya da 64 problemas).
 - Doc: `docs/preetiquetado.md`. No se tocaron `eval/etiquetas.csv`, `eval/etiquetas/`, `config/`, `src/` ni `eval/*.py`.
 
+- Confirmación por la persona (2026-10-07, firmada «David»; el asistente solo transcribió sus decisiones): las 19 filas dudosas, una a una
+  (en 3 filas cambió mi propuesta de tema o ruido; 3 llevan nota, entre ellas la fila judicial de Suntracs, confirmada contra la sugerencia de la
+  guía D-111, y la que consideró a la vez `no_es_noticia` y fuera de tema, guardada como `no_es_noticia`); las otras 42 se aprobaron **en bloque**
+  («Aprobar todas»), con la nota «Aprobado en bloque por la persona». Resultado: 61 de 61 decididas; `tema_humano`: `sin_tema` 46, `servicios_publicos` 8,
+  `economia` 7; ruido: `no_es_panama` 30, `fuera_de_temas` 12, `no_es_noticia` 4. Eventos con tema: `servicios_publicos` 8, `economia` 3.
+  El test del formato ahora acepta filas decididas y las valida (firma, fecha ISO, convención de ruido de D-87). 17 passed; `git diff --numstat`
+  sobre la hoja: 61 líneas cambiadas, ninguna de más.
+- **Nada de esto es todavía etiqueta humana consolidada**: no entra en `eval/etiquetas.csv` ni en ninguna métrica; la herramienta
+  `eval/etiquetar.py --consolidar` rechaza 38 de las 61 por el problema de la muestra.
+
 ## Próximo paso
-Dueño: decidir el bloque B vacío y el hueco de `--validar` (modo nuevo o muestra congelada); T3 la hace una persona.
+Dueño: decidir cómo consolidar (modo nuevo en `eval/etiquetar.py` o muestra congelada) y el bloque B vacío. Es una tarea de código aparte.
