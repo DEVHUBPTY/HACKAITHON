@@ -30,6 +30,9 @@ tabla_acciones:
     parcial: {accion: "Archivar", motivo: "Atención baja con evidencia parcial: se conserva como registro."}
     insuficiente: {accion: "Archivar", motivo: "Atención baja con evidencia insuficiente: se conserva como registro."}
 
+# D-132 · Fuentes de datos oficiales que esta modalidad puede usar (se filtra al leer vínculos): la banca añade la fuente D (SBP).
+fuentes_oficiales: [indicador, usgs, sbp]
+
 # Fuentes que el analista suele consultar además de las del tema y de la regla de vínculo (sugerencia, nunca evidencia; D-37).
 fuentes_sugeridas_extra:
   - "Superintendencia de Bancos de Panamá"

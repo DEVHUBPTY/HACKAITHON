@@ -7,6 +7,7 @@ usa el corpus de prueba de E1-11.
 from __future__ import annotations
 
 import ast
+import shutil
 from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
@@ -508,7 +509,26 @@ def test_la_revision_de_un_grupo_sin_caso_muestra_los_cinco_estados_y_solo_ofrec
     assert "aprobado como borrador" in "\n".join(textos(at))
 
 
-def test_la_modalidad_banca_sin_puntajes_en_la_base_no_inventa_una_bandeja(app) -> None:
+def test_la_modalidad_banca_sobre_una_base_editorial_calcula_sus_puntajes_en_una_copia_de_sesion(app, base) -> None:
+    """D-132: antes la bandeja de banca salía vacía («sin puntajes»); ahora se re-puntúa una copia de sesión y el archivo no se toca."""
+    antes = base.read_bytes()
+    at = app.run()
+    at.selectbox(key="modalidad").select("banca").run()
+    at = ir(at, "bandeja")
+    texto = "\n".join(textos(at))
+    assert not at.exception and "Modalidad: Banca" in texto and "calculados para esta sesión sobre una copia de la base" in texto
+    assert CFG.textos.sin_puntajes.format(modalidad="banca") not in texto and at.dataframe
+    assert base.read_bytes() == antes
+
+
+def test_la_modalidad_banca_sin_puntajes_en_la_base_no_inventa_una_bandeja(app, base, monkeypatch, tmp_path) -> None:
+    vacia = tmp_path / "sin_puntajes.duckdb"
+    shutil.copy2(base, vacia)
+    con = db.conectar(vacia)
+    for tabla in ("puntajes", "evidencia", "contradicciones"):
+        con.execute(f"DELETE FROM {tabla}")
+    con.close()
+    monkeypatch.setattr(ui, "elegir_base", lambda demo, cfg, base_normal=None: (vacia, None))
     at = app.run()
     at.selectbox(key="modalidad").select("banca").run()
     at = ir(at, "bandeja")

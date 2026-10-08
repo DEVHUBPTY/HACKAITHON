@@ -11,6 +11,7 @@ import argparse
 import re
 import sys
 import unicodedata
+from collections.abc import Iterable, Mapping
 from pathlib import Path
 from typing import Any, Literal, TypeVar, get_args
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -1138,12 +1139,22 @@ class ConfigModalidad(ModeloConfig):
     grupos_restricciones: list[str]  # grupos de restricciones.yaml que aplican a la modalidad
     tabla_acciones: TablaAcciones
     fuentes_sugeridas_extra: list[str]
+    # D-132: fuentes de datos oficiales cuyos vínculos puede usar esta modalidad (la fuente D, SBP, solo la banca). Se filtra al leer.
+    fuentes_oficiales: list[Literal["indicador", "usgs", "sbp"]] = Field(min_length=1)
     parcial: bool = False  # true: el archivo solo trae lo que necesita la ficha (D-90); la etapa que lo completa lo apaga
     # Banca (D-11): tema -> sector; el alcance de I se mide por sector en lugar de tema (diseño, reglas v1.3).
     sectores_por_tema: dict[str, str] = Field(default_factory=dict)
     alcance_por_sector: dict[str, float] = Field(default_factory=dict)
     horizonte: HorizonteTemporal | None = None
     bandeja: BandejaPorSector | None = None
+
+    def permite_fuente(self, fuente: object) -> bool:
+        """¿La modalidad puede usar los vínculos de esta fuente oficial (``indicador``, ``usgs``, ``sbp``)? (D-132)"""
+        return fuente in self.fuentes_oficiales
+
+    def filtrar_vinculos(self, filas: Iterable[Mapping[str, Any]]) -> list[Mapping[str, Any]]:
+        """Las filas de ``vinculos`` cuya fuente permite la modalidad; el resto no existe para ella (D-132)."""
+        return [f for f in filas if self.permite_fuente(f.get("fuente"))]
 
 
 def cargar_modalidad(modalidad: str, carpeta: Path | None = None) -> ConfigModalidad:
@@ -2958,6 +2969,7 @@ class CarpetasCorrida(ModeloConfig):
     subcarpeta_validos: str = Field(min_length=1)
     subcarpeta_salida: str = Field(min_length=1)
     subcarpeta_propio: str = Field(min_length=1)
+    subcarpeta_modalidades: str = Field(min_length=1)
     base_revision: str = Field(min_length=1)
 
 
@@ -3010,6 +3022,7 @@ class TextosCorrida(ModeloConfig):
     explorar: str = Field(min_length=1)
     volver: str = Field(min_length=1)
     aviso_explorando: str = Field(min_length=1)
+    aviso_copia_modalidad: str = Field(min_length=1)
     iguales: str = Field(min_length=1)
     distintas: str = Field(min_length=1)
     titulo_propio: str = Field(min_length=1)

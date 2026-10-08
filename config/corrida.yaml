@@ -9,6 +9,7 @@ corridas:
   subcarpeta_validos: validos         # filas válidas de la carga (como data/processed/validos/)
   subcarpeta_salida: salida           # reporte_calidad.json, errores.csv y los reportes de cada etapa
   subcarpeta_propio: archivo_propio   # prueba T01 con un archivo subido
+  subcarpeta_modalidades: modalidades # D-132: copia de la base con los puntajes de otra modalidad (una subcarpeta por modalidad y base)
   base_revision: revision.duckdb      # revisiones al explorar una corrida: nunca data/revision.duckdb
 
 insumos:                              # solo lectura: lo que se carga
@@ -55,6 +56,7 @@ textos:
   explorar: "Explorar esta corrida en las otras pantallas (solo en esta sesión)"
   volver: "Volver a la base de la app"
   aviso_explorando: "Estás viendo la base de una corrida (no la de la app). Las revisiones se guardan en la carpeta de la corrida. Nada de esto toca los archivos vivos."
+  aviso_copia_modalidad: "Puntajes de {modalidad} calculados para esta sesión sobre una copia de la base: el archivo vivo no se toca y se descarta al cerrar."
   iguales: "Esta carga reproduce la base de la app: todas las cuentas y todas las huellas coinciden."
   distintas: "Esta carga NO coincide con la base de la app. Diferencias:"
   titulo_propio: "Probar con un archivo propio (T01)"

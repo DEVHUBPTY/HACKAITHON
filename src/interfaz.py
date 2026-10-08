@@ -751,9 +751,15 @@ def _periodo_de(v: Mapping[str, Any]) -> str:
     return "sin dato"
 
 
-def vinculos_oficiales(con: Any, nombres_de_tema: Mapping[str, str], cfg: ConfigInterfaz | None = None) -> tuple[list[VinculoVista], list[GrupoSinVinculo]]:
-    """Todos los vínculos con dato oficial y, aparte, los grupos sin vínculo con su motivo (``sin_relacion_sustentada`` o ``tema_sin_indicador``)."""
+def vinculos_oficiales(
+    con: Any, nombres_de_tema: Mapping[str, str], cfg: ConfigInterfaz | None = None, modalidad: str | None = None
+) -> tuple[list[VinculoVista], list[GrupoSinVinculo]]:
+    """Todos los vínculos con dato oficial y, aparte, los grupos sin vínculo con su motivo (``sin_relacion_sustentada`` o ``tema_sin_indicador``).
+
+    D-132: con ``modalidad``, solo los vínculos de las fuentes oficiales que esa modalidad declara (la SBP es de la banca).
+    """
     cfg = cfg or cargar_interfaz()
+    permitida = cargar_modalidad(modalidad) if modalidad else None
     c = cfg.contextualizar
     filas = con.execute(
         "SELECT v.*, g.titular_central, g.tema_clasificado FROM vinculos v JOIN grupos g USING (id_grupo) ORDER BY g.titular_central, v.id_grupo, v.fuente, v.tipo, v.rol, v.id_evidencia"
@@ -761,8 +767,12 @@ def vinculos_oficiales(con: Any, nombres_de_tema: Mapping[str, str], cfg: Config
     columnas = [d[0] for d in filas.description]
     con_vinculo: list[VinculoVista] = []
     sin_vinculo: list[GrupoSinVinculo] = []
+    omitidos: dict[str, dict[str, Any]] = {}
     for fila in filas.fetchall():
         v = dict(zip(columnas, fila, strict=True))
+        if permitida is not None and v["id_evidencia"] and not permitida.permite_fuente(v["fuente"]):
+            omitidos.setdefault(v["id_grupo"], v)
+            continue
         if v["motivo_sin_vinculo"] or not v["id_evidencia"]:
             sin_vinculo.append(GrupoSinVinculo(
                 v["id_grupo"], v["titular_central"], nombres_de_tema.get(v["tema_clasificado"], v["tema_clasificado"] or ""),
@@ -777,6 +787,12 @@ def vinculos_oficiales(con: Any, nombres_de_tema: Mapping[str, str], cfg: Config
             (v["place"] if usgs else f"{v['pais_iso3']} · {v['indicador_id']}") or "", valor, _periodo_de(v),
             " ".join(x for x in (v["limitacion"], cfg.citas.aviso_anual if v["fuente"] == "indicador" else "") if x), v["regla"] or "",
         ))
+    conocidos = {x.id_grupo for x in con_vinculo} | {x.id_grupo for x in sin_vinculo}
+    for id_grupo, v in omitidos.items():   # un grupo cuyo único vínculo es de una fuente que la modalidad no usa queda sin vínculo para ella
+        if id_grupo not in conocidos:
+            sin_vinculo.append(GrupoSinVinculo(
+                id_grupo, v["titular_central"], nombres_de_tema.get(v["tema_clasificado"], v["tema_clasificado"] or ""), "sin_relacion_sustentada", v["regla"] or "",
+            ))
     return con_vinculo, sin_vinculo
 
 
@@ -1251,6 +1267,27 @@ def propuesta_de_pesos(
 def propuesta_a_json(propuesta: Mapping[str, Any]) -> str:
     """JSON legible (UTF-8, sin escapar tildes) de ``propuesta_de_pesos``."""
     return json.dumps(propuesta, ensure_ascii=False, indent=2) + "\n"
+
+
+SELECTORES_DE_DESPLAZAMIENTO = ('[data-testid="stMain"]', 'section.main', '.main')   # contenedores con scroll de Streamlit, según la versión
+
+
+def script_ir_arriba(pantalla: str) -> str:
+    """D-132: JavaScript local (sin recursos externos) que sube al inicio de la página al cambiar de etapa.
+
+    Streamlit conserva el desplazamiento al cambiar de pantalla y el encabezado quedaba fuera de vista. Se emite solo cuando la
+    pantalla cambió; ``pantalla`` va en un comentario para que cada cambio sea un elemento distinto y el navegador lo ejecute.
+    """
+    contenedores = ", ".join(repr(x) for x in SELECTORES_DE_DESPLAZAMIENTO)
+    return (
+        f"<script>/* ir arriba: {pantalla} */(function(){{const subir=()=>{{[{contenedores}].forEach(s=>{{const e=document.querySelector(s);"
+        "if(e){e.scrollTo({top:0});}});window.scrollTo(0,0);};subir();requestAnimationFrame(subir);})();</script>"
+    )
+
+
+def etapa_cambio(previa: str | None, actual: str) -> bool:
+    """¿Hay que subir al inicio? Sí si ya había una pantalla y es otra; en la primera carga (o con un enlace directo) no."""
+    return previa is not None and previa != actual
 
 
 @dataclass

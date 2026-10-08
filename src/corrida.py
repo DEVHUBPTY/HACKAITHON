@@ -597,6 +597,56 @@ def comparar_bases(base_corrida: Path, base_viva: Path, cfg: ConfigCorrida | Non
     return Comparacion(filas)
 
 
+# ============================================================================================ D-132 · puntajes de otra modalidad
+
+
+def modalidad_puntuada(base: Path) -> str | None:
+    """Modalidad de los puntajes guardados en la base (``evidencia.modalidad``); ``None`` si no hay corrida de ``src.puntaje``."""
+    from src import db
+
+    con = db.conectar(base, solo_lectura=True)
+    try:
+        try:
+            modalidades = sorted(r[0] for r in con.execute("SELECT DISTINCT modalidad FROM evidencia").fetchall() if r[0])
+        except Exception:  # noqa: BLE001  tabla ausente: la base no se puntuó
+            return None
+    finally:
+        con.close()
+    return modalidades[0] if len(modalidades) == 1 else None
+
+
+def base_de_modalidad(base: Path, modalidad: str, cfg: ConfigCorrida | None = None, raiz: Path = RAIZ) -> Path:
+    """Base cuyos puntajes son de ``modalidad``: la misma ``base`` si ya lo son; si no, una copia de sesión re-puntuada (D-132).
+
+    Una base guarda los puntajes de una sola modalidad a la vez (``src.puntaje``). Para ver la otra sin tocar el archivo vivo, se
+    copia a ``<tmp>/<corridas>/<modalidades>/<modalidad>-<huella>/`` y en la copia se corre ``prioridad.ejecutar`` sin LLM (los pares
+    candidatos a contradicción quedan sin nota, como en la carga en vivo). La carpeta depende de la modalidad y de la huella (tamaño y
+    fecha de modificación) de ``base``: se reutiliza mientras la base no cambie y las anteriores de esa modalidad se borran.
+    Nunca escribe en ``base``, en ``data/revision.duckdb`` ni en ``data/``.
+    """
+    from src import prioridad
+
+    cfg = cfg or cargar_corrida()
+    base = Path(base)
+    if modalidad_puntuada(base) in (None, modalidad):
+        return base
+    estado = base.stat()
+    destino = raiz_de_corridas(cfg) / cfg.corridas.subcarpeta_modalidades
+    carpeta = destino / f"{modalidad}-{estado.st_size}-{estado.st_mtime_ns}"
+    copia = carpeta / base.name
+    if copia.exists() and modalidad_puntuada(copia) == modalidad:
+        return copia
+    for vieja in destino.glob(f"{modalidad}-*") if destino.exists() else ():
+        shutil.rmtree(vieja, ignore_errors=True)
+    carpeta.mkdir(parents=True, exist_ok=True)
+    parcial = carpeta / f".{base.name}.parcial"
+    shutil.copy2(base, parcial)
+    ahora = prioridad.fecha_de_corte(Path(raiz) / cfg.insumos.manifest)
+    prioridad.ejecutar(parcial, carpeta / prioridad.REPORTE, ahora, None, modalidad)
+    parcial.replace(copia)   # solo una copia completa y puntuada tiene el nombre final
+    return copia
+
+
 # ============================================================================================ T01 · archivo propio
 
 

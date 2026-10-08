@@ -284,6 +284,15 @@ def explorar_corrida(ruta: str) -> None:
     st.session_state["base_explorada"] = ruta
 
 
+@st.cache_resource(show_spinner=False)
+def base_de_sesion(ruta: str, modalidad: str, huella: tuple[int, int]) -> str:
+    """D-132: la base con los puntajes de ``modalidad`` (la misma si ya lo son; si no, una copia de sesión). Una vez por base y modalidad.
+
+    ``huella`` (tamaño y fecha de modificación) solo forma parte de la clave de la caché: si la base cambia, se vuelve a calcular.
+    """
+    return str(co.base_de_modalidad(Path(ruta), modalidad))
+
+
 def volver_a_la_base() -> None:
     st.session_state.pop("base_explorada", None)
 
@@ -522,7 +531,7 @@ def pantalla_organizar(ctx: ui.Contexto) -> None:
 def pantalla_contextualizar(ctx: ui.Contexto) -> None:
     encabezado(ctx, "contextualizar")
     nombres = {k: t.nombre for k, t in cargar_temas().temas.items()}
-    vinculos, sin = ui.vinculos_oficiales(ctx.con, nombres, ctx.cfg)
+    vinculos, sin = ui.vinculos_oficiales(ctx.con, nombres, ctx.cfg, ctx.modalidad)
     con_vinculo = {v.id_grupo for v in vinculos}
     por_motivo = ui.grupos_sin_vinculo_por_motivo(sin, con_vinculo)
     c1, c2, c3 = st.columns(3)
@@ -1120,16 +1129,29 @@ def main() -> None:
     if not ruta.exists():
         st.error(cfg.textos.sin_base)
         st.stop()
-    con = abrir_base(str(ruta)).cursor()
     nombres = {k: t.nombre for k, t in cargar_temas().temas.items()}
     previa = st.session_state.get("modalidad", cfg.modalidad_inicial)
     ruta_rev = ruta.parent / cargar_corrida().corridas.base_revision if explorada else ui.ruta_de_revision(demo)    # al explorar una corrida, las revisiones van a su carpeta
+    origen = ruta
+    estado_base = ruta.stat()
+    with st.spinner(f"Calculando los puntajes de {cargar_modalidad(previa).nombre}…"):     # D-132: la base guarda una modalidad; la otra se calcula en una copia de sesión
+        ruta = Path(base_de_sesion(str(ruta), previa, (estado_base.st_size, estado_base.st_mtime_ns)))
+    con = abrir_base(str(ruta)).cursor()
     revisiones = rv.Revisiones(ruta_rev, ruta, demo=demo, huellas=rv.huellas_de_exportacion(demo))  # aparte: la base de las pantallas es de solo lectura
     aplicar_atajo(cfg, ui.leer_bandeja(con, previa, nombres), revisiones)      # antes de crear los widgets: así puede fijar la pantalla
     modalidad = barra_lateral(cfg, demo)
+    if modalidad != previa:      # no debería pasar (el selector ya fijó el valor al empezar la ejecución): se repite con la base correcta
+        st.rerun()
+    if ruta != origen:
+        st.caption(cargar_corrida().textos.aviso_copia_modalidad.format(modalidad=cargar_modalidad(modalidad).nombre))
     ctx = ui.Contexto(cfg, ui.cargar_verificacion(), con, modalidad, demo, aviso, ui.leer_bandeja(con, modalidad, nombres), ruta, revisiones)
-    PANTALLAS[st.session_state["pantalla"]](ctx)
-    navegacion_inferior(ctx, st.session_state["pantalla"])
+    pantalla = st.session_state["pantalla"]
+    PANTALLAS[pantalla](ctx)
+    navegacion_inferior(ctx, pantalla)
+    vista = st.session_state.get("pantalla_vista")      # D-132: al cambiar de etapa se sube al inicio; en la primera carga y con enlaces directos, no
+    st.session_state["pantalla_vista"] = pantalla
+    if ui.etapa_cambio(vista, pantalla):
+        st.html(ui.script_ir_arriba(pantalla), unsafe_allow_javascript=True)
 
 
 main()

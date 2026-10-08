@@ -59,7 +59,7 @@ Pasada ejecutada el 2026-10-06 con el snapshot real (`data/senales.duckdb`), sin
     La integración se configura en `config/interfaz.yaml:generacion`.
   - **`CASO-00N` y revisión (E1-16):** ya integrado. Al abrir un grupo en *Revisión* nace su `CASO-00N`; `?caso=` acepta un `GRP-…`, un `CASO-…` o la posición en la bandeja. La revisión de la demo va a `data/revision_demo.duckdb`, aparte de la real.
   - **Base y capturas de demo (C-06):** `data/demo.duckdb`, `preparar_demo`, y `capturas_demo` todavía no existen (`scripts/calentar_cache.py` ya existe, E1-14); `--demo` cae al snapshot y lo avisa.
-  - **Banca (E2-01):** la modalidad se puede elegir y se declara parcial (D-90); la bandeja bancaria llega con esa tarea.
+  - **Banca (E2-01, D-132):** la modalidad Banca funciona en toda la interfaz. La base guarda los puntajes de una sola modalidad, así que al elegir Banca la app calcula (sin LLM, ~0,3 s) una copia de sesión en el directorio temporal y la usa en todas las pantallas; el archivo vivo no se toca y *Editorial* vuelve a él. Los borradores de banca se calientan sobre esa misma copia (ver la noche anterior).
 
 ## Riesgos
 
@@ -75,6 +75,12 @@ Pasada ejecutada el 2026-10-06 con el snapshot real (`data/senales.duckdb`), sin
 **La noche anterior**
 - [ ] `poetry run python -m scripts.preparar_demo` (base de demo; C-06, aún no existe)
 - [ ] `poetry run python -m scripts.calentar_cache` (borradores en caché, E1-14; volver a correrlo tras cambiar prompt, modelo o validador) y `--verificar`
+- [ ] Borradores de **banca** en caché (D-132; con red): la base viva tiene los puntajes de editorial, así que se calienta sobre la copia de sesión:
+  ```bash
+  BANCA=$(poetry run python -c "from src.corrida import base_de_modalidad; from src.configuracion import RAIZ; print(base_de_modalidad(RAIZ/'data'/'senales.duckdb','banca'))" 2>/dev/null | tail -1)
+  poetry run python -m scripts.calentar_cache --modalidad banca --base "$BANCA"             # genera (con red)
+  poetry run python -m scripts.calentar_cache --modalidad banca --base "$BANCA" --verificar # sin red
+  ```
 - [ ] `poetry run python -m scripts.capturas_demo` (capturas de respaldo; C-06)
 - [ ] Las fichas exportadas y actualizadas en Notion (E1-16)
 - [ ] Ensayo completo cronometrado (≤ 4:00)

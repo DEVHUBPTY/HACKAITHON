@@ -753,3 +753,11 @@ Ninguno decide un puntaje: gobiernan dónde se escribe una corrida, cuántas se 
 | `archivo_propio.filas_visibles` | 300 | Supuesto (tope de filas que se listan en pantalla; el CSV descargable lleva todas) | Revisión visual |
 | `archivo_propio.columna_esperado`, `ejemplo_noticias`, `ejemplo_indicadores` | `error_esperado`, y los fixtures T01 `tests/fixtures/t01_*.csv` | PDF sección 9 (T01: «Archivo con fechas inválidas y nulos») · E1-02 | `test_el_archivo_t01_de_noticias_reporta_cada_rechazo_con_su_motivo` |
 | `pasos[]`, `textos.*` | Orden de los nueve pasos y su explicación | PDF sección 3 (etapa 1) y sección 8 (arquitectura) | `test_cada_paso_trae_explicacion_cifras_y_tiempo` |
+
+## Banca, fuente D y desplazamiento (D-132)
+
+| Parámetro | Valor | Origen | Cómo se valida |
+|---|---|---|---|
+| `fuentes_oficiales` (`config/modalidad_editorial.yaml`, `config/modalidad_banca.yaml`) | Editorial: `indicador`, `usgs`. Banca: `indicador`, `usgs`, `sbp`. Se filtra al leer los vínculos (ficha, generación, pantalla *Contextualizar* y puntaje) | PDF secciones 2 y 6-D: «el núcleo obligatorio combina A y B; C añade eventos verificables; D es una extensión bancaria». `contexto` corre una vez y es agnóstico de la modalidad; el filtro vive en la lectura, sin ningún `if modalidad` | `test_un_vinculo_de_la_sbp_no_aparece_en_la_ficha_editorial_y_si_en_la_de_banca` · `test_la_pantalla_contextualizar_filtra_por_modalidad` · `test_el_puntaje_editorial_no_cambia_por_los_vinculos_de_la_sbp` |
+| `corridas.subcarpeta_modalidades` (`config/corrida.yaml`) | `modalidades` | Decisión de diseño D-132: una base guarda los puntajes de una sola modalidad; la otra se calcula (`prioridad.ejecutar`, sin LLM) sobre una copia de sesión en `<tmp>/hackiathon_corridas/modalidades/<modalidad>-<tamaño>-<mtime>/`. Se reutiliza mientras la base no cambie; el archivo vivo nunca se escribe | `test_la_copia_de_banca_tiene_puntajes_de_banca_y_no_toca_la_base_viva` · `test_cambiar_el_archivo_de_la_base_recalcula_la_copia` |
+| Desplazamiento al cambiar de etapa (`interfaz.script_ir_arriba`) | Se emite solo cuando cambia la pantalla; no en la primera carga ni con enlaces directos | Presentación (sin recursos externos) | `test_el_script_se_emite_al_cambiar_de_etapa_y_no_al_volver_a_dibujar` |
