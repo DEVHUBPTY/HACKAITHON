@@ -301,11 +301,12 @@ def test_x112_la_vista_previa_no_entra_al_paquete_y_viene_de_la_configuracion(tm
 # ---------------------------------------------------------------------------------------------- X110: P-02 re-verifica todas las fichas que se entregan
 
 
-def _ficha_jsonl(tmp_path: Path, registros: list[tuple[str, str, str]]) -> None:
+def _ficha_jsonl(tmp_path: Path, registros: list[tuple[str, str, str]], notas: dict[str, str] | None = None) -> None:
     ruta = tmp_path / CFG.auditoria.fichas_jsonl
     ruta.parent.mkdir(parents=True, exist_ok=True)
     base = {k: None for k in CFG.auditoria.campos_fichas_jsonl}
-    ruta.write_text("".join(json.dumps({**base, "id_caso": c, "id_grupo": g, "estado_revision": e, "ficha": {}}) + "\n" for c, g, e in registros), encoding="utf-8")
+    ruta.write_text("".join(json.dumps({**base, "id_caso": c, "id_grupo": g, "estado_revision": e, "ficha": {}, "nota_estado": (notas or {}).get(c)}) + "\n"
+                            for c, g, e in registros), encoding="utf-8")
 
 
 def _traza(tmp_path: Path, casos: dict[str, str], todo_ok: bool = True, citas: list[dict] | None = None) -> None:
@@ -324,8 +325,8 @@ def _vivo(registros_ids: list[str], *, fallos: dict[str, list[str]] | None = Non
 FICHAS = [("CASO-001", "GRP-a", "aprobado como borrador"), ("CASO-002", "GRP-b", "requiere evidencia"), ("CASO-004", "GRP-d", "descartado")]
 
 
-def _p02(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, vivo, *, fichas=FICHAS, traza=None) -> aud.Item:
-    _ficha_jsonl(tmp_path, fichas)
+def _p02(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, vivo, *, fichas=FICHAS, traza=None, notas=None) -> aud.Item:
+    _ficha_jsonl(tmp_path, fichas, notas)
     _traza(tmp_path, traza if traza is not None else {"CASO-001": "GRP-a", "CASO-002": "GRP-b"})
     monkeypatch.setattr(aud, "reverificar_fichas", vivo)
     c = _contexto(tmp_path)
@@ -350,6 +351,18 @@ def test_x110_una_ficha_vigente_que_trazabilidad_no_cubre_es_falta(tmp_path: Pat
 
 def test_x110_un_fallo_del_validador_en_una_ficha_descartada_tambien_es_falta(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     it = _p02(tmp_path, monkeypatch, _vivo(["CASO-001", "CASO-002", "CASO-004"], fallos={"CASO-004": ["cita_con_id_en_datos: NOT-9"]}))
+    assert it.estado == aud.FALTA and "CASO-004" in it.evidencia
+
+
+def test_x110_un_descartado_con_nota_y_citas_rotas_de_su_grupo_es_informativo(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    it = _p02(tmp_path, monkeypatch, _vivo(["CASO-001", "CASO-002", "CASO-004"], fallos={"CASO-004": ["cita_con_id_en_datos: GRP-d · n_titulares"]}),
+              notas={"CASO-004": "descartado: el grupo ya no existe tras la reagrupación"})
+    assert it.estado == aud.PASS and "CASO-004" in it.evidencia and "informativo: ['CASO-004" in it.evidencia
+
+
+def test_x110_un_descartado_con_nota_y_un_fallo_ajeno_a_su_grupo_sigue_siendo_falta(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    it = _p02(tmp_path, monkeypatch, _vivo(["CASO-001", "CASO-002", "CASO-004"], fallos={"CASO-004": ["cita_con_id_en_datos: GRP-d · n_titulares", "cita_con_id_en_datos: NOT-9"]}),
+              notas={"CASO-004": "descartado: el grupo ya no existe tras la reagrupación"})
     assert it.estado == aud.FALTA and "CASO-004" in it.evidencia
 
 
@@ -395,9 +408,16 @@ def test_x110_el_validador_real_se_corre_sobre_cada_ficha_de_fichas_jsonl() -> N
     item = aud.Contexto(CFG, RAIZ)
     aud.validador(item)
     p02 = next(i for i in item.items if i.id == "P-02")
+    por_id = {r["id_caso"]: r for r in registros}
+
+    def informativo(i: str) -> bool:     # descartado con nota_estado cuyas citas rotas son todas de su propio grupo (88de277)
+        r = por_id[i]
+        return bool(r.get("nota_estado")) and all(f.startswith(("cita_con_id_en_datos", "cita_con_campo_y_valor")) and str(r.get("id_grupo")) in f for f in vivo[i]["fallos"])
+
     fallan = [i for i, v in vivo.items() if v["fallos"]]
-    assert (p02.estado == aud.FALTA) == bool(fallan) and all(i in p02.evidencia for i in fallan)      # la auditoría los declara
-    if not fallan:
+    reales = [i for i in fallan if not informativo(i)]
+    assert (p02.estado == aud.FALTA) == bool(reales) and all(i in p02.evidencia for i in fallan)      # la auditoría los declara, informativos incluidos
+    if not reales:
         assert p02.estado == aud.PASS
 
 
