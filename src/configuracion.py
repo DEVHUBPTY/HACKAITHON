@@ -1611,6 +1611,21 @@ class ModeloEmbeddings(ModeloConfig):
         return self
 
 
+class ConjuntoAmpliado(ModeloConfig):
+    """C-12: cómo se marcan las filas de la hoja de confirmación al armar ``eval/etiquetas_ampliadas.csv``."""
+
+    estrato_hoja: str            # valor de ``estrato`` de esas filas (no vienen de la muestra estratificada de E1-06)
+    n_etiquetadores_hoja: int    # cuántas personas decidieron cada una
+
+    @model_validator(mode="after")
+    def _rangos(self) -> ConjuntoAmpliado:
+        if not self.estrato_hoja.strip():
+            raise ValueError("ampliado.estrato_hoja: no puede ir vacío")
+        if self.n_etiquetadores_hoja < 1:
+            raise ValueError("ampliado.n_etiquetadores_hoja: al menos 1")
+        return self
+
+
 class ConfigAprendizajeActivo(ModeloConfig):
     """Ciclo de aprendizaje activo con una persona en el circuito (D-123).
 
@@ -1620,6 +1635,7 @@ class ConfigAprendizajeActivo(ModeloConfig):
 
     usar_pool: bool                  # si el método `logistica` también se entrena con el pool de etiquetas humanas
     muestra_evaluacion: str = Field(min_length=1)   # CSV con la columna id_noticia: la evaluación congelada
+    etiquetas_pool: str | None = None               # CSV humano del que sale el pool (C-12: el ampliado); None = el de la evaluación
 
 
 class ConfigLogistica(ModeloConfig):
@@ -1754,6 +1770,7 @@ class ConfigClasificacion(ModeloConfig):
     fuga_semantica: FugaSemantica
     baseline: BaselineClasificacion
     logistica: ConfigLogistica
+    ampliado: ConjuntoAmpliado     # C-12: marca de las filas de la hoja de confirmación
 
     @model_validator(mode="after")
     def _coherente(self) -> ConfigClasificacion:
