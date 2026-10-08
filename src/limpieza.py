@@ -112,6 +112,8 @@ class Reglas:
         self.cultura = _compilar(ruido.fuera_de_temas.cultura)
         self.politica = _compilar(ruido.fuera_de_temas.politica_partidista)
         self.autopromocion = _compilar(ruido.fuera_de_temas.autopromocion_tvn)
+        self.politica_internacional = _compilar(ruido.fuera_de_temas.politica_internacional)
+        self.solo_en_seccion_dudosa = _compilar(ruido.fuera_de_temas.solo_en_seccion_dudosa)
         self.regionales = _compilar(ruido.panama.regionales)
         self.fenomenos_con_impacto = _compilar(ruido.panama.fenomenos_regionales_con_impacto)
         self.inyeccion = _compilar(restricciones.inyeccion.patrones)
@@ -270,7 +272,7 @@ def _regional_sin_impacto(fila: Fila, texto: str, reglas: Reglas) -> bool:
 
 
 def _fuera_de_temas(texto: str, reglas: Reglas) -> bool:
-    grupos = (reglas.deportes, reglas.farandula, reglas.cultura, reglas.politica)
+    grupos = (reglas.deportes, reglas.farandula, reglas.cultura, reglas.politica, reglas.politica_internacional)
     return any(_coincide(g, texto) for g in grupos)
 
 
@@ -282,7 +284,9 @@ def clasificar(fila: Fila, titulo_limpio: str, reglas: Reglas) -> tuple[str | No
     es "otro país"); 5. sin mención de Panamá en un origen sujeto: ``no_es_panama``, **salvo** que el titular nombre
     la región o un fenómeno regional (D-84: se conserva con ``alcance_regional``); 5b. (D-120) esa excepción regional
     exige impacto en Panamá: un medio no panameño, sin mención de Panamá ni fenómeno regional con impacto, es ``no_es_panama``; 6. deportes, farándula, cultura
-    y política partidista (``fuera_de_temas``).
+    y política partidista (``fuera_de_temas``); D-126: también la política internacional (un pronunciamiento sobre otro país sin
+    efecto en Panamá) y, solo en una sección dudosa de TVN, los términos de ``solo_en_seccion_dudosa`` (p. ej. «piloto»).
+    D-126 además: un titular sin tema tras clasificar se marca ``fuera_de_temas`` en src/clasificacion.py (no aquí).
 
     Una noticia de otro país que afecta a Panamá (Darién, Canal) nombra algo de ``panama.menciones`` y no es ruido.
     """
@@ -295,7 +299,7 @@ def clasificar(fila: Fila, titulo_limpio: str, reglas: Reglas) -> tuple[str | No
         return MOTIVO_NO_ES_PANAMA, False
     if _coincide(reglas.autopromocion, texto):
         return MOTIVO_FUERA_DE_TEMAS, False
-    if _es_seccion_dudosa(fila, reglas) and _fuera_de_temas(texto, reglas):
+    if _es_seccion_dudosa(fila, reglas) and (_fuera_de_temas(texto, reglas) or _coincide(reglas.solo_en_seccion_dudosa, texto)):
         return MOTIVO_FUERA_DE_TEMAS, False
     regional = _coincide(reglas.regionales, texto)
     if _sujeta_al_filtro_de_mencion(fila, reglas) and not _coincide(reglas.menciones, texto) and not regional:
