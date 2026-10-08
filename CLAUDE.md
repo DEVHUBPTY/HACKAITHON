@@ -113,12 +113,8 @@ Previsto (lo crea la spec indicada):
 data/demo.duckdb (C-06)
 config/      modalidad_banca.yaml completa (E2-01: sectores, horizonte, bandeja)
 prompts/     comparar_contradicciones.txt (E1-10) · respuesta_consulta.txt (E1-11)
-<<<<<<< HEAD
 scripts/     buscar_casos.py · preparar_demo.py · capturas_demo.py (C-06)
              empaquetar_datos.py · auditoria_final.py (C-07)
-=======
-scripts/     buscar_casos.py · preparar_demo.py · capturas_demo.py · verificar_offline.py (C-06)
->>>>>>> rescate-prs
 eval/        run_benchmark.py (E1-18) · precision_at_5.py (E1-19) · y los módulos de métricas que pide cada spec
 tests/       test_t02_*.py, test_t04_*.py … test_t10_*.py (ver docs/protocolo_evaluacion.md)
 outputs/     pruebas.csv (E1-17) · metricas.json (E1-18)
