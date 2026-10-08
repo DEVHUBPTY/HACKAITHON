@@ -73,7 +73,7 @@
       "tema": "turismo"
     }
   ],
-  "duplicados_descartados": 352,
+  "duplicados_descartados": 456,
   "excluidos": [
     {
       "id_noticia": "NOT-0031e6a574",
@@ -605,44 +605,44 @@
     {
       "detalle": "[locales] ningún crudo ni intento registrado para este día",
       "dias": 30,
-      "fin": "20261007000000",
-      "inicio": "20260907000000",
+      "fin": "20261008000000",
+      "inicio": "20260908000000",
       "motivo": "no_solicitado",
       "tema": "economia"
     },
     {
       "detalle": "[locales] ningún crudo ni intento registrado para este día",
       "dias": 30,
-      "fin": "20261007000000",
-      "inicio": "20260907000000",
+      "fin": "20261008000000",
+      "inicio": "20260908000000",
       "motivo": "no_solicitado",
       "tema": "eventos_naturales"
     },
     {
       "detalle": "[locales] ningún crudo ni intento registrado para este día",
       "dias": 30,
-      "fin": "20261007000000",
-      "inicio": "20260907000000",
+      "fin": "20261008000000",
+      "inicio": "20260908000000",
       "motivo": "no_solicitado",
       "tema": "logistica"
     },
     {
       "detalle": "[locales] ningún crudo ni intento registrado para este día",
       "dias": 30,
-      "fin": "20261007000000",
-      "inicio": "20260907000000",
+      "fin": "20261008000000",
+      "inicio": "20260908000000",
       "motivo": "no_solicitado",
       "tema": "turismo"
     }
   ],
   "idiomas_sin_mapeo": {},
-  "registros_crudos_leidos": 670,
+  "registros_crudos_leidos": 821,
   "ventana": {
     "ampliada": false,
     "dias_aplicados": 30,
     "dias_base": 30,
     "dias_maximo": 90,
-    "fin": "2026-10-07T00:41:03Z",
-    "inicio": "2026-09-07T00:41:03Z"
+    "fin": "2026-10-08T03:35:18Z",
+    "inicio": "2026-09-08T03:35:18Z"
   }
 }

@@ -4,16 +4,16 @@
     "eventos.geojson": 82,
     "fuentes.json": 110,
     "indicadores.csv": 540,
-    "noticias.csv": 221,
+    "noticias.csv": 268,
     "sbp_series.csv": 36
   },
   "cobertura_efectiva": {
     "base_de_medicion": "fecha_deteccion; fecha_publicacion si el registro no tiene detección",
     "fecha_deteccion_final": "2026-10-06T08:30:00Z",
     "fecha_deteccion_inicial": "2026-10-01T16:00:00Z",
-    "fecha_final": "2026-10-07T00:30:57Z",
+    "fecha_final": "2026-10-08T03:30:01Z",
     "fecha_inicial": "2026-09-29T01:23:06Z",
-    "fecha_publicacion_final": "2026-10-07T00:30:57Z",
+    "fecha_publicacion_final": "2026-10-08T03:30:01Z",
     "fecha_publicacion_inicial": "2026-09-29T01:23:06Z",
     "gdelt_dias_por_tema": {
       "economia": {
@@ -59,32 +59,32 @@
       {
         "detalle": "[locales] ningún crudo ni intento registrado para este día",
         "dias": 30,
-        "fin": "20261007000000",
-        "inicio": "20260907000000",
+        "fin": "20261008000000",
+        "inicio": "20260908000000",
         "motivo": "no_solicitado",
         "tema": "economia"
       },
       {
         "detalle": "[locales] ningún crudo ni intento registrado para este día",
         "dias": 30,
-        "fin": "20261007000000",
-        "inicio": "20260907000000",
+        "fin": "20261008000000",
+        "inicio": "20260908000000",
         "motivo": "no_solicitado",
         "tema": "eventos_naturales"
       },
       {
         "detalle": "[locales] ningún crudo ni intento registrado para este día",
         "dias": 30,
-        "fin": "20261007000000",
-        "inicio": "20260907000000",
+        "fin": "20261008000000",
+        "inicio": "20260908000000",
         "motivo": "no_solicitado",
         "tema": "logistica"
       },
       {
         "detalle": "[locales] ningún crudo ni intento registrado para este día",
         "dias": 30,
-        "fin": "20261007000000",
-        "inicio": "20260907000000",
+        "fin": "20261008000000",
+        "inicio": "20260908000000",
         "motivo": "no_solicitado",
         "tema": "turismo"
       }
@@ -93,8 +93,8 @@
     "nota_ventana": "ventana_dias_aplicada es el filtro de fechas de las noticias, no la cobertura lograda: GDELT cubre solo los días de gdelt_dias_por_tema.dias_cubiertos y el resto de la ventana, salvo lo que aporta el RSS de TVN, está en gdelt_rangos_sin_resolver.",
     "ventana_ampliada_a_90": false,
     "ventana_dias_aplicada": 30,
-    "ventana_fin": "2026-10-07T00:41:03Z",
-    "ventana_inicio": "2026-09-07T00:41:03Z"
+    "ventana_fin": "2026-10-08T03:35:18Z",
+    "ventana_inicio": "2026-09-08T03:35:18Z"
   },
   "consultas": {
     "banco_mundial": {
@@ -280,6 +280,10 @@
       "bytes": 193006,
       "sha256": "d824e6a0bafd58c1f8bcd014b024e89f799fad9dae08cc7426a99257673bc494"
     },
+    "raw/rss_tvn/rss_tvn_20261008T033518Z.xml": {
+      "bytes": 193576,
+      "sha256": "25622a8e0376c161313ef7d49269c430a0f60aa27348270f20af2e5b503409a1"
+    },
     "raw/sbp/sbp_morosos_20261007-185325.xlsx": {
       "bytes": 58996,
       "sha256": "19229f257f1a8afa5117130fc3c4e9da5bfe09845f7f7a61c8c2fed300cc9a1b"
@@ -367,8 +371,8 @@
       "tema": "turismo"
     }
   ],
-  "fecha_corte_UTC": "2026-10-07T00:41:03Z",
-  "hash_snapshot": "d0ae54537df7824aaf0a4295b56a50c9d4dcd00806d3ddb36e931d3007e8057e",
+  "fecha_corte_UTC": "2026-10-08T03:35:18Z",
+  "hash_snapshot": "4503952d97fb1018429b517c2e230cf69fcb501f9f0529c38faa01d16e3683b6",
   "historial": [
     {
       "cambios_de_fuente": [
@@ -660,6 +664,81 @@
         "processed/sbp_series.csv": "85f9f17e5e5f4095aae423b749ad7cb72952fc8329086830f6ba78b216644b96"
       },
       "version": "1.3"
+    },
+    {
+      "cambios_de_fuente": [
+        "noticias.csv: 221 -> 268",
+        "Contenido distinto en processed/conversion.json (mismo conteo)"
+      ],
+      "cantidad_por_archivo": {
+        "conversion.json": 97,
+        "eventos.geojson": 82,
+        "fuentes.json": 110,
+        "indicadores.csv": 540,
+        "noticias.csv": 268,
+        "sbp_series.csv": 36
+      },
+      "crudos_consulta_historica": {
+        "por_tema": {
+          "economia": 2,
+          "logistica": 5,
+          "turismo": 2
+        },
+        "total": 9
+      },
+      "fallos_de_extraccion": [
+        {
+          "detalle": "[locales] ningún crudo ni intento registrado para este día",
+          "dias": 30,
+          "fin": "20261008000000",
+          "inicio": "20260908000000",
+          "motivo": "no_solicitado",
+          "tema": "economia"
+        },
+        {
+          "detalle": "[locales] ningún crudo ni intento registrado para este día",
+          "dias": 30,
+          "fin": "20261008000000",
+          "inicio": "20260908000000",
+          "motivo": "no_solicitado",
+          "tema": "eventos_naturales"
+        },
+        {
+          "detalle": "[locales] ningún crudo ni intento registrado para este día",
+          "dias": 30,
+          "fin": "20261008000000",
+          "inicio": "20260908000000",
+          "motivo": "no_solicitado",
+          "tema": "logistica"
+        },
+        {
+          "detalle": "[locales] ningún crudo ni intento registrado para este día",
+          "dias": 30,
+          "fin": "20261008000000",
+          "inicio": "20260908000000",
+          "motivo": "no_solicitado",
+          "tema": "turismo"
+        }
+      ],
+      "fecha": "2026-10-08T03:35:18Z",
+      "hash_snapshot": "4503952d97fb1018429b517c2e230cf69fcb501f9f0529c38faa01d16e3683b6",
+      "nota_fecha": "fecha de corte de los datos (último crudo real), no la fecha en que se generó la versión",
+      "registros_excluidos": {
+        "por_motivo": {
+          "fuera_de_ventana": 97
+        },
+        "total": 97
+      },
+      "revisiones_de_datos": [],
+      "sha256_por_archivo": {
+        "processed/conversion.json": "23249ad8a26deaca36a1a40b1373314dc8b122a96f0e7f0d922b8929c9e0cbf2",
+        "processed/eventos.geojson": "c43507e5934652ff45fcb0bdae781d498a08167457c9e9d82f67446d6966d411",
+        "processed/fuentes.json": "799b74b1f7766e193659f6c08f41ad9052ed838049812797c80ef75751db9b52",
+        "processed/indicadores.csv": "6238f1c008ac313a1cc1f9ebc5e5459c21a47c36460900aa47cce726a8e34b12",
+        "processed/noticias.csv": "8aba0f96764846d1a981bf7ca8527d6d7d973c79a70388db5ef0bc44b081ee2c",
+        "processed/sbp_series.csv": "85f9f17e5e5f4095aae423b749ad7cb72952fc8329086830f6ba78b216644b96"
+      },
+      "version": "1.4"
     }
   ],
   "licencias": {
@@ -835,11 +914,11 @@
     }
   },
   "sha256": {
-    "processed/conversion.json": "fb8ac3865ff48f3f394e70e580c7a5f69f3b4665a810fd935055a18810d47481",
+    "processed/conversion.json": "23249ad8a26deaca36a1a40b1373314dc8b122a96f0e7f0d922b8929c9e0cbf2",
     "processed/eventos.geojson": "c43507e5934652ff45fcb0bdae781d498a08167457c9e9d82f67446d6966d411",
     "processed/fuentes.json": "799b74b1f7766e193659f6c08f41ad9052ed838049812797c80ef75751db9b52",
     "processed/indicadores.csv": "6238f1c008ac313a1cc1f9ebc5e5459c21a47c36460900aa47cce726a8e34b12",
-    "processed/noticias.csv": "fca44ad5c80ab71674fdf46f8b50c9dd6e7acf1ade125b824e335621f2336a7f",
+    "processed/noticias.csv": "8aba0f96764846d1a981bf7ca8527d6d7d973c79a70388db5ef0bc44b081ee2c",
     "processed/sbp_series.csv": "85f9f17e5e5f4095aae423b749ad7cb72952fc8329086830f6ba78b216644b96"
   },
   "transformaciones": [
@@ -860,7 +939,7 @@
     "SBP (fuente D, E3-02): una fila de cada informe .xlsx (la del Sistema Bancario) y una columna por mes de 2024; id_serie = SBP-<serie>, ID de cada dato = SBP-<serie>-<YYYY-MM>; pagina = hoja y celda de origen; unidad original del informe; nulos como celda vacía, nunca 0.",
     "Registros excluidos (sin título, sin URL, sin fecha válida, fuera de ventana) se listan en conversion.json."
   ],
-  "version": "1.3",
+  "version": "1.4",
   "volumen_noticias": {
     "meta": 200,
     "minimo": 100,
