@@ -2717,6 +2717,7 @@ class DemoInterfaz(ModeloConfig):
     ruta_base: str = Field(min_length=1)
     parametro_caso: str = Field(min_length=1)
     guion: str = Field(min_length=1)
+    espera_verificacion_s: int = Field(ge=1)   # C-06: tiempo máximo de `scripts.verificar_offline` para dibujar la pantalla de entrada
 
 
 class CitasInterfaz(ModeloConfig):
