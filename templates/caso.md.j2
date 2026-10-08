@@ -1,5 +1,9 @@
 # {{ d.id_caso }} · Ficha de evidencia · {{ d.id_grupo }}
 **{{ d.marca }}**
+{% if d.sintetico %}
+
+**{{ d.sintetico }}**
+{% endif %}
 
 - Estado de revisión: {{ d.estado }}
 - Versión del borrador: {{ d.version_texto }}

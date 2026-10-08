@@ -50,7 +50,7 @@ Previstos; cada uno estará disponible cuando se implemente su spec:
 
 ```bash
 poetry run streamlit run app.py                      # interfaz (E1-15)
-poetry run streamlit run app.py -- --demo            # modo demo con data/demo.duckdb (C-06)
+.venv/bin/streamlit run app.py -- --demo            # modo demo con data/demo.duckdb (C-06)
 poetry run python -m scripts.verificar_offline       # chequeo antes del pitch (C-06)
 ```
 

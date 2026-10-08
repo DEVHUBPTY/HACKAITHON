@@ -500,12 +500,21 @@ class PasoVista:
     cuenta: int | None
     unidad: str
     pantallas: tuple[str, ...]
+    ancla: str | None = None   # D-130: parte de la pantalla «1 · Cargar» donde se ve el paso
 
 
 def _contar(con: Any, tabla: str) -> int:
     """Filas de una tabla de la base; una tabla ausente cuenta 0 (la pantalla abre aunque falte un paso del pipeline)."""
     try:
         return int(con.execute(f"SELECT count(*) FROM {tabla}").fetchone()[0])  # noqa: S608 - nombres de un conjunto fijo, no del usuario
+    except Exception:  # noqa: BLE001 - tabla inexistente
+        return 0
+
+
+def _contar_donde(con: Any, tabla: str, condicion: str) -> int:
+    """Filas de una tabla que cumplen una condición fija; una tabla ausente cuenta 0."""
+    try:
+        return int(con.execute(f"SELECT count(*) FROM {tabla} WHERE {condicion}").fetchone()[0])  # noqa: S608 - tabla y condición son constantes del código
     except Exception:  # noqa: BLE001 - tabla inexistente
         return 0
 
@@ -530,13 +539,13 @@ def casos_exportados(demo: bool, cfg_rev: ConfigRevision | None = None, raiz: Pa
         return sum(1 for _ in csv.DictReader(f))
 
 
-def pasos_de_arquitectura(
-    con: Any, cfg: ConfigInterfaz, reporte: Mapping[str, Any] | None, revisiones: Any = None, demo: bool = False, carpeta_cache: Path | None = None,
-) -> list[PasoVista]:
-    """La arquitectura mínima del PDF (sección 8) con la cuenta real de cada paso. Toda cuenta sale de los datos o de los archivos del pipeline."""
+def cuentas_del_pipeline(
+    con: Any, reporte: Mapping[str, Any] | None, revisiones: Any = None, demo: bool = False, carpeta_cache: Path | None = None,
+) -> dict[str, int | None]:
+    """Toda cuenta viva de la interfaz (arquitectura de «1 · Cargar» y secuencia de «Cómo funciona»): sale de los datos o de los archivos del pipeline."""
     from src.cache import CacheLlm   # import tardío: la caché no se necesita para el resto del módulo
 
-    cuentas: dict[str, int | None] = {
+    return {
         "registros_leidos": total_de_reporte(reporte, "leidas"),
         "registros_validos": total_de_reporte(reporte, "validas"),
         "filas_en_base": sum(_contar(con, t) for t in ("noticias", "indicadores", "sismos")),
@@ -546,8 +555,76 @@ def pasos_de_arquitectura(
         "fichas_disponibles": _contar(con, "evidencia"),
         "casos_revisados": len(revisiones.casos()) if revisiones is not None else 0,
         "casos_exportados": casos_exportados(demo),
+        "vinculos": _contar_donde(con, "vinculos", "motivo_sin_vinculo IS NULL AND id_evidencia IS NOT NULL"),    # solo los sustentados
     }
-    return [PasoVista(p.etiqueta, cuentas[p.medida], p.unidad, tuple(p.pantallas)) for p in cfg.cargar.arquitectura]
+
+
+def pasos_de_arquitectura(
+    con: Any, cfg: ConfigInterfaz, reporte: Mapping[str, Any] | None, revisiones: Any = None, demo: bool = False, carpeta_cache: Path | None = None,
+) -> list[PasoVista]:
+    """La arquitectura mínima del PDF (sección 8) con la cuenta real de cada paso. Toda cuenta sale de los datos o de los archivos del pipeline."""
+    cuentas = cuentas_del_pipeline(con, reporte, revisiones, demo, carpeta_cache)
+    return [PasoVista(p.etiqueta, cuentas[p.medida], p.unidad, tuple(p.pantallas), p.ancla) for p in cfg.cargar.arquitectura]
+
+
+# ------------------------------------------------------------------ D-131 · «Cómo funciona» y recorrido por etapas
+
+
+@dataclass(frozen=True)
+class EtapaVista:
+    """Una etapa de la secuencia: su nombre, lo que entra, lo que sale y su cuenta real (``None`` si no hay de dónde leerla)."""
+
+    clave: str
+    titulo: str
+    entra: str
+    sale: str
+    cuenta: int | None
+    unidad: str
+
+
+def etapas_del_reto(cfg: ConfigInterfaz) -> list[Any]:
+    """Las siete pantallas-etapa, en el orden del reto (la consulta queda aparte)."""
+    return [p for p in cfg.pantallas if not p.separada]
+
+
+def etapas_de_inicio(
+    con: Any, cfg: ConfigInterfaz, reporte: Mapping[str, Any] | None, revisiones: Any = None, demo: bool = False, carpeta_cache: Path | None = None,
+) -> list[EtapaVista]:
+    """La secuencia de «Cómo funciona»: cada etapa con lo que entra, lo que sale y la cuenta viva de los datos (nunca escrita en la configuración)."""
+    cuentas = cuentas_del_pipeline(con, reporte, revisiones, demo, carpeta_cache)
+    return [EtapaVista(p.clave, p.titulo, p.guia.entra, p.guia.sale, cuentas[p.guia.medida], p.guia.unidad_cuenta or "") for p in etapas_del_reto(cfg)]
+
+
+def vecinas_de_etapa(cfg: ConfigInterfaz, clave: str) -> tuple[Any | None, Any | None]:
+    """La etapa anterior y la siguiente (``None`` en los extremos: la 1 no tiene anterior y la 7 no tiene siguiente); una pantalla que no es etapa no tiene vecinas."""
+    etapas = etapas_del_reto(cfg)
+    claves = [p.clave for p in etapas]
+    if clave not in claves:
+        return None, None
+    i = claves.index(clave)
+    return (etapas[i - 1] if i > 0 else None), (etapas[i + 1] if i + 1 < len(etapas) else None)
+
+
+def css_de_la_interfaz(cfg: ConfigInterfaz) -> str:
+    """El CSS mínimo de la interfaz con los colores de la configuración. Sin recursos externos: la demo corre sin red."""
+    from string import Template
+
+    e = cfg.estilo
+    return Template(e.css).safe_substitute(acento=e.acento, tinta=e.tinta, papel=e.papel, papel_secundario=e.papel_secundario)
+
+
+def usuario_de_seccion(cfg: ConfigInterfaz, modalidad: str, titulo: str) -> str | None:
+    """El lector al que sirve una sección del paquete (según ``paquete.usuarios`` de la configuración), o ``None`` si no se declaró."""
+    campos = cfg.paquete.usuarios.get(modalidad, {})
+    for campo, lector in campos.items():
+        if cfg.paquete.etiquetas.get(campo) == titulo:
+            return cfg.paquete.lectores[lector]
+    return None
+
+
+def color_semantico(cfg: ConfigInterfaz, columna: str, valor: str) -> str | None:
+    """El color con significado de un valor (p. ej. rango «alto»), o ``None`` si ese valor no lleva color."""
+    return cfg.estilo.semanticos.get(columna, {}).get(str(valor).lower())
 
 
 # ------------------------------------------------------------------ D-128 · etapa 2 · Organizar
@@ -674,9 +751,15 @@ def _periodo_de(v: Mapping[str, Any]) -> str:
     return "sin dato"
 
 
-def vinculos_oficiales(con: Any, nombres_de_tema: Mapping[str, str], cfg: ConfigInterfaz | None = None) -> tuple[list[VinculoVista], list[GrupoSinVinculo]]:
-    """Todos los vínculos con dato oficial y, aparte, los grupos sin vínculo con su motivo (``sin_relacion_sustentada`` o ``tema_sin_indicador``)."""
+def vinculos_oficiales(
+    con: Any, nombres_de_tema: Mapping[str, str], cfg: ConfigInterfaz | None = None, modalidad: str | None = None
+) -> tuple[list[VinculoVista], list[GrupoSinVinculo]]:
+    """Todos los vínculos con dato oficial y, aparte, los grupos sin vínculo con su motivo (``sin_relacion_sustentada`` o ``tema_sin_indicador``).
+
+    D-132: con ``modalidad``, solo los vínculos de las fuentes oficiales que esa modalidad declara (la SBP es de la banca).
+    """
     cfg = cfg or cargar_interfaz()
+    permitida = cargar_modalidad(modalidad) if modalidad else None
     c = cfg.contextualizar
     filas = con.execute(
         "SELECT v.*, g.titular_central, g.tema_clasificado FROM vinculos v JOIN grupos g USING (id_grupo) ORDER BY g.titular_central, v.id_grupo, v.fuente, v.tipo, v.rol, v.id_evidencia"
@@ -684,8 +767,12 @@ def vinculos_oficiales(con: Any, nombres_de_tema: Mapping[str, str], cfg: Config
     columnas = [d[0] for d in filas.description]
     con_vinculo: list[VinculoVista] = []
     sin_vinculo: list[GrupoSinVinculo] = []
+    omitidos: dict[str, dict[str, Any]] = {}
     for fila in filas.fetchall():
         v = dict(zip(columnas, fila, strict=True))
+        if permitida is not None and v["id_evidencia"] and not permitida.permite_fuente(v["fuente"]):
+            omitidos.setdefault(v["id_grupo"], v)
+            continue
         if v["motivo_sin_vinculo"] or not v["id_evidencia"]:
             sin_vinculo.append(GrupoSinVinculo(
                 v["id_grupo"], v["titular_central"], nombres_de_tema.get(v["tema_clasificado"], v["tema_clasificado"] or ""),
@@ -700,6 +787,12 @@ def vinculos_oficiales(con: Any, nombres_de_tema: Mapping[str, str], cfg: Config
             (v["place"] if usgs else f"{v['pais_iso3']} · {v['indicador_id']}") or "", valor, _periodo_de(v),
             " ".join(x for x in (v["limitacion"], cfg.citas.aviso_anual if v["fuente"] == "indicador" else "") if x), v["regla"] or "",
         ))
+    conocidos = {x.id_grupo for x in con_vinculo} | {x.id_grupo for x in sin_vinculo}
+    for id_grupo, v in omitidos.items():   # un grupo cuyo único vínculo es de una fuente que la modalidad no usa queda sin vínculo para ella
+        if id_grupo not in conocidos:
+            sin_vinculo.append(GrupoSinVinculo(
+                id_grupo, v["titular_central"], nombres_de_tema.get(v["tema_clasificado"], v["tema_clasificado"] or ""), "sin_relacion_sustentada", v["regla"] or "",
+            ))
     return con_vinculo, sin_vinculo
 
 
@@ -1174,6 +1267,27 @@ def propuesta_de_pesos(
 def propuesta_a_json(propuesta: Mapping[str, Any]) -> str:
     """JSON legible (UTF-8, sin escapar tildes) de ``propuesta_de_pesos``."""
     return json.dumps(propuesta, ensure_ascii=False, indent=2) + "\n"
+
+
+SELECTORES_DE_DESPLAZAMIENTO = ('[data-testid="stMain"]', 'section.main', '.main')   # contenedores con scroll de Streamlit, según la versión
+
+
+def script_ir_arriba(pantalla: str) -> str:
+    """D-132: JavaScript local (sin recursos externos) que sube al inicio de la página al cambiar de etapa.
+
+    Streamlit conserva el desplazamiento al cambiar de pantalla y el encabezado quedaba fuera de vista. Se emite solo cuando la
+    pantalla cambió; ``pantalla`` va en un comentario para que cada cambio sea un elemento distinto y el navegador lo ejecute.
+    """
+    contenedores = ", ".join(repr(x) for x in SELECTORES_DE_DESPLAZAMIENTO)
+    return (
+        f"<script>/* ir arriba: {pantalla} */(function(){{const subir=()=>{{[{contenedores}].forEach(s=>{{const e=document.querySelector(s);"
+        "if(e){e.scrollTo({top:0});}});window.scrollTo(0,0);};subir();requestAnimationFrame(subir);})();</script>"
+    )
+
+
+def etapa_cambio(previa: str | None, actual: str) -> bool:
+    """¿Hay que subir al inicio? Sí si ya había una pantalla y es otra; en la primera carga (o con un enlace directo) no."""
+    return previa is not None and previa != actual
 
 
 @dataclass

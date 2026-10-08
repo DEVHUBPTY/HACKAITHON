@@ -51,6 +51,47 @@ def exigir_modalidad_de_la_base(con: Any, pedida: str) -> None:
 
 RUTA_BASE = RAIZ / "data" / "senales.duckdb"
 
+TABLA_MARCA_DEMO = "demo_marca"   # C-06: la crea `scripts.preparar_demo`; una base con esta tabla es de demostración aunque cambie de nombre
+
+
+class BaseDeDemo(RuntimeError):
+    """Una métrica intentó leer la base de la demo (``data/demo.duckdb``): lleva casos sintéticos y nunca se usa para medir (C-06, CLAUDE.md)."""
+
+
+def es_base_de_demo(ruta: Path | str) -> bool:
+    """¿``ruta`` es la base de la demo? Por su nombre (``interfaz.yaml: demo.ruta_base``) o por la tabla ``demo_marca`` que lleva dentro."""
+    from src.configuracion import cargar_interfaz   # aquí y no arriba: la configuración de la interfaz importa medio pipeline
+
+    ruta = Path(ruta)
+    if ruta.name == Path(cargar_interfaz().demo.ruta_base).name:
+        return True
+    if not ruta.is_file():
+        return False
+    try:
+        con = duckdb.connect(str(ruta), read_only=True)
+    except duckdb.Error:
+        return False
+    try:
+        return bool(con.execute("SELECT count(*) FROM information_schema.tables WHERE table_name = ?", [TABLA_MARCA_DEMO]).fetchone()[0])
+    finally:
+        con.close()
+
+
+def exigir_base_real(ruta: Path | str) -> None:
+    """Falla con ``BaseDeDemo`` si ``ruta`` es la base de la demo. Toda métrica la llama antes de leer su base."""
+    if es_base_de_demo(ruta):
+        raise BaseDeDemo(
+            f"{ruta}: es la base de la demo (casos sintéticos). Nunca se usa para calcular métricas: use data/senales.duckdb."
+        )
+
+
+def base_real_o_salir(ruta: Path | str) -> None:
+    """Como ``exigir_base_real``, pero para una CLI: termina el proceso con el mensaje en vez de lanzar."""
+    try:
+        exigir_base_real(ruta)
+    except BaseDeDemo as exc:
+        raise SystemExit(f"ERROR: {exc}") from exc
+
 # Tabla -> [(columna, tipo)]. El orden es el de la tabla.
 # SIEMPRE se agregan columnas nuevas AL FINAL de su tabla: `asegurar_esquema` las agrega con ALTER TABLE (quedan al final en una
 # base ya creada) y los inserts son posicionales; una columna en medio desordena las bases viejas (error de conversión).

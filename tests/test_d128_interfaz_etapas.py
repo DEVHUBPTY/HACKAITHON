@@ -74,8 +74,8 @@ def test_la_barra_lateral_tiene_las_siete_etapas_del_pdf_en_orden_y_la_consulta_
     at = app.run()
     assert not at.exception
     assert list(at.radio(key="pantalla_etapa").options) == ETAPAS_PDF
-    assert [b.label for b in at.sidebar.button] == ["Consulta"]            # la consulta no es una etapa del reto
-    assert at.radio(key="pantalla_etapa").value == "calidad" and at.session_state["pantalla"] == "calidad"
+    assert [b.label for b in at.sidebar.button] == ["Cómo funciona", "Consulta"]            # D-131: la entrada y la consulta no son etapas del reto
+    assert at.radio(key="pantalla_etapa").value is None and at.session_state["pantalla"] == "inicio"
 
 
 def test_las_etapas_llevan_los_nombres_y_las_claves_de_siempre() -> None:
@@ -88,7 +88,7 @@ def test_elegir_una_etapa_y_la_consulta_cambia_de_pantalla(app) -> None:
     at = app.run()
     at.radio(key="pantalla_etapa").set_value("contextualizar").run()
     assert at.session_state["pantalla"] == "contextualizar" and not at.exception
-    at.sidebar.button[0].click().run()
+    at.sidebar.button(key="pantalla_consulta").click().run()
     assert at.session_state["pantalla"] == "consulta" and at.radio(key="pantalla_etapa").value is None and not at.exception
     at.radio(key="pantalla_etapa").set_value("ficha").run()
     assert at.session_state["pantalla"] == "ficha"
@@ -115,7 +115,7 @@ def test_el_atajo_caso_abre_explicar(app) -> None:
 
 
 def test_la_arquitectura_muestra_los_nueve_pasos_del_pdf_con_las_cuentas_de_los_datos(app, datos) -> None:
-    at = app.run()
+    at = ir(app.run(), "calidad")      # D-131: la aplicación abre en «Cómo funciona»; la arquitectura está en «1 · Cargar»
     m = metricas(at)
     pasos = [
         "Fuentes públicas / snapshot", "Validación y normalización", "Almacenamiento", "Búsqueda y agrupación", "Motor de priorización",
@@ -138,7 +138,7 @@ def test_la_arquitectura_muestra_los_nueve_pasos_del_pdf_con_las_cuentas_de_los_
 
 
 def test_cada_paso_de_la_arquitectura_lleva_un_boton_a_la_pantalla_donde_se_ve(app) -> None:
-    at = app.run()
+    at = ir(app.run(), "calidad")
     botones = {b.key: b for b in at.button if str(b.key).startswith("arq_")}
     esperado = {f"arq_{i}_{pantalla}" for i, paso in enumerate(CFG.cargar.arquitectura) for pantalla in paso.pantallas}
     assert set(botones) == esperado

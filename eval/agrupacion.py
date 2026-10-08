@@ -333,6 +333,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--salida", type=Path, default=SALIDA_JSON)
     parser.add_argument("--curva", type=Path, default=SALIDA_CSV)
     args = parser.parse_args(argv)
+    db.base_real_o_salir(args.base)    # C-06: la base de la demo nunca entra en una métrica
     if not args.etiquetas.exists():
         print(f"No existe {args.etiquetas}: sin etiquetas humanas no se calcula ninguna métrica", file=sys.stderr)
         return CODIGO_SIN_ETIQUETAS

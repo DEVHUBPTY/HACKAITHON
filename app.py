@@ -25,13 +25,14 @@ import contextlib  # noqa: E402
 import io  # noqa: E402
 import logging  # noqa: E402
 from collections.abc import Sequence  # noqa: E402
+from pathlib import Path  # noqa: E402
 from typing import Any  # noqa: E402
 
 import pandas as pd  # noqa: E402
 import streamlit as st  # noqa: E402
 
-from src import db, exportar, interfaz as ui, revision as rv  # noqa: E402
-from src.configuracion import MODALIDADES, RAIZ, cargar_modalidad, cargar_temas, leer_local_env  # noqa: E402
+from src import corrida as co, db, exportar, interfaz as ui, revision as rv  # noqa: E402
+from src.configuracion import CLAVE_INICIO, MODALIDADES, RAIZ, cargar_carga, cargar_corrida, cargar_modalidad, cargar_temas, leer_local_env  # noqa: E402
 from src.cache import SinBorrador  # noqa: E402
 from src.consulta import RespuestaConsulta, crear_consultor  # noqa: E402
 from src.esquemas import ETIQUETA_BORRADOR, Ficha  # noqa: E402
@@ -62,8 +63,9 @@ def ficha_de(ruta: str, id_grupo: str, modalidad: str) -> Ficha:
 
 
 @st.cache_data(show_spinner=False)
-def reporte_de_carga() -> dict[str, Any]:
-    return ui.reporte_de_carga(REPORTE_CARGA)
+def reporte_de_carga(ruta: str = str(REPORTE_CARGA)) -> dict[str, Any]:
+    """El reporte de carga de la app o, al explorar una corrida (D-130), el de esa corrida."""
+    return ui.reporte_de_carga(Path(ruta))
 
 
 # ------------------------------------------------------------------ piezas comunes
@@ -75,11 +77,74 @@ def pie(ctx: ui.Contexto, alcance: str | None = None) -> None:
     st.caption(f"**{ETIQUETA_BORRADOR}** · Alcance: {alcance or ui.leyenda_de_alcance()}")
 
 
+def indicador_de_etapas(ctx: ui.Contexto, clave: str) -> None:
+    """D-131: la secuencia siempre a la vista: las siete etapas en fila, la actual resaltada (color principal) y cada una con su salto."""
+    etapas = ui.etapas_del_reto(ctx.cfg)
+    for e, col in zip(etapas, st.columns(len(etapas)), strict=True):
+        with col:
+            st.button(
+                e.titulo, key=f"paso_{e.clave}", on_click=ir_a, args=(e.clave,), width="stretch", type="primary" if e.clave == clave else "secondary",
+                help=ctx.cfg.navegacion.ayuda_paso.format(titulo=e.titulo),
+            )
+
+
 def encabezado(ctx: ui.Contexto, clave: str) -> None:
-    """D-128: cada pantalla lleva el nombre de su etapa del PDF y lo que el PDF pide en ella."""
+    """D-128: cada pantalla lleva el nombre de su etapa del PDF y lo que el PDF pide en ella.
+    D-131: antes va el indicador de etapas y después, la guía (qué hace, cómo leerla y qué caso de uso demuestra)."""
     p = next(x for x in ctx.cfg.pantallas if x.clave == clave)
+    if not p.separada:
+        indicador_de_etapas(ctx, clave)
     st.header(p.titulo)
     st.caption(p.descripcion)
+    nav = ctx.cfg.navegacion
+    with st.container(key="guia_etapa"):
+        st.markdown(f"**{nav.que_hace}.** {p.guia.que_hace}")
+        st.markdown(f"**{nav.como_leer}.** {p.guia.como_leer}")
+        st.markdown(f"**{nav.caso_de_uso}.** {p.guia.caso_de_uso}")
+
+
+def navegacion_inferior(ctx: ui.Contexto, clave: str) -> None:
+    """D-131: al pie de cada etapa, ir a la anterior o a la siguiente (la 1 no tiene anterior y la 7 no tiene siguiente). El grupo elegido se conserva."""
+    anterior, siguiente = ui.vecinas_de_etapa(ctx.cfg, clave)
+    if anterior is None and siguiente is None:
+        return
+    nav = ctx.cfg.navegacion
+    with st.container(key="navegacion_pie"):
+        izquierda, derecha = st.columns(2)
+        if anterior is not None:
+            izquierda.button(nav.anterior.format(titulo=anterior.titulo), key="nav_anterior", on_click=ir_a, args=(anterior.clave,), width="stretch")
+        if siguiente is not None:
+            derecha.button(nav.siguiente.format(titulo=siguiente.titulo), key="nav_siguiente", on_click=ir_a, args=(siguiente.clave,), type="primary", width="stretch")
+
+
+def pantalla_inicio(ctx: ui.Contexto) -> None:
+    """D-131: «Cómo funciona», la entrada: para qué sirve, quién la usa, las siete etapas con lo que entra y sale de cada una, y tres reglas de la casa."""
+    ini = ctx.cfg.inicio
+    st.header(ini.titulo)
+    st.caption(ini.descripcion)
+    st.markdown(ini.proposito)
+    st.subheader(ini.titulo_modalidades)
+    st.markdown(ini.texto_cita)
+    for m in ini.modalidades:
+        st.markdown(f"- **{m.nombre}** · {m.quien}: {m.obtiene} {m.alcance}")
+    st.subheader(ini.titulo_etapas)
+    st.caption(ini.ayuda_etapas)
+    etapas = ui.etapas_de_inicio(ctx.con, ctx.cfg, carga_activa(), ctx.revisiones, ctx.demo)
+    for e, col in zip(etapas, st.columns(len(etapas)), strict=True):
+        with col, st.container(key=f"etapa_{e.clave}"):
+            st.metric(e.titulo, ini.sin_dato if e.cuenta is None else f"{e.cuenta:,}".replace(",", " "), help=e.unidad)
+            st.caption(e.unidad)
+            st.markdown(f"**{ini.etiqueta_entra}:** {e.entra}")
+            st.markdown(f"**{ini.etiqueta_sale}:** {e.sale}")
+            st.button(ini.boton_abrir.format(titulo=e.titulo), key=f"inicio_{e.clave}", on_click=ir_a, args=(e.clave,), width="stretch")
+    st.subheader(ini.titulo_reglas)
+    for i, (regla, col) in enumerate(zip(ini.reglas, st.columns(len(ini.reglas)), strict=True)):
+        with col, st.container(key=f"regla_{i}"):
+            st.markdown(f"**{regla.titulo}**")
+            st.markdown(regla.texto)
+    st.caption(ini.texto_arquitectura)
+    st.button(ini.boton_arquitectura, key="inicio_arquitectura", on_click=ir_a, args=(ctx.cfg.pantallas[0].clave,))
+    pie(ctx)
 
 
 def titulo_de(ctx: ui.Contexto, clave: str) -> str:
@@ -88,6 +153,25 @@ def titulo_de(ctx: ui.Contexto, clave: str) -> str:
 
 def insignia_sintetico(ctx: ui.Contexto) -> None:
     st.markdown(f":orange-badge[{ctx.cfg.textos.sintetico}]", help=ctx.cfg.textos.sintetico_ayuda)
+
+
+def grupos_sinteticos(ctx: ui.Contexto) -> set[str]:
+    """Grupos con algún titular sintético (``origen = sintetico``): solo existen en la base de la demo (C-06)."""
+    return {f.id_grupo for f in ctx.filas if f.sintetico}
+
+
+def insignia_de_grupo(ctx: ui.Contexto, id_grupo: str | None) -> None:
+    """La insignia SINTÉTICO si el grupo lo es (Organizar, Contextualizar, Priorizar, Explicar, Producir y Revisar)."""
+    if id_grupo and id_grupo in grupos_sinteticos(ctx):
+        insignia_sintetico(ctx)
+
+
+def con_origen(ctx: ui.Contexto, filas: list[dict[str, Any]], clave: str = "Grupo") -> list[dict[str, Any]]:
+    """Agrega la columna «Origen» (SINTÉTICO) a las filas de un grupo; si la base no tiene sintéticos, las deja como están."""
+    sinteticos = grupos_sinteticos(ctx)
+    if not sinteticos:
+        return filas
+    return [{**f, "Origen": ctx.cfg.textos.sintetico if f[clave] in sinteticos else ""} for f in filas]
 
 
 def linea(texto: str, nivel: int = 0) -> None:
@@ -137,7 +221,7 @@ def selector_de_grupo(ctx: ui.Contexto, clave: str) -> str | None:
 
     def etiqueta(i: str) -> str:
         f = por_id[i]
-        return f"#{f.posicion} · {f.titular[:ctx.cfg.bandeja.largo_titular_selector]}"
+        return f"#{f.posicion} · {ctx.cfg.textos.sintetico + ' · ' if f.sintetico else ''}{f.titular[:ctx.cfg.bandeja.largo_titular_selector]}"
 
     # El valor del widget parte del grupo compartido; al elegir otro, on_change (que corre ANTES de volver a ejecutar el script)
     # actualiza el grupo compartido, así que lo de arriba ya no pisa la elección.
@@ -170,18 +254,206 @@ def arquitectura(ctx: ui.Contexto, carga: dict[str, Any] | None) -> None:
             with col, st.container(border=True):
                 st.metric(f"{i + 1} · {paso.etiqueta}", "sin dato" if paso.cuenta is None else f"{paso.cuenta:,}".replace(",", " "), help=paso.unidad)
                 st.caption(paso.unidad + (" →" if i + 1 < len(pasos) else ""))
+                if paso.ancla:    # D-130: el paso se ve más abajo, en esta misma pantalla
+                    st.markdown(f"[Ir a este paso, más abajo ↓](#{paso.ancla})")
                 for destino in paso.pantallas:
                     st.button(f"Ver en {titulo_de(ctx, destino)}", key=f"arq_{i}_{destino}", on_click=ir_a, args=(destino,), width="stretch")
 
 
+# ------------------------------------------------------------------ 1 · Cargar en vivo y prueba T01 (D-130)
+
+COLUMNAS_POR_FILA = 4
+
+
+def reporte_activo() -> Path:
+    """El reporte de carga de la app, o el de la corrida que se está explorando en esta sesión."""
+    base = st.session_state.get("base_explorada")
+    if base:
+        r = Path(base).parent / cargar_corrida().corridas.subcarpeta_salida / cargar_carga().salida.reporte
+        if r.exists():
+            return r
+    return REPORTE_CARGA
+
+
+def pintar_paso(paso: co.Paso) -> None:
+    """Explicación, cifras reales, tablas y mensajes de un paso (los mismos en vivo y al volver a pintar la corrida guardada)."""
+    st.caption(paso.explicacion)
+    numericas = {k: v for k, v in paso.cifras.items() if isinstance(v, (int, float)) and not isinstance(v, bool)}
+    items = list(numericas.items())
+    for inicio in range(0, len(items), COLUMNAS_POR_FILA):
+        for (k, v), col in zip(items[inicio : inicio + COLUMNAS_POR_FILA], st.columns(COLUMNAS_POR_FILA), strict=False):
+            col.metric(k, f"{v:,}".replace(",", " ") if isinstance(v, int) else v)
+    for k, v in paso.cifras.items():
+        if k not in numericas:
+            st.markdown(f"**{escapar_markdown(k)}:** {escapar_markdown(str(v))}")
+    for nombre, filas in paso.tablas.items():
+        if filas:
+            st.markdown(f"**{nombre}**")
+            st.dataframe(pd.DataFrame(filas), hide_index=True)
+    for m in paso.mensajes:
+        (st.error if paso.estado == co.ESTADO_FALLA else st.warning)(m)
+
+
+def etiqueta_de_paso(paso: co.Paso) -> str:
+    marca = {co.ESTADO_OK: "✓", co.ESTADO_AVISO: "⚠", co.ESTADO_FALLA: "✗", co.ESTADO_OMITIDO: "–"}[paso.estado]
+    return f"{marca} {paso.titulo} · {paso.segundos:.1f} s"
+
+
+def explorar_corrida(ruta: str) -> None:
+    st.session_state["base_explorada"] = ruta
+
+
+@st.cache_resource(show_spinner=False)
+def base_de_sesion(ruta: str, modalidad: str, huella: tuple[int, int]) -> str:
+    """D-132: la base con los puntajes de ``modalidad`` (la misma si ya lo son; si no, una copia de sesión). Una vez por base y modalidad.
+
+    ``huella`` (tamaño y fecha de modificación) solo forma parte de la clave de la caché: si la base cambia, se vuelve a calcular.
+    """
+    return str(co.base_de_modalidad(Path(ruta), modalidad))
+
+
+def volver_a_la_base() -> None:
+    st.session_state.pop("base_explorada", None)
+
+
+def pintar_comparacion(c: co.Comparacion, cfg: Any) -> None:
+    st.subheader("Esta carga vs. la base de la app", anchor="comparacion")
+    (st.success if c.iguales else st.warning)(cfg.textos.iguales if c.iguales else cfg.textos.distintas)
+    st.dataframe(
+        pd.DataFrame([{"Concepto": f.etiqueta, "Esta carga": f.corrida, "Base de la app": f.viva, "Coincide": co.MARCA_OK if f.igual else co.MARCA_MAL} for f in c.filas]),
+        hide_index=True,
+    )
+
+
+def carga_en_vivo(ctx: ui.Contexto) -> None:
+    """Botón «Cargar el paquete congelado»: corre la etapa 1 y las siguientes sobre una base propia, mostrando cada paso (D-130)."""
+    cfg = cargar_corrida()
+    st.subheader(cfg.textos.titulo, anchor="cargar")
+    st.write(cfg.textos.explicacion)
+    st.caption(cfg.textos.sin_red)
+    pedido = st.button(cfg.textos.boton, type="primary", key="corrida_cargar")
+    barra = st.empty()
+    contenedores: dict[str, Any] = {}
+    for p in cfg.pasos:
+        st.subheader(p.titulo, anchor=p.clave)
+        contenedores[p.clave] = st.container()
+    zona_final = st.container()
+    guardada = st.session_state.get("corrida")
+    if pedido:
+        corrida = co.Corrida(cfg)
+        total = len(cfg.pasos)
+        for i, p in enumerate(cfg.pasos):
+            barra.progress(i / total, text=f"{p.titulo}…")
+            with contenedores[p.clave], st.status(f"{p.titulo}…", expanded=True) as estado:
+                paso = corrida.ejecutar_paso(p.clave)
+                pintar_paso(paso)
+                estado.update(label=etiqueta_de_paso(paso), state="error" if paso.estado == co.ESTADO_FALLA else "complete")
+        barra.progress(1.0, text="Listo")
+        comparacion = None
+        if all(x.estado in {co.ESTADO_OK, co.ESTADO_AVISO} for x in corrida.pasos.values()):
+            comparacion = corrida.comparar(db.RUTA_BASE)
+        guardada = st.session_state["corrida"] = {
+            "carpeta": str(corrida.carpeta), "base": str(corrida.base), "pasos": list(corrida.pasos.values()), "comparacion": comparacion,
+        }
+        st.session_state.pop("base_explorada", None)
+    elif guardada:
+        for paso in guardada["pasos"]:
+            with contenedores[paso.clave], st.expander(etiqueta_de_paso(paso), expanded=False):
+                pintar_paso(paso)
+    else:
+        for p in cfg.pasos:
+            with contenedores[p.clave]:
+                st.caption(p.explicacion)
+                st.caption(f"Pendiente: pulse «{cfg.textos.boton}».")
+    if guardada:
+        with zona_final:
+            st.caption(f"Carpeta de la corrida (fuera del repositorio): {guardada['carpeta']} · tiempo total {sum(p.segundos for p in guardada['pasos']):.1f} s")
+            if guardada["comparacion"] is None:
+                st.warning("La corrida no terminó bien: no se compara con la base de la app.")
+            else:
+                pintar_comparacion(guardada["comparacion"], cfg)
+                if Path(guardada["base"]).exists():
+                    if st.session_state.get("base_explorada") == guardada["base"]:
+                        st.button(cfg.textos.volver, key="corrida_volver", on_click=volver_a_la_base)
+                    else:
+                        st.button(cfg.textos.explorar, key="corrida_explorar", on_click=explorar_corrida, args=(guardada["base"],))
+
+
+def archivo_propio() -> None:
+    """T01: valida solo la etapa 1 sobre un CSV subido, fila por fila. Nunca alimenta la base de la app (D-130)."""
+    cfg = cargar_corrida()
+    st.subheader(cfg.textos.titulo_propio, anchor="archivo-propio")
+    st.write(cfg.textos.explicacion_propio)
+    c1, c2 = st.columns(2)
+    for tipo, nombre, col in (("noticias", cfg.archivo_propio.nombre_descarga_noticias, c1), ("indicadores", cfg.archivo_propio.nombre_descarga_indicadores, c2)):
+        ejemplo = co.ejemplo_con_errores(tipo, cfg)
+        if ejemplo:
+            col.download_button(f"Descargar un ejemplo de {tipo} con errores", ejemplo, file_name=nombre, mime="text/csv", key=f"t01_ejemplo_{tipo}")
+    noticias = c1.file_uploader("CSV de noticias", type="csv", key="t01_noticias")
+    indicadores = c2.file_uploader("CSV de indicadores (opcional)", type="csv", key="t01_indicadores")
+    if st.button(cfg.textos.boton_propio, key="t01_validar", disabled=not (noticias or indicadores)):
+        carpeta = co.crear_carpeta_de_corrida(cfg, subcarpeta=cfg.corridas.subcarpeta_propio)
+        resultados, errores = [], []
+        for tipo, archivo in (("noticias", noticias), ("indicadores", indicadores)):
+            if archivo is None:
+                continue
+            try:
+                resultados.append(co.validar_archivo_propio(archivo.getvalue(), tipo, carpeta, cfg))
+            except co.ErrorDeCorrida as exc:
+                errores.append(f"{archivo.name}: {exc}")
+        st.session_state["t01_resultados"], st.session_state["t01_errores"] = resultados, errores
+    for e in st.session_state.get("t01_errores", []):
+        st.error(e)
+    resultados = st.session_state.get("t01_resultados")
+    if not resultados:
+        st.caption(cfg.textos.sin_archivo)
+        return
+    for r in resultados:
+        pintar_resultado_propio(r, cfg)
+
+
+def pintar_resultado_propio(r: co.ResultadoPropio, cfg: Any) -> None:
+    st.markdown(f"**Reporte de calidad de {r.archivo}**")
+    a, b, c = st.columns(3)
+    a.metric("Leídas", r.leidas)
+    b.metric("Aceptadas", r.validas)
+    c.metric("Rechazadas", r.rechazadas)
+    for e in r.errores_de_archivo:
+        st.error(f"{e['campo']}: {e['motivo']}")
+    if r.errores_por_tipo:
+        st.dataframe(pd.DataFrame({"Tipo de error": list(r.errores_por_tipo), "Filas": list(r.errores_por_tipo.values())}), hide_index=True)
+    if r.coinciden_con_lo_esperado:
+        k, n = r.coinciden_con_lo_esperado
+        st.caption(f"El archivo declara el error esperado de cada fila ({cfg.archivo_propio.columna_esperado}): el resultado coincide en {k} de {n} filas.")
+    filas = [
+        {"Fila": f.posicion, "ID": f.id, "Veredicto": "✓ aceptada" if f.estado == "aceptada" else "✗ rechazada", "Motivo": f.motivos, "Valor rechazado": f.valor_rechazado,
+         **({"Esperado": f.esperado or ""} if r.columna_esperado else {}), **f.campos}
+        for f in r.filas[: cfg.archivo_propio.filas_visibles]
+    ]
+    if len(r.filas) > len(filas):
+        st.caption(f"Se listan {len(filas)} de {len(r.filas)} filas; el CSV descargable lleva todas.")
+    st.dataframe(pd.DataFrame(filas), hide_index=True)
+    if r.nulos_en_validas:
+        st.caption("Nulos conservados como nulos en las filas aceptadas (nunca se rellenan con cero): " + " · ".join(f"{k}: {v}" for k, v in r.nulos_en_validas.items()))
+    st.download_button("Descargar el veredicto de cada fila (CSV)", r.csv_de_filas, file_name=f"veredicto_{r.tipo}.csv", mime="text/csv", key=f"t01_veredicto_{r.tipo}")
+
+
+def carga_activa() -> dict[str, Any] | None:
+    """El reporte de carga de la base activa, o ``None`` si no se puede leer (la cuenta queda «sin dato», nunca inventada)."""
+    try:
+        return reporte_de_carga(str(reporte_activo()))
+    except Exception:  # noqa: BLE001 - la pantalla debe abrir aunque falten los archivos del snapshot
+        return None
+
+
 def pantalla_calidad(ctx: ui.Contexto) -> None:
     encabezado(ctx, "calidad")
-    try:
-        carga = reporte_de_carga()
-    except Exception as exc:  # noqa: BLE001 - la pantalla debe abrir aunque falten los archivos del snapshot
-        st.warning(f"No se pudo leer el reporte de carga ({type(exc).__name__}).")
-        carga = None
+    carga = carga_activa()
+    if carga is None:
+        st.warning("No se pudo leer el reporte de carga.")
     arquitectura(ctx, carga)
+    carga_en_vivo(ctx)
+    archivo_propio()
     st.subheader("Calidad de los datos")
     st.caption("Lo que no sirve se marca, no se borra: el ruido se conserva y se cuenta, pero no entra en la bandeja.")
     r = ui.resumen_de_calidad(ctx.con)
@@ -246,17 +518,19 @@ def pantalla_organizar(ctx: ui.Contexto) -> None:
         st.info(ctx.cfg.textos.sin_base)
         pie(ctx)
         return
-    st.dataframe(pd.DataFrame(filas), hide_index=True, width="stretch", column_config={"Titular central": st.column_config.TextColumn(width="large")})
+    st.dataframe(pd.DataFrame(con_origen(ctx, filas)), hide_index=True, width="stretch", column_config={"Titular central": st.column_config.TextColumn(width="large")})
     ids = [f["Grupo"] for f in filas]
+    sinteticos = grupos_sinteticos(ctx)
     por_id = {f["Grupo"]: f for f in filas}
     largo = ctx.cfg.bandeja.largo_titular_selector
     elegido = st.selectbox(
         "Abrir los titulares y las procedencias de un grupo", ids, key="organizar_grupo",
-        format_func=lambda i: f"{i} · {por_id[i]['Titulares']} titulares, {por_id[i]['Procedencias']} procedencias · {por_id[i]['Titular central'][:largo]}",
+        format_func=lambda i: f"{i} · {ctx.cfg.textos.sintetico + ' · ' if i in sinteticos else ''}{por_id[i]['Titulares']} titulares, {por_id[i]['Procedencias']} procedencias · {por_id[i]['Titular central'][:largo]}",
     )
     d = ui.detalle_de_grupo(ctx.con, elegido, nombres, ctx.cfg_ver, ctx.cfg.organizar.titulares_visibles)
     if d is not None:
         st.markdown(f"**{escapar_markdown(d.titular_central)}** · `{d.id_grupo}` · {d.tema}")
+        insignia_de_grupo(ctx, d.id_grupo)
         c1, c2, c3 = st.columns(3)
         c1.metric("Titulares", d.n_titulares)
         c2.metric("Medios", d.n_medios)
@@ -265,7 +539,11 @@ def pantalla_organizar(ctx: ui.Contexto) -> None:
         st.markdown("**Procedencias**")
         st.dataframe(pd.DataFrame(d.procedencias), hide_index=True, width="stretch")
         st.markdown("**Titulares del grupo**")
-        st.dataframe(pd.DataFrame(d.titulares), hide_index=True, width="stretch", column_config={"Titular": st.column_config.TextColumn(width="large")})
+        titulares = d.titulares
+        marcados = ui.ids_sinteticos(ctx.con, [t["Noticia"] for t in titulares])
+        if marcados:
+            titulares = [{**t, "Origen": ctx.cfg.textos.sintetico if t["Noticia"] in marcados else ""} for t in titulares]
+        st.dataframe(pd.DataFrame(titulares), hide_index=True, width="stretch", column_config={"Titular": st.column_config.TextColumn(width="large")})
         if d.n_titulares > len(d.titulares):
             st.caption(f"Se muestran {len(d.titulares)} de {d.n_titulares} titulares.")
         st.button("Abrir la ficha de este grupo", key="organizar_abrir", on_click=ir_a, args=("ficha", d.id_grupo))
@@ -278,7 +556,7 @@ def pantalla_organizar(ctx: ui.Contexto) -> None:
 def pantalla_contextualizar(ctx: ui.Contexto) -> None:
     encabezado(ctx, "contextualizar")
     nombres = {k: t.nombre for k, t in cargar_temas().temas.items()}
-    vinculos, sin = ui.vinculos_oficiales(ctx.con, nombres, ctx.cfg)
+    vinculos, sin = ui.vinculos_oficiales(ctx.con, nombres, ctx.cfg, ctx.modalidad)
     con_vinculo = {v.id_grupo for v in vinculos}
     por_motivo = ui.grupos_sin_vinculo_por_motivo(sin, con_vinculo)
     c1, c2, c3 = st.columns(3)
@@ -289,10 +567,10 @@ def pantalla_contextualizar(ctx: ui.Contexto) -> None:
     st.subheader("Noticias relacionadas con un dato oficial")
     if vinculos:
         st.dataframe(
-            pd.DataFrame([{
+            pd.DataFrame(con_origen(ctx, [{
                 "Grupo": v.id_grupo, "Titular": v.titular, "Fuente": v.fuente, "Dato oficial": v.id_evidencia, "Relación": v.relacion, "Papel": v.papel,
                 "Indicador o lugar": v.indicador, "Valor": v.valor, "Período": v.periodo, "Limitaciones": v.limitacion, "Regla que lo sustenta": v.regla,
-            } for v in vinculos]),
+            } for v in vinculos])),
             hide_index=True, width="stretch",
             column_config={"Titular": st.column_config.TextColumn(width="large"), "Limitaciones": st.column_config.TextColumn(width="large"),
                            "Regla que lo sustenta": st.column_config.TextColumn(width="large")},
@@ -301,7 +579,8 @@ def pantalla_contextualizar(ctx: ui.Contexto) -> None:
         st.markdown("**Citas (clic para ver el registro)**")
         for g in dict.fromkeys(v.id_grupo for v in vinculos):
             propios = [v for v in vinculos if v.id_grupo == g]
-            with st.expander(f"{g} · {propios[0].titular[:ctx.cfg.bandeja.largo_titular_selector]} ({len(propios)} vínculos)"):
+            with st.expander(f"{g} · {ctx.cfg.textos.sintetico + ' · ' if g in grupos_sinteticos(ctx) else ''}{propios[0].titular[:ctx.cfg.bandeja.largo_titular_selector]} ({len(propios)} vínculos)"):
+                insignia_de_grupo(ctx, g)
                 citas_clicables(ctx, list(dict.fromkeys((v.id_evidencia, v.campo_cita) for v in propios)), "Datos oficiales")
                 st.button("Abrir la ficha de este grupo", key=f"contexto_abrir_{g}", on_click=ir_a, args=("ficha", g))
     else:
@@ -310,7 +589,7 @@ def pantalla_contextualizar(ctx: ui.Contexto) -> None:
     for motivo, grupos in por_motivo.items():
         st.markdown(f"**{ctx.cfg.contextualizar.motivos_sin_vinculo.get(motivo, motivo)}** · {len(grupos)} grupos · `{motivo}`")
         st.dataframe(
-            pd.DataFrame([{"Grupo": g.id_grupo, "Titular": g.titular, "Tema": g.tema, "Regla": g.regla} for g in grupos]),
+            pd.DataFrame(con_origen(ctx, [{"Grupo": g.id_grupo, "Titular": g.titular, "Tema": g.tema, "Regla": g.regla} for g in grupos])),
             hide_index=True, width="stretch", column_config={"Titular": st.column_config.TextColumn(width="large")},
         )
     pie(ctx)
@@ -333,8 +612,15 @@ def tabla_de_bandeja(ctx: ui.Contexto, filas: Sequence[ui.FilaBandeja], modalida
             for f in filas
         ]
     )
+    def con_significado(columna: str) -> Any:     # D-131: solo el rango y el estado de evidencia llevan color, y es el de su significado (alto, medio, insuficiente, suficiente)
+        def pintar(valor: Any) -> str:
+            color = ui.color_semantico(ctx.cfg, columna.lower(), str(valor))
+            return f"color: {color}; font-weight: 600" if color else ""
+        return pintar
+
+    estilo = tabla.style.map(con_significado("Rango"), subset=["Rango"]).map(con_significado("Evidencia"), subset=["Evidencia"])
     st.dataframe(
-        tabla, hide_index=True, width="stretch", height=(len(tabla) + 1) * ctx.cfg.bandeja.alto_filas_px,
+        estilo, hide_index=True, width="stretch", height=(len(tabla) + 1) * ctx.cfg.bandeja.alto_filas_px,
         column_config={k: st.column_config.ProgressColumn(k, help=f"Componente {k} (0 a 1)", min_value=0.0, max_value=1.0, format=f"%.{ctx.cfg.bandeja.decimales_puntaje + 1}f") for k in ui.COMPONENTES}
         | {"P": st.column_config.NumberColumn("P", format=f"%.{ctx.cfg.bandeja.decimales_puntaje}f"), "Titular representativo": st.column_config.TextColumn(width="large")},
     )
@@ -422,7 +708,8 @@ def pantalla_bandeja(ctx: ui.Contexto) -> None:
     st.caption(f"Se muestran {len(visibles)} de {total} grupos.")
     ids = [f.id_grupo for f in filas]
     por_id = {f.id_grupo: f for f in filas}
-    elegido = st.selectbox("Abrir la ficha de", ids, key="bandeja_grupo", format_func=lambda i: f"#{por_id[i].posicion} · {por_id[i].titular[:ctx.cfg.bandeja.largo_titular_selector]}")
+    elegido = st.selectbox("Abrir la ficha de", ids, key="bandeja_grupo", format_func=lambda i: f"#{por_id[i].posicion} · {ctx.cfg.textos.sintetico + ' · ' if por_id[i].sintetico else ''}{por_id[i].titular[:ctx.cfg.bandeja.largo_titular_selector]}")
+    insignia_de_grupo(ctx, elegido)
     st.button("Abrir ficha", on_click=ir_a, args=("ficha", elegido), key="bandeja_abrir")
     pie(ctx)
 
@@ -445,8 +732,7 @@ def pantalla_ficha(ctx: ui.Contexto) -> None:
     v = vista(ficha, ctx.cfg_ver)
     plan = ui.plan_de_ficha(v, ctx.cfg)
     st.markdown(f"**{v.marca}** · `{v.id_grupo}`")
-    if any(f.sintetico for f in ctx.filas if f.id_grupo == id_grupo):
-        insignia_sintetico(ctx)
+    insignia_de_grupo(ctx, id_grupo)
     for s in plan.resumen:                                   # resumen: qué se reporta, estado y acción
         st.subheader(s.titulo)
         lineas(s.lineas)
@@ -528,6 +814,7 @@ def pantalla_paquete(ctx: ui.Contexto) -> None:
         pie(ctx)
         return
     ficha = ficha_de(str(ctx.ruta_base), id_grupo, ctx.modalidad)
+    insignia_de_grupo(ctx, id_grupo)
     a = ficha.accion_recomendada
     st.markdown(f"**Acción recomendada:** {escapar_markdown(a.accion)} · prioridad {a.rango} · evidencia {a.estado_evidencia}")
     estado = ui.obtener_paquete(id_grupo, ctx.modalidad, ctx.cfg, ruta_base=ctx.ruta_base)
@@ -535,6 +822,9 @@ def pantalla_paquete(ctx: ui.Contexto) -> None:
         st.markdown(f"**{ETIQUETA_BORRADOR}**")
         for titulo, parrafos in ui.secciones_de_paquete(estado.paquete, ctx.cfg.paquete.etiquetas):
             with st.expander(titulo, expanded=True):
+                lector = ui.usuario_de_seccion(ctx.cfg, ctx.modalidad, titulo)      # D-131: a quién sirve esta sección
+                if lector:
+                    st.caption(ctx.cfg.paquete.etiqueta_usuario.format(usuario=lector))
                 for p in parrafos:
                     st.markdown(escapar_markdown(p))
     else:
@@ -585,6 +875,7 @@ def pantalla_revision(ctx: ui.Contexto) -> None:
         pie(ctx)
         return
     rev, cfg_rev = ctx.revisiones, ui.cargar_revision()
+    insignia_de_grupo(ctx, id_grupo)
     _huerfanos(ctx)
     caso = rev.caso_de_grupo(id_grupo, ctx.modalidad)
     actual = ui.estado_de_revision(ctx.con, id_grupo, ctx.cfg, rev, ctx.modalidad)
@@ -800,7 +1091,7 @@ def _correccion(ctx: ui.Contexto, caso: Any, version: Any, revisor: str | None, 
 
 
 PANTALLAS = {
-    "calidad": pantalla_calidad, "organizar": pantalla_organizar, "contextualizar": pantalla_contextualizar, "bandeja": pantalla_bandeja,
+    "inicio": pantalla_inicio, "calidad": pantalla_calidad, "organizar": pantalla_organizar, "contextualizar": pantalla_contextualizar, "bandeja": pantalla_bandeja,
     "ficha": pantalla_ficha, "paquete": pantalla_paquete, "revision": pantalla_revision, "consulta": pantalla_consulta,
 }
 
@@ -815,7 +1106,7 @@ def barra_lateral(cfg: Any, demo: bool) -> str:
     with st.sidebar:
         st.title(cfg.titulo_app)
         if demo:
-            st.markdown(":red-badge[MODO DEMO]")
+            st.markdown(":gray-badge[Modo demo]")
         modalidad = st.selectbox(
             "Modalidad", list(MODALIDADES), index=MODALIDADES.index(cfg.modalidad_inicial), key="modalidad",
             format_func=lambda m: cargar_modalidad(m).nombre + (" (parcial)" if cargar_modalidad(m).parcial else ""),
@@ -823,6 +1114,7 @@ def barra_lateral(cfg: Any, demo: bool) -> str:
         etapas = {p.clave: p.titulo for p in cfg.pantallas if not p.separada}
         st.session_state.setdefault("pantalla", cfg.pantalla_inicial)
         actual = st.session_state["pantalla"]
+        st.button(cfg.inicio.titulo, key="pantalla_inicio", on_click=ir_a, args=(CLAVE_INICIO,), type="primary" if actual == CLAVE_INICIO else "secondary", width="stretch")
         st.session_state["pantalla_etapa"] = actual if actual in etapas else None     # en la consulta, ninguna etapa queda marcada
         st.radio("Etapas del reto", list(etapas), format_func=etapas.get, key="pantalla_etapa", index=None, on_change=elegir_etapa)
         st.divider()
@@ -849,21 +1141,45 @@ def aplicar_atajo(cfg: Any, filas: list[ui.FilaBandeja], revisiones: Any) -> Non
 def main() -> None:
     cfg = ui.cargar_interfaz()
     st.set_page_config(page_title=cfg.titulo_app, layout="wide")
+    st.html(f"<style>{ui.css_de_la_interfaz(cfg)}</style>")      # D-131: CSS mínimo y local, sin recursos externos
     demo = ui.modo_demo()
     ruta, aviso = ui.elegir_base(demo, cfg)
     if aviso:
         st.warning(aviso)
+    explorada = st.session_state.get("base_explorada")      # D-130: la base de una corrida, solo en esta sesión; nunca reemplaza el archivo vivo
+    if explorada and not Path(explorada).exists():
+        st.session_state.pop("base_explorada", None)
+        explorada = None
+    if explorada:
+        ruta = Path(explorada)
+        st.warning(cargar_corrida().textos.aviso_explorando)
+        st.button(cargar_corrida().textos.volver, key="volver_a_la_base", on_click=volver_a_la_base)
     if not ruta.exists():
         st.error(cfg.textos.sin_base)
         st.stop()
-    con = abrir_base(str(ruta)).cursor()
     nombres = {k: t.nombre for k, t in cargar_temas().temas.items()}
     previa = st.session_state.get("modalidad", cfg.modalidad_inicial)
-    revisiones = rv.Revisiones(ui.ruta_de_revision(demo), ruta, demo=demo, huellas=rv.huellas_de_exportacion(demo))  # aparte: la base de las pantallas es de solo lectura
+    ruta_rev = ruta.parent / cargar_corrida().corridas.base_revision if explorada else ui.ruta_de_revision(demo)    # al explorar una corrida, las revisiones van a su carpeta
+    origen = ruta
+    estado_base = ruta.stat()
+    with st.spinner(f"Calculando los puntajes de {cargar_modalidad(previa).nombre}…"):     # D-132: la base guarda una modalidad; la otra se calcula en una copia de sesión
+        ruta = Path(base_de_sesion(str(ruta), previa, (estado_base.st_size, estado_base.st_mtime_ns)))
+    con = abrir_base(str(ruta)).cursor()
+    revisiones = rv.Revisiones(ruta_rev, ruta, demo=demo, huellas=rv.huellas_de_exportacion(demo))  # aparte: la base de las pantallas es de solo lectura
     aplicar_atajo(cfg, ui.leer_bandeja(con, previa, nombres), revisiones)      # antes de crear los widgets: así puede fijar la pantalla
     modalidad = barra_lateral(cfg, demo)
+    if modalidad != previa:      # no debería pasar (el selector ya fijó el valor al empezar la ejecución): se repite con la base correcta
+        st.rerun()
+    if ruta != origen:
+        st.caption(cargar_corrida().textos.aviso_copia_modalidad.format(modalidad=cargar_modalidad(modalidad).nombre))
     ctx = ui.Contexto(cfg, ui.cargar_verificacion(), con, modalidad, demo, aviso, ui.leer_bandeja(con, modalidad, nombres), ruta, revisiones)
-    PANTALLAS[st.session_state["pantalla"]](ctx)
+    pantalla = st.session_state["pantalla"]
+    PANTALLAS[pantalla](ctx)
+    navegacion_inferior(ctx, pantalla)
+    vista = st.session_state.get("pantalla_vista")      # D-132: al cambiar de etapa se sube al inicio; en la primera carga y con enlaces directos, no
+    st.session_state["pantalla_vista"] = pantalla
+    if ui.etapa_cambio(vista, pantalla):
+        st.html(ui.script_ir_arriba(pantalla), unsafe_allow_javascript=True)
 
 
 main()

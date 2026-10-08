@@ -274,13 +274,14 @@ def leer_datos(con: Any, id_grupo: str, modalidad: str) -> Datos:
     if not puntajes or not evidencias:
         raise LookupError(f"{id_grupo}: sin puntaje ni estado de evidencia; ejecute `poetry run python -m src.puntaje`")
     db.exigir_modalidad(evidencias[0].get("modalidad"), modalidad, id_grupo)       # X39: nunca se mezcla el puntaje de una modalidad con la acción de otra
+    vinculos = cargar_modalidad(modalidad).filtrar_vinculos(_consulta(con, "SELECT * FROM vinculos WHERE id_grupo = ?", [id_grupo]))   # D-132: solo las fuentes de la modalidad
     return Datos(
         grupo=grupos[0],
         puntaje=puntajes[0],
         evidencia=evidencias[0],
         noticias=_consulta(con, "SELECT * FROM noticias WHERE id_grupo = ? ORDER BY id_noticia", [id_grupo]),
         procedencias=_consulta(con, "SELECT * FROM procedencias WHERE id_grupo = ? ORDER BY orden", [id_grupo]),
-        vinculos=_consulta(con, "SELECT * FROM vinculos WHERE id_grupo = ?", [id_grupo]),
+        vinculos=[dict(v) for v in vinculos],
         contradicciones=_consulta(con, "SELECT * FROM contradicciones WHERE id_grupo = ? ORDER BY id_noticia_a, id_noticia_b", [id_grupo]),
         fuentes={f["dominio"]: f for f in _consulta(con, "SELECT * FROM fuentes")},
     )

@@ -27,4 +27,8 @@ tabla_acciones:
     parcial: {accion: "Archivar", motivo: "Atención baja con evidencia parcial."}
     insuficiente: {accion: "Archivar", motivo: "Atención baja con evidencia insuficiente."}
 
+# D-132 · Fuentes de datos oficiales que esta modalidad puede usar (se filtra al leer vínculos): el PDF §6-D hace de la SBP (fuente D)
+# una extensión bancaria; el núcleo editorial usa A y B (Banco Mundial) y C (USGS).
+fuentes_oficiales: [indicador, usgs]
+
 fuentes_sugeridas_extra: []     # editorial: ninguna (D-38); banca: SBP, MEF, INEC

@@ -7,6 +7,7 @@ usa el corpus de prueba de E1-11.
 from __future__ import annotations
 
 import ast
+import shutil
 from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
@@ -296,7 +297,8 @@ def test_el_guion_de_la_demo_sale_de_la_tabla_de_docs_demo_md() -> None:
     assert ui.pasos_de_demo(texto) == [ui.PasoDemo("0:00–0:15", "Calidad", "Se muestra el reporte", "Se marca, no se borra")]
 
 
-def test_el_modo_demo_sin_base_de_demo_cae_al_snapshot_y_avisa(tmp_path) -> None:
+def test_el_modo_demo_sin_base_de_demo_cae_al_snapshot_y_avisa(tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr(ui, "RAIZ", tmp_path)      # C-06: ya existe data/demo.duckdb en el repo; aquí no hay ninguna
     assert ui.modo_demo(["--demo"]) is True and ui.modo_demo([]) is False
     ruta, aviso = ui.elegir_base(True, CFG, base_normal=tmp_path / "senales.duckdb")
     assert ruta == tmp_path / "senales.duckdb" and aviso == CFG.textos.sin_demo
@@ -454,7 +456,7 @@ def test_el_atajo_caso_abre_la_ficha_del_grupo(app) -> None:
 def test_el_atajo_caso_con_un_valor_malo_no_rompe_ni_cambia_de_pantalla(app) -> None:
     app.query_params["caso"] = "'; DROP TABLE grupos; --"
     at = app.run()
-    assert not at.exception and at.session_state["pantalla"] == "calidad"
+    assert not at.exception and at.session_state["pantalla"] == "inicio"
 
 
 def test_la_consulta_responde_con_citas_y_se_abstiene_diciendo_que_falta(app) -> None:
@@ -502,12 +504,32 @@ def test_la_revision_de_un_grupo_sin_caso_muestra_los_cinco_estados_y_solo_ofrec
     at = ir(app.run(), "revision")
     assert not at.exception
     assert "Estado actual:** nuevo" in "\n".join(textos(at))
-    assert [b.label for b in at.main.button] == ["Abrir para revisar"] and at.main.button[0].disabled      # hasta elegir quién revisa (D-49)
+    propios = [b for b in at.main.button if not str(b.key).startswith(("paso_", "nav_"))]      # D-131: sin el indicador de etapas ni la navegación
+    assert [b.label for b in propios] == ["Abrir para revisar"] and propios[0].disabled      # hasta elegir quién revisa (D-49)
     assert list(at.dataframe[0].value["Estados del reto"]) == CFG.revision.estados
     assert "aprobado como borrador" in "\n".join(textos(at))
 
 
-def test_la_modalidad_banca_sin_puntajes_en_la_base_no_inventa_una_bandeja(app) -> None:
+def test_la_modalidad_banca_sobre_una_base_editorial_calcula_sus_puntajes_en_una_copia_de_sesion(app, base) -> None:
+    """D-132: antes la bandeja de banca salía vacía («sin puntajes»); ahora se re-puntúa una copia de sesión y el archivo no se toca."""
+    antes = base.read_bytes()
+    at = app.run()
+    at.selectbox(key="modalidad").select("banca").run()
+    at = ir(at, "bandeja")
+    texto = "\n".join(textos(at))
+    assert not at.exception and "Modalidad: Banca" in texto and "calculados para esta sesión sobre una copia de la base" in texto
+    assert CFG.textos.sin_puntajes.format(modalidad="banca") not in texto and at.dataframe
+    assert base.read_bytes() == antes
+
+
+def test_la_modalidad_banca_sin_puntajes_en_la_base_no_inventa_una_bandeja(app, base, monkeypatch, tmp_path) -> None:
+    vacia = tmp_path / "sin_puntajes.duckdb"
+    shutil.copy2(base, vacia)
+    con = db.conectar(vacia)
+    for tabla in ("puntajes", "evidencia", "contradicciones"):
+        con.execute(f"DELETE FROM {tabla}")
+    con.close()
+    monkeypatch.setattr(ui, "elegir_base", lambda demo, cfg, base_normal=None: (vacia, None))
     at = app.run()
     at.selectbox(key="modalidad").select("banca").run()
     at = ir(at, "bandeja")
@@ -543,7 +565,7 @@ def test_el_modo_demo_muestra_la_insignia_y_los_pasos_del_guion(monkeypatch, bas
     at = app.run()
     assert not at.exception
     lateral = "\n".join(str(m.value) for m in at.sidebar.markdown)
-    assert "MODO DEMO" in lateral and ui.leer_guion(CFG)[0].tiempo in lateral
+    assert "Modo demo" in lateral and ui.leer_guion(CFG)[0].tiempo in lateral
 
 
 def test_la_app_no_usa_la_red_al_importar_ni_al_pintar(monkeypatch, app) -> None:

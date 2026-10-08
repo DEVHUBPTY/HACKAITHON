@@ -320,6 +320,8 @@ def principal(argv: list[str] | None = None) -> int:
     parser.add_argument("--corte", default=None, help="corte que lleva la hoja (por defecto, el de la base)")
     args = parser.parse_args(argv)
     bases = args.base or [db.RUTA_BASE]
+    for b in bases:
+        db.base_real_o_salir(b)    # C-06: la base de la demo nunca entra en una métrica
     por_defecto = not args.seleccion
     selecciones = args.seleccion or [RAIZ / cfg.archivos.seleccion]
 

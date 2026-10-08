@@ -107,13 +107,23 @@ def app_editorial(monkeypatch, base_editorial, emb, tmp_path):
     return AppTest.from_file(str(RAIZ / "app.py"), default_timeout=60)
 
 
-def test_el_mensaje_de_la_app_dice_que_comando_correr(app_editorial) -> None:
+def test_banca_se_calcula_sola_en_una_copia_de_sesion_y_el_mensaje_conserva_el_comando(app_editorial) -> None:
+    """D-132: la base guarda una modalidad; la app puntúa la otra en una copia de sesión, así que ya no pide correr el comando.
+
+    El comando sigue en el texto de ``sin_puntajes`` (para una modalidad sin puntajes); aquí se prueba que la bandeja se llena y se avisa.
+    """
+    from src.configuracion import cargar_corrida
+
+    assert "poetry run python -m src.puntaje --modalidad {modalidad}" in CFG_UI.textos.sin_puntajes
     at = app_editorial.run()
     at.selectbox(key="modalidad").select("banca").run()
     at.session_state["pantalla"] = "bandeja"
     at = at.run()
     assert not at.exception
-    assert any("poetry run python -m src.puntaje --modalidad banca" in str(i.value) for i in at.info)
+    aviso = cargar_corrida().textos.aviso_copia_modalidad.format(modalidad="Banca")
+    assert any(aviso in str(c.value) for c in at.caption)
+    assert not any("poetry run python -m src.puntaje" in str(i.value) for i in at.info)
+    assert len(at.dataframe) > 0
 
 
 # ------------------------------------------------------------------ configuración

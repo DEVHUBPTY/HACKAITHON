@@ -158,7 +158,7 @@ def _hallazgos_de_vinculos(vinculos: Sequence[Mapping[str, Any]], cfg: ConfigPri
 
 
 def leer_entradas(
-    con: Any, reglas: ReglasV13, emb: Embeddings, cfg: ConfigPrioridad | None = None
+    con: Any, reglas: ReglasV13, emb: Embeddings, cfg: ConfigPrioridad | None = None, modalidad: ConfigModalidad | None = None
 ) -> tuple[list[EntradaGrupo], dict[str, int], dict[str, str]]:
     """Entradas del puntaje, procedencia de cada noticia (su ``orden``) y titular central de cada grupo."""
     grupos = db.leer_tabla(con, "grupos", "id_grupo")
@@ -179,6 +179,8 @@ def leer_entradas(
     temas = {str(g["id_grupo"]): g.get("tema_clasificado") for g in grupos}
     cfg = cfg or cargar_prioridad()
     filas_vinculos = db.leer_tabla(con, "vinculos")
+    if modalidad is not None:   # D-132: los vínculos de una fuente que la modalidad no usa (la SBP en editorial) no cuentan ni como contexto
+        filas_vinculos = modalidad.filtrar_vinculos(filas_vinculos)
     oficial, motivos = _oficial_por_grupo(filas_vinculos, cfg.dato_oficial.relaciones_aceptadas)
     hallazgos = _hallazgos_de_vinculos(filas_vinculos, cfg, cargar_vinculos().cifra_titular.etiquetas)
     entradas = []
@@ -404,7 +406,7 @@ def ejecutar(
     emb = emb or crear(cargar_clasificacion(), reglas.agrupacion.modelo)
     con = db.conectar(ruta_base, solo_lectura=True)
     try:
-        entradas, procedencia_de, centrales = leer_entradas(con, reglas, emb)
+        entradas, procedencia_de, centrales = leer_entradas(con, reglas, emb, modalidad=mod)
     finally:
         con.close()
     envuelto = ProveedorConCorte(proveedor) if proveedor is not None else None

@@ -1,0 +1,93 @@
+# D-130 · Carga en vivo de la etapa 1 (src/corrida.py, pantalla «1 · Cargar»). Todo número, ruta y texto vive aquí (D-79).
+# Orígenes y validación de cada valor: docs/parametros.md, sección «Carga en vivo (D-130)».
+version: "1.0"
+
+corridas:
+  carpeta: hackiathon_corridas        # bajo el directorio temporal del sistema: fuera de git y fuera de data/ (nunca toca los archivos vivos)
+  formato_nombre: "%Y%m%dT%H%M%SZ"    # una subcarpeta por corrida, con la hora UTC
+  conservar_ultimas: 5                # las corridas más viejas se borran al crear una nueva (cada una pesa unos MB)
+  subcarpeta_validos: validos         # filas válidas de la carga (como data/processed/validos/)
+  subcarpeta_salida: salida           # reporte_calidad.json, errores.csv y los reportes de cada etapa
+  subcarpeta_propio: archivo_propio   # prueba T01 con un archivo subido
+  subcarpeta_modalidades: modalidades # D-132: copia de la base con los puntajes de otra modalidad (una subcarpeta por modalidad y base)
+  base_revision: revision.duckdb      # revisiones al explorar una corrida: nunca data/revision.duckdb
+
+insumos:                              # solo lectura: lo que se carga
+  carpeta_datos: data
+  carpeta_procesados: data/processed
+  carpeta_crudos: data/raw
+  manifest: data/manifest.json
+  series_sbp: data/processed/sbp_series.csv   # fuente D: no pasa por la etapa 1 (agregados de la SBP); el contexto la lee tal cual
+  modalidad: editorial                # modalidad con la que se puntúa la corrida (la de la base de la app)
+
+comparacion:                          # «esta carga vs. la base de la app»: cuentas y huellas
+  decimales_huella: 4                 # los flotantes se redondean a N decimales antes del hash (igual que config/reproducibilidad.yaml)
+  cuentas:                            # tabla (nombre simple), filtro opcional (condición fija de esta configuración) y agrupación opcional
+    - {etiqueta: "Titulares en la base", tabla: noticias}
+    - {etiqueta: "Titulares marcados como ruido", tabla: noticias, donde: es_ruido}
+    - {etiqueta: "Titulares útiles (entran en la bandeja)", tabla: noticias, donde: NOT es_ruido}
+    - {etiqueta: "Filas de indicadores", tabla: indicadores}
+    - {etiqueta: "Eventos sísmicos", tabla: sismos}
+    - {etiqueta: "Grupos de noticias", tabla: grupos}
+    - {etiqueta: "Vínculos con datos oficiales", tabla: vinculos}
+    - {etiqueta: "Grupos puntuados", tabla: puntajes}
+    - {etiqueta: "Grupos por rango", tabla: puntajes, agrupar_por: rango}
+  huellas:                            # identidad fila a fila: los mismos números podrían salir de filas distintas
+    - {etiqueta: "Identificadores de los titulares", tabla: noticias, columnas: [id_noticia]}
+    - {etiqueta: "Identificadores de los grupos", tabla: grupos, columnas: [id_grupo]}
+    - {etiqueta: "Vínculos (grupo, tipo, regla, fuente)", tabla: vinculos, columnas: [id_grupo, tipo, regla, fuente]}
+    - {etiqueta: "Puntaje y rango de cada grupo", tabla: puntajes, columnas: [id_grupo, puntaje, rango]}
+
+archivo_propio:                       # T01: probar la validación con un archivo subido (solo etapa 1; nunca alimenta la base viva)
+  maximo_bytes: 5000000               # tope del archivo subido
+  filas_visibles: 300                 # filas que se listan en pantalla (el CSV descargable lleva todas)
+  columna_esperado: error_esperado    # columna opcional de los fixtures T01: el error que se espera de esa fila
+  ejemplo_noticias: tests/fixtures/t01_noticias_invalidas.csv
+  ejemplo_indicadores: tests/fixtures/t01_indicadores_nulos.csv
+  nombre_descarga_noticias: ejemplo_noticias_con_errores.csv
+  nombre_descarga_indicadores: ejemplo_indicadores_con_nulos.csv
+
+textos:
+  titulo: "Cargar el paquete congelado"
+  explicacion: "Lee el paquete público congelado (data/raw y data/processed), lo valida, lo normaliza, lo guarda en una base propia de esta corrida y encadena las etapas siguientes sobre esa base. Nada de lo que se hace aquí escribe en data/, en la base de la app ni en las revisiones: todo va a la carpeta de la corrida."
+  boton: "Cargar el paquete congelado"
+  boton_propio: "Validar mi archivo"
+  sin_red: "Sin red y sin LLM: los embeddings son locales y el puntaje se calcula sin el modelo de lenguaje."
+  explorar: "Explorar esta corrida en las otras pantallas (solo en esta sesión)"
+  volver: "Volver a la base de la app"
+  aviso_explorando: "Estás viendo la base de una corrida (no la de la app). Las revisiones se guardan en la carpeta de la corrida. Nada de esto toca los archivos vivos."
+  aviso_copia_modalidad: "Puntajes de {modalidad} calculados para esta sesión sobre una copia de la base: el archivo vivo no se toca y se descarta al cerrar."
+  iguales: "Esta carga reproduce la base de la app: todas las cuentas y todas las huellas coinciden."
+  distintas: "Esta carga NO coincide con la base de la app. Diferencias:"
+  titulo_propio: "Probar con un archivo propio (T01)"
+  explicacion_propio: "Sube un CSV de noticias (y, si querés, uno de indicadores): se valida solo la etapa 1 en la carpeta de la corrida y se muestra qué filas se aceptan y cuáles se rechazan, con el motivo de cada una. Los nulos quedan como nulos. El archivo nunca entra a la base de la app."
+  sin_archivo: "Sube un archivo para validarlo, o descarga el ejemplo con errores."
+
+pasos:                                # orden de la corrida; cada paso lleva su explicación (PDF sección 3, etapa 1 y sección 8)
+  - clave: fuentes
+    titulo: "Fuentes públicas / snapshot"
+    explicacion: "Se leen los archivos del paquete congelado y se compara el SHA-256 de cada uno con el que registra data/manifest.json. Si un hash no coincide, el paquete no es el que se congeló."
+  - clave: validacion
+    titulo: "Validación"
+    explicacion: "Cada fila se valida contra el contrato de datos (config/contrato.yaml y config/carga.yaml): IDs con su prefijo, URL bien formada, fechas ISO 8601 UTC y campos obligatorios. Un error no detiene la carga: la fila inválida se separa con su motivo y el resto sigue. Los nulos son nulos: nunca se rellenan con cero."
+  - clave: normalizacion
+    titulo: "Normalización"
+    explicacion: "Las filas válidas se llevan a una forma común: la fecha de detección (seendate de GDELT) nunca se usa como fecha de publicación, el idioma queda en ISO 639-1, el ID sale de la URL canónica y la descripción del RSS no se copia."
+  - clave: almacenamiento
+    titulo: "Almacenamiento"
+    explicacion: "Las tablas se guardan en un DuckDB propio de la corrida. Se comprueba que data/raw y data/processed quedaron idénticos (mismo hash antes y después)."
+  - clave: limpieza
+    titulo: "Etapa 2 · Limpieza"
+    explicacion: "Se limpian los titulares y se marca el ruido: se marca, no se borra. El registro se conserva y se cuenta, pero no entra en la bandeja."
+  - clave: clasificacion
+    titulo: "Etapa 2 · Clasificación"
+    explicacion: "Embeddings locales asignan cada titular útil a uno de los seis temas del reto."
+  - clave: agrupacion
+    titulo: "Etapa 2 · Agrupación"
+    explicacion: "Los titulares del mismo evento se agrupan y se cuentan las procedencias independientes (repetición no es corroboración)."
+  - clave: contexto
+    titulo: "Etapa 3 · Contexto"
+    explicacion: "Cada grupo se vincula con un dato oficial solo si un titular lo sustenta; si no hay relación sustentada, no se fuerza."
+  - clave: puntaje
+    titulo: "Etapa 4 · Puntaje"
+    explicacion: "Puntaje de atención, estado de evidencia y acción por grupo, con código determinista y sin el modelo de lenguaje (--sin-llm)."

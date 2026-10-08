@@ -1,0 +1,12 @@
+{
+ "clave": "e36e7bb06d53ea2a9ac38a1ba9ec73d3e29a9af90c1d7905660ba470d58bacdb",
+ "proveedor": "deepseek",
+ "modelo": "deepseek-flash",
+ "version_prompt": "1.2",
+ "prompt": "boletin_banca",
+ "version_cache": "1",
+ "tokens_entrada": 1961,
+ "tokens_salida": 493,
+ "creado_utc": "2026-10-08T18:05:41Z",
+ "respuesta": "{\n  \"observaciones\": [\n    {\n      \"texto\": \"El medio prensa-latina.cu reporta que el Presidente panameño visitará Singapur y Vietnam.\",\n      \"afirmaciones\": [\"A1\"]\n    },\n    {\n      \"texto\": \"El medio laestrella.com.pa reporta que Mulino viajará a Asia y suscribirá convenios bilaterales con Singapur y Vietnam.\",\n      \"afirmaciones\": [\"A2\"]\n    },\n    {\n      \"texto\": \"El medio revistaeyn.com reporta que el Presidente de Panamá visita Singapur y Vietnam en busca de inversiones.\",\n      \"afirmaciones\": [\"A3\"]\n    },\n    {\n      \"texto\": \"El grupo de registros reúne 3 titulares de 3 medios que reportan este tema.\",\n      \"afirmaciones\": [\"A4\"]\n    },\n    {\n      \"texto\": \"Se estiman 3 procedencias independientes, contando los titulares que replican a una misma fuente como una sola.\",\n      \"afirmaciones\": [\"A5\"]\n    }\n  ],\n  \"hipotesis_impacto\": [\n    {\n      \"texto\": \"Es posible que la cobertura de una gira presidencial por Asia con fines de inversión y convenios bilaterales resulte relevante para sectores de la economía vinculados al comercio y la atracción de capital, a verificar con información adicional.\",\n      \"afirmaciones\": [\"A6\"]\n    }\n  ],\n  \"preguntas\": [\n    {\n      \"texto\": \"¿Existe algún dato oficial vinculado a esta gira presidencial por Asia que permita contrastar lo reportado por los medios?\",\n      \"vacio\": \"sin_dato_oficial\"\n    },\n    {\n      \"texto\": \"¿Cuáles son los medios y las fechas de publicación de los 3 titulares que integran el grupo de registros?\",\n      \"vacio\": \"medios_o_fechas_desconocidos\"\n    },\n    {\n      \"texto\": \"¿Qué elementos permiten estimar la urgencia del tema si la fecha de publicación es desconocida?\",\n      \"vacio\": \"urgencia_sin_publicacion\"\n    }\n  ]\n}"
+}

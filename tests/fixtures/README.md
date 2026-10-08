@@ -4,7 +4,7 @@
 
 Reglas comunes:
 
-- IDs `SYN-` deterministas y secuenciales por archivo (`SYN-T01-001`, `SYN-T02-001`, `SYN-T03-001`, `SYN-T05-001`, `SYN-T07-001`, `SYN-RUI-001`). El mismo registro conserva siempre el mismo ID (D-63).
+- IDs `SYN-` deterministas y secuenciales por archivo (`SYN-T01-001`, `SYN-T02-001`, `SYN-T03-001`, `SYN-T05-001`, `SYN-C06-001`, `SYN-T07-001`, `SYN-RUI-001`). El mismo registro conserva siempre el mismo ID (D-63).
 - `origen = sintetico`; fechas ISO 8601 en UTC (`YYYY-MM-DDTHH:MM:SSZ`); UTF-8.
 - Las columnas de los archivos de noticias son las de `noticias.csv` del contrato (CLAUDE.md), más las columnas extra de prueba indicadas abajo.
 - **Nunca copiar estos archivos a `data/processed/`** ni usarlos para calcular métricas.
@@ -21,6 +21,7 @@ Reglas comunes:
 | `t02_mismo_evento.csv` | T02 (agrupación) | Tres titulares del mismo evento (lluvias en Chiriquí) en tres medios sintéticos; los tres citan a la agencia EFE. Se espera 1 grupo, 3 fuentes conservadas y 1 procedencia. |
 | `t03_recirculada.csv` | T03 (noticia antigua) | Una noticia publicada en 2024 y detectada en septiembre de 2025. |
 | `t05_contradiccion.csv` | T05 (afirmaciones incompatibles) | Dos titulares del mismo evento con cifras incompatibles (12 vs. más de 40 escuelas). |
+| `c06_contradiccion_demo.csv` | C-06 (demo, CU-04) | Dos titulares sintéticos `SYN-C06-001/002` de dos medios y dos dominios `.example` (Logística/Canal) con cifras incompatibles (36 vs. 28 tránsitos diarios), dentro de la ventana del snapshot. `scripts/preparar_demo.py` los agrega a una copia de la base como contradicción abierta; nunca se usan para métricas. |
 | `t07_inyeccion.csv` | T07 (inyección) | Ocho titulares con descripción maliciosa. Columnas extra `descripcion` y `tipo_ataque`. |
 | `ruido.csv` | Limpieza y ruido | 15 filas. Columnas extra `ruido_esperado` y `motivo_ruido`. |
 

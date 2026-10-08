@@ -387,6 +387,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--ahora", default=None, help="fecha de referencia ISO 8601 UTC (por defecto, fecha_corte_UTC del manifest)")
     parser.add_argument("--salida", type=Path, default=SALIDA)
     args = parser.parse_args(argv)
+    db.base_real_o_salir(args.base)    # C-06: la base de la demo nunca entra en una métrica
     if not args.base.exists():
         logger.error("No existe %s: ejecute primero la tubería hasta `python -m src.contexto`", args.base)
         return 1
