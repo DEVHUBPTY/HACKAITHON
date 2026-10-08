@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "fecha_utc": "2026-10-07T20:31:59Z",
+  "fecha_utc": "2026-10-08T22:51:50Z",
   "benchmark": {
     "archivo": "benchmark_dev.jsonl",
     "sha256": "27c791a86055322eece5c45570b35ae4fe0f06bb89a4bed67c8d861c809f11cc",
@@ -14,11 +14,11 @@
     "split": "dev"
   },
   "entorno": {
-    "python": "3.11.14",
+    "python": "3.11.3",
     "sistema": "Darwin",
     "embeddings": "Embeddings",
     "metodo": "semantica",
-    "umbral_similitud": 0.874,
+    "umbral_similitud": 0.84,
     "consulta_sin_llm": true,
     "internet_necesario": false
   },
@@ -66,62 +66,52 @@
   },
   "abstenciones_incorrectas": {
     "sustentadas": {
-      "n": 2,
+      "n": 0,
       "de": 20,
-      "proporcion": 0.1,
+      "proporcion": 0.0,
       "ic95": [
         0.0,
-        0.25
+        0.0
       ],
       "ic95_wilson": [
-        0.0279,
-        0.301
+        0.0,
+        0.1611
       ],
       "remuestreos": 2000,
-      "ids": [
-        "BDEV-004",
-        "BDEV-017"
-      ],
-      "motivos": {
-        "BDEV-004": "similitud_baja",
-        "BDEV-017": "similitud_baja"
-      }
+      "bootstrap_degenerado": true,
+      "ids": [],
+      "motivos": {}
     },
     "respondibles": {
-      "n": 2,
+      "n": 0,
       "de": 30,
-      "proporcion": 0.0667,
+      "proporcion": 0.0,
       "ic95": [
         0.0,
-        0.1667
+        0.0
       ],
       "ic95_wilson": [
-        0.0185,
-        0.2132
+        0.0,
+        0.1135
       ],
       "remuestreos": 2000,
-      "ids": [
-        "BDEV-004",
-        "BDEV-017"
-      ],
-      "motivos": {
-        "BDEV-004": "similitud_baja",
-        "BDEV-017": "similitud_baja"
-      }
+      "bootstrap_degenerado": true,
+      "ids": [],
+      "motivos": {}
     },
     "nota": "Numerador: respondibles rechazadas; denominador: respondibles. Se reporta; no tiene meta."
   },
   "cobertura_de_citas": {
     "consultas": {
-      "n": 56,
-      "de": 56,
+      "n": 84,
+      "de": 84,
       "proporcion": 1.0,
       "ic95": [
         1.0,
         1.0
       ],
       "ic95_wilson": [
-        0.9358,
+        0.9563,
         1.0
       ],
       "remuestreos": 2000,
@@ -129,15 +119,15 @@
       "fallos": []
     },
     "consultas_con_validador_de_citas": {
-      "n": 56,
-      "de": 56,
+      "n": 84,
+      "de": 84,
       "proporcion": 1.0,
       "ic95": [
         1.0,
         1.0
       ],
       "ic95_wilson": [
-        0.9358,
+        0.9563,
         1.0
       ],
       "remuestreos": 2000,
@@ -147,15 +137,15 @@
     "nota": "Afirmaciones emitidas (respuestas y «último dato disponible» de las abstenciones). Cita válida = ID existente en el corpus + campo citable.",
     "borradores": {
       "factuales_con_cita_valida": {
-        "n": 11,
-        "de": 11,
+        "n": 43,
+        "de": 43,
         "proporcion": 1.0,
         "ic95": [
           1.0,
           1.0
         ],
         "ic95_wilson": [
-          0.7412,
+          0.918,
           1.0
         ],
         "remuestreos": 2000,
@@ -163,6 +153,22 @@
         "fallos": []
       },
       "factuales_que_pasan_el_validador": {
+        "n": 43,
+        "de": 43,
+        "proporcion": 1.0,
+        "ic95": [
+          1.0,
+          1.0
+        ],
+        "ic95_wilson": [
+          0.918,
+          1.0
+        ],
+        "remuestreos": 2000,
+        "bootstrap_degenerado": true,
+        "fallos": []
+      },
+      "derivadas_con_base_valida": {
         "n": 11,
         "de": 11,
         "proporcion": 1.0,
@@ -172,22 +178,6 @@
         ],
         "ic95_wilson": [
           0.7412,
-          1.0
-        ],
-        "remuestreos": 2000,
-        "bootstrap_degenerado": true,
-        "fallos": []
-      },
-      "derivadas_con_base_valida": {
-        "n": 3,
-        "de": 3,
-        "proporcion": 1.0,
-        "ic95": [
-          1.0,
-          1.0
-        ],
-        "ic95_wilson": [
-          0.4385,
           1.0
         ],
         "remuestreos": 2000,
@@ -413,23 +403,23 @@
       "unidad": "s",
       "p50": {
         "n": 40,
-        "valor": 0.0068,
+        "valor": 0.0125,
         "ic95": [
-          0.0003,
-          0.0071
+          0.0004,
+          0.0128
         ],
         "remuestreos": 2000
       },
       "p95": {
         "n": 40,
-        "valor": 0.0078,
+        "valor": 0.0144,
         "ic95": [
-          0.0073,
-          0.0083
+          0.0136,
+          0.0197
         ],
         "remuestreos": 2000
       },
-      "arranque_modelo_s": 4.08,
+      "arranque_modelo_s": 4.314,
       "nota": "consulta de punta a punta en frío (el vector de la consulta se codifica de verdad, sin caché) con el modelo de embeddings local ya cargado; sin red. arranque_modelo_s es el arranque en frío del proceso (armar el consultor y cargar el modelo hasta el primer vector) y no entra en la latencia"
     },
     "paquete_completo": {
@@ -624,58 +614,38 @@
     "modo": "cache",
     "grupos": 12,
     "estados": {
-      "con_vacios": 2,
-      "sin_cache": 9,
-      "completo": 1
+      "con_vacios": 4,
+      "completo": 8
     },
-    "fallos": [
-      "GRP-79f3183472",
-      "GRP-21ad932d54",
-      "GRP-038c4f0643",
-      "GRP-5e6531917f",
-      "GRP-39dfe8d714",
-      "GRP-1b52bb958d",
-      "GRP-87e128925b",
-      "GRP-39773bed5a",
-      "GRP-5ab17b45cd"
-    ]
+    "fallos": []
   },
   "rechazos_previos": {
     "fuente": "re-validación de las respuestas guardadas en data/cache_llm/ con el validador actual",
     "tasas": {
-      "unidades_evaluadas": 45,
+      "unidades_evaluadas": 149,
       "por_modelo": {
         "deepseek/deepseek-flash": {
-          "k": 12,
-          "n": 45,
-          "tasa": 0.26666666666666666,
+          "k": 33,
+          "n": 149,
+          "tasa": 0.2214765100671141,
           "ic95": [
-            0.1596,
-            0.4104
+            0.1623,
+            0.2947
           ]
         }
       },
       "por_unidad": {
         "deepseek/deepseek-flash": {
           "afirmacion": {
-            "k": 4,
-            "n": 27,
-            "tasa": 0.14814814814814814,
+            "k": 17,
+            "n": 99,
+            "tasa": 0.1717171717171717,
             "ic95": [
-              0.0592,
-              0.3248
+              0.1101,
+              0.2579
             ]
           },
           "seccion:brief": {
-            "k": 0,
-            "n": 1,
-            "tasa": 0.0,
-            "ic95": [
-              0.0,
-              0.7935
-            ]
-          },
-          "seccion:copy_digital": {
             "k": 2,
             "n": 2,
             "tasa": 1.0,
@@ -684,13 +654,22 @@
               1.0
             ]
           },
-          "seccion:enfoque": {
-            "k": 2,
-            "n": 4,
-            "tasa": 0.5,
+          "seccion:copy_digital": {
+            "k": 0,
+            "n": 1,
+            "tasa": 0.0,
             "ic95": [
-              0.15,
-              0.85
+              0.0,
+              0.7935
+            ]
+          },
+          "seccion:enfoque": {
+            "k": 9,
+            "n": 17,
+            "tasa": 0.5294117647058824,
+            "ic95": [
+              0.3096,
+              0.7384
             ]
           },
           "seccion:guion": {
@@ -703,30 +682,30 @@
             ]
           },
           "seccion:preguntas": {
-            "k": 0,
-            "n": 3,
-            "tasa": 0.0,
+            "k": 1,
+            "n": 13,
+            "tasa": 0.07692307692307693,
             "ic95": [
-              0.0,
-              0.5615
+              0.0137,
+              0.3331
             ]
           },
           "seccion:resumen_web": {
-            "k": 0,
-            "n": 1,
-            "tasa": 0.0,
-            "ic95": [
-              0.0,
-              0.7935
-            ]
-          },
-          "seccion:titulares": {
             "k": 2,
             "n": 2,
             "tasa": 1.0,
             "ic95": [
               0.3424,
               1.0
+            ]
+          },
+          "seccion:titulares": {
+            "k": 0,
+            "n": 1,
+            "tasa": 0.0,
+            "ic95": [
+              0.0,
+              0.7935
             ]
           },
           "seccion:titulo": {
@@ -740,41 +719,19 @@
           },
           "seccion:titulo_trabajo": {
             "k": 0,
-            "n": 2,
+            "n": 11,
             "tasa": 0.0,
             "ic95": [
               0.0,
-              0.6576
+              0.2588
             ]
           }
         }
       },
       "por_regla": {
-        "causalidad": {
+        "afirmacion_desconocida": {
           "deepseek/deepseek-flash": {
-            "afirmacion": {
-              "k": 3,
-              "n": 27,
-              "tasa": 0.1111111111111111,
-              "ic95": [
-                0.0385,
-                0.2806
-              ]
-            },
-            "seccion:enfoque": {
-              "k": 1,
-              "n": 4,
-              "tasa": 0.25,
-              "ic95": [
-                0.0456,
-                0.6994
-              ]
-            }
-          }
-        },
-        "cifra_no_coincide": {
-          "deepseek/deepseek-flash": {
-            "seccion:guion": {
+            "seccion:brief": {
               "k": 1,
               "n": 2,
               "tasa": 0.5,
@@ -785,15 +742,94 @@
             }
           }
         },
+        "base_invalida": {
+          "deepseek/deepseek-flash": {
+            "afirmacion": {
+              "k": 3,
+              "n": 99,
+              "tasa": 0.030303030303030304,
+              "ic95": [
+                0.0104,
+                0.0853
+              ]
+            }
+          }
+        },
+        "causalidad": {
+          "deepseek/deepseek-flash": {
+            "afirmacion": {
+              "k": 13,
+              "n": 99,
+              "tasa": 0.13131313131313133,
+              "ic95": [
+                0.0784,
+                0.2118
+              ]
+            },
+            "seccion:enfoque": {
+              "k": 3,
+              "n": 17,
+              "tasa": 0.17647058823529413,
+              "ic95": [
+                0.0619,
+                0.4103
+              ]
+            }
+          }
+        },
+        "cifra_no_coincide": {
+          "deepseek/deepseek-flash": {
+            "seccion:brief": {
+              "k": 2,
+              "n": 2,
+              "tasa": 1.0,
+              "ic95": [
+                0.3424,
+                1.0
+              ]
+            },
+            "seccion:guion": {
+              "k": 2,
+              "n": 2,
+              "tasa": 1.0,
+              "ic95": [
+                0.3424,
+                1.0
+              ]
+            },
+            "seccion:resumen_web": {
+              "k": 1,
+              "n": 2,
+              "tasa": 0.5,
+              "ic95": [
+                0.0945,
+                0.9055
+              ]
+            }
+          }
+        },
+        "detalle_sin_cita": {
+          "deepseek/deepseek-flash": {
+            "seccion:preguntas": {
+              "k": 1,
+              "n": 13,
+              "tasa": 0.07692307692307693,
+              "ic95": [
+                0.0137,
+                0.3331
+              ]
+            }
+          }
+        },
         "enfoque_como_hecho": {
           "deepseek/deepseek-flash": {
             "seccion:enfoque": {
-              "k": 2,
-              "n": 4,
-              "tasa": 0.5,
+              "k": 9,
+              "n": 17,
+              "tasa": 0.5294117647058824,
               "ic95": [
-                0.15,
-                0.85
+                0.3096,
+                0.7384
               ]
             }
           }
@@ -802,11 +838,11 @@
           "deepseek/deepseek-flash": {
             "afirmacion": {
               "k": 1,
-              "n": 27,
-              "tasa": 0.037037037037037035,
+              "n": 99,
+              "tasa": 0.010101010101010102,
               "ic95": [
-                0.0066,
-                0.1828
+                0.0018,
+                0.055
               ]
             }
           }
@@ -826,16 +862,29 @@
         },
         "nombre_nuevo": {
           "deepseek/deepseek-flash": {
-            "seccion:copy_digital": {
-              "k": 2,
+            "seccion:resumen_web": {
+              "k": 1,
               "n": 2,
-              "tasa": 1.0,
+              "tasa": 0.5,
               "ic95": [
-                0.3424,
-                1.0
+                0.0945,
+                0.9055
+              ]
+            }
+          }
+        },
+        "sin_atribucion": {
+          "deepseek/deepseek-flash": {
+            "seccion:enfoque": {
+              "k": 3,
+              "n": 17,
+              "tasa": 0.17647058823529413,
+              "ic95": [
+                0.0619,
+                0.4103
               ]
             },
-            "seccion:titulares": {
+            "seccion:guion": {
               "k": 2,
               "n": 2,
               "tasa": 1.0,
@@ -855,9 +904,8 @@
     "revisadas": 30,
     "meta": 0.9,
     "muestra_prevista": 30,
-    "origen_juicio": "asistente_provisional (D-101)",
-    "juicio_humano": false,
-    "aviso_origen": "JUICIO PROVISIONAL DEL ASISTENTE, NO HUMANO (D-101): se rehace a mano en C-09; no reportar como juicio de una persona.",
+    "origen_juicio": "humano",
+    "juicio_humano": true,
     "conteo": {
       "sustentada": 29,
       "parcial": 1,
@@ -922,29 +970,29 @@
       "limite_inferior_wilson": 0.8333,
       "cumple_con_limite_inferior_wilson": false,
       "nota_wilson": "información adicional: no reemplaza el criterio oficial",
-      "origen_juicio": "asistente_provisional (D-101)",
-      "juicio_humano": false
+      "origen_juicio": "humano",
+      "juicio_humano": true
     },
     "revisores": [
-      "asistente (D-101)"
+      "David Feng"
     ],
-    "cumple_meta_provisional": true,
+    "cumple_meta": true,
     "archivo": "revision_sustento.csv",
     "muestra": {
       "n": 30,
-      "pool": 67,
+      "pool": 135,
       "semilla": 42,
       "estado_del_archivo": "conservada_con_veredictos",
       "origenes": {
-        "borrador": 8,
-        "consulta": 22
+        "borrador": 12,
+        "consulta": 18
       }
     },
     "aviso": "La muestra revisada ya no coincide con la que daría esta corrida (cambió el conjunto de salidas); se conserva la revisada."
   },
   "analisis_umbral": {
     "metodo": "validacion_cruzada_dejando_uno_afuera",
-    "umbral_configurado": 0.874,
+    "umbral_configurado": 0.84,
     "percentil": 5.0,
     "n_en_la_puerta": 23,
     "n_calibran": 20,
@@ -1006,22 +1054,20 @@
         "fallos": []
       },
       "abstenciones_incorrectas_sustentadas": {
-        "n": 2,
+        "n": 0,
         "de": 20,
-        "proporcion": 0.1,
+        "proporcion": 0.0,
         "ic95": [
           0.0,
-          0.25
+          0.0
         ],
         "ic95_wilson": [
-          0.0279,
-          0.301
+          0.0,
+          0.1611
         ],
         "remuestreos": 2000,
-        "ids": [
-          "BDEV-004",
-          "BDEV-017"
-        ]
+        "bootstrap_degenerado": true,
+        "ids": []
       }
     },
     "sensibilidad": [
