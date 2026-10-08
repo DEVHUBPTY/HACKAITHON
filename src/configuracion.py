@@ -1463,7 +1463,7 @@ class PanamaRuido(ModeloConfig):
 
     @model_validator(mode="after")
     def _regex_validas(self) -> PanamaRuido:
-        _compilar_todas([*self.falsos, *self.menciones, *self.regionales], "panama")
+        _compilar_todas([*self.falsos, *self.menciones, *self.regionales, *self.fenomenos_regionales_con_impacto], "panama")
         return self
 
 
@@ -1522,6 +1522,9 @@ def cargar_ruido(carpeta: Path | None = None) -> ConfigRuido:
 # ------------------------------------------------------------------ clasificacion.yaml (E1-07)
 
 METODOS_CLASIFICACION = ("A", "B")
+MIN_REMUESTREOS_PAREADOS = 2000   # mínimo exigido al bootstrap pareado (D-121)
+METODO_LOGISTICO = "logistica"      # D-121: regresión logística sobre los mismos embeddings; no lleva umbrales por modelo (ver ConfigLogistica)
+METODOS_ACTIVABLES = (*METODOS_CLASIFICACION, METODO_LOGISTICO)
 
 
 class UmbralesMetodo(ModeloConfig):
@@ -1559,6 +1562,39 @@ class ModeloEmbeddings(ModeloConfig):
     def _metodos(self) -> ModeloEmbeddings:
         if set(self.umbrales) != set(METODOS_CLASIFICACION):
             raise ValueError(f"umbrales: deben estar los métodos {list(METODOS_CLASIFICACION)}")
+        return self
+
+
+class ConfigLogistica(ModeloConfig):
+    """Clasificador por regresión logística (D-121). Se entrena SOLO con los textos de referencia de ``temas.yaml``
+    (descripción, ejemplos y prototipos de subtema); las etiquetas humanas no entran nunca en el entrenamiento.
+
+    ``regularizacion_c`` y ``umbral_sin_tema`` son el RESULTADO de ``python -m eval.calibrar_logistico`` (validación
+    cruzada estratificada sobre esos textos): el primero maximiza el macro-F1 de la validación cruzada de la
+    ``rejilla_c``; el segundo es el ``percentil_umbral`` de la probabilidad máxima, fuera de muestra, de los textos que la
+    validación cruzada acierta; ``margen_secundario`` = ``percentil_margen`` de la brecha entre las dos mayores
+    probabilidades de esos mismos textos. Un test recalcula ambos y falla si el YAML no coincide.
+    """
+
+    regularizacion_c: float = Field(gt=0)
+    rejilla_c: list[float] = Field(min_length=1)
+    pesos_de_clase: Literal["balanced"] | None
+    max_iter: int = Field(gt=0)
+    pliegues: int = Field(ge=2)
+    semilla: int
+    percentil_umbral: float = Field(ge=0, le=100)
+    percentil_margen: float = Field(ge=0, le=100)    # margen_secundario = este percentil de (1.ª − 2.ª probabilidad) fuera de muestra
+    umbral_sin_tema: float = Field(ge=0, le=1)       # probabilidad máxima mínima; por debajo, sin_tema
+    margen_secundario: float = Field(ge=0, le=1)     # diferencia de probabilidad para ofrecer un tema secundario
+    decimales_umbral: int = Field(ge=0)              # el umbral se guarda redondeado a estos decimales
+    bootstrap_pareado: CriterioAB                    # comparación pareada de macro-F1 contra el método A (>= 2000 remuestreos)
+
+    @model_validator(mode="after")
+    def _coherente(self) -> ConfigLogistica:
+        if self.regularizacion_c not in self.rejilla_c or any(c <= 0 for c in self.rejilla_c):
+            raise ValueError("logistica: regularizacion_c debe pertenecer a rejilla_c y toda C ser positiva")
+        if self.bootstrap_pareado.remuestreos < MIN_REMUESTREOS_PAREADOS:
+            raise ValueError(f"logistica.bootstrap_pareado: al menos {MIN_REMUESTREOS_PAREADOS} remuestreos")
         return self
 
 
@@ -1753,11 +1789,24 @@ class EstratosEtiquetado(ModeloConfig):
     ruido: EstratoEtiquetado
 
 
+class AmpliacionEtiquetado(ModeloConfig):
+    """Titulares que se agregan a la muestra sin tocar los originales (censo de una captura nueva, estrato propio)."""
+
+    nombre: str = Field(min_length=1)
+    ids_desde: str                 # CSV con columna id_noticia (p. ej. eval/propuestas/*.csv); solo se leen los IDs
+    estrato: str = Field(min_length=1)
+    peso_muestreo: float = Field(gt=0)   # censo del estrato: 1.0
+
+
 class MuestraEtiquetado(ModeloConfig):
     semilla: int
     tamano: int = Field(ge=1)
     tamano_acuerdo: int = Field(ge=2)
     estratos: EstratosEtiquetado
+    # CSV con la muestra original ya fijada (orden, estrato, pesos, dobles). Si está, la muestra original sale de ahí y no
+    # se vuelve a sortear: el filtro de ruido cambió después de etiquetar y la población creció.
+    congelada: str | None = None
+    ampliaciones: list[AmpliacionEtiquetado] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _acuerdo_cabe(self) -> MuestraEtiquetado:

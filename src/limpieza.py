@@ -113,6 +113,7 @@ class Reglas:
         self.politica = _compilar(ruido.fuera_de_temas.politica_partidista)
         self.autopromocion = _compilar(ruido.fuera_de_temas.autopromocion_tvn)
         self.regionales = _compilar(ruido.panama.regionales)
+        self.fenomenos_con_impacto = _compilar(ruido.panama.fenomenos_regionales_con_impacto)
         self.inyeccion = _compilar(restricciones.inyeccion.patrones)
 
     @classmethod
@@ -252,6 +253,22 @@ def _sujeta_al_filtro_de_mencion(fila: Fila, reglas: Reglas) -> bool:
     return bool(origenes & set(cfg.origenes_sujetos))
 
 
+def _medio_panameno(fila: Fila, reglas: Reglas) -> bool:
+    """El medio es panameño (origen exento o país exento): sus notas dicen «el país» sin nombrar a Panamá."""
+    cfg = reglas.ruido.panama
+    origenes = {o.strip() for o in str(fila.get("origen") or "").split(reglas.separador_origen.strip()) if o.strip()}
+    return bool(origenes & set(cfg.origenes_exentos)) or fila.get("pais_medio") in cfg.paises_medio_exentos
+
+
+def _regional_sin_impacto(fila: Fila, texto: str, reglas: Reglas) -> bool:
+    """D-120: nota regional de un medio no panameño, sin nombrar a Panamá ni un fenómeno regional con impacto."""
+    return (
+        not _medio_panameno(fila, reglas)
+        and not _coincide(reglas.menciones, texto)
+        and not _coincide(reglas.fenomenos_con_impacto, texto)
+    )
+
+
 def _fuera_de_temas(texto: str, reglas: Reglas) -> bool:
     grupos = (reglas.deportes, reglas.farandula, reglas.cultura, reglas.politica)
     return any(_coincide(g, texto) for g in grupos)
@@ -263,7 +280,8 @@ def clasificar(fila: Fila, titulo_limpio: str, reglas: Reglas) -> tuple[str | No
     1. ``fuera_de_ventana``; 2. ``no_es_noticia``; 3. falso Panamá (``no_es_panama``); 4. autopromoción de TVN y,
     en una sección dudosa de TVN, deportes/farándula (``fuera_de_temas``: la historia de un panameño en la MLB no
     es "otro país"); 5. sin mención de Panamá en un origen sujeto: ``no_es_panama``, **salvo** que el titular nombre
-    la región o un fenómeno regional (D-84: se conserva con ``alcance_regional``); 6. deportes, farándula, cultura
+    la región o un fenómeno regional (D-84: se conserva con ``alcance_regional``); 5b. (D-120) esa excepción regional
+    exige impacto en Panamá: un medio no panameño, sin mención de Panamá ni fenómeno regional con impacto, es ``no_es_panama``; 6. deportes, farándula, cultura
     y política partidista (``fuera_de_temas``).
 
     Una noticia de otro país que afecta a Panamá (Darién, Canal) nombra algo de ``panama.menciones`` y no es ruido.
@@ -281,6 +299,8 @@ def clasificar(fila: Fila, titulo_limpio: str, reglas: Reglas) -> tuple[str | No
         return MOTIVO_FUERA_DE_TEMAS, False
     regional = _coincide(reglas.regionales, texto)
     if _sujeta_al_filtro_de_mencion(fila, reglas) and not _coincide(reglas.menciones, texto) and not regional:
+        return MOTIVO_NO_ES_PANAMA, False
+    if regional and _regional_sin_impacto(fila, texto, reglas):  # D-120
         return MOTIVO_NO_ES_PANAMA, False
     if _fuera_de_temas(texto, reglas):
         return MOTIVO_FUERA_DE_TEMAS, False

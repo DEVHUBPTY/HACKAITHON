@@ -315,7 +315,9 @@ def test_x14_h1_los_patrones_de_fuera_de_temas_no_marcan_palabras_ambiguas(titul
     ],
 )
 def test_x14_h2_nota_regional_no_es_ruido_y_lleva_alcance_regional(titulo: str) -> None:
-    r = limpieza.evaluar(_fila(titulo), REGLAS)
+    """D-84: la nota regional se detecta y se marca. D-120 exige además evidencia de impacto en Panamá para medios no
+    panameños; aquí el medio es panameño para probar solo la detección regional (D-120 está en test_d120_*)."""
+    r = limpieza.evaluar(_fila(titulo, pais_medio="Panamá"), REGLAS)
     assert r.motivo_ruido is None and r.es_ruido is False and r.alcance_regional is True
 
 
@@ -373,7 +375,8 @@ def test_x14_o1_negativos_inventados_no_son_utiles_regionales(titulo: str) -> No
     ],
 )
 def test_x14_o1_o3_regional_en_varios_idiomas_y_caribe_con_termino_economico(titulo: str) -> None:
-    r = limpieza.evaluar(_fila(titulo), REGLAS)
+    """D-84: detección regional en varios idiomas. Medio panameño para aislarla de D-120 (ver test_d120_*)."""
+    r = limpieza.evaluar(_fila(titulo, pais_medio="Panamá"), REGLAS)
     assert r.es_ruido is False and r.alcance_regional is True, titulo
 
 

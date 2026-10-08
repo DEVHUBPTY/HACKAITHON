@@ -27,7 +27,7 @@ La salida del clasificador son **solo los 6 temas del reto** (sección 3, etapa 
 Los tres quedan fuera de la bandeja, se conservan y se cuentan por separado en el reporte de calidad.
 Una noticia de otro país **que afecta a Panamá** no es `no_es_panama` (migración por el Darién, decisiones sobre el Canal).
 
-**Alcance regional (D-84).** Una nota que menciona la región (Centroamérica, América Latina, Caribe) o un fenómeno regional que afecta a Panamá (El Niño y La Niña, rutas marítimas) **no es ruido**, aunque no nombre a Panamá. Se etiqueta con su tema como cualquier otra y se marca **alcance regional**; se cuenta aparte. Si no afecta a Panamá de ninguna manera, sigue siendo `no_es_panama`.
+**Alcance regional (D-84).** Una nota que menciona la región (Centroamérica, América Latina, Caribe) o un fenómeno regional que afecta a Panamá (El Niño y La Niña, rutas marítimas) **no es ruido**, aunque no nombre a Panamá. Se etiqueta con su tema como cualquier otra y se marca **alcance regional**; se cuenta aparte. Si no afecta a Panamá de ninguna manera, sigue siendo `no_es_panama`. El sistema lo aplica así (D-120): una nota regional de un medio no panameño que no nombra a Panamá ni trae uno de esos fenómenos (El Niño y La Niña, rutas marítimas y su comercio, migración por el Darién) se marca `no_es_panama`; las de medios panameños no.
 
 ## Reglas de frontera
 
