@@ -2,63 +2,63 @@
   "nota": "Puntaje de ordenamiento, no una probabilidad de verdad ni de pérdida. Todo es borrador para una decisión humana; ninguna acción habilita publicar.",
   "version_reglas": "1.3",
   "modalidad": "editorial",
-  "fecha_referencia": "2026-10-07T00:41:03Z",
-  "grupos": 60,
+  "fecha_referencia": "2026-10-08T03:35:18Z",
+  "grupos": 72,
   "por_rango": {
     "alto": {
-      "n": 42,
-      "de": 60,
-      "proporcion": 0.7,
+      "n": 53,
+      "de": 72,
+      "proporcion": 0.7361,
       "ic95": [
-        0.5749,
-        0.801
+        0.6242,
+        0.8241
       ]
     },
     "medio": {
-      "n": 18,
-      "de": 60,
-      "proporcion": 0.3,
+      "n": 19,
+      "de": 72,
+      "proporcion": 0.2639,
       "ic95": [
-        0.199,
-        0.4251
+        0.1759,
+        0.3758
       ]
     },
     "bajo": {
       "n": 0,
-      "de": 60,
+      "de": 72,
       "proporcion": 0.0,
       "ic95": [
         0.0,
-        0.0602
+        0.0507
       ]
     }
   },
   "por_estado_de_evidencia": {
     "suficiente": {
       "n": 2,
-      "de": 60,
-      "proporcion": 0.0333,
+      "de": 72,
+      "proporcion": 0.0278,
       "ic95": [
-        0.0092,
-        0.1136
+        0.0077,
+        0.0957
       ]
     },
     "parcial": {
-      "n": 3,
-      "de": 60,
-      "proporcion": 0.05,
+      "n": 4,
+      "de": 72,
+      "proporcion": 0.0556,
       "ic95": [
-        0.0171,
-        0.137
+        0.0218,
+        0.1343
       ]
     },
     "insuficiente": {
-      "n": 55,
-      "de": 60,
+      "n": 66,
+      "de": 72,
       "proporcion": 0.9167,
       "ic95": [
-        0.8193,
-        0.9639
+        0.8299,
+        0.9612
       ]
     }
   },
@@ -80,13 +80,13 @@
       "posicion": 1,
       "id_grupo": "GRP-21ad932d54",
       "titular_central": "Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá",
-      "puntaje": 90.45,
+      "puntaje": 87.25,
       "empate_con": 0,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
         "I": 1.0,
-        "U": 0.8391,
+        "U": 0.6789,
         "N": 1.0,
         "E": 0.3667
       },
@@ -102,13 +102,13 @@
       "posicion": 2,
       "id_grupo": "GRP-038c4f0643",
       "titular_central": "Clima en Panamá: Martes con lluvias y tormentas eléctricas en varias regiones durante la tarde",
-      "puntaje": 89.59,
+      "puntaje": 86.39,
       "empate_con": 0,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
         "I": 0.9,
-        "U": 0.9213,
+        "U": 0.7612,
         "N": 1.0,
         "E": 0.3667
       },
@@ -122,15 +122,38 @@
     },
     {
       "posicion": 3,
-      "id_grupo": "GRP-5e6531917f",
-      "titular_central": "Más de 30 mujeres han muerto de forma violenta en Panamá este año",
-      "puntaje": 88.41,
+      "id_grupo": "GRP-393e132dbb",
+      "titular_central": "Festival Navideño 'City of Stars 2026': Alcaldía de Panamá presenta el calendario de actividades",
+      "puntaje": 86.13,
       "empate_con": 0,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
-        "I": 0.9,
-        "U": 0.862,
+        "I": 0.75,
+        "U": 0.9356,
+        "N": 1.0,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "subtema no determinado: se usó el alcance neutro de impacto",
+        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 4,
+      "id_grupo": "GRP-50d72e2b04",
+      "titular_central": "Unos 22 aprehendidos en la operación Comunidad Segura contra el microtráfico en Colón y Panama Oeste",
+      "puntaje": 85.98,
+      "empate_con": 0,
+      "rango": "alto",
+      "componentes": {
+        "R": 1.0,
+        "I": 0.7,
+        "U": 0.9908,
         "N": 1.0,
         "E": 0.3667
       },
@@ -144,16 +167,16 @@
       "contradicciones": []
     },
     {
-      "posicion": 4,
-      "id_grupo": "GRP-84a6b3a04b",
-      "titular_central": "Colegios particulares atribuyen aumento de matrícula a migración al sector oficial y altos costos de operación",
-      "puntaje": 83.49,
-      "empate_con": 1,
+      "posicion": 5,
+      "id_grupo": "GRP-5e6531917f",
+      "titular_central": "Más de 30 mujeres han muerto de forma violenta en Panamá este año",
+      "puntaje": 85.2,
+      "empate_con": 0,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
-        "I": 0.65,
-        "U": 0.9286,
+        "I": 0.9,
+        "U": 0.7019,
         "N": 1.0,
         "E": 0.3667
       },
@@ -161,46 +184,22 @@
       "accion": "Investigar ya",
       "vacios": [
         "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "los titulares traen cifras y no hay dato oficial vinculado",
         "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
       ],
       "contradicciones": []
     },
     {
-      "posicion": 5,
-      "id_grupo": "GRP-39dfe8d714",
-      "titular_central": "Aeropuerto panameño suscribe convenio con empresa asiática",
-      "puntaje": 83.49,
-      "empate_con": 1,
-      "rango": "alto",
-      "componentes": {
-        "R": 1.0,
-        "I": 0.75,
-        "U": 0.9037,
-        "N": 1.0,
-        "E": 0.1667
-      },
-      "estado_de_evidencia": "insuficiente",
-      "accion": "Investigar ya",
-      "vacios": [
-        "subtema no determinado: se usó el alcance neutro de impacto",
-        "urgencia estimada: fecha de publicación desconocida",
-        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)",
-        "1 de 1 titulares sin medio o fecha de publicación conocidos"
-      ],
-      "contradicciones": []
-    },
-    {
       "posicion": 6,
-      "id_grupo": "GRP-1b52bb958d",
-      "titular_central": "Disparan contra el vehículo del exdiputado Pedro Torres en Colón",
-      "puntaje": 83.4,
+      "id_grupo": "GRP-2b6511298e",
+      "titular_central": "Veraguas prepara operativo para fiestas patrias con refuerzo policial y controles en la Panamericana",
+      "puntaje": 85.06,
       "empate_con": 0,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
         "I": 0.7,
-        "U": 0.8615,
+        "U": 0.9445,
         "N": 1.0,
         "E": 0.3667
       },
@@ -214,38 +213,15 @@
     },
     {
       "posicion": 7,
-      "id_grupo": "GRP-87e128925b",
-      "titular_central": "Veraguas: Preocupación por aumento de muertes por enfermedades transmisibles y respiratorias",
-      "puntaje": 82.37,
-      "empate_con": 0,
-      "rango": "alto",
-      "componentes": {
-        "R": 1.0,
-        "I": 0.55,
-        "U": 0.9977,
-        "N": 1.0,
-        "E": 0.3667
-      },
-      "estado_de_evidencia": "insuficiente",
-      "accion": "Investigar ya",
-      "vacios": [
-        "subtema no determinado: se usó el alcance neutro de impacto",
-        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
-      ],
-      "contradicciones": []
-    },
-    {
-      "posicion": 8,
-      "id_grupo": "GRP-39773bed5a",
-      "titular_central": "Árbol cae sobre dos vehículos en estacionamientos del hospital San Miguel Arcángel",
-      "puntaje": 81.76,
+      "id_grupo": "GRP-8a448d1fd9",
+      "titular_central": "Universidad Tecnológica evalúa unos 200 edificios para determinar su seguridad ante sismos",
+      "puntaje": 84.56,
       "empate_con": 0,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
         "I": 0.65,
-        "U": 0.8422,
+        "U": 0.982,
         "N": 1.0,
         "E": 0.3667
       },
@@ -253,21 +229,22 @@
       "accion": "Investigar ya",
       "vacios": [
         "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
+        "los titulares traen cifras y no hay dato oficial vinculado",
+        "sin dato oficial vinculado (el tema está fuera de la cobertura de las fuentes oficiales)"
       ],
       "contradicciones": []
     },
     {
-      "posicion": 9,
-      "id_grupo": "GRP-6e737ecad5",
-      "titular_central": "MOP solicita $43.1 millones para pagar compromisos y continuar obras en ejecución",
-      "puntaje": 81.74,
+      "posicion": 8,
+      "id_grupo": "GRP-4d8b340bd9",
+      "titular_central": "Aprehenden a 10 personas por presunta minería ilegal y delitos ambientales en Coclé del Norte",
+      "puntaje": 84.41,
       "empate_con": 0,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
-        "I": 0.55,
-        "U": 0.9659,
+        "I": 0.7,
+        "U": 0.912,
         "N": 1.0,
         "E": 0.3667
       },
@@ -281,16 +258,38 @@
       "contradicciones": []
     },
     {
-      "posicion": 10,
-      "id_grupo": "GRP-5ab17b45cd",
-      "titular_central": "Asesinan a taxista en Remedios; fue hallado dentro de su vehículo con varias heridas",
-      "puntaje": 81.65,
+      "posicion": 9,
+      "id_grupo": "GRP-a03bab5b02",
+      "titular_central": "Asamblea: Debate por la renovación del contrato de Ciudad del Saber genera cuestionamientos por exoneraciones",
+      "puntaje": 82.14,
       "empate_con": 0,
       "rango": "alto",
       "componentes": {
         "R": 1.0,
         "I": 0.55,
-        "U": 0.9616,
+        "U": 0.9861,
+        "N": 1.0,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 10,
+      "id_grupo": "GRP-7ddcf92e16",
+      "titular_central": "Ataque a tiros cerca de la estación del metro de San Miguelito deja un muerto y dos heridos",
+      "puntaje": 82.01,
+      "empate_con": 0,
+      "rango": "alto",
+      "componentes": {
+        "R": 1.0,
+        "I": 0.55,
+        "U": 0.9795,
         "N": 1.0,
         "E": 0.3667
       },

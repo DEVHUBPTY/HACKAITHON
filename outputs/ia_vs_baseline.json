@@ -25,23 +25,23 @@
       "sin_tema"
     ],
     "vista_clasificador": {
-      "n": 64,
+      "n": 46,
       "exactitud_ia": {
-        "n": 35,
-        "de": 64,
-        "proporcion": 0.5469,
+        "n": 33,
+        "de": 46,
+        "proporcion": 0.7174,
         "ic95": [
-          0.4257,
-          0.6627
+          0.5745,
+          0.8268
         ]
       },
       "exactitud_baseline": {
-        "n": 29,
-        "de": 64,
-        "proporcion": 0.4531,
+        "n": 28,
+        "de": 46,
+        "proporcion": 0.6087,
         "ic95": [
-          0.3373,
-          0.5743
+          0.4646,
+          0.7361
         ]
       },
       "con_criterio_de_clasificacion": {
@@ -51,59 +51,59 @@
           "semilla": 42
         },
         "macro_f1_ia": {
-          "n": 64,
-          "macro_f1": 0.4296,
+          "n": 46,
+          "macro_f1": 0.4918,
           "ic95": [
-            0.2762,
-            0.5418
+            0.3127,
+            0.615
           ],
           "ic95_exacto": [
-            0.27624643299763596,
-            0.5418440835077923
+            0.3127139869116763,
+            0.614972383937901
           ],
           "remuestreos": 1000,
           "ponderado": false
         },
         "macro_f1_baseline": {
-          "n": 64,
-          "macro_f1": 0.4669,
+          "n": 46,
+          "macro_f1": 0.5042,
           "ic95": [
-            0.2348,
-            0.5749
+            0.2785,
+            0.6272
           ],
           "ic95_exacto": [
-            0.23476668647600005,
-            0.5749063039850085
+            0.2784792746885989,
+            0.6272444548915137
           ],
           "remuestreos": 1000,
           "ponderado": false
         },
         "diferencia_macro_f1": {
-          "n": 64,
-          "diferencia_macro_f1": -0.0374,
+          "n": 46,
+          "diferencia_macro_f1": -0.0125,
           "ic95": [
-            -0.2316,
-            0.2292
+            -0.2418,
+            0.266
           ],
           "ic95_exacto": [
-            -0.23159014679409415,
-            0.2292236337532031
+            -0.24176556394251159,
+            0.26601459607411976
           ]
         },
         "veredicto": "sin_diferencia_demostrable",
         "por_tema": {
           "economia": {
             "soporte": true,
-            "diferencia_f1": 0.1152,
+            "diferencia_f1": -0.0303,
             "ic95": [
-              -0.1655,
-              0.3918
+              -0.6,
+              0.5455
             ],
             "ic95_exacto": [
-              -0.1654718137254902,
-              0.39181818181818157
+              -0.6,
+              0.5454545454545454
             ],
-            "titulares_humanos": 26,
+            "titulares_humanos": 9,
             "veredicto": "sin_diferencia_demostrable"
           },
           "logistica": {
@@ -136,14 +136,14 @@
           },
           "servicios_publicos": {
             "soporte": true,
-            "diferencia_f1": 0.3067,
+            "diferencia_f1": 0.3333,
             "ic95": [
-              -0.0952,
-              0.6897
+              -0.0693,
+              0.7034
             ],
             "ic95_exacto": [
-              -0.09523809523809523,
-              0.6896551724137931
+              -0.06928571428571433,
+              0.703361344537815
             ],
             "titulares_humanos": 9,
             "veredicto": "sin_diferencia_demostrable"
@@ -152,43 +152,43 @@
             "soporte": true,
             "diferencia_f1": 0.0,
             "ic95": [
-              -0.0767,
-              0.0698
+              -0.0732,
+              0.0613
             ],
             "ic95_exacto": [
-              -0.07669751301330247,
-              0.06984758013827776
+              -0.07317073170731703,
+              0.061256377551020334
             ],
             "titulares_humanos": 20,
             "veredicto": "sin_diferencia_demostrable"
           },
           "regulacion": {
             "soporte": true,
-            "diferencia_f1": 0.3333,
+            "diferencia_f1": 0.6667,
             "ic95": [
               0.0,
-              0.8
+              1.0
             ],
             "ic95_exacto": [
               0.0,
-              0.8
+              1.0
             ],
             "titulares_humanos": 1,
             "veredicto": "soporte_insuficiente"
           },
           "sin_tema": {
             "soporte": true,
-            "diferencia_f1": -0.15,
+            "diferencia_f1": -0.1905,
             "ic95": [
-              -0.3,
+              -0.4307,
               0.0
             ],
             "ic95_exacto": [
-              -0.3,
+              -0.4307453416149067,
               0.0
             ],
-            "titulares_humanos": 5,
-            "veredicto": "sin_diferencia_demostrable"
+            "titulares_humanos": 4,
+            "veredicto": "soporte_insuficiente"
           }
         }
       },
@@ -199,59 +199,59 @@
           "semilla": 42
         },
         "macro_f1_ia": {
-          "n": 64,
-          "macro_f1": 0.4296,
+          "n": 46,
+          "macro_f1": 0.4918,
           "ic95": [
-            0.2811,
-            0.5409
+            0.3095,
+            0.62
           ],
           "ic95_exacto": [
-            0.28105113012947125,
-            0.5409332675722619
+            0.3095071595071595,
+            0.6199737762237763
           ],
           "remuestreos": 2000,
           "ponderado": false
         },
         "macro_f1_baseline": {
-          "n": 64,
-          "macro_f1": 0.4669,
+          "n": 46,
+          "macro_f1": 0.5042,
           "ic95": [
-            0.2361,
-            0.5796
+            0.2741,
+            0.6288
           ],
           "ic95_exacto": [
-            0.23606111942015648,
-            0.5796055640595916
+            0.2740674603174603,
+            0.628849206349206
           ],
           "remuestreos": 2000,
           "ponderado": false
         },
         "diferencia_macro_f1": {
-          "n": 64,
-          "diferencia_macro_f1": -0.0374,
+          "n": 46,
+          "diferencia_macro_f1": -0.0125,
           "ic95": [
-            -0.2406,
-            0.2185
+            -0.2474,
+            0.2719
           ],
           "ic95_exacto": [
-            -0.24063519862171256,
-            0.21848004807929478
+            -0.24743378727291296,
+            0.2719093805131035
           ]
         },
         "veredicto": "sin_diferencia_demostrable",
         "por_tema": {
           "economia": {
             "soporte": true,
-            "diferencia_f1": 0.1152,
+            "diferencia_f1": -0.0303,
             "ic95": [
-              -0.1815,
-              0.4
+              -0.6,
+              0.5455
             ],
             "ic95_exacto": [
-              -0.1814607771260997,
-              0.4
+              -0.6,
+              0.5454545454545454
             ],
-            "titulares_humanos": 26,
+            "titulares_humanos": 9,
             "veredicto": "sin_diferencia_demostrable"
           },
           "logistica": {
@@ -284,14 +284,14 @@
           },
           "servicios_publicos": {
             "soporte": true,
-            "diferencia_f1": 0.3067,
+            "diferencia_f1": 0.3333,
             "ic95": [
-              -0.1212,
-              0.6667
+              -0.0366,
+              0.7033
             ],
             "ic95_exacto": [
-              -0.12121212121212122,
-              0.6666666666666666
+              -0.03655991574348566,
+              0.7033486943164359
             ],
             "titulares_humanos": 9,
             "veredicto": "sin_diferencia_demostrable"
@@ -300,43 +300,43 @@
             "soporte": true,
             "diferencia_f1": 0.0,
             "ic95": [
-              -0.0741,
-              0.0714
+              -0.0712,
+              0.0667
             ],
             "ic95_exacto": [
-              -0.07413951545530481,
-              0.0714285714285714
+              -0.0711576576576576,
+              0.06666666666666665
             ],
             "titulares_humanos": 20,
             "veredicto": "sin_diferencia_demostrable"
           },
           "regulacion": {
             "soporte": true,
-            "diferencia_f1": 0.3333,
+            "diferencia_f1": 0.6667,
             "ic95": [
               0.0,
-              0.8
+              1.0
             ],
             "ic95_exacto": [
               0.0,
-              0.8
+              1.0
             ],
             "titulares_humanos": 1,
             "veredicto": "soporte_insuficiente"
           },
           "sin_tema": {
             "soporte": true,
-            "diferencia_f1": -0.15,
+            "diferencia_f1": -0.1905,
             "ic95": [
-              -0.3,
+              -0.4167,
               0.0
             ],
             "ic95_exacto": [
-              -0.3,
+              -0.4166666666666667,
               0.0
             ],
-            "titulares_humanos": 5,
-            "veredicto": "sin_diferencia_demostrable"
+            "titulares_humanos": 4,
+            "veredicto": "soporte_insuficiente"
           }
         }
       },
@@ -348,10 +348,8 @@
           "NOT-613e8bdf24",
           "NOT-66fdc7fa16",
           "NOT-96d1ecac7d",
-          "NOT-a71293e7e8",
           "NOT-d1a04c684b",
           "NOT-dfa8707d5a",
-          "NOT-f01abb1ca2",
           "NOT-f1f1f6e600",
           "NOT-fc94561c6d"
         ],
@@ -360,7 +358,6 @@
           "NOT-38702b3c42",
           "NOT-aacff154c6",
           "NOT-d6cc7acc03",
-          "NOT-e4f8660e0d",
           "NOT-fbc3efaa5d"
         ],
         "ambos_aciertan": [
@@ -389,38 +386,23 @@
           "NOT-e795e93c9d"
         ],
         "ambos_fallan": [
-          "NOT-05ae3da7e3",
           "NOT-1819a7014e",
-          "NOT-1ba5a41e46",
-          "NOT-203cd5b44e",
-          "NOT-213eb698b8",
-          "NOT-26fd75f865",
           "NOT-33032542b7",
-          "NOT-5d839301a6",
           "NOT-660d940f9d",
-          "NOT-6717a15ab7",
           "NOT-8206bf1857",
           "NOT-8897c80d23",
-          "NOT-99ea1a995f",
-          "NOT-adb01e330f",
           "NOT-ba54c3921d",
-          "NOT-c712a8d7e4",
           "NOT-ca6fae4efb",
-          "NOT-cf027fac38",
-          "NOT-d1dad65858",
-          "NOT-e1ef662816",
-          "NOT-e80ba5ef9d",
-          "NOT-eb363c1b4e",
-          "NOT-fb0597e7e5"
+          "NOT-cf027fac38"
         ],
         "conteo": {
           "ambos_aciertan": 23,
-          "solo_ia": 12,
-          "solo_baseline": 6,
-          "ambos_fallan": 23,
-          "n": 64
+          "solo_ia": 10,
+          "solo_baseline": 5,
+          "ambos_fallan": 8,
+          "n": 46
         },
-        "p_mcnemar_exacto": 0.2379
+        "p_mcnemar_exacto": 0.3018
       },
       "ejemplos_ia_acierta_y_baseline_falla": [
         {
@@ -489,36 +471,36 @@
           "ia": "turismo"
         },
         {
-          "id": "NOT-e4f8660e0d",
-          "titular": "Negocios de Gilinski y de Ecopetrol son claves para Colombia en América Latina",
-          "humano": "sin_tema",
-          "baseline": "sin_tema",
-          "ia": "regulacion"
+          "id": "NOT-fbc3efaa5d",
+          "titular": "Presidente de Panamá visita Singapur y Vietnam en busca de inversiones",
+          "humano": "economia",
+          "baseline": "economia",
+          "ia": "logistica"
         }
       ],
       "por_tema_ia": {
         "economia": {
-          "soporte": 26,
-          "predichos": 5,
+          "soporte": 9,
+          "predichos": 3,
           "precision": {
-            "n": 4,
-            "de": 5,
-            "proporcion": 0.8,
+            "n": 2,
+            "de": 3,
+            "proporcion": 0.6667,
             "ic95": [
-              0.3755,
-              0.9638
+              0.2077,
+              0.9385
             ]
           },
           "recall": {
-            "n": 4,
-            "de": 26,
-            "proporcion": 0.1538,
+            "n": 2,
+            "de": 9,
+            "proporcion": 0.2222,
             "ic95": [
-              0.0615,
-              0.3353
+              0.0632,
+              0.5474
             ]
           },
-          "f1": 0.2581
+          "f1": 0.3333
         },
         "logistica": {
           "soporte": 2,
@@ -568,14 +550,14 @@
         },
         "servicios_publicos": {
           "soporte": 9,
-          "predichos": 16,
+          "predichos": 15,
           "precision": {
             "n": 8,
-            "de": 16,
-            "proporcion": 0.5,
+            "de": 15,
+            "proporcion": 0.5333,
             "ic95": [
-              0.28,
-              0.72
+              0.3012,
+              0.7519
             ]
           },
           "recall": {
@@ -587,7 +569,7 @@
               0.9801
             ]
           },
-          "f1": 0.64
+          "f1": 0.6667
         },
         "eventos_naturales": {
           "soporte": 20,
@@ -614,14 +596,14 @@
         },
         "regulacion": {
           "soporte": 1,
-          "predichos": 5,
+          "predichos": 2,
           "precision": {
             "n": 1,
-            "de": 5,
-            "proporcion": 0.2,
+            "de": 2,
+            "proporcion": 0.5,
             "ic95": [
-              0.0362,
-              0.6245
+              0.0945,
+              0.9055
             ]
           },
           "recall": {
@@ -633,27 +615,24 @@
               1.0
             ]
           },
-          "f1": 0.3333
+          "f1": 0.6667
         },
         "sin_tema": {
-          "soporte": 5,
-          "predichos": 12,
+          "soporte": 4,
+          "predichos": 0,
           "precision": {
             "n": 0,
-            "de": 12,
-            "proporcion": 0.0,
-            "ic95": [
-              0.0,
-              0.2425
-            ]
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
           },
           "recall": {
             "n": 0,
-            "de": 5,
+            "de": 4,
             "proporcion": 0.0,
             "ic95": [
               0.0,
-              0.4345
+              0.4899
             ]
           },
           "f1": 0.0
@@ -661,7 +640,7 @@
       },
       "por_tema_baseline": {
         "economia": {
-          "soporte": 26,
+          "soporte": 9,
           "predichos": 2,
           "precision": {
             "n": 2,
@@ -674,14 +653,14 @@
           },
           "recall": {
             "n": 2,
-            "de": 26,
-            "proporcion": 0.0769,
+            "de": 9,
+            "proporcion": 0.2222,
             "ic95": [
-              0.0214,
-              0.2414
+              0.0632,
+              0.5474
             ]
           },
-          "f1": 0.1429
+          "f1": 0.3636
         },
         "logistica": {
           "soporte": 2,
@@ -799,27 +778,27 @@
           "f1": 0.0
         },
         "sin_tema": {
-          "soporte": 5,
-          "predichos": 35,
+          "soporte": 4,
+          "predichos": 17,
           "precision": {
-            "n": 3,
-            "de": 35,
-            "proporcion": 0.0857,
+            "n": 2,
+            "de": 17,
+            "proporcion": 0.1176,
             "ic95": [
-              0.0296,
-              0.2238
+              0.0329,
+              0.3434
             ]
           },
           "recall": {
-            "n": 3,
-            "de": 5,
-            "proporcion": 0.6,
+            "n": 2,
+            "de": 4,
+            "proporcion": 0.5,
             "ic95": [
-              0.2307,
-              0.8824
+              0.15,
+              0.85
             ]
           },
-          "f1": 0.15
+          "f1": 0.1905
         }
       }
     },
@@ -827,50 +806,50 @@
       "n": 100,
       "macro_f1_ia": {
         "n": 100,
-        "macro_f1": 0.5451,
+        "macro_f1": 0.6121,
         "ic95": [
-          0.38,
-          0.6692
+          0.4195,
+          0.7452
         ],
         "ic95_exacto": [
-          0.3800118971041328,
-          0.6692180333005975
+          0.41952438030309686,
+          0.7451953864067559
         ],
         "remuestreos": 1000,
         "ponderado": false
       },
       "macro_f1_baseline": {
         "n": 100,
-        "macro_f1": 0.545,
+        "macro_f1": 0.582,
         "ic95": [
-          0.3384,
-          0.6657
+          0.3827,
+          0.7217
         ],
         "ic95_exacto": [
-          0.33838891566184426,
-          0.6657310547875064
+          0.38266056726515757,
+          0.7216591435185185
         ],
         "remuestreos": 1000,
         "ponderado": false
       },
       "diferencia_macro_f1": {
         "n": 100,
-        "diferencia_macro_f1": 0.0002,
+        "diferencia_macro_f1": 0.0301,
         "ic95": [
-          -0.2137,
-          0.2666
+          -0.2289,
+          0.2993
         ],
         "ic95_exacto": [
-          -0.21365099211706054,
-          0.2666444753413147
+          -0.2289366823897138,
+          0.29933548382191977
         ]
       },
       "veredicto": "sin_diferencia_demostrable",
       "discordantes_conteo": {
-        "ambos_aciertan": 59,
-        "solo_ia": 12,
-        "solo_baseline": 6,
-        "ambos_fallan": 23,
+        "ambos_aciertan": 73,
+        "solo_ia": 10,
+        "solo_baseline": 5,
+        "ambos_fallan": 12,
         "n": 100
       }
     }
@@ -881,10 +860,10 @@
     ],
     "usa_etiquetas_provisionales": false,
     "modelo": "minilm",
-    "umbral_elegido_con_todas_las_etiquetas": 0.69,
+    "umbral_elegido_con_todas_las_etiquetas": 0.625,
     "umbral_por_pliegue_validacion_cruzada": {
-      "0": 0.535,
-      "1": 0.725
+      "0": 0.6,
+      "1": 0.72
     },
     "titulares_etiquetados": 100,
     "validacion_cruzada_agrupada": {
@@ -894,51 +873,11 @@
       "unidad_de_remuestreo": "titular",
       "remuestreos": 2000,
       "ia": {
-        "tp": 125,
-        "fp": 17,
-        "fn": 6,
-        "pares_predichos": 142,
-        "pares_positivos": 131,
-        "precision": {
-          "valor": 0.8803,
-          "ic95": [
-            0.68,
-            1.0
-          ],
-          "ic95_exacto": [
-            0.6799708029197081,
-            1.0
-          ]
-        },
-        "recall": {
-          "valor": 0.9542,
-          "ic95": [
-            0.8303,
-            1.0
-          ],
-          "ic95_exacto": [
-            0.8303299216027875,
-            1.0
-          ]
-        },
-        "f1": {
-          "valor": 0.9158,
-          "ic95": [
-            0.7793,
-            0.9945
-          ],
-          "ic95_exacto": [
-            0.779339674410097,
-            0.994477390103291
-          ]
-        }
-      },
-      "baseline": {
-        "tp": 86,
+        "tp": 91,
         "fp": 0,
-        "fn": 45,
-        "pares_predichos": 86,
-        "pares_positivos": 131,
+        "fn": 2,
+        "pares_predichos": 91,
+        "pares_positivos": 93,
         "precision": {
           "valor": 1.0,
           "ic95": [
@@ -951,119 +890,34 @@
           ]
         },
         "recall": {
-          "valor": 0.6565,
+          "valor": 0.9785,
           "ic95": [
-            0.4433,
-            0.8682
-          ],
-          "ic95_exacto": [
-            0.4433187834412843,
-            0.8682221542227662
-          ]
-        },
-        "f1": {
-          "valor": 0.7926,
-          "ic95": [
-            0.6143,
-            0.9295
-          ],
-          "ic95_exacto": [
-            0.6143045819364017,
-            0.9294635030097598
-          ]
-        }
-      },
-      "diferencia_ia_menos_baseline": {
-        "precision": {
-          "valor": -0.1197,
-          "ic95": [
-            -0.32,
-            0.0
-          ],
-          "ic95_exacto": [
-            -0.32002919708029187,
-            0.0
-          ],
-          "veredicto": "sin_diferencia_demostrable"
-        },
-        "recall": {
-          "valor": 0.2977,
-          "ic95": [
-            0.0914,
-            0.5044
-          ],
-          "ic95_exacto": [
-            0.09141558441558442,
-            0.5043538093338651
-          ],
-          "veredicto": "gana_ia"
-        },
-        "f1": {
-          "valor": 0.1232,
-          "ic95": [
-            -0.0385,
-            0.3081
-          ],
-          "ic95_exacto": [
-            -0.03847475909837848,
-            0.3080726522897449
-          ],
-          "veredicto": "sin_diferencia_demostrable"
-        }
-      }
-    },
-    "umbral_elegido_en_la_misma_muestra": {
-      "nota": "OPTIMISTA: las mismas etiquetas calibran y evalúan.",
-      "pares_en_alcance": 4950,
-      "n_titulares": 100,
-      "unidad_de_remuestreo": "titular",
-      "remuestreos": 2000,
-      "ia": {
-        "tp": 259,
-        "fp": 0,
-        "fn": 13,
-        "pares_predichos": 259,
-        "pares_positivos": 272,
-        "precision": {
-          "valor": 1.0,
-          "ic95": [
-            1.0,
+            0.866,
             1.0
           ],
           "ic95_exacto": [
-            1.0,
-            1.0
-          ]
-        },
-        "recall": {
-          "valor": 0.9522,
-          "ic95": [
-            0.8391,
-            1.0
-          ],
-          "ic95_exacto": [
-            0.8390794756731224,
+            0.8660412644787646,
             1.0
           ]
         },
         "f1": {
-          "valor": 0.9755,
+          "valor": 0.9891,
           "ic95": [
-            0.9125,
+            0.9282,
             1.0
           ],
           "ic95_exacto": [
-            0.9124994180633147,
+            0.9282123292420775,
             1.0
           ]
         }
       },
       "baseline": {
-        "tp": 184,
+        "tp": 65,
         "fp": 0,
-        "fn": 88,
-        "pares_predichos": 184,
-        "pares_positivos": 272,
+        "fn": 28,
+        "pares_predichos": 65,
+        "pares_positivos": 93,
         "precision": {
           "valor": 1.0,
           "ic95": [
@@ -1076,25 +930,25 @@
           ]
         },
         "recall": {
-          "valor": 0.6765,
+          "valor": 0.6989,
           "ic95": [
-            0.4825,
-            0.8697
+            0.4465,
+            0.95
           ],
           "ic95_exacto": [
-            0.4824545454545455,
-            0.8697049989414627
+            0.44654800431499475,
+            0.9500184729064038
           ]
         },
         "f1": {
-          "valor": 0.807,
+          "valor": 0.8228,
           "ic95": [
-            0.6509,
-            0.9303
+            0.6174,
+            0.9744
           ],
           "ic95_exacto": [
-            0.650886027536971,
-            0.9303125283738385
+            0.6173980382034074,
+            0.9743686868686868
           ]
         }
       },
@@ -1112,39 +966,164 @@
           "veredicto": "sin_diferencia_demostrable"
         },
         "recall": {
-          "valor": 0.2757,
+          "valor": 0.2796,
           "ic95": [
-            0.0917,
-            0.4596
+            0.0106,
+            0.5206
           ],
           "ic95_exacto": [
-            0.09171084781706705,
-            0.4596321816770186
+            0.010627442466348221,
+            0.5205550799086759
           ],
           "veredicto": "gana_ia"
         },
         "f1": {
-          "valor": 0.1685,
+          "valor": 0.1663,
           "ic95": [
-            0.0498,
-            0.3136
+            0.0053,
+            0.3575
           ],
           "ic95_exacto": [
-            0.04980194329330433,
-            0.3136063258983929
+            0.005342108871520666,
+            0.3575200836621191
+          ],
+          "veredicto": "gana_ia"
+        }
+      }
+    },
+    "umbral_elegido_en_la_misma_muestra": {
+      "nota": "OPTIMISTA: las mismas etiquetas calibran y evalúan.",
+      "pares_en_alcance": 4950,
+      "n_titulares": 100,
+      "unidad_de_remuestreo": "titular",
+      "remuestreos": 2000,
+      "ia": {
+        "tp": 193,
+        "fp": 0,
+        "fn": 1,
+        "pares_predichos": 193,
+        "pares_positivos": 194,
+        "precision": {
+          "valor": 1.0,
+          "ic95": [
+            1.0,
+            1.0
+          ],
+          "ic95_exacto": [
+            1.0,
+            1.0
+          ]
+        },
+        "recall": {
+          "valor": 0.9948,
+          "ic95": [
+            0.9629,
+            1.0
+          ],
+          "ic95_exacto": [
+            0.9629454926624738,
+            1.0
+          ]
+        },
+        "f1": {
+          "valor": 0.9974,
+          "ic95": [
+            0.9811,
+            1.0
+          ],
+          "ic95_exacto": [
+            0.9811230043541365,
+            1.0
+          ]
+        }
+      },
+      "baseline": {
+        "tp": 139,
+        "fp": 0,
+        "fn": 55,
+        "pares_predichos": 139,
+        "pares_positivos": 194,
+        "precision": {
+          "valor": 1.0,
+          "ic95": [
+            1.0,
+            1.0
+          ],
+          "ic95_exacto": [
+            1.0,
+            1.0
+          ]
+        },
+        "recall": {
+          "valor": 0.7165,
+          "ic95": [
+            0.4937,
+            0.9634
+          ],
+          "ic95_exacto": [
+            0.49369418597389625,
+            0.9634236453201968
+          ]
+        },
+        "f1": {
+          "valor": 0.8348,
+          "ic95": [
+            0.661,
+            0.9814
+          ],
+          "ic95_exacto": [
+            0.6610378151260504,
+            0.9813711050013091
+          ]
+        }
+      },
+      "diferencia_ia_menos_baseline": {
+        "precision": {
+          "valor": 0.0,
+          "ic95": [
+            0.0,
+            0.0
+          ],
+          "ic95_exacto": [
+            0.0,
+            0.0
+          ],
+          "veredicto": "sin_diferencia_demostrable"
+        },
+        "recall": {
+          "valor": 0.2783,
+          "ic95": [
+            0.027,
+            0.5001
+          ],
+          "ic95_exacto": [
+            0.027011728709841892,
+            0.5000523012552298
+          ],
+          "veredicto": "gana_ia"
+        },
+        "f1": {
+          "valor": 0.1626,
+          "ic95": [
+            0.0137,
+            0.3351
+          ],
+          "ic95_exacto": [
+            0.013692047166807766,
+            0.3350523238492477
           ],
           "veredicto": "gana_ia"
         }
       }
     },
     "titulares_con_pares_en_cv": 100,
-    "coincide_con_outputs_agrupacion_json": true,
+    "coincide_con_outputs_agrupacion_json": false,
     "conteo_pares": {
-      "ia_une_y_baseline_no_cv": 39,
+      "ia_une_y_baseline_no_cv": 26,
       "baseline_une_y_ia_no_cv": 0,
-      "falsos_negativos_ia_cv": 6,
-      "falsos_positivos_ia_cv": 17,
-      "falsos_negativos_ia_umbral_elegido": 13
+      "falsos_negativos_ia_cv": 2,
+      "falsos_positivos_ia_cv": 0,
+      "falsos_negativos_ia_umbral_elegido": 1
     },
     "ejemplos_ia_une_y_baseline_no": [
       {
@@ -1179,21 +1158,6 @@
       },
       {
         "par": [
-          "NOT-213eb698b8",
-          "NOT-26fd75f865"
-        ],
-        "titulares": [
-          "Допомога США Європі - Трамп перенаправляє гроші, схвалені для європейських країн, Латинській Америці",
-          "Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika"
-        ],
-        "grupo_humano": [
-          "trump-ayuda-europa-latam",
-          "trump-ayuda-europa-latam"
-        ],
-        "identicos": false
-      },
-      {
-        "par": [
           "NOT-364916b1e1",
           "NOT-7170117798"
         ],
@@ -1209,36 +1173,21 @@
       },
       {
         "par": [
-          "NOT-5d839301a6",
-          "NOT-fb0597e7e5"
+          "NOT-7bc0adfe59",
+          "NOT-bac341eccd"
         ],
         "titulares": [
-          "Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika",
-          "Trump přesměroval pomoc Ukrajině do zemí Latinské Ameriky"
+          "Intensifying El Nino deepens economic risks across LatAm",
+          "World Insights: Intensifying El Nino deepens economic risks across LatAm"
         ],
         "grupo_humano": [
-          "trump-ayuda-europa-latam",
-          "trump-ayuda-europa-latam"
+          "el-nino-latam",
+          "el-nino-latam"
         ],
         "identicos": false
       }
     ],
     "ejemplos_falsos_negativos_ia_umbral_elegido": [
-      {
-        "par": [
-          "NOT-1ba5a41e46",
-          "NOT-c712a8d7e4"
-        ],
-        "titulares": [
-          "Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika",
-          "WP: США перенаправят в Латинскую Америку $52 млн, выделенные на проекты в Европе"
-        ],
-        "grupo_humano": [
-          "trump-ayuda-europa-latam",
-          "trump-ayuda-europa-latam"
-        ],
-        "identicos": false
-      },
       {
         "par": [
           "NOT-8206bf1857",
@@ -1255,38 +1204,7 @@
         "identicos": false
       }
     ],
-    "ejemplos_falsos_positivos_ia_cv": [
-      {
-        "par": [
-          "NOT-05ae3da7e3",
-          "NOT-213eb698b8"
-        ],
-        "titulares": [
-          "El BID moviliza proyectos por US$84.000 millones desde Miami: Quiero cerrar acuerdos que beneficien a América Latina, dice su nuevo director",
-          "Допомога США Європі - Трамп перенаправляє гроші, схвалені для європейських країн, Латинській Америці"
-        ],
-        "grupo_humano": [
-          null,
-          "trump-ayuda-europa-latam"
-        ],
-        "identicos": false
-      },
-      {
-        "par": [
-          "NOT-26fd75f865",
-          "NOT-a71293e7e8"
-        ],
-        "titulares": [
-          "Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika",
-          "The Duality of Latin America FDI"
-        ],
-        "grupo_humano": [
-          "trump-ayuda-europa-latam",
-          null
-        ],
-        "identicos": false
-      }
-    ],
+    "ejemplos_falsos_positivos_ia_cv": [],
     "ejemplos_baseline_une_y_ia_no_cv": [],
     "por_grupo_humano_ia": {
       "el-nino-latam": {
@@ -1303,11 +1221,6 @@
         "titulares": 3,
         "pares": 3,
         "recuperados": 3
-      },
-      "trump-ayuda-europa-latam": {
-        "titulares": 13,
-        "pares": 78,
-        "recuperados": 66
       }
     }
   },
@@ -2395,40 +2308,40 @@
     "utilidad_medible": false,
     "motivo": "eval/seleccion_editor.csv existe pero es una selección provisional del asistente (D-101), no de un editor; su Precision@5 está en outputs/precision_at_5.json y se rehace a mano en C-09.",
     "baseline": "grupos ordenados solo por publicación más reciente (PDF sección 8); empate por ID ascendente",
-    "grupos": 60,
+    "grupos": 72,
     "top": 5,
     "top_sistema": [
       "GRP-21ad932d54",
       "GRP-038c4f0643",
-      "GRP-5e6531917f",
-      "GRP-84a6b3a04b",
-      "GRP-39dfe8d714"
+      "GRP-393e132dbb",
+      "GRP-50d72e2b04",
+      "GRP-5e6531917f"
     ],
     "top_por_fecha": [
-      "GRP-f9e3ba0bd2",
-      "GRP-87e128925b",
-      "GRP-0c210ad795",
-      "GRP-1df3ab1e22",
-      "GRP-0f8fb5a5bb"
+      "GRP-3a15fc6a18",
+      "GRP-1dc52c45ff",
+      "GRP-50d72e2b04",
+      "GRP-a03bab5b02",
+      "GRP-1627d09497"
     ],
     "solapamiento": {
       "k": 5,
-      "coinciden": [],
+      "coinciden": [
+        "GRP-50d72e2b04"
+      ],
       "solo_sistema": [
         "GRP-21ad932d54",
         "GRP-038c4f0643",
-        "GRP-5e6531917f",
-        "GRP-84a6b3a04b",
-        "GRP-39dfe8d714"
+        "GRP-393e132dbb",
+        "GRP-5e6531917f"
       ],
       "solo_baseline": [
-        "GRP-f9e3ba0bd2",
-        "GRP-87e128925b",
-        "GRP-0c210ad795",
-        "GRP-1df3ab1e22",
-        "GRP-0f8fb5a5bb"
+        "GRP-3a15fc6a18",
+        "GRP-1dc52c45ff",
+        "GRP-a03bab5b02",
+        "GRP-1627d09497"
       ],
-      "n_coinciden": 0
+      "n_coinciden": 1
     },
     "empates_de_fecha_en_el_corte": [],
     "ejemplos_solo_sistema": [
@@ -2438,14 +2351,14 @@
         "n_titulares": 1,
         "n_medios": 1,
         "posicion_sistema": 1,
-        "posicion_por_fecha": 32,
+        "posicion_por_fecha": 51,
         "fecha_mas_reciente": "2026-10-05T21:38:58Z",
-        "puntaje": 90.45,
+        "puntaje": 87.25,
         "rango": "alto",
         "componentes": {
           "R": 1.0,
           "I": 1.0,
-          "U": 0.8391,
+          "U": 0.6789,
           "N": 1.0,
           "E": 0.3667
         },
@@ -2458,14 +2371,34 @@
         "n_titulares": 1,
         "n_medios": 1,
         "posicion_sistema": 2,
-        "posicion_por_fecha": 21,
+        "posicion_por_fecha": 42,
         "fecha_mas_reciente": "2026-10-06T11:27:43Z",
-        "puntaje": 89.59,
+        "puntaje": 86.39,
         "rango": "alto",
         "componentes": {
           "R": 1.0,
           "I": 0.9,
-          "U": 0.9213,
+          "U": 0.7612,
+          "N": 1.0,
+          "E": 0.3667
+        },
+        "estado_de_evidencia": "insuficiente",
+        "accion": "Investigar ya"
+      },
+      {
+        "id_grupo": "GRP-393e132dbb",
+        "titular_central": "Festival Navideño 'City of Stars 2026': Alcaldía de Panamá presenta el calendario de actividades",
+        "n_titulares": 1,
+        "n_medios": 1,
+        "posicion_sistema": 3,
+        "posicion_por_fecha": 16,
+        "fecha_mas_reciente": "2026-10-07T16:46:00Z",
+        "puntaje": 86.13,
+        "rango": "alto",
+        "componentes": {
+          "R": 1.0,
+          "I": 0.75,
+          "U": 0.9356,
           "N": 1.0,
           "E": 0.3667
         },
@@ -2477,57 +2410,17 @@
         "titular_central": "Más de 30 mujeres han muerto de forma violenta en Panamá este año",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 3,
-        "posicion_por_fecha": 25,
+        "posicion_sistema": 5,
+        "posicion_por_fecha": 44,
         "fecha_mas_reciente": "2026-10-06T01:30:01Z",
-        "puntaje": 88.41,
+        "puntaje": 85.2,
         "rango": "alto",
         "componentes": {
           "R": 1.0,
           "I": 0.9,
-          "U": 0.862,
+          "U": 0.7019,
           "N": 1.0,
           "E": 0.3667
-        },
-        "estado_de_evidencia": "insuficiente",
-        "accion": "Investigar ya"
-      },
-      {
-        "id_grupo": "GRP-84a6b3a04b",
-        "titular_central": "Colegios particulares atribuyen aumento de matrícula a migración al sector oficial y altos costos de operación",
-        "n_titulares": 1,
-        "n_medios": 1,
-        "posicion_sistema": 4,
-        "posicion_por_fecha": 18,
-        "fecha_mas_reciente": "2026-10-06T12:41:06Z",
-        "puntaje": 83.49,
-        "rango": "alto",
-        "componentes": {
-          "R": 1.0,
-          "I": 0.65,
-          "U": 0.9286,
-          "N": 1.0,
-          "E": 0.3667
-        },
-        "estado_de_evidencia": "insuficiente",
-        "accion": "Investigar ya"
-      },
-      {
-        "id_grupo": "GRP-39dfe8d714",
-        "titular_central": "Aeropuerto panameño suscribe convenio con empresa asiática",
-        "n_titulares": 1,
-        "n_medios": 1,
-        "posicion_sistema": 5,
-        "posicion_por_fecha": 22,
-        "fecha_mas_reciente": "2026-10-06T08:30:00Z",
-        "puntaje": 83.49,
-        "rango": "alto",
-        "componentes": {
-          "R": 1.0,
-          "I": 0.75,
-          "U": 0.9037,
-          "N": 1.0,
-          "E": 0.1667
         },
         "estado_de_evidencia": "insuficiente",
         "accion": "Investigar ya"
@@ -2535,19 +2428,19 @@
     ],
     "ejemplos_solo_por_fecha": [
       {
-        "id_grupo": "GRP-f9e3ba0bd2",
-        "titular_central": "Comisión de Presupuesto tramita traslados y créditos por casi $100 millones entre seis instituciones",
+        "id_grupo": "GRP-3a15fc6a18",
+        "titular_central": "Lau Cortés: Ordenan detención domiciliaria e imputan cargos por enriquecimiento injustificado y blanqueo de capitales",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 18,
+        "posicion_sistema": 22,
         "posicion_por_fecha": 1,
-        "fecha_mas_reciente": "2026-10-07T00:21:09Z",
-        "puntaje": 78.63,
+        "fecha_mas_reciente": "2026-10-08T02:30:00Z",
+        "puntaje": 78.54,
         "rango": "alto",
         "componentes": {
           "R": 1.0,
           "I": 0.4,
-          "U": 0.998,
+          "U": 0.9935,
           "N": 1.0,
           "E": 0.3667
         },
@@ -2555,19 +2448,39 @@
         "accion": null
       },
       {
-        "id_grupo": "GRP-87e128925b",
-        "titular_central": "Veraguas: Preocupación por aumento de muertes por enfermedades transmisibles y respiratorias",
+        "id_grupo": "GRP-1dc52c45ff",
+        "titular_central": "César Caicedo ahora está recluido en el Hospital Santo Tomás; había sido trasladado a Coiba",
         "n_titulares": 2,
         "n_medios": 1,
-        "posicion_sistema": 7,
+        "posicion_sistema": 23,
         "posicion_por_fecha": 2,
-        "fecha_mas_reciente": "2026-10-07T00:17:42Z",
-        "puntaje": 82.37,
+        "fecha_mas_reciente": "2026-10-08T02:10:57Z",
+        "puntaje": 78.5,
+        "rango": "alto",
+        "componentes": {
+          "R": 1.0,
+          "I": 0.4,
+          "U": 0.9916,
+          "N": 1.0,
+          "E": 0.3667
+        },
+        "estado_de_evidencia": null,
+        "accion": null
+      },
+      {
+        "id_grupo": "GRP-a03bab5b02",
+        "titular_central": "Asamblea: Debate por la renovación del contrato de Ciudad del Saber genera cuestionamientos por exoneraciones",
+        "n_titulares": 1,
+        "n_medios": 1,
+        "posicion_sistema": 9,
+        "posicion_por_fecha": 4,
+        "fecha_mas_reciente": "2026-10-08T01:14:47Z",
+        "puntaje": 82.14,
         "rango": "alto",
         "componentes": {
           "R": 1.0,
           "I": 0.55,
-          "U": 0.9977,
+          "U": 0.9861,
           "N": 1.0,
           "E": 0.3667
         },
@@ -2575,59 +2488,19 @@
         "accion": "Investigar ya"
       },
       {
-        "id_grupo": "GRP-0c210ad795",
-        "titular_central": "Adultos mayores lo pierden todo tras incendio de su vivienda en Portachuelo",
+        "id_grupo": "GRP-1627d09497",
+        "titular_central": "Contenido exclusivo: Dietilenglicol, 20 años de dolor",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 19,
-        "posicion_por_fecha": 3,
-        "fecha_mas_reciente": "2026-10-07T00:16:11Z",
-        "puntaje": 78.62,
-        "rango": "alto",
-        "componentes": {
-          "R": 1.0,
-          "I": 0.4,
-          "U": 0.9975,
-          "N": 1.0,
-          "E": 0.3667
-        },
-        "estado_de_evidencia": null,
-        "accion": null
-      },
-      {
-        "id_grupo": "GRP-1df3ab1e22",
-        "titular_central": "Mides solicita $47 millones para completar último pago de transferencias monetarias de 2026",
-        "n_titulares": 1,
-        "n_medios": 1,
-        "posicion_sistema": 20,
-        "posicion_por_fecha": 4,
-        "fecha_mas_reciente": "2026-10-07T00:14:52Z",
-        "puntaje": 78.61,
-        "rango": "alto",
-        "componentes": {
-          "R": 1.0,
-          "I": 0.4,
-          "U": 0.9974,
-          "N": 1.0,
-          "E": 0.3667
-        },
-        "estado_de_evidencia": null,
-        "accion": null
-      },
-      {
-        "id_grupo": "GRP-0f8fb5a5bb",
-        "titular_central": "Caso Pandora: Legalizan aprehensión de exejecutivo bancario señalado por autorizar pagos de créditos fiscales de la DGI",
-        "n_titulares": 1,
-        "n_medios": 1,
-        "posicion_sistema": 21,
+        "posicion_sistema": 25,
         "posicion_por_fecha": 5,
-        "fecha_mas_reciente": "2026-10-06T23:57:05Z",
-        "puntaje": 78.58,
+        "fecha_mas_reciente": "2026-10-08T01:02:59Z",
+        "puntaje": 78.36,
         "rango": "alto",
         "componentes": {
           "R": 1.0,
           "I": 0.4,
-          "U": 0.9956,
+          "U": 0.9849,
           "N": 1.0,
           "E": 0.3667
         },
@@ -2642,14 +2515,14 @@
         "n_titulares": 1,
         "n_medios": 1,
         "posicion_sistema": 1,
-        "posicion_por_fecha": 32,
+        "posicion_por_fecha": 51,
         "fecha_mas_reciente": "2026-10-05T21:38:58Z",
-        "puntaje": 90.45,
+        "puntaje": 87.25,
         "rango": "alto",
         "componentes": {
           "R": 1.0,
           "I": 1.0,
-          "U": 0.8391,
+          "U": 0.6789,
           "N": 1.0,
           "E": 0.3667
         },
@@ -2662,14 +2535,54 @@
         "n_titulares": 1,
         "n_medios": 1,
         "posicion_sistema": 2,
-        "posicion_por_fecha": 21,
+        "posicion_por_fecha": 42,
         "fecha_mas_reciente": "2026-10-06T11:27:43Z",
-        "puntaje": 89.59,
+        "puntaje": 86.39,
         "rango": "alto",
         "componentes": {
           "R": 1.0,
           "I": 0.9,
-          "U": 0.9213,
+          "U": 0.7612,
+          "N": 1.0,
+          "E": 0.3667
+        },
+        "estado_de_evidencia": "insuficiente",
+        "accion": "Investigar ya"
+      },
+      {
+        "id_grupo": "GRP-393e132dbb",
+        "titular_central": "Festival Navideño 'City of Stars 2026': Alcaldía de Panamá presenta el calendario de actividades",
+        "n_titulares": 1,
+        "n_medios": 1,
+        "posicion_sistema": 3,
+        "posicion_por_fecha": 16,
+        "fecha_mas_reciente": "2026-10-07T16:46:00Z",
+        "puntaje": 86.13,
+        "rango": "alto",
+        "componentes": {
+          "R": 1.0,
+          "I": 0.75,
+          "U": 0.9356,
+          "N": 1.0,
+          "E": 0.3667
+        },
+        "estado_de_evidencia": "insuficiente",
+        "accion": "Investigar ya"
+      },
+      {
+        "id_grupo": "GRP-50d72e2b04",
+        "titular_central": "Unos 22 aprehendidos en la operación Comunidad Segura contra el microtráfico en Colón y Panama Oeste",
+        "n_titulares": 1,
+        "n_medios": 1,
+        "posicion_sistema": 4,
+        "posicion_por_fecha": 3,
+        "fecha_mas_reciente": "2026-10-08T02:02:13Z",
+        "puntaje": 85.98,
+        "rango": "alto",
+        "componentes": {
+          "R": 1.0,
+          "I": 0.7,
+          "U": 0.9908,
           "N": 1.0,
           "E": 0.3667
         },
@@ -2681,57 +2594,17 @@
         "titular_central": "Más de 30 mujeres han muerto de forma violenta en Panamá este año",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 3,
-        "posicion_por_fecha": 25,
+        "posicion_sistema": 5,
+        "posicion_por_fecha": 44,
         "fecha_mas_reciente": "2026-10-06T01:30:01Z",
-        "puntaje": 88.41,
+        "puntaje": 85.2,
         "rango": "alto",
         "componentes": {
           "R": 1.0,
           "I": 0.9,
-          "U": 0.862,
+          "U": 0.7019,
           "N": 1.0,
           "E": 0.3667
-        },
-        "estado_de_evidencia": "insuficiente",
-        "accion": "Investigar ya"
-      },
-      {
-        "id_grupo": "GRP-84a6b3a04b",
-        "titular_central": "Colegios particulares atribuyen aumento de matrícula a migración al sector oficial y altos costos de operación",
-        "n_titulares": 1,
-        "n_medios": 1,
-        "posicion_sistema": 4,
-        "posicion_por_fecha": 18,
-        "fecha_mas_reciente": "2026-10-06T12:41:06Z",
-        "puntaje": 83.49,
-        "rango": "alto",
-        "componentes": {
-          "R": 1.0,
-          "I": 0.65,
-          "U": 0.9286,
-          "N": 1.0,
-          "E": 0.3667
-        },
-        "estado_de_evidencia": "insuficiente",
-        "accion": "Investigar ya"
-      },
-      {
-        "id_grupo": "GRP-39dfe8d714",
-        "titular_central": "Aeropuerto panameño suscribe convenio con empresa asiática",
-        "n_titulares": 1,
-        "n_medios": 1,
-        "posicion_sistema": 5,
-        "posicion_por_fecha": 22,
-        "fecha_mas_reciente": "2026-10-06T08:30:00Z",
-        "puntaje": 83.49,
-        "rango": "alto",
-        "componentes": {
-          "R": 1.0,
-          "I": 0.75,
-          "U": 0.9037,
-          "N": 1.0,
-          "E": 0.1667
         },
         "estado_de_evidencia": "insuficiente",
         "accion": "Investigar ya"

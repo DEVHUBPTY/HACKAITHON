@@ -338,7 +338,8 @@ def test_x100_coherencia_avisa_si_la_macro_f1_difiere_entre_salidas(raiz: Path):
 
 def test_x100_coherencia_avisa_si_la_exactitud_difiere(raiz: Path):
     def cambia(d):
-        d["clasificacion"]["vista_clasificador"]["exactitud_ia"].update(n=33, de=63)
+        e = d["clasificacion"]["vista_clasificador"]["exactitud_ia"]
+        e.update(n=e["n"] + 1, de=e["de"] + 1)      # siempre distinto del valor real, sea cual sea
     _editar(raiz, "outputs/ia_vs_baseline.json", cambia)
     texto = _pagina(raiz)
     assert "aciertos de la exactitud de la IA" in texto and "total de la exactitud de la IA" in texto
