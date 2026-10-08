@@ -1,0 +1,707 @@
+{
+  "benchmark": "benchmark/benchmark_dev.jsonl",
+  "n_consultas": 40,
+  "division": {
+    "regla": "pares calibran, el resto evalúa (paridad del número del id)",
+    "calibracion": 20,
+    "evaluacion": 20
+  },
+  "recuperacion": {
+    "k": 5,
+    "n_consultas": 0,
+    "filas": {
+      "semantica": {
+        "total": {
+          "por_ids": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "por_ids_acotado": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "consultas_completas": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "macro_recall": null,
+          "fallos": {}
+        },
+        "titulares": {
+          "por_ids": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "por_ids_acotado": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "consultas_completas": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "macro_recall": null,
+          "fallos": {}
+        },
+        "oficiales": {
+          "por_ids": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "por_ids_acotado": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "consultas_completas": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "macro_recall": null,
+          "fallos": {}
+        }
+      },
+      "bm25": {
+        "total": {
+          "por_ids": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "por_ids_acotado": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "consultas_completas": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "macro_recall": null,
+          "fallos": {}
+        },
+        "titulares": {
+          "por_ids": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "por_ids_acotado": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "consultas_completas": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "macro_recall": null,
+          "fallos": {}
+        },
+        "oficiales": {
+          "por_ids": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "por_ids_acotado": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "consultas_completas": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "macro_recall": null,
+          "fallos": {}
+        }
+      },
+      "sistema": {
+        "total": {
+          "por_ids": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "por_ids_acotado": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "consultas_completas": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "macro_recall": null,
+          "fallos": {}
+        },
+        "titulares": {
+          "por_ids": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "por_ids_acotado": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "consultas_completas": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "macro_recall": null,
+          "fallos": {}
+        },
+        "oficiales": {
+          "por_ids": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "por_ids_acotado": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "consultas_completas": {
+            "n": 0,
+            "de": 0,
+            "proporcion": null,
+            "ic95": null
+          },
+          "macro_recall": null,
+          "fallos": {}
+        }
+      }
+    }
+  },
+  "abstencion": {
+    "semantica": {
+      "metodo": "semantica",
+      "umbral": 0.84,
+      "por_mitad": {
+        "calibracion": {
+          "abstencion_correcta_sin_respuesta": {
+            "n": 13,
+            "de": 17,
+            "proporcion": 0.7647,
+            "ic95": [
+              0.5274,
+              0.9045
+            ],
+            "fallos": [
+              "C12-008",
+              "C12-014",
+              "C12-018",
+              "C12-024"
+            ]
+          },
+          "abstencion_correcta_todas": {
+            "n": 13,
+            "de": 17,
+            "proporcion": 0.7647,
+            "ic95": [
+              0.5274,
+              0.9045
+            ],
+            "fallos": [
+              "C12-008",
+              "C12-014",
+              "C12-018",
+              "C12-024"
+            ]
+          },
+          "abstencion_incorrecta_sustentada": {
+            "n": 0,
+            "de": 3,
+            "proporcion": 0.0,
+            "ic95": [
+              0.0,
+              0.5615
+            ],
+            "ids": []
+          },
+          "abstencion_incorrecta_todas": {
+            "n": 0,
+            "de": 3,
+            "proporcion": 0.0,
+            "ic95": [
+              0.0,
+              0.5615
+            ],
+            "ids": []
+          }
+        },
+        "evaluacion": {
+          "abstencion_correcta_sin_respuesta": {
+            "n": 11,
+            "de": 13,
+            "proporcion": 0.8462,
+            "ic95": [
+              0.5776,
+              0.9567
+            ],
+            "fallos": [
+              "C12-007",
+              "C12-031"
+            ]
+          },
+          "abstencion_correcta_todas": {
+            "n": 11,
+            "de": 13,
+            "proporcion": 0.8462,
+            "ic95": [
+              0.5776,
+              0.9567
+            ],
+            "fallos": [
+              "C12-007",
+              "C12-031"
+            ]
+          },
+          "abstencion_incorrecta_sustentada": {
+            "n": 0,
+            "de": 7,
+            "proporcion": 0.0,
+            "ic95": [
+              0.0,
+              0.3543
+            ],
+            "ids": []
+          },
+          "abstencion_incorrecta_todas": {
+            "n": 0,
+            "de": 7,
+            "proporcion": 0.0,
+            "ic95": [
+              0.0,
+              0.3543
+            ],
+            "ids": []
+          }
+        },
+        "total": {
+          "abstencion_correcta_sin_respuesta": {
+            "n": 24,
+            "de": 30,
+            "proporcion": 0.8,
+            "ic95": [
+              0.6269,
+              0.905
+            ],
+            "fallos": [
+              "C12-007",
+              "C12-008",
+              "C12-014",
+              "C12-018",
+              "C12-024",
+              "C12-031"
+            ]
+          },
+          "abstencion_correcta_todas": {
+            "n": 24,
+            "de": 30,
+            "proporcion": 0.8,
+            "ic95": [
+              0.6269,
+              0.905
+            ],
+            "fallos": [
+              "C12-007",
+              "C12-008",
+              "C12-014",
+              "C12-018",
+              "C12-024",
+              "C12-031"
+            ]
+          },
+          "abstencion_incorrecta_sustentada": {
+            "n": 0,
+            "de": 10,
+            "proporcion": 0.0,
+            "ic95": [
+              0.0,
+              0.2775
+            ],
+            "ids": []
+          },
+          "abstencion_incorrecta_todas": {
+            "n": 0,
+            "de": 10,
+            "proporcion": 0.0,
+            "ic95": [
+              0.0,
+              0.2775
+            ],
+            "ids": []
+          }
+        }
+      },
+      "motivos": {
+        "cifra_inexistente": [
+          "C12-033"
+        ],
+        "responde": [
+          "C12-002",
+          "C12-005",
+          "C12-007",
+          "C12-008",
+          "C12-009",
+          "C12-013",
+          "C12-014",
+          "C12-017",
+          "C12-018",
+          "C12-021",
+          "C12-024",
+          "C12-025",
+          "C12-028",
+          "C12-031",
+          "C12-032",
+          "C12-037"
+        ],
+        "similitud_baja": [
+          "C12-001",
+          "C12-003",
+          "C12-004",
+          "C12-006",
+          "C12-010",
+          "C12-011",
+          "C12-012",
+          "C12-015",
+          "C12-016",
+          "C12-019",
+          "C12-020",
+          "C12-022",
+          "C12-023",
+          "C12-026",
+          "C12-027",
+          "C12-029",
+          "C12-030",
+          "C12-034",
+          "C12-035",
+          "C12-036",
+          "C12-038",
+          "C12-039",
+          "C12-040"
+        ]
+      },
+      "solo_umbral_sin_respuesta": {
+        "n": 23,
+        "de": 30,
+        "proporcion": 0.7667,
+        "ic95": [
+          0.5907,
+          0.8821
+        ],
+        "ids": [
+          "C12-001",
+          "C12-003",
+          "C12-004",
+          "C12-006",
+          "C12-010",
+          "C12-011",
+          "C12-012",
+          "C12-015",
+          "C12-016",
+          "C12-019",
+          "C12-020",
+          "C12-022",
+          "C12-023",
+          "C12-026",
+          "C12-027",
+          "C12-029",
+          "C12-030",
+          "C12-034",
+          "C12-035",
+          "C12-036",
+          "C12-038",
+          "C12-039",
+          "C12-040"
+        ]
+      }
+    },
+    "bm25": {
+      "metodo": "bm25",
+      "umbral": 10.844,
+      "por_mitad": {
+        "calibracion": {
+          "abstencion_correcta_sin_respuesta": {
+            "n": 13,
+            "de": 17,
+            "proporcion": 0.7647,
+            "ic95": [
+              0.5274,
+              0.9045
+            ],
+            "fallos": [
+              "C12-010",
+              "C12-014",
+              "C12-018",
+              "C12-024"
+            ]
+          },
+          "abstencion_correcta_todas": {
+            "n": 13,
+            "de": 17,
+            "proporcion": 0.7647,
+            "ic95": [
+              0.5274,
+              0.9045
+            ],
+            "fallos": [
+              "C12-010",
+              "C12-014",
+              "C12-018",
+              "C12-024"
+            ]
+          },
+          "abstencion_incorrecta_sustentada": {
+            "n": 0,
+            "de": 3,
+            "proporcion": 0.0,
+            "ic95": [
+              0.0,
+              0.5615
+            ],
+            "ids": []
+          },
+          "abstencion_incorrecta_todas": {
+            "n": 0,
+            "de": 3,
+            "proporcion": 0.0,
+            "ic95": [
+              0.0,
+              0.5615
+            ],
+            "ids": []
+          }
+        },
+        "evaluacion": {
+          "abstencion_correcta_sin_respuesta": {
+            "n": 13,
+            "de": 13,
+            "proporcion": 1.0,
+            "ic95": [
+              0.7719,
+              1.0
+            ],
+            "fallos": []
+          },
+          "abstencion_correcta_todas": {
+            "n": 13,
+            "de": 13,
+            "proporcion": 1.0,
+            "ic95": [
+              0.7719,
+              1.0
+            ],
+            "fallos": []
+          },
+          "abstencion_incorrecta_sustentada": {
+            "n": 0,
+            "de": 7,
+            "proporcion": 0.0,
+            "ic95": [
+              0.0,
+              0.3543
+            ],
+            "ids": []
+          },
+          "abstencion_incorrecta_todas": {
+            "n": 0,
+            "de": 7,
+            "proporcion": 0.0,
+            "ic95": [
+              0.0,
+              0.3543
+            ],
+            "ids": []
+          }
+        },
+        "total": {
+          "abstencion_correcta_sin_respuesta": {
+            "n": 26,
+            "de": 30,
+            "proporcion": 0.8667,
+            "ic95": [
+              0.7032,
+              0.9469
+            ],
+            "fallos": [
+              "C12-010",
+              "C12-014",
+              "C12-018",
+              "C12-024"
+            ]
+          },
+          "abstencion_correcta_todas": {
+            "n": 26,
+            "de": 30,
+            "proporcion": 0.8667,
+            "ic95": [
+              0.7032,
+              0.9469
+            ],
+            "fallos": [
+              "C12-010",
+              "C12-014",
+              "C12-018",
+              "C12-024"
+            ]
+          },
+          "abstencion_incorrecta_sustentada": {
+            "n": 0,
+            "de": 10,
+            "proporcion": 0.0,
+            "ic95": [
+              0.0,
+              0.2775
+            ],
+            "ids": []
+          },
+          "abstencion_incorrecta_todas": {
+            "n": 0,
+            "de": 10,
+            "proporcion": 0.0,
+            "ic95": [
+              0.0,
+              0.2775
+            ],
+            "ids": []
+          }
+        }
+      },
+      "motivos": {
+        "cifra_inexistente": [
+          "C12-033"
+        ],
+        "responde": [
+          "C12-002",
+          "C12-005",
+          "C12-009",
+          "C12-010",
+          "C12-013",
+          "C12-014",
+          "C12-017",
+          "C12-018",
+          "C12-021",
+          "C12-024",
+          "C12-025",
+          "C12-028",
+          "C12-032",
+          "C12-037"
+        ],
+        "similitud_baja": [
+          "C12-001",
+          "C12-003",
+          "C12-004",
+          "C12-006",
+          "C12-007",
+          "C12-008",
+          "C12-011",
+          "C12-012",
+          "C12-015",
+          "C12-016",
+          "C12-019",
+          "C12-020",
+          "C12-022",
+          "C12-023",
+          "C12-026",
+          "C12-027",
+          "C12-029",
+          "C12-030",
+          "C12-031",
+          "C12-034",
+          "C12-035",
+          "C12-036",
+          "C12-038",
+          "C12-039",
+          "C12-040"
+        ]
+      },
+      "solo_umbral_sin_respuesta": {
+        "n": 26,
+        "de": 30,
+        "proporcion": 0.8667,
+        "ic95": [
+          0.7032,
+          0.9469
+        ],
+        "ids": [
+          "C12-001",
+          "C12-003",
+          "C12-004",
+          "C12-006",
+          "C12-007",
+          "C12-008",
+          "C12-011",
+          "C12-012",
+          "C12-015",
+          "C12-016",
+          "C12-019",
+          "C12-020",
+          "C12-022",
+          "C12-023",
+          "C12-026",
+          "C12-027",
+          "C12-029",
+          "C12-030",
+          "C12-031",
+          "C12-033",
+          "C12-034",
+          "C12-035",
+          "C12-036",
+          "C12-038",
+          "C12-039",
+          "C12-040"
+        ]
+      }
+    }
+  },
+  "umbrales_de_config": {
+    "semantica": 0.84,
+    "bm25": 10.844
+  },
+  "aviso": "El umbral se calibra con la mitad de calibración y se evalúa en la otra; las reglas por patrón se escribieron viendo las 40 consultas, así que 'total' es optimista y no independiente."
+}

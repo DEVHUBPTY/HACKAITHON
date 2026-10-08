@@ -1,0 +1,41 @@
+id,pregunta,en_corpus,nota
+C12-001,¿Quién ganó las elecciones presidenciales de Panamá en 2019?,no,Elecciones de otra fecha. Los 69 titulares compartidos no incluyen ese resultado.
+C12-002,¿Qué falta definir para que Cobre Panamá vuelva a producir?,si,GRP-dd7d78a551: el titular señala que falta definir bajo qué modelo.
+C12-003,¿En qué fecha de 1999 se transfirió el Canal de Panamá a la administración panameña?,no,Evento histórico ausente de los titulares compartidos. Las noticias actuales del Canal no aportan esa fecha.
+C12-004,¿Cuántos casos de dengue registró Herrera en la semana epidemiológica 40 de 2026?,no,No hay un titular de dengue en Herrera ni ese dato epidemiológico semanal en las evidencias compartidas.
+C12-005,"Sobre el presupuesto de 2027, ¿para qué áreas recomendará más fondos el presidente de la Comisión?",si,GRP-41ed91b93c: salud y cumplimiento de primas de antigüedad.
+C12-006,¿Quién fue campeón del Torneo Clausura 2025 de la Liga Panameña de Fútbol?,no,Competencia y periodo ausentes de los 69 titulares compartidos.
+C12-007,¿Cuánto cuesta la matrícula de primer ingreso en la UTP para 2026 y cómo se calcula?,no,"El titular de la UTP trata sobre seguridad sísmica de edificios, no sobre tarifas de matrícula."
+C12-008,Busco una comparación del alquiler mensual mediano de viviendas en San Miguelito y La Chorrera durante septiembre de 2026. ¿Cuáles fueron los valores?,no,No se incluyen alquileres por municipio. La inflación nacional anual no permite obtener estos valores locales.
+C12-009,¿Qué medida cautelar y qué cargos se informaron en el caso de Lau Cortés?,si,GRP-3a15fc6a18: detención domiciliaria e imputación por enriquecimiento injustificado y blanqueo de capitales.
+C12-010,¿Cuántas viviendas faltaban para cubrir el déficit habitacional de la comarca Ngäbe-Buglé al cierre de 2025?,no,No aparece ese tema ni una medición del déficit de vivienda por comarca en las referencias compartidas.
+C12-011,¿Cuándo se confirmó el primer caso de COVID-19 en Panamá en 2020?,no,Pregunta de otro periodo. No aparece ese evento en los titulares compartidos.
+C12-012,¿Qué sectores abastecidos por Chilibre tendrán cortes de agua el 9 de octubre de 2026?,no,Fecha posterior al corte del 8 de octubre. No hay un aviso con ese calendario en los titulares compartidos.
+C12-013,¿Para qué solicita el Mides $47 millones?,si,GRP-1df3ab1e22: completar el último pago de transferencias monetarias de 2026.
+C12-014,"¿Qué porcentaje de intención de voto tiene cada partido para las elecciones de 2029, según la encuesta más reciente?",no,El titular sobre el plan electoral no contiene una encuesta ni porcentajes de intención de voto.
+C12-015,"¿Cuántas horas tardó, en promedio, el despacho aduanero de contenedores en Manzanillo durante septiembre de 2026?",no,"No se aporta ese indicador de operación portuaria, con ese puerto y periodo."
+C12-016,¿Cuántas personas murieron en Panamá durante los hechos del 9 de enero de 1964?,no,Evento histórico que no figura entre los 69 titulares compartidos.
+C12-017,¿Cuántas personas murieron y cuántas resultaron heridas en el ataque cerca de la estación del metro de San Miguelito?,si,GRP-7ddcf92e16: el titular informa un muerto y dos heridos.
+C12-018,¿Cuál fue el costo de la canasta básica de alimentos en Panamá y San Miguelito en septiembre de 2026?,no,No se incluyen esos costos mensuales. El indicador anual de inflación de 2024 no equivale al precio de la canasta.
+C12-019,¿Qué barrios de David tienen cobertura móvil 5G?,no,La cobertura 5G por barrio no aparece en las referencias. El porcentaje nacional de uso de internet mide otra cosa.
+C12-020,¿Cuántos estudiantes recibieron almuerzo escolar diariamente en las escuelas públicas de Darién durante 2025?,no,No hay un titular ni una serie sobre beneficiarios diarios del almuerzo escolar en Darién.
+C12-021,¿Qué institución avanza en la coordinación del Plan General de Elecciones de 2029?,si,GRP-276c88e7f3: Tribunal Electoral.
+C12-022,"¿Cuánto tardan, en promedio, las ambulancias del SUME en llegar a las emergencias en Panamá Oeste?",no,No se incluyen tiempos de respuesta de ambulancias por provincia en los datos compartidos.
+C12-023,¿Cuántas toneladas de arroz produjo Coclé en la cosecha de 2025?,no,El titular sobre la sequedad del campo no aporta el volumen de producción de arroz de 2025.
+C12-024,"¿Cuánto subieron los precios de los alimentos en Colón, mes a mes, entre enero y septiembre de 2026?",no,"Se pide una serie mensual local y por rubro. La evidencia disponible de inflación es nacional, anual y de 2024."
+C12-025,¿Por la desaparición de quiénes se emitió una Alerta Amber en Chiriquí?,si,GRP-821afe7eec: una adolescente de 16 años y su bebé.
+C12-026,¿Cuántos buques atravesaron el Canal de Panamá el 4 de octubre de 2023?,no,Fecha ajena a la ventana de titulares y sin un registro diario de tránsitos en las evidencias compartidas.
+C12-027,¿Cuántas hectáreas de manglar perdió la bahía de Panamá durante 2025?,no,No figura ese tema ni una medición de pérdida de manglar por zona y año.
+C12-028,"Según el dato del Banco Mundial incluido, ¿cuál fue la inflación anual de Panamá en 2024?",si,"IND-PAN-FP.CPI.TOTL.ZG-2024: 0.69322555100446 % anual, aproximadamente 0.69 %."
+C12-029,¿Cómo va la recolección de basura en Penonomé?,no,No aparece la recolección de basura en Penonomé entre los 69 titulares compartidos.
+C12-030,¿Cuántas escuelas de Los Santos tenían rampas de acceso para estudiantes con discapacidad en 2025?,no,No se incluyen datos de accesibilidad escolar por provincia ni un titular sobre ese tema.
+C12-031,"Para una nota sobre playas, necesito los resultados de coliformes en el agua de las playas de Bocas del Toro al 8 de octubre de 2026. ¿Cuáles son?",no,No hay resultados de calidad del agua de esas playas en las referencias compartidas.
+C12-032,"¿Qué porcentaje de la población panameña usaba internet en 2024, según el indicador disponible del Banco Mundial?",si,"IND-PAN-IT.NET.USER.ZS-2024: 72.77149963 % de la población, aproximadamente 72.77 %."
+C12-033,¿Qué crecimiento del PIB de Panamá pronostica el FMI para 2027?,no,Se solicita una proyección del FMI. La evidencia compartida de PIB corresponde al crecimiento observado de 2023 del Banco Mundial.
+C12-034,¿Cuánto costaba una caja de losartán de 50 mg en las farmacias de Santiago el 7 de octubre de 2026?,no,No se incluye un relevamiento de precios de ese medicamento por farmacia y fecha.
+C12-035,¿Cuál fue el marcador del partido con el que Panamá consiguió en octubre de 2017 su clasificación al Mundial de 2018?,no,"Evento deportivo de otro periodo, ausente de los titulares compartidos."
+C12-036,¿Cuántos accidentes de tránsito hubo en el distrito de Boquete durante junio de 2026?,no,No hay una estadística de accidentes con ese distrito y mes en las referencias compartidas.
+C12-037,"Según el registro de USGS incluido, ¿qué magnitud tuvo el sismo del 22 de julio de 2024 a las 20:17:54 UTC cerca de Puerto Armuelles?",si,"SIS-us6000nekb: magnitud 5.6, a 11 km ESE de Puerto Armuelles."
+C12-038,¿Cuántas personas asistieron al Carnaval de Las Tablas en 2025?,no,Evento y dato de asistencia ausentes de los 69 titulares compartidos.
+C12-039,¿Cuál era la proporción de empleo informal entre las mujeres de la comarca Guna Yala en 2025?,no,El desempleo nacional anual no mide informalidad por sexo y comarca. No se aporta el desglose solicitado.
+C12-040,¿Qué números salieron en el sorteo dominical de la Lotería Nacional del 23 de febrero de 2025?,no,Sorteo de otra fecha. No se incluyen resultados de lotería en los titulares compartidos.
