@@ -488,6 +488,12 @@ class FuenteSugerida(ModeloFicha):
     nombre: str = Field(min_length=1)
     origen: Literal["regla", "tema", "modalidad"]   # D-125: «regla» = regla interna de vínculo (antes «subtema»)
 
+    @field_validator("origen", mode="before")
+    @classmethod
+    def _origen_obsoleto(cls, v: Any) -> Any:
+        """Una ficha guardada antes de D-125 trae ``origen="subtema"``: el subtema era parte de un tema, así que se lee como «tema»."""
+        return "tema" if v == "subtema" else v
+
     @field_validator("nombre")
     @classmethod
     def _sin_formato_de_cita(cls, v: str) -> str:

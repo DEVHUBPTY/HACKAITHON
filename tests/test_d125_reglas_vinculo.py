@@ -223,3 +223,12 @@ def test_el_catalogo_de_temas_no_tiene_subtemas_y_las_reglas_apuntan_a_temas_rea
     temas = cargar_temas().temas
     assert len(temas) == 6 and not any(hasattr(t, "subtemas") for t in temas.values())
     assert {r.tema for r in REGLAS.values()} <= set(temas)
+
+
+def test_d125_una_fuente_sugerida_guardada_antes_se_lee_con_origen_tema() -> None:
+    """Las fichas de ``fichas_revisadas`` anteriores a D-125 traen ``origen="subtema"``: se leen como «tema»."""
+    from src.esquemas import FuenteSugerida
+
+    assert FuenteSugerida.model_validate({"nombre": "INEC", "origen": "subtema"}).origen == "tema"
+    with pytest.raises(ValueError):
+        FuenteSugerida.model_validate({"nombre": "INEC", "origen": "otro"})
