@@ -114,8 +114,11 @@ def citas_clicables(ctx: ui.Contexto, citas: list[tuple[str, str]], titulo: str 
                 st.markdown(f"**Valor:** {escapar_markdown(d.valor)}")
                 for etiqueta, dato in d.filas:
                     st.markdown(f"**{etiqueta}:** {escapar_markdown(dato)}")
+                if d.enlace_humano:
+                    st.markdown(f"[{ctx.cfg.citas.etiqueta_enlace_humano}]({d.enlace_humano})")
                 if d.url:
-                    st.markdown(f"**URL:** {d.url}")
+                    etiqueta = ctx.cfg.citas.etiqueta_url_api if d.id.startswith("IND-") else "URL"
+                    st.markdown(f"**{etiqueta}:** {d.url}")
                 if d.sintetico:
                     insignia_sintetico(ctx)
             else:

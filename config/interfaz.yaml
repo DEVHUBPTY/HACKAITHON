@@ -111,6 +111,10 @@ demo:
 citas:
   decimales_valor: 2                # decimales del valor de un indicador en el recuadro de cita (el dato no se redondea)
   aviso_anual: "Dato anual del Banco Mundial: no describe la situación actual."
+  etiqueta_url_api: "Fuente de datos (API)"          # fuente_url del contrato de datos: devuelve JSON crudo, se conserva como procedencia
+  etiqueta_enlace_humano: "Ver en el Banco Mundial"
+  plantilla_enlace_indicador: "https://datos.bancomundial.org/indicador/{indicador}?locations={iso2}"   # página legible (en español; la versión en inglés daba 504)
+  iso2_por_pais: {PAN: PA, CRI: CR, COL: CO, DOM: DO, MEX: MX, GTM: GT}   # los 6 países del reto; un país sin entrada solo muestra la URL de la API
 
 generacion:                         # punto de enganche con E1-12 (src/generacion.py); se conecta tras integrar esa tarea
   modulo: src.generacion

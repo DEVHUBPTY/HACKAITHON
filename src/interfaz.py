@@ -361,6 +361,15 @@ class DetalleCita:
     sintetico: bool = False
     nota: str | None = None
     filas: tuple[tuple[str, str], ...] = ()
+    enlace_humano: str | None = None
+
+
+def enlace_indicador(pais_iso3: str | None, indicador_id: str | None, cfg: ConfigInterfaz) -> str | None:
+    """Página legible del Banco Mundial para un indicador y país; ``None`` si el país no tiene ISO2 en la configuración (no se adivina)."""
+    iso2 = cfg.citas.iso2_por_pais.get(pais_iso3 or "")
+    if not iso2 or not indicador_id:
+        return None
+    return cfg.citas.plantilla_enlace_indicador.format(indicador=indicador_id, iso2=iso2)
 
 
 def _no_encontrada(id_registro: str, campo: str, nota: str) -> DetalleCita:
@@ -406,7 +415,11 @@ def detalle_cita(con: Any, id_registro: str, campo: str, cfg: ConfigInterfaz | N
             texto = f"{float(valor):.{cfg.citas.decimales_valor}f}" + (f" {unidad}" if unidad and unidad != "sin dato" else "")
         filas.append(("Aviso", cfg.citas.aviso_anual))
     sintetico = (pide_origen and fila[-1] == ORIGEN_SINTETICO) or id_registro.startswith("SYN-")
-    return DetalleCita(id_registro, campo, texto, url, True, bool(sintetico), filas=tuple(filas))
+    enlace = None
+    if tabla == "indicadores":
+        por_columna = {c: d for (_, c, _), d in zip(extras, datos, strict=True)}
+        enlace = enlace_indicador(por_columna.get("pais_iso3"), por_columna.get("indicador_id"), cfg)
+    return DetalleCita(id_registro, campo, texto, url, True, bool(sintetico), filas=tuple(filas), enlace_humano=enlace)
 
 
 # ------------------------------------------------------------------ calidad (pantalla 1)

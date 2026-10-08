@@ -2670,6 +2670,16 @@ class DemoInterfaz(ModeloConfig):
 class CitasInterfaz(ModeloConfig):
     decimales_valor: int = Field(ge=0)
     aviso_anual: str = Field(min_length=1)
+    etiqueta_url_api: str = Field(min_length=1)               # la URL de la API es la procedencia del dato (fuente_url), no una página legible
+    etiqueta_enlace_humano: str = Field(min_length=1)
+    plantilla_enlace_indicador: str = Field(min_length=1)     # lleva {indicador} y {iso2}
+    iso2_por_pais: dict[str, str] = Field(default_factory=dict)   # ISO3 -> ISO2; sin entrada no se arma enlace (no se adivina)
+
+    @model_validator(mode="after")
+    def _plantilla_completa(self) -> CitasInterfaz:
+        if "{indicador}" not in self.plantilla_enlace_indicador or "{iso2}" not in self.plantilla_enlace_indicador:
+            raise ValueError("citas.plantilla_enlace_indicador: debe llevar {indicador} y {iso2}")
+        return self
 
 
 class GeneracionInterfaz(ModeloConfig):

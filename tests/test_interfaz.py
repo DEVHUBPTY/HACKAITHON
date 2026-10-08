@@ -729,3 +729,32 @@ def test_e3_04_el_escenario_no_cambia_la_ficha_ni_el_registro_de_revision(app, c
     assert f"(P = {round(o.puntaje, CFG_VER.presentacion.decimales_valor):g}, posición {o.posicion}," in linea and f"posición {o.posicion}," in linea
     assert f"posición {nuevo.posicion}," not in linea
     assert filas_del_registro(registro) == antes                 # abrir la ficha en escenario no escribe en el registro de revisión
+
+# ------------------------------------------------------------------ enlace legible del Banco Mundial (D-128)
+
+
+def test_el_enlace_legible_de_un_indicador_de_colombia_usa_la_plantilla_y_el_iso2_de_la_config() -> None:
+    assert ui.enlace_indicador("COL", "FP.CPI.TOTL.ZG", CFG) == "https://datos.bancomundial.org/indicador/FP.CPI.TOTL.ZG?locations=CO"
+    assert {p: ui.enlace_indicador(p, "X", CFG)[-2:] for p in CFG.citas.iso2_por_pais} == {
+        "PAN": "PA", "CRI": "CR", "COL": "CO", "DOM": "DO", "MEX": "MX", "GTM": "GT"}
+
+
+def test_la_cita_de_un_indicador_trae_la_url_de_la_api_y_el_enlace_legible(con) -> None:
+    d = ui.detalle_cita(con, "IND-PAN-FP.CPI.TOTL.ZG-2024", "valor", CFG, CFG_VER)
+    assert d.url.startswith("https://api.worldbank.org")                # la procedencia se conserva
+    assert d.enlace_humano == "https://datos.bancomundial.org/indicador/FP.CPI.TOTL.ZG?locations=PA"
+
+
+def test_un_pais_sin_iso2_en_la_config_solo_muestra_la_url_de_la_api(con) -> None:
+    cfg = CFG.model_copy(update={"citas": CFG.citas.model_copy(update={"iso2_por_pais": {}})})
+    d = ui.detalle_cita(con, "IND-PAN-FP.CPI.TOTL.ZG-2024", "valor", cfg, CFG_VER)
+    assert d.enlace_humano is None and d.url.startswith("https://api.worldbank.org")
+    assert ui.enlace_indicador("ARG", "FP.CPI.TOTL.ZG", CFG) is None    # país fuera del reto: no se adivina
+
+
+def test_la_config_de_citas_rechaza_claves_desconocidas_y_plantillas_incompletas() -> None:
+    base = CFG.citas.model_dump()
+    with pytest.raises(ValidationError):
+        type(CFG.citas)(**base, clave_inventada=1)
+    with pytest.raises(ValidationError):
+        type(CFG.citas)(**{**base, "plantilla_enlace_indicador": "https://x.org/{indicador}"})
