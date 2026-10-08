@@ -165,10 +165,14 @@ def test_el_enlace_con_caso_se_queda_en_explicar_producir_o_revisar(app, clave) 
     assert not at.exception and url_actual(at) == URLS[clave] and at.session_state["id_grupo"] == h.G_SISMO
 
 
-def test_elegir_otro_grupo_actualiza_el_caso_de_la_url(app) -> None:
+def test_elegir_otro_grupo_lo_guarda_en_la_sesion_sin_reescribir_la_url(app) -> None:
+    """Reescribir ?caso= agregaba entradas al historial y «Atrás» pedía tres clics (auditoría en Chrome): el grupo vive en la sesión."""
     at = ir_a_pantalla(app, "ficha")
-    at.selectbox(key="ficha_grupo").select(h.G_SISMO).run()
-    assert at.query_params["caso"] in (h.G_SISMO, [h.G_SISMO]) and at.session_state["id_grupo"] == h.G_SISMO
+    at = at.selectbox(key="ficha_grupo").select(h.G_SISMO).run()
+    assert at.session_state["id_grupo"] == h.G_SISMO
+    assert "caso" not in at.query_params
+    at = ir_a_pantalla(at, "paquete")      # el grupo elegido sobrevive al cambio de página
+    assert at.session_state["id_grupo"] == h.G_SISMO
 
 
 # ------------------------------------------------------------------ consulta en la URL

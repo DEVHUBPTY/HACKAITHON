@@ -226,9 +226,7 @@ def selector_de_grupo(ctx: ui.Contexto, clave: str) -> str | None:
     # El valor del widget parte del grupo compartido; al elegir otro, on_change (que corre ANTES de volver a ejecutar el script)
     # actualiza el grupo compartido, así que lo de arriba ya no pisa la elección.
     st.session_state[clave] = st.session_state["id_grupo"]
-    elegido = st.selectbox("Grupo", ids, key=clave, format_func=etiqueta, on_change=sincronizar_grupo, args=(clave,))
-    fijar_caso_en_url(ctx.cfg, elegido)
-    return elegido
+    return st.selectbox("Grupo", ids, key=clave, format_func=etiqueta, on_change=sincronizar_grupo, args=(clave,))
 
 
 def sincronizar_grupo(clave: str) -> None:
@@ -244,6 +242,8 @@ def ir_a(pantalla: str, id_grupo: str | None = None) -> None:
     if id_grupo:
         st.session_state["id_grupo"] = id_grupo
     st.session_state["pantalla"] = pantalla
+    # Sin parámetros: Streamlit agrega una entrada al historial por cada cambio de ?caso= (antes y al salir de la página), y «Atrás»
+    # pedía tres clics. El grupo vive en la sesión; ?caso= queda solo como enlace de entrada (aplicar_atajo).
     st.switch_page(PAGINAS[pantalla])
 
 
@@ -251,14 +251,6 @@ def conservar_estado(cfg: Any) -> None:
     """D-133: Streamlit borra el valor de un widget con ``key`` cuando su página deja de pintarlo; copiarlo a sí mismo lo vuelve estado de la sesión."""
     for clave in ui.claves_a_conservar(cfg, list(st.session_state.keys())):
         st.session_state[clave] = st.session_state[clave]
-
-
-def fijar_caso_en_url(cfg: Any, id_grupo: str | None) -> None:
-    """D-133: la URL de Explicar, Producir y Revisar lleva el grupo elegido (``?caso=GRP-…``): recargar o compartir abre el mismo grupo."""
-    parametro = cfg.demo.parametro_caso
-    if id_grupo and st.query_params.get(parametro) != id_grupo:
-        st.session_state["caso_aplicado"] = id_grupo
-        st.query_params[parametro] = id_grupo
 
 
 # ------------------------------------------------------------------ 1 · Calidad
