@@ -99,6 +99,6 @@ Pasada ejecutada el 2026-10-06 con el snapshot real (`data/senales.duckdb`), sin
 **30 minutos antes**
 - [ ] Wi-Fi apagado
 - [ ] `poetry run python -m scripts.verificar_offline` en verde (C-06)
-- [ ] `.venv/bin/streamlit run app.py -- --demo` abierto en Calidad
+- [ ] `.venv/bin/streamlit run app.py -- --demo` abierto en «Cómo funciona», y recorridas una vez las 7 etapas: la primera carga tarda 15–20 s (carga el modelo de embeddings) y un clic hecho mientras arriba a la derecha dice «Running» se pierde
 - [ ] Notion abierto en *Presentación al jurado*
 - [ ] Con el Wi-Fi apagado (T10) los borradores salen **solo de la caché** (E1-14, calentada la noche anterior): DeepSeek es el único proveedor de generación (D-94/D-95) y no hay modelo local que arrancar
