@@ -7,12 +7,12 @@
 - Versión del borrador: sin borrador
 - Modalidad: Editorial
 - Alcance: basado únicamente en titular/metadatos
-- Exportado: 2026-10-07 17:28 (hora de Panamá)
+- Exportado: 2026-10-08 11:04 (hora de Panamá)
 
 ## 1 · Qué se reporta
 - Titular central: «¿Cómo se fija el precio del combustible en Panamá? El MEF explica la fórmula quincenal tras aprobarse nuevo subsidio» — panamaamerica.com.pa
 - Cobertura: 2 titulares · 1 medio · de 2026-10-01 18:30 a 2026-10-02 03:00 (hora de Panamá); fecha de detección
-- Tema: Economía · Subtema: Inflación y precios (canasta básica, combustibles) (criterio: lexico)
+- Tema: Economía
 - Tema secundario: sin dato
 - Alcance: basado únicamente en titular/metadatos
 

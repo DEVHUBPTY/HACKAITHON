@@ -3,14 +3,14 @@
   "borrador": true,
   "con_casos": true,
   "decision": "D-118",
-  "fecha_referencia": "2026-10-07T00:41:03Z",
+  "fecha_referencia": "2026-10-08T03:35:18Z",
   "fichas": [
     {
       "citas": [
         {
           "campo": "n_titulares",
           "existe_en_datos": true,
-          "id": "GRP-21ad932d54",
+          "id": "GRP-5e6531917f",
           "tipo": "hecho",
           "url": null,
           "valor": "1"
@@ -18,7 +18,7 @@
         {
           "campo": "n_medios",
           "existe_en_datos": true,
-          "id": "GRP-21ad932d54",
+          "id": "GRP-5e6531917f",
           "tipo": "hecho",
           "url": null,
           "valor": "1"
@@ -26,7 +26,7 @@
         {
           "campo": "n_procedencias",
           "existe_en_datos": true,
-          "id": "GRP-21ad932d54",
+          "id": "GRP-5e6531917f",
           "tipo": "hecho",
           "url": null,
           "valor": "1"
@@ -34,10 +34,10 @@
         {
           "campo": "titulo_limpio",
           "existe_en_datos": true,
-          "id": "NOT-3be05280f2",
+          "id": "NOT-0d91fa48b0",
           "tipo": "declaración",
-          "url": "https://www.tvn-2.com/nacionales/salud/minsa-enciende-alarmas-diagnosticos-cancer_1_2264460.html",
-          "valor": "Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá"
+          "url": "https://www.tvn-2.com/nacionales/30-mujeres-han-muerto-forma_1_2264499.html",
+          "valor": "Más de 30 mujeres han muerto de forma violenta en Panamá este año"
         }
       ],
       "comprobaciones": {
@@ -95,8 +95,8 @@
         }
       },
       "fallos": [],
-      "id_caso": "CASO-002",
-      "id_grupo": "GRP-21ad932d54"
+      "id_caso": "CASO-007",
+      "id_grupo": "GRP-5e6531917f"
     },
     {
       "citas": [
@@ -533,7 +533,7 @@
         {
           "campo": "n_titulares",
           "existe_en_datos": true,
-          "id": "GRP-5e6531917f",
+          "id": "GRP-4d8b340bd9",
           "tipo": "hecho",
           "url": null,
           "valor": "1"
@@ -541,7 +541,7 @@
         {
           "campo": "n_medios",
           "existe_en_datos": true,
-          "id": "GRP-5e6531917f",
+          "id": "GRP-4d8b340bd9",
           "tipo": "hecho",
           "url": null,
           "valor": "1"
@@ -549,7 +549,7 @@
         {
           "campo": "n_procedencias",
           "existe_en_datos": true,
-          "id": "GRP-5e6531917f",
+          "id": "GRP-4d8b340bd9",
           "tipo": "hecho",
           "url": null,
           "valor": "1"
@@ -557,10 +557,10 @@
         {
           "campo": "titulo_limpio",
           "existe_en_datos": true,
-          "id": "NOT-0d91fa48b0",
+          "id": "NOT-47f236bdf2",
           "tipo": "declaración",
-          "url": "https://www.tvn-2.com/nacionales/30-mujeres-han-muerto-forma_1_2264499.html",
-          "valor": "Más de 30 mujeres han muerto de forma violenta en Panamá este año"
+          "url": "https://www.tvn-2.com/nacionales/aprehenden-10-personas-presunta-mineria-cocle_1_2264763.html",
+          "valor": "Aprehenden a 10 personas por presunta minería ilegal y delitos ambientales en Coclé del Norte"
         }
       ],
       "comprobaciones": {
@@ -618,8 +618,8 @@
         }
       },
       "fallos": [],
-      "id_caso": "CASO-007",
-      "id_grupo": "GRP-5e6531917f"
+      "id_caso": "CASO-009",
+      "id_grupo": "GRP-4d8b340bd9"
     },
     {
       "citas": [
@@ -731,7 +731,7 @@
       "id_grupo": "GRP-da35c3dead"
     }
   ],
-  "generado_utc": "2026-10-07T22:28:16Z",
+  "generado_utc": "2026-10-08T16:04:48Z",
   "juicio_humano": false,
   "modalidad": "editorial",
   "n_fichas": 5,
@@ -884,9 +884,7 @@
       "proporcion": 1.0
     }
   },
-  "reemplazados": [
-    "CASO-006"
-  ],
+  "reemplazados": [],
   "seleccion": {
     "elegidas": [
       {
@@ -895,11 +893,11 @@
         "elegida_por": "primero del ranking",
         "estado": "insuficiente",
         "garantia": false,
-        "id_caso": "CASO-002",
-        "id_grupo": "GRP-21ad932d54",
+        "id_caso": "CASO-007",
+        "id_grupo": "GRP-5e6531917f",
         "modalidad": "editorial",
         "posicion": 1,
-        "puntaje": 90.45,
+        "puntaje": 86.08,
         "respaldo": false,
         "reutilizado": false
       },
@@ -912,8 +910,8 @@
         "id_caso": "CASO-003",
         "id_grupo": "GRP-81a11a5998",
         "modalidad": "editorial",
-        "posicion": 13,
-        "puntaje": 81.25,
+        "posicion": 53,
+        "puntaje": 70.16,
         "respaldo": false,
         "reutilizado": false
       },
@@ -926,8 +924,8 @@
         "id_caso": "CASO-008",
         "id_grupo": "GRP-79f3183472",
         "modalidad": "editorial",
-        "posicion": 53,
-        "puntaje": 54.74,
+        "posicion": 70,
+        "puntaje": 49.04,
         "respaldo": false,
         "reutilizado": false
       },
@@ -937,11 +935,11 @@
         "elegida_por": "estado=insuficiente, vacio=cifras_sin_dato_oficial (respaldo declarado)",
         "estado": "insuficiente",
         "garantia": false,
-        "id_caso": "CASO-007",
-        "id_grupo": "GRP-5e6531917f",
+        "id_caso": "CASO-009",
+        "id_grupo": "GRP-4d8b340bd9",
         "modalidad": "editorial",
         "posicion": 3,
-        "puntaje": 88.41,
+        "puntaje": 85.28,
         "respaldo": true,
         "reutilizado": false
       },

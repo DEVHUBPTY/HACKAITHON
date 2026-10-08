@@ -7,12 +7,12 @@
 - Versión del borrador: versión 3 (corregida)
 - Modalidad: Banca
 - Alcance: basado únicamente en titular/metadatos
-- Exportado: 2026-10-07 17:28 (hora de Panamá)
+- Exportado: 2026-10-08 11:04 (hora de Panamá)
 
 ## 1 · Qué se reporta
 - Titular central: «Mulino viajará a Asia: suscribirá convenios bilaterales con Singapur y Vietnam» — laestrella.com.pa
 - Cobertura: 3 titulares · 3 medios · de 2026-10-01 11:30 a 2026-10-01 14:45 (hora de Panamá); fecha de detección
-- Tema: Logística/Canal · Subtema: no determinado
+- Tema: Logística/Canal
 - Tema secundario: Economía
 - Alcance: basado únicamente en titular/metadatos
 

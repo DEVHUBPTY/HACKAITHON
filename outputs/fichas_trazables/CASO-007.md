@@ -1,4 +1,4 @@
-> **Caso de uso CU-04** — Cifra inexistente o contradicción: abstenerse o mostrar versiones, con la verificación pendiente · elegida por: estado=insuficiente, vacio=cifras_sin_dato_oficial · criterio de respaldo declarado
+> **Caso de uso CU-01** — ¿Qué cinco temas merecen revisión para la agenda de Panamá y por qué? · elegida por: primero del ranking
 
 # CASO-007 · Ficha de evidencia · GRP-5e6531917f
 **BORRADOR · requiere revisión**
@@ -7,12 +7,12 @@
 - Versión del borrador: sin borrador
 - Modalidad: Editorial
 - Alcance: basado únicamente en titular/metadatos
-- Exportado: 2026-10-07 17:28 (hora de Panamá)
+- Exportado: 2026-10-08 11:04 (hora de Panamá)
 
 ## 1 · Qué se reporta
 - Titular central: «Más de 30 mujeres han muerto de forma violenta en Panamá este año» — TVN Panamá
 - Cobertura: 1 titular · 1 medio · de 2026-10-05 20:30 a 2026-10-05 20:30 (hora de Panamá); fecha de publicación
-- Tema: Servicios públicos · Subtema: Seguridad ciudadana (policía, operativos, cárceles, delitos) (criterio: lexico)
+- Tema: Servicios públicos
 - Tema secundario: Economía
 - Alcance: basado únicamente en titular/metadatos
 

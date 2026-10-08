@@ -7,12 +7,12 @@
 - Versión del borrador: sin borrador
 - Modalidad: Editorial
 - Alcance: basado únicamente en titular/metadatos
-- Exportado: 2026-10-07 17:28 (hora de Panamá)
+- Exportado: 2026-10-08 11:04 (hora de Panamá)
 
 ## 1 · Qué se reporta
 - Titular central: «Intensifying El Nino deepens economic risks across LatAm» — massachusettssun.com
 - Cobertura: 20 titulares · 18 medios · de 2026-10-02 01:15 a 2026-10-02 05:00 (hora de Panamá); fecha de detección
-- Tema: Eventos naturales · Subtema: Sequía y El Niño (criterio: lexico)
+- Tema: Eventos naturales
 - Tema secundario: sin dato
 - Alcance: basado únicamente en titular/metadatos
 
