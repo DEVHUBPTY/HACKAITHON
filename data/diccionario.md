@@ -148,6 +148,7 @@ se sustituyen entre sí. El nombre de la persona que firma **no se guarda** (D-3
 | `alcance_regional` | BOOLEAN | sí | limpieza | derivado | Verdadero si el titular nombra la región (Centroamérica, América Latina, LatAm, Caribe) o un fenómeno regional que afecta a Panamá (El Niño, rutas marítimas) y no es ruido (D-84). Se cuenta aparte en el reporte. |
 | `similitud_panama` | DOUBLE | sí | clasificación | derivado | Mayor similitud coseno del titular con los prototipos de noticia sobre Panamá (`ruido.yaml`; diferido desde E1-03b en la revisión X14). Se guarda siempre; marca ruido solo si `similitud_prototipo.activo` (hoy `false`). Nula hasta correr `python -m src.clasificacion` (E1-07). |
 | `ruido_similitud` | BOOLEAN | sí | clasificación | derivado | Verdadero si el registro se marcó `no_es_panama` por esa similitud (nunca una nota con `alcance_regional`). Nulo si no se marcó. |
+| `ruido_sin_tema` | BOOLEAN | sí | clasificación | derivado | Verdadero si el clasificador no encontró ninguno de los 6 temas (`sin_tema`) y por eso marcó el registro como ruido `fuera_de_temas` (D-126; `ruido.yaml`, `sin_tema_como_ruido`). Nulo si no se marcó. Se limpia y se reclasifica al volver a correr `python -m src.clasificacion`. |
 | `tema_clasificado` | VARCHAR | sí | clasificación | derivado | Salida del clasificador (E1-07): uno de los 6 temas de `temas.yaml` o `sin_tema`. **No es el `tema` de origen** (D-62) y nunca se usan una como etiqueta de la otra. Nulo en el ruido. |
 | `tema_similitud` | DOUBLE | sí | clasificación | derivado | Mayor similitud coseno con un tema (también si el resultado es `sin_tema`). |
 | `subtema_clasificado` | VARCHAR | sí | clasificación | derivado | **Obsoleta desde D-125** (el reto define 6 temas y ningún subtema): ya no se llena; se conserva nula para que las bases y salidas viejas carguen. Antes: solo con el método B. |
@@ -293,6 +294,7 @@ Una fila por dato (o una por grupo sin vínculo). Es **contexto, nunca prueba de
 | `informe` | VARCHAR | sí | contexto | derivado | E3-02: informe de la SBP del que sale el dato. Solo en las filas `sbp`. |
 | `pagina` | VARCHAR | sí | contexto | derivado | E3-02: página de origen del dato (hoja y celda del .xlsx). Solo en las filas `sbp`. |
 | `url_fuente` | VARCHAR | sí | contexto | derivado | E3-02: URL del archivo descargado de la SBP. Solo en las filas `sbp`. |
+| `n_eventos` | INTEGER | sí | contexto | derivado | D-127: cantidad de eventos del catálogo de USGS con la magnitud mínima en el `periodo`. Solo en las filas `usgs` de rol `contexto_historico` (el mayor evento va en `id_evidencia`). |
 
 En las filas `usgs`, `valor` es la magnitud y `unidad` es `magnitud`. `tipo` es `evento` solo con un `SIS-` (vinculado o candidato ambiguo) y nulo si no hay vínculo; `rol` es siempre `evento`.
 
