@@ -2720,6 +2720,7 @@ class DemoInterfaz(ModeloConfig):
     parametro_caso: str = Field(min_length=1)
     paginas_con_caso: list[Literal["ficha", "paquete", "revision"]] = Field(min_length=1)
     guion: str = Field(min_length=1)
+    espera_verificacion_s: int = Field(ge=1)   # C-06: tiempo máximo de `scripts.verificar_offline` para dibujar la pantalla de entrada
 
 
 class CitasInterfaz(ModeloConfig):

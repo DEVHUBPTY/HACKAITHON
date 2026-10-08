@@ -59,7 +59,7 @@ poetry run python -m src.exportar --caso CASO-001    # (--demo: rutas de la demo
 poetry run python -m eval.revision                   # tasas de aceptación, corrección y descarte con n e IC, motivos, tiempo por caso y % de afirmaciones editadas → outputs/revision.json (E1-16)
 poetry run python -m eval.reporte_pruebas          # corre T01–T10 por marcador y escribe outputs/pruebas.csv con las columnas de la base Pruebas de Notion; pendientes en config/pruebas.yaml (E1-17)
 .venv/bin/streamlit run app.py -- --demo            # modo demo (data/demo.duckdb, C-06) con los pasos de docs/demo.md
-poetry run python -m scripts.verificar_offline       # chequeo antes del pitch
+poetry run python -m scripts.verificar_offline       # chequeo antes del pitch, sin red ni LLM: modelo local, bases, caché de borradores (editorial y banca) y la app; sale con 1 si falla algo obligatorio (C-06)
 poetry run python -m scripts.calentar_cache          # borradores en data/cache_llm (con red; --verificar sin red) · docs/fallback.md
 poetry run python -m scripts.catalogo                # outputs/catalogo.csv (E1-04)
 poetry run python -m scripts.explorar                # docs/exploracion.md (E0-09)
@@ -74,7 +74,6 @@ poetry run python -m scripts.reproducir --verificar  # reconstruye todo desde da
 Previstos (existirán cuando se implemente su spec):
 
 ```bash
-poetry run python -m scripts.verificar_offline       # chequeo antes del pitch (C-06)
 poetry run python -m eval.run_benchmark --split dev  # benchmark → outputs/metricas.json (E1-18)
 poetry run python -m scripts.auditoria_final         # condiciones previas de la sección 10 antes del cierre (C-07)
 ```
@@ -113,7 +112,7 @@ Previsto (lo crea la spec indicada):
 data/demo.duckdb (C-06)
 config/      modalidad_banca.yaml completa (E2-01: sectores, horizonte, bandeja)
 prompts/     comparar_contradicciones.txt (E1-10) · respuesta_consulta.txt (E1-11)
-scripts/     buscar_casos.py · preparar_demo.py · capturas_demo.py · verificar_offline.py (C-06)
+scripts/     buscar_casos.py · preparar_demo.py · capturas_demo.py (C-06)
              empaquetar_datos.py · auditoria_final.py (C-07)
 eval/        run_benchmark.py (E1-18) · precision_at_5.py (E1-19) · y los módulos de métricas que pide cada spec
 tests/       test_t02_*.py, test_t04_*.py … test_t10_*.py (ver docs/protocolo_evaluacion.md)

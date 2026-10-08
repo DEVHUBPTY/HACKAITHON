@@ -260,6 +260,7 @@ demo:
   parametro_caso: caso              # ?caso=<GRP-…|posición> abre la ficha
   paginas_con_caso: [ficha, paquete, revision]   # D-133: ?caso= se queda en estas pantallas; desde cualquier otra abre «5 · Explicar»
   guion: docs/demo.md               # los pasos de la barra lateral salen de la tabla de este archivo
+  espera_verificacion_s: 180        # C-06: tiempo máximo de scripts.verificar_offline para dibujar la pantalla de entrada (la primera carga tarda 15–20 s)
 
 citas:
   decimales_valor: 2                # decimales del valor de un indicador en el recuadro de cita (el dato no se redondea)
