@@ -80,7 +80,7 @@ def test_el_dato_trae_pais_anio_unidad_id_tipo_y_limitacion_y_nunca_actual() -> 
 
 
 def test_ningun_texto_de_la_configuracion_dice_actual() -> None:
-    textos = [v.limitacion for v in (*CFG.reglas_vinculo.values(), *CFG.vinculos_por_tema.values())] + list(CFG.notas.model_dump().values())
+    textos = [v.limitacion for v in CFG.reglas_vinculo.values()] + CFG.sismos.contexto_historico.limitaciones + list(CFG.notas.model_dump().values())
     assert not [t for t in textos if PALABRA_PROHIBIDA.search(t)]
 
 
@@ -100,24 +100,31 @@ def test_la_poblacion_no_se_vincula_sola() -> None:
 
 def test_los_indicadores_vinculados_existen_en_las_fuentes() -> None:
     declarados = set(cargar_fuentes().banco_mundial.indicadores)
-    ids = {v.id for v in (*CFG.reglas_vinculo.values(), *CFG.vinculos_por_tema.values()) if v.id}
+    ids = {v.id for v in CFG.reglas_vinculo.values() if v.id}
     assert ids <= declarados
 
 
 def test_la_cifra_del_titular_solo_usa_indicadores_vinculados() -> None:
-    ids = {v.id for v in (*CFG.reglas_vinculo.values(), *CFG.vinculos_por_tema.values()) if v.id}
+    ids = {v.id for v in CFG.reglas_vinculo.values() if v.id}
     assert set(CFG.cifra_titular.palabras_clave) <= ids
 
 
 # ------------------------------------------------------------------ sin vínculo
 
 
-@pytest.mark.parametrize("tema", ["turismo", "regulacion", "servicios_publicos", "sin_tema", None])
-def test_un_tema_sin_regla_ni_vinculo_por_tema_devuelve_tema_sin_indicador(tema: str | None) -> None:
+@pytest.mark.parametrize("tema", ["turismo", "regulacion", "eventos_naturales", "sin_tema", None])
+def test_un_tema_sin_ninguna_regla_devuelve_tema_sin_indicador(tema: str | None) -> None:
     (fila,) = vincular(None, tema)  # type: ignore[arg-type]
     assert fila["motivo_sin_vinculo"] == "tema_sin_indicador"
     assert fila["id_evidencia"] is None and fila["valor"] is None
     assert fila["regla"].startswith(contexto.REGLA_SIN_ENTRADA)
+
+
+@pytest.mark.parametrize("tema", ["servicios_publicos", "logistica", "economia"])
+def test_d127_un_tema_con_reglas_pero_sin_termino_que_las_sustente_no_fuerza_la_relacion(tema: str) -> None:
+    (fila,) = vincular(None, tema)  # type: ignore[arg-type]
+    assert fila["motivo_sin_vinculo"] == "sin_relacion_sustentada"
+    assert fila["id_evidencia"] is None and fila["valor"] is None and "no se fuerza" in fila["regla"]
 
 
 def test_indicador_sin_ningun_valor_es_sin_dato_en_periodo() -> None:
@@ -162,11 +169,11 @@ def test_la_tendencia_son_los_ultimos_cinco_anios_de_panama_y_los_nulos_siguen_n
     assert [f["valor"] for f in tendencia] == [-0.4, -1.6, None, 2.9, 1.5]  # nunca se rellena con 0
 
 
-def test_el_vinculo_por_tema_es_indirecto_y_declara_su_regla() -> None:
+def test_el_vinculo_de_logistica_es_indirecto_y_lo_dispara_una_regla_con_su_termino() -> None:
     ind = grilla(IND_EXPORTACIONES, {"PAN": {2024: 44.4}, "COL": {2024: 17.0}}, unidad="% del PIB")
-    filas = vincular(None, "logistica", ind=ind)
+    filas = vincular("exportaciones_logistica", "logistica", ind=ind)
     assert {f["tipo"] for f in filas} == {"indirecta"}
-    assert {f["regla"] for f in filas} == {f"{contexto.REGLA_TEMA}:logistica"}
+    assert {f["regla"] for f in filas} == {CFG.textos_regla.disparada.format(regla="exportaciones_logistica", termino="exportaciones_logistica")}
 
 
 # ------------------------------------------------------------------ cifra del titular
@@ -364,14 +371,14 @@ def test_la_cifra_de_otro_indicador_no_se_compara_con_este() -> None:
 def test_cada_vinculo_guarda_la_regla_que_lo_genero() -> None:
     casos = [
         vincular("inflacion", "economia"),                                                       # por regla de vínculo
-        vincular(None, "logistica", ind=grilla(IND_EXPORTACIONES, {"PAN": {2024: 44.4}})),        # por tema
+        vincular("exportaciones_logistica", "logistica", ind=grilla(IND_EXPORTACIONES, {"PAN": {2024: 44.4}})),   # logística con término
         vincular(None, "turismo"),                                                               # sin entrada
         vincular("empleo", "economia", ind=[]),                                                  # sin dato
     ]
     reglas = [{f["regla"] for f in filas} for filas in casos]
     assert reglas == [
         {CFG.textos_regla.disparada.format(regla="inflacion", termino="inflacion")},
-        {"vinculo_por_tema:logistica"},
+        {CFG.textos_regla.disparada.format(regla="exportaciones_logistica", termino="exportaciones_logistica")},
         {"sin_vinculo_en_tabla:turismo"},
         {f"sin_dato_en_periodo:{'SL.UEM.TOTL.ZS'}"},
     ]
@@ -441,12 +448,13 @@ def _leer(ruta) -> list[dict[str, Any]]:
         con.close()
 
 
-def test_la_base_guarda_vinculos_con_su_regla_y_delega_los_sismos(base) -> None:
+def test_la_base_guarda_vinculos_con_su_regla_y_los_sismos_no_son_del_banco_mundial(base) -> None:
     filas, delegados, total = contexto.aplicar_a_base(base, CFG)
-    assert (total, delegados) == (3, ["GRP-3"])
+    assert (total, delegados) == (3, [])   # D-127: la regla de sismos no tiene tema; su contexto de USGS lo escribe aplicar_sismos
     guardadas = _leer(base)
     assert len(guardadas) == len(filas)
-    assert {f["id_grupo"] for f in guardadas} == {"GRP-1", "GRP-2"}
+    assert {f["id_grupo"] for f in guardadas} == {"GRP-1", "GRP-2", "GRP-3"}
+    assert [f["motivo_sin_vinculo"] for f in guardadas if f["id_grupo"] == "GRP-3"] == ["tema_sin_indicador"]   # nunca un indicador inventado
     assert all(f["regla"] and f["fuente"] == "indicador" for f in guardadas)
     assert [f["motivo_sin_vinculo"] for f in guardadas if f["id_grupo"] == "GRP-2"] == ["tema_sin_indicador"]
     (panama,) = [f for f in guardadas if f["id_grupo"] == "GRP-1" and f["rol"] == "panama"]
@@ -471,10 +479,10 @@ def test_el_reporte_cuenta_con_y_sin_vinculo_por_motivo(base, tmp_path) -> None:
     r = contexto.ejecutar(base, ruta)
     guardado = json.loads(ruta.read_text(encoding="utf-8"))
     assert guardado == r
-    assert (r["grupos_en_base"], r["grupos_del_banco_mundial"], r["grupos_delegados_a_otra_fuente"]) == (3, 2, 1)
-    assert (r["con_vinculo"]["n"], r["sin_vinculo"]["n"]) == (1, 1)
+    assert (r["grupos_en_base"], r["grupos_del_banco_mundial"], r["grupos_delegados_a_otra_fuente"]) == (3, 3, 0)
+    assert (r["con_vinculo"]["n"], r["sin_vinculo"]["n"]) == (1, 2)
     assert r["con_vinculo"]["ic95"] is not None  # toda proporción con n e IC
-    assert r["sin_vinculo_por_motivo"] == {"tema_sin_indicador": 1}
+    assert r["sin_vinculo_por_motivo"] == {"tema_sin_indicador": 2}
     assert r["comparacion_con_cifra_del_titular"] == {"posible discrepancia, verificar": 1}
 
 

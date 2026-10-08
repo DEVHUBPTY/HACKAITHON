@@ -842,15 +842,21 @@ class ReglaVinculo(Vinculo):
     ``exclusiones``.
     """
 
-    tema: str
+    tema: str | None = None   # D-127: sin tema = regla de contexto que no compite con las del tema (hoy, `sismos`); exige relación `evento`
     terminos: list[str] = Field(min_length=1)
     patrones: list[str] = Field(default_factory=list)   # expresiones regulares sobre texto sin tildes ni mayúsculas
     exclusiones: list[str] = Field(default_factory=list)
+    # D-129: el MISMO titular que dispara el término debe además contener alguno de `requiere` (palabra completa). Sustenta que el hecho
+    # sea de Panamá (p. ej. «exportaciones» + Panamá/ZLC): un término suelto no basta cuando el indicador es de Panamá y el titular puede
+    # hablar de otro país. Vacío = sin requisito.
+    requiere: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _listas_validas(self) -> ReglaVinculo:
-        if any(not x.strip() for x in (*self.terminos, *self.exclusiones)):
+        if any(not x.strip() for x in (*self.terminos, *self.exclusiones, *self.requiere)):
             raise ValueError("terminos y exclusiones: palabras no vacías")
+        if self.tema is None and self.relacion != "evento":
+            raise ValueError("una regla sin tema solo puede ser de relación `evento` (contexto de USGS)")
         for patron in self.patrones:
             try:
                 re.compile(patron)
@@ -864,12 +870,30 @@ class TextosReglaVinculo(ModeloConfig):
 
     disparada: str    # lleva {regla} y {termino}
     ambigua: str      # lleva {tema} y {reglas}
+    sin_relacion: str  # D-127: lleva {tema}
 
     @model_validator(mode="after")
     def _marcadores(self) -> TextosReglaVinculo:
-        for texto, marcas in ((self.disparada, ("{regla}", "{termino}")), (self.ambigua, ("{tema}", "{reglas}"))):
+        for texto, marcas in ((self.disparada, ("{regla}", "{termino}")), (self.ambigua, ("{tema}", "{reglas}")), (self.sin_relacion, ("{tema}",))):
             if any(m not in texto for m in marcas):
                 raise ValueError(f"textos_regla: falta alguno de {marcas} en {texto!r}")
+        return self
+
+
+class ContextoHistoricoSismos(ModeloConfig):
+    """D-127: el catálogo de USGS como contexto histórico (no coincide con la fecha de la noticia). Lleva {periodo} en sus textos."""
+
+    rol: str = Field(min_length=1)
+    relacion: str = Field(min_length=1)
+    plantilla_regla: str
+    limitaciones: list[str] = Field(min_length=3)
+
+    @model_validator(mode="after")
+    def _marcadores(self) -> ContextoHistoricoSismos:
+        if not all(m in self.plantilla_regla for m in ("{regla}", "{periodo}", "{magnitud_minima}")):
+            raise ValueError("contexto_historico.plantilla_regla debe llevar {regla}, {periodo} y {magnitud_minima}")
+        if not any("{periodo}" in x for x in self.limitaciones):
+            raise ValueError("contexto_historico.limitaciones: alguna debe decir el {periodo}")
         return self
 
 
@@ -884,6 +908,7 @@ class SismosVinculo(ModeloConfig):
     plantilla_regla: str
     nota_fecha_deteccion: str
     limitaciones: list[str] = Field(min_length=1)
+    contexto_historico: ContextoHistoricoSismos
 
     @field_validator("zona_horaria")
     @classmethod
@@ -984,13 +1009,13 @@ class ConfigVinculos(ModeloConfig):
     tipos_relacion: dict[str, str]
     motivos_sin_vinculo: list[str]
     motivo_por_defecto: str
+    motivo_sin_relacion: str
     ventana_coincidencia_dias: int = Field(ge=0)
     pais_por_defecto: str
     textos_regla: TextosReglaVinculo
     sismos: SismosVinculo
     sbp: SbpVinculo
-    reglas_vinculo: dict[str, ReglaVinculo]  # D-125: tema + términos; el nombre es solo un identificador
-    vinculos_por_tema: dict[str, Vinculo]  # sin regla disparada, el vínculo del tema
+    reglas_vinculo: dict[str, ReglaVinculo]  # D-125: tema + términos; el nombre es solo un identificador. D-127: sin vínculo por tema
     tendencia_anios: int = Field(ge=1)
     indicadores_solo_contexto: list[str]
     palabras_prohibidas: list[str]
@@ -1001,14 +1026,16 @@ class ConfigVinculos(ModeloConfig):
     def _relaciones_declaradas(self) -> ConfigVinculos:
         if self.motivo_por_defecto not in self.motivos_sin_vinculo:
             raise ValueError("motivo_por_defecto debe estar en motivos_sin_vinculo")
-        malas = {v.relacion for v in (*self.reglas_vinculo.values(), *self.vinculos_por_tema.values())} - set(self.tipos_relacion)
+        if self.motivo_sin_relacion not in self.motivos_sin_vinculo:
+            raise ValueError("motivo_sin_relacion debe estar en motivos_sin_vinculo")
+        malas = {v.relacion for v in (*self.reglas_vinculo.values(), self.sismos.contexto_historico)} - set(self.tipos_relacion)
         if malas:
             raise ValueError(f"relaciones no declaradas en tipos_relacion: {sorted(malas)}")
         return self
 
     @model_validator(mode="after")
     def _poblacion_no_va_sola(self) -> ConfigVinculos:
-        todos = (*self.reglas_vinculo.values(), *self.vinculos_por_tema.values())
+        todos = self.reglas_vinculo.values()
         solos = {v.id for v in todos} & set(self.indicadores_solo_contexto)
         if solos:
             raise ValueError(f"indicadores solo de contexto no pueden vincularse solos: {sorted(solos)}")
@@ -1016,7 +1043,7 @@ class ConfigVinculos(ModeloConfig):
 
     @model_validator(mode="after")
     def _textos_sin_palabras_prohibidas(self) -> ConfigVinculos:
-        textos = [v.limitacion for v in (*self.reglas_vinculo.values(), *self.vinculos_por_tema.values())]
+        textos = [v.limitacion for v in self.reglas_vinculo.values()] + self.sismos.contexto_historico.limitaciones
         textos += [*self.notas.model_dump().values(), *self.cifra_titular.etiquetas.model_dump().values()]
         for palabra in self.palabras_prohibidas:
             patron = re.compile(rf"\b{re.escape(palabra)}\b", re.IGNORECASE)
@@ -1266,14 +1293,11 @@ def validar_coherencia(carpeta: Path | None = None) -> list[str]:
     if set(reglas.impacto.alcance_tema) != set(temas.temas):
         dif = set(reglas.impacto.alcance_tema) ^ set(temas.temas)
         problemas.append(f"alcance_tema y temas de temas.yaml difieren: {sorted(dif)}")
-    ajenas = {r.tema for r in vinculos.reglas_vinculo.values()} - set(temas.temas)
+    ajenas = {r.tema for r in vinculos.reglas_vinculo.values() if r.tema} - set(temas.temas)
     if ajenas:
         problemas.append(f"vinculos.yaml: temas inexistentes en reglas_vinculo: {sorted(ajenas)}")
-    sin_tema = set(vinculos.vinculos_por_tema) - set(temas.temas)
-    if sin_tema:
-        problemas.append(f"vinculos.yaml: temas inexistentes en vinculos_por_tema: {sorted(sin_tema)}")
     indicadores = set(cargar_fuentes(carpeta).banco_mundial.indicadores)
-    for nombre, v in (*vinculos.reglas_vinculo.items(), *vinculos.vinculos_por_tema.items()):
+    for nombre, v in vinculos.reglas_vinculo.items():
         if v.fuente == "indicador" and v.id not in indicadores:
             problemas.append(f"vinculos.yaml: {nombre} usa el indicador {v.id}, que no está en fuentes.yaml")
     if (carpeta / "prioridad.yaml").exists() and (carpeta / "interfaz.yaml").exists():
@@ -2537,9 +2561,52 @@ def cargar_verificacion(carpeta: Path | None = None) -> ConfigVerificacion:
 # ------------------------------------------------------------------ interfaz.yaml (E1-15)
 
 
+CLAVES_DE_PANTALLA = ("calidad", "organizar", "contextualizar", "bandeja", "ficha", "paquete", "revision", "consulta")
+
+
 class PantallaInterfaz(ModeloConfig):
-    clave: Literal["calidad", "bandeja", "ficha", "consulta", "paquete", "revision"]
+    """Una pantalla de la barra lateral. Las siete etapas llevan el nombre del PDF (sección 3); ``separada`` marca la herramienta aparte."""
+
+    clave: Literal["calidad", "organizar", "contextualizar", "bandeja", "ficha", "paquete", "revision", "consulta"]
     titulo: str = Field(min_length=1)
+    descripcion: str = Field(min_length=1)
+    separada: bool = False
+
+
+class PasoArquitectura(ModeloConfig):
+    """D-128: un paso de la arquitectura mínima del PDF (sección 8) con la cuenta real que lo respalda y las pantallas donde se ve."""
+
+    etiqueta: str = Field(min_length=1)
+    medida: Literal["registros_leidos", "registros_validos", "filas_en_base", "grupos", "grupos_puntuados", "borradores_en_cache",
+                    "fichas_disponibles", "casos_revisados", "casos_exportados"]
+    unidad: str = Field(min_length=1)
+    pantallas: list[Literal["calidad", "organizar", "contextualizar", "bandeja", "ficha", "paquete", "revision", "consulta"]] = Field(min_length=1)
+
+
+class CargarInterfaz(ModeloConfig):
+    arquitectura: list[PasoArquitectura] = Field(min_length=1)
+    titulo_arquitectura: str = Field(min_length=1)
+    ayuda_arquitectura: str = Field(min_length=1)
+
+
+class OrganizarInterfaz(ModeloConfig):
+    """D-128, etapa 2: textos de los motivos de ruido y de la tabla de grupos (las cuentas salen de los datos)."""
+
+    motivos_ruido: dict[str, str]
+    ayuda_grupos: str = Field(min_length=1)
+    ayuda_procedencias: str = Field(min_length=1)
+    titulares_visibles: int = Field(ge=1)
+
+
+class ContextualizarInterfaz(ModeloConfig):
+    """D-128, etapa 3: nombres legibles de las fuentes, relaciones, papeles y motivos sin vínculo."""
+
+    fuentes: dict[str, str]
+    relaciones: dict[str, str]
+    roles: dict[str, str]
+    motivos_sin_vinculo: dict[str, str]
+    aviso_no_forzar: str = Field(min_length=1)
+    aviso_usgs: str = Field(min_length=1)
 
 
 class BandejaInterfaz(ModeloConfig):
@@ -2607,6 +2674,18 @@ class DemoInterfaz(ModeloConfig):
 class CitasInterfaz(ModeloConfig):
     decimales_valor: int = Field(ge=0)
     aviso_anual: str = Field(min_length=1)
+    etiqueta_url_api: str = Field(min_length=1)               # la URL de la API es la procedencia del dato (fuente_url), no una página legible
+    etiqueta_enlace_humano: str = Field(min_length=1)
+    etiqueta_periodo: str = Field(min_length=1)               # D-129: rótulo del periodo que cubre el dato de un registro SIS-
+    etiqueta_limitaciones: str = Field(min_length=1)          # D-129: rótulo de las limitaciones del registro
+    plantilla_enlace_indicador: str = Field(min_length=1)     # lleva {indicador} y {iso2}
+    iso2_por_pais: dict[str, str] = Field(default_factory=dict)   # ISO3 -> ISO2; sin entrada no se arma enlace (no se adivina)
+
+    @model_validator(mode="after")
+    def _plantilla_completa(self) -> CitasInterfaz:
+        if "{indicador}" not in self.plantilla_enlace_indicador or "{iso2}" not in self.plantilla_enlace_indicador:
+            raise ValueError("citas.plantilla_enlace_indicador: debe llevar {indicador} y {iso2}")
+        return self
 
 
 class GeneracionInterfaz(ModeloConfig):
@@ -2625,6 +2704,23 @@ class PaqueteInterfaz(ModeloConfig):
 class RevisionInterfaz(ModeloConfig):
     estados: list[str] = Field(min_length=1)
     estado_inicial: str
+    borrador_desde_cache: str = Field(min_length=1)   # D-129: rótulo del borrador que se lee de la caché para un caso sin versión
+    titulo_huerfanos: str = Field(min_length=1)       # D-129: expander de los casos cuyo grupo ya no está en la base
+
+
+class RegistroNotionInterfaz(ModeloConfig):
+    """D-128, etapa 7: el paso «registro en Notion» (crear o actualizar la ficha del caso; nunca una acción de dar por definitivo)."""
+
+    subtitulo: str = Field(min_length=1)
+    explicacion: str = Field(min_length=1)
+    boton_exportar: str = Field(min_length=1)
+    ayuda_exportar: str = Field(min_length=1)
+    boton_exportar_huerfano: str = Field(min_length=1)
+    boton_api: str = Field(min_length=1)
+    ayuda_api: str = Field(min_length=1)
+    sin_token: str = Field(min_length=1)
+    api_ok: str = Field(min_length=1)
+    api_fallo: str = Field(min_length=1)
 
 
 class TextosEmpate(ModeloConfig):
@@ -2662,8 +2758,12 @@ class ConfigInterfaz(ModeloConfig):
     version: str
     titulo_app: str
     modalidad_inicial: Literal["editorial", "banca"]
-    pantallas: list[PantallaInterfaz] = Field(min_length=6, max_length=6)
+    pantallas: list[PantallaInterfaz] = Field(min_length=8, max_length=8)
     pantalla_inicial: str
+    cargar: CargarInterfaz
+    organizar: OrganizarInterfaz
+    contextualizar: ContextualizarInterfaz
+    registro_notion: RegistroNotionInterfaz
     bandeja: BandejaInterfaz
     pesos_editables: PesosEditablesInterfaz
     calidad: CalidadInterfaz
@@ -2679,14 +2779,23 @@ class ConfigInterfaz(ModeloConfig):
     @model_validator(mode="after")
     def _coherente(self) -> ConfigInterfaz:
         claves = [p.clave for p in self.pantallas]
-        if len(set(claves)) != 6:
-            raise ValueError("pantallas: las seis claves (calidad, bandeja, ficha, consulta, paquete, revision) deben aparecer una vez")
+        if sorted(claves) != sorted(CLAVES_DE_PANTALLA):
+            raise ValueError(f"pantallas: las ocho claves {', '.join(CLAVES_DE_PANTALLA)} deben aparecer una vez")
+        if [p.clave for p in self.pantallas if p.separada] != ["consulta"]:
+            raise ValueError("pantallas: solo la consulta va separada de las siete etapas del reto")
+        if self.pantalla_inicial in [p.clave for p in self.pantallas if p.separada]:
+            raise ValueError("pantalla_inicial: debe ser una de las siete etapas")
         if self.pantalla_inicial not in claves:
             raise ValueError("pantalla_inicial: debe ser una de las pantallas")
         if self.revision.estado_inicial not in self.revision.estados:
             raise ValueError("revision.estado_inicial: debe estar en revision.estados")
         propios = [t for v in self.textos.model_dump().values() for t in (v.values() if isinstance(v, dict) else [v])]
-        textos = [self.titulo_app, *self.consulta.ejemplos, *self.revision.estados, *propios]
+        nuevos = [self.cargar.titulo_arquitectura, self.cargar.ayuda_arquitectura, *(x.etiqueta for x in self.cargar.arquitectura),
+                  *(p.titulo for p in self.pantallas), *(p.descripcion for p in self.pantallas),
+                  *self.organizar.motivos_ruido.values(), self.organizar.ayuda_grupos, self.organizar.ayuda_procedencias,
+                  *self.contextualizar.motivos_sin_vinculo.values(), self.contextualizar.aviso_no_forzar, self.contextualizar.aviso_usgs,
+                  *self.registro_notion.model_dump().values()]
+        textos = [self.titulo_app, *self.consulta.ejemplos, *self.revision.estados, *propios, *nuevos]
         if any(FORMAS_DE_PUBLICAR.search(t) for t in textos):
             raise ValueError("ningún texto de la interfaz puede hablar de publicar")
         return self

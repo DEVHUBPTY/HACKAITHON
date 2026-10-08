@@ -8,7 +8,9 @@ de ``config/vinculos.yaml``; nada fuera de esa tabla. El resultado va a la tabla
   que lleve una exclusión. Las reglas NO son categorías: no se guardan en la base como tema ni subtema y la ficha no las muestra
   como tales; solo dejan su texto en ``vinculos.regla``. Si se disparan dos o más del mismo tema, el vínculo es ambiguo: no se
   elige ninguno (``candidatos_ambiguos``).
-* **Vínculo:** primero la regla disparada, después ``vinculos_por_tema``; si no hay, ``tema_sin_indicador``.
+* **Vínculo (D-127):** solo lo da una regla disparada por un término literal; no hay vínculo por tema. Sin regla disparada:
+  ``sin_relacion_sustentada`` (el tema tiene reglas y ningún titular las sustenta; el PDF pide no forzar la relación) o
+  ``tema_sin_indicador`` (el tema no tiene reglas).
   Un indicador sin ningún valor no nulo de Panamá es ``sin_dato_en_periodo``.
 * **Panamá:** el último año con valor no nulo, declarado en la limitación junto con los años posteriores sin valor.
   **Comparables:** los demás países de la cuadrícula en **ese mismo año**, solo los que tienen dato. **Tendencia:** los
@@ -66,7 +68,6 @@ FUENTE_INDICADOR = "indicador"   # valor de ``vinculos.fuente`` de las filas que
 ROL_PANAMA, ROL_COMPARABLE, ROL_TENDENCIA = "panama", "comparable", "tendencia"
 MOTIVO_AMBIGUO = "candidatos_ambiguos"
 REGLA_VINCULO = "vinculo_por_regla"
-REGLA_TEMA = "vinculo_por_tema"
 REGLA_SIN_ENTRADA = "sin_vinculo_en_tabla"
 MOTIVO_SIN_DATO = "sin_dato_en_periodo"
 REGLA_SIN_DATO = MOTIVO_SIN_DATO
@@ -104,6 +105,8 @@ def termino_que_dispara(titulares: Sequence[str], regla: ReglaVinculo) -> str | 
     """
     textos = [_normalizar(t) for t in titulares]
     textos = [x for x in textos if not any(m.strip() and _palabra_completa(m).search(x) for m in regla.exclusiones)]
+    if regla.requiere:   # D-129: el titular que dispara debe además nombrar a Panamá (o a un actor panameño), según `requiere`
+        textos = [x for x in textos if any(_palabra_completa(r).search(x) for r in regla.requiere)]
     for termino in regla.terminos:
         if any(_palabra_completa(termino).search(x) for x in textos):
             return termino
@@ -116,13 +119,32 @@ def termino_que_dispara(titulares: Sequence[str], regla: ReglaVinculo) -> str | 
 def reglas_disparadas(titulares: Sequence[str], tema: str | None, cfg: ConfigVinculos) -> dict[str, str]:
     """Reglas de vínculo del ``tema`` que dispara algún titular, con el término que las disparó (ordenadas por nombre).
 
-    Sin tema (nulo o ``sin_tema``) ninguna regla se dispara: una regla exige el tema del grupo.
+    Sin tema (nulo o ``sin_tema``) ninguna regla se dispara: una regla exige el tema del grupo. Las reglas sin tema (D-127,
+    ``reglas_contextuales``) no entran aquí: no compiten con las del tema ni son nunca el vínculo principal.
     """
     disparadas = {}
     for nombre, regla in sorted(cfg.reglas_vinculo.items()):
-        if regla.tema == tema and (termino := termino_que_dispara(titulares, regla)) is not None:
+        if regla.tema is not None and regla.tema == tema and (termino := termino_que_dispara(titulares, regla)) is not None:
             disparadas[nombre] = termino
     return disparadas
+
+
+def reglas_contextuales(titulares: Sequence[str], cfg: ConfigVinculos) -> dict[str, str]:
+    """D-127: reglas sin tema (hoy ``sismos``) que algún titular dispara con un término literal, con el término que las disparó.
+
+    Un término sísmico literal es la evidencia que sustenta el contexto de USGS, sea cual sea el tema del grupo. Es un contexto
+    aparte: un grupo puede tener su vínculo principal por tema y además este contexto.
+    """
+    return {
+        nombre: termino
+        for nombre, regla in sorted(cfg.reglas_vinculo.items())
+        if regla.tema is None and (termino := termino_que_dispara(titulares, regla)) is not None
+    }
+
+
+def tema_con_reglas(tema: str | None, cfg: ConfigVinculos) -> bool:
+    """``True`` si alguna regla de vínculo es del ``tema`` (un grupo de ese tema sin término que la sustente no tiene relación sustentada)."""
+    return tema is not None and any(r.tema == tema for r in cfg.reglas_vinculo.values())
 
 
 # ------------------------------------------------------------------ cifra del titular
@@ -233,8 +255,9 @@ def elegir_vinculo(
 ) -> tuple[Vinculo | None, str, str | None, str | None]:
     """Vínculo de un grupo, el texto de la regla que lo eligió, el motivo si no hay vínculo y el nombre de la regla de vínculo.
 
-    Una regla disparada gana; dos o más del tema son ambiguas (sin vínculo, ``candidatos_ambiguos``); sin regla, el vínculo del
-    tema; sin nada, ``tema_sin_indicador``. Devuelve ``(vinculo, regla, motivo, nombre_de_regla)``.
+    Una regla disparada gana; dos o más del tema son ambiguas (sin vínculo, ``candidatos_ambiguos``). D-127: sin regla disparada
+    no hay vínculo y nunca se fuerza por tema: ``sin_relacion_sustentada`` si el tema tiene reglas pero ningún titular las sustenta,
+    ``tema_sin_indicador`` si el tema no tiene ninguna. Devuelve ``(vinculo, regla, motivo, nombre_de_regla)``.
     """
     textos = cfg.textos_regla
     if len(disparadas) > 1:
@@ -242,8 +265,8 @@ def elegir_vinculo(
     if disparadas:
         ((nombre, termino),) = disparadas.items()
         return cfg.reglas_vinculo[nombre], textos.disparada.format(regla=nombre, termino=termino), None, nombre
-    if tema and tema in cfg.vinculos_por_tema:
-        return cfg.vinculos_por_tema[tema], f"{REGLA_TEMA}:{tema}", None, None
+    if tema_con_reglas(tema, cfg):
+        return None, textos.sin_relacion.format(tema=tema), cfg.motivo_sin_relacion, None
     return None, f"{REGLA_SIN_ENTRADA}:{tema or 'sin_tema'}", cfg.motivo_por_defecto, None
 
 
@@ -356,6 +379,7 @@ def leer_grupos(con: Any, cfg: ConfigVinculos | None = None) -> list[dict[str, A
                 "id_grupo": id_grupo,
                 "tema": tema,
                 "reglas": reglas_disparadas(titulares.get(id_grupo, []), tema, cfg),
+                "contextuales": reglas_contextuales(titulares.get(id_grupo, []), cfg),
                 "titular": titular,
                 "anio_publicacion": _anio_de(publicacion or deteccion),
             }
@@ -421,7 +445,8 @@ def aplicar_sismos(
 ) -> tuple[list[contexto_sismos.ResultadoSismos], list[dict[str, Any]], int]:
     """Vincula con USGS los grupos que ``vinculos.yaml`` delega a esa fuente y reemplaza solo las filas ``fuente = 'usgs'``.
 
-    La regla de vínculo es la de ``leer_grupos`` (la misma de los vínculos del Banco Mundial). Con ``con`` escribe dentro de la
+    D-127: un titular con un término sísmico literal basta (cualquier tema). Si algún evento coincide en el tiempo, es el vínculo de
+    siempre (``evento``); si no, el catálogo de USGS del periodo extraído se muestra como contexto histórico (``indirecta``). Con ``con`` escribe dentro de la
     transacción abierta del llamador (ver ``aplicar_a_base``). Devuelve ``(resultados, filas, eventos_sin_magnitud)``.
     """
     fuentes, campos_fecha = cargar_fuentes(), cargar_reglas().agrupacion.campos_fecha
@@ -436,12 +461,14 @@ def aplicar_sismos(
         fechas = contexto_sismos.leer_noticias_por_grupo(con)
         resultados = []
         for g in leer_grupos(con, cfg):
-            vinculo, _, _, nombre = elegir_vinculo(g["tema"], g["reglas"], cfg)
-            if vinculo is None or vinculo.fuente != contexto_sismos.FUENTE_USGS:
-                continue
-            r = contexto_sismos.vincular_grupo(g["id_grupo"], nombre, fechas.get(g["id_grupo"], []), eventos, cfg, fuentes, campos_fecha)
-            if r is not None:
-                resultados.append(r)
+            for nombre in g["contextuales"]:   # D-127: la regla de sismos no tiene tema: la sustenta un término sísmico literal
+                if not contexto_sismos.aplica(nombre, cfg):
+                    continue
+                r = contexto_sismos.vincular_grupo(g["id_grupo"], nombre, fechas.get(g["id_grupo"], []), eventos, cfg, fuentes, campos_fecha)
+                if r is not None and r.estado not in contexto_sismos.ESTADOS_DE_EVENTO:
+                    r = contexto_sismos.contexto_historico(g["id_grupo"], nombre, eventos, cfg, fuentes)   # sin coincidencia en el tiempo
+                if r is not None:
+                    resultados.append(r)
         filas = [f for r in resultados for f in contexto_sismos.a_filas_vinculo(r, cfg)]
         verificar_texto(filas, cfg)
         _reemplazar(con, contexto_sismos.FUENTE_VINCULO, filas, propia)
@@ -519,6 +546,7 @@ def construir_reporte_usgs(
         "nota": "Eventos de USGS como contexto; no informan daños ni pérdidas. Solo cubre el periodo extraído de USGS (fuentes.yaml).",
         "grupos_de_sismos": len(resultados),
         "vinculados": proporcion(por_estado[contexto_sismos.VINCULADO], len(resultados), z),
+        "con_contexto_historico": proporcion(por_estado[contexto_sismos.CONTEXTO_HISTORICO], len(resultados), z),
         "por_resultado": dict(sorted(por_estado.items())),
         "filas_en_vinculos": len(filas),
         "eventos_sin_magnitud": eventos_sin_magnitud,

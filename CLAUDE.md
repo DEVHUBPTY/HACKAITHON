@@ -52,7 +52,7 @@ poetry run python -m scripts.medir_generacion --proveedor ollama  # latencia: pr
 poetry run python -m src.validador --tasas            # tasa de rechazo por modelo y por regla (n e IC 95 %) desde outputs/rechazos.jsonl (E1-13)
 poetry run python -m src.consulta "pregunta"         # consulta en español con abstención (--metodo semantica|bm25)
 poetry run python -m eval.recuperacion               # Recall@5 y abstención, semántica vs. BM25, con n e IC
-poetry run streamlit run app.py                      # interfaz: 6 pantallas (E1-15); ?caso=GRP-… o ?caso=CASO-… abre la ficha; la pantalla Revisión es el flujo de la etapa 7 (E1-16)
+poetry run streamlit run app.py                      # interfaz: las 7 etapas del reto (1 · Cargar … 7 · Revisar, D-128) y la Consulta aparte; ?caso=GRP-… o ?caso=CASO-… abre 5 · Explicar; 7 · Revisar es el flujo de la etapa 7 (E1-16)
 poetry run python -m src.revision --abrir GRP-… --revisor "Nombre"   # abre el grupo como CASO-… (también --estado GRP-…, --historial CASO-…); las acciones se hacen en la app (E1-16)
 poetry run python -m scripts.fichas_trazables --casos   # C-01: 5 fichas reales, una por caso de uso CU-01…CU-05 (D-118), elegidas por regla (config/fichas_trazables.yaml), trazabilidad comprobada contra los datos → outputs/fichas_trazables/ y CASO- (revisión provisional del asistente); sin --casos solo escribe en outputs/fichas_trazables/vista_previa/ (fuera de git)
 poetry run python -m src.exportar --caso CASO-001    # (--demo: rutas de la demo) Markdown + fila CSV de «Casos y evidencias» (Notion) en outputs/notion/, y outputs/fichas.jsonl; volver a exportar actualiza (E1-16)

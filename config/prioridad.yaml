@@ -110,6 +110,7 @@ vacios:                           # textos de los vacíos de verificación (plan
     sin_evento_coincidente: "no hay un evento oficial cercano en el tiempo"
     fuera_de_cobertura: "el tema está fuera de la cobertura de las fuentes oficiales"
     candidatos_ambiguos: "hay varios eventos oficiales posibles y no se eligió ninguno"
+    sin_relacion_sustentada: "ningún titular sustenta una relación con un dato oficial; no se fuerza la relación"
 
 sensibilidad:                     # eval/sensibilidad.py
   variacion_peso: 5               # puntos de peso (PDF: «permitir justificar cambios de pesos»)

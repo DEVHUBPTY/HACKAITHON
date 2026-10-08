@@ -85,15 +85,19 @@ def test_vinculos_son_exactamente_los_del_diseno() -> None:
         "empleo": ("economia", "indicador", "SL.UEM.TOTL.ZS", "directa"),
         "comercio_exterior": ("economia", "indicador", "NE.EXP.GNFS.ZS", "directa"),
         "telecomunicaciones": ("servicios_publicos", "indicador", "IT.NET.USER.ZS", "directa"),
-        "sismos": ("eventos_naturales", "usgs", None, "evento"),
+        # D-127: sin tema; un término sísmico literal sustenta el contexto de USGS en cualquier tema.
+        "sismos": (None, "usgs", None, "evento"),
         # E3-02 (X89): la banca vincula las series agregadas de la SBP; no está en el diseño original.
         "banca": ("economia", "sbp", None, "indirecta"),
+        # D-127: la logística ya no recibe las exportaciones por tema: solo si un titular las sustenta con un término.
+        "exportaciones_logistica": ("logistica", "indicador", "NE.EXP.GNFS.ZS", "indirecta"),
     }
-    log = v.vinculos_por_tema["logistica"]
-    assert (log.id, log.relacion) == ("NE.EXP.GNFS.ZS", "indirecta") and "tránsitos" in log.limitacion
-    assert set(v.vinculos_por_tema) == {"logistica"}
+    log = v.reglas_vinculo["exportaciones_logistica"]
+    assert "tránsitos" in log.limitacion
+    assert not hasattr(v, "vinculos_por_tema")
     assert set(v.tipos_relacion) == {"directa", "indirecta", "evento"}
-    assert v.motivos_sin_vinculo == ["tema_sin_indicador", "sin_dato_en_periodo", "sin_evento_coincidente", "fuera_de_cobertura", "candidatos_ambiguos"]
+    assert v.motivos_sin_vinculo == ["tema_sin_indicador", "sin_dato_en_periodo", "sin_evento_coincidente", "fuera_de_cobertura", "candidatos_ambiguos", "sin_relacion_sustentada"]
+    assert v.motivo_sin_relacion == "sin_relacion_sustentada"
     assert v.motivo_por_defecto == "tema_sin_indicador"
 
 

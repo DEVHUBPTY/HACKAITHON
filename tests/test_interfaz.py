@@ -74,7 +74,7 @@ def con(base):
 
 
 def test_la_configuracion_valida_y_ningun_texto_habla_de_publicar() -> None:
-    assert [p.clave for p in CFG.pantallas] == ["calidad", "bandeja", "ficha", "consulta", "paquete", "revision"]
+    assert [p.clave for p in CFG.pantallas] == ["calidad", "organizar", "contextualizar", "bandeja", "ficha", "paquete", "revision", "consulta"]
     datos = CFG.model_dump()
     datos["textos"]["sin_borrador"] = "Listo para publicar"
     with pytest.raises(ValidationError, match="publicar"):
@@ -83,7 +83,7 @@ def test_la_configuracion_valida_y_ningun_texto_habla_de_publicar() -> None:
 
 def test_la_configuracion_rechaza_pantallas_repetidas_y_claves_desconocidas() -> None:
     datos = CFG.model_dump()
-    datos["pantallas"][1]["clave"] = "calidad"
+    datos["pantallas"][1]["clave"] = "calidad"      # D-128: ocho pantallas, una vez cada clave
     with pytest.raises(ValidationError):
         ConfigInterfaz.model_validate(datos)
     with pytest.raises(ValidationError):
@@ -248,7 +248,7 @@ def test_una_cita_de_noticia_separa_publicacion_y_deteccion_sin_sustituir_una_po
 def test_una_cita_de_sismo_trae_la_hora_del_evento_en_panama_y_el_estado(con) -> None:
     s = ui.detalle_cita(con, "SIS-us7000test", "magnitude", CFG, CFG_VER)
     f = etiquetas(s)
-    assert s.valor == "5.1" and f["Hora del evento"] == "2026-10-06 02:30 (hora de Panamá)" and f["Estado"] == "reviewed"
+    assert s.valor == "5.1 magnitud" and f["Hora del evento"] == "2026-10-06 02:30 (hora de Panamá)" and f["Estado"] == "reviewed"
     assert "Puerto Armuelles" in f["Lugar"] and "usgs" in s.url
 
 
@@ -317,7 +317,7 @@ def test_sin_generacion_integrada_la_interfaz_lo_dice_y_no_inventa_un_borrador()
     for cfg in (sin_funcion, sin_modulo):
         assert ui.cargar_generador(cfg) is None
         e = ui.obtener_paquete("GRP-1", "editorial", cfg)
-        assert e.estado == "sin_integrar" and e.paquete is None and e.motivo == "Generación disponible cuando se integre E1-12."
+        assert e.estado == "sin_integrar" and e.paquete is None and e.motivo == cfg.textos.sin_borrador
 
 
 def test_con_generador_se_pide_solo_cache_y_se_aplanan_las_secciones() -> None:
@@ -381,7 +381,7 @@ def ir(at: AppTest, pantalla: str) -> AppTest:
     return at.run()
 
 
-def test_las_seis_pantallas_abren_sin_errores_y_cada_una_lleva_marca_y_leyenda(app) -> None:
+def test_todas_las_pantallas_abren_sin_errores_y_cada_una_lleva_marca_y_leyenda(app) -> None:
     at = app.run()
     assert not at.exception
     for clave in PANTALLAS:
@@ -391,9 +391,10 @@ def test_las_seis_pantallas_abren_sin_errores_y_cada_una_lleva_marca_y_leyenda(a
         assert MARCA in texto and any(x in texto for x in LEYENDAS), clave
 
 
-def test_la_barra_lateral_ofrece_las_seis_pantallas_y_la_modalidad(app) -> None:
+def test_la_barra_lateral_ofrece_las_etapas_y_la_modalidad(app) -> None:
     at = app.run()
-    assert list(at.radio(key="pantalla").options) == [p.titulo for p in CFG.pantallas]
+    # D-128: las siete etapas del PDF en la barra lateral y la consulta aparte (test_d128_interfaz_etapas.py las comprueba a fondo)
+    assert list(at.radio(key="pantalla_etapa").options) == [p.titulo for p in CFG.pantallas if not p.separada]
     assert list(at.selectbox(key="modalidad").options) == ["Editorial (TVN)", "Banca"]
     assert at.session_state["pantalla"] == CFG.pantalla_inicial
 
@@ -501,7 +502,7 @@ def test_la_revision_de_un_grupo_sin_caso_muestra_los_cinco_estados_y_solo_ofrec
     at = ir(app.run(), "revision")
     assert not at.exception
     assert "Estado actual:** nuevo" in "\n".join(textos(at))
-    assert [b.label for b in at.button] == ["Abrir para revisar"] and at.button[0].disabled      # hasta elegir quién revisa (D-49)
+    assert [b.label for b in at.main.button] == ["Abrir para revisar"] and at.main.button[0].disabled      # hasta elegir quién revisa (D-49)
     assert list(at.dataframe[0].value["Estados del reto"]) == CFG.revision.estados
     assert "aprobado como borrador" in "\n".join(textos(at))
 
@@ -728,3 +729,32 @@ def test_e3_04_el_escenario_no_cambia_la_ficha_ni_el_registro_de_revision(app, c
     assert f"(P = {round(o.puntaje, CFG_VER.presentacion.decimales_valor):g}, posición {o.posicion}," in linea and f"posición {o.posicion}," in linea
     assert f"posición {nuevo.posicion}," not in linea
     assert filas_del_registro(registro) == antes                 # abrir la ficha en escenario no escribe en el registro de revisión
+
+# ------------------------------------------------------------------ enlace legible del Banco Mundial (D-128)
+
+
+def test_el_enlace_legible_de_un_indicador_de_colombia_usa_la_plantilla_y_el_iso2_de_la_config() -> None:
+    assert ui.enlace_indicador("COL", "FP.CPI.TOTL.ZG", CFG) == "https://datos.bancomundial.org/indicador/FP.CPI.TOTL.ZG?locations=CO"
+    assert {p: ui.enlace_indicador(p, "X", CFG)[-2:] for p in CFG.citas.iso2_por_pais} == {
+        "PAN": "PA", "CRI": "CR", "COL": "CO", "DOM": "DO", "MEX": "MX", "GTM": "GT"}
+
+
+def test_la_cita_de_un_indicador_trae_la_url_de_la_api_y_el_enlace_legible(con) -> None:
+    d = ui.detalle_cita(con, "IND-PAN-FP.CPI.TOTL.ZG-2024", "valor", CFG, CFG_VER)
+    assert d.url.startswith("https://api.worldbank.org")                # la procedencia se conserva
+    assert d.enlace_humano == "https://datos.bancomundial.org/indicador/FP.CPI.TOTL.ZG?locations=PA"
+
+
+def test_un_pais_sin_iso2_en_la_config_solo_muestra_la_url_de_la_api(con) -> None:
+    cfg = CFG.model_copy(update={"citas": CFG.citas.model_copy(update={"iso2_por_pais": {}})})
+    d = ui.detalle_cita(con, "IND-PAN-FP.CPI.TOTL.ZG-2024", "valor", cfg, CFG_VER)
+    assert d.enlace_humano is None and d.url.startswith("https://api.worldbank.org")
+    assert ui.enlace_indicador("ARG", "FP.CPI.TOTL.ZG", CFG) is None    # país fuera del reto: no se adivina
+
+
+def test_la_config_de_citas_rechaza_claves_desconocidas_y_plantillas_incompletas() -> None:
+    base = CFG.citas.model_dump()
+    with pytest.raises(ValidationError):
+        type(CFG.citas)(**base, clave_inventada=1)
+    with pytest.raises(ValidationError):
+        type(CFG.citas)(**{**base, "plantilla_enlace_indicador": "https://x.org/{indicador}"})

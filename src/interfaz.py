@@ -22,7 +22,7 @@ import logging
 import re
 import sys
 from collections import Counter
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Collection, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from datetime import datetime
 from pathlib import Path
@@ -51,6 +51,7 @@ from src.configuracion import (
     cargar_revision,
     cargar_temas,
     cargar_verificacion,
+    cargar_vinculos,
 )
 from src.esquemas import Cita, Ficha
 from src.ficha import Linea, Seccion, Vista, texto_empate
@@ -63,6 +64,8 @@ PARAMETRO_DEMO = "--demo"
 COLUMNA_COMPONENTE = {"R": "relevancia", "I": "impacto", "U": "urgencia", "N": "novedad", "E": "evidencia"}
 ORIGEN_SINTETICO = "sintetico"
 SIN_TEMA = "sin tema"
+SIN_DATO = "sin dato"
+POSICION_ANIO_CITA = 4   # ``YYYY`` al inicio de una fecha ISO 8601
 # Prefijo de ID -> (tabla, columna del ID, columna de URL, datos que acompañan a la cita como (etiqueta, columna, clase)).
 # Cada fecha lleva SU etiqueta (de qué es): nunca una «Fecha» genérica ni una por otra (publicación ≠ detección; el año ≠ la extracción).
 # Es un mapa fijo: nunca se arma SQL con texto del usuario. Clases: texto | fecha (UTC -> hora de Panamá).
@@ -361,6 +364,15 @@ class DetalleCita:
     sintetico: bool = False
     nota: str | None = None
     filas: tuple[tuple[str, str], ...] = ()
+    enlace_humano: str | None = None
+
+
+def enlace_indicador(pais_iso3: str | None, indicador_id: str | None, cfg: ConfigInterfaz) -> str | None:
+    """Página legible del Banco Mundial para un indicador y país; ``None`` si el país no tiene ISO2 en la configuración (no se adivina)."""
+    iso2 = cfg.citas.iso2_por_pais.get(pais_iso3 or "")
+    if not iso2 or not indicador_id:
+        return None
+    return cfg.citas.plantilla_enlace_indicador.format(indicador=indicador_id, iso2=iso2)
 
 
 def _no_encontrada(id_registro: str, campo: str, nota: str) -> DetalleCita:
@@ -393,20 +405,42 @@ def detalle_cita(con: Any, id_registro: str, campo: str, cfg: ConfigInterfaz | N
     if fila is None:
         return _no_encontrada(id_registro, campo, "El registro no existe en esta base.")
     valor, url, datos = fila[0], fila[1], fila[2 : 2 + len(extras)]
-    texto = "sin dato" if valor is None else str(valor)    # un nulo es un nulo: nunca 0
+    texto = SIN_DATO if valor is None else str(valor)    # un nulo es un nulo: nunca 0
     filas: list[tuple[str, str]] = []
     for (etiqueta, _, clase), dato in zip(extras, datos, strict=True):
         if clase == "fecha":
             filas.append((etiqueta, hora_panama(str(dato) if dato else None, cfg_ver)))
         else:
-            filas.append((etiqueta, "sin dato" if dato is None else str(dato)))
+            filas.append((etiqueta, SIN_DATO if dato is None else str(dato)))
     if tabla == "indicadores":
         unidad = dict(filas).get("Unidad", "")
         if campo == "valor" and valor is not None:
-            texto = f"{float(valor):.{cfg.citas.decimales_valor}f}" + (f" {unidad}" if unidad and unidad != "sin dato" else "")
+            texto = f"{float(valor):.{cfg.citas.decimales_valor}f}" + (f" {unidad}" if unidad and unidad != SIN_DATO else "")
         filas.append(("Aviso", cfg.citas.aviso_anual))
+    if tabla == "sismos":
+        texto, filas = _completar_sismo(con, id_registro, campo, valor, texto, filas, cfg)
     sintetico = (pide_origen and fila[-1] == ORIGEN_SINTETICO) or id_registro.startswith("SYN-")
-    return DetalleCita(id_registro, campo, texto, url, True, bool(sintetico), filas=tuple(filas))
+    enlace = None
+    if tabla == "indicadores":
+        por_columna = {c: d for (_, c, _), d in zip(extras, datos, strict=True)}
+        enlace = enlace_indicador(por_columna.get("pais_iso3"), por_columna.get("indicador_id"), cfg)
+    return DetalleCita(id_registro, campo, texto, url, True, bool(sintetico), filas=tuple(filas), enlace_humano=enlace)
+
+
+def _completar_sismo(con: Any, id_registro: str, campo: str, valor: Any, texto: str, filas: list[tuple[str, str]], cfg: ConfigInterfaz) -> tuple[str, list[tuple[str, str]]]:
+    """D-129: la magnitud lleva su unidad; el panel agrega el periodo y las limitaciones que guardó el vínculo (o las fijas de la regla).
+
+    El periodo y las limitaciones salen de la fila de ``vinculos`` que cita el evento (así «no coincide con la fecha de la noticia» solo
+    aparece cuando es contexto histórico); sin vínculo, del año del evento y de las limitaciones fijas de ``vinculos.yaml``.
+    """
+    cfg_vinc = cargar_vinculos()
+    if campo == "magnitude" and valor is not None:
+        texto = f"{valor} {cfg_vinc.sismos.unidad_magnitud}"
+    fila_v = con.execute("SELECT periodo, limitacion FROM vinculos WHERE id_evidencia = ? ORDER BY id_grupo LIMIT 1", [id_registro]).fetchone()
+    hora = con.execute("SELECT time FROM sismos WHERE id = ?", [id_registro]).fetchone()
+    periodo = (fila_v[0] if fila_v and fila_v[0] else None) or (str(hora[0])[:POSICION_ANIO_CITA] if hora and hora[0] else SIN_DATO)
+    limitacion = (fila_v[1] if fila_v and fila_v[1] else None) or " ".join(cfg_vinc.sismos.limitaciones)
+    return texto, [*filas, (cfg.citas.etiqueta_periodo, periodo), (cfg.citas.etiqueta_limitaciones, limitacion)]
 
 
 # ------------------------------------------------------------------ calidad (pantalla 1)
@@ -453,6 +487,235 @@ def reporte_de_carga(ruta_reporte: Path, procesados: Path | None = None) -> dict
 
     config = cargar_carga()
     return construir_reporte(cargar_todo(procesados or CARPETA_PROCESADOS, config), config)
+
+
+# ------------------------------------------------------------------ D-128 · arquitectura del PDF (etapa 1)
+
+
+@dataclass(frozen=True)
+class PasoVista:
+    """Un paso de la arquitectura mínima del PDF con su cuenta real (``None`` si no hay de dónde leerla: nunca se inventa)."""
+
+    etiqueta: str
+    cuenta: int | None
+    unidad: str
+    pantallas: tuple[str, ...]
+
+
+def _contar(con: Any, tabla: str) -> int:
+    """Filas de una tabla de la base; una tabla ausente cuenta 0 (la pantalla abre aunque falte un paso del pipeline)."""
+    try:
+        return int(con.execute(f"SELECT count(*) FROM {tabla}").fetchone()[0])  # noqa: S608 - nombres de un conjunto fijo, no del usuario
+    except Exception:  # noqa: BLE001 - tabla inexistente
+        return 0
+
+
+def total_de_reporte(reporte: Mapping[str, Any] | None, campo: str) -> int | None:
+    """Suma ``leidas`` o ``validas`` de todos los archivos del reporte de carga; ``None`` si no hay reporte."""
+    if not reporte or "archivos" not in reporte:
+        return None
+    return sum(int(a.get(campo, 0)) for a in reporte["archivos"].values())
+
+
+def casos_exportados(demo: bool, cfg_rev: ConfigRevision | None = None, raiz: Path = RAIZ) -> int:
+    """Filas de la exportación CSV de «Casos y evidencias» (la real, o la de la demo): lo ya listo para el registro en Notion."""
+    import csv
+
+    cfg_rev = cfg_rev or cargar_revision()
+    carpeta = raiz / (cfg_rev.exportacion.carpeta_demo if demo else cfg_rev.exportacion.carpeta)
+    ruta = carpeta / cfg_rev.exportacion.csv
+    if not ruta.exists():
+        return 0
+    with ruta.open(encoding="utf-8", newline="") as f:
+        return sum(1 for _ in csv.DictReader(f))
+
+
+def pasos_de_arquitectura(
+    con: Any, cfg: ConfigInterfaz, reporte: Mapping[str, Any] | None, revisiones: Any = None, demo: bool = False, carpeta_cache: Path | None = None,
+) -> list[PasoVista]:
+    """La arquitectura mínima del PDF (sección 8) con la cuenta real de cada paso. Toda cuenta sale de los datos o de los archivos del pipeline."""
+    from src.cache import CacheLlm   # import tardío: la caché no se necesita para el resto del módulo
+
+    cuentas: dict[str, int | None] = {
+        "registros_leidos": total_de_reporte(reporte, "leidas"),
+        "registros_validos": total_de_reporte(reporte, "validas"),
+        "filas_en_base": sum(_contar(con, t) for t in ("noticias", "indicadores", "sismos")),
+        "grupos": _contar(con, "grupos"),
+        "grupos_puntuados": _contar(con, "puntajes"),
+        "borradores_en_cache": len(CacheLlm(carpeta_cache)),
+        "fichas_disponibles": _contar(con, "evidencia"),
+        "casos_revisados": len(revisiones.casos()) if revisiones is not None else 0,
+        "casos_exportados": casos_exportados(demo),
+    }
+    return [PasoVista(p.etiqueta, cuentas[p.medida], p.unidad, tuple(p.pantallas)) for p in cfg.cargar.arquitectura]
+
+
+# ------------------------------------------------------------------ D-128 · etapa 2 · Organizar
+
+
+@dataclass(frozen=True)
+class ResumenOrganizar:
+    """Titulares útiles por tema (los seis del reto, aun con 0), ruido por motivo (marcado, no borrado) y totales."""
+
+    por_tema: dict[str, int]
+    grupos_por_tema: dict[str, int]
+    ruido_por_motivo: dict[str, int]
+    utiles: int
+    ruido: int
+    grupos: int
+
+
+def resumen_de_organizacion(con: Any, nombres_de_tema: Mapping[str, str]) -> ResumenOrganizar:
+    """Cuenta de titulares útiles por cada tema del reto y de titulares de ruido por motivo; un tema fuera de los seis nunca aparece."""
+    utiles = dict(con.execute("SELECT tema_clasificado, count(*) FROM noticias WHERE NOT es_ruido AND tema_clasificado IS NOT NULL GROUP BY 1").fetchall())
+    grupos = dict(con.execute("SELECT tema_clasificado, count(*) FROM grupos WHERE tema_clasificado IS NOT NULL GROUP BY 1").fetchall())
+    ruido = dict(con.execute("SELECT motivo_ruido, count(*) FROM noticias WHERE es_ruido GROUP BY 1 ORDER BY 2 DESC, 1").fetchall())
+    por_tema = {nombre: int(utiles.get(clave, 0)) for clave, nombre in nombres_de_tema.items()}
+    return ResumenOrganizar(
+        por_tema, {nombre: int(grupos.get(clave, 0)) for clave, nombre in nombres_de_tema.items()},
+        {str(k): int(v) for k, v in ruido.items() if k}, sum(por_tema.values()), sum(int(v) for v in ruido.values()), sum(grupos.values()),
+    )
+
+
+def nombre_de_motivo_ruido(motivo: str, cfg: ConfigInterfaz | None = None) -> str:
+    cfg = cfg or cargar_interfaz()
+    return cfg.organizar.motivos_ruido.get(motivo, motivo)
+
+
+def tabla_de_grupos(con: Any, nombres_de_tema: Mapping[str, str]) -> list[dict[str, Any]]:
+    """Una fila por grupo: ``GRP-``, titular central, tema, titulares, medios y procedencias independientes (de la tabla ``grupos``)."""
+    filas = con.execute(
+        "SELECT id_grupo, titular_central, tema_clasificado, n_titulares, n_medios, n_procedencias FROM grupos ORDER BY n_titulares DESC, id_grupo"
+    ).fetchall()
+    return [
+        {"Grupo": g, "Titular central": t, "Tema": nombres_de_tema.get(tema, tema or ""), "Titulares": n, "Medios": m, "Procedencias": p}
+        for g, t, tema, n, m, p in filas
+    ]
+
+
+@dataclass(frozen=True)
+class DetalleGrupo:
+    """Los titulares de un grupo y sus procedencias (CU-03: repetición no es corroboración independiente)."""
+
+    id_grupo: str
+    titular_central: str
+    tema: str
+    n_titulares: int
+    n_medios: int
+    n_procedencias: int
+    titulares: list[dict[str, str]]
+    procedencias: list[dict[str, Any]]
+
+
+def detalle_de_grupo(con: Any, id_grupo: str, nombres_de_tema: Mapping[str, str], cfg_ver: ConfigVerificacion | None = None, limite: int | None = None) -> DetalleGrupo | None:
+    """Titulares (titular, medio, publicación en hora de Panamá, procedencia) y procedencias del grupo. Nunca la descripción del RSS ni un autor."""
+    cfg_ver = cfg_ver or cargar_verificacion()
+    g = con.execute("SELECT titular_central, tema_clasificado, n_titulares, n_medios, n_procedencias FROM grupos WHERE id_grupo = ?", [id_grupo]).fetchone()
+    if g is None:
+        return None
+    filas = con.execute(
+        "SELECT id_noticia, titulo_limpio, titulo, medio, fecha_publicacion, procedencia, fecha_deteccion FROM noticias WHERE id_grupo = ? ORDER BY fecha_publicacion NULLS LAST, id_noticia",
+        [id_grupo],
+    ).fetchall()
+    if limite is not None:
+        filas = filas[:limite]
+    titulares = [
+        {
+            "Noticia": i, "Titular": tl or t or "", "Medio": m or "",
+            # D-129: cada fecha con su propio rótulo; una ausente dice «sin dato» y nunca se sustituye por la otra (publicación ≠ detección).
+            "Publicación": hora_panama(f, cfg_ver) if f else SIN_DATO, "Detección": hora_panama(d, cfg_ver) if d else SIN_DATO,
+            "Procedencia": pr or "",
+        }
+        for i, tl, t, m, f, pr, d in filas
+    ]
+    procs = [
+        {"Procedencia": e, "Titulares": n, "Medios": (ms or "").replace(",", ", "), "Reglas": r or ""}
+        for e, n, ms, r in con.execute("SELECT etiqueta, n_titulares, medios, reglas FROM procedencias WHERE id_grupo = ? ORDER BY orden", [id_grupo]).fetchall()
+    ]
+    return DetalleGrupo(id_grupo, g[0], nombres_de_tema.get(g[1], g[1] or ""), g[2], g[3], g[4], titulares, procs)
+
+
+# ------------------------------------------------------------------ D-128 · etapa 3 · Contextualizar
+
+
+@dataclass(frozen=True)
+class VinculoVista:
+    """Un vínculo de un grupo con un dato oficial, con todo lo que el reto pide mostrar: período, unidad y limitaciones."""
+
+    id_grupo: str
+    titular: str
+    fuente: str
+    id_evidencia: str
+    campo_cita: str
+    relacion: str
+    papel: str
+    indicador: str
+    valor: str
+    periodo: str
+    limitacion: str
+    regla: str
+
+
+@dataclass(frozen=True)
+class GrupoSinVinculo:
+    id_grupo: str
+    titular: str
+    tema: str
+    motivo: str
+    regla: str
+
+
+def _periodo_de(v: Mapping[str, Any]) -> str:
+    """El período del dato oficial: el año de un indicador (anual) o el período de la serie/catálogo; nunca «actual»."""
+    if v.get("periodo"):
+        return str(v["periodo"])
+    if v.get("anio") is not None:
+        return f"{v['anio']} (anual)" if v.get("fuente") == "indicador" else str(v["anio"])
+    return "sin dato"
+
+
+def vinculos_oficiales(con: Any, nombres_de_tema: Mapping[str, str], cfg: ConfigInterfaz | None = None) -> tuple[list[VinculoVista], list[GrupoSinVinculo]]:
+    """Todos los vínculos con dato oficial y, aparte, los grupos sin vínculo con su motivo (``sin_relacion_sustentada`` o ``tema_sin_indicador``)."""
+    cfg = cfg or cargar_interfaz()
+    c = cfg.contextualizar
+    filas = con.execute(
+        "SELECT v.*, g.titular_central, g.tema_clasificado FROM vinculos v JOIN grupos g USING (id_grupo) ORDER BY g.titular_central, v.id_grupo, v.fuente, v.tipo, v.rol, v.id_evidencia"
+    )
+    columnas = [d[0] for d in filas.description]
+    con_vinculo: list[VinculoVista] = []
+    sin_vinculo: list[GrupoSinVinculo] = []
+    for fila in filas.fetchall():
+        v = dict(zip(columnas, fila, strict=True))
+        if v["motivo_sin_vinculo"] or not v["id_evidencia"]:
+            sin_vinculo.append(GrupoSinVinculo(
+                v["id_grupo"], v["titular_central"], nombres_de_tema.get(v["tema_clasificado"], v["tema_clasificado"] or ""),
+                v["motivo_sin_vinculo"] or "sin_relacion_sustentada", v["regla"] or "",
+            ))
+            continue
+        usgs = v["fuente"] == "usgs"
+        valor = "sin dato" if v["valor"] is None else f"{float(v['valor']):.{cfg.citas.decimales_valor}f}" + (f" {v['unidad']}" if v["unidad"] else "")
+        con_vinculo.append(VinculoVista(
+            v["id_grupo"], v["titular_central"], c.fuentes.get(v["fuente"], v["fuente"]), v["id_evidencia"], "magnitude" if usgs else "valor",
+            c.relaciones.get(v["tipo"] or "", v["tipo"] or ""), c.roles.get(v["rol"] or "", v["rol"] or ""),
+            (v["place"] if usgs else f"{v['pais_iso3']} · {v['indicador_id']}") or "", valor, _periodo_de(v),
+            " ".join(x for x in (v["limitacion"], cfg.citas.aviso_anual if v["fuente"] == "indicador" else "") if x), v["regla"] or "",
+        ))
+    return con_vinculo, sin_vinculo
+
+
+def grupos_sin_vinculo_por_motivo(sin: Sequence[GrupoSinVinculo], con_vinculo: Collection[str] = ()) -> dict[str, list[GrupoSinVinculo]]:
+    """Cada grupo sin vínculo una sola vez, agrupado por motivo (el orden de aparición de los motivos se conserva).
+
+    Un grupo que sí tiene algún vínculo oficial (p. ej. el contexto histórico de USGS) no es un grupo «sin vínculo», aunque no tenga relación con un indicador.
+    """
+    visto: set[str] = set(con_vinculo)
+    salida: dict[str, list[GrupoSinVinculo]] = {}
+    for g in sin:
+        if g.id_grupo in visto:
+            continue
+        visto.add(g.id_grupo)
+        salida.setdefault(g.motivo, []).append(g)
+    return salida
 
 
 # ------------------------------------------------------------------ consulta y revisión
@@ -668,6 +931,18 @@ def _texto_de_elemento(x: Any) -> str:
         if "sector" in x and "motivo" in x:  # sector del boletín bancario (E2-02)
             return f"{x['sector']}: {x['motivo']}"
     return json.dumps(x, ensure_ascii=False)
+
+
+def borrador_en_cache_de_caso(version: Any, id_grupo: str, modalidad: str, cfg: ConfigInterfaz, ruta_base: Path | None = None, generador: Callable[..., Any] | None = None) -> Any | None:
+    """D-129: el borrador de la caché de un caso que todavía no tiene versión; ``None`` si el caso ya tiene una o la caché no lo tiene.
+
+    Solo lee (``solo_cache``): nunca llama al LLM ni escribe en ``revision.duckdb``. La interfaz lo muestra de solo lectura y rotulado
+    «desde la caché»; guardarlo como versión (de solo agregar) sigue siendo una acción de una persona (``Revisiones.regenerar``).
+    """
+    if version is not None:
+        return None
+    estado = obtener_paquete(id_grupo, modalidad, cfg, generador=generador, ruta_base=ruta_base)
+    return estado.paquete if estado.estado == "disponible" else None
 
 
 def secciones_de_paquete(paquete: Any, etiquetas: Mapping[str, str] | None = None) -> list[tuple[str, list[str]]]:

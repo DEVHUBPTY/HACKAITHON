@@ -2,7 +2,7 @@
 # Un vínculo es CONTEXTO, nunca prueba de causa ni suma a I (D-15). Los indicadores deben existir en config/fuentes.yaml.
 # D-125: el reto define 6 temas y ningún subtema. Un vínculo lo dispara una REGLA INTERNA (`reglas_vinculo`): tema del grupo +
 # un término en algún titular. Las reglas no son categorías: no aparecen en la ficha, la interfaz ni las exportaciones, salvo
-# como texto de la regla que creó el vínculo. Los grupos sin regla ni vínculo por tema quedan sin dato con `motivo_por_defecto`.
+# como texto de la regla que creó el vínculo. Sin regla disparada no hay vínculo (D-127: nunca se fuerza por tema): `sin_relacion_sustentada` si el tema tiene reglas y `motivo_por_defecto` si no.
 version: "1.0"
 
 tipos_relacion:
@@ -10,8 +10,9 @@ tipos_relacion:
   indirecta: "El indicador es un contexto lejano del tema; no mide el hecho."
   evento: "Evento oficial (USGS) que puede coincidir en el tiempo con la noticia."
 
-motivos_sin_vinculo: [tema_sin_indicador, sin_dato_en_periodo, sin_evento_coincidente, fuera_de_cobertura, candidatos_ambiguos]
-motivo_por_defecto: tema_sin_indicador
+motivos_sin_vinculo: [tema_sin_indicador, sin_dato_en_periodo, sin_evento_coincidente, fuera_de_cobertura, candidatos_ambiguos, sin_relacion_sustentada]
+motivo_por_defecto: tema_sin_indicador       # el tema no tiene ninguna regla de vínculo
+motivo_sin_relacion: sin_relacion_sustentada # D-127: el tema sí tiene reglas, pero ningún titular las sustenta: no se fuerza la relación
 
 ventana_coincidencia_dias: 2        # sismos: ± días entre evento USGS y noticia (supuesto)
 pais_por_defecto: PAN
@@ -19,6 +20,7 @@ pais_por_defecto: PAN
 textos_regla:                       # D-125: lo que queda escrito en `vinculos.regla` cuando decide una regla interna
   disparada: "regla {regla}: término «{termino}» en el titular"
   ambigua: "reglas {reglas} del tema {tema} disparadas a la vez: no se elige ninguna"
+  sin_relacion: "ninguna regla del tema {tema} se dispara: ningún titular sustenta una relación con un dato oficial, no se fuerza"
 
 sismos:                             # E1-09b: presentación y textos fijos del vínculo con eventos USGS
   zona_horaria: America/Panama      # solo para mostrar; los datos siguen en UTC
@@ -32,6 +34,16 @@ sismos:                             # E1-09b: presentación y textos fijos del v
     - "El lugar puede estar fuera de territorio panameño: se muestra tal como lo da USGS."
     - "La fuente solo describe el evento sísmico; no informa daños ni pérdidas."
     - "Un evento con estado automático puede cambiar al ser revisado."
+  # D-127: si el titular nombra un sismo y ningún evento coincide en el tiempo, el catálogo de USGS (periodo fijo del reto: 2024) se
+  # muestra como CONTEXTO histórico (`indirecta`): cuántos eventos hubo y el mayor. No es el evento de la noticia.
+  contexto_historico:
+    rol: contexto_historico         # valor de `vinculos.rol` de la fila
+    relacion: indirecta             # clave de `tipos_relacion`: no mide el hecho y no cuenta como dato oficial en E
+    plantilla_regla: "Regla {regla}: el titular nombra un sismo y ningún evento de USGS coincide en el tiempo; se muestra el catálogo {periodo} de la caja regional (magnitud mínima {magnitud_minima}) como contexto."
+    limitaciones:
+      - "La caja regional no equivale al territorio de Panamá: el lugar se muestra tal como lo da USGS."
+      - "Periodo {periodo}, no coincide con la fecha de la noticia: no es el evento de la noticia."
+      - "La fuente solo describe eventos sísmicos; no informa daños ni pérdidas."
 
 # E3-02 · series agregadas del sistema bancario de la SBP (src/contexto_sbp.py), solo para reglas con `fuente: sbp`. Son datos
 # MENSUALES de 2024 (config/fuentes.yaml: sbp), no el mes de la noticia: la nota de cada fila lo dice.
@@ -116,8 +128,10 @@ reglas_vinculo:
     id: IT.NET.USER.ZS
     relacion: directa
     limitacion: "Uso de internet como % de la población, anual; no mide la falla puntual."
+  # D-127: `sismos` NO lleva tema. Un término sísmico literal en el titular es la evidencia que sustenta el contexto de USGS, sea cual sea el
+  # tema del grupo (el reto solo exige que la relación esté sustentada y que USGS se use solo para hechos sísmicos). Una regla sin tema no
+  # compite con las del tema (no hay ambigüedad): suma su contexto aparte, y nunca es el vínculo principal.
   sismos:
-    tema: eventos_naturales
     terminos: [sismo, sismos, sismico, sismica, temblor, temblores, terremoto]
     fuente: usgs
     relacion: evento
@@ -132,9 +146,20 @@ reglas_vinculo:
     relacion: indirecta
     limitacion: "Series agregadas del sistema bancario; no describen una entidad ni un cliente, ni miden una calificación de riesgo ni una pérdida."
 
-vinculos_por_tema:                  # sin regla disparada, el vínculo del tema
-  logistica:
+  # D-127: el vínculo por tema (todo grupo de logística recibía las exportaciones) se retiró: forzaba la relación con la ley del
+  # presupuesto del Canal, la muerte de un capitán de remolcador o el GNL de EE. UU. Ahora la logística se vincula con las
+  # exportaciones solo si un titular habla de exportaciones, comercio exterior o carga en contenedores (TEU). «Canal» y «carga» sueltos
+  # NO son evidencia: «carga» es todo el tema de Logística/Canal (guia_temas.md) y no distingue exportaciones de importaciones o de tránsito.
+  exportaciones_logistica:
+    tema: logistica
+    terminos: [exportacion, exportaciones, comercio exterior, contenedor, contenedores, contenerizada, contenerizadas, contenerizado, teu, teus]
+    # D-129: el indicador es de Panamá, así que el titular debe nombrar a Panamá o a un actor/lugar panameño del comercio exterior, y no
+    # atribuir las exportaciones a otro país («Exportaciones chinas sostienen la demanda de carga contenerizada pese a la debilidad de EE. UU.»).
+    requiere: [panama, panameno, panamena, panamenos, panamenas, zlc, zona libre de colon, balboa, manzanillo, puerto de cristobal,
+               autoridad del canal, acp, mici]
+    exclusiones: [exportaciones chinas, exportaciones de china, exportaciones estadounidenses, exportaciones de ee uu, exportaciones de estados unidos,
+                  exportaciones europeas, exportaciones de la ue, exportaciones japonesas, exportaciones coreanas, exportaciones indias]
     fuente: indicador
     id: NE.EXP.GNFS.ZS
     relacion: indirecta
-    limitacion: "No mide tránsitos ni carga; es solo el contexto de exportaciones como % del PIB, anual."
+    limitacion: "No mide tránsitos ni carga; es solo el contexto de exportaciones de Panamá como % del PIB, anual."

@@ -4,47 +4,61 @@
   "grupos_del_banco_mundial": 69,
   "grupos_delegados_a_otra_fuente": 0,
   "con_vinculo": {
-    "n": 10,
+    "n": 2,
     "de": 69,
-    "proporcion": 0.1449,
+    "proporcion": 0.029,
     "ic95": [
-      0.0807,
-      0.2466
+      0.008,
+      0.0997
     ]
   },
   "sin_vinculo": {
-    "n": 59,
+    "n": 67,
     "de": 69,
-    "proporcion": 0.8551,
+    "proporcion": 0.971,
     "ic95": [
-      0.7534,
-      0.9193
+      0.9003,
+      0.992
     ]
   },
   "sin_vinculo_por_motivo": {
-    "tema_sin_indicador": 59
+    "sin_relacion_sustentada": 47,
+    "tema_sin_indicador": 20
   },
   "con_vinculo_por_relacion": {
-    "directa": 2,
-    "indirecta": 8
+    "directa": 2
   },
   "con_vinculo_por_indicador": {
     "FP.CPI.TOTL.ZG": 1,
-    "NE.EXP.GNFS.ZS": 9
+    "NE.EXP.GNFS.ZS": 1
   },
   "comparacion_con_cifra_del_titular": {},
-  "filas_en_vinculos": 169,
+  "filas_en_vinculos": 89,
   "usgs": {
     "nota": "Eventos de USGS como contexto; no informan daños ni pérdidas. Solo cubre el periodo extraído de USGS (fuentes.yaml).",
-    "grupos_de_sismos": 0,
+    "grupos_de_sismos": 1,
     "vinculados": {
       "n": 0,
-      "de": 0,
-      "proporcion": null,
-      "ic95": null
+      "de": 1,
+      "proporcion": 0.0,
+      "ic95": [
+        0.0,
+        0.7935
+      ]
     },
-    "por_resultado": {},
-    "filas_en_vinculos": 0,
+    "con_contexto_historico": {
+      "n": 1,
+      "de": 1,
+      "proporcion": 1.0,
+      "ic95": [
+        0.2065,
+        1.0
+      ]
+    },
+    "por_resultado": {
+      "contexto_historico": 1
+    },
+    "filas_en_vinculos": 1,
     "eventos_sin_magnitud": 0
   },
   "sbp": {

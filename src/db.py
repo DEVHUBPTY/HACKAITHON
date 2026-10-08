@@ -201,6 +201,8 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("informe", "VARCHAR"),                # informe de la SBP del que sale el dato
         ("pagina", "VARCHAR"),                 # página de origen: hoja y celda del informe
         ("url_fuente", "VARCHAR"),             # URL del archivo descargado
+        # D-127: solo en las filas `usgs` de rol `contexto_historico` (el mayor evento va en `id_evidencia`; el periodo, en `periodo`)
+        ("n_eventos", "INTEGER"),              # eventos del catálogo de USGS con la magnitud mínima en ese periodo
     ],
     "puntajes": [  # E1-10: R, I, U, N, E y P de cada grupo, con la explicación de cada componente (reglas v1.3)
         ("id_grupo", "VARCHAR PRIMARY KEY"),

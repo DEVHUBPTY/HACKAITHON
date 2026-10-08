@@ -37,8 +37,6 @@ def disparadas(tema: str | None, *titulares: str) -> dict[str, str]:
         ("economia", "Fitch mantiene el grado de inversión de Panamá", "banca"),
         ("economia", "El sistema bancario mantiene su cartera estable", "banca"),
         ("servicios_publicos", "Falla el INTERNET en la capital", "telecomunicaciones"),
-        ("eventos_naturales", "Sismo de 4,5 sacude Chiriquí", "sismos"),
-        ("eventos_naturales", "Fuerte Sísmica en el Darién", "sismos"),
     ],
 )
 def test_una_regla_se_dispara_con_su_tema_y_un_termino_sin_importar_acentos_ni_mayusculas(tema: str, titular: str, regla: str) -> None:
@@ -121,9 +119,11 @@ def test_una_regla_disparada_elige_su_vinculo_y_escribe_su_texto() -> None:
     assert regla == "regla inflacion: término «inflacion» en el titular"
 
 
-def test_sin_regla_el_vinculo_es_el_del_tema_o_tema_sin_indicador() -> None:
+def test_sin_regla_no_hay_vinculo_por_tema_sino_el_motivo_que_corresponde() -> None:
+    # D-127: ya no hay vínculo por tema. Un tema con reglas y sin término que las sustente: sin relación sustentada, no se fuerza.
     vinculo, regla, motivo, nombre = contexto.elegir_vinculo("logistica", {}, CFG)
-    assert (vinculo, regla, motivo, nombre) == (CFG.vinculos_por_tema["logistica"], "vinculo_por_tema:logistica", None, None)
+    assert (vinculo, motivo, nombre) == (None, "sin_relacion_sustentada", None)
+    assert "logistica" in regla and "no se fuerza" in regla
     vinculo, regla, motivo, nombre = contexto.elegir_vinculo("turismo", {}, CFG)
     assert (vinculo, motivo, nombre) == (None, "tema_sin_indicador", None) and regla == "sin_vinculo_en_tabla:turismo"
     assert contexto.elegir_vinculo(None, {}, CFG)[1] == "sin_vinculo_en_tabla:sin_tema"
@@ -154,8 +154,17 @@ def test_las_filas_de_vinculo_ya_no_guardan_subtema() -> None:
 
 @pytest.mark.parametrize("regla", ["sismos", "banca"])
 def test_las_reglas_de_usgs_y_sbp_se_delegan_al_modulo_de_su_fuente(regla: str) -> None:
-    tema = REGLAS[regla].tema
+    tema = REGLAS[regla].tema or "eventos_naturales"
     assert contexto.vincular_grupo("GRP-1", tema, {regla: regla}, "t", 2024, [], CFG) is None
+
+
+@pytest.mark.parametrize("tema", ["eventos_naturales", "servicios_publicos", "economia", None])
+@pytest.mark.parametrize("titular", ["Sismo de 4,5 sacude Chiriquí", "Fuerte Sísmica en el Darién", "Evalúan edificios ante sismos"])
+def test_d127_la_regla_de_sismos_no_tiene_tema_y_la_sustenta_un_termino_sismico_literal(tema: str | None, titular: str) -> None:
+    assert REGLAS["sismos"].tema is None
+    assert disparadas(tema, titular) == {}                                    # no compite con las reglas del tema
+    assert list(contexto.reglas_contextuales([titular], CFG)) == ["sismos"]
+    assert contexto.reglas_contextuales(["Inundación en Colón", "Lluvias dejan daños"], CFG) == {}
 
 
 # ------------------------------------------------------------------ sobre la base
@@ -192,22 +201,24 @@ def test_leer_grupos_trae_las_reglas_de_cada_grupo_sin_necesitar_embeddings_ni_s
     finally:
         con.close()
     assert {k: sorted(v["reglas"]) for k, v in grupos.items()} == {
-        "GRP-pib": ["pib"], "GRP-ambiguo": ["inflacion", "pib"], "GRP-otro-tema": [], "GRP-canal": [], "GRP-sismo": ["sismos"], "GRP-vacio": [],
+        "GRP-pib": ["pib"], "GRP-ambiguo": ["inflacion", "pib"], "GRP-otro-tema": [], "GRP-canal": [], "GRP-sismo": [], "GRP-vacio": [],
     }
+    assert {k: sorted(v["contextuales"]) for k, v in grupos.items() if v["contextuales"]} == {"GRP-sismo": ["sismos"]}   # D-127: contexto sin tema
     assert all("subtema" not in g and "criterio_subtema" not in g for g in grupos.values())
 
 
 def test_la_base_guarda_los_vinculos_por_regla_y_ninguna_columna_de_subtema(tmp_path: Path) -> None:
     ruta = _base(tmp_path)
     filas, delegados, total = contexto.aplicar_a_base(ruta, CFG)
-    assert total == 6 and delegados == ["GRP-sismo"]
+    assert total == 6 and delegados == []   # D-127: la regla de sismos no tiene tema; su contexto de USGS lo escribe `aplicar_sismos`
     por_grupo: dict[str, list[dict[str, Any]]] = {}
     for f in filas:
         por_grupo.setdefault(f["id_grupo"], []).append(f)
     assert {f["motivo_sin_vinculo"] for f in por_grupo["GRP-pib"]} == {"sin_dato_en_periodo"}      # no hay indicadores en la base sintética
     assert [f["motivo_sin_vinculo"] for f in por_grupo["GRP-ambiguo"]] == ["candidatos_ambiguos"]
     assert [f["motivo_sin_vinculo"] for f in por_grupo["GRP-otro-tema"]] == ["tema_sin_indicador"]
-    assert [f["regla"] for f in por_grupo["GRP-canal"]] == ["sin_dato_en_periodo:NE.EXP.GNFS.ZS"]  # el vínculo por tema de logística
+    assert [f["motivo_sin_vinculo"] for f in por_grupo["GRP-canal"]] == ["sin_relacion_sustentada"]   # D-127: «Canal» solo no sustenta exportaciones
+    assert [f["motivo_sin_vinculo"] for f in por_grupo["GRP-sismo"]] == ["tema_sin_indicador"]       # eventos_naturales no tiene reglas de indicador
     assert [f["motivo_sin_vinculo"] for f in por_grupo["GRP-vacio"]] == ["tema_sin_indicador"]
     assert all(f["subtema"] is None and f["criterio_subtema"] is None for f in filas)
 
@@ -222,7 +233,7 @@ def test_el_reporte_de_vinculos_ya_no_cuenta_por_subtema(tmp_path: Path) -> None
 def test_el_catalogo_de_temas_no_tiene_subtemas_y_las_reglas_apuntan_a_temas_reales() -> None:
     temas = cargar_temas().temas
     assert len(temas) == 6 and not any(hasattr(t, "subtemas") for t in temas.values())
-    assert {r.tema for r in REGLAS.values()} <= set(temas)
+    assert {r.tema for r in REGLAS.values() if r.tema} <= set(temas)
 
 
 def test_d125_una_fuente_sugerida_guardada_antes_se_lee_con_origen_tema() -> None:

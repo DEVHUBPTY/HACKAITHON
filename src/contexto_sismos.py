@@ -11,6 +11,10 @@ Un evento de USGS es **contexto** de la noticia, nunca prueba de daños ni de ca
   nunca se sustituye una por otra en silencio. Sin ninguna fecha: ``sin_dato_en_periodo``.
 * **Resultado:** un candidato → ``vinculado``; varios → ``candidatos_ambiguos`` (se listan todos, ninguno se elige);
   ninguno → ``sin_evento_coincidente``; noticias fuera del periodo extraído → ``fuera_de_cobertura``.
+* **Contexto histórico (D-127):** si el titular nombra un sismo (término literal de la regla ``sismos``, sin importar el tema) y
+  ningún evento coincide con la fecha de la noticia (o la noticia es de otro periodo, como siempre ocurre con el catálogo fijo de
+  2024), ``contexto_historico`` resume el catálogo extraído: cuántos eventos de magnitud mínima hubo y el mayor, con su ``SIS-`` y
+  su ``place`` tal como los da USGS. Es relación ``indirecta``: no es el evento de la noticia y no cuenta como dato oficial en E.
 * **Cobertura:** de ``usgs.starttime`` a ``usgs.endtime`` de ``fuentes.yaml`` (UTC). Las noticias fuera del periodo no se
   comparan; si todas están fuera, el motivo es ``fuera_de_cobertura``.
 
@@ -46,6 +50,8 @@ CANDIDATOS_AMBIGUOS = "candidatos_ambiguos"
 SIN_EVENTO = "sin_evento_coincidente"
 FUERA_DE_COBERTURA = "fuera_de_cobertura"
 SIN_DATO_EN_PERIODO = "sin_dato_en_periodo"
+CONTEXTO_HISTORICO = "contexto_historico"   # D-127: no hay evento coincidente; el catálogo del periodo extraído va como contexto
+ESTADOS_DE_EVENTO = (VINCULADO, CANDIDATOS_AMBIGUOS)   # resultados en que algún evento coincide con la noticia
 
 
 # ------------------------------------------------------------------ datos
@@ -87,10 +93,13 @@ class ResultadoSismos:
     origenes_fecha: tuple[str, ...]         # de qué campo salió cada fecha usada: ``publicacion`` o ``deteccion``
     regla: str
     limitacion: str
+    n_eventos: int | None = None            # solo en ``contexto_historico``: eventos del catálogo con magnitud mínima
+    periodo: str | None = None              # solo en ``contexto_historico``: periodo del catálogo (p. ej. ``2024``)
+    mayor: EventoUsgs | None = None         # solo en ``contexto_historico``: el evento de mayor magnitud
 
     @property
     def motivo_sin_vinculo(self) -> str | None:
-        return None if self.estado == VINCULADO else self.estado
+        return None if self.estado in (VINCULADO, CONTEXTO_HISTORICO) else self.estado
 
 
 # ------------------------------------------------------------------ carga
@@ -205,6 +214,33 @@ def vincular_grupo(
     return resultado(VINCULADO if len(candidatos) == 1 else CANDIDATOS_AMBIGUOS, candidatos)
 
 
+def periodo_del_catalogo(fuentes: ConfigFuentes) -> str:
+    """Periodo que cubrió la extracción como texto: ``2024`` si cabe en un año; si no, ``AAAA-MM-DD a AAAA-MM-DD`` (UTC)."""
+    inicio, fin = cobertura(fuentes)
+    if inicio.year == fin.year:
+        return str(inicio.year)
+    return f"{inicio:%Y-%m-%d} a {fin:%Y-%m-%d}"
+
+
+def contexto_historico(
+    id_grupo: str, regla_vinculo: str, eventos: Sequence[EventoUsgs], vinculos: ConfigVinculos, fuentes: ConfigFuentes
+) -> ResultadoSismos:
+    """D-127: catálogo de USGS del periodo extraído como contexto de un titular que nombra un sismo (sin evento coincidente).
+
+    Cuenta los eventos con magnitud (los nulos no se cuentan ni se rellenan) de al menos ``usgs.minmagnitude`` y toma el mayor
+    (empate: el más antiguo y luego el menor ID). Sin ningún evento no hay contexto: ``sin_evento_coincidente``.
+    """
+    ch = vinculos.sismos.contexto_historico
+    periodo = periodo_del_catalogo(fuentes)
+    validos = [e for e in eventos if e.magnitud is not None and e.magnitud >= fuentes.usgs.minmagnitude]
+    limitacion = " ".join(x.format(periodo=periodo) for x in ch.limitaciones)
+    if not validos:
+        return ResultadoSismos(id_grupo, SIN_EVENTO, (), (), _regla(vinculos, fuentes, ()), limitacion)
+    mayor = min(validos, key=lambda e: (-(e.magnitud or 0.0), e.hora_utc, e.id))
+    regla = ch.plantilla_regla.format(regla=regla_vinculo, periodo=periodo, magnitud_minima=fuentes.usgs.minmagnitude)
+    return ResultadoSismos(id_grupo, CONTEXTO_HISTORICO, (), (), regla, limitacion, n_eventos=len(validos), periodo=periodo, mayor=mayor)
+
+
 # ------------------------------------------------------------------ salida para la tabla ``vinculos``
 
 
@@ -224,6 +260,8 @@ def _fila_base(resultado: ResultadoSismos, tipo: str | None) -> dict[str, Any]:
 def a_filas_vinculo(resultado: ResultadoSismos, vinculos: ConfigVinculos) -> list[dict[str, Any]]:
     """Filas de la tabla ``vinculos`` (``fuente = 'usgs'``, ``rol = 'evento'``).
 
+    * ``contexto_historico`` (D-127): una fila ``indirecta`` con el ``SIS-`` del mayor evento del catálogo, su magnitud, el periodo del
+      catálogo y ``n_eventos``; no es el evento de la noticia.
     * ``vinculado``: una fila con el ``SIS-``, ``tipo = 'evento'`` y ``motivo_sin_vinculo`` nulo.
     * ``candidatos_ambiguos``: una fila por candidato, con ``tipo = 'evento'`` y ``motivo_sin_vinculo =
       candidatos_ambiguos`` (ninguno está elegido; el motivo avisa que no son un vínculo firme).
@@ -231,6 +269,25 @@ def a_filas_vinculo(resultado: ResultadoSismos, vinculos: ConfigVinculos) -> lis
 
     La magnitud va en ``valor``/``unidad``; ``place``, profundidad, hora UTC, estado y URL en sus columnas.
     """
+    if resultado.estado == CONTEXTO_HISTORICO and resultado.mayor is not None:
+        e, ch = resultado.mayor, vinculos.sismos.contexto_historico
+        return [
+            {
+                **_fila_base(resultado, ch.relacion),
+                "rol": ch.rol,
+                "id_evidencia": e.id,
+                "valor": e.magnitud,
+                "unidad": vinculos.sismos.unidad_magnitud,
+                "anio": int(resultado.periodo[:4]) if resultado.periodo and resultado.periodo[:4].isdigit() else None,
+                "periodo": resultado.periodo,
+                "n_eventos": resultado.n_eventos,
+                "place": e.place,
+                "profundidad_km": e.profundidad_km,
+                "hora_utc": e.hora_utc.strftime(vinculos.sismos.formato_hora_utc),
+                "estado_evento": e.estado,
+                "url_evento": e.url,
+            }
+        ]
     if not resultado.candidatos:
         return [_fila_base(resultado, None)]
     filas = []

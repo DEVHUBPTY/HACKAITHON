@@ -9,18 +9,19 @@ poetry run streamlit run app.py -- --demo    # base de demo (data/demo.duckdb, l
 ```
 
 La barra lateral del modo demo lee la tabla de abajo: **mantén el formato** (`| m:ss–m:ss | pantalla | qué se hace | "qué se dice" | plan B |`).
-Los atajos `?caso=<GRP-…|posición>` abren la ficha directamente (ej. `http://localhost:8501/?caso=GRP-da35c3dead`).
+Las pantallas de la barra lateral siguen las siete etapas del reto (PDF sección 3: Cargar, Organizar, Contextualizar, Priorizar, Explicar, Producir, Revisar) y, aparte, la Consulta (D-128).
+Los atajos `?caso=<GRP-…|posición>` abren la ficha (5 · Explicar) directamente (ej. `http://localhost:8501/?caso=GRP-da35c3dead`).
 
 ## Recorrido cronometrado
 
 | Tiempo | Pantalla (atajo) | Qué se hace | Qué se dice | Plan B |
 |---|---|---|---|---|
-| 0:00–0:15 | Calidad | Mostrar el ruido marcado (127 de 221 titulares, con su IC 95 %) y el reporte de carga | "Cargamos el snapshot; lo que no sirve se marca, no se borra." | Captura de Calidad |
-| 0:15–1:00 | Bandeja | Señalar la versión de reglas y el corte del snapshot (hora de Panamá); abrir las 5 primeras filas: P, barras R·I·U·N·E, estado y acción. La #1 (`GRP-84a6b3a04b`) es **Alto + Insuficiente → Investigar ya** | "El puntaje ordena la atención; la evidencia dice si se puede trabajar. Son independientes." | Captura de Bandeja |
-| 1:00–1:30 | Ficha `?caso=GRP-79f3183472` | Abrir *Quién lo reporta*: 20 titulares de 18 medios y **1 procedencia** (Xinhua + Big News Network) | "20 titulares, 18 medios, una sola procedencia: se cuenta una fuente independiente." | Ficha en Markdown (`python -m src.ficha --grupo GRP-79f3183472`) |
+| 0:00–0:15 | 1 · Cargar | Mostrar la arquitectura del prototipo (cada paso con su cuenta real), el ruido marcado (con su IC 95 %) y el reporte de carga | "Cargamos el snapshot; lo que no sirve se marca, no se borra." | Captura de Calidad |
+| 0:15–1:00 | 4 · Priorizar | Señalar la versión de reglas y el corte del snapshot (hora de Panamá); abrir las 5 primeras filas: P, barras R·I·U·N·E, estado y acción. La #1 (`GRP-84a6b3a04b`) es **Alto + Insuficiente → Investigar ya** | "El puntaje ordena la atención; la evidencia dice si se puede trabajar. Son independientes." | Captura de Bandeja |
+| 1:00–1:30 | 5 · Explicar `?caso=GRP-79f3183472` | Abrir *Quién lo reporta*: 20 titulares de 18 medios y **1 procedencia** (Xinhua + Big News Network) | "20 titulares, 18 medios, una sola procedencia: se cuenta una fuente independiente." | Ficha en Markdown (`python -m src.ficha --grupo GRP-79f3183472`) |
 | 1:30–2:00 | Consulta | Preguntar «¿Cuál fue la inflación de Panamá en 2023?»; hacer clic en la cita `IND-PAN-FP.CPI.TOTL.ZG-2023 · valor` (valor con su unidad, **año del dato**, **fecha de extracción**, país, indicador y URL) | "Este dato es del Banco Mundial, anual, de 2023: el sistema no lo presenta como actual." | `python -m src.consulta "…"` |
-| 2:00–2:40 | Ficha `?caso=GRP-da35c3dead` | Titular central, 3 medios, 3 procedencias, **Borrador opcional**; abrir *Qué está respaldado* y hacer clic en una cita `NOT-… · titulo_limpio` | "Cada línea respaldada lleva su cita ID + campo; un titular es una declaración de su medio, no un hecho." | Ficha en Markdown |
-| 2:40–3:20 | Paquete → Revisión | Paquete: el borrador del grupo, leído de la caché (`data/cache_llm/`, sin red). **Aviso:** `GRP-da35c3dead` quedó con `titulares`, `copy_digital` y `guion` vacíos tras recalentar la caché (X45; `docs/reproducibilidad.md`); la tarea E1-12b lo corrige. Revisión: los cinco estados del reto y lo que la persona debe comprobar | "Todo es borrador: el estado máximo es «aprobado como borrador»." | Pantalla de Revisión |
+| 2:00–2:40 | 5 · Explicar `?caso=GRP-da35c3dead` | Titular central, 3 medios, 3 procedencias, **Borrador opcional**; abrir *Qué está respaldado* y hacer clic en una cita `NOT-… · titulo_limpio` | "Cada línea respaldada lleva su cita ID + campo; un titular es una declaración de su medio, no un hecho." | Ficha en Markdown |
+| 2:40–3:20 | 6 · Producir → 7 · Revisar | Paquete: el borrador del grupo, leído de la caché (`data/cache_llm/`, sin red). **Aviso:** `GRP-da35c3dead` quedó con `titulares`, `copy_digital` y `guion` vacíos tras recalentar la caché (X45; `docs/reproducibilidad.md`); la tarea E1-12b lo corrige. Revisar: los cinco estados del reto, lo que la persona debe comprobar y el *Registro en Notion* (crea o actualiza la ficha) | "Todo es borrador: el estado máximo es «aprobado como borrador»." | Pantalla de Revisión |
 | 3:20–4:00 | Consulta | Preguntar «¿Cuál fue el desempleo de Panamá en 2025?» → **abstención** con el último dato disponible (2024: 8.45 %) y qué haría falta | "Si no hay evidencia, se abstiene y dice qué falta." | `python -m src.consulta "…"` |
 
 ## Pruebas dinámicas del jurado
@@ -28,7 +29,8 @@ Los atajos `?caso=<GRP-…|posición>` abren la ficha directamente (ej. `http://
 | Pregunta | Dónde ir |
 |---|---|
 | "¿De dónde proviene esta cifra y de qué año es?" | Consulta de inflación 2023 → clic en la cita `IND-` → país, año del dato, valor con unidad, fecha de extracción (etiquetada) y URL |
-| "Si cinco medios replican la misma agencia, ¿cuántas fuentes independientes cuentas?" | `?caso=GRP-79f3183472` → *Quién lo reporta* → "una" (20 titulares, 18 medios) |
+| "Si cinco medios replican la misma agencia, ¿cuántas fuentes independientes cuentas?" | 2 · Organizar → abrir `GRP-79f3183472` (20 titulares, 18 medios, **1 procedencia**), o `?caso=GRP-79f3183472` → *Quién lo reporta* |
+| "¿A qué dato oficial se relaciona esta noticia, y si no hay relación?" | 3 · Contextualizar → cada vínculo con período, unidad y limitaciones; los grupos sin vínculo dicen «no se fuerza la relación» |
 | "¿Qué pasa sin evidencia o si una fuente intenta cambiar las instrucciones?" | Consulta de abstención (desempleo 2025) · casos con `sospechoso_inyeccion` se muestran como texto, no como instrucción |
 | "Muéstrame en Notion una decisión, una prueba fallida y su corrección" | Notion → Decisiones → Pruebas (estado *Corregido*) |
 

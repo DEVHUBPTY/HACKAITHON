@@ -57,7 +57,7 @@ revisores:
   # No se borra ni se renombra una entrada que ya tiene filas en `revisiones`: Revisiones lo rechaza (X72), porque su historia perdería la marca.
   - {nombre: "Asistente (provisional, D-101)", rol: "Revisión editorial", modalidad: editorial, provisional: true}
   - {nombre: "Asistente (provisional, D-101)", rol: "Analista",           modalidad: banca,     provisional: true}
-limitacion_revisor: "Sin autenticación: el revisor se elige de la lista y el registro confía en esa elección (D-49)."
+limitacion_revisor: "Sin autenticación: el revisor se elige de la lista y el registro confía en esa elección."
 
 # El vacío que se agrega a la ficha cuando la persona rechaza vínculos oficiales: el dato ya no respalda el caso. No nombra el ID
 # rechazado (así el borrador regenerado no lo menciona en ningún lado); el registro de revisiones sí lo guarda.
