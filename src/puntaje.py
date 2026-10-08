@@ -170,8 +170,6 @@ def pertenencia_de(
     """
     valores = reglas.relevancia.pertenencia_tematica
     principales = sorted({str(m["tema_clasificado"]) for m in miembros if m.get("tema_clasificado") in temas})
-    if tema_grupo in temas:   # el tema del grupo cuenta como principal
-        principales = sorted({*principales, str(tema_grupo)})
     secundarios = sorted({str(m["tema_secundario"]) for m in miembros if m.get("tema_secundario") in temas} - set(principales))
     if principales:
         valor, motivo, coinciden = valores.tema_principal, "tema_principal", principales
