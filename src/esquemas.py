@@ -469,8 +469,10 @@ class Respaldado(ModeloFicha):
             raise ValueError("lo que dicen los titulares son declaraciones")
         if any(not c.id.startswith("GRP-") for x in self.reportes for c in x.citas):
             raise ValueError("un conteo cita al grupo")
-        if any(not c.id.startswith(("IND-", "SBP-")) for x in (*self.datos_oficiales, *self.contexto_oficial) for c in x.citas):
+        if any(not c.id.startswith(("IND-", "SBP-")) for x in self.datos_oficiales for c in x.citas):
             raise ValueError("un dato oficial cita un indicador")
+        if any(not c.id.startswith(("IND-", "SBP-", "SIS-")) for x in self.contexto_oficial for c in x.citas):   # D-127: SIS- = contexto histórico de USGS
+            raise ValueError("el contexto oficial cita un indicador, una serie de la SBP o el sismo mayor del catálogo de USGS")
         if any(not c.id.startswith("SIS-") for x in self.eventos_oficiales for c in x.citas):
             raise ValueError("un evento oficial cita un sismo")
         return self

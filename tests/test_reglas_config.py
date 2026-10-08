@@ -201,7 +201,8 @@ def test_vinculos_apuntan_a_indicadores_de_fuentes_y_a_usgs() -> None:
     assert v.reglas_vinculo["sismos"].fuente == "usgs" and v.reglas_vinculo["sismos"].id is None
     assert v.reglas_vinculo["inflacion"].id == "FP.CPI.TOTL.ZG"
     assert all(x.limitacion for x in v.reglas_vinculo.values())
-    assert all(x.terminos and x.tema in cargar_temas().temas for x in v.reglas_vinculo.values())
+    assert all(x.terminos and (x.tema is None or x.tema in cargar_temas().temas) for x in v.reglas_vinculo.values())
+    assert [n for n, x in v.reglas_vinculo.items() if x.tema is None] == ["sismos"]    # D-127: la única regla sin tema es el contexto de USGS
 
 
 def test_vinculo_con_relacion_no_declarada_falla(tmp_path: Path) -> None:

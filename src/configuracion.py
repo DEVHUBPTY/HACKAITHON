@@ -842,7 +842,7 @@ class ReglaVinculo(Vinculo):
     ``exclusiones``.
     """
 
-    tema: str
+    tema: str | None = None   # D-127: sin tema = regla de contexto que no compite con las del tema (hoy, `sismos`); exige relación `evento`
     terminos: list[str] = Field(min_length=1)
     patrones: list[str] = Field(default_factory=list)   # expresiones regulares sobre texto sin tildes ni mayúsculas
     exclusiones: list[str] = Field(default_factory=list)
@@ -851,6 +851,8 @@ class ReglaVinculo(Vinculo):
     def _listas_validas(self) -> ReglaVinculo:
         if any(not x.strip() for x in (*self.terminos, *self.exclusiones)):
             raise ValueError("terminos y exclusiones: palabras no vacías")
+        if self.tema is None and self.relacion != "evento":
+            raise ValueError("una regla sin tema solo puede ser de relación `evento` (contexto de USGS)")
         for patron in self.patrones:
             try:
                 re.compile(patron)
@@ -864,12 +866,30 @@ class TextosReglaVinculo(ModeloConfig):
 
     disparada: str    # lleva {regla} y {termino}
     ambigua: str      # lleva {tema} y {reglas}
+    sin_relacion: str  # D-127: lleva {tema}
 
     @model_validator(mode="after")
     def _marcadores(self) -> TextosReglaVinculo:
-        for texto, marcas in ((self.disparada, ("{regla}", "{termino}")), (self.ambigua, ("{tema}", "{reglas}"))):
+        for texto, marcas in ((self.disparada, ("{regla}", "{termino}")), (self.ambigua, ("{tema}", "{reglas}")), (self.sin_relacion, ("{tema}",))):
             if any(m not in texto for m in marcas):
                 raise ValueError(f"textos_regla: falta alguno de {marcas} en {texto!r}")
+        return self
+
+
+class ContextoHistoricoSismos(ModeloConfig):
+    """D-127: el catálogo de USGS como contexto histórico (no coincide con la fecha de la noticia). Lleva {periodo} en sus textos."""
+
+    rol: str = Field(min_length=1)
+    relacion: str = Field(min_length=1)
+    plantilla_regla: str
+    limitaciones: list[str] = Field(min_length=3)
+
+    @model_validator(mode="after")
+    def _marcadores(self) -> ContextoHistoricoSismos:
+        if not all(m in self.plantilla_regla for m in ("{regla}", "{periodo}", "{magnitud_minima}")):
+            raise ValueError("contexto_historico.plantilla_regla debe llevar {regla}, {periodo} y {magnitud_minima}")
+        if not any("{periodo}" in x for x in self.limitaciones):
+            raise ValueError("contexto_historico.limitaciones: alguna debe decir el {periodo}")
         return self
 
 
@@ -884,6 +904,7 @@ class SismosVinculo(ModeloConfig):
     plantilla_regla: str
     nota_fecha_deteccion: str
     limitaciones: list[str] = Field(min_length=1)
+    contexto_historico: ContextoHistoricoSismos
 
     @field_validator("zona_horaria")
     @classmethod
@@ -984,13 +1005,13 @@ class ConfigVinculos(ModeloConfig):
     tipos_relacion: dict[str, str]
     motivos_sin_vinculo: list[str]
     motivo_por_defecto: str
+    motivo_sin_relacion: str
     ventana_coincidencia_dias: int = Field(ge=0)
     pais_por_defecto: str
     textos_regla: TextosReglaVinculo
     sismos: SismosVinculo
     sbp: SbpVinculo
-    reglas_vinculo: dict[str, ReglaVinculo]  # D-125: tema + términos; el nombre es solo un identificador
-    vinculos_por_tema: dict[str, Vinculo]  # sin regla disparada, el vínculo del tema
+    reglas_vinculo: dict[str, ReglaVinculo]  # D-125: tema + términos; el nombre es solo un identificador. D-127: sin vínculo por tema
     tendencia_anios: int = Field(ge=1)
     indicadores_solo_contexto: list[str]
     palabras_prohibidas: list[str]
@@ -1001,14 +1022,16 @@ class ConfigVinculos(ModeloConfig):
     def _relaciones_declaradas(self) -> ConfigVinculos:
         if self.motivo_por_defecto not in self.motivos_sin_vinculo:
             raise ValueError("motivo_por_defecto debe estar en motivos_sin_vinculo")
-        malas = {v.relacion for v in (*self.reglas_vinculo.values(), *self.vinculos_por_tema.values())} - set(self.tipos_relacion)
+        if self.motivo_sin_relacion not in self.motivos_sin_vinculo:
+            raise ValueError("motivo_sin_relacion debe estar en motivos_sin_vinculo")
+        malas = {v.relacion for v in (*self.reglas_vinculo.values(), self.sismos.contexto_historico)} - set(self.tipos_relacion)
         if malas:
             raise ValueError(f"relaciones no declaradas en tipos_relacion: {sorted(malas)}")
         return self
 
     @model_validator(mode="after")
     def _poblacion_no_va_sola(self) -> ConfigVinculos:
-        todos = (*self.reglas_vinculo.values(), *self.vinculos_por_tema.values())
+        todos = self.reglas_vinculo.values()
         solos = {v.id for v in todos} & set(self.indicadores_solo_contexto)
         if solos:
             raise ValueError(f"indicadores solo de contexto no pueden vincularse solos: {sorted(solos)}")
@@ -1016,7 +1039,7 @@ class ConfigVinculos(ModeloConfig):
 
     @model_validator(mode="after")
     def _textos_sin_palabras_prohibidas(self) -> ConfigVinculos:
-        textos = [v.limitacion for v in (*self.reglas_vinculo.values(), *self.vinculos_por_tema.values())]
+        textos = [v.limitacion for v in self.reglas_vinculo.values()] + self.sismos.contexto_historico.limitaciones
         textos += [*self.notas.model_dump().values(), *self.cifra_titular.etiquetas.model_dump().values()]
         for palabra in self.palabras_prohibidas:
             patron = re.compile(rf"\b{re.escape(palabra)}\b", re.IGNORECASE)
@@ -1266,14 +1289,11 @@ def validar_coherencia(carpeta: Path | None = None) -> list[str]:
     if set(reglas.impacto.alcance_tema) != set(temas.temas):
         dif = set(reglas.impacto.alcance_tema) ^ set(temas.temas)
         problemas.append(f"alcance_tema y temas de temas.yaml difieren: {sorted(dif)}")
-    ajenas = {r.tema for r in vinculos.reglas_vinculo.values()} - set(temas.temas)
+    ajenas = {r.tema for r in vinculos.reglas_vinculo.values() if r.tema} - set(temas.temas)
     if ajenas:
         problemas.append(f"vinculos.yaml: temas inexistentes en reglas_vinculo: {sorted(ajenas)}")
-    sin_tema = set(vinculos.vinculos_por_tema) - set(temas.temas)
-    if sin_tema:
-        problemas.append(f"vinculos.yaml: temas inexistentes en vinculos_por_tema: {sorted(sin_tema)}")
     indicadores = set(cargar_fuentes(carpeta).banco_mundial.indicadores)
-    for nombre, v in (*vinculos.reglas_vinculo.items(), *vinculos.vinculos_por_tema.items()):
+    for nombre, v in vinculos.reglas_vinculo.items():
         if v.fuente == "indicador" and v.id not in indicadores:
             problemas.append(f"vinculos.yaml: {nombre} usa el indicador {v.id}, que no está en fuentes.yaml")
     if (carpeta / "prioridad.yaml").exists() and (carpeta / "interfaz.yaml").exists():

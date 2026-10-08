@@ -61,7 +61,7 @@ from src.configuracion import (
     cargar_verificacion,
     cargar_vinculos,
 )
-from src.contexto import reglas_disparadas
+from src.contexto import reglas_contextuales, reglas_disparadas
 from src.embeddings import Embeddings, crear
 from src.esquemas import (
     ETIQUETA_BORRADOR,
@@ -226,7 +226,10 @@ def elegir_titular_central(miembros: Sequence[Mapping[str, Any]], vectores: np.n
 def _regla_de_vinculo(datos: Datos) -> str | None:
     """Nombre de la única regla interna de vínculo (D-125) que disparan los titulares del grupo; ``None`` si no hay o hay varias."""
     titulares = [str(n.get("titulo_limpio") or n.get("titulo") or "") for n in datos.noticias]
-    disparadas = reglas_disparadas(titulares, datos.grupo.get("tema_clasificado"), cargar_vinculos())
+    cfg = cargar_vinculos()
+    disparadas = reglas_disparadas(titulares, datos.grupo.get("tema_clasificado"), cfg)
+    if not disparadas:   # D-127: sin regla del tema, la regla de contexto sísmico (sin tema) también sugiere sus fuentes
+        disparadas = reglas_contextuales(titulares, cfg)
     return next(iter(disparadas)) if len(disparadas) == 1 else None
 
 
@@ -469,6 +472,28 @@ def _lineas_de_sbp(filas: Sequence[Mapping[str, Any]], cfg: ConfigVerificacion) 
     ]
 
 
+def _lineas_de_sismos_historicos(filas: Sequence[Mapping[str, Any]], cfg: ConfigVerificacion) -> list[LineaRespaldo]:
+    """D-127: una línea por contexto sísmico histórico de USGS: periodo del catálogo, cuántos eventos, el mayor (magnitud, lugar tal como lo da la fuente).
+
+    Todo dato lleva su periodo y su unidad; la limitación (caja regional, periodo distinto del de la noticia, solo hechos sísmicos) va aparte.
+    """
+    p, fuentes = cfg.presentacion, cargar_fuentes()
+    return [
+        LineaRespaldo(
+            tipo="hecho",
+            texto=(
+                f"{p.fuentes_oficiales.get(str(v['fuente']), str(v['fuente']))} · {p.roles.get(str(v['rol']), str(v['rol']))}: "
+                f"{v['n_eventos']} eventos de magnitud mínima {fuentes.usgs.minmagnitude} en la caja regional durante {v['periodo']}; "
+                f"el mayor, magnitud {_numero(float(v['valor']), cfg)}, lugar «{v.get('place') or SIN_DATO}» (tal como lo da la fuente)"
+            ),
+            citas=[Cita(id=str(v["id_evidencia"]), campo="magnitude")],
+            limitacion=v.get("limitacion"),
+            fecha=v.get("hora_utc"),
+        )
+        for v in sorted(filas, key=lambda v: str(v["id_evidencia"]))
+    ]
+
+
 def _respaldado(datos: Datos, titulares: list[TitularReportado], cfg: ConfigVerificacion) -> Respaldado:
     g, p = datos.grupo, cfg.presentacion
     id_grupo = str(g["id_grupo"])
@@ -493,7 +518,8 @@ def _respaldado(datos: Datos, titulares: list[TitularReportado], cfg: ConfigVeri
     sbp = [v for v in datos.vinculos if _tiene_dato(v) and v.get("fuente") == FUENTE_SBP]
     # X91: la SBP se muestra siempre, pero solo mide el hecho si su relación es aceptada; si es `indirecta` va aparte, como contexto
     datos_oficiales = _lineas_de_indicadores(indicadores, cfg) + _lineas_de_sbp([v for v in sbp if v.get("tipo") in aceptadas], cfg)
-    contexto_oficial = _lineas_de_sbp([v for v in sbp if v.get("tipo") not in aceptadas], cfg)
+    historicos = [v for v in datos.vinculos if _tiene_dato(v) and v.get("fuente") == "usgs" and v.get("tipo") not in aceptadas]
+    contexto_oficial = _lineas_de_sbp([v for v in sbp if v.get("tipo") not in aceptadas], cfg) + _lineas_de_sismos_historicos(historicos, cfg)
     eventos = [
         LineaRespaldo(
             tipo="hecho",
