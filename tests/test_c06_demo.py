@@ -109,6 +109,20 @@ def test_la_demo_es_el_snapshot_mas_el_caso_sin_cambiar_los_grupos_reales(demo, 
         copia.close()
 
 
+def test_el_caso_sintetico_no_altera_el_puntaje_de_los_grupos_reales(demo, grupo_sintetico) -> None:
+    """Auditoría: N, P y el orden de los grupos reales en la demo son los de la base viva; el sintético tiene su propio puntaje."""
+    consulta = "SELECT id_grupo, puntaje, novedad, posicion FROM puntajes ORDER BY posicion"
+    real, copia = duckdb.connect(str(SNAPSHOT), read_only=True), duckdb.connect(str(demo), read_only=True)
+    try:
+        viva, en_demo = real.execute(consulta).fetchall(), copia.execute(consulta).fetchall()
+    finally:
+        real.close()
+        copia.close()
+    reales = [f for f in en_demo if f[0] != grupo_sintetico]
+    assert [(g, p, n) for g, p, n, _ in reales] == [(g, p, n) for g, p, n, _ in viva]      # mismo P, mismo N y mismo orden relativo
+    assert any(f[0] == grupo_sintetico and f[1] is not None for f in en_demo)
+
+
 def test_preparar_es_idempotente(demo, grupo_sintetico, tmp_path) -> None:
     segunda = tmp_path / "demo.duckdb"
     preparar_demo.preparar(segunda)

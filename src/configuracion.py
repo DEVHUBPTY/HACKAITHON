@@ -2864,11 +2864,10 @@ class NavegacionInterfaz(ModeloConfig):
     caso_de_uso: str = Field(min_length=1)
     anterior: str = Field(min_length=1)
     siguiente: str = Field(min_length=1)
-    ayuda_paso: str = Field(min_length=1)
 
     @model_validator(mode="after")
     def _marcadores(self) -> NavegacionInterfaz:
-        for campo in ("anterior", "siguiente", "ayuda_paso"):
+        for campo in ("anterior", "siguiente"):
             if "{titulo}" not in getattr(self, campo):
                 raise ValueError(f"navegacion.{campo} debe llevar {{titulo}}")
         return self

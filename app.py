@@ -84,8 +84,7 @@ def indicador_de_etapas(ctx: ui.Contexto, clave: str) -> None:
         with col:
             st.button(
                 e.titulo, key=f"paso_{e.clave}", on_click=ir_a, args=(e.clave,), width="stretch", type="primary" if e.clave == clave else "secondary",
-                help=ctx.cfg.navegacion.ayuda_paso.format(titulo=e.titulo),
-            )
+            )   # sin `help`: el globo de ayuda queda colgado al pie de la pantalla nueva tras el clic
 
 
 def encabezado(ctx: ui.Contexto, clave: str) -> None:
@@ -1119,11 +1118,11 @@ def barra_lateral(cfg: Any, demo: bool) -> str:
         st.radio("Etapas del reto", list(etapas), format_func=etapas.get, key="pantalla_etapa", index=None, on_change=elegir_etapa)
         st.divider()
         for p in (x for x in cfg.pantallas if x.separada):
-            st.button(p.titulo, key=f"pantalla_{p.clave}", on_click=ir_a, args=(p.clave,), type="primary" if actual == p.clave else "secondary", width="stretch", help=p.descripcion)
+            st.button(p.titulo, key=f"pantalla_{p.clave}", on_click=ir_a, args=(p.clave,), type="primary" if actual == p.clave else "secondary", width="stretch")
         if demo:
             st.subheader("Guion de la demo")
             for p in ui.leer_guion(cfg):
-                st.markdown(f"**{escapar_markdown(p.tiempo)}** · {escapar_markdown(p.pantalla)}  \n{escapar_markdown(p.accion)}")
+                st.markdown(f"**{escapar_markdown(p.tiempo)}** · {p.pantalla}  \n{p.accion}")      # texto del repo (docs/demo.md): su Markdown (negritas, código) se muestra
     return modalidad
 
 
@@ -1163,7 +1162,11 @@ def main() -> None:
     origen = ruta
     estado_base = ruta.stat()
     with st.spinner(f"Calculando los puntajes de {cargar_modalidad(previa).nombre}…"):     # D-132: la base guarda una modalidad; la otra se calcula en una copia de sesión
-        ruta = Path(base_de_sesion(str(ruta), previa, (estado_base.st_size, estado_base.st_mtime_ns)))
+        try:
+            ruta = Path(base_de_sesion(str(ruta), previa, (estado_base.st_size, estado_base.st_mtime_ns)))
+        except Exception:      # noqa: BLE001  borde de la interfaz: si la copia no se puede armar, la app sigue con la base tal cual y dice qué falta
+            logging.getLogger(__name__).exception("no se pudo armar la copia de sesión de %s", previa)
+            st.warning(cfg.textos.sin_puntajes.format(modalidad=previa))
     con = abrir_base(str(ruta)).cursor()
     revisiones = rv.Revisiones(ruta_rev, ruta, demo=demo, huellas=rv.huellas_de_exportacion(demo))  # aparte: la base de las pantallas es de solo lectura
     aplicar_atajo(cfg, ui.leer_bandeja(con, previa, nombres), revisiones)      # antes de crear los widgets: así puede fijar la pantalla

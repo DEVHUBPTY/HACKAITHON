@@ -136,7 +136,6 @@ navegacion:                         # D-131: indicador de etapas, bloque de guí
   caso_de_uso: "Caso de uso que se demuestra aquí"
   anterior: "Etapa anterior: {titulo}"
   siguiente: "Siguiente: {titulo}"
-  ayuda_paso: "Ir a {titulo}"
 
 estilo:                             # D-131: sistema visual claro y editorial. El tema base está en .streamlit/config.toml y debe coincidir (lo vigila una prueba)
   acento: "#0E7C86"                 # petróleo: lo único con acento (secuencia, etapa actual y botones principales)

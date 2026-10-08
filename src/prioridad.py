@@ -53,6 +53,7 @@ from src.contradicciones import Contradiccion
 from src.embeddings import Embeddings, crear
 from src.evidencia import Evidencia, accion_recomendada, evaluar_evidencia
 from src.llm.proveedor import ErrorProveedor, Proveedor, crear_proveedor
+from src.normalizacion import es_id_sintetico
 from src.puntaje import EntradaGrupo, Puntaje, calcular_puntajes
 from src.registro import configurar_logging
 
@@ -183,6 +184,7 @@ def leer_entradas(
         filas_vinculos = modalidad.filtrar_vinculos(filas_vinculos)
     oficial, motivos = _oficial_por_grupo(filas_vinculos, cfg.dato_oficial.relaciones_aceptadas)
     hallazgos = _hallazgos_de_vinculos(filas_vinculos, cfg, cargar_vinculos().cifra_titular.etiquetas)
+    prefijos_sinteticos = cargar_normalizacion().noticias.prefijos_sinteticos
     entradas = []
     for g in grupos:
         id_grupo = str(g["id_grupo"])
@@ -195,6 +197,7 @@ def leer_entradas(
                 miembros=miembros,
                 vectores=np.stack([vectores[posicion[str(m["id_noticia"])]] for m in miembros]),
                 tema=temas.get(id_grupo),
+                sintetico=bool(miembros) and all(es_id_sintetico(m.get("id_noticia"), prefijos_sinteticos) for m in miembros),
                 n_procedencias=n_procedencias[id_grupo],
                 tiene_oficial=oficial.get(id_grupo, False),
                 motivo_sin_oficial=motivos.get(id_grupo),

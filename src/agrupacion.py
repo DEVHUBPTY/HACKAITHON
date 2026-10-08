@@ -49,6 +49,7 @@ from src.configuracion import (
     cargar_reglas,
 )
 from src.embeddings import Embeddings, crear, fijar_semilla
+from src.normalizacion import es_id_sintetico
 from src.procedencias import Procedencia, dominio_normalizado, estimar_procedencias
 from src.registro import configurar_logging
 
@@ -213,8 +214,11 @@ def construir_grupos(
     vectores: np.ndarray,
     reglas: ReglasV13,
     proc: ConfigProcedencias,
+    prefijos_sinteticos: Sequence[str] = (),
 ) -> list[Grupo]:
     """Agrupa ``filas`` (titulares que no son ruido, con ``vectores`` en el mismo orden) y estima sus procedencias.
+
+    Los titulares sintéticos (ID con alguno de ``prefijos_sinteticos``, C-06) se agrupan aparte: nunca se mezclan con los reales.
 
     El tema del grupo es el dominante entre sus titulares (D-125 quitó la corrección por subtema nombrado de D-122). Falla con ``SinCalibrar`` si ``umbral_similitud`` es ``null``. Verifica que cada titular quede en un solo grupo.
     """
@@ -229,7 +233,13 @@ def construir_grupos(
     iso = [fecha_iso_de(f, campos) for f in filas]
     origen = [origen_de_fecha(f, campos) for f in filas]
     grupos: list[Grupo] = []
-    for indices in agrupar_indices(vectores, fechas, ids, umbral, reglas.agrupacion.ventana_dias):
+    todos = list(range(len(ids)))
+    clases = [[i for i in todos if es_id_sintetico(ids[i], prefijos_sinteticos) == sintetico] for sintetico in (False, True)]
+    por_clase = [
+        [[clase[k] for k in g] for g in agrupar_indices(vectores[clase], [fechas[i] for i in clase], [ids[i] for i in clase], umbral, reglas.agrupacion.ventana_dias)]
+        for clase in clases if clase
+    ]
+    for indices in sorted((g for clase in por_clase for g in clase), key=lambda g: ids[g[0]]):
         miembros = [filas[i] for i in indices]
         fechadas = [i for i in indices if fechas[i] is not None]
         primera = min(fechadas, key=lambda i: fechas[i]) if fechadas else -1
@@ -320,7 +330,7 @@ def aplicar_a_base(
             raise RuntimeError(f"{len(sin_limpiar)} noticias sin limpiar: ejecute `poetry run python -m src.limpieza`")
         utiles = [f for f in todas if not f["es_ruido"]]
         vectores = codificar_titulares(utiles, emb, reglas.agrupacion.usar_descripcion)
-        grupos = construir_grupos(utiles, vectores, reglas, proc)
+        grupos = construir_grupos(utiles, vectores, reglas, proc, cargar_normalizacion().noticias.prefijos_sinteticos)
         filas_grupos, filas_proc, asignaciones = _filas_de_grupos(grupos, estimado=True)
         con.begin()
         try:

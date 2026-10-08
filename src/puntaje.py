@@ -91,6 +91,7 @@ class EntradaGrupo:
     periodos_distintos: tuple[str, ...] = ()     # IDs de datos oficiales de otro período que la cifra de un titular
     eventos_sin_revisar: tuple[str, ...] = ()    # IDs de eventos oficiales con estado automático
     tema: str | None = None                      # ``tema_clasificado`` del grupo: lo usa el alcance por sector de la modalidad (E2-01)
+    sintetico: bool = False                      # todos sus titulares son sintéticos (C-06, ``SYN-``): nunca cuentan como grupo anterior de uno real
 
 
 @dataclass(frozen=True)
@@ -432,7 +433,9 @@ def _similitudes_maximas(
     entradas: Sequence[EntradaGrupo], reglas: ReglasV13
 ) -> list[tuple[float, str, int] | None]:
     """Por grupo: (similitud máxima entre centroides con un grupo que empezó ANTES y dentro de ``novedad.ventana_dias``, ese
-    grupo, cuántos grupos había en la ventana); ``None`` si no hay ninguno (o el grupo no tiene fecha)."""
+    grupo, cuántos grupos había en la ventana); ``None`` si no hay ninguno (o el grupo no tiene fecha).
+
+    Un grupo sintético (C-06) nunca es «anterior» de uno real: los casos de la demo no alteran el puntaje de los casos reales."""
     inicio = [_fecha_de_inicio(e, reglas) for e in entradas]
     ventana = timedelta(days=reglas.novedad.ventana_dias)
     centroides = [_centroide(e) for e in entradas]
@@ -444,6 +447,7 @@ def _similitudes_maximas(
         anteriores = [
             j for j, otro in enumerate(entradas)
             if inicio[j] is not None and (inicio[j], otro.id_grupo) < (inicio[i], e.id_grupo) and inicio[i] - inicio[j] <= ventana
+            and (e.sintetico or not otro.sintetico)
         ]
         if not anteriores:
             continue

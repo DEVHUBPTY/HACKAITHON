@@ -297,8 +297,13 @@ _CAMPOS_NOTICIAS_ENTRADA = [
 ]  # fmt: skip
 
 
+def es_id_sintetico(id_: str | None, prefijos: Sequence[str]) -> bool:
+    """``True`` si el ID empieza con alguno de los prefijos de datos sintéticos (``noticias.prefijos_sinteticos``, C-06)."""
+    return bool(id_) and any(str(id_).startswith(p) for p in prefijos)
+
+
 def _es_sintetico(id_: str | None, config: ConfigNormalizacion) -> bool:
-    return bool(id_) and any(str(id_).startswith(p) for p in config.noticias.prefijos_sinteticos)
+    return es_id_sintetico(id_, config.noticias.prefijos_sinteticos)
 
 
 def _es_recirculada(publicacion: str | None, deteccion: str | None, config: ConfigNormalizacion) -> bool | None:

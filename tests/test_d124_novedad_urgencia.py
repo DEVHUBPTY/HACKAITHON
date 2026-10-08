@@ -89,6 +89,22 @@ def test_una_duplicacion_nunca_sube_n() -> None:
     assert all(_n_del_nuevo(s).valor <= lejos for s in (0.55, 0.65, 0.8, 0.99))
 
 
+def test_un_grupo_sintetico_anterior_no_descuenta_la_novedad_de_uno_real_pero_si_la_suya() -> None:
+    """C-06: los casos sintéticos de la demo nunca alteran el puntaje de los reales; el sintético sí se puntúa (y ve a los reales)."""
+    from dataclasses import replace
+
+    real_previo = entrada("GRP-a-real", [miembro("NOT-p", publicado_hace=100)], vectores=np.stack([vector(1, 0)]))
+    sintetico = replace(entrada("GRP-b-syn", [miembro("SYN-1", publicado_hace=50)], vectores=np.stack([vector(1, 0)])), sintetico=True)
+    real_nuevo = entrada("GRP-c-real", [miembro("NOT-n", publicado_hace=10)], vectores=np.stack([vector(1, 0)]))
+    con = {p.id_grupo: p for p in puntaje.calcular_puntajes([real_previo, sintetico, real_nuevo], REGLAS, CFG, AHORA)}
+    sin = {p.id_grupo: p for p in puntaje.calcular_puntajes([real_previo, real_nuevo], REGLAS, CFG, AHORA)}
+    assert con["GRP-c-real"].componentes["N"].explicacion["grupos_previos"] == 1                  # solo el real anterior
+    assert con["GRP-c-real"].componentes["N"].explicacion["grupo_mas_parecido"] == "GRP-a-real"
+    for g in ("GRP-a-real", "GRP-c-real"):
+        assert con[g].puntaje == sin[g].puntaje and con[g].componentes["N"].valor == sin[g].componentes["N"].valor
+    assert con["GRP-b-syn"].componentes["N"].explicacion["grupo_mas_parecido"] == "GRP-a-real"   # el sintético sí tiene su propio puntaje
+
+
 # ------------------------------------------------------------------ U · fecha imputada
 
 
