@@ -467,6 +467,33 @@ def test_la_revision_provisional_aprueba_o_pide_evidencia_segun_el_estado_y_se_v
     assert linea["revision_provisional"] is True and linea["borrador"] is True
 
 
+def _verificar_rotulo(rev: Revisiones, base: Path, id_caso: str, textos: list[str], fila: dict, provisional: bool):
+    con = db.conectar(base, solo_lectura=True)
+    try:
+        return verificar_ficha(rev.ficha_revisada(id_caso), Resolutor(con, CFG), CFG, id_caso=id_caso, estado_revision=rev.estado(id_caso), textos_extra=textos,
+                               fila_notion=fila, revision_provisional=provisional, marca_provisional=MARCA)
+    finally:
+        con.close()
+
+
+def test_una_revision_humana_pasa_sin_la_marca_provisional(rev, base, tmp_path) -> None:
+    id_h = rev.abrir(h.G_COMPLETO, "editorial", "David Feng").id_caso
+    rev.aceptar(id_h, "David Feng")
+    assert not rev.vigente_provisional(id_h)
+    e = exportar.exportar_caso(rev, id_h, tmp_path / "notion", tmp_path / "fichas.jsonl")
+    r = _verificar_rotulo(rev, base, id_h, [e.markdown, *e.fila.values()], e.fila, provisional=False)
+    assert r.fallos() == [] and r.conteo("revision_provisional_visible") == (1, 1)
+
+
+def test_una_revision_humana_rotulada_como_provisional_es_un_fallo(rev, base, tmp_path) -> None:
+    id_h = rev.abrir(h.G_COMPLETO, "editorial", "David Feng").id_caso
+    rev.aceptar(id_h, "David Feng")
+    e = exportar.exportar_caso(rev, id_h, tmp_path / "notion", tmp_path / "fichas.jsonl")
+    fila = {**e.fila, "Revisor": f"{e.fila.get('Revisor', '')} {MARCA}"}
+    r = _verificar_rotulo(rev, base, id_h, [e.markdown + f"\n{MARCA}\n", *fila.values()], fila, provisional=False)
+    assert r.conteo("revision_provisional_visible") == (0, 1)
+
+
 def test_la_revision_provisional_es_idempotente_y_no_toca_un_caso_que_ya_avanzo(rev, base, tmp_path) -> None:
     id_1, _, _ = _revisar(rev, base, h.G_COMPLETO, "suficiente", tmp_path)
     n = len(rev.historial(id_1))
@@ -510,9 +537,9 @@ def test_los_casos_que_c01_abrio_y_ya_no_elige_se_reabren_y_se_descartan_con_el_
 
 def test_un_caso_con_una_fila_de_una_persona_o_que_no_abrio_c01_no_se_descarta(rev, base, tmp_path) -> None:
     de_persona = _abrir_como_c01(rev, base, h.G_COMPLETO, "suficiente", tmp_path)
-    rev.reabrir(de_persona, "David Fen", "una persona lo retoma")
-    rev.aceptar(de_persona, "David Fen")                       # ya no es la fila provisional la vigente
-    ajeno = rev.abrir(h.G_CIFRAS, "editorial", "David Fen").id_caso     # lo abrió una persona, no esta tarea
+    rev.reabrir(de_persona, "David Feng", "una persona lo retoma")
+    rev.aceptar(de_persona, "David Feng")                       # ya no es la fila provisional la vigente
+    ajeno = rev.abrir(h.G_CIFRAS, "editorial", "David Feng").id_caso     # lo abrió una persona, no esta tarea
     assert cli.retirar_reemplazadas(rev, set(), CFG) == []
     assert rev.estado(de_persona) == "aprobado como borrador" and rev.estado(ajeno) == "en revisión"
 

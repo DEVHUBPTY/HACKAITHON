@@ -1,45 +1,21 @@
 {
   "estado": "medido",
   "k": 5,
-  "origen_juicio": "asistente_provisional (D-101)",
-  "juicio_humano": false,
-  "aviso_origen": "JUICIO PROVISIONAL DEL ASISTENTE, NO HUMANO (D-101): se rehace a mano en C-09; no reportar como juicio de una persona.",
+  "origen_juicio": "humano",
+  "juicio_humano": true,
   "cortes": [
     {
-      "corte": "2026-10-07T00:41:03Z",
-      "candidatos": 60,
+      "corte": "2026-10-08T03:35:18Z",
+      "candidatos": 69,
       "elegidos": [
-        "GRP-1e2c34f6bf",
-        "GRP-4776222797",
-        "GRP-5e6531917f",
-        "GRP-e78a143f9a",
-        "GRP-fcdfc2a3cc"
+        "GRP-1df3ab1e22",
+        "GRP-3a15fc6a18",
+        "GRP-41ed91b93c",
+        "GRP-7ddcf92e16",
+        "GRP-dd7d78a551"
       ],
       "criterio_de_empate": "Empates en el corte: el sistema los resuelve con la regla del reto (P mostrado, luego mayor urgencia, luego ID); el baseline, por ID. Se informa cuántos grupos empatan en el corte y cuántos quedan fuera del top.",
       "sistema": {
-        "k": 1,
-        "n": 5,
-        "proporcion": 0.2,
-        "ic95": [
-          0.0362,
-          0.6245
-        ],
-        "top": [
-          "GRP-21ad932d54",
-          "GRP-038c4f0643",
-          "GRP-5e6531917f",
-          "GRP-84a6b3a04b",
-          "GRP-39dfe8d714"
-        ],
-        "ids_fallidos": [
-          "GRP-21ad932d54",
-          "GRP-038c4f0643",
-          "GRP-84a6b3a04b",
-          "GRP-39dfe8d714"
-        ],
-        "empate_en_el_corte": null
-      },
-      "baseline": {
         "k": 0,
         "n": 5,
         "proporcion": 0.0,
@@ -48,22 +24,45 @@
           0.4345
         ],
         "top": [
-          "GRP-f9e3ba0bd2",
-          "GRP-87e128925b",
-          "GRP-0c210ad795",
-          "GRP-1df3ab1e22",
-          "GRP-0f8fb5a5bb"
+          "GRP-5e6531917f",
+          "GRP-21ad932d54",
+          "GRP-4d8b340bd9",
+          "GRP-a329f4e91e",
+          "GRP-29baaf270e"
         ],
         "ids_fallidos": [
-          "GRP-f9e3ba0bd2",
-          "GRP-87e128925b",
-          "GRP-0c210ad795",
-          "GRP-1df3ab1e22",
-          "GRP-0f8fb5a5bb"
+          "GRP-5e6531917f",
+          "GRP-21ad932d54",
+          "GRP-4d8b340bd9",
+          "GRP-a329f4e91e",
+          "GRP-29baaf270e"
         ],
         "empate_en_el_corte": null
       },
-      "baseline_sin_fecha_publicacion": 25
+      "baseline": {
+        "k": 1,
+        "n": 5,
+        "proporcion": 0.2,
+        "ic95": [
+          0.0362,
+          0.6245
+        ],
+        "top": [
+          "GRP-3a15fc6a18",
+          "GRP-1dc52c45ff",
+          "GRP-50d72e2b04",
+          "GRP-a03bab5b02",
+          "GRP-1627d09497"
+        ],
+        "ids_fallidos": [
+          "GRP-1dc52c45ff",
+          "GRP-50d72e2b04",
+          "GRP-a03bab5b02",
+          "GRP-1627d09497"
+        ],
+        "empate_en_el_corte": null
+      },
+      "baseline_sin_fecha_publicacion": 17
     }
   ],
   "nota": "Los temas de un mismo corte no son independientes: el intervalo es orientativo. No se infiere audiencia, rentabilidad ni reducción de riesgo.",
@@ -72,21 +71,21 @@
   "exploratoria": true,
   "cortes_minimos": 3,
   "sistema": {
-    "k": 1,
-    "n": 5,
-    "proporcion": 0.2,
-    "ic95": [
-      0.0362,
-      0.6245
-    ]
-  },
-  "baseline": {
     "k": 0,
     "n": 5,
     "proporcion": 0.0,
     "ic95": [
       0.0,
       0.4345
+    ]
+  },
+  "baseline": {
+    "k": 1,
+    "n": 5,
+    "proporcion": 0.2,
+    "ic95": [
+      0.0362,
+      0.6245
     ]
   }
 }

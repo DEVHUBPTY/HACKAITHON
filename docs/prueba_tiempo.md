@@ -2,7 +2,9 @@
 
 Mide cuánto tarda una persona en la misma tarea de forma **manual** y **asistida** por la app, y si el sustento de lo que entrega se mantiene. Alimenta el minuto de «valor operativo medido» del pitch (PDF sección 11).
 
-**Estado: protocolo listo, pruebas pendientes.** Pruebas realizadas hasta hoy: **0**. Ningún tiempo de esta página es una medición: los campos de resultados están vacíos a propósito y solo se llenan con tiempos cronometrados de personas reales. No se estiman ni se simulan.
+**Estado: NO MEDIDA (decisión del equipo en C-09, 2026-10-08).** Pruebas realizadas hasta hoy: **0**. Ningún tiempo de esta página es una medición: los campos de resultados están vacíos a propósito y solo se llenan con tiempos cronometrados de personas reales. No se estiman ni se simulan.
+
+**Por qué no se midió.** El diseño no se pudo cumplir con el equipo disponible: quien eligió los 5 temas de Precision@5 no puede participar en ese corte (regla 6) y la base tiene un solo corte vigente (`2026-10-08T03:35:18Z`); quien construyó la app no participa (regla 7); el asistente no puede ser participante (D-101). Quedaba un solo participante elegible, lejos del mínimo de 3 pruebas por condición. El pitch no declara ningún ahorro de tiempo.
 
 **D-101:** esta prueba mide a una persona, así que el asistente **no** la hace ni la sustituye con juicios provisionales; queda pendiente para C-09.
 

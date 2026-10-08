@@ -16,7 +16,7 @@ Regla del PDF: *limitarse a una modalidad y un recorrido convincente antes de a�
 
 ## Qué hace cada área en cada tramo
 
-Las columnas son **áreas de trabajo**, no personas: el equipo (David Fen, Javier Acosta, Juan Zhou) hace de todo y el responsable de cada tarea está en el Backlog de Notion.
+Las columnas son **áreas de trabajo**, no personas: el equipo (David Feng, Javier Acosta, Juan Zhou) hace de todo y el responsable de cada tarea está en el Backlog de Notion.
 
 | Tramo | Datos (D) | IA | Producto (P) |
 |---|---|---|---|

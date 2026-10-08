@@ -1,61 +1,70 @@
-corte,id_grupo,tema,titular,fecha_reciente,seleccion,origen_juicio
-2026-10-07T00:41:03Z,GRP-1e2c34f6bf,Servicios públicos,Pase-U: Largas filas en Changuinola en el segundo día de entrega de tarjetas Punch del Ifarhu,2026-10-06T18:12:50Z,x,asistente_provisional
-2026-10-07T00:41:03Z,GRP-e78a143f9a,Logística/Canal,"Ejecutivo sanciona la Ley 552 del Presupuesto del Canal de Panamá por $5,555 millones",,x,asistente_provisional
-2026-10-07T00:41:03Z,GRP-6e737ecad5,Servicios públicos,MOP solicita $43.1 millones para pagar compromisos y continuar obras en ejecución,2026-10-06T18:57:35Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-ad0e219d38,Servicios públicos,Contenido Exclusivo: Turismo en transporte público,2026-09-29T01:23:06Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-5e6531917f,Servicios públicos,Más de 30 mujeres han muerto de forma violenta en Panamá este año,2026-10-06T01:30:01Z,x,asistente_provisional
-2026-10-07T00:41:03Z,GRP-45aebb27b2,Eventos naturales,"Contenido Exclusivo: Coclé, se seca el campo",2026-10-01T01:31:04Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-9fea8ec754,Economía,Exportaciones de banano superan los $17 millones en junio y marcan recuperación,,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-1083f5e540,Logística/Canal,Inland navigation workers stand with Panama Canal workers after death of tug captain,,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-65d565abd0,Servicios públicos,MiBus responde por filtraciones: lamenta incomodidad de usuarios; afirma que realiza correctivos,2026-10-05T23:39:22Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-276c88e7f3,Regulación,Tribunal Electoral avanza en la coordinación del Plan General del Elecciones de 2029,2026-10-06T22:16:17Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-4776222797,Economía,Cobre Panamá volvería a producir: lo que falta definir es bajo qué modelo,,x,asistente_provisional
-2026-10-07T00:41:03Z,GRP-821afe7eec,Servicios públicos,Chiriquí: Emiten Alerta Amber por desaparición de adolescente de 16 años y su bebé,2026-10-05T20:17:58Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-0dfdd5a021,sin tema,"Trump streicht Europa - Hilfe, lenkt Millionen nach Lateinamerika",,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-cf758ba062,Eventos naturales,Piscina del Parque Omar cierra por reparaciones; trabajos podrían durar hasta un mes,2026-10-05T23:43:40Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-1c2f1d950d,Turismo,Obispos panameños presentarán en Roma la realidad de sus diócesis durante la visita ad limina,2026-10-06T16:48:00Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-551ba86248,Servicios públicos,El abrir para cerrar de la mina de cobre genera dudas y cuestionamientos en el frente ambiental y financiero,,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-d420b7bd51,Regulación,"WP: США перенаправят в Латинскую Америку $52 млн, выделенные на проекты в Европе",,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-d08b11be1c,Servicios públicos,Las manzanas de Sodoma o la ilusión minera,,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-39773bed5a,Servicios públicos,Árbol cae sobre dos vehículos en estacionamientos del hospital San Miguel Arcángel,2026-10-05T22:10:32Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-84a6b3a04b,Servicios públicos,Colegios particulares atribuyen aumento de matrícula a migración al sector oficial y altos costos de operación,2026-10-06T12:41:06Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-5ab17b45cd,Servicios públicos,Asesinan a taxista en Remedios; fue hallado dentro de su vehículo con varias heridas,2026-10-06T18:13:55Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-9442098153,Servicios públicos,Contenido Exclusivo: El metro por la Tumba Muerto,2026-10-06T00:47:04Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-e0b0f0f335,Servicios públicos,"Profesor Angel Dust, el rey de la noche de Barcelona que acabó en una prisión de Panamá: Sigo pensando que fue un sueño, pero me perdí cinco años de la vida de mi hija",,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-3fb1b2c9b4,Servicios públicos,La Chorrera proyecta renovar el parque Tomás Martín Feuillet con una inversión de 620 mil dólares,2026-10-05T18:30:34Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-f9e3ba0bd2,Regulación,Comisión de Presupuesto tramita traslados y créditos por casi $100 millones entre seis instituciones,2026-10-07T00:21:09Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-fcdfc2a3cc,Servicios públicos,"Aprehenden a Enrique Lau, exdirector de la CSS, por supuesto enriquecimiento injustificado",2026-10-06T11:50:00Z,x,asistente_provisional
-2026-10-07T00:41:03Z,GRP-66048e9c28,Economía,Central America Trade Squeeze,,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-29baaf270e,Regulación,Panamá mantiene vigilancia epidemiológica ante caso sospechoso de peste neumónica en Rusia,2026-10-06T20:53:52Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-71176bb291,Regulación,Negocios de Gilinski y de Ecopetrol son claves para Colombia en América Latina,,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-dc0c06491a,Servicios públicos,Mujer es aprehendida en Santiago tras hallazgo de 162 paquetes de presunta droga en el vehículo que conducía,2026-10-06T16:21:42Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-0c210ad795,Eventos naturales,Adultos mayores lo pierden todo tras incendio de su vivienda en Portachuelo,2026-10-07T00:16:11Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-ef3acec21e,Servicios públicos,Minsa: Adelantan vacunación contra VSR en embarazadas,2026-10-05T19:47:41Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-21ad932d54,Servicios públicos,Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá,2026-10-05T21:38:58Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-b2028a457f,Servicios públicos,"Solo dos ciudades de Centroamérica están entre las mejores 300 del mundo, según ranking",,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-eaeabe3e2a,Economía,The Duality of Latin America FDI,,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-87e128925b,Eventos naturales,Veraguas: Preocupación por aumento de muertes por enfermedades transmisibles y respiratorias,2026-10-07T00:17:42Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-79f3183472,Eventos naturales,Intensifying El Nino deepens economic risks across LatAm,,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-038c4f0643,Eventos naturales,Clima en Panamá: Martes con lluvias y tormentas eléctricas en varias regiones durante la tarde,2026-10-06T11:27:43Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-0f8fb5a5bb,Regulación,Caso Pandora: Legalizan aprehensión de exejecutivo bancario señalado por autorizar pagos de créditos fiscales de la DGI,2026-10-06T23:57:05Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-f2aa06ea27,Turismo,Montería estrenará vuelo directo a Panamá con Satena y conexión aérea de menos de una hora,,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-0a10e8fec2,Regulación,"El BID moviliza proyectos por US$84.000 millones desde Miami: Quiero cerrar acuerdos que beneficien a América Latina, dice su nuevo director",,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-96eb79d57a,Economía,"Panamá apunta a salir de la lista fiscal de la Unión Europea, pero aún enfrenta una revisión clave en 2027",,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-e2e32056c3,Servicios públicos,Tres hombres asaltan casino y despojan a clientes de sus pertenencias en San Miguelito,2026-10-05T22:12:26Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-67dc144457,Logística/Canal,Exportaciones chinas sostienen la demanda de carga contenerizada pese a la debilidad de EE. UU.,,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-2820cdd711,Servicios públicos,Aduanas decomisa de cigarrillos y ropa falsificada en puestos de control de Chiriquí,,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-8af4196527,Servicios públicos,César Caicedo ahora está recluido en el Hospital Santo Tomás; había sido trasladado a Coiba,2026-10-05T19:03:37Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-81a11a5998,Economía,¿Cómo se fija el precio del combustible en Panamá? El MEF explica la fórmula quincenal tras aprobarse nuevo subsidio,,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-3fd5126822,Logística/Canal,"US LNG Exports Increase in September, Europe Outbids Asia for Cargoes",,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-39dfe8d714,Regulación,Aeropuerto panameño suscribe convenio con empresa asiática,,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-d03e52e97f,Servicios públicos,Alcaldesa Stefany Peñalba: residentes protestan frente al Municipio de Arraiján y exigen auditorías contra su gestión,2026-10-06T18:24:07Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-f4a44182b1,Logística/Canal,Panamá reforzará su presencia marítima en Vietnam con nueva oficina de servicio técnico de la AMP en Ho Chi Minh,2026-10-06T11:57:42Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-be613f0763,Economía,Reformas electorales: Blandón defiende el 3% para nuevos partidos y rechaza aumento del financiamiento privado,2026-10-06T13:00:36Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-1a231154dc,Regulación,Suspenden audiencia contra Genaro López y otros miembros del Suntracs,2026-10-06T17:52:35Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-4d3630957d,Turismo,Semana de la RSE busca impulsar la sostenibilidad en las empresas,2026-10-06T13:35:00Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-1df3ab1e22,Regulación,Mides solicita $47 millones para completar último pago de transferencias monetarias de 2026,2026-10-07T00:14:52Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-da35c3dead,Logística/Canal,Presidente de Panamá visita Singapur y Vietnam en busca de inversiones,,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-1b52bb958d,Servicios públicos,Disparan contra el vehículo del exdiputado Pedro Torres en Colón,2026-10-06T01:25:08Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-5c66ab40e9,Servicios públicos,"Descentralización explica qué incluye el proyecto de $293,715 para 15 juntas comunales",2026-10-06T14:51:46Z,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-f394306d06,Servicios públicos,Déficit de personal limita la capacidad operativa de los bomberos en el país,,,asistente_provisional
-2026-10-07T00:41:03Z,GRP-3aebb6f23a,Logística/Canal,Miguel Lorenzo Fábrega toma posesión como nuevo subadministrador del Canal de Panamá,,,asistente_provisional
+"corte","id_grupo","tema","titular","fecha_reciente","seleccion"
+"2026-10-08T03:35:18Z","GRP-1e2c34f6bf","Servicios públicos","Pase-U: Largas filas en Changuinola en el segundo día de entrega de tarjetas Punch del Ifarhu","2026-10-06T18:12:50Z",""
+"2026-10-08T03:35:18Z","GRP-e78a143f9a","Logística/Canal","Ejecutivo sanciona la Ley 552 del Presupuesto del Canal de Panamá por $5,555 millones","",""
+"2026-10-08T03:35:18Z","GRP-6e737ecad5","Servicios públicos","MOP solicita $43.1 millones para pagar compromisos y continuar obras en ejecución","2026-10-06T18:57:35Z",""
+"2026-10-08T03:35:18Z","GRP-ad0e219d38","Servicios públicos","Contenido Exclusivo: Turismo en transporte público","2026-09-29T01:23:06Z",""
+"2026-10-08T03:35:18Z","GRP-5e6531917f","Servicios públicos","Más de 30 mujeres han muerto de forma violenta en Panamá este año","2026-10-06T01:30:01Z",""
+"2026-10-08T03:35:18Z","GRP-45aebb27b2","Eventos naturales","Contenido Exclusivo: Coclé, se seca el campo","2026-10-01T01:31:04Z",""
+"2026-10-08T03:35:18Z","GRP-9fea8ec754","Economía","Exportaciones de banano superan los $17 millones en junio y marcan recuperación","",""
+"2026-10-08T03:35:18Z","GRP-1083f5e540","Logística/Canal","Inland navigation workers stand with Panama Canal workers after death of tug captain","",""
+"2026-10-08T03:35:18Z","GRP-65d565abd0","Servicios públicos","MiBus responde por filtraciones: lamenta incomodidad de usuarios; afirma que realiza correctivos","2026-10-05T23:39:22Z",""
+"2026-10-08T03:35:18Z","GRP-276c88e7f3","Regulación","Tribunal Electoral avanza en la coordinación del Plan General del Elecciones de 2029","2026-10-06T22:16:17Z",""
+"2026-10-08T03:35:18Z","GRP-e3fb06f2ab","Servicios públicos","Pilotos solicitan al Aeropuerto de Tocumen fortalecer controles por riesgo de aves durante temporada migratoria","2026-10-07T17:53:52Z",""
+"2026-10-08T03:35:18Z","GRP-393e132dbb","Turismo","Festival Navideño 'City of Stars 2026': Alcaldía de Panamá presenta el calendario de actividades","2026-10-07T16:46:00Z",""
+"2026-10-08T03:35:18Z","GRP-a329f4e91e","Eventos naturales","Chiriquí | Investigan incendio en sastrería de calle Quinta en David","2026-10-07T18:08:42Z",""
+"2026-10-08T03:35:18Z","GRP-821afe7eec","Servicios públicos","Chiriquí: Emiten Alerta Amber por desaparición de adolescente de 16 años y su bebé","2026-10-05T20:17:58Z",""
+"2026-10-08T03:35:18Z","GRP-2b6511298e","Turismo","Veraguas prepara operativo para fiestas patrias con refuerzo policial y controles en la Panamericana","2026-10-07T18:16:00Z",""
+"2026-10-08T03:35:18Z","GRP-03e3ef16d9","Servicios públicos","Sinaproc busca superar el 10% de participación ciudadana en el tercer simulacro nacional","2026-10-07T18:38:53Z",""
+"2026-10-08T03:35:18Z","GRP-cf758ba062","Eventos naturales","Piscina del Parque Omar cierra por reparaciones; trabajos podrían durar hasta un mes","2026-10-05T23:43:40Z",""
+"2026-10-08T03:35:18Z","GRP-1c2f1d950d","Turismo","Obispos panameños presentarán en Roma la realidad de sus diócesis durante la visita ad limina","2026-10-06T16:48:00Z",""
+"2026-10-08T03:35:18Z","GRP-551ba86248","Servicios públicos","El abrir para cerrar de la mina de cobre genera dudas y cuestionamientos en el frente ambiental y financiero","",""
+"2026-10-08T03:35:18Z","GRP-8a448d1fd9","Servicios públicos","Universidad Tecnológica evalúa unos 200 edificios para determinar su seguridad ante sismos","2026-10-08T00:33:51Z",""
+"2026-10-08T03:35:18Z","GRP-d08b11be1c","Servicios públicos","Las manzanas de Sodoma o la ilusión minera","",""
+"2026-10-08T03:35:18Z","GRP-41ed91b93c","Economía","Presupuesto 2027: Presidente de la Comisión recomendará más fondos para salud y cumplir con primas de antigüedad","2026-10-07T13:10:19Z","x"
+"2026-10-08T03:35:18Z","GRP-39773bed5a","Servicios públicos","Árbol cae sobre dos vehículos en estacionamientos del hospital San Miguel Arcángel","2026-10-05T22:10:32Z",""
+"2026-10-08T03:35:18Z","GRP-84a6b3a04b","Servicios públicos","Colegios particulares atribuyen aumento de matrícula a migración al sector oficial y altos costos de operación","2026-10-06T12:41:06Z",""
+"2026-10-08T03:35:18Z","GRP-5ab17b45cd","Servicios públicos","Asesinan a taxista en Remedios; fue hallado dentro de su vehículo con varias heridas","2026-10-06T18:13:55Z",""
+"2026-10-08T03:35:18Z","GRP-9442098153","Servicios públicos","Contenido Exclusivo: El metro por la Tumba Muerto","2026-10-06T00:47:04Z",""
+"2026-10-08T03:35:18Z","GRP-1dc52c45ff","Servicios públicos","César Caicedo ahora está recluido en el Hospital Santo Tomás; había sido trasladado a Coiba","2026-10-08T02:10:57Z",""
+"2026-10-08T03:35:18Z","GRP-e0b0f0f335","Servicios públicos","Profesor Angel Dust, el rey de la noche de Barcelona que acabó en una prisión de Panamá: Sigo pensando que fue un sueño, pero me perdí cinco años de la vida de mi hija","",""
+"2026-10-08T03:35:18Z","GRP-3fb1b2c9b4","Servicios públicos","La Chorrera proyecta renovar el parque Tomás Martín Feuillet con una inversión de 620 mil dólares","2026-10-05T18:30:34Z",""
+"2026-10-08T03:35:18Z","GRP-f9e3ba0bd2","Regulación","Comisión de Presupuesto tramita traslados y créditos por casi $100 millones entre seis instituciones","2026-10-07T00:21:09Z",""
+"2026-10-08T03:35:18Z","GRP-fcdfc2a3cc","Servicios públicos","Aprehenden a Enrique Lau, exdirector de la CSS, por supuesto enriquecimiento injustificado","2026-10-06T11:50:00Z",""
+"2026-10-08T03:35:18Z","GRP-1627d09497","Servicios públicos","Contenido exclusivo: Dietilenglicol, 20 años de dolor","2026-10-08T01:02:59Z",""
+"2026-10-08T03:35:18Z","GRP-29baaf270e","Regulación","Panamá mantiene vigilancia epidemiológica ante caso sospechoso de peste neumónica en Rusia","2026-10-06T20:53:52Z",""
+"2026-10-08T03:35:18Z","GRP-dc0c06491a","Servicios públicos","Mujer es aprehendida en Santiago tras hallazgo de 162 paquetes de presunta droga en el vehículo que conducía","2026-10-06T16:21:42Z",""
+"2026-10-08T03:35:18Z","GRP-dd7d78a551","Economía","Cobre Panamá volvería a producir: lo que falta definir es bajo qué modelo","2026-10-07T12:14:33Z","x"
+"2026-10-08T03:35:18Z","GRP-0c210ad795","Eventos naturales","Adultos mayores lo pierden todo tras incendio de su vivienda en Portachuelo","2026-10-07T00:16:11Z",""
+"2026-10-08T03:35:18Z","GRP-ef3acec21e","Servicios públicos","Minsa: Adelantan vacunación contra VSR en embarazadas","2026-10-05T19:47:41Z",""
+"2026-10-08T03:35:18Z","GRP-21ad932d54","Servicios públicos","Minsa enciende alarmas por diagnósticos de cáncer de mama en hombres en Panamá","2026-10-05T21:38:58Z",""
+"2026-10-08T03:35:18Z","GRP-87e128925b","Eventos naturales","Veraguas: Preocupación por aumento de muertes por enfermedades transmisibles y respiratorias","2026-10-07T00:17:42Z",""
+"2026-10-08T03:35:18Z","GRP-79f3183472","Eventos naturales","Intensifying El Nino deepens economic risks across LatAm","",""
+"2026-10-08T03:35:18Z","GRP-50d72e2b04","Logística/Canal","Unos 22 aprehendidos en la operación Comunidad Segura contra el microtráfico en Colón y Panama Oeste","2026-10-08T02:02:13Z",""
+"2026-10-08T03:35:18Z","GRP-038c4f0643","Eventos naturales","Clima en Panamá: Martes con lluvias y tormentas eléctricas en varias regiones durante la tarde","2026-10-06T11:27:43Z",""
+"2026-10-08T03:35:18Z","GRP-0f8fb5a5bb","Regulación","Caso Pandora: Legalizan aprehensión de exejecutivo bancario señalado por autorizar pagos de créditos fiscales de la DGI","2026-10-06T23:57:05Z",""
+"2026-10-08T03:35:18Z","GRP-f2aa06ea27","Turismo","Montería estrenará vuelo directo a Panamá con Satena y conexión aérea de menos de una hora","",""
+"2026-10-08T03:35:18Z","GRP-3a15fc6a18","Servicios públicos","Lau Cortés: Ordenan detención domiciliaria e imputan cargos por enriquecimiento injustificado y blanqueo de capitales","2026-10-08T02:30:00Z","x"
+"2026-10-08T03:35:18Z","GRP-96eb79d57a","Economía","Panamá apunta a salir de la lista fiscal de la Unión Europea, pero aún enfrenta una revisión clave en 2027","",""
+"2026-10-08T03:35:18Z","GRP-e2e32056c3","Servicios públicos","Tres hombres asaltan casino y despojan a clientes de sus pertenencias en San Miguelito","2026-10-05T22:12:26Z",""
+"2026-10-08T03:35:18Z","GRP-67dc144457","Logística/Canal","Exportaciones chinas sostienen la demanda de carga contenerizada pese a la debilidad de EE. UU.","",""
+"2026-10-08T03:35:18Z","GRP-4d8b340bd9","Servicios públicos","Aprehenden a 10 personas por presunta minería ilegal y delitos ambientales en Coclé del Norte","2026-10-07T12:48:21Z",""
+"2026-10-08T03:35:18Z","GRP-2820cdd711","Servicios públicos","Aduanas decomisa de cigarrillos y ropa falsificada en puestos de control de Chiriquí","",""
+"2026-10-08T03:35:18Z","GRP-81a11a5998","Economía","¿Cómo se fija el precio del combustible en Panamá? El MEF explica la fórmula quincenal tras aprobarse nuevo subsidio","",""
+"2026-10-08T03:35:18Z","GRP-3fd5126822","Logística/Canal","US LNG Exports Increase in September, Europe Outbids Asia for Cargoes","",""
+"2026-10-08T03:35:18Z","GRP-39dfe8d714","Regulación","Aeropuerto panameño suscribe convenio con empresa asiática","",""
+"2026-10-08T03:35:18Z","GRP-dfe20e69ce","Eventos naturales","Defensoría abrirá queja de oficio por desborde de aguas residuales y afectación ambiental en barriada de Pacora","2026-10-07T15:27:22Z",""
+"2026-10-08T03:35:18Z","GRP-d03e52e97f","Servicios públicos","Alcaldesa Stefany Peñalba: residentes protestan frente al Municipio de Arraiján y exigen auditorías contra su gestión","2026-10-06T18:24:07Z",""
+"2026-10-08T03:35:18Z","GRP-f4a44182b1","Logística/Canal","Panamá reforzará su presencia marítima en Vietnam con nueva oficina de servicio técnico de la AMP en Ho Chi Minh","2026-10-06T11:57:42Z",""
+"2026-10-08T03:35:18Z","GRP-be613f0763","Economía","Reformas electorales: Blandón defiende el 3% para nuevos partidos y rechaza aumento del financiamiento privado","2026-10-06T13:00:36Z",""
+"2026-10-08T03:35:18Z","GRP-1a231154dc","Regulación","Suspenden audiencia contra Genaro López y otros miembros del Suntracs","2026-10-06T17:52:35Z",""
+"2026-10-08T03:35:18Z","GRP-a2db4b8dec","Servicios públicos","Municipio de Arraiján: Stefany Peñalba guarda silencio en medio de disputa por uso de fondos y presuntas irregularidades","2026-10-07T13:02:18Z",""
+"2026-10-08T03:35:18Z","GRP-4d3630957d","Turismo","Semana de la RSE busca impulsar la sostenibilidad en las empresas","2026-10-06T13:35:00Z",""
+"2026-10-08T03:35:18Z","GRP-5f29786f14","Servicios públicos","Exfuncionarios de alto perfil investigados: estos son los casos y su situación judicial","2026-10-07T17:02:14Z",""
+"2026-10-08T03:35:18Z","GRP-1df3ab1e22","Regulación","Mides solicita $47 millones para completar último pago de transferencias monetarias de 2026","2026-10-07T00:14:52Z","x"
+"2026-10-08T03:35:18Z","GRP-da35c3dead","Logística/Canal","Presidente de Panamá visita Singapur y Vietnam en busca de inversiones","",""
+"2026-10-08T03:35:18Z","GRP-1b52bb958d","Servicios públicos","Disparan contra el vehículo del exdiputado Pedro Torres en Colón","2026-10-06T01:25:08Z",""
+"2026-10-08T03:35:18Z","GRP-5c66ab40e9","Servicios públicos","Descentralización explica qué incluye el proyecto de $293,715 para 15 juntas comunales","2026-10-06T14:51:46Z",""
+"2026-10-08T03:35:18Z","GRP-f394306d06","Servicios públicos","Déficit de personal limita la capacidad operativa de los bomberos en el país","",""
+"2026-10-08T03:35:18Z","GRP-a03bab5b02","Servicios públicos","Asamblea: Debate por la renovación del contrato de Ciudad del Saber genera cuestionamientos por exoneraciones","2026-10-08T01:14:47Z",""
+"2026-10-08T03:35:18Z","GRP-7ddcf92e16","Servicios públicos","Ataque a tiros cerca de la estación del metro de San Miguelito deja un muerto y dos heridos","2026-10-08T00:08:54Z","x"
+"2026-10-08T03:35:18Z","GRP-3aebb6f23a","Logística/Canal","Miguel Lorenzo Fábrega toma posesión como nuevo subadministrador del Canal de Panamá","",""

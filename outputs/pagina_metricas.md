@@ -2,7 +2,7 @@
 
 > **BORRADOR — métricas provisionales** · JUICIO PROVISIONAL DEL ASISTENTE, NO HUMANO (D-101): se rehace a mano en C-09; no reportar como juicio de una persona.
 
-Generada el 2026-10-08T20:18:30Z desde el commit `c76eb50` con `poetry run python -m scripts.pagina_metricas`. Ninguna cifra está escrita a mano: cada una sale del archivo que se indica. Toda proporción lleva numerador, denominador e IC 95 %.
+Generada el 2026-10-08T22:51:56Z desde el commit `458f4f0` con `poetry run python -m scripts.pagina_metricas`. Ninguna cifra está escrita a mano: cada una sale del archivo que se indica. Toda proporción lleva numerador, denominador e IC 95 %.
 
 **Origen del juicio:** `humano` = lo decidió una persona (las etiquetas de clasificación y agrupación las propone el asistente y una persona las revisa y aprueba una por una, D-85) · **PROVISIONAL** = lo decidió el asistente (D-101) y se rehace en C-09 · `automático` = automático (sin juicio humano: lo calcula el código contra una referencia).
 
@@ -11,20 +11,20 @@ Generada el 2026-10-08T20:18:30Z desde el commit `c76eb50` con `poetry run pytho
 | Métrica | Valor | Numerador / denominador | IC 95 % | Origen del juicio | Fuente | Fallos (IDs) · nota |
 |---|---|---|---|---|---|---|
 | Abstención correcta (consultas sin respuesta) | 100.0 % | 7 de 7 | 100.0 % – 100.0 % (Wilson 64.6 % – 100.0 %) | automático | `metricas.json` | fallos: ninguno · meta 80.0 % |
-| Abstenciones incorrectas (respondibles rechazadas) | 6.7 % | 2 de 30 | 0.0 % – 16.7 % (Wilson 1.8 % – 21.3 %) | automático | `metricas.json` | fallos: BDEV-004, BDEV-017 · sin meta; se reporta |
-| Cobertura de citas (respuestas de la consulta) | 100.0 % | 56 de 56 | 100.0 % – 100.0 % (Wilson 93.6 % – 100.0 %) | automático | `metricas.json` | fallos: ninguno · meta 100 % |
+| Abstenciones incorrectas (respondibles rechazadas) | 0.0 % | 0 de 30 | 0.0 % – 0.0 % (Wilson 0.0 % – 11.3 %) | automático | `metricas.json` | fallos: ninguno · sin meta; se reporta |
+| Cobertura de citas (respuestas de la consulta) | 100.0 % | 84 de 84 | 100.0 % – 100.0 % (Wilson 95.6 % – 100.0 %) | automático | `metricas.json` | fallos: ninguno · meta 100 % |
 | Recall@5 por evidencias esperadas · semántica (IA) | 64.0 % | 32 de 50 | 42.6 % – 100.0 % | automático | `metricas.json` | — |
 | Recall@5 por evidencias esperadas · BM25 (baseline) | 48.0 % | 24 de 50 | 32.1 % – 80.0 % | automático | `metricas.json` | — |
-| Afirmaciones sustentadas | 96.7 % | 29 de 30 | 90.0 % – 100.0 % (Wilson 83.3 % – 99.4 %) | **PROVISIONAL** · asistente_provisional (D-101) | `metricas.json` | fallos: GRP-39773bed5a/A4 · meta 90 % sobre la estimación puntual |
+| Afirmaciones sustentadas | 96.7 % | 29 de 30 | 90.0 % – 100.0 % (Wilson 83.3 % – 99.4 %) | humano | `metricas.json` | fallos: GRP-39773bed5a/A4 · meta 90 % sobre la estimación puntual |
 | Macro-F1 de clasificación · IA (e5/A) | 0.629 | n = 100 | 0.427 – 0.774 | humano | `ia_vs_baseline.json` | — |
 | Macro-F1 de clasificación · baseline | 0.601 | n = 100 | 0.399 – 0.749 | humano | `ia_vs_baseline.json` | — |
-| Precision@5 · sistema | 20.0 % | 1 de 5 | 3.6 % – 62.5 % | **PROVISIONAL** · asistente_provisional (D-101) | `precision_at_5.json` | fallos: GRP-21ad932d54, GRP-038c4f0643, GRP-84a6b3a04b, GRP-39dfe8d714 |
-| Precision@5 · baseline por fecha de publicación | 0.0 % | 0 de 5 | 0.0 % – 43.5 % | **PROVISIONAL** · asistente_provisional (D-101) | `precision_at_5.json` | fallos: GRP-f9e3ba0bd2, GRP-87e128925b, GRP-0c210ad795, GRP-1df3ab1e22, GRP-0f8fb5a5bb |
+| Precision@5 · sistema | 0.0 % | 0 de 5 | 0.0 % – 43.5 % | humano | `precision_at_5.json` | fallos: GRP-5e6531917f, GRP-21ad932d54, GRP-4d8b340bd9, GRP-a329f4e91e, GRP-29baaf270e |
+| Precision@5 · baseline por fecha de publicación | 20.0 % | 1 de 5 | 3.6 % – 62.5 % | humano | `precision_at_5.json` | fallos: GRP-1dc52c45ff, GRP-50d72e2b04, GRP-a03bab5b02, GRP-1627d09497 |
 | Variantes cuyo top 5 no cambia de temas | 86.3 % | 44 de 51 | 74.3 % – 93.2 % | automático | `sensibilidad.json` | cada peso ±5 puntos y cada supuesto ±20 % |
-| Latencia p50 · Consulta (punta a punta, local, sin LLM) | 0.0068 s | n = 40 | 0.0003 – 0.0071 s | automático | `metricas.json` | — |
+| Latencia p50 · Consulta (punta a punta, local, sin LLM) | 0.0125 s | n = 40 | 0.0004 – 0.0128 s | automático | `metricas.json` | — |
 | Latencia p50 · Paquete completo de borrador | 6.36 s | n = 12 | 5.04 – 7.69 s | automático | `metricas.json` | — |
 | Costo por paquete (mediana, cota superior) | 0.0031 USD | n = 12 | 0.0024 – 0.0038 USD | automático | `metricas.json` | deepseek/deepseek-flash, medido 2026-10-07T04:20:13Z |
-| Unidades rechazadas · deepseek/deepseek-flash | 26.7 % | 12 de 45 | 16.0 % – 41.0 % | automático | `metricas.json` | afirmaciones y secciones, re-validadas con el validador actual |
+| Unidades rechazadas · deepseek/deepseek-flash | 22.1 % | 33 de 149 | 16.2 % – 29.5 % | automático | `metricas.json` | afirmaciones y secciones, re-validadas con el validador actual |
 
 ## Pruebas de aceptación
 
@@ -49,12 +49,12 @@ Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de 
 |---|---|---|---|---|---|---|
 | Abstención correcta (consultas sin respuesta) | 100.0 % | 7 de 7 | 100.0 % – 100.0 % (Wilson 64.6 % – 100.0 %) | automático | `metricas.json` | fallos: ninguno · meta 80.0 % |
 | Abstención correcta (incluye adversariales que debían abstenerse) | 100.0 % | 10 de 10 | 100.0 % – 100.0 % (Wilson 72.2 % – 100.0 %) | automático | `metricas.json` | fallos: ninguno |
-| Abstenciones incorrectas (respondibles rechazadas) | 6.7 % | 2 de 30 | 0.0 % – 16.7 % (Wilson 1.8 % – 21.3 %) | automático | `metricas.json` | fallos: BDEV-004, BDEV-017 · sin meta; se reporta |
-| Cobertura de citas (respuestas de la consulta) | 100.0 % | 56 de 56 | 100.0 % – 100.0 % (Wilson 93.6 % – 100.0 %) | automático | `metricas.json` | fallos: ninguno · meta 100 % |
-| Cobertura de citas (con validador de citas) | 100.0 % | 56 de 56 | 100.0 % – 100.0 % (Wilson 93.6 % – 100.0 %) | automático | `metricas.json` | fallos: ninguno |
-| Borradores: afirmaciones factuales con cita válida | 100.0 % | 11 de 11 | 100.0 % – 100.0 % (Wilson 74.1 % – 100.0 %) | automático | `metricas.json` | fallos: ninguno |
-| Borradores: afirmaciones factuales que pasan el validador | 100.0 % | 11 de 11 | 100.0 % – 100.0 % (Wilson 74.1 % – 100.0 %) | automático | `metricas.json` | fallos: ninguno |
-| Borradores: inferencias e hipótesis con base válida | 100.0 % | 3 de 3 | 100.0 % – 100.0 % (Wilson 43.9 % – 100.0 %) | automático | `metricas.json` | fallos: ninguno |
+| Abstenciones incorrectas (respondibles rechazadas) | 0.0 % | 0 de 30 | 0.0 % – 0.0 % (Wilson 0.0 % – 11.3 %) | automático | `metricas.json` | fallos: ninguno · sin meta; se reporta |
+| Cobertura de citas (respuestas de la consulta) | 100.0 % | 84 de 84 | 100.0 % – 100.0 % (Wilson 95.6 % – 100.0 %) | automático | `metricas.json` | fallos: ninguno · meta 100 % |
+| Cobertura de citas (con validador de citas) | 100.0 % | 84 de 84 | 100.0 % – 100.0 % (Wilson 95.6 % – 100.0 %) | automático | `metricas.json` | fallos: ninguno |
+| Borradores: afirmaciones factuales con cita válida | 100.0 % | 43 de 43 | 100.0 % – 100.0 % (Wilson 91.8 % – 100.0 %) | automático | `metricas.json` | fallos: ninguno |
+| Borradores: afirmaciones factuales que pasan el validador | 100.0 % | 43 de 43 | 100.0 % – 100.0 % (Wilson 91.8 % – 100.0 %) | automático | `metricas.json` | fallos: ninguno |
+| Borradores: inferencias e hipótesis con base válida | 100.0 % | 11 de 11 | 100.0 % – 100.0 % (Wilson 74.1 % – 100.0 %) | automático | `metricas.json` | fallos: ninguno |
 
 - Umbral de Consulta (0.840): margen estrecho, validado con n = 1 negativo del benchmark; pendiente: ~30 preguntas fuera del corpus escritas por una persona (C-12, docs/pendientes_humanos.md).
 
@@ -73,11 +73,11 @@ Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de 
 
 | Métrica | Valor | Numerador / denominador | IC 95 % | Origen del juicio | Fuente | Fallos (IDs) · nota |
 |---|---|---|---|---|---|---|
-| Afirmaciones sustentadas | 96.7 % | 29 de 30 | 90.0 % – 100.0 % (Wilson 83.3 % – 99.4 %) | **PROVISIONAL** · asistente_provisional (D-101) | `metricas.json` | fallos: GRP-39773bed5a/A4 · meta 90 % sobre la estimación puntual |
-| Afirmaciones parcialmente sustentadas | 3.3 % | 1 de 30 | 0.0 % – 10.0 % (Wilson 0.6 % – 16.7 %) | **PROVISIONAL** · asistente_provisional (D-101) | `metricas.json` | — |
-| Afirmaciones con tipo incorrecto | 0.0 % | 0 de 30 | 0.0 % – 0.0 % (Wilson 0.0 % – 11.3 %) | **PROVISIONAL** · asistente_provisional (D-101) | `metricas.json` | — |
+| Afirmaciones sustentadas | 96.7 % | 29 de 30 | 90.0 % – 100.0 % (Wilson 83.3 % – 99.4 %) | humano | `metricas.json` | fallos: GRP-39773bed5a/A4 · meta 90 % sobre la estimación puntual |
+| Afirmaciones parcialmente sustentadas | 3.3 % | 1 de 30 | 0.0 % – 10.0 % (Wilson 0.6 % – 16.7 %) | humano | `metricas.json` | — |
+| Afirmaciones con tipo incorrecto | 0.0 % | 0 de 30 | 0.0 % – 0.0 % (Wilson 0.0 % – 11.3 %) | humano | `metricas.json` | — |
 
-- Meta de 90.0 %: cumple con la estimación puntual (96.7 %), no cumple con el límite inferior de Wilson (83.3 %). El criterio oficial es la estimación puntual (protocolo, sección 4); el resultado es **provisional** mientras los veredictos los haya dado el asistente.
+- Meta de 90.0 %: no cumple con la estimación puntual (96.7 %), no cumple con el límite inferior de Wilson (83.3 %). El criterio oficial es la estimación puntual (protocolo, sección 4); el resultado es **provisional** mientras los veredictos los haya dado el asistente.
 
 ## Clasificación y agrupación: IA contra baseline
 
@@ -102,8 +102,8 @@ Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de 
 
 | Métrica | Valor | Numerador / denominador | IC 95 % | Origen del juicio | Fuente | Fallos (IDs) · nota |
 |---|---|---|---|---|---|---|
-| Precision@5 · sistema | 20.0 % | 1 de 5 | 3.6 % – 62.5 % | **PROVISIONAL** · asistente_provisional (D-101) | `precision_at_5.json` | fallos: GRP-21ad932d54, GRP-038c4f0643, GRP-84a6b3a04b, GRP-39dfe8d714 |
-| Precision@5 · baseline por fecha de publicación | 0.0 % | 0 de 5 | 0.0 % – 43.5 % | **PROVISIONAL** · asistente_provisional (D-101) | `precision_at_5.json` | fallos: GRP-f9e3ba0bd2, GRP-87e128925b, GRP-0c210ad795, GRP-1df3ab1e22, GRP-0f8fb5a5bb |
+| Precision@5 · sistema | 0.0 % | 0 de 5 | 0.0 % – 43.5 % | humano | `precision_at_5.json` | fallos: GRP-5e6531917f, GRP-21ad932d54, GRP-4d8b340bd9, GRP-a329f4e91e, GRP-29baaf270e |
+| Precision@5 · baseline por fecha de publicación | 20.0 % | 1 de 5 | 3.6 % – 62.5 % | humano | `precision_at_5.json` | fallos: GRP-1dc52c45ff, GRP-50d72e2b04, GRP-a03bab5b02, GRP-1627d09497 |
 | Variantes cuyo top 5 no cambia de temas | 86.3 % | 44 de 51 | 74.3 % – 93.2 % | automático | `sensibilidad.json` | cada peso ±5 puntos y cada supuesto ±20 % |
 | Variantes que conservan el mismo orden | 74.5 % | 38 de 51 | 61.1 % – 84.5 % | automático | `sensibilidad.json` | — |
 | Temas del top 5 que se conservan (sobre todas las variantes) | 96.9 % | 247 de 255 | 93.9 % – 98.4 % | automático | `sensibilidad.json` | — |
@@ -111,15 +111,15 @@ Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de 
 | Grupos con rango de prioridad «medio» | 33.3 % | 23 de 69 | 23.4 % – 45.1 % | automático | `puntaje.json` | — |
 | Grupos con rango de prioridad «bajo» | 0.0 % | 0 de 69 | 0.0 % – 5.3 % | automático | `puntaje.json` | — |
 
-- Precision@5: sistema 1 de 5, baseline 0 de 5; los IC se solapan: **sin diferencia demostrable**. Pruebas: 1 (fecha de corte 2026-10-07T00:41:03Z, 60 candidatos); exploratoria; especialista: no.
+- Precision@5: sistema 0 de 5, baseline 1 de 5; los IC se solapan: **sin diferencia demostrable**. Pruebas: 1 (fecha de corte 2026-10-08T03:35:18Z, 69 candidatos); exploratoria; especialista: no.
 - Distribución del puntaje P (n = 69 grupos): mínimo 46.358, mediana 72.460, máximo 86.079, desviación 8.931. Componentes casi constantes: ninguno.
 
 ## Eficiencia, tokens y costo
 
 | Métrica | Valor | Numerador / denominador | IC 95 % | Origen del juicio | Fuente | Fallos (IDs) · nota |
 |---|---|---|---|---|---|---|
-| Latencia p50 · Consulta (punta a punta, local, sin LLM) | 0.0068 s | n = 40 | 0.0003 – 0.0071 s | automático | `metricas.json` | — |
-| Latencia p95 · Consulta (punta a punta, local, sin LLM) | 0.0078 s | n = 40 | 0.0073 – 0.0083 s | automático | `metricas.json` | — |
+| Latencia p50 · Consulta (punta a punta, local, sin LLM) | 0.0125 s | n = 40 | 0.0004 – 0.0128 s | automático | `metricas.json` | — |
+| Latencia p95 · Consulta (punta a punta, local, sin LLM) | 0.0144 s | n = 40 | 0.0136 – 0.0197 s | automático | `metricas.json` | — |
 | Latencia p50 · Primera respuesta del borrador | 4.09 s | n = 12 | 3.06 – 4.52 s | automático | `metricas.json` | — |
 | Latencia p95 · Primera respuesta del borrador | 5.67 s | n = 12 | 4.29 – 6.05 s | automático | `metricas.json` | — |
 | Latencia p50 · Paquete completo de borrador | 6.36 s | n = 12 | 5.04 – 7.69 s | automático | `metricas.json` | — |
@@ -135,23 +135,29 @@ Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de 
 - Meta sugerida: mediana ≤ 15 s. Consulta: cumple; paquete por tipo: editorial no cumple, investigacion cumple.
 - Costo total estimado de la corrida de 12 paquetes: USD 0.0408; tokens totales 76825 de entrada y 14759 de salida.
 - **Supuesto del proyecto (D-97):** el contador de costo sobreestima ≈ 2.6 × respecto de la consola del proveedor (una comparación puntual); las cifras de USD son una cota superior conservadora, no la factura.
-- Contador acumulado del proyecto: 1846393 tokens y USD 0.8712 (local, ignorado por git).
+- Contador acumulado del proyecto: 83903 tokens y USD 0.0267 (local, ignorado por git).
 
 ## Rechazos del validador
 
 | Métrica | Valor | Numerador / denominador | IC 95 % | Origen del juicio | Fuente | Fallos (IDs) · nota |
 |---|---|---|---|---|---|---|
-| Unidades rechazadas · deepseek/deepseek-flash | 26.7 % | 12 de 45 | 16.0 % – 41.0 % | automático | `metricas.json` | afirmaciones y secciones, re-validadas con el validador actual |
-| Regla «causalidad» · afirmacion · deepseek/deepseek-flash | 11.1 % | 3 de 27 | 3.9 % – 28.1 % | automático | `metricas.json` | — |
-| Regla «causalidad» · seccion:enfoque · deepseek/deepseek-flash | 25.0 % | 1 de 4 | 4.6 % – 69.9 % | automático | `metricas.json` | — |
-| Regla «cifra_no_coincide» · seccion:guion · deepseek/deepseek-flash | 50.0 % | 1 de 2 | 9.4 % – 90.5 % | automático | `metricas.json` | — |
-| Regla «enfoque_como_hecho» · seccion:enfoque · deepseek/deepseek-flash | 50.0 % | 2 de 4 | 15.0 % – 85.0 % | automático | `metricas.json` | — |
-| Regla «hipotesis_sin_condicional» · afirmacion · deepseek/deepseek-flash | 3.7 % | 1 de 27 | 0.7 % – 18.3 % | automático | `metricas.json` | — |
+| Unidades rechazadas · deepseek/deepseek-flash | 22.1 % | 33 de 149 | 16.2 % – 29.5 % | automático | `metricas.json` | afirmaciones y secciones, re-validadas con el validador actual |
+| Regla «afirmacion_desconocida» · seccion:brief · deepseek/deepseek-flash | 50.0 % | 1 de 2 | 9.4 % – 90.5 % | automático | `metricas.json` | — |
+| Regla «base_invalida» · afirmacion · deepseek/deepseek-flash | 3.0 % | 3 de 99 | 1.0 % – 8.5 % | automático | `metricas.json` | — |
+| Regla «causalidad» · afirmacion · deepseek/deepseek-flash | 13.1 % | 13 de 99 | 7.8 % – 21.2 % | automático | `metricas.json` | — |
+| Regla «causalidad» · seccion:enfoque · deepseek/deepseek-flash | 17.6 % | 3 de 17 | 6.2 % – 41.0 % | automático | `metricas.json` | — |
+| Regla «cifra_no_coincide» · seccion:brief · deepseek/deepseek-flash | 100.0 % | 2 de 2 | 34.2 % – 100.0 % | automático | `metricas.json` | — |
+| Regla «cifra_no_coincide» · seccion:guion · deepseek/deepseek-flash | 100.0 % | 2 de 2 | 34.2 % – 100.0 % | automático | `metricas.json` | — |
+| Regla «cifra_no_coincide» · seccion:resumen_web · deepseek/deepseek-flash | 50.0 % | 1 de 2 | 9.4 % – 90.5 % | automático | `metricas.json` | — |
+| Regla «detalle_sin_cita» · seccion:preguntas · deepseek/deepseek-flash | 7.7 % | 1 de 13 | 1.4 % – 33.3 % | automático | `metricas.json` | — |
+| Regla «enfoque_como_hecho» · seccion:enfoque · deepseek/deepseek-flash | 52.9 % | 9 de 17 | 31.0 % – 73.8 % | automático | `metricas.json` | — |
+| Regla «hipotesis_sin_condicional» · afirmacion · deepseek/deepseek-flash | 1.0 % | 1 de 99 | 0.2 % – 5.5 % | automático | `metricas.json` | — |
 | Regla «limite_palabras» · seccion:guion · deepseek/deepseek-flash | 100.0 % | 2 de 2 | 34.2 % – 100.0 % | automático | `metricas.json` | — |
-| Regla «nombre_nuevo» · seccion:copy_digital · deepseek/deepseek-flash | 100.0 % | 2 de 2 | 34.2 % – 100.0 % | automático | `metricas.json` | — |
-| Regla «nombre_nuevo» · seccion:titulares · deepseek/deepseek-flash | 100.0 % | 2 de 2 | 34.2 % – 100.0 % | automático | `metricas.json` | — |
+| Regla «nombre_nuevo» · seccion:resumen_web · deepseek/deepseek-flash | 50.0 % | 1 de 2 | 9.4 % – 90.5 % | automático | `metricas.json` | — |
+| Regla «sin_atribucion» · seccion:enfoque · deepseek/deepseek-flash | 17.6 % | 3 de 17 | 6.2 % – 41.0 % | automático | `metricas.json` | — |
+| Regla «sin_atribucion» · seccion:guion · deepseek/deepseek-flash | 100.0 % | 2 de 2 | 34.2 % – 100.0 % | automático | `metricas.json` | — |
 
-- Borradores del benchmark: modo cache, 12 grupos; estados con_vacios 2, sin_cache 9, completo 1. Grupos con fallo: GRP-79f3183472, GRP-21ad932d54, GRP-038c4f0643, GRP-5e6531917f, GRP-39dfe8d714, GRP-1b52bb958d, GRP-87e128925b, GRP-39773bed5a, GRP-5ab17b45cd.
+- Borradores del benchmark: modo cache, 12 grupos; estados con_vacios 4, completo 8. Grupos con fallo: ninguno.
 
 ## Revisión humana: personas y revisor provisional
 
@@ -161,18 +167,18 @@ Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de 
 | Tasa de corrección · personas | sin datos | n = 0 | — | humano | `revision.json` | — |
 | Tasa de descarte · personas | sin datos | n = 0 | — | humano | `revision.json` | — |
 | Afirmaciones editadas · personas | sin datos | n = 0 | — | humano | `revision.json` | — |
-| Tasa de aceptación (aprobados como borrador) · PROVISIONAL (asistente) | 100.0 % | 2 de 2 | 34.2 % – 100.0 % | **PROVISIONAL** · asistente_provisional (D-101) | `revision.json` | — |
-| Tasa de corrección · PROVISIONAL (asistente) | 50.0 % | 1 de 2 | 9.5 % – 90.5 % | **PROVISIONAL** · asistente_provisional (D-101) | `revision.json` | — |
-| Tasa de descarte · PROVISIONAL (asistente) | 0.0 % | 0 de 2 | 0.0 % – 65.8 % | **PROVISIONAL** · asistente_provisional (D-101) | `revision.json` | — |
-| Afirmaciones editadas · PROVISIONAL (asistente) | 0.0 % | 0 de 6 | 0.0 % – 39.0 % | **PROVISIONAL** · asistente_provisional (D-101) | `revision.json` | — |
+| Tasa de aceptación (aprobados como borrador) · PROVISIONAL (asistente) | 100.0 % | 1 de 1 | 20.7 % – 100.0 % | **PROVISIONAL** · asistente_provisional (D-101) | `revision.json` | — |
+| Tasa de corrección · PROVISIONAL (asistente) | 0.0 % | 0 de 1 | 0.0 % – 79.3 % | **PROVISIONAL** · asistente_provisional (D-101) | `revision.json` | — |
+| Tasa de descarte · PROVISIONAL (asistente) | 0.0 % | 0 de 1 | 0.0 % – 79.3 % | **PROVISIONAL** · asistente_provisional (D-101) | `revision.json` | — |
+| Afirmaciones editadas · PROVISIONAL (asistente) | 0.0 % | 0 de 8 | 0.0 % – 32.4 % | **PROVISIONAL** · asistente_provisional (D-101) | `revision.json` | — |
 
-- Casos abiertos: 9. Decididos por una persona: 0. Decididos por el revisor provisional: 2.
+- Casos abiertos: 6. Decididos por una persona: 0. Decididos por el revisor provisional: 1.
 - **JUICIO PROVISIONAL DEL ASISTENTE, NO HUMANO (D-101): se rehace a mano en C-09; no reportar como juicio de una persona.**
 
 ## Reproducibilidad
 
 - Registro del manifest: commit `3df0978`, árbol con cambios al registrar: **sí**; corte del snapshot 2026-10-08T03:35:18Z; hash del snapshot `4503952d97fb`.
-- Commit desde el que se generó: `c76eb50`. El registro es de otro commit: confirmar con `--verificar` antes de afirmar que se reproduce.
+- Commit desde el que se generó: `458f4f0` (árbol con cambios sin commitear). El registro es de otro commit: confirmar con `--verificar` antes de afirmar que se reproduce.
 - LLM: deepseek/deepseek-flash, temperatura 0.0, semilla 0; embeddings minilm y e5 con revisión fijada.
 - Salidas deterministas con hash: 33. Borradores en caché: sin_cache 9, completo 1, con_vacios 2.
 - Comprobación: `HF_HUB_OFFLINE=1 poetry run python -m scripts.reproducir --verificar` (sale con 1 si algo difiere).
@@ -180,17 +186,15 @@ Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de 
 
 ## Coherencia entre fuentes
 
-- Distinto número de grupos entre fuentes: puntaje.json (grupos) = 69; ia_vs_baseline.json (ranking.grupos) = 69; precision_at_5.json (candidatos) = 60. Alguna salida es anterior a un cambio de la base: volver a correrla antes de citarla.
-- Fecha de corte distinta: sensibilidad.json 2026-10-08T03:35:18Z contra precision_at_5.json 2026-10-07T00:41:03Z.
 - El top 5 del sistema difiere entre precision_at_5.json e ia_vs_baseline.json: una de las dos salidas es anterior a un cambio del ranking.
 
 ## Fuentes
 
 | Archivo | Commit | Fecha del commit | Fecha dentro del archivo |
 |---|---|---|---|
-| `outputs/metricas.json` | 3df0978 | 2026-10-07T15:37:09-05:00 | 2026-10-07T20:31:59Z |
+| `outputs/metricas.json` | 3df0978 + cambios sin commitear | 2026-10-07T15:37:09-05:00 | 2026-10-08T22:51:50Z |
 | `outputs/ia_vs_baseline.json` | 88de277 | 2026-10-08T15:13:26-05:00 | — |
-| `outputs/precision_at_5.json` | 40253af | 2026-10-07T15:16:18-05:00 | 2026-10-07T00:41:03Z |
+| `outputs/precision_at_5.json` | e512db2 | 2026-10-08T16:28:48-05:00 | 2026-10-08T03:35:18Z |
 | `outputs/clasificacion.json` | 737f8f2 | 2026-10-08T14:21:50-05:00 | — |
 | `outputs/agrupacion.json` | a479628 | 2026-10-06T19:49:01-05:00 | — |
 | `outputs/sensibilidad.json` | 15e7e31 | 2026-10-08T15:13:45-05:00 | 2026-10-08T03:35:18Z |
@@ -198,15 +202,15 @@ Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de 
 | `outputs/pruebas.csv` | e9bf8a3 | 2026-10-07T06:46:06-05:00 | — |
 | `data/manifest.json` | ccb2a8e | 2026-10-07T23:07:47-05:00 | 2026-10-08T03:35:18Z |
 | `eval/etiquetas.csv` | fdfe422 | 2026-10-08T09:59:37-05:00 | — |
-| `docs/prueba_tiempo.md` | 0f9accb | 2026-10-07T07:09:49-05:00 | — |
-| `outputs/revision.json` | 88de277 | 2026-10-08T15:13:26-05:00 | — |
+| `docs/prueba_tiempo.md` | 0f9accb + cambios sin commitear | 2026-10-07T07:09:49-05:00 | — |
+| `outputs/revision.json` | 458f4f0 | 2026-10-08T17:47:45-05:00 | — |
 | `outputs/costo_llm.json` | sin versionar (generado en local) | — | — |
 
 ## Limitaciones
 
-- **Precision@5 con n = 5 temas** en 1 fecha de corte, sin especialista editorial: es exploratoria. Los IC (sistema 0.036–0.625; baseline 0.000–0.434) se solapan: no hay diferencia demostrable. Los temas de un mismo corte no son independientes (nota de la fuente).
+- **Precision@5 con n = 5 temas** en 1 fecha de corte, sin especialista editorial: es exploratoria. Los IC (sistema 0.000–0.434; baseline 0.036–0.625) se solapan: no hay diferencia demostrable. Los temas de un mismo corte no son independientes (nota de la fuente).
 - **Selección ciega solo a medias:** quien eligió los temas conocía la selección y el resultado anteriores (revisión D-78 de E1-19). No es la selección independiente de un editor.
-- **Juicios provisionales del asistente (D-101), pendientes de C-09:** secciones: Ranking: Precision@5, estabilidad y distribución, Revisión humana: personas y revisor provisional, Validez de sustento (revisión de afirmaciones). Se rehacen a mano; hasta entonces no se reportan como juicio de una persona.
+- **Juicios provisionales del asistente (D-101), pendientes de C-09:** secciones: Revisión humana: personas y revisor provisional. Se rehacen a mano; hasta entonces no se reportan como juicio de una persona.
 - **Recalcular tras C-10:** cualquier mejora de ranking, clasificación o generación cambia estas cifras; hay que volver a correr los módulos de `eval/` y regenerar esta página (nueva corrida).
 - **Benchmark de desarrollo (n = 40 consultas):** El benchmark de desarrollo se construyó con el equipo y las reglas por patrón de la consulta se redactaron viendo esas mismas consultas: las cifras de abstención son optimistas, no independientes. n es pequeño (decenas de consultas): los intervalos son anchos y las metas son orientativas.
 - **Baselines:** el veredicto «sin diferencia demostrable» significa que los IC se solapan, no que los métodos sean iguales.

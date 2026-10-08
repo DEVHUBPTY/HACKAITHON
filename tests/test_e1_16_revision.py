@@ -721,8 +721,13 @@ def test_eval_calcula_tasas_con_n_e_intervalo_y_los_motivos(rev) -> None:
     assert t["n"] == 4 and t["mediana"] > 0 and t["media"] > 0
 
 
-def test_x107_los_descartes_administrativos_no_entran_a_las_tasas_y_se_cuentan_aparte(rev) -> None:
-    motivo = CFG.motivos_administrativos[0]
+def test_un_caso_abierto_por_error_se_descarta_como_administrativo() -> None:
+    assert "Abierto por error" in CFG.motivos_descarte and "Abierto por error" in CFG.motivos_administrativos   # C-09: no es un juicio editorial
+    assert "Abierto por error" not in CFG.motivos_con_comentario
+
+
+@pytest.mark.parametrize("motivo", CFG.motivos_administrativos)
+def test_x107_los_descartes_administrativos_no_entran_a_las_tasas_y_se_cuentan_aparte(rev, motivo: str) -> None:
     assert motivo in CFG.motivos_descarte
     _historia(rev)
     extra = rev.caso_de_grupo(h.G_PERIODO, "editorial").id_caso      # el quinto caso de la historia, sin decidir

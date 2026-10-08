@@ -4,9 +4,8 @@
   "revisadas": 6,
   "meta": 0.9,
   "muestra_prevista": 30,
-  "origen_juicio": "asistente_provisional (D-101)",
-  "juicio_humano": false,
-  "aviso_origen": "JUICIO PROVISIONAL DEL ASISTENTE, NO HUMANO (D-101): se rehace a mano en C-09; no reportar como juicio de una persona.",
+  "origen_juicio": "humano",
+  "juicio_humano": true,
   "conteo": {
     "sustentada": 5,
     "parcial": 1,
@@ -71,12 +70,12 @@
     "limite_inferior_wilson": 0.4365,
     "cumple_con_limite_inferior_wilson": false,
     "nota_wilson": "información adicional: no reemplaza el criterio oficial",
-    "origen_juicio": "asistente_provisional (D-101)",
-    "juicio_humano": false
+    "origen_juicio": "humano",
+    "juicio_humano": true
   },
   "revisores": [
-    "asistente (D-101)"
+    "David Feng"
   ],
-  "cumple_meta_provisional": false,
+  "cumple_meta": false,
   "nota": "La muestra tiene 6 < 30 afirmaciones: no se produjeron más (PDF 9.1: «si se producen tantas»)."
 }

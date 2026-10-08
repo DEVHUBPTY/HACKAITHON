@@ -37,5 +37,5 @@ Cada fase tiene una parte que hace el agente y otra que hacen ustedes. El despli
 1. **Una spec por sesión.** Al cambiar de tarea, empezar una conversación nueva para que el contexto no se mezcle.
 2. **Plan antes que código**, siempre.
 3. **Si la spec y `CLAUDE.md` chocan, manda `CLAUDE.md`** y se corrige la spec.
-4. **Una tarea, un worktree, una rama, un PR.** Se integra por PR a `main` con la plantilla de `.github/` y la revisión del paso *Revisar* (D-78). El equipo (David Fen, Javier Acosta, Juan Zhou) hace de todo; el responsable de cada tarea está en el Backlog de Notion.
+4. **Una tarea, un worktree, una rama, un PR.** Se integra por PR a `main` con la plantilla de `.github/` y la revisión del paso *Revisar* (D-78). El equipo (David Feng, Javier Acosta, Juan Zhou) hace de todo; el responsable de cada tarea está en el Backlog de Notion.
 5. **Cronograma:** tramos, punto de corte y reparto por área en `docs/cronograma.md`.
