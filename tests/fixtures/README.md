@@ -69,3 +69,5 @@ No son ruido (controles): `SYN-RUI-008` (URL canónica; las cuatro variantes de 
 | `e2_03_cu05_ficha_abstencion.json` | `EntradaFicha` de `GRP-f4a44182b1` en banca (acción «Seguimiento prioritario»: no genera boletín, D-104) |
 
 Si cambia un prompt o una regla del validador, la caché deja de servir y `tests/test_e2_03_cu05.py` falla: se vuelve a calentar (`scripts.calentar_cache`) y a congelar.
+
+**D-125 (sin subtemas):** `e2_03_cu05_ficha_editorial.json` y `e2_03_cu05_paquete_editorial.json` conservan el vacío `subtema_desconocido` y su texto ("subtema no determinado…"), porque ese texto forma parte de la evidencia con que se guardó la respuesta en `data/cache_llm/` y cambiarlo invalidaría la caché; el vacío actual se llama `tema_desconocido`. Se actualizarán al volver a calentar la caché con red (`scripts.calentar_cache`). `e2_03_cu05_ficha_abstencion_renderizable.json` sí se actualizó (sin `subtema`, `criterio_subtema` ni `peso_subtema`).

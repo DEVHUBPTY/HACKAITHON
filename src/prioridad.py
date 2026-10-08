@@ -176,7 +176,6 @@ def leer_entradas(
         n_procedencias[str(p["id_grupo"])] += 1
         for id_noticia in str(p["ids_noticia"]).split(SEPARADOR_LISTA):
             procedencia_de[id_noticia] = int(p["orden"])
-    subtemas = {g["id_grupo"]: g["subtema"] for g in leer_contexto_de_grupos(con)}
     temas = {str(g["id_grupo"]): g.get("tema_clasificado") for g in grupos}
     cfg = cfg or cargar_prioridad()
     filas_vinculos = db.leer_tabla(con, "vinculos")
@@ -193,7 +192,6 @@ def leer_entradas(
                 id_grupo=id_grupo,
                 miembros=miembros,
                 vectores=np.stack([vectores[posicion[str(m["id_noticia"])]] for m in miembros]),
-                subtema=subtemas.get(id_grupo),
                 tema=temas.get(id_grupo),
                 n_procedencias=n_procedencias[id_grupo],
                 tiene_oficial=oficial.get(id_grupo, False),

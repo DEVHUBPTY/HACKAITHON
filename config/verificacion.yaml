@@ -19,7 +19,7 @@ vacios:
     - cifra_periodo_distinto
     - medios_o_fechas_desconocidos
     - urgencia_sin_publicacion
-    - subtema_desconocido
+    - tema_desconocido
     - sector_desconocido
   verificacion_por_defecto: "Revisar el vacío con la fuente primaria antes de usar el tema."
   # Qué hacer para cerrar cada vacío. Los vacíos y sus textos los calcula E1-10 (`prioridad.yaml`, tabla `evidencia`): la
@@ -47,55 +47,23 @@ vacios:
       verificacion: "Abrir el enlace de cada titular para identificar el medio y la fecha de publicación original."
     urgencia_sin_publicacion:
       verificacion: "Abrir el enlace de cada titular para identificar el medio y la fecha de publicación original."
-    subtema_desconocido:
-      verificacion: "Confirmar de qué asunto trata el grupo; sin subtema no hay fuentes sugeridas específicas."
+    tema_desconocido:
+      verificacion: "Confirmar de qué asunto trata el grupo; sin tema no hay fuentes sugeridas."
     sector_desconocido:
       verificacion: "Confirmar a qué sector del entorno pertenece el tema; sin sector el impacto usa un alcance neutro."
 
 fuentes:
-  subtema_desconocido: sin_subtema   # valor de subtema que equivale a «no determinado» (D-92); también cuenta el nulo
   nota: "sugerencias para quien verifica; no son evidencia del sistema ni se citan como tal"
-  por_subtema:
-    crecimiento_pib: ["Contraloría General de la República (INEC)", "Ministerio de Economía y Finanzas"]
-    inflacion_precios: ["Contraloría General de la República (INEC)", "Autoridad de Protección al Consumidor y Defensa de la Competencia"]
+  # D-125: fuentes por regla interna de vínculo (config/vinculos.yaml: reglas_vinculo), migradas de las que tenía cada subtema.
+  # Si ninguna regla de vínculo se dispara, solo se sugiere lo del tema. La regla no se muestra como categoría.
+  por_regla_vinculo:
+    pib: ["Contraloría General de la República (INEC)", "Ministerio de Economía y Finanzas"]
+    inflacion: ["Contraloría General de la República (INEC)", "Autoridad de Protección al Consumidor y Defensa de la Competencia"]
     empleo: ["Contraloría General de la República (INEC)", "Ministerio de Trabajo y Desarrollo Laboral"]
-    finanzas_publicas: ["Ministerio de Economía y Finanzas", "Contraloría General de la República"]
-    inversion: ["Ministerio de Comercio e Industrias", "Ministerio de Economía y Finanzas"]
     comercio_exterior: ["Contraloría General de la República (INEC)", "Ministerio de Comercio e Industrias"]
-    banca_calificaciones: ["Superintendencia de Bancos de Panamá", "Ministerio de Economía y Finanzas"]
-    operacion_canal: ["Autoridad del Canal de Panamá"]
-    puertos: ["Autoridad Marítima de Panamá", "Autoridad del Canal de Panamá"]
-    zona_libre: ["Zona Libre de Colón", "Ministerio de Comercio e Industrias"]
-    carga_aerea: ["Autoridad de Aeronáutica Civil", "Aeropuerto Internacional de Tocumen"]
-    transporte_carga: ["Autoridad del Tránsito y Transporte Terrestre", "Autoridad Marítima de Panamá"]
-    cadenas_suministro: ["Autoridad del Canal de Panamá", "Ministerio de Comercio e Industrias"]
-    llegada_visitantes: ["Autoridad de Turismo de Panamá", "Contraloría General de la República (INEC)"]
-    cruceros: ["Autoridad de Turismo de Panamá", "Autoridad Marítima de Panamá"]
-    hoteleria: ["Autoridad de Turismo de Panamá"]
-    aviacion_pasajeros: ["Autoridad de Aeronáutica Civil", "Aeropuerto Internacional de Tocumen"]
-    destinos_promocion: ["Autoridad de Turismo de Panamá"]
-    agua_potable: ["Instituto de Acueductos y Alcantarillados Nacionales", "Ministerio de Salud"]
-    electricidad: ["Autoridad Nacional de los Servicios Públicos", "Empresa de Transmisión Eléctrica"]
     telecomunicaciones: ["Autoridad Nacional de los Servicios Públicos"]
-    transporte_publico: ["Autoridad del Tránsito y Transporte Terrestre", "Metro de Panamá"]
-    recoleccion_basura: ["Autoridad de Aseo Urbano y Domiciliario", "Ministerio de Ambiente"]
-    salud_publica: ["Ministerio de Salud", "Caja de Seguro Social"]
-    educacion_publica: ["Ministerio de Educación"]
-    seguridad_ciudadana: ["Ministerio de Seguridad Pública", "Ministerio Público"]
-    obras_publicas: ["Ministerio de Obras Públicas", "Autoridad Nacional de Contrataciones Públicas (PanamaCompra)", "Contraloría General de la República"]
     sismos: ["Instituto de Geociencias de la Universidad de Panamá", "Servicio Geológico de los Estados Unidos (USGS)", "Sistema Nacional de Protección Civil"]
-    inundaciones_lluvias: ["Empresa de Transmisión Eléctrica (Hidrometeorología)", "Sistema Nacional de Protección Civil"]
-    deslizamientos: ["Sistema Nacional de Protección Civil", "Ministerio de Obras Públicas"]
-    sequia_nino: ["Empresa de Transmisión Eléctrica (Hidrometeorología)", "Autoridad del Canal de Panamá"]
-    incendios_forestales: ["Ministerio de Ambiente", "Cuerpo de Bomberos de Panamá"]
-    alertas_proteccion_civil: ["Sistema Nacional de Protección Civil"]
-    leyes_decretos: ["Gaceta Oficial Digital", "Asamblea Nacional"]
-    resoluciones_entes: ["Gaceta Oficial Digital"]
-    reformas: ["Asamblea Nacional", "Gaceta Oficial Digital"]
-    listas_internacionales: ["Ministerio de Economía y Finanzas", "Superintendencia de Bancos de Panamá"]
-    contratos_concesiones: ["Autoridad Nacional de Contrataciones Públicas (PanamaCompra)", "Contraloría General de la República"]
-    sanciones: ["Gaceta Oficial Digital", "Ministerio Público"]
-  # Si el grupo no tiene subtema (D-92) o su subtema no está arriba, solo se sugiere lo del tema.
+    banca: ["Superintendencia de Bancos de Panamá", "Ministerio de Economía y Finanzas"]
   por_tema:
     economia: ["Ministerio de Economía y Finanzas", "Contraloría General de la República (INEC)"]
     logistica: ["Autoridad del Canal de Panamá", "Autoridad Marítima de Panamá"]

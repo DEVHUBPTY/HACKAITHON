@@ -88,7 +88,7 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("ruido_similitud", "BOOLEAN"),
         ("tema_clasificado", "VARCHAR"),
         ("tema_similitud", "DOUBLE"),
-        ("subtema_clasificado", "VARCHAR"),
+        ("subtema_clasificado", "VARCHAR"),   # obsoleta desde D-125: ya no se llena (nulo); se conserva para que las bases viejas carguen
         ("tema_secundario", "VARCHAR"),
         ("tema_secundario_similitud", "DOUBLE"),
         ("tema_baseline", "VARCHAR"),
@@ -133,13 +133,13 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("clave", "VARCHAR NOT NULL"),
         ("motivo", "VARCHAR NOT NULL"),
     ],
-    "similitud_tema": [  # E1-07: similitud de cada noticia con cada tema (explicabilidad), por método (A o B)
+    "similitud_tema": [  # E1-07: similitud de cada noticia con cada tema (explicabilidad), por método (A o logistica)
         ("id_noticia", "VARCHAR NOT NULL"),
         ("metodo", "VARCHAR NOT NULL"),
         ("tema", "VARCHAR NOT NULL"),
         ("similitud", "DOUBLE NOT NULL"),
-        ("subtema", "VARCHAR"),
-        ("margen_subtema", "DOUBLE"),  # D-92: similitud del 1.º menos la del 2.º subtema del tema (solo método B)
+        ("subtema", "VARCHAR"),         # obsoleta desde D-125 (era del método B): nula
+        ("margen_subtema", "DOUBLE"),  # obsoleta desde D-125 (era del método B): nula
     ],
     "grupos": [  # E1-08: un grupo por evento; el conteo de procedencias es una ESTIMACIÓN (CU-03)
         ("id_grupo", "VARCHAR PRIMARY KEY"),
@@ -156,8 +156,8 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("tema_clasificado", "VARCHAR"),
         ("ids_noticia", "VARCHAR NOT NULL"),
         ("estimado", "BOOLEAN NOT NULL"),
-        ("tema_origen_clasificador", "VARCHAR"),  # D-122: tema del clasificador cuando un subtema nombrado lo corrigió; nulo si no se corrigió
-        ("criterio_tema", "VARCHAR"),             # D-122: por qué se corrigió (``subtema_nombrado``); nulo si el tema es el del clasificador
+        ("tema_origen_clasificador", "VARCHAR"),  # obsoleta desde D-125 (D-122 quitado): nula
+        ("criterio_tema", "VARCHAR"),             # obsoleta desde D-125 (D-122 quitado): nula
     ],
     "procedencias": [  # E1-08: procedencias independientes de cada grupo y por qué se unieron los titulares
         ("id_grupo", "VARCHAR NOT NULL"),
@@ -177,7 +177,7 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("motivo_sin_vinculo", "VARCHAR"),     # solo en filas sin vínculo (config/vinculos.yaml)
         ("fuente", "VARCHAR NOT NULL"),        # quién la escribe: `indicador` (src.contexto), `usgs` (src.contexto_sismos) o `sbp` (src.contexto_sbp)
         ("rol", "VARCHAR"),                    # panama · comparable · tendencia · evento · sistema (SBP)
-        ("subtema", "VARCHAR"),                # subtema más cercano dentro del tema del grupo (D-92: solo si hay margen o término)
+        ("subtema", "VARCHAR"),                # obsoleta desde D-125: ya no se llena (nulo)
         ("pais_iso3", "VARCHAR"),
         ("indicador_id", "VARCHAR"),
         ("anio", "INTEGER"),
@@ -194,7 +194,7 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("estado_evento", "VARCHAR"),          # `automatic` o `reviewed`
         ("url_evento", "VARCHAR"),
         ("diferencia_horas", "DOUBLE"),        # distancia a la noticia más cercana del grupo
-        ("criterio_subtema", "VARCHAR"),       # D-92: por qué se aceptó el subtema: `margen` o `lexico`
+        ("criterio_subtema", "VARCHAR"),       # obsoleta desde D-125: ya no se llena (nulo)
         # E3-02: solo en las filas `sbp` (el id de la serie va en `indicador_id`; el valor y la unidad, en `valor`/`unidad`)
         ("periodo", "VARCHAR"),                # mes del dato, YYYY-MM
         ("informe", "VARCHAR"),                # informe de la SBP del que sale el dato
@@ -214,7 +214,7 @@ ESQUEMA: dict[str, list[tuple[str, str]]] = {
         ("puntaje", "DOUBLE NOT NULL"),
         ("rango", "VARCHAR NOT NULL"),
         ("componentes", "VARCHAR NOT NULL"),   # JSON: por componente, su valor y de qué valores sale
-        ("vacios", "VARCHAR NOT NULL"),        # JSON: vacíos que nacen del puntaje (urgencia estimada, recirculada, subtema)
+        ("vacios", "VARCHAR NOT NULL"),        # JSON: vacíos que nacen del puntaje (urgencia estimada, recirculada, tema desconocido)
         ("recirculada", "BOOLEAN NOT NULL"),
         ("es_nueva", "BOOLEAN NOT NULL"),
         ("empate_con", "INTEGER"),             # D-105: cuántos OTROS grupos tienen el mismo P tal como se muestra (0 = sin empate)

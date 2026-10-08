@@ -28,7 +28,7 @@ from pathlib import Path
 import numpy as np
 
 from src import db
-from src.clasificacion import METODO_A, METODO_B, construir_referencias, puntuar, texto_de_entrada
+from src.clasificacion import METODO_A, construir_referencias, puntuar, texto_de_entrada
 from src.configuracion import RAIZ, cargar_clasificacion, cargar_normalizacion, cargar_ruido, cargar_temas
 from src.embeddings import crear
 from src.limpieza import Reglas
@@ -72,7 +72,7 @@ def calcular(ruta_base: Path) -> dict[str, dict]:
         ref = construir_referencias(emb, temas, reglas)
         vectores = emb.codificar(textos, "titular")
         por_metodo = {}
-        for metodo in (METODO_A, METODO_B):
+        for metodo in (METODO_A,):
             sim = puntuar(vectores, ref, metodo).similitud
             orden = np.sort(sim, axis=1)
             maxima, brecha = orden[:, -1], orden[:, -1] - orden[:, -2]
@@ -107,7 +107,7 @@ def main(argv: list[str] | None = None) -> int:
         if nombre == "n":
             continue
         print(f"\n{nombre}")
-        for metodo in (METODO_A, METODO_B):
+        for metodo in (METODO_A,):
             v = valores[metodo]
             auc_v = "n/d" if v["auc_fuera_de_temas_vs_utiles"] is None else f"{v['auc_fuera_de_temas_vs_utiles']:.3f}"
             print(f"  {metodo}: umbral_sin_tema {v['umbral_sin_tema']}  margen_secundario {v['margen_secundario']}  (AUC fuera_de_temas vs útiles {auc_v})")

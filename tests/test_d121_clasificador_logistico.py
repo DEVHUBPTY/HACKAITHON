@@ -71,11 +71,11 @@ def test_bajo_el_umbral_la_logistica_se_abstiene(emb, ref) -> None:
     temas = ref.temas
     justo_debajo = np.full(len(temas), (1 - (umbrales.umbral_sin_tema - 0.01)) / (len(temas) - 1))
     justo_debajo[0] = umbrales.umbral_sin_tema - 0.01
-    d = clasificacion.decidir(justo_debajo, [None] * len(temas), temas, umbrales)
+    d = clasificacion.decidir(justo_debajo, temas, umbrales)
     assert d.principal == SIN_TEMA and d.similitud < umbrales.umbral_sin_tema
     justo_encima = np.full(len(temas), (1 - (umbrales.umbral_sin_tema + 0.01)) / (len(temas) - 1))
     justo_encima[0] = umbrales.umbral_sin_tema + 0.01
-    assert clasificacion.decidir(justo_encima, [None] * len(temas), temas, umbrales).principal == temas[0]
+    assert clasificacion.decidir(justo_encima, temas, umbrales).principal == temas[0]
     # de punta a punta: un umbral inalcanzable hace que todo el lote se abstenga
     todos = clasificacion.clasificar_textos(
         TITULARES, emb, ref, METODO_LOGISTICO, UmbralesMetodo(umbral_sin_tema=1.0, margen_secundario=0.0)
@@ -100,8 +100,8 @@ def test_la_configuracion_rechaza_claves_desconocidas_en_logistica(tmp_path) -> 
     [
         ({"remuestreos: 5000": "remuestreos: 1000\n    extra: 1"}, "extra"),
         ({"remuestreos: 5000": "remuestreos: 1500"}, "remuestreos"),         # el bootstrap pareado exige >= 2000
-        ({"regularizacion_c: 1000.0 ": "regularizacion_c: 7.0 "}, "rejilla_c"),  # C fuera de la rejilla
-        ({"umbral_sin_tema: 0.472": "umbral_sin_tema: 1.5"}, "umbral_sin_tema"),
+        ({"regularizacion_c: 100.0 ": "regularizacion_c: 7.0 "}, "rejilla_c"),  # C fuera de la rejilla
+        ({"umbral_sin_tema: 0.287": "umbral_sin_tema: 1.5"}, "umbral_sin_tema"),
     ],
 )
 def test_la_configuracion_logistica_invalida_se_rechaza(tmp_path, reemplazos, mensaje) -> None:
@@ -113,7 +113,7 @@ def test_la_configuracion_logistica_invalida_se_rechaza(tmp_path, reemplazos, me
 def test_el_metodo_se_elige_por_configuracion(tmp_path) -> None:
     carpeta = _copiar_config(tmp_path, {"metodo_activo: A": f"metodo_activo: {METODO_LOGISTICO}"})
     assert cargar_config("clasificacion", ConfigClasificacion, carpeta).metodo_activo == METODO_LOGISTICO
-    assert cargar_clasificacion().metodo_activo in {"A", "B", METODO_LOGISTICO}
+    assert cargar_clasificacion().metodo_activo in {"A", METODO_LOGISTICO}
     carpeta_mala = _copiar_config(tmp_path / "otra", {"metodo_activo: A": "metodo_activo: C"})
     with pytest.raises(ErrorDeConfiguracion, match="metodo_activo"):
         cargar_config("clasificacion", ConfigClasificacion, carpeta_mala)
@@ -129,7 +129,7 @@ def test_el_metodo_a_sigue_disponible_y_sin_cambios(emb) -> None:
 
 
 def test_la_calibracion_es_determinista_y_solo_usa_referencias(emb) -> None:
-    cfg = cargar_clasificacion().logistica.model_copy(update={"pliegues": 5})
+    cfg = cargar_clasificacion().logistica.model_copy(update={"pliegues": 3})   # D-125: cada tema de prueba trae 3 textos (descripción + 2 ejemplos)
     X, y = clasificacion.datos_de_entrenamiento(emb, temas_de_prueba(), REGLAS)
     a = clasificacion_logistica.calibrar(X, y, cfg)
     b = clasificacion_logistica.calibrar(X, y, cfg)

@@ -48,7 +48,7 @@ def test_un_grupo_de_prioridad_alta_expone_componentes_version_y_no_habilita_pub
             miembro("NOT-a000000003", "Decreto a nivel nacional", "tvn-2.com", similitud=0.95, publicado_hace=4),
         ],
         vectores=np.stack([vector(0.0, 1.0)] * 3),
-        subtema="crecimiento_pib",
+        tema="economia",
         n_procedencias=3,
         tiene_oficial=True,
     )
@@ -165,7 +165,7 @@ def test_un_grupo_con_un_titular_sobre_panama_tiene_foco_pleno_aunque_otros_sean
     assert _calcular(_varios(mixto))["GRP-mixto"].componentes["R"].explicacion["foco"] == 1.0
 
 
-# ------------------------------------------------------------------ I · alcance geográfico y subtema
+# ------------------------------------------------------------------ I · alcance geográfico y tema (D-125)
 
 
 @pytest.mark.parametrize(
@@ -196,20 +196,28 @@ def test_el_alcance_del_grupo_es_el_mas_amplio_de_sus_titulares() -> None:
     assert g.terminos == ("a nivel nacional",) or "a nivel nacional" in g.terminos
 
 
-def test_i_combina_subtema_y_alcance_geografico_sin_dato_oficial_ni_procedencias() -> None:
-    base = dict(miembros=[miembro("NOT-i000000001", "Decreto a nivel nacional")], subtema="crecimiento_pib")
+def test_i_combina_tema_y_alcance_geografico_sin_dato_oficial_ni_procedencias() -> None:
+    base = dict(miembros=[miembro("NOT-i000000001", "Decreto a nivel nacional")], tema="economia")
     sin = entrada("GRP-sin", n_procedencias=1, tiene_oficial=False, **base)
     con = entrada("GRP-con", n_procedencias=3, tiene_oficial=True, **base)
     r = _calcular(_varios(sin, con))
-    esperado = 0.5 * REGLAS.impacto.alcance_subtema["crecimiento_pib"] + 0.5 * REGLAS.impacto.alcance_geografico.nacional
+    esperado = 0.5 * REGLAS.impacto.alcance_tema["economia"] + 0.5 * REGLAS.impacto.alcance_geografico.nacional
     assert r["GRP-sin"].componentes["I"].valor == pytest.approx(esperado)
     assert r["GRP-con"].componentes["I"].valor == r["GRP-sin"].componentes["I"].valor   # D-15, D-35
 
 
-def test_un_grupo_sin_subtema_usa_el_alcance_neutro_y_lo_declara_como_vacio() -> None:
-    p = _calcular(_varios(entrada("GRP-ns", subtema=None)))["GRP-ns"]
-    assert p.componentes["I"].explicacion["alcance_subtema"] == CFG.impacto.alcance_subtema_desconocido
-    assert any(v.codigo == "subtema_desconocido" for v in p.vacios)
+@pytest.mark.parametrize("tema", [None, "sin_tema"])
+def test_un_grupo_sin_tema_usa_el_alcance_neutro_y_lo_declara_como_vacio(tema: str | None) -> None:
+    p = _calcular(_varios(entrada("GRP-ns", tema=tema)))["GRP-ns"]
+    assert p.componentes["I"].explicacion["alcance_tema"] == CFG.impacto.alcance_tema_desconocido
+    assert any(v.codigo == "tema_desconocido" for v in p.vacios)
+
+
+def test_cada_tema_toma_su_propio_alcance_del_yaml() -> None:
+    r = _calcular(_varios(*(entrada(f"GRP-{t}", tema=t) for t in REGLAS.impacto.alcance_tema)))
+    for tema, alcance in REGLAS.impacto.alcance_tema.items():
+        assert r[f"GRP-{tema}"].componentes["I"].explicacion["alcance_tema"] == alcance
+        assert not [v for v in r[f"GRP-{tema}"].vacios if v.codigo == "tema_desconocido"]
 
 
 # ------------------------------------------------------------------ U · urgencia
@@ -321,7 +329,7 @@ def test_e_cuenta_procedencias_no_titulares() -> None:
 
 
 def test_dos_grupos_identicos_salvo_por_tener_dato_oficial_tienen_la_misma_i_y_distinta_e() -> None:
-    base = dict(miembros=[miembro("NOT-o000000001", "Inflación sube a nivel nacional")], subtema="inflacion_precios", n_procedencias=2)
+    base = dict(miembros=[miembro("NOT-o000000001", "Inflación sube a nivel nacional")], tema="economia", n_procedencias=2)
     r = _calcular(_varios(entrada("GRP-sin", tiene_oficial=False, **base), entrada("GRP-con", tiene_oficial=True, **base)))
     assert r["GRP-con"].componentes["I"].valor == r["GRP-sin"].componentes["I"].valor
     assert r["GRP-con"].componentes["E"].valor > r["GRP-sin"].componentes["E"].valor
@@ -384,7 +392,7 @@ def test_t08_aceptacion_expone_componentes_y_regla_y_la_prioridad_no_habilita_pu
     fuerte = entrada(
         "GRP-t08",
         [miembro(f"NOT-t08000000{n}", "Gobierno anuncia a nivel nacional un decreto", d, similitud=0.95, publicado_hace=2 + n) for n, d in enumerate(("prensa.com", "laestrella.com.pa", "tvn-2.com"))],
-        vectores=np.stack([vector(0.0, 1.0)] * 3), subtema="crecimiento_pib", n_procedencias=3, tiene_oficial=True,
+        vectores=np.stack([vector(0.0, 1.0)] * 3), tema="economia", n_procedencias=3, tiene_oficial=True,
     )
     r = _calcular(_varios(fuerte))["GRP-t08"]
     assert r.rango == "alto" and set(r.componentes) == {"R", "I", "U", "N", "E"} and all(c.explicacion for c in r.componentes.values())

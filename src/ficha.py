@@ -61,6 +61,7 @@ from src.configuracion import (
     cargar_verificacion,
     cargar_vinculos,
 )
+from src.contexto import reglas_disparadas
 from src.embeddings import Embeddings, crear
 from src.esquemas import (
     ETIQUETA_BORRADOR,
@@ -222,11 +223,18 @@ def elegir_titular_central(miembros: Sequence[Mapping[str, Any]], vectores: np.n
 # ------------------------------------------------------------------ fuentes sugeridas
 
 
-def fuentes_sugeridas(tema: str | None, subtema: str | None, modalidad: ConfigModalidad, cfg: ConfigVerificacion) -> list[FuenteSugerida]:
-    """Fuentes para verificar: las del subtema; sin subtema conocido (D-92), solo las del tema; y las extra de la modalidad al final."""
+def _regla_de_vinculo(datos: Datos) -> str | None:
+    """Nombre de la única regla interna de vínculo (D-125) que disparan los titulares del grupo; ``None`` si no hay o hay varias."""
+    titulares = [str(n.get("titulo_limpio") or n.get("titulo") or "") for n in datos.noticias]
+    disparadas = reglas_disparadas(titulares, datos.grupo.get("tema_clasificado"), cargar_vinculos())
+    return next(iter(disparadas)) if len(disparadas) == 1 else None
+
+
+def fuentes_sugeridas(tema: str | None, regla_vinculo: str | None, modalidad: ConfigModalidad, cfg: ConfigVerificacion) -> list[FuenteSugerida]:
+    """Fuentes para verificar: las de la regla de vínculo del grupo (D-125); sin regla, solo las del tema; y las extra de la modalidad."""
     f = cfg.fuentes
-    if subtema and subtema != f.subtema_desconocido and subtema in f.por_subtema:
-        base = [FuenteSugerida(nombre=n, origen="subtema") for n in f.por_subtema[subtema]]
+    if regla_vinculo and regla_vinculo in f.por_regla_vinculo:
+        base = [FuenteSugerida(nombre=n, origen="regla") for n in f.por_regla_vinculo[regla_vinculo]]
     elif tema and tema in f.por_tema:
         base = [FuenteSugerida(nombre=n, origen="tema") for n in f.por_tema[tema]]
     else:
@@ -331,8 +339,8 @@ def _contradicciones(datos: Datos, cfg: ConfigVerificacion) -> list[Contradiccio
 def _alcance(datos: Datos) -> str:
     """Leyenda de alcance (D-51): declara la descripción del RSS si se usó en algún paso que da forma a lo que muestra la ficha.
 
-    La descripción es de uso interno y nunca se muestra (D-31), pero si se codificó junto al titular para **clasificar** (tema y
-    subtema, ``clasificacion.yaml``) o para **agrupar** (``reglas_v1.3.yaml``), la ficha depende de ella y la leyenda debe decirlo.
+    La descripción es de uso interno y nunca se muestra (D-31), pero si se codificó junto al titular para **clasificar** (el tema,
+    ``clasificacion.yaml``) o para **agrupar** (``reglas_v1.3.yaml``), la ficha depende de ella y la leyenda debe decirlo.
     Solo cuenta si algún titular del grupo la trae: sin descripción no hay nada que declarar.
     """
     leyendas = cargar_restricciones().leyendas_alcance
@@ -340,7 +348,7 @@ def _alcance(datos: Datos) -> str:
     return leyendas.con_descripcion if uso_en_pasos and any(n.get("descripcion") for n in datos.noticias) else leyendas.titular_metadatos
 
 
-def _que_se_reporta(datos: Datos, titulares: list[TitularReportado], emb: Embeddings | None, cfg: ConfigVerificacion, subtema: str | None) -> QueSeReporta:
+def _que_se_reporta(datos: Datos, titulares: list[TitularReportado], emb: Embeddings | None, cfg: ConfigVerificacion) -> QueSeReporta:
     miembros = datos.noticias
     if len(miembros) > 1:
         emb = emb or _embeddings()
@@ -357,8 +365,6 @@ def _que_se_reporta(datos: Datos, titulares: list[TitularReportado], emb: Embedd
     return QueSeReporta(
         tema=g.get("tema_clasificado"),
         tema_secundario=tema_secundario_de_grupo(miembros, g.get("tema_clasificado"), cargar_temas().temas),
-        subtema=subtema,
-        criterio_subtema=next((str(v["criterio_subtema"]) for v in datos.vinculos if subtema and v.get("criterio_subtema")), None),
         titular_central=TitularCentral(id_noticia=central.id_noticia, titular=central.titular, medio=central.medio, url=central.url),
         cobertura=Cobertura(
             n_titulares=int(g["n_titulares"]), n_medios=int(g["n_medios"]), fecha_inicio=g.get("fecha_inicio"), fecha_fin=g.get("fecha_fin"),
@@ -575,8 +581,7 @@ def construir_ficha(
     datos = leer_datos(con, id_grupo, modalidad)
     if excluir_vinculos:
         datos = replace(datos, vinculos=[v for v in datos.vinculos if v.get("id_evidencia") not in set(excluir_vinculos)])
-    componentes = _json(datos.puntaje["componentes"], {})
-    subtema = componentes.get("I", {}).get("explicacion", {}).get("subtema")
+    regla_vinculo = _regla_de_vinculo(datos)
     titulares = _titulares(datos)
     vacios = [*vacios_extra, *_vacios(datos, cfg)]
     principales = cfg.vacios.principales
@@ -586,12 +591,12 @@ def construir_ficha(
         marca_borrador=ETIQUETA_BORRADOR,
         alcance=_alcance(datos),
         puntaje=_puntaje(datos),
-        que_se_reporta=_que_se_reporta(datos, titulares, emb, cfg, subtema),
+        que_se_reporta=_que_se_reporta(datos, titulares, emb, cfg),
         quien_lo_reporta=QuienLoReporta(titulares=titulares, procedencias=_procedencias(datos, cfg), medio_referencia=_medio_referencia(titulares, mod, cfg)),
         respaldado=_respaldado(datos, titulares, cfg),
         falta_comprobar=FaltaComprobar(
             principales=vacios[:principales], otros=vacios[principales:],
-            fuentes_sugeridas=fuentes_sugeridas(datos.grupo.get("tema_clasificado"), subtema, mod, cfg), aviso_fuentes=cfg.fuentes.nota,
+            fuentes_sugeridas=fuentes_sugeridas(datos.grupo.get("tema_clasificado"), regla_vinculo, mod, cfg), aviso_fuentes=cfg.fuentes.nota,
         ),
         accion_recomendada=_accion(datos, vacios, mod, cfg),
     )
@@ -622,7 +627,6 @@ def vista(ficha: Ficha, cfg: ConfigVerificacion | None = None) -> Vista:
     q, r, ra, fc, ar = ficha.que_se_reporta, ficha.quien_lo_reporta, ficha.respaldado, ficha.falta_comprobar, ficha.accion_recomendada
     tema = temas.get(q.tema or "")
     nombre_tema = tema.nombre if tema else (q.tema or "no determinado")
-    nombre_subtema = tema.subtemas[q.subtema].nombre if tema and q.subtema in tema.subtemas else "no determinado"
     c = q.cobertura
     origen = cfg.presentacion.origen_fecha
     if c.fecha_inicio and c.fecha_fin:
@@ -633,7 +637,7 @@ def vista(ficha: Ficha, cfg: ConfigVerificacion | None = None) -> Vista:
     s1 = [
         Linea(f"Titular central: «{q.titular_central.titular}» — {q.titular_central.medio}"),
         Linea(f"Cobertura: {_plural(c.n_titulares, 'titular', 'titulares')} · {_plural(c.n_medios, 'medio', 'medios')} · {fechas}"),
-        Linea(f"Tema: {nombre_tema} · Subtema: {nombre_subtema}" + (f" (criterio: {q.criterio_subtema})" if q.criterio_subtema else "")),
+        Linea(f"Tema: {nombre_tema}"),
         # E2-02: una ficha revisada antes de existir el campo, o un grupo sin otro tema, lo dice en vez de omitirlo
         Linea(f"Tema secundario: {temas[q.tema_secundario].nombre if q.tema_secundario in temas else (q.tema_secundario or SIN_DATO)}"),
         Linea(f"Alcance: {ficha.alcance}"),
@@ -678,7 +682,7 @@ def vista(ficha: Ficha, cfg: ConfigVerificacion | None = None) -> Vista:
         s4.append(Linea(f"Otros vacíos ({len(fc.otros)})"))
         s4 += [vacio(x, 1, True) for x in fc.otros]
     s4.append(Linea(f"Fuentes sugeridas para verificar ({fc.aviso_fuentes})"))
-    s4 += [Linea(s.nombre, 1) for s in fc.fuentes_sugeridas] or [Linea("Ninguna: el grupo no tiene tema ni subtema conocido", 1)]
+    s4 += [Linea(s.nombre, 1) for s in fc.fuentes_sugeridas] or [Linea("Ninguna: el grupo no tiene tema conocido", 1)]
 
     p = ficha.puntaje
     desglose = " · ".join(f"{k} {_numero(c.valor, cfg)}" for k, c in p.componentes.items())

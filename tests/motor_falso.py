@@ -45,21 +45,20 @@ def config_de_prueba(**cambios: object) -> ConfigClasificacion:
 def temas_de_prueba() -> ConfigTemas:
     """Seis temas mínimos con vocabulario disjunto: cada uno se reconoce por sus palabras."""
     vocabulario = {
-        "economia": ("inflacion precios canasta", ["inflacion sube precios", "deuda presupuesto fiscal"], {"precios": "precios canasta combustibles", "empleo": "desempleo empleo trabajo"}),
-        "logistica": ("canal transitos buques", ["canal reduce transitos", "puerto contenedores carga"], {"canal": "canal transitos calado", "puertos": "puerto contenedores"}),
-        "turismo": ("turistas hoteles cruceros", ["hoteles llenos turistas", "cruceros visitantes playa"], {"hoteles": "hoteles ocupacion", "cruceros": "cruceros colon"}),
-        "servicios_publicos": ("agua luz hospital", ["sin agua barrios", "hospital medicamentos"], {"agua": "agua potable tuberia", "salud": "hospital pacientes"}),
-        "eventos_naturales": ("sismo lluvias sequia", ["fuerte sismo temblor", "lluvias inundaciones"], {"sismos": "sismo temblor", "lluvias": "lluvias inundaciones"}),
-        "regulacion": ("ley decreto resolucion", ["aprueban ley", "decreto regula sanciones"], {"leyes": "ley decreto", "sanciones": "sanciona multa"}),
+        "economia": ("inflacion precios canasta", ["inflacion sube precios", "deuda presupuesto fiscal"]),
+        "logistica": ("canal transitos buques", ["canal reduce transitos", "puerto contenedores carga"]),
+        "turismo": ("turistas hoteles cruceros", ["hoteles llenos turistas", "cruceros visitantes playa"]),
+        "servicios_publicos": ("agua luz hospital", ["sin agua barrios", "hospital medicamentos"]),
+        "eventos_naturales": ("sismo lluvias sequia", ["fuerte sismo temblor", "lluvias inundaciones"]),
+        "regulacion": ("ley decreto resolucion", ["aprueban ley", "decreto regula sanciones"]),
     }
     temas = {
         id_tema: {
             "nombre": id_tema.title(),
             "descripcion": descripcion,
             "ejemplos": [{"titulo": t, "real": False} for t in ejemplos],
-            "subtemas": {sub: {"nombre": sub, "prototipo": proto} for sub, proto in subtemas.items()},
         }
-        for id_tema, (descripcion, ejemplos, subtemas) in vocabulario.items()
+        for id_tema, (descripcion, ejemplos) in vocabulario.items()
     }
     return ConfigTemas.model_validate(
         {

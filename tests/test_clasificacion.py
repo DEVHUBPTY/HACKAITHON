@@ -1,4 +1,6 @@
-"""E1-07: embeddings, clasificación (A y B), baseline y filtro de ruido por similitud. Sin red: codificador de prueba."""
+"""E1-07: embeddings, clasificación (A), baseline y filtro de ruido por similitud. Sin red: codificador de prueba.
+
+D-125 quitó el método B (prototipos por subtema): solo quedan A y ``logistica`` (ver ``test_d121_clasificador_logistico.py``)."""
 
 import subprocess
 import sys
@@ -110,6 +112,7 @@ def _copiar_config(tmp_path, reemplazos: dict[str, str]) -> Path:
         ({"614241f622f53c4eeff9890bdc4f31cfecc418b3": "main"}, "revision"),           # una rama no es una revisión fija
         ({"modelo_activo: e5": "modelo_activo: inexistente"}, "modelo_activo"),
         ({"metodo_activo: A": "metodo_activo: C"}, "metodo_activo"),
+        ({"metodo_activo: A": "metodo_activo: B"}, "metodo_activo"),                                # D-125: el método B ya no existe
         ({"version: 1\nsemilla: 42": "version: 1\nextra: 1\nsemilla: 42"}, "extra"),                      # claves desconocidas prohibidas
         ({"[crecimiento, pib,": "[Crecimiento, pib,"}, "minúsculas"),                              # término en mayúsculas
         ({"umbral_sin_tema: 0.824": "umbral_sin_tema: 7.0"}, "umbral_sin_tema"),
@@ -233,21 +236,21 @@ def ref(emb):
 
 def test_metodo_a_centroide_de_descripcion_y_ejemplos(emb, ref) -> None:
     d = clasificacion.clasificar_textos(["inflacion sube precios"], emb, ref, "A", UmbralesMetodo(umbral_sin_tema=0.05, margen_secundario=0.0))
-    assert d[0].principal == "economia" and d[0].subtema is None
+    assert d[0].principal == "economia" and not hasattr(d[0], "subtema")
     assert set(d[0].similitudes) == set(cargar_temas().temas)
 
 
-def test_metodo_b_sube_el_subtema_a_su_tema(emb, ref) -> None:
-    d = clasificacion.clasificar_textos(["desempleo y trabajo"], emb, ref, "B", UmbralesMetodo(umbral_sin_tema=0.05, margen_secundario=0.0))
-    assert (d[0].principal, d[0].subtema) == ("economia", "empleo")
-    d = clasificacion.clasificar_textos(["hospital pacientes"], emb, ref, "B", UmbralesMetodo(umbral_sin_tema=0.05, margen_secundario=0.0))
-    assert (d[0].principal, d[0].subtema) == ("servicios_publicos", "salud")
+def test_el_metodo_b_ya_no_existe_ni_hay_prototipos_de_subtema(emb, ref) -> None:
+    with pytest.raises(ValueError, match="método desconocido"):
+        clasificacion.puntuar(emb.codificar(["hospital pacientes"], "titular"), ref, "B")
+    assert not hasattr(clasificacion, "METODO_B") and not hasattr(ref, "prototipos") and not hasattr(ref, "subtemas")
+    assert clasificacion.METODO_A == "A" and set(cargar_clasificacion().modelos["e5"].umbrales) == {"A"}
 
 
 def test_la_salida_son_solo_los_6_temas_o_sin_tema(emb, ref) -> None:
     textos = ["inflacion", "canal", "turistas", "hospital", "sismo", "ley", "palabras que no estan en ningun tema zzz"]
     permitidos = set(cargar_temas().temas) | {baseline.SIN_TEMA}
-    for metodo in ("A", "B"):
+    for metodo in ("A",):
         for d in clasificacion.clasificar_textos(textos, emb, ref, metodo, UmbralesMetodo(umbral_sin_tema=0.05, margen_secundario=0.5)):
             assert d.principal in permitidos
             assert d.secundario is None or d.secundario in cargar_temas().temas
@@ -257,7 +260,7 @@ def test_bajo_el_umbral_no_hay_tema_y_el_umbral_sale_del_yaml(emb, ref) -> None:
     texto = "zzz qqq xxx"                              # sin palabras en común con ningún tema
     estricto = UmbralesMetodo(umbral_sin_tema=0.5, margen_secundario=0.5)
     d = clasificacion.clasificar_textos([texto], emb, ref, "A", estricto)[0]
-    assert d.principal == baseline.SIN_TEMA and d.secundario is None and d.subtema is None
+    assert d.principal == baseline.SIN_TEMA and d.secundario is None
     assert d.similitud < 0.5                           # la similitud máxima se conserva para explicar la abstención
     laxo = UmbralesMetodo(umbral_sin_tema=0.0, margen_secundario=0.0)
     assert clasificacion.clasificar_textos([texto], emb, ref, "A", laxo)[0].principal != baseline.SIN_TEMA
@@ -287,7 +290,7 @@ def test_tema_secundario_solo_si_esta_dentro_del_margen(emb, ref) -> None:
 def test_un_empate_lo_gana_el_primer_tema_de_temas_yaml() -> None:
     temas = list(cargar_temas().temas)
     sim = np.zeros(len(temas))
-    d = clasificacion.decidir(sim, [None] * len(temas), temas, UmbralesMetodo(umbral_sin_tema=0.0, margen_secundario=0.0))
+    d = clasificacion.decidir(sim, temas, UmbralesMetodo(umbral_sin_tema=0.0, margen_secundario=0.0))
     assert d.principal == temas[0]
 
 
@@ -296,7 +299,7 @@ def test_el_resultado_es_determinista(tmp_path) -> None:
     for i in range(2):
         e = embeddings.crear(config_de_prueba(), motor=MotorFalso(), raiz=tmp_path / str(i))
         r = clasificacion.construir_referencias(e, temas_de_prueba(), REGLAS)
-        corridas.append(clasificacion.clasificar_textos(["inflacion sube", "canal buques", "zzz"], e, r, "B", UmbralesMetodo(umbral_sin_tema=0.05, margen_secundario=0.5)))
+        corridas.append(clasificacion.clasificar_textos(["inflacion sube", "canal buques", "zzz"], e, r, "A", UmbralesMetodo(umbral_sin_tema=0.05, margen_secundario=0.5)))
     assert corridas[0] == corridas[1]
 
 
@@ -388,26 +391,35 @@ def test_la_clasificacion_no_usa_el_tema_de_origen(tmp_path) -> None:
     assert [r[1] for r in _leer(ruta1, "SELECT id_noticia, tema FROM noticias ORDER BY 1")] == [f["tema"] for f in FILAS]
 
 
-def test_guarda_la_similitud_con_cada_tema_y_el_subtema_solo_en_b(tmp_path) -> None:
+def test_guarda_la_similitud_con_cada_tema_y_ya_no_llena_el_subtema(tmp_path) -> None:
     ruta, _, _, _ = _correr(tmp_path)
-    filas = _leer(ruta, "SELECT id_noticia, metodo, tema, similitud, subtema FROM similitud_tema")
-    assert len(filas) == 6 * 6 * 2                           # 6 noticias útiles × 6 temas × métodos A y B
-    assert {f[1] for f in filas} == {"A", "B"}
-    assert all(f[4] is None for f in filas if f[1] == "A") and all(f[4] is not None for f in filas if f[1] == "B")
+    filas = _leer(ruta, "SELECT id_noticia, metodo, tema, similitud, subtema, margen_subtema FROM similitud_tema")
+    assert len(filas) == 6 * 6                               # 6 noticias útiles × 6 temas, método A
+    assert {f[1] for f in filas} == {"A"}
+    assert all(f[4] is None and f[5] is None for f in filas)   # D-125: columnas obsoletas, nulas
     assert not any(f[0] == "NOT-7" for f in filas)           # el ruido no entra
     # el tema principal es el de mayor similitud del método activo
     mejor = {}
-    for id_, metodo, tema, sim, _ in filas:
+    for id_, metodo, tema, sim, *_ in filas:
         if metodo == "A" and sim > mejor.get(id_, (None, -1))[1]:
             mejor[id_] = (tema, sim)
     for id_, tema in _leer(ruta, "SELECT id_noticia, tema_clasificado FROM noticias WHERE NOT es_ruido"):
         assert mejor[id_][0] == tema
 
 
-def test_el_metodo_b_guarda_el_subtema(tmp_path) -> None:
-    ruta, _, _, _ = _correr(tmp_path, metodo="B")
-    sub = dict(_leer(ruta, "SELECT id_noticia, subtema_clasificado FROM noticias"))
-    assert sub["NOT-6"] == "agua" and sub["NOT-7"] is None
+def test_ya_no_se_llena_ninguna_columna_de_subtema(tmp_path) -> None:
+    ruta, _, _, _ = _correr(tmp_path)
+    assert _leer(ruta, "SELECT count(*) FROM noticias WHERE subtema_clasificado IS NOT NULL") == [(0,)]
+    asignadas = _leer(ruta, "SELECT count(*) FROM noticias WHERE tema_clasificado IS NOT NULL")
+    assert asignadas == [(6,)]                                # el tema sí: solo desapareció el subtema
+    # una base vieja con subtema se limpia al volver a clasificar
+    con = db.conectar(ruta)
+    con.execute("UPDATE noticias SET subtema_clasificado = 'agua'")
+    con.close()
+    cfg, ruido = config_de_prueba(), cargar_ruido()
+    emb = embeddings.crear(cfg, motor=MotorFalso(), raiz=tmp_path)
+    clasificacion.aplicar_a_base(ruta, cfg, ruido, temas_de_prueba(), emb, "A", REGLAS)
+    assert _leer(ruta, "SELECT count(*) FROM noticias WHERE subtema_clasificado IS NOT NULL") == [(0,)]
 
 
 def test_es_idempotente_y_no_cambia_el_numero_de_noticias(tmp_path) -> None:
@@ -417,7 +429,7 @@ def test_es_idempotente_y_no_cambia_el_numero_de_noticias(tmp_path) -> None:
     emb = embeddings.crear(cfg, motor=MotorFalso(), raiz=tmp_path)
     clasificacion.aplicar_a_base(ruta, cfg, ruido, temas_de_prueba(), emb, "A", REGLAS)
     assert _leer(ruta, sql) == antes
-    assert _leer(ruta, "SELECT count(*) FROM similitud_tema")[0][0] == 6 * 6 * 2
+    assert _leer(ruta, "SELECT count(*) FROM similitud_tema")[0][0] == 6 * 6
 
 
 def test_una_base_anterior_sin_las_columnas_nuevas_se_completa(tmp_path) -> None:

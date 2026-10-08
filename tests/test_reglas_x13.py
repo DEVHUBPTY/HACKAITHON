@@ -77,16 +77,17 @@ def test_tabla_banca_fija_las_9_celdas_del_diseno(tmp_path: Path) -> None:
 # 2 · vínculos exactos del diseño
 def test_vinculos_son_exactamente_los_del_diseno() -> None:
     v = cargar_vinculos()
-    por_subtema = {k: (x.fuente, x.id, x.relacion) for k, x in v.vinculos.items()}
-    assert por_subtema == {
-        "crecimiento_pib": ("indicador", "NY.GDP.MKTP.KD.ZG", "directa"),
-        "inflacion_precios": ("indicador", "FP.CPI.TOTL.ZG", "directa"),
-        "empleo": ("indicador", "SL.UEM.TOTL.ZS", "directa"),
-        "comercio_exterior": ("indicador", "NE.EXP.GNFS.ZS", "directa"),
-        "telecomunicaciones": ("indicador", "IT.NET.USER.ZS", "directa"),
-        "sismos": ("usgs", None, "evento"),
+    por_regla = {k: (x.tema, x.fuente, x.id, x.relacion) for k, x in v.reglas_vinculo.items()}
+    # D-125: las reglas internas heredan los vínculos por subtema del diseño, ahora con el tema del grupo como condición.
+    assert por_regla == {
+        "pib": ("economia", "indicador", "NY.GDP.MKTP.KD.ZG", "directa"),
+        "inflacion": ("economia", "indicador", "FP.CPI.TOTL.ZG", "directa"),
+        "empleo": ("economia", "indicador", "SL.UEM.TOTL.ZS", "directa"),
+        "comercio_exterior": ("economia", "indicador", "NE.EXP.GNFS.ZS", "directa"),
+        "telecomunicaciones": ("servicios_publicos", "indicador", "IT.NET.USER.ZS", "directa"),
+        "sismos": ("eventos_naturales", "usgs", None, "evento"),
         # E3-02 (X89): la banca vincula las series agregadas de la SBP; no está en el diseño original.
-        "banca_calificaciones": ("sbp", None, "indirecta"),
+        "banca": ("economia", "sbp", None, "indirecta"),
     }
     log = v.vinculos_por_tema["logistica"]
     assert (log.id, log.relacion) == ("NE.EXP.GNFS.ZS", "indirecta") and "tránsitos" in log.limitacion
@@ -96,7 +97,7 @@ def test_vinculos_son_exactamente_los_del_diseno() -> None:
     assert v.motivo_por_defecto == "tema_sin_indicador"
 
 
-# 3 · fuga de evaluación: ningún ejemplo ni prototipo es un caso difícil de la guía (tests de E1-07)
+# 3 · fuga de evaluación: ningún ejemplo es un caso difícil de la guía (tests de E1-07)
 def normalizar(s: str) -> str:
     s = unicodedata.normalize("NFD", s.lower())
     return re.sub(r"[^a-z0-9 ]", "", "".join(c for c in s if unicodedata.category(c) != "Mn")).strip()
@@ -110,9 +111,9 @@ def casos_dificiles() -> list[str]:
     return filas
 
 
-def test_ningun_ejemplo_ni_prototipo_es_un_caso_dificil_de_la_guia() -> None:
+def test_ningun_ejemplo_es_un_caso_dificil_de_la_guia() -> None:
     casos = [normalizar(c) for c in casos_dificiles()]
-    textos = [e.titulo for t in cargar_temas().temas.values() for e in t.ejemplos] + [s.prototipo for t in cargar_temas().temas.values() for s in t.subtemas.values()]
+    textos = [e.titulo for t in cargar_temas().temas.values() for e in t.ejemplos]
     for texto in textos:
         for caso in casos:
             assert difflib.SequenceMatcher(None, normalizar(texto), caso).ratio() < 0.8, f"{texto!r} se parece a un caso difícil: {caso!r}"

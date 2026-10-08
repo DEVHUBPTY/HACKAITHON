@@ -42,17 +42,10 @@ def n(id_noticia: str, titulo: str, dominio: str, grupo: str, **cambios: Any) ->
     return base | cambios
 
 
-def subtema(grupo: str, ids: list[str], nombre: str | None, tema: str = "economia") -> list[dict[str, Any]]:
-    """Filas de ``similitud_tema`` (método B) que fijan el subtema de un grupo."""
-    if nombre is None:
-        return []
-    return [{"id_noticia": i, "metodo": "B", "tema": tema, "similitud": 0.8, "subtema": nombre, "margen_subtema": 0.1} for i in ids]
-
-
 def indicador(grupo: str, anio: int = 2024, rol: str = "panama", pais: str = "PAN", valor: float = 0.69322, tipo: str = "directa", **cambios: Any) -> dict[str, Any]:
     fila = fila_vinculo(
         grupo, id_evidencia=f"IND-{pais}-FP.CPI.TOTL.ZG-{anio}", tipo=tipo, rol=rol, valor=valor, anio=anio, unidad="% anual", pais_iso3=pais,
-        indicador_id="FP.CPI.TOTL.ZG", limitacion=f"Dato anual de {anio}; puede revisarse.", subtema="inflacion_precios",
+        indicador_id="FP.CPI.TOTL.ZG", limitacion=f"Dato anual de {anio}; puede revisarse.",
     )
     return fila | cambios
 
@@ -62,33 +55,31 @@ def construir(ruta: Path, emb: Any, proveedor: ProveedorFalso | None = None, mod
     noticias: list[dict[str, Any]] = []
     grupos: list[dict[str, Any]] = []
     procs: list[dict[str, Any]] = []
-    sims: list[dict[str, Any]] = []
     vinculos: list[dict[str, Any]] = []
 
-    def grupo(id_grupo: str, filas: list[dict[str, Any]], n_proc: int | None = None, sub: str | None = "inflacion_precios", tema: str = "economia") -> None:
+    def grupo(id_grupo: str, filas: list[dict[str, Any]], n_proc: int | None = None, tema: str = "economia") -> None:
         ids = [f["id_noticia"] for f in filas]
         noticias.extend(filas)
         grupos.append(fila_grupo(id_grupo, ids, filas[0]["titulo_limpio"], n_proc or len(ids)) | {"tema_clasificado": tema, "fecha_inicio": "2026-10-06T08:00:00Z", "fecha_inicio_origen": "publicacion", "fecha_fin": "2026-10-06T10:00:00Z", "fecha_fin_origen": "publicacion"})
         procs.extend(filas_procedencias(id_grupo, ids)[: n_proc or len(ids)])
-        sims.extend(subtema(id_grupo, ids, sub, tema))
 
-    # completo: 3 procedencias, dato oficial directo, fechas y medios conocidos, subtema conocido, sin cifras ni contradicción
+    # completo: 3 procedencias, dato oficial directo, fechas y medios conocidos, tema conocido, sin cifras ni contradicción
     grupo(G_COMPLETO, [
         n("NOT-c000000001", "Inflación se mantiene estable en Panamá", "prensa.example", G_COMPLETO, fecha_publicacion="2026-10-06T07:00:00Z"),
         n("NOT-c000000002", "Panamá reporta inflación estable", "tvn-2.com", G_COMPLETO, fecha_publicacion="2026-10-06T08:00:00Z"),
         n("NOT-c000000003", "Panama inflation remains stable", "english.example", G_COMPLETO, idioma="en", pais_medio="Estados Unidos", agencia="Reuters", tipo_firma="agencia", fecha_publicacion="2026-10-06T09:00:00Z"),
     ])
     vinculos += [indicador(G_COMPLETO), indicador(G_COMPLETO, rol="comparable", pais="COL", valor=6.6), *(indicador(G_COMPLETO, anio=a, rol="tendencia", valor=0.69322 if a == 2024 else a / 1000) for a in (2022, 2023, 2024))]
-    # cifras distintas, sin dato oficial y sin subtema: contradicción abierta + cifras sin dato oficial + sin dato oficial + subtema desconocido
+    # cifras distintas, sin dato oficial y sin tema: contradicción abierta + cifras sin dato oficial + sin dato oficial + tema desconocido (D-125)
     grupo(G_CIFRAS, [
-        # X53: nombran educación («escuelas») y agua potable a la vez -> subtema ambiguo, el grupo sigue sin subtema
-        n("NOT-d000000001", "Cierran 12 escuelas en Veraguas sin agua potable", "prensa.example", G_CIFRAS, tema_clasificado="servicios_publicos"),
-        n("NOT-d000000002", "Más de 40 escuelas cerradas en Veraguas sin agua potable", "english.example", G_CIFRAS, tema_clasificado="servicios_publicos"),
-    ], sub=None, tema="servicios_publicos")
+        # el clasificador no les dio tema (sin_tema): I usa el alcance neutro y queda el vacío «tema desconocido»
+        n("NOT-d000000001", "Cierran 12 escuelas en Veraguas sin agua potable", "prensa.example", G_CIFRAS, tema_clasificado="sin_tema"),
+        n("NOT-d000000002", "Más de 40 escuelas cerradas en Veraguas sin agua potable", "english.example", G_CIFRAS, tema_clasificado="sin_tema"),
+    ], tema="sin_tema")
     vinculos.append(fila_vinculo(G_CIFRAS, motivo_sin_vinculo="tema_sin_indicador"))
     # un solo vínculo y es indirecto: procedencias insuficientes + «solo vínculo indirecto» (y no «sin vínculo en la tabla»)
-    grupo(G_INDIRECTO, [n("NOT-e000000001", "Puertos reducen carga por menor demanda", "prensa.example", G_INDIRECTO, tema_clasificado="logistica")], sub="puertos", tema="logistica")
-    vinculos.append(indicador(G_INDIRECTO, tipo="indirecta", subtema=None) | {"id_evidencia": "IND-PAN-NE.EXP.GNFS.ZS-2024", "indicador_id": "NE.EXP.GNFS.ZS"})
+    grupo(G_INDIRECTO, [n("NOT-e000000001", "Puertos reducen carga por menor demanda", "prensa.example", G_INDIRECTO, tema_clasificado="logistica")], tema="logistica")
+    vinculos.append(indicador(G_INDIRECTO, tipo="indirecta") | {"id_evidencia": "IND-PAN-NE.EXP.GNFS.ZS-2024", "indicador_id": "NE.EXP.GNFS.ZS"})
     # medio y fecha de publicación desconocidos
     grupo(G_SIN_FECHA, [
         n("NOT-f000000001", "Inflación estable en el país", "prensa.example", G_SIN_FECHA, fecha_publicacion=None, medio=""),
@@ -111,10 +102,10 @@ def construir(ruta: Path, emb: Any, proveedor: ProveedorFalso | None = None, mod
     grupo(G_SISMO, [
         n("NOT-3000000001", "Fuerte sismo sacude la provincia de Chiriquí", "prensa.example", G_SISMO, tema_clasificado="eventos_naturales"),
         n("NOT-3000000002", "Sismo de magnitud 5 en Chiriquí", "english.example", G_SISMO, tema_clasificado="eventos_naturales"),
-    ], sub="sismos", tema="eventos_naturales")
+    ], tema="eventos_naturales")
     vinculos.append(fila_vinculo(G_SISMO, id_evidencia="SIS-us7000test", tipo="evento", rol="evento", fuente="usgs", valor=5.1, unidad="magnitud", place="12 km S of Puerto Armuelles, Panama",
                                  profundidad_km=10.0, hora_utc="2026-10-06T07:30:00Z", estado_evento="automatic", url_evento="https://earthquake.usgs.gov/earthquakes/eventpage/us7000test",
-                                 limitacion="La caja de USGS no es Panamá: mostrar siempre el place original; solo sirve para hechos sísmicos.", subtema="sismos"))
+                                 limitacion="La caja de USGS no es Panamá: mostrar siempre el place original; solo sirve para hechos sísmicos."))
     # la cifra del titular difiere de la oficial
     grupo(G_DISCREPANCIA, [
         n("NOT-4000000001", "La inflación sube a 9 % en Panamá", "prensa.example", G_DISCREPANCIA),
@@ -131,14 +122,14 @@ def construir(ruta: Path, emb: Any, proveedor: ProveedorFalso | None = None, mod
     grupo(G_SISMO_REVISADO, [
         n("NOT-7000000001", "Sismo de magnitud 4 sacude Darién", "prensa.example", G_SISMO_REVISADO, tema_clasificado="eventos_naturales"),
         n("NOT-7000000002", "Temblor de magnitud 4 en el Darién", "english.example", G_SISMO_REVISADO, tema_clasificado="eventos_naturales"),
-    ], sub="sismos", tema="eventos_naturales")
+    ], tema="eventos_naturales")
     vinculos.append(fila_vinculo(G_SISMO_REVISADO, id_evidencia="SIS-us7000rev1", tipo="evento", rol="evento", fuente="usgs", valor=4.2, unidad="magnitud", place="30 km N of Yaviza, Panama",
                                  profundidad_km=None, hora_utc="2026-10-06T06:00:00Z", estado_evento="reviewed", url_evento="https://earthquake.usgs.gov/earthquakes/eventpage/us7000rev1",
-                                 limitacion="La caja de USGS no es Panamá: mostrar siempre el place original; solo sirve para hechos sísmicos.", subtema="sismos"))
+                                 limitacion="La caja de USGS no es Panamá: mostrar siempre el place original; solo sirve para hechos sísmicos."))
     # un titular, un medio: solo ese grupo trae TVN como único medio
-    grupo(G_SOLO, [n("NOT-5000000001", "TVN informa sobre el precio del combustible", "tvn-2.com", G_SOLO, tema_clasificado="economia")], sub="inflacion_precios")
+    grupo(G_SOLO, [n("NOT-5000000001", "TVN informa sobre el precio del combustible", "tvn-2.com", G_SOLO, tema_clasificado="economia")])
     vinculos.append(indicador(G_SOLO))
 
-    db.guardar_todo(ruta, {"noticias": noticias, "grupos": grupos, "procedencias": procs, "vinculos": vinculos, "similitud_tema": sims, "fuentes": FUENTES})
+    db.guardar_todo(ruta, {"noticias": noticias, "grupos": grupos, "procedencias": procs, "vinculos": vinculos, "fuentes": FUENTES})
     prioridad.ejecutar(ruta, ruta.with_name("prioridad.json"), CORTE, proveedor, modalidad, emb=emb)
     return ruta

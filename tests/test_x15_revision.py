@@ -182,7 +182,7 @@ def test_h3_las_dos_variantes_dan_resultados_distintos_donde_importa() -> None:
 
 def test_h3_el_reporte_de_casos_dificiles_trae_el_baseline_con_y_sin_la_extension() -> None:
     r = evalclas.evaluar_casos_dificiles(cargar_clasificacion(), TEMAS, ["e5"], {"e5": MotorFalso(), "minilm": MotorFalso()}, verificar_fuga=False)
-    assert {"baseline", "baseline_ampliado", "e5/A", "e5/B"} <= set(r["configuraciones"])
+    assert {"baseline", "baseline_ampliado", "e5/A"} <= set(r["configuraciones"])
 
 
 def test_h3_la_documentacion_no_afirma_lo_que_no_se_puede_demostrar() -> None:
@@ -216,11 +216,12 @@ def test_h4_un_ejemplo_parafraseado_de_un_caso_se_detecta(tmp_path) -> None:
 def test_h4_la_palabra_panama_no_cuenta_como_parecido(tmp_path) -> None:
     caso = evalclas.CasoDificil("CD-X", "Panamá sale de la lista", "regulacion", None, "2")
     temas = temas_de_prueba().model_copy(deep=True)
-    temas.temas["turismo"].subtemas["hoteles"] = type(temas.temas["turismo"].subtemas["hoteles"])(nombre="x", prototipo="Panamá recibe más turistas")
+    temas.temas["turismo"].ejemplos.append(type(temas.temas["turismo"].ejemplos[0])(titulo="Panamá recibe más turistas", real=False))
+    referencia = f"turismo.ejemplo[{len(temas.temas['turismo'].ejemplos) - 1}]"
     emb = embeddings.crear(config_de_prueba(), motor=MotorFalso(), raiz=tmp_path)
     con = evalclas.fuga_semantica([caso], temas, REGLAS, emb, 0.15, ["panama"])
     sin = evalclas.fuga_semantica([caso], temas, REGLAS, emb, 0.15, [])
-    assert not any(h.referencia.endswith("hoteles") for h in con) and any(h.referencia.endswith("hoteles") for h in sin)
+    assert not any(h.referencia == referencia for h in con) and any(h.referencia == referencia for h in sin)
 
 
 def _modelo_disponible(nombre: str) -> bool:
@@ -229,7 +230,7 @@ def _modelo_disponible(nombre: str) -> bool:
 
 
 @pytest.mark.skipif(not _modelo_disponible("minilm"), reason="MiniLM no descargado")
-def test_h4_ningun_ejemplo_ni_prototipo_parafrasea_un_caso_dificil() -> None:
+def test_h4_ningun_ejemplo_parafrasea_un_caso_dificil() -> None:
     cfg = cargar_clasificacion()
     f = cfg.fuga_semantica
     emb = embeddings.crear(cfg, f.modelo)
@@ -249,18 +250,6 @@ def test_h4_las_excepciones_aceptadas_son_ejemplos_reales_y_siguen_sobre_el_umbr
         assert clave in por_clave and por_clave[clave].coseno >= f.umbral_coseno, f"{clave} ya no supera el umbral: quítela"
         tema, indice = re.search(r"~(\w+)\.ejemplo\[(\d+)\]", clave).groups()
         assert TEMAS.temas[tema].ejemplos[int(indice)].real, f"{clave} no es un ejemplo real: se reescribe, no se acepta"
-
-
-def test_h4_los_prototipos_de_la_revision_ya_no_parafrasean_los_casos() -> None:
-    prototipos = {s: st.prototipo for t in TEMAS.temas.values() for s, st in t.subtemas.items()}
-    for sub, viejo in {
-        "operacion_canal": "El Canal reduce tránsitos por el nivel del lago Gatún",
-        "agua_potable": "Sectores de la ciudad quedan sin agua potable",
-        "resoluciones_entes": "Ente regulador emite resolución sobre las tarifas de un servicio",
-        "salud_publica": "Pacientes denuncian escasez de medicamentos en un hospital público",
-        "educacion_publica": "Estudiantes pierden clases en escuelas públicas por una suspensión de labores",
-    }.items():
-        assert prototipos[sub] != viejo, sub
 
 
 # ------------------------------------------------------------------ H6: el secundario guardado

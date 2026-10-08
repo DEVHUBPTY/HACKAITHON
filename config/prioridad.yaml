@@ -10,7 +10,7 @@ comparacion:
   decimales_empate: 1
 
 impacto:
-  alcance_subtema_desconocido: 0.5   # grupo sin subtema (tema `sin_tema`): alcance neutro (D-109 bajó `alcance_geografico.desconocido` a 0.3; el subtema desconocido sigue en 0.5)
+  alcance_tema_desconocido: 0.5   # grupo sin tema (`sin_tema`): alcance neutro (D-109 bajó `alcance_geografico.desconocido` a 0.3; el tema desconocido sigue en 0.5)
 
 dato_oficial:                     # qué vínculos de `vinculos` (columna `tipo`) cuentan como dato oficial en E y en el estado de evidencia
   relaciones_aceptadas: [directa, evento]   # `indirecta` NO: el indicador es contexto lejano y no mide el hecho (vinculos.yaml)
@@ -101,7 +101,7 @@ vacios:                           # textos de los vacíos de verificación (plan
   cifra_periodo_distinto: "la cifra de un titular corresponde a un período distinto del dato oficial vinculado ({ids}): no es comparable"
   evento_sin_revisar: "el evento oficial vinculado ({ids}) tiene estado automático: puede cambiar al ser revisado"
   noticia_recirculada: "noticia recirculada: publicada originalmente el {fecha}; no se trata como nueva"
-  subtema_desconocido: "subtema no determinado: se usó el alcance neutro de impacto"
+  tema_desconocido: "tema no determinado: se usó el alcance neutro de impacto"
   sector_desconocido: "sector no determinado: el tema del grupo no tiene sector y se usó el alcance neutro de impacto"
   motivo_sin_dato_oficial_por_defecto: "no hay un vínculo definido para este tema en la tabla de contexto"
   motivos_sin_vinculo:            # `vinculos.motivo_sin_vinculo` dicho en palabras: ningún código interno llega a la ficha

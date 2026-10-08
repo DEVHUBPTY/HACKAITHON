@@ -4,7 +4,7 @@
 version: 1
 semilla: 42                 # semilla global (torch, numpy y bootstrap) para que dos corridas den lo mismo
 modelo_activo: e5           # D-20 (propuesta): multilingual-e5-small; MiniLM se mide aparte y se elige por macro-F1 con E1-06
-metodo_activo: A            # D-21/D-57: A salvo que `python -m eval.clasificacion` demuestre que B es mejor (criterio_ab)
+metodo_activo: A            # D-21/D-57: A salvo que `python -m eval.clasificacion` demuestre que `logistica` es mejor (bootstrap_pareado)
 dispositivo: cpu            # CPU: determinista y sin GPU en la máquina de la demo
 lote: 32                    # titulares por lote al codificar (no cambia el resultado)
 usar_descripcion: true      # si el registro trae descripción del RSS se codifica "titular. descripción"; solo uso interno (D-31)
@@ -25,7 +25,6 @@ modelos:
     # similitudes (0.81-0.91): su umbral y su margen son estrechos. Se recalibran con eval/etiquetas.csv (E1-06).
     umbrales:
       A: {umbral_sin_tema: 0.824, margen_secundario: 0.002}
-      B: {umbral_sin_tema: 0.797, margen_secundario: 0.004}
   minilm:
     id: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
     revision: e8f8c211226b894fcb81acc59f3b34ba3efd5f42
@@ -33,11 +32,9 @@ modelos:
     prefijo_tema: ""
     umbrales:                       # PROVISIONALES: misma regla que arriba (escala de similitud mucho más amplia)
       A: {umbral_sin_tema: 0.213, margen_secundario: 0.03}
-      B: {umbral_sin_tema: 0.283, margen_secundario: 0.019}
 
-# Criterio A vs B fijado ANTES de medir (D-21, D-57): B solo si el IC 95 % (bootstrap) de la diferencia de macro-F1
-# B − A excluye el cero y ningún tema empeora de forma significativa (IC 95 % de la diferencia de F1 por tema
-# enteramente por debajo de cero); si no, A por ser más simple.
+# Remuestreo (bootstrap) de los IC 95 % de macro-F1 y de las diferencias entre métodos (D-21, D-57). D-125 quitó el método B
+# (prototipos por subtema); la decisión A vs `logistica` usa `logistica.bootstrap_pareado`. El nombre `criterio_ab` se conserva.
 criterio_ab:
   remuestreos: 1000
   confianza: 0.95
@@ -121,21 +118,21 @@ baseline:
                   gaceta oficial]
 
 # D-121 · Clasificador por regresión logística (método `logistica`). Se entrena SOLO con los textos de referencia de
-# temas.yaml (descripción + ejemplos + prototipos de subtema); las etiquetas humanas no entran en el entrenamiento ni en
+# temas.yaml (descripción + ejemplos; D-125 quitó los prototipos de subtema); las etiquetas humanas no entran en el entrenamiento ni en
 # la calibración. `regularizacion_c`, `umbral_sin_tema` y `margen_secundario` son el RESULTADO de
 # `python -m eval.calibrar_logistico` (validación cruzada estratificada con la semilla de abajo); un test los recalcula.
 # Origen y validación: docs/parametros.md, sección «Clasificación (E1-07)».
 logistica:
-  regularizacion_c: 1000.0      # RESULTADO de la calibración (rejilla_c, macro-F1 de validación cruzada)
+  regularizacion_c: 100.0       # RESULTADO de la calibración (D-125: 100 y 1000 empatan; gana la menor) (rejilla_c, macro-F1 de validación cruzada)
   rejilla_c: [1.0, 10.0, 100.0, 1000.0]
-  pesos_de_clase: balanced      # balanced | null; los temas tienen entre 14 y 22 textos
+  pesos_de_clase: balanced      # balanced | null; los temas tienen entre 8 y 13 textos (D-125: sin prototipos de subtema)
   max_iter: 1000
-  pliegues: 5                   # <= textos del tema con menos referencias (14)
+  pliegues: 5                   # <= textos del tema con menos referencias (8)
   semilla: 42
   percentil_umbral: 5.0         # mismo supuesto que el método A (percentil 5 de la confianza)
   percentil_margen: 25.0        # mismo supuesto que el método A (percentil 25 de la brecha)
-  umbral_sin_tema: 0.472         # RESULTADO de la calibración
-  margen_secundario: 0.462       # RESULTADO de la calibración
+  umbral_sin_tema: 0.287         # RESULTADO de la calibración
+  margen_secundario: 0.113       # RESULTADO de la calibración
   decimales_umbral: 3
   bootstrap_pareado:            # comparación pareada del macro-F1 contra el método A (eval.clasificacion)
     remuestreos: 5000

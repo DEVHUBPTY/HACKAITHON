@@ -258,7 +258,7 @@ def evaluar_clasificacion(ruta_base: Path) -> dict[str, Any]:
     y vista del pipeline completo (todos los etiquetados; los que el filtro descartó cuentan ``sin_tema`` para los dos)."""
     from src import db
     from src.baseline import SIN_TEMA
-    from src.clasificacion import METODO_A, METODO_B, texto_de_entrada
+    from src.clasificacion import texto_de_entrada
     from src.configuracion import cargar_carga, cargar_temas
     from src.embeddings import crear
     from src.limpieza import Reglas
@@ -281,7 +281,7 @@ def evaluar_clasificacion(ruta_base: Path) -> dict[str, Any]:
     reales = [etiquetas[i].tema for i in pasaron]
     pred = predecir(textos, cfg, temas, modelo, crear(cfg, modelo), Reglas.desde_config())
     base_p = [p.principal for p in pred["baseline"]]
-    ia_p = [p.principal for p in pred[METODO_A if metodo == METODO_A else METODO_B]]
+    ia_p = [p.principal for p in pred[metodo]]
     z = cargar_carga().salida.z_intervalo_confianza
     criterio_bench = cargar_benchmark().intervalos
 

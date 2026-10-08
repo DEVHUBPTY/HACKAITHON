@@ -169,11 +169,18 @@ def test_el_titular_central_es_determinista_ante_empates() -> None:
     assert miembros[elegir_titular_central(miembros, v, CFG)]["id_noticia"] == "NOT-a"
 
 
-def test_el_criterio_del_subtema_se_muestra_si_el_vinculo_lo_trae(con, emb) -> None:
+def test_la_ficha_muestra_solo_el_tema_sin_subtema_ni_criterio_d125(con, emb) -> None:
     f = hacer(con, emb, h.G_COMPLETO)
-    assert f.que_se_reporta.criterio_subtema is None            # la base sintética no lo trae
-    v = vista(f.model_copy(update={"que_se_reporta": f.que_se_reporta.model_copy(update={"criterio_subtema": "margen"})}))
-    assert any("(criterio: margen)" in l.texto for l in v.secciones[0].lineas)
+    assert not hasattr(f.que_se_reporta, "subtema") and not hasattr(f.que_se_reporta, "criterio_subtema")
+    linea = next(l.texto for l in vista(f).secciones[0].lineas if l.texto.startswith("Tema:"))
+    assert linea == "Tema: Economía"                            # sin «· Subtema», sin criterio
+
+
+def test_una_ficha_guardada_antes_de_d125_con_subtema_se_sigue_leyendo(con, emb) -> None:
+    f = hacer(con, emb, h.G_COMPLETO)
+    antigua = f.model_dump()
+    antigua["que_se_reporta"] |= {"subtema": "inflacion_precios", "criterio_subtema": "lexico"}
+    assert Ficha.model_validate(antigua) == f                    # los campos obsoletos se ignoran al leer
 
 
 def test_la_ficha_usa_embeddings_cacheados_y_no_carga_el_modelo(con, emb) -> None:
@@ -364,7 +371,7 @@ ESPERADOS: dict[str, set[str]] = {
     "cifra_periodo_distinto": {h.G_PERIODO},
     "medios_o_fechas_desconocidos": {h.G_SIN_FECHA},
     "urgencia_sin_publicacion": {h.G_SIN_FECHA},
-    "subtema_desconocido": {h.G_CIFRAS},
+    "tema_desconocido": {h.G_CIFRAS},
     "sector_desconocido": set(),       # solo en una corrida bancaria con un tema sin sector (ningún grupo de la base lo tiene)
 }
 
@@ -400,7 +407,7 @@ def test_los_tres_vacios_mas_importantes_van_arriba_en_el_orden_de_la_configurac
     todos = [v.codigo for v in (*f.falta_comprobar.principales, *f.falta_comprobar.otros)]
     assert todos == sorted(todos, key=orden.index)
     assert len(f.falta_comprobar.principales) == CFG.vacios.principales == 3
-    assert todos[:3] == [v.codigo for v in f.falta_comprobar.principales] and [v.codigo for v in f.falta_comprobar.otros] == ["subtema_desconocido"]
+    assert todos[:3] == [v.codigo for v in f.falta_comprobar.principales] and [v.codigo for v in f.falta_comprobar.otros] == ["tema_desconocido"]
     desplegable = [l for l in vista(f).secciones[3].lineas if l.desplegable]
     assert desplegable and all(l.nivel >= 1 for l in desplegable)
 
@@ -414,10 +421,11 @@ def test_cada_vacio_trae_su_verificacion_sugerida(con, emb) -> None:
 # ------------------------------------------------------------------ fuentes sugeridas
 
 
-def test_las_fuentes_sugeridas_salen_del_subtema_y_nunca_son_evidencia(con, emb) -> None:
-    f = hacer(con, emb, h.G_COMPLETO)
+def test_las_fuentes_sugeridas_salen_de_la_regla_de_vinculo_y_nunca_son_evidencia(con, emb) -> None:
+    f = hacer(con, emb, h.G_COMPLETO)                     # «Inflación…» dispara la regla `inflacion` del tema economía (D-125)
     nombres = [s.nombre for s in f.falta_comprobar.fuentes_sugeridas]
-    assert nombres == CFG.fuentes.por_subtema["inflacion_precios"]
+    assert nombres == CFG.fuentes.por_regla_vinculo["inflacion"]
+    assert {s.origen for s in f.falta_comprobar.fuentes_sugeridas} == {"regla"}
     assert f.falta_comprobar.aviso_fuentes == CFG.fuentes.nota
     for grupo in GRUPOS:
         for modalidad in MODALIDADES:
@@ -430,22 +438,22 @@ def test_las_fuentes_sugeridas_salen_del_subtema_y_nunca_son_evidencia(con, emb)
             assert not any(re.search(r"\b(IND|SIS|SBP|NOT|GRP)-\S+ · ", l) for l in md_lineas if any(s in l for s in sugeridas))     # sin formato de cita (D-37)
 
 
-def test_sin_subtema_solo_hay_fuentes_del_tema_d92(con, emb) -> None:
-    f = hacer(con, emb, h.G_CIFRAS)
-    assert [s.nombre for s in f.falta_comprobar.fuentes_sugeridas] == CFG.fuentes.por_tema["servicios_publicos"]
+def test_sin_regla_de_vinculo_solo_hay_fuentes_del_tema(con, emb) -> None:
+    f = hacer(con, emb, h.G_INDIRECTO)                    # logística: ninguna regla se dispara
+    assert [s.nombre for s in f.falta_comprobar.fuentes_sugeridas] == CFG.fuentes.por_tema["logistica"]
     assert {s.origen for s in f.falta_comprobar.fuentes_sugeridas} == {"tema"}
 
 
-@pytest.mark.parametrize("subtema", [None, "sin_subtema", "subtema_que_no_existe"])
-def test_fuentes_sugeridas_sin_subtema_conocido_usan_solo_el_tema(subtema) -> None:
+@pytest.mark.parametrize("regla", [None, "regla_que_no_existe"])
+def test_fuentes_sugeridas_sin_regla_conocida_usan_solo_el_tema(regla) -> None:
     mod = cargar_modalidad("editorial")
-    assert [s.nombre for s in fuentes_sugeridas("logistica", subtema, mod, CFG)] == CFG.fuentes.por_tema["logistica"]
-    assert fuentes_sugeridas(None, None, mod, CFG) == []                  # ni tema ni subtema: ninguna, y el vacío ya lo dice
+    assert [s.nombre for s in fuentes_sugeridas("logistica", regla, mod, CFG)] == CFG.fuentes.por_tema["logistica"]
+    assert fuentes_sugeridas(None, None, mod, CFG) == []                  # ni tema ni regla: ninguna, y el vacío ya lo dice
 
 
 def test_la_banca_agrega_sus_fuentes_extra_al_final_y_sin_repetir() -> None:
-    e = fuentes_sugeridas("economia", "banca_calificaciones", cargar_modalidad("editorial"), CFG)
-    b = fuentes_sugeridas("economia", "banca_calificaciones", cargar_modalidad("banca"), CFG)
+    e = fuentes_sugeridas("economia", "banca", cargar_modalidad("editorial"), CFG)
+    b = fuentes_sugeridas("economia", "banca", cargar_modalidad("banca"), CFG)
     assert b[: len(e)] == e and [s.nombre for s in b[len(e):]] == ["Contraloría General de la República (INEC)"]    # SBP y MEF ya estaban
     assert [s.origen for s in b[len(e):]] == ["modalidad"]
 
@@ -501,11 +509,11 @@ def test_misma_ficha_distinta_modalidad_solo_cambian_accion_medio_de_referencia_
     saca = ("modalidad", "accion_recomendada.accion", "accion_recomendada.motivo", "accion_recomendada.rango", "quien_lo_reporta.medio_referencia",
             "falta_comprobar.fuentes_sugeridas", "puntaje")
     de, db_ = _sin(e.model_dump(), *saca), _sin(b.model_dump(), *saca)
-    for d in (de, db_):          # «subtema no determinado» habla del alcance del subtema, que en banca no entra en I (usa el sector): solo lo emite la editorial
+    for d in (de, db_):          # «tema no determinado» habla del alcance del tema (editorial); en banca I usa el sector y lo dice como «sector no determinado»
         for lista in ("principales", "otros"):
-            d["falta_comprobar"][lista] = [v for v in d["falta_comprobar"][lista] if v["codigo"] != "subtema_desconocido"]
+            d["falta_comprobar"][lista] = [v for v in d["falta_comprobar"][lista] if v["codigo"] not in ("tema_desconocido", "sector_desconocido")]
     assert de == db_
-    assert "subtema_desconocido" not in codigos(b)
+    assert "tema_desconocido" not in codigos(b)
     assert {k: v.model_dump() for k, v in e.puntaje.componentes.items() if k != "I"} == {k: v.model_dump() for k, v in b.puntaje.componentes.items() if k != "I"}
     assert e.modalidad == "editorial" and b.modalidad == "banca"
     assert b.quien_lo_reporta.medio_referencia is None
@@ -625,12 +633,12 @@ def test_verificacion_yaml_esta_registrado_y_la_configuracion_completa_valida() 
     assert "verificacion" in CARGADORES and "verificacion" in validar_todo()
 
 
-def test_verificacion_cubre_todos_los_subtemas_y_temas() -> None:
-    from src.configuracion import cargar_temas
+def test_verificacion_cubre_todas_las_reglas_de_vinculo_y_temas() -> None:
+    from src.configuracion import cargar_temas, cargar_vinculos
 
     temas = cargar_temas()
     assert set(CFG.fuentes.por_tema) == set(temas.temas)
-    assert set(CFG.fuentes.por_subtema) == {s for t in temas.temas.values() for s in t.subtemas}
+    assert set(CFG.fuentes.por_regla_vinculo) == set(cargar_vinculos().reglas_vinculo)
 
 
 def test_verificacion_rechaza_claves_desconocidas_y_un_orden_que_no_coincide_con_el_catalogo(tmp_path) -> None:
@@ -659,7 +667,7 @@ def test_verificacion_rechaza_claves_desconocidas_y_un_orden_que_no_coincide_con
     shutil.rmtree(tmp_path)
 
 
-def test_la_coherencia_detecta_un_subtema_sin_fuentes(tmp_path) -> None:
+def test_la_coherencia_detecta_una_regla_de_vinculo_sin_fuentes(tmp_path) -> None:
     import shutil
 
     import yaml
@@ -669,11 +677,11 @@ def test_la_coherencia_detecta_un_subtema_sin_fuentes(tmp_path) -> None:
     carpeta = tmp_path / "config"
     shutil.copytree(CARPETA_CONFIG, carpeta)
     datos = yaml.safe_load((carpeta / "verificacion.yaml").read_text(encoding="utf-8"))
-    del datos["fuentes"]["por_subtema"]["sismos"]
-    datos["fuentes"]["por_subtema"]["subtema_falso"] = ["X"]
+    del datos["fuentes"]["por_regla_vinculo"]["sismos"]
+    datos["fuentes"]["por_regla_vinculo"]["regla_falsa"] = ["X"]
     (carpeta / "verificacion.yaml").write_text(yaml.safe_dump(datos, allow_unicode=True), encoding="utf-8")
     problemas = " | ".join(validar_coherencia(carpeta))
-    assert "sin fuentes sugeridas para el subtema sismos" in problemas and "subtema inexistente" in problemas and "subtema_falso" in problemas
+    assert "sin fuentes sugeridas para la regla de vínculo sismos" in problemas and "regla de vínculo inexistente" in problemas and "regla_falsa" in problemas
 
 
 # ------------------------------------------------------------------ revisión del PR #24 (X23, X24, M1, M2, m3, m4)

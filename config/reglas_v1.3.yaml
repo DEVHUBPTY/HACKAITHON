@@ -27,51 +27,20 @@ relevancia:                 # R = peso_foco × foco × pertenencia temática. D-
     solo_secundario: 0.6    # ninguno lo tiene como principal, pero alguno lo tiene como tema_secundario
     sin_tema: 0.3           # ninguno (etiqueta nula, no_es_panama, fuera_de_temas o no_es_noticia): baja el orden sin anular el grupo
 
-impacto:                    # I = peso_subtema × alcance(subtema) + peso_geografico × alcance geográfico
-  peso_subtema: 0.5         # el dato oficial y las procedencias NO entran en I (D-15, D-35)
+impacto:                    # D-125: I = peso_tema × alcance(tema) + peso_geografico × alcance geográfico (el reto define 6 temas y ningún subtema)
+  peso_tema: 0.5            # el dato oficial y las procedencias NO entran en I (D-15, D-35); mismo reparto que tenía con el subtema
   peso_geografico: 0.5
   alcance_geografico: {nacional: 1.0, provincial: 0.6, local: 0.3, desconocido: 0.3, exterior: 0.3}   # D-109: desconocido = local (antes 0.5, neutro) · D-115: exterior = local
-  # Alcance por subtema (criterio editorial, supuesto). Las claves son los subtemas de temas.yaml.
-  alcance_subtema:
-    crecimiento_pib: 1.0
-    inflacion_precios: 1.0
-    empleo: 0.8
-    finanzas_publicas: 0.8
-    inversion: 0.6
-    comercio_exterior: 0.6
-    banca_calificaciones: 0.6
-    operacion_canal: 1.0
-    puertos: 0.8
-    zona_libre: 0.6
-    carga_aerea: 0.6
-    transporte_carga: 0.6
-    cadenas_suministro: 0.6
-    llegada_visitantes: 0.6
-    cruceros: 0.6
-    hoteleria: 0.5
-    aviacion_pasajeros: 0.6
-    destinos_promocion: 0.4
-    agua_potable: 1.0
-    electricidad: 1.0
-    telecomunicaciones: 0.8
-    transporte_publico: 0.8
-    recoleccion_basura: 0.6
-    salud_publica: 1.0
-    educacion_publica: 1.0
-    seguridad_ciudadana: 0.8
-    obras_publicas: 0.8       # E1-07c (D-111, D-113): decisión del dueño; igual que transporte público
-    sismos: 1.0
-    inundaciones_lluvias: 0.8
-    deslizamientos: 0.6
-    sequia_nino: 1.0
-    incendios_forestales: 0.6
-    alertas_proteccion_civil: 0.8
-    leyes_decretos: 1.0
-    resoluciones_entes: 0.8
-    reformas: 1.0
-    listas_internacionales: 1.0
-    contratos_concesiones: 0.8
-    sanciones: 0.6
+  # Alcance por tema (criterio editorial, supuesto heredado). Cada valor es el PROMEDIO, redondeado a 2 decimales, del alcance
+  # por subtema que usaba la versión anterior (D-125) para los subtemas del tema: economía 5.4/7, logística 4.2/6, turismo 2.7/5,
+  # servicios públicos 7.8/9, eventos naturales 4.8/6, regulación 5.2/6. Detalle y origen: docs/parametros.md.
+  alcance_tema:
+    economia: 0.77
+    logistica: 0.70
+    turismo: 0.54
+    servicios_publicos: 0.87
+    eventos_naturales: 0.80
+    regulacion: 0.87
 
 urgencia:                   # U usa la publicación original MÁS RECIENTE del grupo
   # D-106: U = fracción de la ventana de revisión que queda («tiempo disponible para revisar», PDF sección 4): lineal de 1 al

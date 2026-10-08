@@ -2,7 +2,7 @@
 
 Un dato de la SBP es **contexto** del tema bancario, nunca prueba de causa, de pérdida ni de riesgo de una entidad. Reglas:
 
-* **Solo subtemas con ``fuente: sbp``** en ``vinculos.yaml`` (hoy ``banca_calificaciones``). Los demás devuelven ``None`` y el
+* **Solo reglas de vínculo con ``fuente: sbp``** en ``vinculos.yaml`` (hoy ``banca``, D-125). Las demás devuelven ``None`` y el
   llamador sigue con su regla de indicadores.
 * **Qué se vincula:** de cada serie agregada de ``sbp_series.csv`` el último período con valor. Es un dato **mensual de 2024**: no
   es el mes de la noticia, y la nota de cada fila lo dice (no se sustituye un período por otro en silencio).
@@ -11,7 +11,7 @@ Un dato de la SBP es **contexto** del tema bancario, nunca prueba de causa, de p
 * **Resultado:** una fila de ``vinculos`` por serie (``fuente = 'sbp'``, ``rol = 'sistema'``, ``tipo`` = la relación declarada en
   ``vinculos.yaml``) con ``id_evidencia = SBP-<serie>-<período>``, valor, unidad, período, informe y página de origen.
 
-Este módulo es puro (solo lee el CSV): ``src.contexto`` deriva el subtema del grupo y escribe las filas en ``vinculos``.
+Este módulo es puro (solo lee el CSV): ``src.contexto`` elige la regla de vínculo del grupo y escribe las filas en ``vinculos``.
 """
 
 from __future__ import annotations
@@ -77,9 +77,9 @@ def cargar_series(ruta: Path) -> list[DatoSbp]:
     return sorted(datos, key=lambda d: (d.id_serie, d.periodo))
 
 
-def aplica(subtema: str | None, vinculos: ConfigVinculos) -> bool:
-    """``True`` solo si el subtema se vincula a la SBP según ``vinculos.yaml``."""
-    regla = vinculos.vinculos.get(subtema) if subtema else None
+def aplica(regla_vinculo: str | None, vinculos: ConfigVinculos) -> bool:
+    """``True`` solo si la regla de vínculo se vincula a la SBP según ``vinculos.yaml``."""
+    regla = vinculos.reglas_vinculo.get(regla_vinculo) if regla_vinculo else None
     return regla is not None and regla.fuente == FUENTE_SBP
 
 
@@ -100,20 +100,19 @@ def _fila(id_grupo: str, **campos: Any) -> dict[str, Any]:
 
 def vincular_grupo(
     id_grupo: str,
-    subtema: str | None,
+    nombre_regla: str | None,
     datos: Sequence[DatoSbp],
     vinculos: ConfigVinculos,
     fuentes: ConfigFuentes,
-    criterio_subtema: str | None = None,
 ) -> list[dict[str, Any]] | None:
-    """Filas de ``vinculos`` de un grupo bancario; ``None`` si su subtema no se vincula a la SBP."""
-    if not aplica(subtema, vinculos):
+    """Filas de ``vinculos`` de un grupo bancario; ``None`` si su regla de vínculo no se vincula a la SBP."""
+    if not aplica(nombre_regla, vinculos):
         return None
-    regla_vinculo = vinculos.vinculos[str(subtema)]
-    regla = vinculos.sbp.plantilla_regla.format(subtema=subtema)
+    regla_vinculo = vinculos.reglas_vinculo[str(nombre_regla)]
+    regla = vinculos.sbp.plantilla_regla.format(regla=nombre_regla)
     elegidos = ultimos_por_serie(datos)
     if not elegidos:
-        return [_fila(id_grupo, regla=regla, motivo_sin_vinculo=SIN_DATO_EN_PERIODO, subtema=subtema, criterio_subtema=criterio_subtema)]
+        return [_fila(id_grupo, regla=regla, motivo_sin_vinculo=SIN_DATO_EN_PERIODO)]
     filas = []
     for d in elegidos:
         nota = vinculos.sbp.nota_periodo.format(periodo=d.periodo)
@@ -124,8 +123,6 @@ def vincular_grupo(
                 tipo=regla_vinculo.relacion,
                 regla=regla,
                 limitacion=" ".join([regla_vinculo.limitacion, nota, fuentes.sbp.limitacion.strip()]),
-                subtema=subtema,
-                criterio_subtema=criterio_subtema,
                 indicador_id=d.id_serie,
                 unidad=d.unidad,
                 valor=d.valor,

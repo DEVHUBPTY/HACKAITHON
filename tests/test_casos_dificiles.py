@@ -86,7 +86,7 @@ def test_el_conteo_de_aciertos_coincide_con_la_lista_de_limitaciones(prediccione
 
 def test_el_baseline_y_el_modelo_se_comparan_sobre_los_mismos_casos_y_categorias(predicciones) -> None:
     permitidos = {*TEMAS.temas, SIN_TEMA}
-    for clave in ("baseline", "A", "B"):
+    for clave in ("baseline", "A"):
         assert len(predicciones[clave]) == 15
         assert {p.principal for p in predicciones[clave]} <= permitidos
 

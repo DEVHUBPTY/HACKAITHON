@@ -42,14 +42,11 @@ from src.configuracion import (
     ConfigClasificacion,
     ConfigProcedencias,
     ReglasV13,
-    SubtemaVinculo,
     cargar_carga,
     cargar_clasificacion,
     cargar_normalizacion,
     cargar_procedencias,
     cargar_reglas,
-    cargar_temas,
-    cargar_vinculos,
 )
 from src.embeddings import Embeddings, crear, fijar_semilla
 from src.procedencias import Procedencia, dominio_normalizado, estimar_procedencias
@@ -181,8 +178,6 @@ class Grupo:
     fecha_fin_origen: str | None
     idiomas: tuple[str, ...]
     tema_clasificado: str | None
-    tema_origen_clasificador: str | None = None   # D-122: tema del clasificador si un subtema nombrado lo corrigió
-    criterio_tema: str | None = None              # D-122: ``subtema_nombrado`` si se corrigió
 
     @property
     def n_titulares(self) -> int:
@@ -218,13 +213,10 @@ def construir_grupos(
     vectores: np.ndarray,
     reglas: ReglasV13,
     proc: ConfigProcedencias,
-    cfg_subtema: SubtemaVinculo | None = None,
-    subtemas_por_tema: Mapping[str, Sequence[str]] | None = None,
 ) -> list[Grupo]:
     """Agrupa ``filas`` (titulares que no son ruido, con ``vectores`` en el mismo orden) y estima sus procedencias.
 
-    Con ``cfg_subtema`` y ``subtemas_por_tema`` aplica D-122: el subtema nombrado corrige el tema del grupo (aquí, un único punto
-    que ven contexto, puntaje, ficha y la interfaz). Falla con ``SinCalibrar`` si ``umbral_similitud`` es ``null``. Verifica que cada titular quede en un solo grupo.
+    El tema del grupo es el dominante entre sus titulares (D-125 quitó la corrección por subtema nombrado de D-122). Falla con ``SinCalibrar`` si ``umbral_similitud`` es ``null``. Verifica que cada titular quede en un solo grupo.
     """
     umbral = reglas.agrupacion.umbral_similitud
     if umbral is None:
@@ -236,8 +228,6 @@ def construir_grupos(
     fechas = [fecha_de(f, campos) for f in filas]
     iso = [fecha_iso_de(f, campos) for f in filas]
     origen = [origen_de_fecha(f, campos) for f in filas]
-    from src.contexto import tema_por_subtema_nombrado   # import tardío: contexto → contexto_sismos → agrupacion
-
     grupos: list[Grupo] = []
     for indices in agrupar_indices(vectores, fechas, ids, umbral, reglas.agrupacion.ventana_dias):
         miembros = [filas[i] for i in indices]
@@ -246,11 +236,6 @@ def construir_grupos(
         ultima = max(fechadas, key=lambda i: fechas[i]) if fechadas else -1
         central = _central(indices, vectores, fechas, ids)
         tema = _tema_dominante(miembros)
-        tema_origen = criterio_tema = None
-        if cfg_subtema is not None and subtemas_por_tema is not None:
-            corregido = tema_por_subtema_nombrado([str(f["titulo_limpio"]) for f in miembros], tema, subtemas_por_tema, cfg_subtema)
-            if corregido is not None:
-                tema_origen, criterio_tema, tema = tema, cfg_subtema.correccion_tema.criterio, corregido
         procedencias = estimar_procedencias(
             miembros, vectores[indices], proc, reglas, [iso[i] for i in indices]
         )
@@ -268,8 +253,6 @@ def construir_grupos(
                 fecha_fin_origen=origen[ultima] if fechadas else None,
                 idiomas=tuple(sorted({str(f["idioma"]) for f in miembros if f.get("idioma")})),
                 tema_clasificado=tema,
-                tema_origen_clasificador=tema_origen,
-                criterio_tema=criterio_tema,
             )
         )
     asignados = [i for g in grupos for i in g.ids_noticia]
@@ -290,7 +273,7 @@ def _filas_de_grupos(grupos: Sequence[Grupo], estimado: bool) -> tuple[list[list
                 g.id_grupo, g.titular_central, g.id_noticia_central, g.n_titulares, g.n_medios, g.n_procedencias,
                 g.fecha_inicio, g.fecha_inicio_origen, g.fecha_fin, g.fecha_fin_origen, SEPARADOR_LISTA.join(g.idiomas), g.tema_clasificado,
                 SEPARADOR_LISTA.join(g.ids_noticia), estimado,
-                g.tema_origen_clasificador, g.criterio_tema,
+                None, None,   # tema_origen_clasificador y criterio_tema: obsoletas desde D-125, ya no se llenan
             ]
         )
         for orden, p in enumerate(g.procedencias, start=1):
@@ -337,9 +320,7 @@ def aplicar_a_base(
             raise RuntimeError(f"{len(sin_limpiar)} noticias sin limpiar: ejecute `poetry run python -m src.limpieza`")
         utiles = [f for f in todas if not f["es_ruido"]]
         vectores = codificar_titulares(utiles, emb, reglas.agrupacion.usar_descripcion)
-        grupos = construir_grupos(
-            utiles, vectores, reglas, proc, cargar_vinculos().subtema, {t: list(d.subtemas) for t, d in cargar_temas().temas.items()}
-        )
+        grupos = construir_grupos(utiles, vectores, reglas, proc)
         filas_grupos, filas_proc, asignaciones = _filas_de_grupos(grupos, estimado=True)
         con.begin()
         try:

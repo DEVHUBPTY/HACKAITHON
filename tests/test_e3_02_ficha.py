@@ -51,19 +51,18 @@ def csv_sbp(ruta: Path, filas: list[dict[str, Any]] | None = None) -> Path:
 
 
 def base_de_banca(ruta: Path) -> Path:
-    """Dos grupos: uno de banca (subtema ``banca_calificaciones``, con «bancario» en el titular) y uno de turismo."""
-    grupos, noticias, procs, sims = [], [], [], []
-    for gid, titulos, tema, sub in (
-        (G_BANCA, ["El sistema bancario mantiene su cartera estable", "Banca panameña reporta cartera estable"], "economia", "banca_calificaciones"),
-        (G_OTRO, ["Llegan más cruceros a Colón"], "turismo", "cruceros"),
+    """Dos grupos: uno de banca (regla de vínculo ``banca``: tema economía y «bancario» en el titular) y uno de turismo."""
+    grupos, noticias, procs = [], [], []
+    for gid, titulos, tema in (
+        (G_BANCA, ["El sistema bancario mantiene su cartera estable", "Banca panameña reporta cartera estable"], "economia"),
+        (G_OTRO, ["Llegan más cruceros a Colón"], "turismo"),
     ):
         filas = [h.n(f"NOT-{gid[-1]}00000000{i}", t, "prensa.example" if i % 2 else "tvn-2.com", gid, tema_clasificado=tema) for i, t in enumerate(titulos, 1)]
         ids = [x["id_noticia"] for x in filas]
         noticias += filas
         grupos.append(fila_grupo(gid, ids, titulos[0], len(ids)) | {"tema_clasificado": tema, "fecha_inicio": "2026-10-06T08:00:00Z", "fecha_inicio_origen": "publicacion", "fecha_fin": "2026-10-06T10:00:00Z", "fecha_fin_origen": "publicacion"})
         procs += filas_procedencias(gid, ids)
-        sims += h.subtema(gid, ids, sub, tema)
-    db.guardar_todo(ruta, {"noticias": noticias, "grupos": grupos, "procedencias": procs, "similitud_tema": sims, "fuentes": h.FUENTES, "vinculos": []})
+    db.guardar_todo(ruta, {"noticias": noticias, "grupos": grupos, "procedencias": procs, "fuentes": h.FUENTES, "vinculos": []})
     return ruta
 
 
@@ -84,25 +83,25 @@ def filas_sbp(base: Path) -> list[dict[str, Any]]:
         con.close()
 
 
-def test_el_subtema_de_banca_vincula_el_ultimo_periodo_de_cada_serie(tmp_path: Path) -> None:
+def test_la_regla_de_banca_vincula_el_ultimo_periodo_de_cada_serie(tmp_path: Path) -> None:
     base = base_de_banca(tmp_path / "s.duckdb")
     r = vincular(base, csv_sbp(tmp_path / "sbp_series.csv"))
     filas = [f for f in filas_sbp(base) if f["fuente"] == "sbp"]
     assert [f["id_evidencia"] for f in filas] == ["SBP-MOROSIDAD-SISTEMA-2024-12", "SBP-MOROSOS-SISTEMA-2024-12", "SBP-PROVISIONES-SISTEMA-2024-12"]
     for f in filas:
-        assert f["id_grupo"] == G_BANCA and f["rol"] == "sistema" and f["tipo"] == "indirecta" and f["subtema"] == "banca_calificaciones"
+        assert f["id_grupo"] == G_BANCA and f["rol"] == "sistema" and f["tipo"] == "indirecta" and f["subtema"] is None and f["criterio_subtema"] is None
         assert f["periodo"] == "2024-12" and f["unidad"] and f["pagina"].startswith("hoja «") and f["informe"] and f["url_fuente"].startswith("https://")
         assert f["valor"] is not None and "no del mes de la noticia" in f["limitacion"] and "opinión oficial de la SBP" in f["limitacion"]
     assert r["sbp"]["grupos_de_banca"] == 1 and r["sbp"]["con_dato"]["n"] == 1 and r["sbp"]["con_dato"]["de"] == 1
     assert r["sbp"]["series_vinculadas"] == ["SBP-MOROSIDAD-SISTEMA", "SBP-MOROSOS-SISTEMA", "SBP-PROVISIONES-SISTEMA"]
 
 
-def test_otros_subtemas_nunca_se_vinculan_a_la_sbp(tmp_path: Path) -> None:
+def test_otras_reglas_nunca_se_vinculan_a_la_sbp(tmp_path: Path) -> None:
     base = base_de_banca(tmp_path / "s.duckdb")
     vincular(base, csv_sbp(tmp_path / "sbp_series.csv"))
     assert not [f for f in filas_sbp(base) if f["id_grupo"] == G_OTRO and f["fuente"] == "sbp"]
-    for subtema in ("cruceros", "inflacion_precios", "sismos", None):
-        assert contexto_sbp.vincular_grupo("GRP-x", subtema, contexto_sbp.cargar_series(csv_sbp(tmp_path / "o.csv")), VINCULOS, FUENTES) is None
+    for regla in ("pib", "inflacion", "sismos", "regla_inexistente", None):
+        assert contexto_sbp.vincular_grupo("GRP-x", regla, contexto_sbp.cargar_series(csv_sbp(tmp_path / "o.csv")), VINCULOS, FUENTES) is None
 
 
 def test_un_valor_nulo_no_se_vincula_ni_se_rellena_con_cero(tmp_path: Path) -> None:
@@ -118,7 +117,7 @@ def test_un_valor_nulo_no_se_vincula_ni_se_rellena_con_cero(tmp_path: Path) -> N
 
 
 def test_sin_ningun_valor_el_grupo_queda_sin_dato_en_periodo() -> None:
-    filas = contexto_sbp.vincular_grupo("GRP-x", "banca_calificaciones", [], VINCULOS, FUENTES)
+    filas = contexto_sbp.vincular_grupo("GRP-x", "banca", [], VINCULOS, FUENTES)
     assert len(filas) == 1 and filas[0]["id_evidencia"] is None and filas[0]["motivo_sin_vinculo"] == "sin_dato_en_periodo" and filas[0]["fuente"] == "sbp"
 
 

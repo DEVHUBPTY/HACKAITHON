@@ -2,7 +2,7 @@
 
 Un evento de USGS es **contexto** de la noticia, nunca prueba de daños ni de causa. Reglas:
 
-* **Solo subtemas con ``fuente: usgs``** en ``vinculos.yaml`` (hoy ``sismos``). Lluvias, inundaciones o daños jamás se
+* **Solo reglas de vínculo con ``fuente: usgs``** en ``vinculos.yaml`` (hoy ``sismos``, D-125). Lluvias, inundaciones o daños jamás se
   vinculan a USGS: ``vincular_grupo`` devuelve ``None`` y el llamador sigue con su regla de indicadores.
 * **Coincidencia:** el evento queda a ``ventana_coincidencia_dias`` o menos de alguna noticia del grupo (en horas, no en
   días calendario) y su magnitud es al menos ``usgs.minmagnitude`` de ``fuentes.yaml``.
@@ -15,7 +15,7 @@ Un evento de USGS es **contexto** de la noticia, nunca prueba de daños ni de ca
   comparan; si todas están fuera, el motivo es ``fuera_de_cobertura``.
 
 Las horas se guardan en UTC; ``hora_panama`` convierte solo para mostrar. Este módulo es puro: ``src.contexto`` (E1-09)
-deriva el subtema del grupo y escribe en ``vinculos`` las filas de ``a_filas_vinculo`` (``fuente = 'usgs'``).
+elige la regla de vínculo del grupo y escribe en ``vinculos`` las filas de ``a_filas_vinculo`` (``fuente = 'usgs'``).
 """
 
 from __future__ import annotations
@@ -82,7 +82,6 @@ class ResultadoSismos:
     """Lo que se sabe de un grupo de sismos frente a USGS; ``estado`` es ``vinculado`` o un motivo sin vínculo."""
 
     id_grupo: str
-    subtema: str
     estado: str
     candidatos: tuple[Candidato, ...]       # vacío salvo ``vinculado`` (uno) y ``candidatos_ambiguos`` (todos)
     origenes_fecha: tuple[str, ...]         # de qué campo salió cada fecha usada: ``publicacion`` o ``deteccion``
@@ -144,9 +143,9 @@ def limitacion_fija(vinculos: ConfigVinculos) -> str:
     return " ".join(vinculos.sismos.limitaciones)
 
 
-def aplica(subtema: str | None, vinculos: ConfigVinculos) -> bool:
-    """``True`` solo si el subtema se vincula a USGS según ``vinculos.yaml``."""
-    regla = vinculos.vinculos.get(subtema) if subtema else None
+def aplica(regla_vinculo: str | None, vinculos: ConfigVinculos) -> bool:
+    """``True`` solo si la regla de vínculo se vincula a USGS según ``vinculos.yaml``."""
+    regla = vinculos.reglas_vinculo.get(regla_vinculo) if regla_vinculo else None
     return regla is not None and regla.fuente == FUENTE_USGS and regla.relacion == TIPO_EVENTO
 
 
@@ -161,19 +160,19 @@ def _regla(vinculos: ConfigVinculos, fuentes: ConfigFuentes, origenes: Sequence[
 
 def vincular_grupo(
     id_grupo: str,
-    subtema: str | None,
+    regla_vinculo: str | None,
     noticias: Sequence[Mapping[str, Any]],
     eventos: Sequence[EventoUsgs],
     vinculos: ConfigVinculos,
     fuentes: ConfigFuentes,
     campos_fecha: Sequence[str],
 ) -> ResultadoSismos | None:
-    """Vincula un grupo con eventos de USGS; ``None`` si su subtema no se vincula a USGS (lluvias, daños, etc.).
+    """Vincula un grupo con eventos de USGS; ``None`` si su regla de vínculo no se vincula a USGS (lluvias, daños, etc.).
 
     ``noticias`` son las filas del grupo con ``fecha_publicacion`` y ``fecha_deteccion``; ``campos_fecha`` fija cuál se usa
     primero (``reglas_v1.3.yaml``). Una noticia sin ninguna fecha no aporta. No elige entre candidatos.
     """
-    if not aplica(subtema, vinculos):
+    if not aplica(regla_vinculo, vinculos):
         return None
 
     inicio, fin = cobertura(fuentes)
@@ -184,7 +183,7 @@ def vincular_grupo(
     limitacion = limitacion_fija(vinculos)
 
     def resultado(estado: str, candidatos: Sequence[Candidato] = ()) -> ResultadoSismos:
-        return ResultadoSismos(id_grupo, subtema, estado, tuple(candidatos), origenes, _regla(vinculos, fuentes, origenes), limitacion)
+        return ResultadoSismos(id_grupo, estado, tuple(candidatos), origenes, _regla(vinculos, fuentes, origenes), limitacion)
 
     if not fechas:
         return resultado(SIN_DATO_EN_PERIODO)
@@ -219,7 +218,6 @@ def _fila_base(resultado: ResultadoSismos, tipo: str | None) -> dict[str, Any]:
         "motivo_sin_vinculo": resultado.motivo_sin_vinculo,
         "fuente": FUENTE_VINCULO,
         "rol": ROL_EVENTO,
-        "subtema": resultado.subtema,
     }
 
 

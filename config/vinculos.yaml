@@ -1,10 +1,12 @@
 # Vínculos con evidencia oficial (etapa 3), tal como el diseño de solución "Vínculos con evidencia oficial".
 # Un vínculo es CONTEXTO, nunca prueba de causa ni suma a I (D-15). Los indicadores deben existir en config/fuentes.yaml.
-# Los subtemas y temas que no aparecen aquí quedan sin dato con el motivo `motivo_por_defecto`.
+# D-125: el reto define 6 temas y ningún subtema. Un vínculo lo dispara una REGLA INTERNA (`reglas_vinculo`): tema del grupo +
+# un término en algún titular. Las reglas no son categorías: no aparecen en la ficha, la interfaz ni las exportaciones, salvo
+# como texto de la regla que creó el vínculo. Los grupos sin regla ni vínculo por tema quedan sin dato con `motivo_por_defecto`.
 version: "1.0"
 
 tipos_relacion:
-  directa: "El indicador mide lo mismo que el subtema."
+  directa: "El indicador mide lo mismo que la regla de vínculo."
   indirecta: "El indicador es un contexto lejano del tema; no mide el hecho."
   evento: "Evento oficial (USGS) que puede coincidir en el tiempo con la noticia."
 
@@ -14,120 +16,9 @@ motivo_por_defecto: tema_sin_indicador
 ventana_coincidencia_dias: 2        # sismos: ± días entre evento USGS y noticia (supuesto)
 pais_por_defecto: PAN
 
-subtema:                            # D-92 (enmienda a E1-09) y E1-10c (X41): el subtema del grupo exige sustento
-  # Criterios que aceptan el subtema más cercano, en orden. E1-10c (X41) quitó `margen`: con un solo prototipo por
-  # subtema, el margen medía el parecido con palabras sueltas del prototipo («obras», «La Chorrera», «CSS») y aceptaba
-  # subtemas que el titular no nombra (MOP → agua potable; aprehensión de un exdirector de la CSS → salud pública).
-  criterios: [lexico]
-  margen_minimo: 0.015              # D-92, sin efecto mientras `margen` no esté en `criterios`; docs/parametros.md
-  # Apoyo léxico (D-92, E1-10c): si algún titular del grupo contiene uno de estos términos, el subtema más cercano se
-  # acepta. Si un titular contiene un término de OTRO subtema del mismo tema, el subtema es ambiguo y no se afirma.
-  # Palabra completa, sin distinguir mayúsculas ni acentos (los términos de varias palabras admiten cualquier espacio
-  # entre ellas). Salen de las definiciones de docs/guia_temas.md (columna "Incluye", los paréntesis de salud, educación
-  # y seguridad y las reglas de frontera) y de las formas léxicas directas de esas palabras; seguridad ciudadana agrega
-  # los nombres de los delitos y actos de un operativo (aprehensión, detención, reclusión) que la guía incluye en él.
-  # Todo subtema del catálogo tiene lista: sin término no hay subtema (alcance neutro de I).
-  # D-122: el subtema nombrado corrige el tema. Si los titulares del grupo nombran (con estos mismos términos, patrones y
-  # exclusiones) subtemas que pertenecen todos a UN solo tema distinto al clasificado, ese tema pasa a ser el del grupo y se
-  # conserva el del clasificador en `grupos.tema_origen_clasificador`. Dos o más temas nombrados, o ninguno: no cambia nada.
-  correccion_tema:
-    activa: true
-    corregir_sin_tema: true         # sin tema del clasificador, un único tema nombrado se asigna (evidencia léxica explícita)
-    criterio: subtema_nombrado      # valor de `grupos.criterio_tema` cuando se corrige
-  terminos_por_subtema:
-    crecimiento_pib: [pib, producto interno bruto, crecimiento economico]
-    # «precio(s)» suelto no es un término (confirmaría un vínculo directo con el IPC para «precio del cobre»): solo frases
-    # que nombran la inflación o los precios que la guía incluye en el subtema (canasta básica, combustibles).
-    inflacion_precios: [inflacion, ipc, indice de precios, costo de la vida, canasta basica, precio del combustible,
-                        precio de los combustibles, precios del combustible, precios de los combustibles]
-    empleo: [empleo, empleos, desempleo]
-    comercio_exterior: [comercio exterior, exportacion, exportaciones, importacion, importaciones]
-    telecomunicaciones: [telecomunicacion, telecomunicaciones, internet]
-    sismos: [sismo, sismos, sismico, sismica, temblor, temblores, terremoto]
-    # E1-10c (X41): los demás subtemas del catálogo (antes solo usaban el margen).
-    finanzas_publicas: [finanzas publicas, deuda publica, deuda, presupuesto, presupuestos, presupuestario, recaudacion,
-                        deficit fiscal]
-    inversion: [inversion, inversiones, inversion extranjera, inversionista, inversionistas]
-    # «banco» suelto no: nombra al Banco Mundial y al BID, que no son la banca panameña.
-    banca_calificaciones: [banca, bancos, bancario, bancaria, sistema bancario, calificacion de riesgo, calificadora,
-                           calificadoras, grado de inversion]
-    operacion_canal: [transito, transitos, calado, lago gatun, esclusas]
-    puertos: [puerto, puertos, portuario, portuaria, portuarios]
-    zona_libre: [zona libre, zona libre de colon]
-    carga_aerea: [carga aerea]
-    transporte_carga: [transporte de carga, transportistas de carga]
-    cadenas_suministro: [cadena de suministro, cadenas de suministro]
-    llegada_visitantes: [visitante, visitantes, turista, turistas]
-    cruceros: [crucero, cruceros]
-    hoteleria: [hotel, hoteles, hotelero, hotelera, hoteleria, ocupacion hotelera]
-    aviacion_pasajeros: [vuelo, vuelos, aerolinea, aerolineas, pasajeros, conectividad aerea, ruta aerea, rutas aereas]
-    destinos_promocion: [destino turistico, destinos turisticos, promocion turistica]
-    # X53: «agua» suelta no (el agua de una crecida no es el servicio): solo frases que nombran el suministro.
-    agua_potable: [agua potable, sin agua, suministro de agua, servicio de agua, corte de agua, cortes de agua, idaan, acueducto,
-                   potabilizadora]
-    # «luz» suelta no («dar a luz», «salir a la luz»): solo frases que nombran el servicio.
-    electricidad: [electricidad, energia electrica, apagon, apagones, sin luz, corte de luz, cortes de luz, tarifa electrica]
-    transporte_publico: [transporte publico, metro, mibus, metrobus, autobus, autobuses, buses]
-    recoleccion_basura: [basura, recoleccion de basura, desechos, residuos solidos, relleno sanitario]
-    salud_publica: [salud publica, hospital, hospitales, hospitalario, hospitalaria, css, caja de seguro social, minsa,
-                    ministerio de salud, medicamento, medicamentos]
-    # «clase» suelta no («clase media»): solo el plural de la guía («sin clases»).
-    educacion_publica: [educacion publica, escuela, escuelas, escolar, escolares, colegio, colegios, clases, docente,
-                        docentes, meduca, ministerio de educacion]
-    # E1-10d (X87, D-101): formas de homicidio, agresión con arma, patrimonio y crimen organizado, decididas por auditoría a ciegas del
-    # léxico contra «delitos» de docs/guia_temas.md (specs/E1-10d.md). «disparan» suelto no: «disparan cohetes», «se disparan los precios».
-    seguridad_ciudadana: [seguridad ciudadana, policia, policias, policial, policiales, operativo, operativos, carcel,
-                          carceles, carcelario, penitenciario, centro penitenciario, prision, recluso, reclusos, recluido,
-                          recluida, privado de libertad, privados de libertad, delito, delitos, delincuencia, delincuente,
-                          delincuentes, homicidio, homicidios, asesinato, asesinatos, asesinan, asesinado, asesinada,
-                          robo, robos, asalto, asaltos, asaltan, hurto, aprehension, aprehenden, aprehendido, aprehendida,
-                          aprehendidos, detenido, detenida, detenidos, droga, drogas, narcotrafico,
-                          asesinados, asesinadas, asesinaron, asesino, asesinos, femicidio, femicidios, feminicidio,
-                          feminicidios, muerte violenta, muertes violentas, muerto de forma violenta, muerta de forma violenta,
-                          muertos de forma violenta, muertas de forma violenta, baleado, baleada, baleados, baleadas, balacera,
-                          balaceras, apunalado, apunalada, apunalados, apunaladas, apunalan, disparos, a disparos,
-                          disparan contra, dispararon contra, asaltado, asaltada, asaltaron, atraco, atracos, secuestro,
-                          secuestros, secuestran, extorsion, sicario, sicarios]
-    # E1-07c (D-111): «obra(s)» suelta no (obra de teatro, obra social) y «sobrecosto» suelto no (puede ser de una compra):
-    # solo las frases que nombran la obra pública. «acueducto» solo, o con Idaan, sigue siendo agua potable (el servicio);
-    # la obra de construcción del acueducto es obras públicas (la coincidencia más larga manda, X53).
-    obras_publicas: [obra publica, obras publicas, ministerio de obras publicas, mop, obra vial, obras viales, infraestructura vial,
-                     carretera, carreteras, autopista, autopistas, puente, puentes, sobrecosto de obra, sobrecostos de obra,
-                     sobrecosto en obra, sobrecostos en obras, sobrecostos en obra, sobrecosto en obras, sobrecosto de obras,
-                     sobrecostos de obras, licitacion de obra, licitacion de obras, contrato de obra, contratos de obra,
-                     obra de acueducto, obras de acueducto, construccion de acueducto, construccion de acueductos]
-    inundaciones_lluvias: [inundacion, inundaciones, inundado, inundados, lluvia, lluvias, aguacero, aguaceros, crecida,
-                           desbordamiento]
-    deslizamientos: [deslizamiento, deslizamientos, derrumbe, derrumbes, alud]
-    sequia_nino: [sequia, sequias, el nino, la nina, fenomeno de el nino]   # X53: «seca» no está en la guía
-    incendios_forestales: [incendio forestal, incendios forestales]
-    # X53: «alerta» suelta no («Minsa enciende alertas»): solo Protección Civil o una alerta con su color.
-    alertas_proteccion_civil: [sinaproc, proteccion civil, alerta verde, alerta amarilla, alerta naranja, alerta roja,
-                               aviso de prevencion]
-    # X53: «ley» suelta no («cumplir la ley de tránsito»): solo una norma en trámite o promulgada.
-    leyes_decretos: [leyes, decreto, decretos, decreto ejecutivo, proyecto de ley, anteproyecto de ley, nueva ley,
-                     sanciona la ley, aprueba la ley, gaceta oficial]
-    resoluciones_entes: [resolucion, resoluciones, ente regulador, regulador, asep, superintendencia]
-    reformas: [reforma, reformas]
-    listas_internacionales: [lista gris, listas grises, lista negra, listas negras, gafi, lista fiscal, paraisos fiscales]
-    contratos_concesiones: [contrato, contratos, concesion, concesiones, licitacion, licitaciones]
-    sanciones: [sancion, sanciones, multa, multas, sancionado, sancionada]
-  # E1-07c (X77): la obra del acueducto (construir, ampliar, rehabilitar, uno nuevo) es obras públicas (docs/guia_temas.md); el
-  # servicio («Idaan repara el acueducto») sigue siendo agua potable porque el término suelto «acueducto» es más corto y pierde.
-  # Expresiones regulares sobre texto sin tildes ni mayúsculas.
-  patrones_por_subtema:
-    obras_publicas:
-      - '(?<!\w)(?:(?:construccion|ampliacion|rehabilitacion|remodelacion|obras?)\s+(?:de|del)\s+(?:(?:un|el|los)\s+)?(?:nuevo\s+)?|nuevos?\s+)acueductos?(?!\w)'
-  # E1-07c (X78, D-111): el proceso judicial por corrupción NO es obras públicas (ni subtema de justicia: la nota es otro asunto).
-  # X83: «audiencia», «juicio» y «tribunal» sueltos quitaban el subtema a «Audiencia pública sobre el nuevo puente» o «Tribunal
-  # Electoral y MOP firman convenio»: solo cuentan las frases del proceso penal.
-  # Un titular con alguno de estos marcadores (palabra o frase completa, sin tildes) no respalda el subtema; no se vuelve ruido.
-  exclusiones_por_subtema:
-    obras_publicas: [imputa, imputan, imputacion, imputaciones, imputado, imputados, imputada, juez, jueza, jueces, fiscalia,
-                     magistrado, audiencia de imputacion, audiencia preliminar, juicio oral, llamamiento a juicio,
-                     tribunal de juicio, tribunal superior,
-                     condena, condenan, condenado, condenados, peculado, corrupcion,
-                     detienen a, detenido por, detenidos por, aprehenden a, aprehendido por, prision preventiva, acusan a]
+textos_regla:                       # D-125: lo que queda escrito en `vinculos.regla` cuando decide una regla interna
+  disparada: "regla {regla}: término «{termino}» en el titular"
+  ambigua: "reglas {reglas} del tema {tema} disparadas a la vez: no se elige ninguna"
 
 sismos:                             # E1-09b: presentación y textos fijos del vínculo con eventos USGS
   zona_horaria: America/Panama      # solo para mostrar; los datos siguen en UTC
@@ -142,10 +33,10 @@ sismos:                             # E1-09b: presentación y textos fijos del v
     - "La fuente solo describe el evento sísmico; no informa daños ni pérdidas."
     - "Un evento con estado automático puede cambiar al ser revisado."
 
-# E3-02 · series agregadas del sistema bancario de la SBP (src/contexto_sbp.py), solo para subtemas con `fuente: sbp`. Son datos
+# E3-02 · series agregadas del sistema bancario de la SBP (src/contexto_sbp.py), solo para reglas con `fuente: sbp`. Son datos
 # MENSUALES de 2024 (config/fuentes.yaml: sbp), no el mes de la noticia: la nota de cada fila lo dice.
 sbp:
-  plantilla_regla: "Subtema {subtema}: último período con valor de cada serie agregada del sistema bancario de la SBP (sbp_series.csv)."
+  plantilla_regla: "Regla {regla}: último período con valor de cada serie agregada del sistema bancario de la SBP (sbp_series.csv)."
   nota_periodo: "Dato mensual de {periodo} (series de 2024), no del mes de la noticia."
 
 # E1-09 · contextualización con el Banco Mundial (src/contexto.py). Todo dato del Banco Mundial es ANUAL.
@@ -181,44 +72,67 @@ cifra_titular:
     periodo_distinto: "período distinto, no comparable"
     coincide: "cifra coincidente con la oficial"
 
-vinculos:                           # por subtema
-  crecimiento_pib:
+# D-125 · reglas internas de vínculo (reemplazan los vínculos por subtema). Una regla se dispara si el tema del grupo es `tema` y
+# algún titular del grupo contiene un término de `terminos` (palabra completa, sin distinguir mayúsculas ni acentos; los términos
+# de varias palabras admiten cualquier espacio entre ellas) o coincide con un patrón de `patrones` (expresión regular sobre texto
+# sin tildes ni mayúsculas), y ningún titular tiene un marcador de `exclusiones` en ese caso. Si se disparan dos o más reglas del
+# mismo tema, el vínculo es ambiguo y no se elige ninguno (`candidatos_ambiguos`). Los términos salen de las listas de D-92/E1-10c
+# (X41, X53), conservadas al migrar los subtemas: «precio(s)» suelto no (confirmaría un vínculo con el IPC para «precio del cobre»),
+# «banco» suelto no (nombra al Banco Mundial y al BID, que no son la banca panameña).
+reglas_vinculo:
+  pib:
+    tema: economia
+    terminos: [pib, producto interno bruto, crecimiento economico]
     fuente: indicador
     id: NY.GDP.MKTP.KD.ZG
     relacion: directa
     limitacion: "Dato anual; no describe un trimestre ni un mes concreto."
-  inflacion_precios:
+  inflacion:
+    tema: economia
+    terminos: [inflacion, ipc, indice de precios, costo de la vida, canasta basica, precio del combustible,
+               precio de los combustibles, precios del combustible, precios de los combustibles]
     fuente: indicador
     id: FP.CPI.TOTL.ZG
     relacion: directa
     limitacion: "Dato anual de inflación al consumidor; no es el precio de un producto concreto."
   empleo:
+    tema: economia
+    terminos: [empleo, empleos, desempleo]
     fuente: indicador
     id: SL.UEM.TOTL.ZS
     relacion: directa
     limitacion: "Dato anual de desempleo; el último año suele revisarse."
   comercio_exterior:
+    tema: economia
+    terminos: [comercio exterior, exportacion, exportaciones, importacion, importaciones]
     fuente: indicador
     id: NE.EXP.GNFS.ZS
     relacion: directa
     limitacion: "Exportaciones de bienes y servicios como % del PIB, anual; no desglosa por producto."
   telecomunicaciones:
+    tema: servicios_publicos
+    terminos: [telecomunicacion, telecomunicaciones, internet]
     fuente: indicador
     id: IT.NET.USER.ZS
     relacion: directa
     limitacion: "Uso de internet como % de la población, anual; no mide la falla puntual."
   sismos:
+    tema: eventos_naturales
+    terminos: [sismo, sismos, sismico, sismica, temblor, temblores, terremoto]
     fuente: usgs
     relacion: evento
     limitacion: "La caja de USGS no es Panamá: mostrar siempre el place original; solo sirve para hechos sísmicos."
-  # E3-02 (X89): morosidad y provisiones del sistema bancario como CONTEXTO del subtema de banca. `indirecta` porque las series no miden una
-  # calificación de riesgo (el hecho del subtema): no cuentan como dato oficial en E ni en el estado de evidencia, pero la ficha las muestra.
-  banca_calificaciones:
+  # E3-02 (X89): morosidad y provisiones del sistema bancario como CONTEXTO de la banca. `indirecta` porque las series no miden una
+  # calificación de riesgo: no cuentan como dato oficial en E ni en el estado de evidencia, pero la ficha las muestra.
+  banca:
+    tema: economia
+    terminos: [banca, bancos, bancario, bancaria, sistema bancario, calificacion de riesgo, calificadora, calificadoras,
+               grado de inversion]
     fuente: sbp
     relacion: indirecta
     limitacion: "Series agregadas del sistema bancario; no describen una entidad ni un cliente, ni miden una calificación de riesgo ni una pérdida."
 
-vinculos_por_tema:                  # cualquier subtema del tema
+vinculos_por_tema:                  # sin regla disparada, el vínculo del tema
   logistica:
     fuente: indicador
     id: NE.EXP.GNFS.ZS

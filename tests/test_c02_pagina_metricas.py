@@ -403,9 +403,9 @@ def test_x103_la_coherencia_compara_con_el_modelo_activo_de_la_configuracion(rai
 
 
 def test_x103_otro_metodo_activo_tambien_avisa_y_la_configuracion_puede_hacer_fallar(raiz: Path, monkeypatch):
-    from src.configuracion import METODOS_CLASIFICACION, cargar_clasificacion
+    from src.configuracion import METODOS_ACTIVABLES, cargar_clasificacion   # D-125: sin B, el «otro» método es `logistica`
     cfg = cargar_clasificacion()
-    otro = next(m for m in METODOS_CLASIFICACION if m != cfg.metodo_activo)
+    otro = next(m for m in METODOS_ACTIVABLES if m != cfg.metodo_activo)
     _activar(monkeypatch, metodo_activo=otro)
     assert "config/clasificacion.yaml activa" in _seccion_coherencia(_pagina(raiz))
     with pytest.raises(pm.ErrorPagina, match="config/clasificacion.yaml activa"):

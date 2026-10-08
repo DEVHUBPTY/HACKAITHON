@@ -163,12 +163,12 @@ def test_la_cli_imprime_la_bandeja_agrupada_por_sector(monkeypatch, base_banca, 
     assert "Economía" in texto and "Continuidad operativa" in texto and h.G_COMPLETO in texto
 
 
-def test_un_grupo_sin_sector_no_reusa_el_texto_del_subtema() -> None:
+def test_un_grupo_sin_sector_no_reusa_el_texto_del_tema_desconocido() -> None:
     from src.puntaje import impacto
     from tests import prioridad_ayuda as pa
     import dataclasses
 
-    _, vacios = impacto(dataclasses.replace(pa.entrada("GRP-a", subtema=None), tema=None), pa.REGLAS, pa.CFG, BANCA)
+    _, vacios = impacto(pa.entrada("GRP-a", tema=None), pa.REGLAS, pa.CFG, BANCA)
     assert [v.codigo for v in vacios] == ["sector_desconocido"]
-    assert "subtema" not in vacios[0].texto.lower() and vacios[0].texto != cargar_prioridad().vacios.subtema_desconocido
+    assert "tema no determinado" not in vacios[0].texto.lower() and vacios[0].texto != cargar_prioridad().vacios.tema_desconocido
     assert "sector_desconocido" in cargar_verificacion().vacios.catalogo
