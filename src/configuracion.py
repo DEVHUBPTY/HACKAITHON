@@ -3781,6 +3781,124 @@ def cargar_pagina_metricas(carpeta: Path | None = None) -> ConfigPaginaMetricas:
     return cargar_config("pagina_metricas", ConfigPaginaMetricas, carpeta)
 
 
+# ------------------------------------------------------------------ entrega.yaml (C-07)
+
+
+class SbpEntrega(ModeloConfig):
+    incluir: bool
+    origen: str = Field(min_length=1)
+    destino: str = Field(min_length=1)
+    nota_destino: str = Field(min_length=1)
+    nota: str = Field(min_length=1)
+
+
+class OrigenValoresRestringidos(ModeloConfig):
+    glob: str = Field(min_length=1)
+    nombres: list[str] = Field(min_length=1)       # etiquetas XML o claves JSON cuyo valor es texto con redistribución restringida
+
+
+class ValoresRestringidos(ModeloConfig):
+    """Valores crudos que no pueden aparecer en ningún texto del paquete (D-31, D-72). Se leen de data/raw/ solo si existe en local."""
+
+    minimo_caracteres: int = Field(ge=1)           # los valores más cortos (p. ej. «Portada») no se buscan: serían falsos positivos
+    rss: OrigenValoresRestringidos
+    gdelt: OrigenValoresRestringidos
+
+
+class ProhibidoEntrega(ModeloConfig):
+    nombres: list[str] = Field(min_length=1)
+    prefijos_ruta: list[str] = Field(min_length=1)
+    campos: list[str] = Field(min_length=1)            # patrones fnmatch sobre el nombre normalizado (minúsculas, sin tildes) de columna o clave
+    campos_permitidos: list[str]                       # banderas booleanas legítimas que el patrón de campos alcanzaría
+    valores_restringidos: ValoresRestringidos
+    extensiones_estructuradas: list[str] = Field(min_length=1)
+    patrones_secretos: list[str] = Field(min_length=1)
+
+
+class PaqueteEntrega(ModeloConfig):
+    carpeta: str = Field(min_length=1)
+    manifest_salida: str = Field(min_length=1)
+    archivo_checksums: str = Field(min_length=1)
+    archivo_indice: str = Field(min_length=1)
+    archivo_leeme: str = Field(min_length=1)
+    archivos: dict[str, str]
+    carpetas: dict[str, str]
+    extensiones_carpetas: list[str]
+    carpetas_excluidas: list[str]                       # subcarpetas que nunca se copian de una carpeta completa (p. ej. la vista previa fuera de git)
+    sbp: SbpEntrega
+    prohibido: ProhibidoEntrega
+
+
+class DemoAuditoria(ModeloConfig):
+    base: str
+    verificar_offline: str
+    guion: str
+
+
+class AuditoriaEntrega(ModeloConfig):
+    salida_md: str
+    salida_json: str
+    resultado_secretos: str
+    minimo_fichas_trazables: int = Field(ge=1)
+    minimo_casos_prueba: int = Field(ge=1)
+    estado_prueba_ok: str
+    minimo_tareas_notion: int = Field(ge=1)
+    minimo_decisiones_notion: int = Field(ge=1)
+    trazabilidad: str
+    fichas_jsonl: str
+    base_senales: str = Field(min_length=1)
+    exportaciones: list[str]                            # carpetas con CASO-*.md y CSV que se entregan o se suben a Notion
+    estados_sin_trazabilidad: list[str]                 # casos que fichas.jsonl conserva pero trazabilidad.json ya no incluye (se re-verifican igual)
+    campos_fichas_jsonl: list[str] = Field(min_length=1)
+    pruebas: str
+    catalogo: str
+    columna_fuente_catalogo: str
+    manifest: str = Field(min_length=1)
+    nombres_fuentes_catalogo: dict[str, str] = Field(min_length=1)   # clave de data/manifest.json -> nombre que debe aparecer en el catálogo
+    pagina_metricas: str
+    sin_efecto_en_metricas: list[str]
+    marca_borrador_metricas: str
+    marca_provisional_metricas: str
+    carpetas_codigo_metricas: list[str] = Field(min_length=1)
+    readme: str
+    secciones_readme: dict[str, str] = Field(min_length=1)
+    licencia_codigo: list[str] = Field(min_length=1)
+    env_ejemplo: str
+    nombres_secretos_env: list[str] = Field(min_length=1)   # regex de nombres de variable que nunca llevan valor en .env.example
+    placeholders_env: list[str]                              # únicos valores aceptados para esas variables (además del vacío)
+    nunca_versionados: list[str] = Field(min_length=1)       # fnmatch sobre la ruta de `git ls-files` o su nombre
+    lock: str
+    demo: DemoAuditoria
+    revision_config: str
+    app: str
+    patron_publicar: str
+    patron_reservado: str
+    escaneo_secretos_extensiones_omitidas: list[str]
+    archivos_sin_escanear: list[str]
+    comando_reproducir: list[str] = Field(min_length=1)
+    espera_reproducir_segundos: int = Field(gt=0)
+
+
+class ConfigEntrega(ModeloConfig):
+    """Qué entra al paquete de datos, qué nunca entra y qué revisa la auditoría final (C-07)."""
+
+    version: int
+    paquete: PaqueteEntrega
+    auditoria: AuditoriaEntrega
+
+    @model_validator(mode="after")
+    def _sin_prohibidos_en_la_lista(self) -> ConfigEntrega:
+        for origen in self.paquete.archivos.values():
+            if any(origen.startswith(pre) for pre in self.paquete.prohibido.prefijos_ruta):
+                raise ValueError(f"archivos: el origen {origen} está en una ruta prohibida (D-72)")
+        return self
+
+
+def cargar_entrega(carpeta: Path | None = None) -> ConfigEntrega:
+    """Atajo para ``config/entrega.yaml``."""
+    return cargar_config("entrega", ConfigEntrega, carpeta)
+
+
 CODIGO_URGENCIA_SIN_PUBLICACION ="urgencia_sin_publicacion"   # el único vacío de E1-10 cuyo texto vive en reglas_v1.3.yaml
 MODALIDADES = ("editorial", "banca")
 OPCIONALES = {"modalidad_banca"}  # el esquema la admite aunque todavía no exista
@@ -3821,6 +3939,7 @@ CARGADORES = {
     "pruebas": cargar_pruebas,
     "reproducibilidad": cargar_reproducibilidad,
     "pagina_metricas": cargar_pagina_metricas,
+    "entrega": cargar_entrega,
 }
 
 

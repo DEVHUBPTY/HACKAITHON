@@ -1,0 +1,157 @@
+{
+  "archivos": {
+    "LEEME.md": {
+      "bytes": 1406,
+      "sha256": "63795418ec524886c138eec91b8c6755cf514a53c9132c6eef3011eb34cffeeb"
+    },
+    "benchmark_dev/README.md": {
+      "bytes": 3918,
+      "sha256": "114a607a0bc9aef12c80f1e61942272e55299796b0afb81556f2c47a33ccb5c2"
+    },
+    "benchmark_dev/benchmark_dev.jsonl": {
+      "bytes": 18116,
+      "sha256": "27c791a86055322eece5c45570b35ae4fe0f06bb89a4bed67c8d861c809f11cc"
+    },
+    "benchmark_dev/sinteticos.csv": {
+      "bytes": 394,
+      "sha256": "46140c1fe49f55f0a930584bf6846730f3a3aaa0c2d912d210398dfd31340d09"
+    },
+    "diccionario/diccionario.md": {
+      "bytes": 37006,
+      "sha256": "2f816859fc9fb68a044d86d40599517ebe3e6a4528f534bc257a0d89ba0aad39"
+    },
+    "evidencias/catalogo.csv": {
+      "bytes": 9128,
+      "sha256": "6e31b936fe4cefc99903752938e06766076608e8f15f00dee7e835ba42147d9c"
+    },
+    "evidencias/fichas.jsonl": {
+      "bytes": 112338,
+      "sha256": "b8f2a9cd930a0baa054f536e95e084de933a45233be30e138120180013eb648a"
+    },
+    "evidencias/fichas_trazables/CASO-001.md": {
+      "bytes": 10978,
+      "sha256": "3dd2ace285b0ae582d8cd2b6ac4dc793da26436f1e7cefe0c7a2db57ecbecabc"
+    },
+    "evidencias/fichas_trazables/CASO-003.md": {
+      "bytes": 6856,
+      "sha256": "888129c8011c7210a93a97a9053e6e1ad6e1f182eeb60ef9f2094646f181b993"
+    },
+    "evidencias/fichas_trazables/CASO-007.md": {
+      "bytes": 5012,
+      "sha256": "c25abbd5a2b696bf5ec864a373b8be192247cd34d7d821df29ca3db71f2ed8ed"
+    },
+    "evidencias/fichas_trazables/CASO-008.md": {
+      "bytes": 13622,
+      "sha256": "7857756a92373e66163e6150ed032087438c7e6aa533a0edb5041170bd534b9b"
+    },
+    "evidencias/fichas_trazables/CASO-009.md": {
+      "bytes": 5213,
+      "sha256": "bcbbb4dc9599cc5d3ccc1998f774d43b6d74963c49169ce5071e9a4e16648c93"
+    },
+    "evidencias/fichas_trazables/casos_y_evidencias.csv": {
+      "bytes": 20986,
+      "sha256": "5589b4a216a82f865616abd99d133a2780649d225da3c72adcefc7e9cb2545ea"
+    },
+    "evidencias/fichas_trazables/indice.md": {
+      "bytes": 4755,
+      "sha256": "eeae15c2e46bf063853bdbcc51705f4dd1acf93d234bb3796094139546dd0f46"
+    },
+    "evidencias/fichas_trazables/trazabilidad.json": {
+      "bytes": 27668,
+      "sha256": "fb4346e66d61d4a5de8d347c452c31d014b0cd709d8f7029f73fd07977f1dfd2"
+    },
+    "evidencias/metricas.json": {
+      "bytes": 26534,
+      "sha256": "e4c17d6ba97792011ebf3421ff472467fc14ef978844a40005bf6c8b60be4f69"
+    },
+    "evidencias/pagina_metricas.md": {
+      "bytes": 23249,
+      "sha256": "0ff366d2ad3fb2b3b5deeb26bbe6db837df3fc37fc760dd32a4b0e7937352dc4"
+    },
+    "evidencias/pruebas.csv": {
+      "bytes": 3667,
+      "sha256": "c81f4a49c6002bc3c3d9818b3060b9ba21853d6152de6f5e34c774d2973aad0d"
+    },
+    "licencias/NOTA_SBP_D-116.md": {
+      "bytes": 580,
+      "sha256": "49e4315f936a7bc2ba2594810cb3212f88b229197f6a4a744d27bf2041c9a1ad"
+    },
+    "licencias/data_README.md": {
+      "bytes": 5747,
+      "sha256": "80b77379a7d120e73d5338232ae04e59c20d29f1c7478948b01c5b6084cb409e"
+    },
+    "licencias/fuentes.md": {
+      "bytes": 9306,
+      "sha256": "16d2e88656cc845936a7c871851a2b90cd354d3c7f34436318ced85002132949"
+    },
+    "manifest/CHANGELOG.md": {
+      "bytes": 3597,
+      "sha256": "2286ed1dc7f6ef943380f2d713d0317af561e2c109738370b3a0d356177cf51b"
+    },
+    "manifest/manifest.json": {
+      "bytes": 42411,
+      "sha256": "953b9ea0507b8e374ea29962d7c10f35a12aeb74c49c3ad68c64e2f4915648a8"
+    },
+    "receta/config/fuentes.yaml": {
+      "bytes": 16601,
+      "sha256": "60c1b5c36afa63262cbb48c9d0dcd065cfeccd6bf821d895ac9b40606e15e218"
+    },
+    "receta/reproducibilidad.md": {
+      "bytes": 12325,
+      "sha256": "afe4dcc73b46ef7486d658681a353b30fb9b3637085b5f785de1b2031a60b0c3"
+    },
+    "receta/scripts/conversion.py": {
+      "bytes": 36524,
+      "sha256": "829c10fd41dc5b8cac8bdf380dfe5d8db8d9c324d90f0e1de73e1eb789e4718a"
+    },
+    "receta/scripts/extraer.py": {
+      "bytes": 21203,
+      "sha256": "35fc35f1236cec470cff562e7abfc29d43966681c0ff204cc01af4a089c7ade1"
+    },
+    "receta/scripts/manifest.py": {
+      "bytes": 22233,
+      "sha256": "65a26c7855de5a728058e10deb5b51dc3a299b995c84f33d5a9513b72af57844"
+    },
+    "receta/scripts/sbp.py": {
+      "bytes": 7952,
+      "sha256": "14c7fd4294d0acd70f7f8e9acf4d8df8116f042c24e4891eaa900676d0c0f4af"
+    },
+    "receta/scripts/validar_snapshot.py": {
+      "bytes": 23111,
+      "sha256": "2f05a0656d6a3c111ec550b0599fb06befe9c8d7d4f0f0c3fe7fd63feccbbda1"
+    },
+    "receta/src/consultas_gdelt.py": {
+      "bytes": 2986,
+      "sha256": "5e1d0744879af39539525b748b302c755f2d79312c5622eee3150ece2f57091a"
+    },
+    "snapshot/conversion.json": {
+      "bytes": 25215,
+      "sha256": "23249ad8a26deaca36a1a40b1373314dc8b122a96f0e7f0d922b8929c9e0cbf2"
+    },
+    "snapshot/eventos.geojson": {
+      "bytes": 48516,
+      "sha256": "c43507e5934652ff45fcb0bdae781d498a08167457c9e9d82f67446d6966d411"
+    },
+    "snapshot/fuentes.json": {
+      "bytes": 19397,
+      "sha256": "799b74b1f7766e193659f6c08f41ad9052ed838049812797c80ef75751db9b52"
+    },
+    "snapshot/indicadores.csv": {
+      "bytes": 143639,
+      "sha256": "6238f1c008ac313a1cc1f9ebc5e5459c21a47c36460900aa47cce726a8e34b12"
+    },
+    "snapshot/noticias.csv": {
+      "bytes": 87424,
+      "sha256": "8aba0f96764846d1a981bf7ca8527d6d7d973c79a70388db5ef0bc44b081ee2c"
+    },
+    "snapshot/sbp_series.csv": {
+      "bytes": 22574,
+      "sha256": "85f9f17e5e5f4095aae423b749ad7cb72952fc8329086830f6ba78b216644b96"
+    }
+  },
+  "bytes_total": 882187,
+  "n_archivos": 37,
+  "paquete": "Panamá · Señales y Evidencias v1",
+  "sbp_incluida": true,
+  "version_snapshot": "1.4"
+}

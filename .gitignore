@@ -57,3 +57,6 @@ outputs/rechazos.jsonl
 # E1-20: fichas que reconstruye scripts.reproducir; su hash queda en data/manifest.json (reproducibilidad).
 outputs/reproduccion/
 outputs/fichas_trazables/vista_previa/
+
+# C-07: el paquete de entrega se reconstruye con scripts.empaquetar_datos; solo se versiona outputs/entrega_manifest.json.
+entrega/
