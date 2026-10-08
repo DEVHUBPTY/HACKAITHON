@@ -1695,13 +1695,14 @@ class ConfigClasificacion(ModeloConfig):
     criterio_ab: CriterioAB
     fuga_semantica: FugaSemantica
     baseline: BaselineClasificacion
+    logistica: ConfigLogistica
 
     @model_validator(mode="after")
     def _coherente(self) -> ConfigClasificacion:
         if self.modelo_activo not in self.modelos:
             raise ValueError(f"modelo_activo {self.modelo_activo!r} no está en modelos {sorted(self.modelos)}")
-        if self.metodo_activo not in METODOS_CLASIFICACION:
-            raise ValueError(f"metodo_activo: uno de {list(METODOS_CLASIFICACION)}")
+        if self.metodo_activo not in METODOS_ACTIVABLES:
+            raise ValueError(f"metodo_activo: uno de {list(METODOS_ACTIVABLES)}")
         if self.fuga_semantica.modelo not in self.modelos:
             raise ValueError(f"fuga_semantica.modelo {self.fuga_semantica.modelo!r} no está en modelos")
         if self.lote < 1:
@@ -1819,6 +1820,12 @@ class MuestraEtiquetado(ModeloConfig):
             raise ValueError("los dobles de los estratos deben sumar tamano_acuerdo")
         if e.no_ruido.dobles > e.no_ruido.cuota or e.ruido.dobles > e.ruido.cuota:
             raise ValueError("los dobles de un estrato no pueden superar su cuota")
+        nombres = [a.nombre for a in self.ampliaciones]
+        estratos = [a.estrato for a in self.ampliaciones]
+        if len(set(nombres)) != len(nombres) or len(set(estratos)) != len(estratos):
+            raise ValueError("cada ampliación lleva un nombre y un estrato propios")
+        if set(estratos) & {"no_ruido", "ruido"}:
+            raise ValueError("el estrato de una ampliación no puede ser no_ruido ni ruido")
         return self
 
 
