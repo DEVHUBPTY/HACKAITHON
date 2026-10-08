@@ -18,10 +18,14 @@ desempate: [u_desc, id_asc]  # mayor U; si empatan, menor ID
 
 # D-103: ni R ni N usan ya percentiles de similitud (antes D-35: «percentil dentro del snapshot»).
 
-relevancia:                 # R = peso_foco × foco. D-103 quitó la parte temática (confianza del clasificador) y renormalizó
-  peso_foco: 1.0            # antes 0.5 foco + 0.5 percentil(similitud temática); la única parte que queda pesa 1
+relevancia:                 # R = peso_foco × foco × pertenencia temática. D-103 quitó la parte temática basada en la CONFIANZA del clasificador;
+  peso_foco: 1.0            # D-119 la restituye de otra forma: pertenencia DISCRETA según la ETIQUETA (nunca la confianza) a los temas de la modalidad
   foco_panama_sujeto: 1.0
   foco_otro_pais_afecta: 0.5
+  pertenencia_tematica:     # "Relación con Panamá y con los temas de la modalidad" (PDF sección 4). Temas = los 6 de config/temas.yaml
+    tema_principal: 1.0     # algún titular del grupo tiene un tema de la modalidad como tema_clasificado
+    solo_secundario: 0.6    # ninguno lo tiene como principal, pero alguno lo tiene como tema_secundario
+    sin_tema: 0.3           # ninguno (etiqueta nula, no_es_panama, fuera_de_temas o no_es_noticia): baja el orden sin anular el grupo
 
 impacto:                    # I = peso_subtema × alcance(subtema) + peso_geografico × alcance geográfico
   peso_subtema: 0.5         # el dato oficial y las procedencias NO entran en I (D-15, D-35)

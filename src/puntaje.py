@@ -4,9 +4,10 @@
 fijan, en ``config/prioridad.yaml``). Es una herramienta de **ordenamiento**: no es una probabilidad de verdad ni de pérdida,
 y **no habilita publicación** (``Puntaje.habilita_publicacion`` es siempre falso).
 
-* **R** = ``peso_foco × foco`` (D-103: sin la parte temática, que era la confianza del clasificador). Foco: 1 si algún
-  titular del grupo trata a Panamá como sujeto; 0.5 si todos son notas regionales o de otro país que afectan a Panamá
-  (``alcance_regional``, D-84).
+* **R** = ``peso_foco × foco × pertenencia`` (D-119; D-103 había quitado la parte temática porque usaba la confianza del
+  clasificador). Foco: 1 si algún titular del grupo trata a Panamá como sujeto; 0.5 si todos son notas regionales o de otro
+  país que afectan a Panamá (``alcance_regional``, D-84). Pertenencia: según la ETIQUETA, nunca la confianza (``tema_similitud``):
+  1 si algún titular tiene un tema de la modalidad como ``tema_clasificado``, 0.6 si solo como ``tema_secundario``, 0.3 si ninguno.
 * **I** = ``peso_subtema × alcance(subtema) + peso_geografico × alcance geográfico``. Ni el dato oficial ni las
   procedencias suman aquí (D-15, D-35). El alcance geográfico es el más amplio que nombren los titulares; sin término
   explícito ni lugar concreto de Panamá, un país o ciudad del exterior lo hace ``exterior`` (D-115) y, si no hay, el país
@@ -32,7 +33,7 @@ from __future__ import annotations
 import re
 import sys
 from collections import Counter
-from collections.abc import Mapping, Sequence
+from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 from functools import lru_cache
@@ -41,7 +42,7 @@ from typing import Any
 import numpy as np
 
 from src.agrupacion import fecha_de, fecha_iso_de
-from src.configuracion import ConfigModalidad, ConfigPrioridad, ReglasV13
+from src.configuracion import ConfigModalidad, ConfigPrioridad, ReglasV13, cargar_temas
 from src.evidencia import Vacio
 from src.limpieza import plano
 from src.procedencias import fraccion_de_procedencias
@@ -78,7 +79,7 @@ class EntradaGrupo:
     """Lo que el puntaje necesita de un grupo: sus titulares (filas de ``noticias``), vectores y contexto ya resuelto."""
 
     id_grupo: str
-    miembros: tuple[Mapping[str, Any], ...]     # id_noticia, titulo_limpio, medio, fecha_publicacion, fecha_deteccion, es_recirculada, alcance_regional, tema_similitud
+    miembros: tuple[Mapping[str, Any], ...]     # id_noticia, titulo_limpio, medio, fecha_publicacion, fecha_deteccion, es_recirculada, alcance_regional, tema_clasificado, tema_secundario
     vectores: np.ndarray | None                 # embeddings normalizados de los miembros (misma posición); necesarios para N
     subtema: str | None
     n_procedencias: int
@@ -157,6 +158,25 @@ def foco_de(miembros: Sequence[Mapping[str, Any]], reglas: ReglasV13) -> tuple[f
     foco = reglas.relevancia.foco_otro_pais_afecta if todos_regionales else reglas.relevancia.foco_panama_sujeto
     motivo = "otro_pais_afecta" if todos_regionales else "panama_sujeto"
     return foco, {"foco": foco, "foco_motivo": motivo, "titulares_regionales": regionales, "titulares": len(miembros)}
+
+
+def pertenencia_de(
+    miembros: Sequence[Mapping[str, Any]], temas: Collection[str], reglas: ReglasV13
+) -> tuple[float, dict[str, Any]]:
+    """Pertenencia temática del grupo (D-119) y su explicación. Lee solo las etiquetas, jamás la confianza del clasificador.
+
+    ``temas`` son los temas de la modalidad. Una etiqueta nula o fuera de ellos (``no_es_panama``, ``fuera_de_temas``…) no cuenta.
+    """
+    valores = reglas.relevancia.pertenencia_tematica
+    principales = sorted({str(m["tema_clasificado"]) for m in miembros if m.get("tema_clasificado") in temas})
+    secundarios = sorted({str(m["tema_secundario"]) for m in miembros if m.get("tema_secundario") in temas} - set(principales))
+    if principales:
+        valor, motivo, coinciden = valores.tema_principal, "tema_principal", principales
+    elif secundarios:
+        valor, motivo, coinciden = valores.solo_secundario, "solo_secundario", secundarios
+    else:
+        valor, motivo, coinciden = valores.sin_tema, "sin_tema", []
+    return valor, {"pertenencia": valor, "pertenencia_motivo": motivo, "temas_coincidentes": coinciden}
 
 
 # ------------------------------------------------------------------ I · impacto
@@ -508,12 +528,20 @@ def empate_en_el_corte(claves: Sequence[Any], k: int) -> dict[str, Any] | None:
 
 
 def calcular_puntajes(
-    entradas: Sequence[EntradaGrupo], reglas: ReglasV13, cfg: ConfigPrioridad, ahora: datetime, modalidad: ConfigModalidad | None = None
+    entradas: Sequence[EntradaGrupo],
+    reglas: ReglasV13,
+    cfg: ConfigPrioridad,
+    ahora: datetime,
+    modalidad: ConfigModalidad | None = None,
+    temas: Collection[str] | None = None,
 ) -> list[Puntaje]:
     """R, I, U, N, E, P, rango y posición de cada grupo. Determinista: no depende del orden de ``entradas``.
 
     ``ahora`` es la fecha de referencia (el corte del snapshot, UTC): U se mide contra ella, nunca contra el reloj.
+    ``temas`` son los temas de la modalidad para la pertenencia de R (D-119); por omisión, los 6 de ``config/temas.yaml``
+    (las modalidades no declaran una lista propia).
     """
+    temas = frozenset(cargar_temas().temas if temas is None else temas)
     entradas = sorted(entradas, key=lambda e: e.id_grupo)
     ids = [e.id_grupo for e in entradas]
     if len(set(ids)) != len(ids):
@@ -525,7 +553,8 @@ def calcular_puntajes(
     resultado: list[Puntaje] = []
     for i, e in enumerate(entradas):
         foco, detalle_foco = foco_de(e.miembros, reglas)
-        r = Componente(rel.peso_foco * foco, {**detalle_foco, "peso_foco": rel.peso_foco})
+        pertenencia, detalle_pertenencia = pertenencia_de(e.miembros, temas, reglas)
+        r = Componente(rel.peso_foco * foco * pertenencia, {**detalle_foco, **detalle_pertenencia, "peso_foco": rel.peso_foco})
         c_i, vacios_i = impacto(e, reglas, cfg, modalidad)
         c_u, vacios_u = urgencia(e.miembros, ahora, reglas)
         if maximas[i] is None:

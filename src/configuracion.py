@@ -585,12 +585,31 @@ class Rangos(ModeloConfig):
         return self
 
 
+class PertenenciaTematica(ModeloConfig):
+    """Pertenencia de un grupo a los temas de la modalidad (D-119): tres valores discretos según la etiqueta, nunca la confianza."""
+
+    tema_principal: float = Unidad
+    solo_secundario: float = Unidad
+    sin_tema: float = Unidad
+
+    @model_validator(mode="after")
+    def _monotona(self) -> PertenenciaTematica:
+        if not self.tema_principal >= self.solo_secundario >= self.sin_tema:
+            raise ValueError("pertenencia_tematica debe cumplir tema_principal >= solo_secundario >= sin_tema")
+        return self
+
+
 class Relevancia(ModeloConfig):
-    """R = ``peso_foco`` × foco. D-103 quitó la parte temática (percentil de la similitud con el tema)."""
+    """R = ``peso_foco`` × foco × pertenencia temática.
+
+    D-103 quitó la parte temática que usaba la confianza del clasificador (percentil de la similitud); D-119 la restituye como
+    pertenencia discreta según la etiqueta (``tema_clasificado`` / ``tema_secundario``), sin leer nunca la confianza.
+    """
 
     peso_foco: float = Unidad
     foco_panama_sujeto: float = Unidad
     foco_otro_pais_afecta: float = Unidad
+    pertenencia_tematica: PertenenciaTematica
 
     @model_validator(mode="after")
     def _partes(self) -> Relevancia:
