@@ -6,21 +6,21 @@
   "grupos": 69,
   "por_rango": {
     "alto": {
-      "n": 54,
+      "n": 56,
       "de": 69,
-      "proporcion": 0.7826,
+      "proporcion": 0.8116,
       "ic95": [
-        0.6718,
-        0.8636
+        0.7039,
+        0.8865
       ]
     },
     "medio": {
-      "n": 15,
+      "n": 13,
       "de": 69,
-      "proporcion": 0.2174,
+      "proporcion": 0.1884,
       "ic95": [
-        0.1364,
-        0.3282
+        0.1135,
+        0.2961
       ]
     },
     "bajo": {
@@ -168,6 +168,28 @@
     },
     {
       "posicion": 5,
+      "id_grupo": "GRP-29baaf270e",
+      "titular_central": "Panamá mantiene vigilancia epidemiológica ante caso sospechoso de peste neumónica en Rusia",
+      "puntaje": 84.16,
+      "empate_con": 0,
+      "rango": "alto",
+      "componentes": {
+        "R": 1.0,
+        "I": 0.935,
+        "U": 0.8173,
+        "N": 0.7184,
+        "E": 0.3667
+      },
+      "estado_de_evidencia": "insuficiente",
+      "accion": "Investigar ya",
+      "vacios": [
+        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
+        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
+      ],
+      "contradicciones": []
+    },
+    {
+      "posicion": 6,
       "id_grupo": "GRP-1dc52c45ff",
       "titular_central": "César Caicedo ahora está recluido en el Hospital Santo Tomás; había sido trasladado a Coiba",
       "puntaje": 83.12,
@@ -189,7 +211,7 @@
       "contradicciones": []
     },
     {
-      "posicion": 6,
+      "posicion": 7,
       "id_grupo": "GRP-1627d09497",
       "titular_central": "Contenido exclusivo: Dietilenglicol, 20 años de dolor",
       "puntaje": 82.99,
@@ -212,7 +234,7 @@
       "contradicciones": []
     },
     {
-      "posicion": 7,
+      "posicion": 8,
       "id_grupo": "GRP-8a448d1fd9",
       "titular_central": "Universidad Tecnológica evalúa unos 200 edificios para determinar su seguridad ante sismos",
       "puntaje": 82.93,
@@ -235,7 +257,7 @@
       "contradicciones": []
     },
     {
-      "posicion": 8,
+      "posicion": 9,
       "id_grupo": "GRP-7ddcf92e16",
       "titular_central": "Ataque a tiros cerca de la estación del metro de San Miguelito deja un muerto y dos heridos",
       "puntaje": 82.88,
@@ -257,7 +279,7 @@
       "contradicciones": []
     },
     {
-      "posicion": 9,
+      "posicion": 10,
       "id_grupo": "GRP-87e128925b",
       "titular_central": "Veraguas: Preocupación por aumento de muertes por enfermedades transmisibles y respiratorias",
       "puntaje": 82.92,
@@ -275,29 +297,6 @@
       "vacios": [
         "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
         "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
-      ],
-      "contradicciones": []
-    },
-    {
-      "posicion": 10,
-      "id_grupo": "GRP-03e3ef16d9",
-      "titular_central": "Sinaproc busca superar el 10% de participación ciudadana en el tercer simulacro nacional",
-      "puntaje": 82.23,
-      "empate_con": 0,
-      "rango": "alto",
-      "componentes": {
-        "R": 1.0,
-        "I": 0.585,
-        "U": 0.9468,
-        "N": 1.0,
-        "E": 0.3667
-      },
-      "estado_de_evidencia": "insuficiente",
-      "accion": "Investigar ya",
-      "vacios": [
-        "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
-        "los titulares traen cifras y no hay dato oficial vinculado",
-        "sin dato oficial vinculado (ningún titular sustenta una relación con un dato oficial; no se fuerza la relación)"
       ],
       "contradicciones": []
     }

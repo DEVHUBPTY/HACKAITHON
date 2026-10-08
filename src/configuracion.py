@@ -17,7 +17,7 @@ from typing import Any, Literal, TypeVar, get_args
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, ValidationInfo, field_validator, model_validator
 
 from src import consultas_gdelt
 
@@ -722,6 +722,22 @@ class Geografia(ModeloConfig):
     distritos: list[str]
     exterior_terminos: list[str] = Field(min_length=1)   # D-115 (E1-10d): países y ciudades grandes, en español e inglés, sin tildes obligatorias
 
+    pais_terminos: list[str] = Field(min_length=1)   # C-10 (D6): cómo se nombra al país; nombrado como parte del hecho manda sobre el exterior
+    panama_nombres_propios: list[str] = Field(min_length=1)   # C-10 (D3): nombres propios con «Panamá» que cuentan como mención del país
+
+    panama_nombres_extranjeros: list[str] = Field(min_length=1)   # C-10 (D6): lugares extranjeros con el nombre del país («Panama City»); no son mención del país
+
+    @field_validator("pais_terminos", "panama_nombres_propios", "panama_nombres_extranjeros")
+    @classmethod
+    def _menciones_sin_vacios_ni_repetidos(cls, terminos: list[str], info: ValidationInfo) -> list[str]:
+        normalizados = [_sin_tildes(t) for t in terminos]
+        if any(not n for n in normalizados):
+            raise ValueError(f"{info.field_name}: un término no puede estar vacío")
+        repetidos = sorted({n for n in normalizados if normalizados.count(n) > 1})
+        if repetidos:
+            raise ValueError(f"{info.field_name}: términos repetidos (sin tildes ni mayúsculas): {repetidos}")
+        return terminos
+
     @field_validator("exterior_terminos")
     @classmethod
     def _exterior_sin_vacios_ni_repetidos(cls, terminos: list[str]) -> list[str]:
@@ -732,6 +748,15 @@ class Geografia(ModeloConfig):
         if repetidos:
             raise ValueError(f"exterior_terminos: términos repetidos (sin tildes ni mayúsculas): {repetidos}")
         return terminos
+
+    @model_validator(mode="after")
+    def _nombres_propios_contienen_al_pais(self) -> Geografia:
+        pais = [_sin_tildes(t) for t in self.pais_terminos]
+        for campo in ("panama_nombres_propios", "panama_nombres_extranjeros"):
+            sin_pais = sorted(n for n in getattr(self, campo) if not any(p in _sin_tildes(n) for p in pais))
+            if sin_pais:
+                raise ValueError(f"{campo}: no contiene el país ({', '.join(self.pais_terminos)}): {sin_pais}")
+        return self
 
     @model_validator(mode="after")
     def _exterior_no_es_un_lugar_de_panama(self) -> Geografia:
