@@ -806,50 +806,50 @@
       "n": 100,
       "macro_f1_ia": {
         "n": 100,
-        "macro_f1": 0.6121,
+        "macro_f1": 0.6295,
         "ic95": [
-          0.4195,
-          0.7452
+          0.4266,
+          0.7737
         ],
         "ic95_exacto": [
-          0.41952438030309686,
-          0.7451953864067559
+          0.42661889755902366,
+          0.7737193240966915
         ],
         "remuestreos": 1000,
         "ponderado": false
       },
       "macro_f1_baseline": {
         "n": 100,
-        "macro_f1": 0.582,
+        "macro_f1": 0.6011,
         "ic95": [
-          0.3827,
-          0.7217
+          0.3986,
+          0.749
         ],
         "ic95_exacto": [
-          0.38266056726515757,
-          0.7216591435185185
+          0.3985799731734691,
+          0.7490330487033522
         ],
         "remuestreos": 1000,
         "ponderado": false
       },
       "diferencia_macro_f1": {
         "n": 100,
-        "diferencia_macro_f1": 0.0301,
+        "diferencia_macro_f1": 0.0284,
         "ic95": [
-          -0.2289,
-          0.2993
+          -0.2436,
+          0.31
         ],
         "ic95_exacto": [
-          -0.2289366823897138,
-          0.29933548382191977
+          -0.24361831728015299,
+          0.3099981285279619
         ]
       },
       "veredicto": "sin_diferencia_demostrable",
       "discordantes_conteo": {
-        "ambos_aciertan": 73,
+        "ambos_aciertan": 77,
         "solo_ia": 10,
         "solo_baseline": 5,
-        "ambos_fallan": 12,
+        "ambos_fallan": 8,
         "n": 100
       }
     }
@@ -2312,10 +2312,10 @@
     "top": 5,
     "top_sistema": [
       "GRP-21ad932d54",
-      "GRP-038c4f0643",
-      "GRP-393e132dbb",
-      "GRP-50d72e2b04",
-      "GRP-5e6531917f"
+      "GRP-5e6531917f",
+      "GRP-8a448d1fd9",
+      "GRP-4d8b340bd9",
+      "GRP-7ddcf92e16"
     ],
     "top_por_fecha": [
       "GRP-3a15fc6a18",
@@ -2326,22 +2326,22 @@
     ],
     "solapamiento": {
       "k": 5,
-      "coinciden": [
-        "GRP-50d72e2b04"
-      ],
+      "coinciden": [],
       "solo_sistema": [
         "GRP-21ad932d54",
-        "GRP-038c4f0643",
-        "GRP-393e132dbb",
-        "GRP-5e6531917f"
+        "GRP-5e6531917f",
+        "GRP-8a448d1fd9",
+        "GRP-4d8b340bd9",
+        "GRP-7ddcf92e16"
       ],
       "solo_baseline": [
         "GRP-3a15fc6a18",
         "GRP-1dc52c45ff",
+        "GRP-50d72e2b04",
         "GRP-a03bab5b02",
         "GRP-1627d09497"
       ],
-      "n_coinciden": 1
+      "n_coinciden": 0
     },
     "empates_de_fecha_en_el_corte": [],
     "ejemplos_solo_sistema": [
@@ -2366,51 +2366,11 @@
         "accion": "Investigar ya"
       },
       {
-        "id_grupo": "GRP-038c4f0643",
-        "titular_central": "Clima en Panamá: Martes con lluvias y tormentas eléctricas en varias regiones durante la tarde",
-        "n_titulares": 1,
-        "n_medios": 1,
-        "posicion_sistema": 2,
-        "posicion_por_fecha": 42,
-        "fecha_mas_reciente": "2026-10-06T11:27:43Z",
-        "puntaje": 86.39,
-        "rango": "alto",
-        "componentes": {
-          "R": 1.0,
-          "I": 0.9,
-          "U": 0.7612,
-          "N": 1.0,
-          "E": 0.3667
-        },
-        "estado_de_evidencia": "insuficiente",
-        "accion": "Investigar ya"
-      },
-      {
-        "id_grupo": "GRP-393e132dbb",
-        "titular_central": "Festival Navideño 'City of Stars 2026': Alcaldía de Panamá presenta el calendario de actividades",
-        "n_titulares": 1,
-        "n_medios": 1,
-        "posicion_sistema": 3,
-        "posicion_por_fecha": 16,
-        "fecha_mas_reciente": "2026-10-07T16:46:00Z",
-        "puntaje": 86.13,
-        "rango": "alto",
-        "componentes": {
-          "R": 1.0,
-          "I": 0.75,
-          "U": 0.9356,
-          "N": 1.0,
-          "E": 0.3667
-        },
-        "estado_de_evidencia": "insuficiente",
-        "accion": "Investigar ya"
-      },
-      {
         "id_grupo": "GRP-5e6531917f",
         "titular_central": "Más de 30 mujeres han muerto de forma violenta en Panamá este año",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 5,
+        "posicion_sistema": 2,
         "posicion_por_fecha": 44,
         "fecha_mas_reciente": "2026-10-06T01:30:01Z",
         "puntaje": 85.2,
@@ -2424,6 +2384,66 @@
         },
         "estado_de_evidencia": "insuficiente",
         "accion": "Investigar ya"
+      },
+      {
+        "id_grupo": "GRP-8a448d1fd9",
+        "titular_central": "Universidad Tecnológica evalúa unos 200 edificios para determinar su seguridad ante sismos",
+        "n_titulares": 1,
+        "n_medios": 1,
+        "posicion_sistema": 3,
+        "posicion_por_fecha": 6,
+        "fecha_mas_reciente": "2026-10-08T00:33:51Z",
+        "puntaje": 84.56,
+        "rango": "alto",
+        "componentes": {
+          "R": 1.0,
+          "I": 0.65,
+          "U": 0.982,
+          "N": 1.0,
+          "E": 0.3667
+        },
+        "estado_de_evidencia": "insuficiente",
+        "accion": "Investigar ya"
+      },
+      {
+        "id_grupo": "GRP-4d8b340bd9",
+        "titular_central": "Aprehenden a 10 personas por presunta minería ilegal y delitos ambientales en Coclé del Norte",
+        "n_titulares": 1,
+        "n_medios": 1,
+        "posicion_sistema": 4,
+        "posicion_por_fecha": 20,
+        "fecha_mas_reciente": "2026-10-07T12:48:21Z",
+        "puntaje": 84.41,
+        "rango": "alto",
+        "componentes": {
+          "R": 1.0,
+          "I": 0.7,
+          "U": 0.912,
+          "N": 1.0,
+          "E": 0.3667
+        },
+        "estado_de_evidencia": "insuficiente",
+        "accion": "Investigar ya"
+      },
+      {
+        "id_grupo": "GRP-7ddcf92e16",
+        "titular_central": "Ataque a tiros cerca de la estación del metro de San Miguelito deja un muerto y dos heridos",
+        "n_titulares": 1,
+        "n_medios": 1,
+        "posicion_sistema": 5,
+        "posicion_por_fecha": 7,
+        "fecha_mas_reciente": "2026-10-08T00:08:54Z",
+        "puntaje": 82.01,
+        "rango": "alto",
+        "componentes": {
+          "R": 1.0,
+          "I": 0.55,
+          "U": 0.9795,
+          "N": 1.0,
+          "E": 0.3667
+        },
+        "estado_de_evidencia": "insuficiente",
+        "accion": "Investigar ya"
       }
     ],
     "ejemplos_solo_por_fecha": [
@@ -2432,16 +2452,16 @@
         "titular_central": "Lau Cortés: Ordenan detención domiciliaria e imputan cargos por enriquecimiento injustificado y blanqueo de capitales",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 22,
+        "posicion_sistema": 25,
         "posicion_por_fecha": 1,
         "fecha_mas_reciente": "2026-10-08T02:30:00Z",
-        "puntaje": 78.54,
+        "puntaje": 77.46,
         "rango": "alto",
         "componentes": {
           "R": 1.0,
           "I": 0.4,
           "U": 0.9935,
-          "N": 1.0,
+          "N": 0.9285,
           "E": 0.3667
         },
         "estado_de_evidencia": null,
@@ -2452,7 +2472,7 @@
         "titular_central": "César Caicedo ahora está recluido en el Hospital Santo Tomás; había sido trasladado a Coiba",
         "n_titulares": 2,
         "n_medios": 1,
-        "posicion_sistema": 23,
+        "posicion_sistema": 17,
         "posicion_por_fecha": 2,
         "fecha_mas_reciente": "2026-10-08T02:10:57Z",
         "puntaje": 78.5,
@@ -2468,31 +2488,51 @@
         "accion": null
       },
       {
+        "id_grupo": "GRP-50d72e2b04",
+        "titular_central": "Unos 22 aprehendidos en la operación Comunidad Segura contra el microtráfico en Colón y Panama Oeste",
+        "n_titulares": 1,
+        "n_medios": 1,
+        "posicion_sistema": 18,
+        "posicion_por_fecha": 3,
+        "fecha_mas_reciente": "2026-10-08T02:02:13Z",
+        "puntaje": 78.53,
+        "rango": "alto",
+        "componentes": {
+          "R": 1.0,
+          "I": 0.7,
+          "U": 0.9908,
+          "N": 0.5033,
+          "E": 0.3667
+        },
+        "estado_de_evidencia": null,
+        "accion": null
+      },
+      {
         "id_grupo": "GRP-a03bab5b02",
         "titular_central": "Asamblea: Debate por la renovación del contrato de Ciudad del Saber genera cuestionamientos por exoneraciones",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 9,
+        "posicion_sistema": 24,
         "posicion_por_fecha": 4,
         "fecha_mas_reciente": "2026-10-08T01:14:47Z",
-        "puntaje": 82.14,
+        "puntaje": 77.84,
         "rango": "alto",
         "componentes": {
           "R": 1.0,
           "I": 0.55,
           "U": 0.9861,
-          "N": 1.0,
+          "N": 0.7137,
           "E": 0.3667
         },
-        "estado_de_evidencia": "insuficiente",
-        "accion": "Investigar ya"
+        "estado_de_evidencia": null,
+        "accion": null
       },
       {
         "id_grupo": "GRP-1627d09497",
         "titular_central": "Contenido exclusivo: Dietilenglicol, 20 años de dolor",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 25,
+        "posicion_sistema": 20,
         "posicion_por_fecha": 5,
         "fecha_mas_reciente": "2026-10-08T01:02:59Z",
         "puntaje": 78.36,
@@ -2530,71 +2570,11 @@
         "accion": "Investigar ya"
       },
       {
-        "id_grupo": "GRP-038c4f0643",
-        "titular_central": "Clima en Panamá: Martes con lluvias y tormentas eléctricas en varias regiones durante la tarde",
-        "n_titulares": 1,
-        "n_medios": 1,
-        "posicion_sistema": 2,
-        "posicion_por_fecha": 42,
-        "fecha_mas_reciente": "2026-10-06T11:27:43Z",
-        "puntaje": 86.39,
-        "rango": "alto",
-        "componentes": {
-          "R": 1.0,
-          "I": 0.9,
-          "U": 0.7612,
-          "N": 1.0,
-          "E": 0.3667
-        },
-        "estado_de_evidencia": "insuficiente",
-        "accion": "Investigar ya"
-      },
-      {
-        "id_grupo": "GRP-393e132dbb",
-        "titular_central": "Festival Navideño 'City of Stars 2026': Alcaldía de Panamá presenta el calendario de actividades",
-        "n_titulares": 1,
-        "n_medios": 1,
-        "posicion_sistema": 3,
-        "posicion_por_fecha": 16,
-        "fecha_mas_reciente": "2026-10-07T16:46:00Z",
-        "puntaje": 86.13,
-        "rango": "alto",
-        "componentes": {
-          "R": 1.0,
-          "I": 0.75,
-          "U": 0.9356,
-          "N": 1.0,
-          "E": 0.3667
-        },
-        "estado_de_evidencia": "insuficiente",
-        "accion": "Investigar ya"
-      },
-      {
-        "id_grupo": "GRP-50d72e2b04",
-        "titular_central": "Unos 22 aprehendidos en la operación Comunidad Segura contra el microtráfico en Colón y Panama Oeste",
-        "n_titulares": 1,
-        "n_medios": 1,
-        "posicion_sistema": 4,
-        "posicion_por_fecha": 3,
-        "fecha_mas_reciente": "2026-10-08T02:02:13Z",
-        "puntaje": 85.98,
-        "rango": "alto",
-        "componentes": {
-          "R": 1.0,
-          "I": 0.7,
-          "U": 0.9908,
-          "N": 1.0,
-          "E": 0.3667
-        },
-        "estado_de_evidencia": "insuficiente",
-        "accion": "Investigar ya"
-      },
-      {
         "id_grupo": "GRP-5e6531917f",
         "titular_central": "Más de 30 mujeres han muerto de forma violenta en Panamá este año",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 5,
+        "posicion_sistema": 2,
         "posicion_por_fecha": 44,
         "fecha_mas_reciente": "2026-10-06T01:30:01Z",
         "puntaje": 85.2,
@@ -2608,35 +2588,95 @@
         },
         "estado_de_evidencia": "insuficiente",
         "accion": "Investigar ya"
+      },
+      {
+        "id_grupo": "GRP-8a448d1fd9",
+        "titular_central": "Universidad Tecnológica evalúa unos 200 edificios para determinar su seguridad ante sismos",
+        "n_titulares": 1,
+        "n_medios": 1,
+        "posicion_sistema": 3,
+        "posicion_por_fecha": 6,
+        "fecha_mas_reciente": "2026-10-08T00:33:51Z",
+        "puntaje": 84.56,
+        "rango": "alto",
+        "componentes": {
+          "R": 1.0,
+          "I": 0.65,
+          "U": 0.982,
+          "N": 1.0,
+          "E": 0.3667
+        },
+        "estado_de_evidencia": "insuficiente",
+        "accion": "Investigar ya"
+      },
+      {
+        "id_grupo": "GRP-4d8b340bd9",
+        "titular_central": "Aprehenden a 10 personas por presunta minería ilegal y delitos ambientales en Coclé del Norte",
+        "n_titulares": 1,
+        "n_medios": 1,
+        "posicion_sistema": 4,
+        "posicion_por_fecha": 20,
+        "fecha_mas_reciente": "2026-10-07T12:48:21Z",
+        "puntaje": 84.41,
+        "rango": "alto",
+        "componentes": {
+          "R": 1.0,
+          "I": 0.7,
+          "U": 0.912,
+          "N": 1.0,
+          "E": 0.3667
+        },
+        "estado_de_evidencia": "insuficiente",
+        "accion": "Investigar ya"
+      },
+      {
+        "id_grupo": "GRP-7ddcf92e16",
+        "titular_central": "Ataque a tiros cerca de la estación del metro de San Miguelito deja un muerto y dos heridos",
+        "n_titulares": 1,
+        "n_medios": 1,
+        "posicion_sistema": 5,
+        "posicion_por_fecha": 7,
+        "fecha_mas_reciente": "2026-10-08T00:08:54Z",
+        "puntaje": 82.01,
+        "rango": "alto",
+        "componentes": {
+          "R": 1.0,
+          "I": 0.55,
+          "U": 0.9795,
+          "N": 1.0,
+          "E": 0.3667
+        },
+        "estado_de_evidencia": "insuficiente",
+        "accion": "Investigar ya"
       }
     ],
     "estabilidad": {
-      "variantes_con_efecto": 43,
+      "variantes_con_efecto": 49,
       "top_sin_cambio": {
-        "n": 26,
-        "de": 43,
-        "proporcion": 0.6047,
+        "n": 37,
+        "de": 49,
+        "proporcion": 0.7551,
         "ic95": [
-          0.4558,
-          0.7363
+          0.6191,
+          0.854
         ]
       },
       "con_algun_cambio": {
-        "n": 17,
-        "de": 43,
-        "proporcion": 0.3953,
+        "n": 12,
+        "de": 49,
+        "proporcion": 0.2449,
         "ic95": [
-          0.2637,
-          0.5442
+          0.146,
+          0.3809
         ]
       },
       "mismo_orden": {
-        "n": 18,
-        "de": 43,
-        "proporcion": 0.4186,
+        "n": 27,
+        "de": 49,
+        "proporcion": 0.551,
         "ic95": [
-          0.2838,
-          0.5667
+          0.4131,
+          0.6815
         ]
       },
       "fuente": "outputs/sensibilidad.json"
