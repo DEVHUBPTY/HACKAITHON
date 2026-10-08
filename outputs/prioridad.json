@@ -95,7 +95,7 @@
       "vacios": [
         "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
         "los titulares traen cifras y no hay dato oficial vinculado",
-        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
+        "sin dato oficial vinculado (ningún titular sustenta una relación con un dato oficial; no se fuerza la relación)"
       ],
       "contradicciones": []
     },
@@ -117,7 +117,7 @@
       "accion": "Investigar ya",
       "vacios": [
         "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
+        "sin dato oficial vinculado (ningún titular sustenta una relación con un dato oficial; no se fuerza la relación)"
       ],
       "contradicciones": []
     },
@@ -140,7 +140,7 @@
       "vacios": [
         "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
         "los titulares traen cifras y no hay dato oficial vinculado",
-        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
+        "sin dato oficial vinculado (ningún titular sustenta una relación con un dato oficial; no se fuerza la relación)"
       ],
       "contradicciones": []
     },
@@ -184,7 +184,7 @@
       "accion": "Investigar ya",
       "vacios": [
         "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
+        "sin dato oficial vinculado (ningún titular sustenta una relación con un dato oficial; no se fuerza la relación)"
       ],
       "contradicciones": []
     },
@@ -207,7 +207,7 @@
       "vacios": [
         "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
         "los titulares traen cifras y no hay dato oficial vinculado",
-        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
+        "sin dato oficial vinculado (ningún titular sustenta una relación con un dato oficial; no se fuerza la relación)"
       ],
       "contradicciones": []
     },
@@ -230,7 +230,7 @@
       "vacios": [
         "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
         "los titulares traen cifras y no hay dato oficial vinculado",
-        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
+        "sin dato oficial vinculado (solo vínculo indirecto: no mide el hecho)"
       ],
       "contradicciones": []
     },
@@ -252,7 +252,7 @@
       "accion": "Investigar ya",
       "vacios": [
         "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
-        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
+        "sin dato oficial vinculado (ningún titular sustenta una relación con un dato oficial; no se fuerza la relación)"
       ],
       "contradicciones": []
     },
@@ -297,7 +297,7 @@
       "vacios": [
         "1 procedencia independiente estimada; se necesitan al menos 2 para evidencia suficiente",
         "los titulares traen cifras y no hay dato oficial vinculado",
-        "sin dato oficial vinculado (el tema no tiene un indicador oficial asignado)"
+        "sin dato oficial vinculado (ningún titular sustenta una relación con un dato oficial; no se fuerza la relación)"
       ],
       "contradicciones": []
     }
