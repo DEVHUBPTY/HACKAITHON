@@ -19,12 +19,12 @@
     },
     {
       "comprobacion": "volumen:total",
-      "detalle": "221 noticias únicas (meta 200)",
+      "detalle": "268 noticias únicas (meta 200)",
       "estado": "ok"
     },
     {
       "comprobacion": "volumen:tvn",
-      "detalle": "88 noticias de TVN (mínimo 20)",
+      "detalle": "135 noticias de TVN (mínimo 20)",
       "estado": "ok"
     },
     {
@@ -39,7 +39,7 @@
     },
     {
       "comprobacion": "cobertura:efectiva",
-      "detalle": "2026-09-29T01:23:06Z a 2026-10-07T00:30:57Z (8.0 días, máximo 90)",
+      "detalle": "2026-09-29T01:23:06Z a 2026-10-08T03:30:01Z (9.1 días, máximo 90)",
       "estado": "ok"
     },
     {
@@ -109,7 +109,7 @@
     },
     {
       "comprobacion": "manifest:historial",
-      "detalle": "4 versión(es) con cambios, revisiones y excluidos",
+      "detalle": "5 versión(es) con cambios, revisiones y excluidos",
       "estado": "ok"
     },
     {
@@ -131,8 +131,8 @@
   "errores": 0,
   "resumen": {
     "cobertura_efectiva": {
-      "dias": 7.96,
-      "fecha_final": "2026-10-07T00:30:57Z",
+      "dias": 9.09,
+      "fecha_final": "2026-10-08T03:30:01Z",
       "fecha_inicial": "2026-09-29T01:23:06Z"
     },
     "cobertura_por_tema": {
@@ -156,8 +156,8 @@
     "fuentes": 110,
     "indicadores": 540,
     "indicadores_nulos": 0,
-    "manifest_version": "1.3",
-    "noticias": 221,
+    "manifest_version": "1.4",
+    "noticias": 268,
     "noticias_gdelt": 133,
     "noticias_por_tema_de_consulta": {
       "economia": 55,
@@ -165,7 +165,7 @@
       "logistica": 95,
       "turismo": 30
     },
-    "noticias_tvn": 88,
+    "noticias_tvn": 135,
     "sbp_series": 36
   }
 }

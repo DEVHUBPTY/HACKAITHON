@@ -2,7 +2,7 @@
 
 > **BORRADOR — métricas provisionales** · JUICIO PROVISIONAL DEL ASISTENTE, NO HUMANO (D-101): se rehace a mano en C-09; no reportar como juicio de una persona.
 
-Generada el 2026-10-09T04:29:10Z desde el commit `c79a13a` con `poetry run python -m scripts.pagina_metricas`. Ninguna cifra está escrita a mano: cada una sale del archivo que se indica. Toda proporción lleva numerador, denominador e IC 95 %.
+Generada el 2026-10-09T05:00:17Z desde el commit `1b40bea` con `poetry run python -m scripts.pagina_metricas`. Ninguna cifra está escrita a mano: cada una sale del archivo que se indica. Toda proporción lleva numerador, denominador e IC 95 %.
 
 **Origen del juicio:** `humano` = lo decidió una persona (las etiquetas de clasificación y agrupación las propone el asistente y una persona las revisa y aprueba una por una) · **PROVISIONAL** = lo decidió el asistente y lo debe rehacer una persona · `automático` = automático (sin juicio humano: lo calcula el código contra una referencia).
 
@@ -177,11 +177,12 @@ Pruebas de aceptación T01–T10: Pasa 10 (de 10). Es una matriz de aceptación,
 
 ## Reproducibilidad
 
-- Registro del manifest: commit `3df0978`, árbol con cambios al registrar: **sí**; corte del snapshot 2026-10-08T03:35:18Z; hash del snapshot `4503952d97fb`.
-- Commit desde el que se generó: `c79a13a` (árbol con cambios sin commitear). El registro es de otro commit: confirmar con `--verificar` antes de afirmar que se reproduce.
+- Registro del manifest: commit `1b40bea`, árbol con cambios al registrar: **sí**; corte del snapshot 2026-10-08T03:35:18Z; hash del snapshot `4503952d97fb`.
+- Commit desde el que se generó: `1b40bea` (árbol con cambios sin commitear). El registro corresponde a ese commit.
 - LLM: deepseek/deepseek-flash, temperatura 0.0, semilla 0; embeddings minilm y e5 con revisión fijada.
-- Salidas deterministas con hash: 33. Borradores en caché: sin_cache 9, completo 1, con_vacios 2.
+- Salidas deterministas con hash: 27. Borradores en caché: completo 8, con_vacios 4.
 - Comprobación: `HF_HUB_OFFLINE=1 poetry run python -m scripts.reproducir --verificar` (sale con 1 si algo difiere).
+- Limitación declarada: faltan 14 crudos de data/raw/ (RSS, GDELT y SBP no se versionan, D-72; se recuperan con scripts.extraer): processed/ no se reconstruyó y se usó el versionado
 - Limitación declarada: el texto de los borradores del LLM se reproduce solo desde data/cache_llm/; sin caché puede variar
 
 ## Coherencia entre fuentes
@@ -193,17 +194,17 @@ Pruebas de aceptación T01–T10: Pasa 10 (de 10). Es una matriz de aceptación,
 | Archivo | Commit | Fecha del commit | Fecha dentro del archivo |
 |---|---|---|---|
 | `outputs/metricas.json` | bf39099 | 2026-10-08T17:52:00-05:00 | 2026-10-08T22:51:50Z |
-| `outputs/ia_vs_baseline.json` | 88de277 + cambios sin commitear | 2026-10-08T15:13:26-05:00 | — |
+| `outputs/ia_vs_baseline.json` | 0043041 | 2026-10-08T23:29:13-05:00 | — |
 | `outputs/precision_at_5.json` | e512db2 | 2026-10-08T16:28:48-05:00 | 2026-10-08T03:35:18Z |
 | `outputs/clasificacion.json` | 737f8f2 | 2026-10-08T14:21:50-05:00 | — |
 | `outputs/agrupacion.json` | a479628 | 2026-10-06T19:49:01-05:00 | — |
 | `outputs/sensibilidad.json` | 15e7e31 | 2026-10-08T15:13:45-05:00 | 2026-10-08T03:35:18Z |
 | `outputs/puntaje.json` | 15e7e31 | 2026-10-08T15:13:45-05:00 | — |
-| `outputs/pruebas.csv` | 447106f + cambios sin commitear | 2026-10-08T22:57:14-05:00 | — |
-| `data/manifest.json` | ccb2a8e | 2026-10-07T23:07:47-05:00 | 2026-10-08T03:35:18Z |
+| `outputs/pruebas.csv` | 0043041 | 2026-10-08T23:29:13-05:00 | — |
+| `data/manifest.json` | ccb2a8e + cambios sin commitear | 2026-10-07T23:07:47-05:00 | 2026-10-08T03:35:18Z |
 | `eval/etiquetas.csv` | fdfe422 | 2026-10-08T09:59:37-05:00 | — |
 | `docs/prueba_tiempo.md` | bf39099 | 2026-10-08T17:52:00-05:00 | — |
-| `outputs/revision.json` | 458f4f0 + cambios sin commitear | 2026-10-08T17:47:45-05:00 | — |
+| `outputs/revision.json` | 0043041 | 2026-10-08T23:29:13-05:00 | — |
 | `outputs/costo_llm.json` | sin versionar (generado en local) | — | — |
 
 ## Limitaciones

@@ -1,6 +1,6 @@
 # Auditoría final · condiciones previas (C-07)
 
-Generada el 2026-10-09T04:29:13Z desde el commit `c79a13a` con `poetry run python -m scripts.auditoria_final`. PASS: 13 · FALTA: 2 · NO VERIFICABLE AUTOMÁTICAMENTE: 10.
+Generada el 2026-10-09T05:00:19Z desde el commit `1b40bea` con `poetry run python -m scripts.auditoria_final`. PASS: 13 · FALTA: 2 · NO VERIFICABLE AUTOMÁTICAMENTE: 10.
 
 | ID | Requisito | Estado | Depende de |
 |---|---|---|---|
@@ -71,7 +71,7 @@ Generada el 2026-10-09T04:29:13Z desde el commit `c79a13a` con `poetry run pytho
 ### S5-07 · FALTA
 
 - **Requisito:** Métricas de la ejecución final: página generada del commit vigente, sin borrador ni juicios provisionales
-- **Evidencia:** outputs/pagina_metricas.md (commit c79a13a): la página sigue marcada «BORRADOR»; hay métricas con juicio PROVISIONAL (D-101)
+- **Evidencia:** outputs/pagina_metricas.md (commit 1b40bea): la página sigue marcada «BORRADOR»; hay métricas con juicio PROVISIONAL (D-101)
 - **Cómo verificar o corregir:** Tras C-09 y C-10: correr los eval/ y `poetry run python -m scripts.pagina_metricas`.
 
 ### S5-08 · NO VERIFICABLE AUTOMÁTICAMENTE
@@ -89,7 +89,7 @@ Generada el 2026-10-09T04:29:13Z desde el commit `c79a13a` con `poetry run pytho
 ### S10-02 · PASS
 
 - **Requisito:** README con instalación, comando de ejecución, pruebas y evaluación reservada
-- **Evidencia:** README.md: encabezados 10; secciones que faltan: ninguna.
+- **Evidencia:** README.md: encabezados 13; secciones que faltan: ninguna.
 - **Cómo verificar o corregir:** Editar README.md
 
 ### S10-03 · PASS
@@ -149,7 +149,7 @@ Generada el 2026-10-09T04:29:13Z desde el commit `c79a13a` con `poetry run pytho
 ### P-01 · PASS
 
 - **Requisito:** Sin secretos en historial, archivos, capturas ni exportaciones
-- **Evidencia:** outputs/auditoria_secretos.json: limpio=True. escaneo rápido de 573 archivos versionados: sin coincidencias; local.env/.env versionados: no.
+- **Evidencia:** outputs/auditoria_secretos.json: limpio=True. escaneo rápido de 574 archivos versionados: sin coincidencias; local.env/.env versionados: no.
 - **Cómo verificar o corregir:** Resultado de C-11.
 
 ### P-02 · PASS
@@ -167,7 +167,7 @@ Generada el 2026-10-09T04:29:13Z desde el commit `c79a13a` con `poetry run pytho
 ### P-04 · PASS
 
 - **Requisito:** Nada con redistribución restringida, ni bases de datos de la sesión, ni el benchmark reservado en el repositorio (D-72)
-- **Evidencia:** `git ls-files` (573 archivos): rutas restringidas (['data/raw/rss_tvn/', 'data/raw/gdelt/', 'data/raw/sbp/']) versionadas: ninguna; bases ['data/demo.duckdb', '*.duckdb', '*.duckdb.wal'] versionadas: ninguna; benchmark reservado versionado: ninguno.
+- **Evidencia:** `git ls-files` (574 archivos): rutas restringidas (['data/raw/rss_tvn/', 'data/raw/gdelt/', 'data/raw/sbp/']) versionadas: ninguna; bases ['data/demo.duckdb', '*.duckdb', '*.duckdb.wal'] versionadas: ninguna; benchmark reservado versionado: ninguno.
 - **Cómo verificar o corregir:** git rm --cached <ruta>
 
 ### P-05 · FALTA

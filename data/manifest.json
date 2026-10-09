@@ -769,59 +769,59 @@
   },
   "reproducibilidad": {
     "borradores_cache": {
-      "GRP-038c4f0643": {
-        "estado": "sin_cache",
-        "sha256": null
+      "GRP-03e3ef16d9": {
+        "estado": "completo",
+        "sha256": "aca476386c963c8bcbfee480ad2379af7b291814acfd6aa947fc5325f9200b68"
       },
       "GRP-1b52bb958d": {
-        "estado": "sin_cache",
-        "sha256": null
+        "estado": "completo",
+        "sha256": "aeff4ace4beaba8aeecc36e6a58504d7deb66e1d834ed4f5a18ad75f53d4f718"
       },
       "GRP-21ad932d54": {
-        "estado": "sin_cache",
-        "sha256": null
+        "estado": "completo",
+        "sha256": "c899a267e89a3ce9b613fd70e660be96f1876522801dd7b9fabd3b71a4ab169d"
       },
-      "GRP-39773bed5a": {
-        "estado": "sin_cache",
-        "sha256": null
+      "GRP-29baaf270e": {
+        "estado": "completo",
+        "sha256": "a8ff65e94b9c967dfbdeadc0ae33c0c949cc833fb3caf41b50ddd45a439fcefe"
       },
-      "GRP-39dfe8d714": {
-        "estado": "sin_cache",
-        "sha256": null
-      },
-      "GRP-5ab17b45cd": {
-        "estado": "sin_cache",
-        "sha256": null
+      "GRP-4d8b340bd9": {
+        "estado": "con_vacios",
+        "sha256": "7019ec3445c5eb60897c603d2b225cd00b697929ba68ede5ef598f47da0ed10c"
       },
       "GRP-5e6531917f": {
-        "estado": "sin_cache",
-        "sha256": null
-      },
-      "GRP-6e737ecad5": {
         "estado": "completo",
-        "sha256": "a3d9135eec3bbcdf233d4ccec9f304ee0a05231516a9088c7d6b9605319ccad5"
+        "sha256": "bd7d741938b3bf97d4e6c4d7447445bf376182cba3d9c6daee48edef34bb36c1"
       },
       "GRP-79f3183472": {
-        "estado": "sin_cache",
-        "sha256": null
-      },
-      "GRP-84a6b3a04b": {
         "estado": "con_vacios",
-        "sha256": "1fafe93a579a02ab174a516e57bcd66f290d1150d2b4e7f4ae48cc138e17d8b8"
+        "sha256": "dfa921ad054c4ad4b3214163d19e9f7c4ea939bc34d4d0cbaf3186d56e785e1a"
+      },
+      "GRP-7ddcf92e16": {
+        "estado": "completo",
+        "sha256": "7e3ff24dc10754c7e4ac50167683a80c8e9132df69467621c150913921e45e0a"
       },
       "GRP-87e128925b": {
-        "estado": "sin_cache",
-        "sha256": null
+        "estado": "completo",
+        "sha256": "15315cff8aa8f780f2094e42099ec3c7ce141500589b8540d78a23d10eb59cc9"
+      },
+      "GRP-a329f4e91e": {
+        "estado": "completo",
+        "sha256": "3ae32c88348c992f510a17b0ed6ed1fd5e326fa1269488a3ea4d8979cb136d84"
       },
       "GRP-da35c3dead": {
         "estado": "con_vacios",
-        "sha256": "d9d476a7b37b9d589b036d469d1ca631bfe101747e9552e4cb8c573202d29c43"
+        "sha256": "74ba5e5daa01ddc0228d899cc65fe6d60a3f05ced02825c2252d4fba868c8429"
+      },
+      "GRP-e3fb06f2ab": {
+        "estado": "con_vacios",
+        "sha256": "7761a9a538cfcef2ff204056e07d028066ad5bbe57b4d2555020123e013f0799"
       }
     },
     "decimales_del_hash": 4,
     "ejecucion": {
       "arbol_con_cambios": true,
-      "commit": "3df09786685c2908aabe491578c6e20142cbd9ac",
+      "commit": "1b40bea7397333a907bbded6662ba4d3b00b10aa",
       "embeddings": {
         "clave": "minilm",
         "id": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
@@ -848,13 +848,15 @@
       "python": "3.11.14",
       "reglas": {
         "archivo": "config/reglas_v1.3.yaml",
-        "sha256": "0237084508437fc9ff767ddeff8ce752966aa5a1109c31882b5ad816f63f80ad",
+        "sha256": "a409f89444a0bcc1f82de9692ef166e4a507bbf19163a533270d742d0beea48a",
         "version": "1.3"
       },
       "semillas": {
         "benchmark.yaml:intervalos.semilla": 42,
         "benchmark.yaml:sustento.semilla": 42,
         "clasificacion.yaml:criterio_ab.semilla": 42,
+        "clasificacion.yaml:logistica.bootstrap_pareado.semilla": 42,
+        "clasificacion.yaml:logistica.semilla": 42,
         "clasificacion.yaml:semilla": 42,
         "etiquetado.yaml:muestra.semilla": 20261006,
         "llm.yaml:generacion.semilla": 0,
@@ -875,42 +877,37 @@
       ]
     },
     "limitaciones": [
+      "faltan 14 crudos de data/raw/ (RSS, GDELT y SBP no se versionan, D-72; se recuperan con scripts.extraer): processed/ no se reconstruyó y se usó el versionado",
       "el texto de los borradores del LLM se reproduce solo desde data/cache_llm/; sin caché puede variar"
     ],
     "salidas_deterministas": {
-      "archivo:data/processed/conversion.json": "fb8ac3865ff48f3f394e70e580c7a5f69f3b4665a810fd935055a18810d47481",
+      "archivo:data/processed/conversion.json": "23249ad8a26deaca36a1a40b1373314dc8b122a96f0e7f0d922b8929c9e0cbf2",
       "archivo:data/processed/eventos.geojson": "c43507e5934652ff45fcb0bdae781d498a08167457c9e9d82f67446d6966d411",
       "archivo:data/processed/fuentes.json": "799b74b1f7766e193659f6c08f41ad9052ed838049812797c80ef75751db9b52",
       "archivo:data/processed/indicadores.csv": "6238f1c008ac313a1cc1f9ebc5e5459c21a47c36460900aa47cce726a8e34b12",
-      "archivo:data/processed/noticias.csv": "fca44ad5c80ab71674fdf46f8b50c9dd6e7acf1ade125b824e335621f2336a7f",
+      "archivo:data/processed/noticias.csv": "8aba0f96764846d1a981bf7ca8527d6d7d973c79a70388db5ef0bc44b081ee2c",
       "archivo:data/processed/sbp_series.csv": "85f9f17e5e5f4095aae423b749ad7cb72952fc8329086830f6ba78b216644b96",
       "archivo:data/processed/validos/eventos.geojson": "f3b6626667a81af16bd13577772cf0b99816d91a04709a7f4b47d75aa5a3c027",
       "archivo:data/processed/validos/fuentes.json": "799b74b1f7766e193659f6c08f41ad9052ed838049812797c80ef75751db9b52",
       "archivo:data/processed/validos/indicadores.csv": "6238f1c008ac313a1cc1f9ebc5e5459c21a47c36460900aa47cce726a8e34b12",
-      "archivo:data/processed/validos/noticias.csv": "fca44ad5c80ab71674fdf46f8b50c9dd6e7acf1ade125b824e335621f2336a7f",
-      "fichas": "48feaced5f0799571602d6f520523f389e995ee61c1b36e1149f469fc1d547ff",
-      "informe:outputs/prioridad.json": "5f93bd29d1bbc36d3b7e0cf8d6de69bc4ea0a804af7077565b68320273af442a",
-      "informe:outputs/reporte_calidad.json": "d94a5389209586020f085e764efcb18f1b1040c9fbc6a4dedb0631c6a5f5a622",
-      "informe:outputs/reporte_vinculos.json": "ab3a73074ba8fdca2c4876ae1ca8ad5cb260d85c22f37b22f38e51c3b918f020",
-      "informe:outputs/validacion_snapshot.json": "0c2af06c2a13e1e92cf1632cf40947cc18657b74730fb780ef7f250eb5284922",
-      "metricas": "bac10eb018d216343c697caa879cd911298e8dad444ff2b9acd4f4716a6c7819",
+      "archivo:data/processed/validos/noticias.csv": "8aba0f96764846d1a981bf7ca8527d6d7d973c79a70388db5ef0bc44b081ee2c",
+      "fichas": "5a32c78fd9ee80106dcd9b9985448c81203b07c62904fb0c943b88849dc3d1be",
+      "informe:outputs/prioridad.json": "b09f94fbd3dcada6dca44b91cbafa376b07be000147939f8d670ed8a73f738fd",
+      "informe:outputs/reporte_calidad.json": "03398f4f28d72712fc95c23695d98d7b2e68f3ff8f8f21a3398d3e52d6fd69bd",
+      "informe:outputs/reporte_vinculos.json": "ee462d0955749da741a44ba7de78dd4fc75b6df10f28e01da7901871fae134ec",
+      "informe:outputs/validacion_snapshot.json": "b9a68d888375ec403c5715264f27b67551cef51bdb615a695eafe11020bf824a",
+      "metricas": "d3a95f7f531c1b010c544a4709b2581df7395825ad9d09b0fe5abebd4c00624f",
       "muestra_sustento": "3f9da12d97656494337abb8931af4d8fa43cc93ba22851c444853af940f34ff3",
-      "reconstruido:data/processed/conversion.json": "fb8ac3865ff48f3f394e70e580c7a5f69f3b4665a810fd935055a18810d47481",
-      "reconstruido:data/processed/eventos.geojson": "c43507e5934652ff45fcb0bdae781d498a08167457c9e9d82f67446d6966d411",
-      "reconstruido:data/processed/fuentes.json": "799b74b1f7766e193659f6c08f41ad9052ed838049812797c80ef75751db9b52",
-      "reconstruido:data/processed/indicadores.csv": "6238f1c008ac313a1cc1f9ebc5e5459c21a47c36460900aa47cce726a8e34b12",
-      "reconstruido:data/processed/noticias.csv": "fca44ad5c80ab71674fdf46f8b50c9dd6e7acf1ade125b824e335621f2336a7f",
-      "reconstruido:data/processed/sbp_series.csv": "85f9f17e5e5f4095aae423b749ad7cb72952fc8329086830f6ba78b216644b96",
       "tabla:contradicciones": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "tabla:evidencia": "c75c6989fdc8bf072556a2f245923d2c84075a607198558315f23bc3c382c6aa",
+      "tabla:evidencia": "4d87b1faa55a2781d81684e65d9c5986a5205353a6f76e4d0a1b20056e1f0342",
       "tabla:fuentes": "2ddbf345cf5f3eec321a7377cc1026562b04567ff979fca70dedd6ba7eacb9f8",
-      "tabla:grupos": "3c4d942e6b44920c5d7c68cd023f8bf2dd5ec451912f6e303b63643b2b0b9633",
+      "tabla:grupos": "e1fa792b2c0e3dcaa2fcf117f15269d87de2b1b0302146d7779d1c30ac2353d8",
       "tabla:indicadores": "ad1ae3982192304c02fe722d8bde0b7101f599606174c6a823d8643cf9216113",
-      "tabla:noticias": "ddaa370ca1ee59e825b316c452bebb0eba9b47417fe90d9e0d6a31486ea942d8",
-      "tabla:procedencias": "bd68e527771c57816350172d37e59d2737a0f95cbca7f4daa17d8be6e5c5b507",
-      "tabla:puntajes": "d28796f273536ffd984b689f93f69a14e7e51f713e8f7274a44173f8c6393223",
+      "tabla:noticias": "2c260fc471067ad09d0003b58966c7d285a78d589106a6ed8b9e97b00474ff37",
+      "tabla:procedencias": "f27a58d60ae691eeee608dab91d94aaa3804b621264dc6f13ab35bef86d0aaa6",
+      "tabla:puntajes": "e7dda02ef124d53fe87d5056d0cd19fdb1dd2a145b7fc56cf51673e210e4cad8",
       "tabla:sismos": "51591108be48bc00cefe3742de11bee45343aadbd91f682e015f4f8c97b506aa",
-      "tabla:vinculos": "10eb63ea653c31453219f4c4da433bc5f47772668217034eae53b2b444d76b62"
+      "tabla:vinculos": "cd76294b36dcf313f1ffc45ad3818f1d95c60491f3731c23fafb262f0ae0acd1"
     }
   },
   "sha256": {
