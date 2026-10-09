@@ -1,6 +1,6 @@
 # Auditoría final · condiciones previas (C-07)
 
-Generada el 2026-10-09T03:00:40Z desde el commit `3ad50f6` con `poetry run python -m scripts.auditoria_final`. PASS: 12 · FALTA: 3 · NO VERIFICABLE AUTOMÁTICAMENTE: 10.
+Generada el 2026-10-09T03:07:55Z desde el commit `2a7af9d` con `poetry run python -m scripts.auditoria_final`. PASS: 12 · FALTA: 3 · NO VERIFICABLE AUTOMÁTICAMENTE: 10.
 
 | ID | Requisito | Estado | Depende de |
 |---|---|---|---|
@@ -71,7 +71,7 @@ Generada el 2026-10-09T03:00:40Z desde el commit `3ad50f6` con `poetry run pytho
 ### S5-07 · FALTA
 
 - **Requisito:** Métricas de la ejecución final: página generada del commit vigente, sin borrador ni juicios provisionales
-- **Evidencia:** outputs/pagina_metricas.md (commit 3ad50f6): la página sigue marcada «BORRADOR»; hay métricas con juicio PROVISIONAL (D-101)
+- **Evidencia:** outputs/pagina_metricas.md (commit 2a7af9d): la página sigue marcada «BORRADOR»; hay métricas con juicio PROVISIONAL (D-101)
 - **Cómo verificar o corregir:** Tras C-09 y C-10: correr los eval/ y `poetry run python -m scripts.pagina_metricas`.
 
 ### S5-08 · NO VERIFICABLE AUTOMÁTICAMENTE
@@ -149,7 +149,7 @@ Generada el 2026-10-09T03:00:40Z desde el commit `3ad50f6` con `poetry run pytho
 ### P-01 · PASS
 
 - **Requisito:** Sin secretos en historial, archivos, capturas ni exportaciones
-- **Evidencia:** outputs/auditoria_secretos.json: limpio=True. escaneo rápido de 570 archivos versionados: sin coincidencias; local.env/.env versionados: no.
+- **Evidencia:** outputs/auditoria_secretos.json: limpio=True. escaneo rápido de 571 archivos versionados: sin coincidencias; local.env/.env versionados: no.
 - **Cómo verificar o corregir:** Resultado de C-11.
 
 ### P-02 · PASS
@@ -167,7 +167,7 @@ Generada el 2026-10-09T03:00:40Z desde el commit `3ad50f6` con `poetry run pytho
 ### P-04 · PASS
 
 - **Requisito:** Nada con redistribución restringida, ni bases de datos de la sesión, ni el benchmark reservado en el repositorio (D-72)
-- **Evidencia:** `git ls-files` (570 archivos): rutas restringidas (['data/raw/rss_tvn/', 'data/raw/gdelt/', 'data/raw/sbp/']) versionadas: ninguna; bases ['data/demo.duckdb', '*.duckdb', '*.duckdb.wal'] versionadas: ninguna; benchmark reservado versionado: ninguno.
+- **Evidencia:** `git ls-files` (571 archivos): rutas restringidas (['data/raw/rss_tvn/', 'data/raw/gdelt/', 'data/raw/sbp/']) versionadas: ninguna; bases ['data/demo.duckdb', '*.duckdb', '*.duckdb.wal'] versionadas: ninguna; benchmark reservado versionado: ninguno.
 - **Cómo verificar o corregir:** git rm --cached <ruta>
 
 ### P-05 · FALTA

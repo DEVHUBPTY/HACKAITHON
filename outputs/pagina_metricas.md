@@ -2,7 +2,7 @@
 
 > **BORRADOR — métricas provisionales** · JUICIO PROVISIONAL DEL ASISTENTE, NO HUMANO (D-101): se rehace a mano en C-09; no reportar como juicio de una persona.
 
-Generada el 2026-10-09T03:00:35Z desde el commit `3ad50f6` con `poetry run python -m scripts.pagina_metricas`. Ninguna cifra está escrita a mano: cada una sale del archivo que se indica. Toda proporción lleva numerador, denominador e IC 95 %.
+Generada el 2026-10-09T03:07:52Z desde el commit `2a7af9d` con `poetry run python -m scripts.pagina_metricas`. Ninguna cifra está escrita a mano: cada una sale del archivo que se indica. Toda proporción lleva numerador, denominador e IC 95 %.
 
 **Origen del juicio:** `humano` = lo decidió una persona (las etiquetas de clasificación y agrupación las propone el asistente y una persona las revisa y aprueba una por una, D-85) · **PROVISIONAL** = lo decidió el asistente (D-101) y se rehace en C-09 · `automático` = automático (sin juicio humano: lo calcula el código contra una referencia).
 
@@ -77,7 +77,7 @@ Pruebas de aceptación T01–T10: Pasa 9, Pendiente 1 (de 10). Es una matriz de 
 | Afirmaciones parcialmente sustentadas | 3.3 % | 1 de 30 | 0.0 % – 10.0 % (Wilson 0.6 % – 16.7 %) | humano | `metricas.json` | — |
 | Afirmaciones con tipo incorrecto | 0.0 % | 0 de 30 | 0.0 % – 0.0 % (Wilson 0.0 % – 11.3 %) | humano | `metricas.json` | — |
 
-- Meta de 90.0 %: no cumple con la estimación puntual (96.7 %), no cumple con el límite inferior de Wilson (83.3 %). El criterio oficial es la estimación puntual (protocolo, sección 4); el resultado es **provisional** mientras los veredictos los haya dado el asistente.
+- Meta de 90.0 %: cumple con la estimación puntual (96.7 %), no cumple con el límite inferior de Wilson (83.3 %). El criterio oficial es la estimación puntual (protocolo, sección 4).
 
 ## Clasificación y agrupación: IA contra baseline
 
@@ -178,7 +178,7 @@ Pruebas de aceptación T01–T10: Pasa 9, Pendiente 1 (de 10). Es una matriz de 
 ## Reproducibilidad
 
 - Registro del manifest: commit `3df0978`, árbol con cambios al registrar: **sí**; corte del snapshot 2026-10-08T03:35:18Z; hash del snapshot `4503952d97fb`.
-- Commit desde el que se generó: `3ad50f6` (árbol con cambios sin commitear). El registro es de otro commit: confirmar con `--verificar` antes de afirmar que se reproduce.
+- Commit desde el que se generó: `2a7af9d`. El registro es de otro commit: confirmar con `--verificar` antes de afirmar que se reproduce.
 - LLM: deepseek/deepseek-flash, temperatura 0.0, semilla 0; embeddings minilm y e5 con revisión fijada.
 - Salidas deterministas con hash: 33. Borradores en caché: sin_cache 9, completo 1, con_vacios 2.
 - Comprobación: `HF_HUB_OFFLINE=1 poetry run python -m scripts.reproducir --verificar` (sale con 1 si algo difiere).
@@ -199,7 +199,7 @@ Pruebas de aceptación T01–T10: Pasa 9, Pendiente 1 (de 10). Es una matriz de 
 | `outputs/agrupacion.json` | a479628 | 2026-10-06T19:49:01-05:00 | — |
 | `outputs/sensibilidad.json` | 15e7e31 | 2026-10-08T15:13:45-05:00 | 2026-10-08T03:35:18Z |
 | `outputs/puntaje.json` | 15e7e31 | 2026-10-08T15:13:45-05:00 | — |
-| `outputs/pruebas.csv` | e9bf8a3 + cambios sin commitear | 2026-10-07T06:46:06-05:00 | — |
+| `outputs/pruebas.csv` | 81e3946 | 2026-10-08T22:00:48-05:00 | — |
 | `data/manifest.json` | ccb2a8e | 2026-10-07T23:07:47-05:00 | 2026-10-08T03:35:18Z |
 | `eval/etiquetas.csv` | fdfe422 | 2026-10-08T09:59:37-05:00 | — |
 | `docs/prueba_tiempo.md` | bf39099 | 2026-10-08T17:52:00-05:00 | — |
