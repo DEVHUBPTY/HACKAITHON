@@ -1,6 +1,6 @@
 # Auditoría final · condiciones previas (C-07)
 
-Generada el 2026-10-09T03:07:55Z desde el commit `2a7af9d` con `poetry run python -m scripts.auditoria_final`. PASS: 12 · FALTA: 3 · NO VERIFICABLE AUTOMÁTICAMENTE: 10.
+Generada el 2026-10-09T03:34:42Z desde el commit `dfb070e` con `poetry run python -m scripts.auditoria_final`. PASS: 12 · FALTA: 3 · NO VERIFICABLE AUTOMÁTICAMENTE: 10.
 
 | ID | Requisito | Estado | Depende de |
 |---|---|---|---|
@@ -155,7 +155,7 @@ Generada el 2026-10-09T03:07:55Z desde el commit `2a7af9d` con `poetry run pytho
 ### P-02 · PASS
 
 - **Requisito:** Toda afirmación de fichas.jsonl y de las exportaciones pasa el validador; ninguna cita falsa
-- **Evidencia:** outputs/fichas.jsonl: 6 fichas (CASO-014, CASO-015, CASO-016, CASO-017, CASO-018, CASO-019); re-verificadas con el validador contra data/senales.duckdb: 6 de 6; exportaciones revisadas: 6 archivos; problemas: ninguno; informativo: ninguno.
+- **Evidencia:** outputs/fichas.jsonl: 5 fichas (CASO-015, CASO-016, CASO-017, CASO-018, CASO-019); re-verificadas con el validador contra data/senales.duckdb: 5 de 5; exportaciones revisadas: 6 archivos; problemas: ninguno; informativo: ninguno.
 - **Cómo verificar o corregir:** poetry run python -m scripts.fichas_trazables --casos; poetry run python -m src.ficha --formato jsonl
 
 ### P-03 · PASS

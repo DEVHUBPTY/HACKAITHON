@@ -1,0 +1,54 @@
+{
+  "proveedor": "ollama",
+  "modelo": "gemma4:12b",
+  "ficha": "tests/fixtures/ficha_generacion.json",
+  "repeticiones": 3,
+  "calentamiento": 1,
+  "primera_respuesta": {
+    "n": 3,
+    "mediana_s": 96.94,
+    "p95_s": 99.05,
+    "min_s": 95.95,
+    "max_s": 99.05
+  },
+  "paquete_completo": {
+    "n": 3,
+    "mediana_s": 190.18,
+    "p95_s": 193.14,
+    "min_s": 186.52,
+    "max_s": 193.14
+  },
+  "tokens_por_paquete": {
+    "entrada": 13202,
+    "salida": 3044
+  },
+  "llamadas_por_paquete": [
+    9,
+    9,
+    9
+  ],
+  "secciones_vacias_por_repeticion": [
+    [
+      "enfoque",
+      "guion"
+    ],
+    [
+      "enfoque",
+      "guion"
+    ],
+    [
+      "enfoque",
+      "guion"
+    ]
+  ],
+  "secciones_recortadas_por_repeticion": [
+    [],
+    [],
+    []
+  ],
+  "afirmaciones_validas_por_repeticion": [
+    1,
+    1,
+    1
+  ]
+}

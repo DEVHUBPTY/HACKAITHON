@@ -1,0 +1,57 @@
+{
+  "proveedor": "ollama",
+  "modelo": "qwen3.5:9b",
+  "ficha": "tests/fixtures/ficha_generacion.json",
+  "repeticiones": 3,
+  "calentamiento": 1,
+  "primera_respuesta": {
+    "n": 3,
+    "mediana_s": 59.38,
+    "p95_s": 61.63,
+    "min_s": 51.05,
+    "max_s": 61.63
+  },
+  "paquete_completo": {
+    "n": 3,
+    "mediana_s": 122.33,
+    "p95_s": 125.62,
+    "min_s": 105.47,
+    "max_s": 125.62
+  },
+  "tokens_por_paquete": {
+    "entrada": 14088,
+    "salida": 3202
+  },
+  "llamadas_por_paquete": [
+    9,
+    9,
+    9
+  ],
+  "secciones_vacias_por_repeticion": [
+    [
+      "brief",
+      "enfoque",
+      "guion"
+    ],
+    [
+      "brief",
+      "enfoque",
+      "guion"
+    ],
+    [
+      "brief",
+      "enfoque",
+      "guion"
+    ]
+  ],
+  "secciones_recortadas_por_repeticion": [
+    [],
+    [],
+    []
+  ],
+  "afirmaciones_validas_por_repeticion": [
+    1,
+    1,
+    1
+  ]
+}

@@ -92,6 +92,22 @@ Por qué se mantiene `qwen3.5:9b` de forma **provisional**: menor memoria en un 
 - **Criterio de rechazo del validador no medido** (ver arriba).
 - `/api/ps` subcuenta la memoria de `gemma4:12b`; el RSS es una aproximación del consumo real.
 
+## Remedición con la generación real (2026-10-09)
+
+Después de E0-07 se volvió a medir con el pipeline completo de E1-12 (dos pasos, validador real de E1-13) sobre la misma ficha que DeepSeek (`tests/fixtures/ficha_generacion.json`), con `poetry run python -m scripts.medir_generacion --proveedor ollama --repeticiones 3 --calentamiento 1`. Misma máquina (Apple M4 Pro, 24 GB), un modelo cargado a la vez.
+
+| | `qwen3.5:9b` (local) | `gemma4:12b` (local) | `deepseek-flash` (API) |
+|---|---|---|---|
+| Paquete completo, mediana | 122.3 s (n = 3) | 190.2 s (n = 3) | 16.6 s (n = 5) |
+| Primera respuesta, mediana | 59.4 s | 96.9 s | — |
+| Llamadas por paquete | 9 | 9 | 7 |
+| Afirmaciones que pasan el validador | 1 en cada repetición | 1 en cada repetición | 6–7 |
+| Secciones vacías (rechazadas) | brief, enfoque, guion | enfoque, guion | ninguna |
+
+Archivos: `outputs/latencia_generacion_ollama_qwen3.5_9b.json`, `outputs/latencia_generacion_ollama_gemma4_12b.json`, `outputs/latencia_generacion_deepseek.json`.
+
+**Lectura:** con temperatura 0 las 3 repeticiones de cada modelo son iguales en contenido, así que la calidad es una sola observación por modelo (n efectivo = 1 ficha): es una limitación medida, no una estimación de tasa. En esa ficha, ningún modelo local supera una afirmación válida y los dos dejan secciones vacías; además tardan 7 a 11 veces más que DeepSeek. Por eso DeepSeek sigue como único proveedor de generación (D-94, D-95) y la demo sin red sale de la caché (`docs/fallback.md`). No se ajustó el prompt para los modelos locales: la instrucción de atribución explícita quedó sin probar.
+
 ## Si ambos fallan o la latencia se degrada
 
 Si en la máquina de la demo la mediana supera 15 s, o el validador real (E1) rechaza más del 20 %, o hay más de 1 JSON inválido de cada 10, se aplica D-02: **DeepSeek pasa a primario** (D-80, provisional), con el tope de costo de D-67 y volviendo al modelo local al alcanzarlo. Antes de eso, probar en este orden: cerrar procesos pesados, reducir `num_ctx` y pedir 2–3 afirmaciones en lugar de 2–4. El adaptador de DeepSeek es de E1 y no se construyó aquí.

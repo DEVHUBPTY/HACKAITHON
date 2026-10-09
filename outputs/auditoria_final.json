@@ -1,6 +1,6 @@
 {
-  "commit": "2a7af9d",
-  "generado_utc": "2026-10-09T03:07:55Z",
+  "commit": "dfb070e",
+  "generado_utc": "2026-10-09T03:34:42Z",
   "resumen": {
     "PASS": 12,
     "FALTA": 3,
@@ -192,7 +192,7 @@
       "grupo": "Condiciones previas",
       "requisito": "Toda afirmación de fichas.jsonl y de las exportaciones pasa el validador; ninguna cita falsa",
       "estado": "PASS",
-      "evidencia": "outputs/fichas.jsonl: 6 fichas (CASO-014, CASO-015, CASO-016, CASO-017, CASO-018, CASO-019); re-verificadas con el validador contra data/senales.duckdb: 6 de 6; exportaciones revisadas: 6 archivos; problemas: ninguno; informativo: ninguno.",
+      "evidencia": "outputs/fichas.jsonl: 5 fichas (CASO-015, CASO-016, CASO-017, CASO-018, CASO-019); re-verificadas con el validador contra data/senales.duckdb: 5 de 5; exportaciones revisadas: 6 archivos; problemas: ninguno; informativo: ninguno.",
       "como_verificar": "poetry run python -m scripts.fichas_trazables --casos; poetry run python -m src.ficha --formato jsonl",
       "depende_de": "C-01"
     },
