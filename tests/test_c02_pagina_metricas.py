@@ -222,6 +222,30 @@ def test_provisionales_salen_marcados_y_nunca_como_humanos(raiz: Path):
     assert vistas == set(humano)
 
 
+def _linea_meta_sustento(raiz: Path) -> str:
+    return next(f for f in _pagina(raiz).splitlines() if f.startswith("- Meta de") and "estimación puntual" in f)
+
+
+def test_meta_de_sustento_sigue_a_la_estimacion_puntual_y_al_origen(raiz: Path):
+    # 96,7 % ≥ 90 % cumple la meta; con juicio humano la frase no puede llamar «provisional» al resultado.
+    def humano(d):
+        v = d["validez_sustento"]
+        v.pop("cumple_meta_provisional", None)
+        v.update(origen_juicio="humano", juicio_humano=True)
+        v["meta_validez"].update(meta=0.9, estimacion_puntual=0.9667, cumple_estimacion_puntual=True, origen_juicio="humano", juicio_humano=True)
+    _editar(raiz, "outputs/metricas.json", humano)
+    linea = _linea_meta_sustento(raiz)
+    assert ": cumple con la estimación puntual" in linea and "**provisional**" not in linea, linea
+
+    def provisional(d):
+        v = d["validez_sustento"]
+        v.update(origen_juicio="asistente_provisional (D-101)", juicio_humano=False)
+        v["meta_validez"].update(cumple_estimacion_puntual=False, origen_juicio="asistente_provisional (D-101)", juicio_humano=False)
+    _editar(raiz, "outputs/metricas.json", provisional)
+    linea = _linea_meta_sustento(raiz)
+    assert ": no cumple con la estimación puntual" in linea and "**provisional**" in linea, linea
+
+
 def test_una_fuente_provisional_sale_marcada_aunque_las_reales_sean_humanas(raiz: Path):
     _editar(raiz, "outputs/precision_at_5.json", lambda d: d.update(origen_juicio="asistente_provisional (D-101)", juicio_humano=False))
     filas = [f for f in _pagina(raiz).splitlines() if f.startswith("| Precision@5")]

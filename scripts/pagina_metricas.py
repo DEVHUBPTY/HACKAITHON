@@ -352,12 +352,12 @@ def seccion_sustento(c: Contexto) -> tuple[list[Metrica], list[str]]:
         c.prop(s, "Afirmaciones con tipo incorrecto", v["tipo_incorrecto"], "metricas", "validez_sustento.tipo_incorrecto", org),
     ]
     mv = v["meta_validez"]
-    cumple = v.get("cumple_meta_provisional")
+    cumple = mv["cumple_estimacion_puntual"]   # la clave «cumple_meta_provisional» desapareció cuando C-09 volvió humano el juicio
+    cierre = "" if org.tipo == HUMANO else "; el resultado es **provisional** mientras los veredictos los haya dado el asistente"
     lineas = [f"Meta de {porcentaje(mv['meta'], c.dp)}: {'cumple' if cumple else 'no cumple'} con la estimación puntual "
               f"({porcentaje(mv['estimacion_puntual'], c.dp)}), "
               f"{'cumple' if mv['cumple_con_limite_inferior_wilson'] else 'no cumple'} con el límite inferior de Wilson "
-              f"({porcentaje(mv['limite_inferior_wilson'], c.dp)}). El criterio oficial es la estimación puntual (protocolo, sección 4); "
-              "el resultado es **provisional** mientras los veredictos los haya dado el asistente."]
+              f"({porcentaje(mv['limite_inferior_wilson'], c.dp)}). El criterio oficial es la estimación puntual (protocolo, sección 4){cierre}."]
     return o, lineas
 
 
