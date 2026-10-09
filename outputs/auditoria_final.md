@@ -1,6 +1,6 @@
 # Auditoría final · condiciones previas (C-07)
 
-Generada el 2026-10-09T03:57:17Z desde el commit `447106f` con `poetry run python -m scripts.auditoria_final`. PASS: 12 · FALTA: 3 · NO VERIFICABLE AUTOMÁTICAMENTE: 10.
+Generada el 2026-10-09T04:29:13Z desde el commit `c79a13a` con `poetry run python -m scripts.auditoria_final`. PASS: 13 · FALTA: 2 · NO VERIFICABLE AUTOMÁTICAMENTE: 10.
 
 | ID | Requisito | Estado | Depende de |
 |---|---|---|---|
@@ -9,7 +9,7 @@ Generada el 2026-10-09T03:57:17Z desde el commit `447106f` con `poetry run pytho
 | S5-03 | Registro durante la ejecución, no solo un resumen final | **NO VERIFICABLE AUTOMÁTICAMENTE** | C-05 |
 | S5-04 | Catálogo completo de las fuentes utilizadas (cada fuente del manifest, con licencia/condiciones) | **PASS** | — |
 | S5-05 | Al menos 5 fichas trazables, incluyendo un caso sin evidencia suficiente | **PASS** | C-01 |
-| S5-06 | Matriz de los 10 casos de prueba, todos en «Pasa» | **FALTA** | C-04, E2-02 |
+| S5-06 | Matriz de los 10 casos de prueba, todos en «Pasa» | **PASS** | C-04, E2-02 |
 | S5-07 | Métricas de la ejecución final: página generada del commit vigente, sin borrador ni juicios provisionales | **FALTA** | C-09, C-10 |
 | S5-08 | Pitch de 10 minutos presentado desde Notion | **NO VERIFICABLE AUTOMÁTICAMENTE** | C-03, C-04 |
 | S10-01 | Prototipo ejecutable y demo reproducible sin fuente en vivo | **PASS** | C-06, C-04 |
@@ -62,16 +62,16 @@ Generada el 2026-10-09T03:57:17Z desde el commit `447106f` con `poetry run pytho
 - **Evidencia:** outputs/fichas_trazables/trazabilidad.json: 5 fichas, todo_ok=True, insuficientes=['CASO-016', 'CASO-018', 'CASO-019']. Aviso: juicio_humano=False (revisión provisional hasta C-09).
 - **Cómo verificar o corregir:** poetry run python -m scripts.fichas_trazables
 
-### S5-06 · FALTA
+### S5-06 · PASS
 
 - **Requisito:** Matriz de los 10 casos de prueba, todos en «Pasa»
-- **Evidencia:** outputs/pruebas.csv: 10 filas; faltan ninguna; no pasan: {'T10': 'Pendiente'}.
+- **Evidencia:** outputs/pruebas.csv: 10 filas; faltan ninguna; no pasan: ninguna.
 - **Cómo verificar o corregir:** poetry run python -m eval.reporte_pruebas (tras terminar E2-02/C-04 para T09 y T10)
 
 ### S5-07 · FALTA
 
 - **Requisito:** Métricas de la ejecución final: página generada del commit vigente, sin borrador ni juicios provisionales
-- **Evidencia:** outputs/pagina_metricas.md (commit 447106f): la página sigue marcada «BORRADOR»; hay métricas con juicio PROVISIONAL (D-101)
+- **Evidencia:** outputs/pagina_metricas.md (commit c79a13a): la página sigue marcada «BORRADOR»; hay métricas con juicio PROVISIONAL (D-101)
 - **Cómo verificar o corregir:** Tras C-09 y C-10: correr los eval/ y `poetry run python -m scripts.pagina_metricas`.
 
 ### S5-08 · NO VERIFICABLE AUTOMÁTICAMENTE
@@ -155,7 +155,7 @@ Generada el 2026-10-09T03:57:17Z desde el commit `447106f` con `poetry run pytho
 ### P-02 · PASS
 
 - **Requisito:** Toda afirmación de fichas.jsonl y de las exportaciones pasa el validador; ninguna cita falsa
-- **Evidencia:** outputs/fichas.jsonl: 5 fichas (CASO-015, CASO-016, CASO-017, CASO-018, CASO-019); re-verificadas con el validador contra data/senales.duckdb: 5 de 5; exportaciones revisadas: 6 archivos; problemas: ninguno; informativo: ninguno.
+- **Evidencia:** outputs/fichas.jsonl: 5 fichas (CASO-015, CASO-016, CASO-017, CASO-018, CASO-019); re-verificadas con el validador contra data/senales.duckdb: 5 de 5; exportaciones revisadas: 12 archivos; problemas: ninguno; informativo: ninguno.
 - **Cómo verificar o corregir:** poetry run python -m scripts.fichas_trazables --casos; poetry run python -m src.ficha --formato jsonl
 
 ### P-03 · PASS

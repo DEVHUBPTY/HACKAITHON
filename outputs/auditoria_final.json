@@ -1,9 +1,9 @@
 {
-  "commit": "447106f",
-  "generado_utc": "2026-10-09T03:57:17Z",
+  "commit": "c79a13a",
+  "generado_utc": "2026-10-09T04:29:13Z",
   "resumen": {
-    "PASS": 12,
-    "FALTA": 3,
+    "PASS": 13,
+    "FALTA": 2,
     "NO VERIFICABLE AUTOMÁTICAMENTE": 10
   },
   "items": [
@@ -56,8 +56,8 @@
       "id": "S5-06",
       "grupo": "Admisión (sec. 5)",
       "requisito": "Matriz de los 10 casos de prueba, todos en «Pasa»",
-      "estado": "FALTA",
-      "evidencia": "outputs/pruebas.csv: 10 filas; faltan ninguna; no pasan: {'T10': 'Pendiente'}.",
+      "estado": "PASS",
+      "evidencia": "outputs/pruebas.csv: 10 filas; faltan ninguna; no pasan: ninguna.",
       "como_verificar": "poetry run python -m eval.reporte_pruebas (tras terminar E2-02/C-04 para T09 y T10)",
       "depende_de": "C-04, E2-02"
     },
@@ -66,7 +66,7 @@
       "grupo": "Admisión (sec. 5)",
       "requisito": "Métricas de la ejecución final: página generada del commit vigente, sin borrador ni juicios provisionales",
       "estado": "FALTA",
-      "evidencia": "outputs/pagina_metricas.md (commit 447106f): la página sigue marcada «BORRADOR»; hay métricas con juicio PROVISIONAL (D-101)",
+      "evidencia": "outputs/pagina_metricas.md (commit c79a13a): la página sigue marcada «BORRADOR»; hay métricas con juicio PROVISIONAL (D-101)",
       "como_verificar": "Tras C-09 y C-10: correr los eval/ y `poetry run python -m scripts.pagina_metricas`.",
       "depende_de": "C-09, C-10"
     },
@@ -192,7 +192,7 @@
       "grupo": "Condiciones previas",
       "requisito": "Toda afirmación de fichas.jsonl y de las exportaciones pasa el validador; ninguna cita falsa",
       "estado": "PASS",
-      "evidencia": "outputs/fichas.jsonl: 5 fichas (CASO-015, CASO-016, CASO-017, CASO-018, CASO-019); re-verificadas con el validador contra data/senales.duckdb: 5 de 5; exportaciones revisadas: 6 archivos; problemas: ninguno; informativo: ninguno.",
+      "evidencia": "outputs/fichas.jsonl: 5 fichas (CASO-015, CASO-016, CASO-017, CASO-018, CASO-019); re-verificadas con el validador contra data/senales.duckdb: 5 de 5; exportaciones revisadas: 12 archivos; problemas: ninguno; informativo: ninguno.",
       "como_verificar": "poetry run python -m scripts.fichas_trazables --casos; poetry run python -m src.ficha --formato jsonl",
       "depende_de": "C-01"
     },

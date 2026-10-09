@@ -1,13 +1,13 @@
 > **Caso de uso CU-03** — Repetición frente a corroboración independiente; una agencia replicada cuenta como una procedencia · elegida por: mas_titulares_que_procedencias=True, titulares_minimos=3, tema_del_reto=True, sin_ruido=True
 
 # CASO-018 · Ficha de evidencia · GRP-79f3183472
-**BORRADOR · requiere revisión**
+**BORRADOR**
 
 - Estado de revisión: requiere evidencia · provisional (D-101)
 - Versión del borrador: versión 1 (generada)
 - Modalidad: Editorial
 - Alcance: basado únicamente en titular/metadatos
-- Exportado: 2026-10-08 17:47 (hora de Panamá)
+- Exportado: 2026-10-08 23:19 (hora de Panamá)
 
 ## 1 · Qué se reporta
 - Titular central: «Intensifying El Nino deepens economic risks across LatAm» — massachusettssun.com
@@ -96,7 +96,7 @@
 ## Borrador · versión 1 (generada)
 
 ### Marca
-- BORRADOR · requiere revisión
+- BORRADOR
 
 ### Caso
 - CASO-018
@@ -149,12 +149,12 @@ El historial es de solo agregar: ninguna fila se modifica ni se borra.
 
 | # | Fecha (hora de Panamá) | Acción | Estado anterior | Estado nuevo | Revisor | Versión | Motivo | Comentario |
 |---|---|---|---|---|---|---|---|---|
-| 8 | 2026-10-08 17:19 | abrir | nuevo | en revisión | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 |  | Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas\_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09. |
-| 9 | 2026-10-08 17:19 | pedir\_evidencia | en revisión | requiere evidencia | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 | Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas\_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09. | Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas\_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09. |
-| 17 | 2026-10-08 17:33 | reabrir | requiere evidencia | en revisión | David Feng (Revisión editorial) | 1 | Revisión C-09 solicitada por el usuario; reevaluación asistida del caso. | C-09: Aprobado exclusivamente como borrador contextual. Las declaraciones están atribuidas y los valores de inflación identifican sus años 2022-2024 y coinciden con la ficha; no se presentan como precio actual del combustible. La hipótesis está diferenciada. Permanecen pendientes la corroboración independiente y las fechas originales. Antes de publicar, explicitar que la inflación anual no mide el combustible ni prueba el efecto del subsidio. |
-| 18 | 2026-10-08 17:33 | pedir\_evidencia | en revisión | requiere evidencia | David Feng (Revisión editorial) | 1 |  | C-09: Pedir evidencia. Los 20 titulares de 18 medios corresponden a una sola procedencia estimada: repetición no equivale a corroboración. Obtener una fuente original independiente, fechas de publicación y evidencia oficial pertinente antes de sostener impactos en Panamá. Mantener como investigación y vigilancia; no descartar por repetición ni aprobar como hecho confirmado. |
-| 27 | 2026-10-08 17:47 | reabrir | requiere evidencia | en revisión | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 | Corrección de origen (C-09): la decisión anterior la redactó un asistente y David Feng la confirmó sin revisión independiente; se registra como revisión asistida y provisional (D-101), no como juicio humano. |  |
-| 28 | 2026-10-08 17:47 | pedir\_evidencia | en revisión | requiere evidencia | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 |  | Misma decisión que la fila anterior: redactada por un asistente y confirmada por David Feng sin revisión independiente (D-101). |
+| 19 | 2026-10-08 17:19 | abrir | nuevo | en revisión | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 |  | Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas\_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09. |
+| 20 | 2026-10-08 17:19 | pedir\_evidencia | en revisión | requiere evidencia | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 | Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas\_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09. | Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas\_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09. |
+| 21 | 2026-10-08 17:33 | reabrir | requiere evidencia | en revisión | David Feng (Revisión editorial) | 1 | Revisión C-09 solicitada por el usuario; reevaluación asistida del caso. | C-09: Aprobado exclusivamente como borrador contextual. Las declaraciones están atribuidas y los valores de inflación identifican sus años 2022-2024 y coinciden con la ficha; no se presentan como precio actual del combustible. La hipótesis está diferenciada. Permanecen pendientes la corroboración independiente y las fechas originales. Antes de publicar, explicitar que la inflación anual no mide el combustible ni prueba el efecto del subsidio. |
+| 22 | 2026-10-08 17:33 | pedir\_evidencia | en revisión | requiere evidencia | David Feng (Revisión editorial) | 1 |  | C-09: Pedir evidencia. Los 20 titulares de 18 medios corresponden a una sola procedencia estimada: repetición no equivale a corroboración. Obtener una fuente original independiente, fechas de publicación y evidencia oficial pertinente antes de sostener impactos en Panamá. Mantener como investigación y vigilancia; no descartar por repetición ni aprobar como hecho confirmado. |
+| 23 | 2026-10-08 17:47 | reabrir | requiere evidencia | en revisión | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 | Corrección de origen (C-09): la decisión anterior la redactó un asistente y David Feng la confirmó sin revisión independiente; se registra como revisión asistida y provisional (D-101), no como juicio humano. |  |
+| 24 | 2026-10-08 17:47 | pedir\_evidencia | en revisión | requiere evidencia | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 |  | Misma decisión que la fila anterior: redactada por un asistente y confirmada por David Feng sin revisión independiente (D-101). |
 
 ---
-**BORRADOR · requiere revisión** · Alcance: basado únicamente en titular/metadatos
+**BORRADOR** · Alcance: basado únicamente en titular/metadatos

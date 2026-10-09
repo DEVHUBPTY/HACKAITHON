@@ -1,5 +1,5 @@
 {
-  "casos_abiertos": 6,
+  "casos_abiertos": 5,
   "origen_juicio": "humano",
   "juicio_humano": true,
   "casos_decididos": 0,
@@ -37,10 +37,8 @@
   },
   "casos_decididos_provisionales": 1,
   "descartes_administrativos": {
-    "n": 1,
-    "motivos": {
-      "Abierto por error": 1
-    },
+    "n": 0,
+    "motivos": {},
     "nota": "Descartes administrativos (no son un juicio editorial): fuera de todas las tasas."
   },
   "nota": "Las afirmaciones de un caso no son independientes: el intervalo de afirmaciones editadas es orientativo.",
@@ -81,8 +79,8 @@
     "motivos_descarte": {},
     "tiempo_por_caso_min": {
       "n": 1,
-      "mediana": 27.65,
-      "media": 27.65
+      "mediana": 28.0,
+      "media": 28.0
     },
     "afirmaciones_editadas": {
       "k": 0,

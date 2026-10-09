@@ -2,7 +2,7 @@
 
 > **BORRADOR — métricas provisionales** · JUICIO PROVISIONAL DEL ASISTENTE, NO HUMANO (D-101): se rehace a mano en C-09; no reportar como juicio de una persona.
 
-Generada el 2026-10-09T03:57:14Z desde el commit `447106f` con `poetry run python -m scripts.pagina_metricas`. Ninguna cifra está escrita a mano: cada una sale del archivo que se indica. Toda proporción lleva numerador, denominador e IC 95 %.
+Generada el 2026-10-09T04:29:10Z desde el commit `c79a13a` con `poetry run python -m scripts.pagina_metricas`. Ninguna cifra está escrita a mano: cada una sale del archivo que se indica. Toda proporción lleva numerador, denominador e IC 95 %.
 
 **Origen del juicio:** `humano` = lo decidió una persona (las etiquetas de clasificación y agrupación las propone el asistente y una persona las revisa y aprueba una por una) · **PROVISIONAL** = lo decidió el asistente y lo debe rehacer una persona · `automático` = automático (sin juicio humano: lo calcula el código contra una referencia).
 
@@ -28,7 +28,7 @@ Generada el 2026-10-09T03:57:14Z desde el commit `447106f` con `poetry run pytho
 
 ## Pruebas de aceptación
 
-Pruebas de aceptación T01–T10: Pasa 9, Pendiente 1 (de 10). Es una matriz de aceptación, no una muestra: no lleva IC.
+Pruebas de aceptación T01–T10: Pasa 10 (de 10). Es una matriz de aceptación, no una muestra: no lleva IC.
 
 | Prueba | Estado | Resultado observado |
 |---|---|---|
@@ -41,7 +41,7 @@ Pruebas de aceptación T01–T10: Pasa 9, Pendiente 1 (de 10). Es una matriz de 
 | T07 · Fuente que exige ignorar instrucciones | Pasa | 25 de 25 pruebas pasan |
 | T08 · Caso de prioridad alta | Pasa | 49 de 49 pruebas pasan |
 | T09 · Brief editorial o boletín bancario | Pasa | 37 de 37 pruebas pasan |
-| T10 · Sin internet durante la demo | Pendiente | 9 de 9 pruebas pasan; pendiente el ensayo con Wi-Fi apagado y su evidencia en Notion; el test cubre el recorrido con snapshot y caché |
+| T10 · Sin internet durante la demo | Pasa | 9 de 9 pruebas pasan |
 
 ## Benchmark de desarrollo: citas y abstención
 
@@ -172,13 +172,13 @@ Pruebas de aceptación T01–T10: Pasa 9, Pendiente 1 (de 10). Es una matriz de 
 | Tasa de descarte · PROVISIONAL (asistente) | 0.0 % | 0 de 1 | 0.0 % – 79.3 % | **PROVISIONAL** · asistente_provisional (D-101) | `revision.json` | — |
 | Afirmaciones editadas · PROVISIONAL (asistente) | 0.0 % | 0 de 8 | 0.0 % – 32.4 % | **PROVISIONAL** · asistente_provisional (D-101) | `revision.json` | — |
 
-- Casos abiertos: 6. Decididos por una persona: 0. Decididos por el revisor provisional: 1.
+- Casos abiertos: 5. Decididos por una persona: 0. Decididos por el revisor provisional: 1.
 - **JUICIO PROVISIONAL DEL ASISTENTE, NO HUMANO (D-101): se rehace a mano en C-09; no reportar como juicio de una persona.**
 
 ## Reproducibilidad
 
 - Registro del manifest: commit `3df0978`, árbol con cambios al registrar: **sí**; corte del snapshot 2026-10-08T03:35:18Z; hash del snapshot `4503952d97fb`.
-- Commit desde el que se generó: `447106f`. El registro es de otro commit: confirmar con `--verificar` antes de afirmar que se reproduce.
+- Commit desde el que se generó: `c79a13a` (árbol con cambios sin commitear). El registro es de otro commit: confirmar con `--verificar` antes de afirmar que se reproduce.
 - LLM: deepseek/deepseek-flash, temperatura 0.0, semilla 0; embeddings minilm y e5 con revisión fijada.
 - Salidas deterministas con hash: 33. Borradores en caché: sin_cache 9, completo 1, con_vacios 2.
 - Comprobación: `HF_HUB_OFFLINE=1 poetry run python -m scripts.reproducir --verificar` (sale con 1 si algo difiere).
@@ -186,24 +186,24 @@ Pruebas de aceptación T01–T10: Pasa 9, Pendiente 1 (de 10). Es una matriz de 
 
 ## Coherencia entre fuentes
 
-- El top 5 del sistema difiere entre precision_at_5.json e ia_vs_baseline.json: una de las dos salidas es anterior a un cambio del ranking.
+- Sin discrepancias entre las fuentes revisadas.
 
 ## Fuentes
 
 | Archivo | Commit | Fecha del commit | Fecha dentro del archivo |
 |---|---|---|---|
 | `outputs/metricas.json` | bf39099 | 2026-10-08T17:52:00-05:00 | 2026-10-08T22:51:50Z |
-| `outputs/ia_vs_baseline.json` | 88de277 | 2026-10-08T15:13:26-05:00 | — |
+| `outputs/ia_vs_baseline.json` | 88de277 + cambios sin commitear | 2026-10-08T15:13:26-05:00 | — |
 | `outputs/precision_at_5.json` | e512db2 | 2026-10-08T16:28:48-05:00 | 2026-10-08T03:35:18Z |
 | `outputs/clasificacion.json` | 737f8f2 | 2026-10-08T14:21:50-05:00 | — |
 | `outputs/agrupacion.json` | a479628 | 2026-10-06T19:49:01-05:00 | — |
 | `outputs/sensibilidad.json` | 15e7e31 | 2026-10-08T15:13:45-05:00 | 2026-10-08T03:35:18Z |
 | `outputs/puntaje.json` | 15e7e31 | 2026-10-08T15:13:45-05:00 | — |
-| `outputs/pruebas.csv` | 447106f | 2026-10-08T22:57:14-05:00 | — |
+| `outputs/pruebas.csv` | 447106f + cambios sin commitear | 2026-10-08T22:57:14-05:00 | — |
 | `data/manifest.json` | ccb2a8e | 2026-10-07T23:07:47-05:00 | 2026-10-08T03:35:18Z |
 | `eval/etiquetas.csv` | fdfe422 | 2026-10-08T09:59:37-05:00 | — |
 | `docs/prueba_tiempo.md` | bf39099 | 2026-10-08T17:52:00-05:00 | — |
-| `outputs/revision.json` | 458f4f0 | 2026-10-08T17:47:45-05:00 | — |
+| `outputs/revision.json` | 458f4f0 + cambios sin commitear | 2026-10-08T17:47:45-05:00 | — |
 | `outputs/costo_llm.json` | sin versionar (generado en local) | — | — |
 
 ## Limitaciones

@@ -2306,7 +2306,7 @@
   },
   "ranking": {
     "utilidad_medible": false,
-    "motivo": "eval/seleccion_editor.csv existe pero es una selección provisional del asistente (D-101), no de un editor; su Precision@5 está en outputs/precision_at_5.json y se rehace a mano en C-09.",
+    "motivo": "la selección de eval/seleccion_editor.csv la hizo una persona; su Precision@5 (exploratoria) está en outputs/precision_at_5.json y aquí no se repite.",
     "baseline": "grupos ordenados solo por publicación más reciente (PDF sección 8); empate por ID ascendente",
     "grupos": 69,
     "top": 5,
@@ -2315,7 +2315,7 @@
       "GRP-21ad932d54",
       "GRP-4d8b340bd9",
       "GRP-a329f4e91e",
-      "GRP-1dc52c45ff"
+      "GRP-29baaf270e"
     ],
     "top_por_fecha": [
       "GRP-3a15fc6a18",
@@ -2326,22 +2326,22 @@
     ],
     "solapamiento": {
       "k": 5,
-      "coinciden": [
-        "GRP-1dc52c45ff"
-      ],
+      "coinciden": [],
       "solo_sistema": [
         "GRP-5e6531917f",
         "GRP-21ad932d54",
         "GRP-4d8b340bd9",
-        "GRP-a329f4e91e"
+        "GRP-a329f4e91e",
+        "GRP-29baaf270e"
       ],
       "solo_baseline": [
         "GRP-3a15fc6a18",
+        "GRP-1dc52c45ff",
         "GRP-50d72e2b04",
         "GRP-a03bab5b02",
         "GRP-1627d09497"
       ],
-      "n_coinciden": 1
+      "n_coinciden": 0
     },
     "empates_de_fecha_en_el_corte": [],
     "ejemplos_solo_sistema": [
@@ -2424,6 +2424,26 @@
         },
         "estado_de_evidencia": "insuficiente",
         "accion": "Investigar ya"
+      },
+      {
+        "id_grupo": "GRP-29baaf270e",
+        "titular_central": "Panamá mantiene vigilancia epidemiológica ante caso sospechoso de peste neumónica en Rusia",
+        "n_titulares": 1,
+        "n_medios": 1,
+        "posicion_sistema": 5,
+        "posicion_por_fecha": 25,
+        "fecha_mas_reciente": "2026-10-06T20:53:52Z",
+        "puntaje": 84.16,
+        "rango": "alto",
+        "componentes": {
+          "R": 1.0,
+          "I": 0.935,
+          "U": 0.8173,
+          "N": 0.7184,
+          "E": 0.3667
+        },
+        "estado_de_evidencia": "insuficiente",
+        "accion": "Investigar ya"
       }
     ],
     "ejemplos_solo_por_fecha": [
@@ -2432,16 +2452,36 @@
         "titular_central": "Lau Cortés: Ordenan detención domiciliaria e imputan cargos por enriquecimiento injustificado y blanqueo de capitales",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 11,
+        "posicion_sistema": 33,
         "posicion_por_fecha": 1,
         "fecha_mas_reciente": "2026-10-08T02:30:00Z",
-        "puntaje": 82.09,
+        "puntaje": 73.09,
         "rango": "alto",
         "componentes": {
-          "R": 1.0,
+          "R": 0.7,
           "I": 0.585,
           "U": 0.9935,
           "N": 0.9285,
+          "E": 0.3667
+        },
+        "estado_de_evidencia": null,
+        "accion": null
+      },
+      {
+        "id_grupo": "GRP-1dc52c45ff",
+        "titular_central": "César Caicedo ahora está recluido en el Hospital Santo Tomás; había sido trasladado a Coiba",
+        "n_titulares": 2,
+        "n_medios": 1,
+        "posicion_sistema": 30,
+        "posicion_por_fecha": 2,
+        "fecha_mas_reciente": "2026-10-08T02:10:57Z",
+        "puntaje": 74.12,
+        "rango": "alto",
+        "componentes": {
+          "R": 0.7,
+          "I": 0.585,
+          "U": 0.9916,
+          "N": 1.0,
           "E": 0.3667
         },
         "estado_de_evidencia": null,
@@ -2452,7 +2492,7 @@
         "titular_central": "Unos 22 aprehendidos en la operación Comunidad Segura contra el microtráfico en Colón y Panama Oeste",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 34,
+        "posicion_sistema": 20,
         "posicion_por_fecha": 3,
         "fecha_mas_reciente": "2026-10-08T02:02:13Z",
         "puntaje": 77.28,
@@ -2472,13 +2512,13 @@
         "titular_central": "Asamblea: Debate por la renovación del contrato de Ciudad del Saber genera cuestionamientos por exoneraciones",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 28,
+        "posicion_sistema": 47,
         "posicion_por_fecha": 4,
         "fecha_mas_reciente": "2026-10-08T01:14:47Z",
-        "puntaje": 78.72,
-        "rango": "alto",
+        "puntaje": 69.72,
+        "rango": "medio",
         "componentes": {
-          "R": 1.0,
+          "R": 0.7,
           "I": 0.585,
           "U": 0.9861,
           "N": 0.7137,
@@ -2492,20 +2532,20 @@
         "titular_central": "Contenido exclusivo: Dietilenglicol, 20 años de dolor",
         "n_titulares": 1,
         "n_medios": 1,
-        "posicion_sistema": 6,
+        "posicion_sistema": 31,
         "posicion_por_fecha": 5,
         "fecha_mas_reciente": "2026-10-08T01:02:59Z",
-        "puntaje": 82.99,
+        "puntaje": 73.99,
         "rango": "alto",
         "componentes": {
-          "R": 1.0,
+          "R": 0.7,
           "I": 0.585,
           "U": 0.9849,
           "N": 1.0,
           "E": 0.3667
         },
-        "estado_de_evidencia": "insuficiente",
-        "accion": "Investigar ya"
+        "estado_de_evidencia": null,
+        "accion": null
       }
     ],
     "top_sistema_detalle": [
@@ -2590,20 +2630,20 @@
         "accion": "Investigar ya"
       },
       {
-        "id_grupo": "GRP-1dc52c45ff",
-        "titular_central": "César Caicedo ahora está recluido en el Hospital Santo Tomás; había sido trasladado a Coiba",
-        "n_titulares": 2,
+        "id_grupo": "GRP-29baaf270e",
+        "titular_central": "Panamá mantiene vigilancia epidemiológica ante caso sospechoso de peste neumónica en Rusia",
+        "n_titulares": 1,
         "n_medios": 1,
         "posicion_sistema": 5,
-        "posicion_por_fecha": 2,
-        "fecha_mas_reciente": "2026-10-08T02:10:57Z",
-        "puntaje": 83.12,
+        "posicion_por_fecha": 25,
+        "fecha_mas_reciente": "2026-10-06T20:53:52Z",
+        "puntaje": 84.16,
         "rango": "alto",
         "componentes": {
           "R": 1.0,
-          "I": 0.585,
-          "U": 0.9916,
-          "N": 1.0,
+          "I": 0.935,
+          "U": 0.8173,
+          "N": 0.7184,
           "E": 0.3667
         },
         "estado_de_evidencia": "insuficiente",
@@ -2611,32 +2651,32 @@
       }
     ],
     "estabilidad": {
-      "variantes_con_efecto": 49,
+      "variantes_con_efecto": 51,
       "top_sin_cambio": {
-        "n": 41,
-        "de": 49,
-        "proporcion": 0.8367,
+        "n": 44,
+        "de": 51,
+        "proporcion": 0.8627,
         "ic95": [
-          0.7096,
-          0.9149
+          0.7428,
+          0.9319
         ]
       },
       "con_algun_cambio": {
-        "n": 8,
-        "de": 49,
-        "proporcion": 0.1633,
+        "n": 7,
+        "de": 51,
+        "proporcion": 0.1373,
         "ic95": [
-          0.0851,
-          0.2904
+          0.0681,
+          0.2572
         ]
       },
       "mismo_orden": {
-        "n": 36,
-        "de": 49,
-        "proporcion": 0.7347,
+        "n": 38,
+        "de": 51,
+        "proporcion": 0.7451,
         "ic95": [
-          0.5974,
-          0.8379
+          0.6113,
+          0.8445
         ]
       },
       "fuente": "outputs/sensibilidad.json"

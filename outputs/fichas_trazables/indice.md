@@ -1,6 +1,6 @@
 # Cinco fichas trazables (C-01)
 
-**BORRADOR · requiere revisión**
+**BORRADOR**
 
 > REVISIÓN PROVISIONAL DEL ASISTENTE, NO HUMANA (D-101): la rehace una persona en C-09. Todo es BORRADOR.
 
@@ -23,7 +23,7 @@ Las fichas salen de la corrida guardada en senales.duckdb (reglas 1.3, corte 202
 
 | Caso de uso | Caso | Grupo | Posición | P | Estado de evidencia | Elegida por | Titular central | Revisión | Borrador | Comprobaciones | Fallos |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| CU-01 | CASO-016 | GRP-5e6531917f | 1 | 86.08 | insuficiente | primero del ranking | Más de 30 mujeres han muerto de forma violenta en Panamá este año | requiere evidencia · provisional (D-101) | versión 1 | 24/24 | 0 |
+| CU-01 | CASO-016 | GRP-5e6531917f | 1 | 86.08 | insuficiente | primero del ranking | Más de 30 mujeres han muerto de forma violenta en Panamá este año | requiere evidencia | versión 1 | 24/24 | 0 |
 | CU-02 | CASO-017 | GRP-81a11a5998 | 45 | 70.16 | parcial | tema=economia, con_dato_oficial=True | ¿Cómo se fija el precio del combustible en Panamá? El MEF explica la fórmula quincenal tras aprobarse nuevo subsidio | aprobado como borrador · provisional (D-101) | versión 1 | 74/74 | 0 |
 | CU-03 | CASO-018 | GRP-79f3183472 | 67 | 49.04 | insuficiente | mas_titulares_que_procedencias=True, titulares_minimos=3, tema_del_reto=True, sin_ruido=True | Intensifying El Nino deepens economic risks across LatAm | requiere evidencia · provisional (D-101) | versión 1 | 138/138 | 0 |
 | CU-04 | CASO-019 | GRP-4d8b340bd9 | 3 | 85.28 | insuficiente | estado=insuficiente, vacio=cifras_sin_dato_oficial (respaldo declarado) | Aprehenden a 10 personas por presunta minería ilegal y delitos ambientales en Coclé del Norte | requiere evidencia · provisional (D-101) | versión 1 | 24/24 | 0 |

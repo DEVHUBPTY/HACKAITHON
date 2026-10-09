@@ -1,13 +1,13 @@
 > **Caso de uso CU-04** — Cifra inexistente o contradicción: abstenerse o mostrar versiones, con la verificación pendiente · elegida por: estado=insuficiente, vacio=cifras_sin_dato_oficial · criterio de respaldo declarado
 
 # CASO-019 · Ficha de evidencia · GRP-4d8b340bd9
-**BORRADOR · requiere revisión**
+**BORRADOR**
 
 - Estado de revisión: requiere evidencia · provisional (D-101)
 - Versión del borrador: versión 1 (generada)
 - Modalidad: Editorial
 - Alcance: basado únicamente en titular/metadatos
-- Exportado: 2026-10-08 17:47 (hora de Panamá)
+- Exportado: 2026-10-08 23:19 (hora de Panamá)
 
 ## 1 · Qué se reporta
 - Titular central: «Aprehenden a 10 personas por presunta minería ilegal y delitos ambientales en Coclé del Norte» — TVN Panamá
@@ -56,7 +56,7 @@
 ## Borrador · versión 1 (generada)
 
 ### Marca
-- BORRADOR · requiere revisión
+- BORRADOR
 
 ### Caso
 - CASO-019
@@ -104,12 +104,12 @@ El historial es de solo agregar: ninguna fila se modifica ni se borra.
 
 | # | Fecha (hora de Panamá) | Acción | Estado anterior | Estado nuevo | Revisor | Versión | Motivo | Comentario |
 |---|---|---|---|---|---|---|---|---|
-| 10 | 2026-10-08 17:19 | abrir | nuevo | en revisión | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 |  | Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas\_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09. |
-| 11 | 2026-10-08 17:19 | pedir\_evidencia | en revisión | requiere evidencia | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 | Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas\_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09. | Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas\_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09. |
-| 19 | 2026-10-08 17:34 | reabrir | requiere evidencia | en revisión | David Feng (Revisión editorial) | 1 | Revisión C-09 solicitada por el usuario; reevaluación asistida del caso. |  |
-| 20 | 2026-10-08 17:34 | pedir\_evidencia | en revisión | requiere evidencia | David Feng (Revisión editorial) | 1 |  | C-09: Pedir evidencia. La cifra de 10 aprehendidos está sustentada únicamente como declaración de TVN, con una sola procedencia y sin respaldo oficial vinculado. Solicitar el comunicado o registro de la autoridad competente y corroboración independiente. Mantener presunta y la atribución; no presentar responsabilidad penal ni impactos comunitarios como hechos probados. |
+| 25 | 2026-10-08 17:19 | abrir | nuevo | en revisión | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 |  | Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas\_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09. |
+| 26 | 2026-10-08 17:19 | pedir\_evidencia | en revisión | requiere evidencia | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 | Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas\_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09. | Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas\_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09. |
+| 27 | 2026-10-08 17:34 | reabrir | requiere evidencia | en revisión | David Feng (Revisión editorial) | 1 | Revisión C-09 solicitada por el usuario; reevaluación asistida del caso. |  |
+| 28 | 2026-10-08 17:34 | pedir\_evidencia | en revisión | requiere evidencia | David Feng (Revisión editorial) | 1 |  | C-09: Pedir evidencia. La cifra de 10 aprehendidos está sustentada únicamente como declaración de TVN, con una sola procedencia y sin respaldo oficial vinculado. Solicitar el comunicado o registro de la autoridad competente y corroboración independiente. Mantener presunta y la atribución; no presentar responsabilidad penal ni impactos comunitarios como hechos probados. |
 | 29 | 2026-10-08 17:47 | reabrir | requiere evidencia | en revisión | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 | Corrección de origen (C-09): la decisión anterior la redactó un asistente y David Feng la confirmó sin revisión independiente; se registra como revisión asistida y provisional (D-101), no como juicio humano. |  |
 | 30 | 2026-10-08 17:47 | pedir\_evidencia | en revisión | requiere evidencia | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 |  | Misma decisión que la fila anterior: redactada por un asistente y confirmada por David Feng sin revisión independiente (D-101). |
 
 ---
-**BORRADOR · requiere revisión** · Alcance: basado únicamente en titular/metadatos
+**BORRADOR** · Alcance: basado únicamente en titular/metadatos

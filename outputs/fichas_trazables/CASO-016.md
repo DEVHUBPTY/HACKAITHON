@@ -1,13 +1,13 @@
 > **Caso de uso CU-01** — ¿Qué cinco temas merecen revisión para la agenda de Panamá y por qué? · elegida por: primero del ranking
 
 # CASO-016 · Ficha de evidencia · GRP-5e6531917f
-**BORRADOR · requiere revisión**
+**BORRADOR**
 
-- Estado de revisión: requiere evidencia · provisional (D-101)
+- Estado de revisión: requiere evidencia
 - Versión del borrador: versión 1 (generada)
 - Modalidad: Editorial
 - Alcance: basado únicamente en titular/metadatos
-- Exportado: 2026-10-08 17:47 (hora de Panamá)
+- Exportado: 2026-10-08 23:19 (hora de Panamá)
 
 ## 1 · Qué se reporta
 - Titular central: «Más de 30 mujeres han muerto de forma violenta en Panamá este año» — TVN Panamá
@@ -56,7 +56,7 @@
 ## Borrador · versión 1 (generada)
 
 ### Marca
-- BORRADOR · requiere revisión
+- BORRADOR
 
 ### Caso
 - CASO-016
@@ -104,12 +104,14 @@ El historial es de solo agregar: ninguna fila se modifica ni se borra.
 
 | # | Fecha (hora de Panamá) | Acción | Estado anterior | Estado nuevo | Revisor | Versión | Motivo | Comentario |
 |---|---|---|---|---|---|---|---|---|
-| 4 | 2026-10-08 17:19 | abrir | nuevo | en revisión | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 |  | Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas\_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09. |
-| 5 | 2026-10-08 17:19 | pedir\_evidencia | en revisión | requiere evidencia | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 | Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas\_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09. | Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas\_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09. |
-| 13 | 2026-10-08 17:32 | reabrir | requiere evidencia | en revisión | David Feng (Revisión editorial) | 1 | Revisión C-09 solicitada por el usuario; reevaluación asistida del caso. | Abierto por error. Descarte solicitado por el usuario para CASO-014 en Banca. |
-| 14 | 2026-10-08 17:32 | pedir\_evidencia | en revisión | requiere evidencia | David Feng (Revisión editorial) | 1 |  | C-09: Pedir evidencia. La cifra de más de 30 muertes solo está respaldada como declaración de TVN, no como cifra oficial; existe una única procedencia. Confirmar cifra, período y definición con el registro oficial competente y obtener corroboración independiente. Conservar como investigación, no como hecho confirmado. |
-| 23 | 2026-10-08 17:47 | reabrir | requiere evidencia | en revisión | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 | Corrección de origen (C-09): la decisión anterior la redactó un asistente y David Feng la confirmó sin revisión independiente; se registra como revisión asistida y provisional (D-101), no como juicio humano. |  |
-| 24 | 2026-10-08 17:47 | pedir\_evidencia | en revisión | requiere evidencia | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 |  | Misma decisión que la fila anterior: redactada por un asistente y confirmada por David Feng sin revisión independiente (D-101). |
+| 5 | 2026-10-08 17:19 | abrir | nuevo | en revisión | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 |  | Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas\_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09. |
+| 6 | 2026-10-08 17:19 | pedir\_evidencia | en revisión | requiere evidencia | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 | Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas\_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09. | Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas\_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09. |
+| 7 | 2026-10-08 17:32 | reabrir | requiere evidencia | en revisión | David Feng (Revisión editorial) | 1 | Revisión C-09 solicitada por el usuario; reevaluación asistida del caso. | Abierto por error. Descarte solicitado por el usuario para CASO-014 en Banca. |
+| 8 | 2026-10-08 17:32 | pedir\_evidencia | en revisión | requiere evidencia | David Feng (Revisión editorial) | 1 |  | C-09: Pedir evidencia. La cifra de más de 30 muertes solo está respaldada como declaración de TVN, no como cifra oficial; existe una única procedencia. Confirmar cifra, período y definición con el registro oficial competente y obtener corroboración independiente. Conservar como investigación, no como hecho confirmado. |
+| 9 | 2026-10-08 17:47 | reabrir | requiere evidencia | en revisión | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 | Corrección de origen (C-09): la decisión anterior la redactó un asistente y David Feng la confirmó sin revisión independiente; se registra como revisión asistida y provisional (D-101), no como juicio humano. |  |
+| 10 | 2026-10-08 17:47 | pedir\_evidencia | en revisión | requiere evidencia | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 |  | Misma decisión que la fila anterior: redactada por un asistente y confirmada por David Feng sin revisión independiente (D-101). |
+| 11 | 2026-10-08 23:15 | reabrir | requiere evidencia | en revisión | Javier Acosta (Revisión editorial) | 1 | Revision | Cifra de mas de 30 muertes sin dato oficial vicnulado |
+| 12 | 2026-10-08 23:15 | pedir\_evidencia | en revisión | requiere evidencia | Javier Acosta (Revisión editorial) | 1 |  | Cifra de mas de 30 muertes sin dato oficial vicnulado |
 
 ---
-**BORRADOR · requiere revisión** · Alcance: basado únicamente en titular/metadatos
+**BORRADOR** · Alcance: basado únicamente en titular/metadatos

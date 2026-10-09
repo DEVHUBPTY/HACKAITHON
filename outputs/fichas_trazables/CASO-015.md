@@ -1,13 +1,13 @@
 > **Caso de uso CU-05** — ¿Qué señales públicas del entorno logístico debo revisar? · elegida por: grupo fijo GRP-da35c3dead (banca)
 
 # CASO-015 · Ficha de evidencia · GRP-da35c3dead
-**BORRADOR · requiere revisión**
+**BORRADOR**
 
 - Estado de revisión: requiere evidencia · provisional (D-101)
 - Versión del borrador: versión 1 (generada)
 - Modalidad: Banca
 - Alcance: basado únicamente en titular/metadatos
-- Exportado: 2026-10-08 17:47 (hora de Panamá)
+- Exportado: 2026-10-08 23:19 (hora de Panamá)
 
 ## 1 · Qué se reporta
 - Titular central: «Mulino viajará a Asia: suscribirá convenios bilaterales con Singapur y Vietnam» — laestrella.com.pa
@@ -63,7 +63,7 @@
 ## Borrador · versión 1 (generada)
 
 ### Marca
-- BORRADOR · requiere revisión
+- BORRADOR
 
 ### Caso
 - CASO-015
@@ -126,10 +126,10 @@ El historial es de solo agregar: ninguna fila se modifica ni se borra.
 
 | # | Fecha (hora de Panamá) | Acción | Estado anterior | Estado nuevo | Revisor | Versión | Motivo | Comentario |
 |---|---|---|---|---|---|---|---|---|
-| 2 | 2026-10-08 17:17 | abrir | nuevo | en revisión | David Feng (Analista) | 1 |  |  |
-| 3 | 2026-10-08 17:18 | pedir\_evidencia | en revisión | requiere evidencia | David Feng (Analista) | 1 |  | Se solicita confirmar las fechas de publicación originales y el calendario oficial del viaje y de los convenios. El boletín fija un horizonte inmediato aunque la ficha declara fecha de publicación desconocida. Mantener las declaraciones atribuidas y la hipótesis de impacto como inferencia; no hay evidencia para afirmar inversiones concretadas. No se descarta el tema: reúne tres procedencias estimadas y es pertinente como contexto. |
-| 21 | 2026-10-08 17:47 | reabrir | requiere evidencia | en revisión | Asistente (provisional, D-101) (Analista) · provisional (D-101) | 1 | Corrección de origen (C-09): la decisión anterior la redactó un asistente y David Feng la confirmó sin revisión independiente; se registra como revisión asistida y provisional (D-101), no como juicio humano. |  |
-| 22 | 2026-10-08 17:47 | pedir\_evidencia | en revisión | requiere evidencia | Asistente (provisional, D-101) (Analista) · provisional (D-101) | 1 |  | Misma decisión que la fila anterior: redactada por un asistente y confirmada por David Feng sin revisión independiente (D-101). |
+| 1 | 2026-10-08 17:17 | abrir | nuevo | en revisión | David Feng (Analista) | 1 |  |  |
+| 2 | 2026-10-08 17:18 | pedir\_evidencia | en revisión | requiere evidencia | David Feng (Analista) | 1 |  | Se solicita confirmar las fechas de publicación originales y el calendario oficial del viaje y de los convenios. El boletín fija un horizonte inmediato aunque la ficha declara fecha de publicación desconocida. Mantener las declaraciones atribuidas y la hipótesis de impacto como inferencia; no hay evidencia para afirmar inversiones concretadas. No se descarta el tema: reúne tres procedencias estimadas y es pertinente como contexto. |
+| 3 | 2026-10-08 17:47 | reabrir | requiere evidencia | en revisión | Asistente (provisional, D-101) (Analista) · provisional (D-101) | 1 | Corrección de origen (C-09): la decisión anterior la redactó un asistente y David Feng la confirmó sin revisión independiente; se registra como revisión asistida y provisional (D-101), no como juicio humano. |  |
+| 4 | 2026-10-08 17:47 | pedir\_evidencia | en revisión | requiere evidencia | Asistente (provisional, D-101) (Analista) · provisional (D-101) | 1 |  | Misma decisión que la fila anterior: redactada por un asistente y confirmada por David Feng sin revisión independiente (D-101). |
 
 ---
-**BORRADOR · requiere revisión** · Alcance: basado únicamente en titular/metadatos
+**BORRADOR** · Alcance: basado únicamente en titular/metadatos

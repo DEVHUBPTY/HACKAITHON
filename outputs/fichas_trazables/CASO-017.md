@@ -1,13 +1,13 @@
 > **Caso de uso CU-02** — Tema económico con serie oficial y brief, sin confundir dato anual con medición de hoy · elegida por: tema=economia, con_dato_oficial=True
 
 # CASO-017 · Ficha de evidencia · GRP-81a11a5998
-**BORRADOR · requiere revisión**
+**BORRADOR**
 
 - Estado de revisión: aprobado como borrador · provisional (D-101)
 - Versión del borrador: versión 1 (generada)
 - Modalidad: Editorial
 - Alcance: basado únicamente en titular/metadatos
-- Exportado: 2026-10-08 17:47 (hora de Panamá)
+- Exportado: 2026-10-08 23:19 (hora de Panamá)
 
 ## 1 · Qué se reporta
 - Titular central: «¿Cómo se fija el precio del combustible en Panamá? El MEF explica la fórmula quincenal tras aprobarse nuevo subsidio» — panamaamerica.com.pa
@@ -60,7 +60,7 @@
 ## Borrador · versión 1 (generada)
 
 ### Marca
-- BORRADOR · requiere revisión
+- BORRADOR
 
 ### Caso
 - CASO-017
@@ -153,12 +153,12 @@ El historial es de solo agregar: ninguna fila se modifica ni se borra.
 
 | # | Fecha (hora de Panamá) | Acción | Estado anterior | Estado nuevo | Revisor | Versión | Motivo | Comentario |
 |---|---|---|---|---|---|---|---|---|
-| 6 | 2026-10-08 17:19 | abrir | nuevo | en revisión | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 |  | Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas\_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09. |
-| 7 | 2026-10-08 17:19 | aceptar | en revisión | aprobado como borrador | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 |  | Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas\_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09. |
+| 13 | 2026-10-08 17:19 | abrir | nuevo | en revisión | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 |  | Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas\_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09. |
+| 14 | 2026-10-08 17:19 | aceptar | en revisión | aprobado como borrador | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 |  | Revisión provisional del asistente (C-01, D-101/D-112): se comprobó la trazabilidad de cada afirmación contra los datos (outputs/fichas\_trazables/trazabilidad.json). No es un juicio editorial humano: lo rehace una persona en C-09. |
 | 15 | 2026-10-08 17:33 | reabrir | aprobado como borrador | en revisión | David Feng (Revisión editorial) | 1 | Revisión C-09 solicitada por el usuario; reevaluación asistida del caso. |  |
 | 16 | 2026-10-08 17:33 | aceptar | en revisión | aprobado como borrador | David Feng (Revisión editorial) | 1 |  | C-09: Aprobado exclusivamente como borrador contextual. Las declaraciones están atribuidas y los valores de inflación identifican sus años 2022-2024 y coinciden con la ficha; no se presentan como precio actual del combustible. La hipótesis está diferenciada. Permanecen pendientes la corroboración independiente y las fechas originales. Antes de publicar, explicitar que la inflación anual no mide el combustible ni prueba el efecto del subsidio. |
-| 25 | 2026-10-08 17:47 | reabrir | aprobado como borrador | en revisión | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 | Corrección de origen (C-09): la decisión anterior la redactó un asistente y David Feng la confirmó sin revisión independiente; se registra como revisión asistida y provisional (D-101), no como juicio humano. |  |
-| 26 | 2026-10-08 17:47 | aceptar | en revisión | aprobado como borrador | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 |  | Misma decisión que la fila anterior: redactada por un asistente y confirmada por David Feng sin revisión independiente (D-101). |
+| 17 | 2026-10-08 17:47 | reabrir | aprobado como borrador | en revisión | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 | Corrección de origen (C-09): la decisión anterior la redactó un asistente y David Feng la confirmó sin revisión independiente; se registra como revisión asistida y provisional (D-101), no como juicio humano. |  |
+| 18 | 2026-10-08 17:47 | aceptar | en revisión | aprobado como borrador | Asistente (provisional, D-101) (Revisión editorial) · provisional (D-101) | 1 |  | Misma decisión que la fila anterior: redactada por un asistente y confirmada por David Feng sin revisión independiente (D-101). |
 
 ---
-**BORRADOR · requiere revisión** · Alcance: basado únicamente en titular/metadatos
+**BORRADOR** · Alcance: basado únicamente en titular/metadatos
