@@ -96,7 +96,7 @@ def test_la_fecha_de_ejecucion_es_utc_iso_8601_y_el_commit_es_un_sha() -> None:
 
 def test_los_pendientes_salen_de_la_configuracion_y_nombran_su_causa() -> None:
     pend = cargar_pruebas().pendientes
-    assert set(pend) == {"T10"} and "C-04" in pend["T10"]  # T09 se cerró con E2-02 (tests/test_t09_borrador.py cubre el boletín bancario)
+    assert set(pend) == {"T10"} and "ensayo con Wi-Fi apagado" in pend["T10"]  # T09 se cerró con E2-02 (tests/test_t09_borrador.py cubre el boletín bancario)
     assert rp.PENDIENTES == pend
 
 

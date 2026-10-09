@@ -468,7 +468,7 @@ def seccion_eficiencia(c: Contexto) -> tuple[list[Metrica], list[str]]:
         + ", ".join(f"{k} {'cumple' if v else 'no cumple'}" for k, v in mt["paquete_cumple_por_tipo"].items()) + ".",
         f"Costo total estimado de la corrida de {b['n_paquetes']} paquetes: USD {b['costo_usd']['total_estimado']:.4f}; tokens totales "
         f"{b['tokens_totales']['entrada']} de entrada y {b['tokens_totales']['salida']} de salida.",
-        f"**Supuesto del proyecto (D-97):** el contador de costo sobreestima ≈ {c.cfg.sobreestimacion_contador_costo:g} × respecto de la consola del proveedor "
+        f"**Supuesto del proyecto:** el contador de costo sobreestima ≈ {c.cfg.sobreestimacion_contador_costo:g} × respecto de la consola del proveedor "
         "(una comparación puntual); las cifras de USD son una cota superior conservadora, no la factura.",
     ]
     cl = c.datos.get("costo_llm")
@@ -716,34 +716,27 @@ def limitaciones(c: Contexto, todas: list[Metrica]) -> list[str]:
         f"Los IC (sistema {ic_s[0]:.{c.dv}f}–{ic_s[1]:.{c.dv}f}; baseline {ic_b[0]:.{c.dv}f}–{ic_b[1]:.{c.dv}f}) "
         f"{'se solapan: no hay diferencia demostrable.' if solapan(ic_s, ic_b) else 'no se solapan, pero con tan pocos temas no se generaliza.'} "
         f"Los temas de un mismo corte no son independientes (nota de la fuente).",
-        "- **Selección ciega solo a medias:** quien eligió los temas conocía la selección y el resultado anteriores (revisión D-78 de E1-19). "
+        "- **Selección ciega solo a medias:** quien eligió los temas conocía la selección y el resultado anteriores. "
         "No es la selección independiente de un editor.",
-        f"- **Juicios provisionales del asistente (D-101), pendientes de C-09:** secciones: {', '.join(provisionales) if provisionales else 'ninguna en esta corrida'}. "
-        "Se rehacen a mano; hasta entonces no se reportan como juicio de una persona.",
-        "- **Recalcular tras C-10:** cualquier mejora de ranking, clasificación o generación cambia estas cifras; hay que volver a correr los módulos de "
+        "- **Recalcular tras cada cambio:** cualquier mejora de ranking, clasificación o generación cambia estas cifras; hay que volver a correr los módulos de "
         "`eval/` y regenerar esta página (nueva corrida).",
         f"- **Benchmark de desarrollo (n = {c.datos['metricas']['benchmark']['n']} consultas):** " + " ".join(c.datos["metricas"]["avisos"]),
         "- **Baselines:** el veredicto «sin diferencia demostrable» significa que los IC se solapan, no que los métodos sean iguales.",
         f"- **Ahorro de tiempo: no medido.** Pruebas realizadas: {tiempo.group(1) if tiempo else 'no consta'} (`docs/prueba_tiempo.md`); "
-        "mide a una persona y queda para C-09.",
-        f"- **Costo:** el contador sobreestima ≈ {c.cfg.sobreestimacion_contador_costo:g} × (supuesto del proyecto, D-97); las cifras de USD son cota superior.",
+        "mide a una persona y queda pendiente.",
+        f"- **Costo:** el contador sobreestima ≈ {c.cfg.sobreestimacion_contador_costo:g} × (supuesto del proyecto); las cifras de USD son cota superior.",
         "- **Revisión humana:** " + ("sin casos decididos por una persona; las tasas humanas están en «sin datos»."
                                     if c.datos.get("revision", {}).get("casos_decididos") == 0 else "las tasas dependen de pocos casos; ver n.")
         if "revision" in c.datos else "- **Revisión humana:** fuente no disponible.",
-        "- **SBP (D-116):** la fuente D se versiona con riesgo aceptado (el aviso legal de la SBP restringe la reproducción y la redistribución sin "
+        "- **SBP:** la fuente D se versiona con riesgo aceptado (el aviso legal de la SBP restringe la reproducción y la redistribución sin "
         "autorización escrita). Esta página no usa cifras de la SBP, pero si el repositorio o el paquete de entrega se hacen públicos hay que pedir "
         "la autorización o retirar esos valores." + ("" if sbp_ok else " (el manifest no registra su licencia)"),
         "- No se infiere audiencia, rentabilidad ni reducción de riesgo; un titular es lo que un medio reporta, no un hecho.",
     ]
+    if provisionales:   # solo mientras quede algún juicio del asistente sin rehacer por una persona
+        out.insert(2, f"- **Juicios provisionales del asistente:** secciones: {', '.join(provisionales)}. "
+                      "Los rehace una persona; hasta entonces no se reportan como juicio humano.")
     return out
-
-
-PREGUNTAS_ABIERTAS = [
-    "**¿Se publica ya en Notion como borrador o se espera a C-09 y C-10?** Recomendación: publicarla una vez ahora marcada «BORRADOR — métricas "
-    "provisionales» y actualizar esa misma página al regenerarla; así el equipo ve el estado real y nada provisional se presenta como humano.",
-    "**¿Qué hacer si una salida de `eval/` es anterior a un cambio de la base?** La sección «Coherencia entre fuentes» lo avisa pero no lo corrige. "
-    "Recomendación: antes de la entrega, volver a correr los módulos de `eval/` y regenerar la página en una sola pasada (condición de C-02 tras C-10).",
-]
 
 
 def generar(c: Contexto | None = None, ahora: datetime | None = None) -> str:
@@ -770,12 +763,14 @@ def generar(c: Contexto | None = None, ahora: datetime | None = None) -> str:
     head = _git(c.raiz, "rev-parse", "--short", "HEAD") or "sin git"
     cfg_o = cargar_origen_juicio()
     hay_prov = any(m.origen.tipo == PROVISIONAL for m in todas)
-    L: list[str] = [f"# {c.cfg.titulo}", "", f"> **{c.cfg.etiqueta_borrador}**" + (f" · {cfg_o.aviso_provisional}" if hay_prov else ""), "",
+    rotulo = [f"> **{c.cfg.etiqueta_borrador}** · {cfg_o.aviso_provisional}", ""] if hay_prov else []   # sin juicios provisionales no hay borrador
+    L: list[str] = [f"# {c.cfg.titulo}", ""] + rotulo + [
                     f"Generada el {ahora.strftime('%Y-%m-%dT%H:%M:%SZ')} desde el commit `{head}` con "
                     "`poetry run python -m scripts.pagina_metricas`. Ninguna cifra está escrita a mano: cada una sale del archivo que se indica. "
                     "Toda proporción lleva numerador, denominador e IC 95 %.", "",
-                    "**Origen del juicio:** `humano` = lo decidió una persona (las etiquetas de clasificación y agrupación las propone el asistente y una persona las revisa y aprueba una por una, D-85) · **PROVISIONAL** = lo decidió el asistente (D-101) y se rehace en C-09 · "
-                    f"`automático` = {c.cfg.etiqueta_automatico}.", "", "## Resumen", ""]
+                    "**Origen del juicio:** `humano` = lo decidió una persona (las etiquetas de clasificación y agrupación las propone el asistente y una persona las revisa y aprueba una por una) · "
+                    + ("**PROVISIONAL** = lo decidió el asistente y lo debe rehacer una persona · " if hay_prov else "")
+                    + f"`automático` = {c.cfg.etiqueta_automatico}.", "", "## Resumen", ""]
     L += _tabla([m for m in todas if m.destacada], c.cfg) + [""]
     L += ["## Pruebas de aceptación", ""] + seccion_pruebas(c) + [""]
     for titulo, ms, lineas in secciones:
@@ -795,8 +790,7 @@ def generar(c: Contexto | None = None, ahora: datetime | None = None) -> str:
         L.append(f"| `{ruta}` | {commit} | {fecha} | {dentro} |")
     for k, cmd in c.ausentes.items():
         L.append(f"| `{c.ruta(k)}` | no disponible | — | — |")
-    L += ["", "## Limitaciones", ""] + limitaciones(c, todas) + ["", "## Preguntas abiertas", ""]
-    L += [f"{i}. {q}" for i, q in enumerate(PREGUNTAS_ABIERTAS, 1)]
+    L += ["", "## Limitaciones", ""] + limitaciones(c, todas)
     return "\n".join(L) + "\n"
 
 

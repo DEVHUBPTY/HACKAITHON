@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import json
+import re
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
@@ -156,12 +157,12 @@ def test_pagina_completa_con_secciones_y_fuentes(raiz: Path):
     texto = _pagina(raiz)
     assert "BORRADOR — métricas provisionales" in texto
     for titulo in ("## Resumen", "## Pruebas de aceptación", "## Eficiencia, tokens y costo", "## Rechazos del validador", "## Reproducibilidad",
-                   "## Coherencia entre fuentes", "## Fuentes", "## Limitaciones", "## Preguntas abiertas"):
+                   "## Coherencia entre fuentes", "## Fuentes", "## Limitaciones"):
         assert titulo in texto
     cfg = cargar_pagina_metricas()
     for ruta in cfg.fuentes.values():
         assert f"`{ruta}`" in texto, f"la fuente {ruta} no aparece en la tabla de fuentes"
-    for expresion in ("n = 5 temas", "D-116", "C-09", "C-10", "2.6"):
+    for expresion in ("n = 5 temas", "**SBP:**", "Juicios provisionales del asistente", "Recalcular tras cada cambio", "2.6"):
         assert expresion in texto
 
 
@@ -220,6 +221,36 @@ def test_provisionales_salen_marcados_y_nunca_como_humanos(raiz: Path):
         if "PROVISIONAL (asistente)" in f:
             assert "**PROVISIONAL**" in f and "| humano |" not in f, f
     assert vistas == set(humano)
+
+
+CODIGO_INTERNO = re.compile(r"\b(?:[CDX]-\d{2,3}|E\d-\d{2}[a-z]?)\b")
+
+
+def _sin_provisionales(raiz: Path) -> None:
+    """Deja todas las fuentes con juicio humano o automático: el revisor provisional ya no tiene casos."""
+    def revision(d):
+        d.pop("provisionales", None)
+        d["casos_decididos_provisionales"] = 0
+    _editar(raiz, "outputs/revision.json", revision)
+
+
+def test_sin_juicios_provisionales_no_hay_rotulo_de_borrador(raiz: Path):
+    _sin_provisionales(raiz)
+    texto = _pagina(raiz)
+    assert "**PROVISIONAL**" not in texto
+    assert "BORRADOR" not in texto and "JUICIO PROVISIONAL" not in texto
+
+
+def test_con_un_juicio_provisional_sale_el_rotulo_de_borrador(raiz: Path):
+    _editar(raiz, "outputs/precision_at_5.json", lambda d: d.update(origen_juicio="asistente_provisional (D-101)", juicio_humano=False))
+    assert "BORRADOR — métricas provisionales" in _pagina(raiz).splitlines()[2]
+
+
+def test_la_pagina_para_el_jurado_no_lleva_preguntas_abiertas_ni_codigos_internos(raiz: Path):
+    _sin_provisionales(raiz)
+    texto = _pagina(raiz)
+    assert "## Preguntas abiertas" not in texto
+    assert not CODIGO_INTERNO.findall(texto), sorted(set(CODIGO_INTERNO.findall(texto)))
 
 
 def _linea_meta_sustento(raiz: Path) -> str:
