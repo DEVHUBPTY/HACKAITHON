@@ -260,6 +260,12 @@ poetry run python -m scripts.verificar_offline       # chequeo antes del pitch, 
 - Recorrido cronometrado de 4 minutos, pruebas dinámicas del jurado y plan B: [`docs/demo.md`](demo.md).
 - Funcionamiento sin internet y qué hacer si algo falla: [`docs/fallback.md`](fallback.md). Sin red funciona todo salvo generar borradores nuevos; los que están en la caché se leen igual.
 
+### Cada modalidad
+
+- **Editorial (TVN)** viene por defecto en la app.
+- **Banca:** en la barra lateral, «Modalidad» → «Banca». La app recalcula los puntajes de banca en una copia de sesión (la base original no se toca) y todas las pantallas pasan a esa modalidad: **4 · Priorizar** muestra la bandeja agrupada por sector y **6 · Producir** el boletín de entorno (observaciones, hipótesis de impacto, sectores relacionados, horizonte temporal y tres preguntas para el analista). Para CU-05, elegir el grupo «Presidente de Panamá visita Singapur y Vietnam» (`GRP-da35c3dead`).
+- Por línea de comandos (`--modalidad banca` en `src.puntaje`, `src.ficha` y `src.generacion`) y calentado de la caché de banca: [README, «Cómo usar cada modalidad»](../README.md#cómo-usar-cada-modalidad). Campos del boletín y sus prohibiciones: [`docs/salidas.md`](salidas.md).
+
 ---
 
 ## 9 · Pruebas de aceptación y métricas
