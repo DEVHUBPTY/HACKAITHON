@@ -23,7 +23,7 @@ from tests.navegacion_ayuda import ir_a_pantalla
 APP = RAIZ / "app.py"
 CFG_REV = cargar_revision()
 REVISOR = "Javier Acosta"
-MARCA = "BORRADOR · requiere revisión"
+MARCA = "BORRADOR"
 
 
 @pytest.fixture(scope="module")

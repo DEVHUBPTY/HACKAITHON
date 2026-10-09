@@ -21,7 +21,7 @@ from tests.navegacion_ayuda import ir_a_pantalla
 BASE = RAIZ / "data" / "senales.duckdb"
 APP = RAIZ / "app.py"
 CFG = cargar_interfaz()
-MARCA = "BORRADOR · requiere revisión"
+MARCA = "BORRADOR"
 GRUPO_CU03 = "GRP-79f3183472"
 # Los nombres del PDF (sección 3), tal cual.
 ETAPAS_PDF = ["1 · Cargar", "2 · Organizar", "3 · Contextualizar", "4 · Priorizar", "5 · Explicar", "6 · Producir", "7 · Revisar"]

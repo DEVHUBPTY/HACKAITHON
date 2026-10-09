@@ -101,7 +101,7 @@ def test_la_pantalla_paquete_muestra_el_borrador_de_la_cache_sin_red(app: Any, c
         assert not at.exception, clave
     at = ir(at, "paquete")
     texto = "\n".join(textos(at))
-    assert "BORRADOR · requiere revisión" in texto and "TVN reporta nuevo plan de Mulino" in texto
+    assert "BORRADOR" in texto and "TVN reporta nuevo plan de Mulino" in texto
     assert [e.label for e in at.expander if e.label == "Guion"] == ["Guion"]
     assert not at.warning and not at.error and sin_red == []
 

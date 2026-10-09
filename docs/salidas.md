@@ -2,7 +2,7 @@
 
 Definición exacta de lo que produce la etapa 6. Los límites numéricos viven en `config/salidas.yaml`; las listas de frases prohibidas, en `config/restricciones.yaml`.
 
-**Comunes a toda salida:** marca **BORRADOR · requiere revisión** · ID del caso y versión · leyenda de alcance (D-51), que no cuenta para los límites de palabras · cada oración con sus afirmaciones citadas (salvo transiciones permitidas, D-41).
+**Comunes a toda salida:** marca **BORRADOR** · ID del caso y versión · leyenda de alcance (D-51), que no cuenta para los límites de palabras · cada oración con sus afirmaciones citadas (salvo transiciones permitidas, D-41).
 
 **Origen de cada campo:** `LLM` = lo redacta el modelo con afirmaciones validadas · `Ficha` = se copia de la ficha sin LLM (D-43) · `Regla` = lo calcula el código.
 
@@ -68,7 +68,7 @@ Todo paquete (`PaqueteEditorial`, `PaqueteInvestigacion`, `BoletinBanca`) lleva 
 
 | Campo | Qué es | Origen |
 |---|---|---|
-| `marca` | «BORRADOR · requiere revisión» (`config/restricciones.yaml`) | Regla |
+| `marca` | «BORRADOR» (`config/restricciones.yaml`) | Regla |
 | `id_caso`, `version` | ID del caso (`CASO-001`…, asignado al abrir el grupo para revisar, E1-16) y versión del borrador (cada corrección o regeneración crea otra) | Ficha |
 | `leyenda_alcance` | Leyenda de alcance (D-51), según `uso_descripcion` de la ficha | Regla |
 | `accion` | Acción recomendada de la ficha que decidió qué se generó (D-42) | Ficha |

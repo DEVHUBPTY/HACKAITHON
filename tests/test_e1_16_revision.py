@@ -580,7 +580,7 @@ def test_cada_linea_de_fichas_jsonl_valida_contra_el_esquema_del_contrato(rev, t
             assert campo in r
         assert (r["id_caso"], r["estado_revision"], r["borrador"]) == (c, estado, True)
         assert r["estado_revision"] == rev.estado(c) == rev.historial(c)[-1].estado_nuevo               # estado = última fila de revisiones
-        assert r["alcance"] and "basado" in r["alcance"] and r["ficha"]["marca_borrador"] == "BORRADOR · requiere revisión"
+        assert r["alcance"] and "basado" in r["alcance"] and r["ficha"]["marca_borrador"] == "BORRADOR"
 
 
 def test_el_esquema_del_contrato_rechaza_lo_que_no_es_del_contrato(rev, tmp_path) -> None:
@@ -617,7 +617,7 @@ def test_exportar_genera_markdown_y_fila_csv_con_version_historial_y_leyenda(rev
     e = exportar.exportar_caso(rev, c, tmp_path / "notion", tmp_path / "fichas.jsonl")
     md = e.ruta_markdown.read_text(encoding="utf-8")
     assert e.ruta_markdown.name == f"{c}.md" and md == e.markdown and md.startswith(f"# {c} · Ficha de evidencia")
-    assert "BORRADOR · requiere revisión" in md and "Estado de revisión: aprobado como borrador" in md        # aprobada y todavía BORRADOR
+    assert "BORRADOR" in md and "Estado de revisión: aprobado como borrador" in md        # aprobada y todavía BORRADOR
     assert "Versión del borrador: versión 2 (corregida)" in md
     for seccion in ("1 · Qué se reporta", "2 · Quién lo reporta", "3 · Qué está respaldado", "4 · Qué falta comprobar", "5 · Acción recomendada", "## Historial de revisión"):
         assert seccion in md

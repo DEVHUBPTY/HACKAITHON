@@ -3,7 +3,7 @@
 # Cada modalidad declara en `grupos_restricciones` qué grupos le aplican (sin `if modalidad` en el código).
 version: "1.0"
 
-marca_borrador: "BORRADOR · requiere revisión"
+marca_borrador: "BORRADOR"
 marcador_visual: "[VISUAL: a definir por producción]"
 aviso_banca: "No constituye recomendación financiera ni opinión oficial de la SBP."
 

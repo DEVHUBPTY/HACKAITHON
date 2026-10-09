@@ -315,7 +315,7 @@ class BoletinBanca(PaqueteBase):
 
 PREFIJOS_DE_HECHO = ("GRP-", "IND-", "SIS-", "SBP-")        # un hecho es un conteo o un dato oficial (CLAUDE.md)
 PREFIJOS_DE_DECLARACION = ("NOT-", "SYN-")                     # un titular (real o sintético, C-06) es lo que un medio reporta: declaración, nunca hecho
-ETIQUETA_BORRADOR = "BORRADOR · requiere revisión"
+ETIQUETA_BORRADOR = "BORRADOR"
 
 
 class ModeloFicha(BaseModel):

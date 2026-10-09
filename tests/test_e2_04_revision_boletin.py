@@ -275,7 +275,7 @@ def test_la_exportacion_muestra_la_version_corregida_con_marca_aviso_y_correccio
     rev.aceptar(c, ANALISTA)
     md = exportar.exportar_caso(rev, c, tmp_path / "notion", tmp_path / "fichas.jsonl").markdown
     original = boletin()
-    assert "BORRADOR · requiere revisión" in md and "aprobado como borrador" in md
+    assert "BORRADOR" in md and "aprobado como borrador" in md
     assert "No constituye recomendación financiera ni opinión oficial de la SBP" in md
     assert "basado únicamente en titular/metadatos" in md
     i_obs, i_hip = md.index("Resumen · Observaciones"), md.index("Resumen · Hipótesis de impacto")

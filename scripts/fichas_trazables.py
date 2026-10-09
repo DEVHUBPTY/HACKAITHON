@@ -110,7 +110,7 @@ def cabecera_caso_de_uso(e: Elegida) -> str:
 
 def indice_markdown(cfg: ConfigFichasTrazables, filas: list[dict[str, Any]], inf: dict[str, Any], marca: dict[str, Any], reemplazados: Sequence[str] = ()) -> str:
     """El índice legible: regla de selección por caso de uso, las cinco fichas y los conteos por comprobación (n e IC 95 %)."""
-    L = ["# Cinco fichas trazables (C-01)", "", "**BORRADOR · requiere revisión**", "", f"> {cfg.textos.aviso_provisional}", "",
+    L = ["# Cinco fichas trazables (C-01)", "", "**BORRADOR**", "", f"> {cfg.textos.aviso_provisional}", "",
          cfg.textos.aviso_corrida.format(**marca), "", "## Regla de selección (`config/fichas_trazables.yaml`, D-118)", ""]
     s = cfg.seleccion
     L += [f"- Una ficha por caso de uso del reto (PDF sección 4), en orden y sobre el ranking oficial (posición 1 = mayor P). Un grupo no se repite entre casos de uso.",
