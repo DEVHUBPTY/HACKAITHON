@@ -2,9 +2,9 @@
 
 > **BORRADOR — métricas provisionales** · JUICIO PROVISIONAL DEL ASISTENTE, NO HUMANO (D-101): se rehace a mano en C-09; no reportar como juicio de una persona.
 
-Generada el 2026-10-09T03:07:52Z desde el commit `2a7af9d` con `poetry run python -m scripts.pagina_metricas`. Ninguna cifra está escrita a mano: cada una sale del archivo que se indica. Toda proporción lleva numerador, denominador e IC 95 %.
+Generada el 2026-10-09T03:57:14Z desde el commit `447106f` con `poetry run python -m scripts.pagina_metricas`. Ninguna cifra está escrita a mano: cada una sale del archivo que se indica. Toda proporción lleva numerador, denominador e IC 95 %.
 
-**Origen del juicio:** `humano` = lo decidió una persona (las etiquetas de clasificación y agrupación las propone el asistente y una persona las revisa y aprueba una por una, D-85) · **PROVISIONAL** = lo decidió el asistente (D-101) y se rehace en C-09 · `automático` = automático (sin juicio humano: lo calcula el código contra una referencia).
+**Origen del juicio:** `humano` = lo decidió una persona (las etiquetas de clasificación y agrupación las propone el asistente y una persona las revisa y aprueba una por una) · **PROVISIONAL** = lo decidió el asistente y lo debe rehacer una persona · `automático` = automático (sin juicio humano: lo calcula el código contra una referencia).
 
 ## Resumen
 
@@ -41,7 +41,7 @@ Pruebas de aceptación T01–T10: Pasa 9, Pendiente 1 (de 10). Es una matriz de 
 | T07 · Fuente que exige ignorar instrucciones | Pasa | 25 de 25 pruebas pasan |
 | T08 · Caso de prioridad alta | Pasa | 49 de 49 pruebas pasan |
 | T09 · Brief editorial o boletín bancario | Pasa | 37 de 37 pruebas pasan |
-| T10 · Sin internet durante la demo | Pendiente | 9 de 9 pruebas pasan; pendiente el ensayo C-04 con Wi-Fi apagado y su evidencia en Notion; el test cubre el recorrido con snapshot y caché |
+| T10 · Sin internet durante la demo | Pendiente | 9 de 9 pruebas pasan; pendiente el ensayo con Wi-Fi apagado y su evidencia en Notion; el test cubre el recorrido con snapshot y caché |
 
 ## Benchmark de desarrollo: citas y abstención
 
@@ -56,7 +56,7 @@ Pruebas de aceptación T01–T10: Pasa 9, Pendiente 1 (de 10). Es una matriz de 
 | Borradores: afirmaciones factuales que pasan el validador | 100.0 % | 43 de 43 | 100.0 % – 100.0 % (Wilson 91.8 % – 100.0 %) | automático | `metricas.json` | fallos: ninguno |
 | Borradores: inferencias e hipótesis con base válida | 100.0 % | 11 de 11 | 100.0 % – 100.0 % (Wilson 74.1 % – 100.0 %) | automático | `metricas.json` | fallos: ninguno |
 
-- Umbral de Consulta (0.840): con 30 preguntas fuera del corpus escritas por una persona (C-12) la abstención correcta es 24/30 = 80 % (IC95 62.7 %–90.5 %, cumple la meta justo) y la abstención incorrecta 0/10; recalibrar a 0.857 rechaza preguntas legítimas del corpus y no se adoptó (docs/consulta.md, C-12).
+- Umbral de Consulta (0.840): con 30 preguntas fuera del corpus escritas por una persona la abstención correcta es 24/30 = 80 % (IC95 62.7 %–90.5 %, cumple la meta justo) y la abstención incorrecta 0/10; recalibrar a 0.857 rechaza preguntas legítimas del corpus y no se adoptó (docs/consulta.md).
 
 ## Búsqueda: semántica contra BM25
 
@@ -134,7 +134,7 @@ Pruebas de aceptación T01–T10: Pasa 9, Pendiente 1 (de 10). Es una matriz de 
 
 - Meta sugerida: mediana ≤ 15 s. Consulta: cumple; paquete por tipo: editorial no cumple, investigacion cumple.
 - Costo total estimado de la corrida de 12 paquetes: USD 0.0408; tokens totales 76825 de entrada y 14759 de salida.
-- **Supuesto del proyecto (D-97):** el contador de costo sobreestima ≈ 2.6 × respecto de la consola del proveedor (una comparación puntual); las cifras de USD son una cota superior conservadora, no la factura.
+- **Supuesto del proyecto:** el contador de costo sobreestima ≈ 2.6 × respecto de la consola del proveedor (una comparación puntual); las cifras de USD son una cota superior conservadora, no la factura.
 - Contador acumulado del proyecto: 1846393 tokens y USD 0.8712 (local, ignorado por git).
 
 ## Rechazos del validador
@@ -178,7 +178,7 @@ Pruebas de aceptación T01–T10: Pasa 9, Pendiente 1 (de 10). Es una matriz de 
 ## Reproducibilidad
 
 - Registro del manifest: commit `3df0978`, árbol con cambios al registrar: **sí**; corte del snapshot 2026-10-08T03:35:18Z; hash del snapshot `4503952d97fb`.
-- Commit desde el que se generó: `2a7af9d`. El registro es de otro commit: confirmar con `--verificar` antes de afirmar que se reproduce.
+- Commit desde el que se generó: `447106f`. El registro es de otro commit: confirmar con `--verificar` antes de afirmar que se reproduce.
 - LLM: deepseek/deepseek-flash, temperatura 0.0, semilla 0; embeddings minilm y e5 con revisión fijada.
 - Salidas deterministas con hash: 33. Borradores en caché: sin_cache 9, completo 1, con_vacios 2.
 - Comprobación: `HF_HUB_OFFLINE=1 poetry run python -m scripts.reproducir --verificar` (sale con 1 si algo difiere).
@@ -199,7 +199,7 @@ Pruebas de aceptación T01–T10: Pasa 9, Pendiente 1 (de 10). Es una matriz de 
 | `outputs/agrupacion.json` | a479628 | 2026-10-06T19:49:01-05:00 | — |
 | `outputs/sensibilidad.json` | 15e7e31 | 2026-10-08T15:13:45-05:00 | 2026-10-08T03:35:18Z |
 | `outputs/puntaje.json` | 15e7e31 | 2026-10-08T15:13:45-05:00 | — |
-| `outputs/pruebas.csv` | 81e3946 | 2026-10-08T22:00:48-05:00 | — |
+| `outputs/pruebas.csv` | 447106f | 2026-10-08T22:57:14-05:00 | — |
 | `data/manifest.json` | ccb2a8e | 2026-10-07T23:07:47-05:00 | 2026-10-08T03:35:18Z |
 | `eval/etiquetas.csv` | fdfe422 | 2026-10-08T09:59:37-05:00 | — |
 | `docs/prueba_tiempo.md` | bf39099 | 2026-10-08T17:52:00-05:00 | — |
@@ -209,18 +209,13 @@ Pruebas de aceptación T01–T10: Pasa 9, Pendiente 1 (de 10). Es una matriz de 
 ## Limitaciones
 
 - **Precision@5 con n = 5 temas** en 1 fecha de corte, sin especialista editorial: es exploratoria. Los IC (sistema 0.000–0.434; baseline 0.036–0.625) se solapan: no hay diferencia demostrable. Los temas de un mismo corte no son independientes (nota de la fuente).
-- **Selección ciega solo a medias:** quien eligió los temas conocía la selección y el resultado anteriores (revisión D-78 de E1-19). No es la selección independiente de un editor.
-- **Juicios provisionales del asistente (D-101), pendientes de C-09:** secciones: Revisión humana: personas y revisor provisional. Se rehacen a mano; hasta entonces no se reportan como juicio de una persona.
-- **Recalcular tras C-10:** cualquier mejora de ranking, clasificación o generación cambia estas cifras; hay que volver a correr los módulos de `eval/` y regenerar esta página (nueva corrida).
+- **Selección ciega solo a medias:** quien eligió los temas conocía la selección y el resultado anteriores. No es la selección independiente de un editor.
+- **Juicios provisionales del asistente:** secciones: Revisión humana: personas y revisor provisional. Los rehace una persona; hasta entonces no se reportan como juicio humano.
+- **Recalcular tras cada cambio:** cualquier mejora de ranking, clasificación o generación cambia estas cifras; hay que volver a correr los módulos de `eval/` y regenerar esta página (nueva corrida).
 - **Benchmark de desarrollo (n = 40 consultas):** El benchmark de desarrollo se construyó con el equipo y las reglas por patrón de la consulta se redactaron viendo esas mismas consultas: las cifras de abstención son optimistas, no independientes. n es pequeño (decenas de consultas): los intervalos son anchos y las metas son orientativas.
 - **Baselines:** el veredicto «sin diferencia demostrable» significa que los IC se solapan, no que los métodos sean iguales.
-- **Ahorro de tiempo: no medido.** Pruebas realizadas: 0 (`docs/prueba_tiempo.md`); mide a una persona y queda para C-09.
-- **Costo:** el contador sobreestima ≈ 2.6 × (supuesto del proyecto, D-97); las cifras de USD son cota superior.
+- **Ahorro de tiempo: no medido.** Pruebas realizadas: 0 (`docs/prueba_tiempo.md`); mide a una persona y queda pendiente.
+- **Costo:** el contador sobreestima ≈ 2.6 × (supuesto del proyecto); las cifras de USD son cota superior.
 - **Revisión humana:** sin casos decididos por una persona; las tasas humanas están en «sin datos».
-- **SBP (D-116):** la fuente D se versiona con riesgo aceptado (el aviso legal de la SBP restringe la reproducción y la redistribución sin autorización escrita). Esta página no usa cifras de la SBP, pero si el repositorio o el paquete de entrega se hacen públicos hay que pedir la autorización o retirar esos valores.
+- **SBP:** la fuente D se versiona con riesgo aceptado (el aviso legal de la SBP restringe la reproducción y la redistribución sin autorización escrita). Esta página no usa cifras de la SBP, pero si el repositorio o el paquete de entrega se hacen públicos hay que pedir la autorización o retirar esos valores.
 - No se infiere audiencia, rentabilidad ni reducción de riesgo; un titular es lo que un medio reporta, no un hecho.
-
-## Preguntas abiertas
-
-1. **¿Se publica ya en Notion como borrador o se espera a C-09 y C-10?** Recomendación: publicarla una vez ahora marcada «BORRADOR — métricas provisionales» y actualizar esa misma página al regenerarla; así el equipo ve el estado real y nada provisional se presenta como humano.
-2. **¿Qué hacer si una salida de `eval/` es anterior a un cambio de la base?** La sección «Coherencia entre fuentes» lo avisa pero no lo corrige. Recomendación: antes de la entrega, volver a correr los módulos de `eval/` y regenerar la página en una sola pasada (condición de C-02 tras C-10).
