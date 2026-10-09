@@ -13,8 +13,8 @@ Todo número de ``docs/ia_vs_baseline.md`` sale de este módulo (``outputs/ia_vs
 * **Búsqueda:** Recall@5 por IDs de la búsqueda semántica contra BM25 sobre el benchmark de desarrollo (las reglas de búsqueda se
   escribieron viendo esas consultas), con bootstrap pareado sobre consultas.
 * **Ranking:** el ranking es código determinista (reglas v1.3), no un LLM. Su utilidad (Precision@5 contra la selección de un
-  editor independiente) **no se mide aquí**: ``eval/seleccion_editor.csv`` existe pero es una selección **provisional del asistente**
-  (D-101; se rehace a mano en C-09) y su Precision@5 está en ``outputs/precision_at_5.json``, rotulada como tal. Aquí solo
+  editor independiente) **no se mide aquí**: está en ``outputs/precision_at_5.json``, con el origen de la selección de
+  ``eval/seleccion_editor.csv`` (persona o provisional del asistente) declarado en ese archivo y en el motivo. Aquí solo
   hay hechos descriptivos: solapamiento del top 5 con el de «más reciente primero» y ejemplos de grupos que difieren.
 
 **Veredicto (D-21/D-57):** una diferencia está «demostrada» solo si el IC95 de la diferencia pareada excluye el cero.
@@ -526,7 +526,18 @@ def _con_veredicto(d: dict[str, Any]) -> dict[str, Any]:
     return {**d, "veredicto": veredicto_por_ic(d.get("ic95_exacto"))}
 
 
-def evaluar_ranking(ruta_base: Path, sensibilidad: Path = RAIZ / "outputs" / "sensibilidad.json") -> dict[str, Any]:
+def _motivo_ranking(precision: Path) -> str:
+    """Por qué la utilidad del ranking no se mide aquí, según quién hizo la selección del editor (``outputs/precision_at_5.json``)."""
+    humana = precision.exists() and json.loads(precision.read_text(encoding="utf-8")).get("juicio_humano") is True
+    if humana:
+        return ("la selección de eval/seleccion_editor.csv la hizo una persona; su Precision@5 (exploratoria) está en "
+                "outputs/precision_at_5.json y aquí no se repite.")
+    return ("eval/seleccion_editor.csv existe pero es una selección provisional del asistente (D-101), no de un editor; "
+            "su Precision@5 está en outputs/precision_at_5.json y se rehace a mano en C-09.")
+
+
+def evaluar_ranking(ruta_base: Path, sensibilidad: Path = RAIZ / "outputs" / "sensibilidad.json",
+                    precision: Path = RAIZ / "outputs" / "precision_at_5.json") -> dict[str, Any]:
     """Hechos descriptivos del ranking frente a «más reciente primero». No mide utilidad: eso exige la selección de un editor (E1-19)."""
     from src import db
 
@@ -567,8 +578,7 @@ def evaluar_ranking(ruta_base: Path, sensibilidad: Path = RAIZ / "outputs" / "se
     sens = json.loads(sensibilidad.read_text(encoding="utf-8")) if sensibilidad.exists() else None
     return {
         "utilidad_medible": False,
-        "motivo": "eval/seleccion_editor.csv existe pero es una selección provisional del asistente (D-101), no de un editor; "
-                  "su Precision@5 está en outputs/precision_at_5.json y se rehace a mano en C-09.",
+        "motivo": _motivo_ranking(precision),
         "baseline": "grupos ordenados solo por publicación más reciente (PDF sección 8); empate por ID ascendente",
         "grupos": len(puntajes),
         "top": TAMANO_TOP,

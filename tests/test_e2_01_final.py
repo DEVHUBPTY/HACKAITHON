@@ -46,6 +46,15 @@ def test_la_evaluacion_del_ranking_exige_una_base_editorial(base_banca, base_edi
     assert ia_vs_baseline.evaluar_ranking(base_editorial)
 
 
+def test_el_motivo_del_ranking_sigue_el_origen_de_la_seleccion_del_editor(base_editorial, tmp_path) -> None:
+    humana, provisional = tmp_path / "humana.json", tmp_path / "provisional.json"
+    humana.write_text('{"origen_juicio": "humano", "juicio_humano": true}', encoding="utf-8")
+    provisional.write_text('{"origen_juicio": "asistente_provisional (D-101)", "juicio_humano": false}', encoding="utf-8")
+    con_persona = ia_vs_baseline.evaluar_ranking(base_editorial, precision=humana)["motivo"]
+    assert "una persona" in con_persona and "provisional" not in con_persona
+    assert "provisional del asistente" in ia_vs_baseline.evaluar_ranking(base_editorial, precision=provisional)["motivo"]
+
+
 def test_precision_at_5_exige_una_base_editorial(base_banca, base_editorial) -> None:
     con = db.conectar(base_banca, solo_lectura=True)
     with pytest.raises(db.ModalidadDistinta, match=r"src\.puntaje --modalidad editorial"):
