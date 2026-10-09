@@ -4,11 +4,41 @@
 
 ## Descripción
 
-Copiloto que convierte titulares públicos (TVN RSS y GDELT) y datos oficiales (Banco Mundial, USGS, SBP) en una bandeja de temas priorizados, fichas de evidencia y borradores para una decisión humana.
+Copiloto que convierte titulares públicos (TVN RSS y GDELT) y datos oficiales (Banco Mundial, USGS, SBP) en una bandeja de temas priorizados, fichas de evidencia y borradores para una decisión humana. Responde al reto «De la señal a la decisión» de TVN Media ([`docs/reto_TVN.pdf`](docs/reto_TVN.pdf)).
 
 - Modalidad principal: editorial (TVN). Extensión: banca, como configuración sobre el mismo núcleo.
 - Todo lo que produce el sistema es un **borrador**. Nada se publica.
 - Principio rector: no afirmar más de lo que la evidencia permite, y demostrarlo cita por cita.
+
+> **Jurado: empiece por la [Guía para el jurado](docs/guia_del_jurado.md).** Recorre, en orden, el reto, las 7 etapas con su módulo, pantalla y test, los casos de uso CU-01 a CU-05, la puntuación, la IA y sus controles, la seguridad, los datos, cómo correr todo, las pruebas y métricas, la evaluación reproducible y las limitaciones.
+
+## Inicio rápido
+
+```bash
+poetry install                                       # Python 3.11; dependencias fijadas en poetry.lock
+poetry run streamlit run app.py                      # la app: «Cómo funciona» y las 7 etapas (/cargar … /revisar) más la Consulta
+poetry run pytest -v                                 # todas las pruebas
+poetry run python -m scripts.reproducir --verificar  # reconstruye todo desde data/raw/ y compara con el manifest
+```
+
+## Mapa de la documentación
+
+| Documento | Para qué |
+|---|---|
+| [`docs/guia_del_jurado.md`](docs/guia_del_jurado.md) | Punto de entrada para evaluar el prototipo (secciones 1 a 11) |
+| [`docs/demo.md`](docs/demo.md) | Guion cronometrado de la demo y pruebas dinámicas del jurado |
+| [`docs/fallback.md`](docs/fallback.md) | Funcionamiento sin internet (T10) y caché de borradores |
+| [`docs/salidas.md`](docs/salidas.md) | Campos exactos del paquete editorial, del paquete de investigación y del boletín bancario |
+| [`docs/ia_vs_baseline.md`](docs/ia_vs_baseline.md) | IA contra su línea base en clasificación, agrupación, búsqueda y ranking |
+| [`docs/eleccion_modelo.md`](docs/eleccion_modelo.md) | Modelos locales medidos y por qué se descartaron |
+| [`docs/protocolo_evaluacion.md`](docs/protocolo_evaluacion.md) | Cómo se mide cada métrica de la sección 9.1 |
+| [`outputs/pagina_metricas.md`](outputs/pagina_metricas.md) | Métricas generadas desde `outputs/`, con n, IC 95 % y origen del juicio |
+| [`outputs/fichas_trazables/indice.md`](outputs/fichas_trazables/indice.md) | Las cinco fichas trazables, una por caso de uso |
+| [`docs/reproducibilidad.md`](docs/reproducibilidad.md) | Qué se reproduce por hash y qué no |
+| [`docs/fuentes.md`](docs/fuentes.md) · [`data/diccionario.md`](data/diccionario.md) · [`data/README.md`](data/README.md) | Fuentes y licencias, diccionario de datos y receta del snapshot |
+| [`docs/parametros.md`](docs/parametros.md) | Origen y validación de cada número de `config/` |
+| [`docs/notion.md`](docs/notion.md) | Exportación de casos a Notion |
+| [`docs/pendientes_humanos.md`](docs/pendientes_humanos.md) | Lo que debe hacer una persona antes de la entrega |
 
 Las reglas del proyecto están en `CLAUDE.md`; las tareas, en `specs/`.
 
@@ -22,11 +52,11 @@ poetry install            # instala las dependencias fijadas en poetry.lock
 cp .env.example local.env # completar localmente; local.env no se versiona
 ```
 
-Variables de `local.env`: `LLM_PROVIDER`, `OLLAMA_HOST`, `OLLAMA_MODEL`, `DEEPSEEK_API_KEY`. Nunca se registran valores de claves en los logs.
+Variables de `local.env`: `LLM_PROVIDER`, `OLLAMA_HOST`, `OLLAMA_MODEL`, `DEEPSEEK_API_KEY` y `NOTION_TOKEN` (opcional, sincronización con Notion). Nunca se registran valores de claves en los logs. Para leer la caché de borradores no hace falta la clave.
 
 ## Ejecución
 
-La demo corre en local; no hay despliegue.
+La demo corre en local; no hay despliegue. Recorrido del pitch: [`docs/demo.md`](docs/demo.md); sin internet: [`docs/fallback.md`](docs/fallback.md).
 
 Disponibles hoy (receta del snapshot en `data/README.md`):
 
@@ -46,14 +76,11 @@ poetry run python -m eval.ia_vs_baseline             # IA contra su línea base 
 poetry run python -m eval.sustento                   # validez de sustento, cuando una persona completó outputs/revision_sustento.csv (E1-18)
 poetry run python -m scripts.pagina_metricas           # página de métricas generada desde outputs/ → outputs/pagina_metricas.md, lista para Notion (C-02)
 poetry run python -m scripts.reproducir --verificar  # reconstruye todo desde data/raw/ y compara con el manifest (E1-20)
-```
-
-Previstos; cada uno estará disponible cuando se implemente su spec:
-
-```bash
 poetry run streamlit run app.py                      # interfaz (E1-15)
+poetry run python -m scripts.preparar_demo           # crea data/demo.duckdb (snapshot + caso sintético de CU-04; fuera de git) (C-06)
+poetry run python -m scripts.calentar_cache          # SOLO CON RED: borradores del LLM a data/cache_llm/ (E1-14); --verificar comprueba la caché sin red
 .venv/bin/streamlit run app.py -- --demo            # modo demo con data/demo.duckdb (C-06)
-poetry run python -m scripts.verificar_offline       # chequeo antes del pitch (C-06)
+poetry run python -m scripts.verificar_offline       # chequeo antes del pitch, sin red (C-06)
 ```
 
 ## Reproducir en una máquina nueva (E1-20)
@@ -87,8 +114,11 @@ poetry run python -m eval.run_benchmark --archivo <ruta-al-archivo.jsonl> --sali
 ## Pruebas
 
 ```bash
-poetry run pytest -v
+poetry run pytest -v                                 # todas las pruebas
+poetry run python -m eval.reporte_pruebas            # T01–T10 por marcador → outputs/pruebas.csv (base Pruebas de Notion)
 ```
+
+Matriz T01–T10 con su estado y su archivo de test: [`outputs/pruebas.csv`](outputs/pruebas.csv) y la sección 9 de la [Guía para el jurado](docs/guia_del_jurado.md#9--pruebas-de-aceptación-y-métricas).
 
 ## Datos
 

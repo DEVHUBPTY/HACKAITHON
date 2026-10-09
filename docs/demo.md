@@ -93,7 +93,7 @@ Pasada ejecutada el 2026-10-06 con el snapshot real (`data/senales.duckdb`), sin
   poetry run python -m scripts.calentar_cache --modalidad banca --base "$BANCA"             # genera (con red)
   poetry run python -m scripts.calentar_cache --modalidad banca --base "$BANCA" --verificar # sin red
   ```
-- [ ] `poetry run python -m scripts.capturas_demo` (capturas de respaldo; C-06)
+- [ ] Capturas de respaldo de cada pantalla (están en la página «Presentación para el Pitch Day» de Notion)
 - [ ] Las fichas exportadas y actualizadas en Notion (E1-16)
 - [ ] Ensayo completo cronometrado (≤ 4:00)
 
