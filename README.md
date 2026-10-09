@@ -14,12 +14,17 @@ Copiloto que convierte titulares públicos (TVN RSS y GDELT) y datos oficiales (
 
 ## Inicio rápido
 
+Las bases de trabajo (`data/*.duckdb`) no se versionan (D-72): se generan con estos comandos, en este orden.
+
 ```bash
 poetry install                                       # Python 3.11; dependencias fijadas en poetry.lock
-poetry run streamlit run app.py                      # la app: «Cómo funciona» y las 7 etapas (/cargar … /revisar) más la Consulta
+poetry run python -m scripts.reproducir --verificar  # crea data/senales.duckdb desde lo versionado y compara con el manifest (≈ 1 min)
+poetry run python -m scripts.preparar_demo           # crea data/demo.duckdb (la base + el caso sintético de CU-04)
+.venv/bin/streamlit run app.py -- --demo            # la app en modo demo: «Cómo funciona», las 7 etapas y la Consulta
 poetry run pytest -v                                 # todas las pruebas
-poetry run python -m scripts.reproducir --verificar  # reconstruye todo desde data/raw/ y compara con el manifest
 ```
+
+`poetry run streamlit run app.py` abre la app sobre la base real, sin el caso sintético. `data/revision.duckdb` (el registro de revisión) lo crea la app la primera vez que se revisa un caso; el historial de los 5 casos ya está exportado en [`outputs/fichas_trazables/`](outputs/fichas_trazables/).
 
 ## Mapa de la documentación
 
