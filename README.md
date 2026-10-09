@@ -110,7 +110,7 @@ poetry run python -m src.generacion --grupo GRP-… --modalidad banca  # boletí
 poetry run python -m src.puntaje                                     # volver al ranking editorial
 ```
 
-- Para la demo sin red, los boletines de banca también salen de la caché: se calientan con red con `poetry run python -m scripts.calentar_cache --modalidad banca` (detalle en [`docs/demo.md`](docs/demo.md)).
+- Para la demo sin red, los boletines de banca también salen de la caché. Se calientan con red con `scripts.calentar_cache --modalidad banca --base <copia de banca>`; el comando completo, que primero obtiene esa copia, está en [`docs/demo.md`](docs/demo.md) («La noche anterior»).
 
 ## Reproducir en una máquina nueva (E1-20)
 
