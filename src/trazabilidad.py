@@ -423,7 +423,10 @@ def verificar_ficha(
 
     # --- la revisión del asistente se ve como provisional (D-112); la de una persona nunca se rotula así (C-09)
     if revision_provisional is not None and marca_provisional:
-        en_textos = any(marca_provisional in t for t in textos_extra)
+        if revision_provisional:
+            en_textos = any(marca_provisional in t for t in textos_extra)
+        else:                              # con una persona vigente, las filas del asistente siguen en el historial como historia rotulada (D-112)
+            en_textos = any(marca_provisional in t for t in map(_sin_filas_de_historial, textos_extra))
         en_notion = fila_notion is not None and marca_provisional in fila_notion.get("Revisor", "")
         if revision_provisional:
             correcto = en_textos and (fila_notion is None or en_notion)
@@ -434,6 +437,20 @@ def verificar_ficha(
 
 
 # ---------------------------------------------------------------------------------------------------- informe
+
+
+TITULO_HISTORIAL = "## Historial de revisión"   # el de templates/caso.md.j2
+
+
+def _sin_filas_de_historial(texto: str) -> str:
+    """El texto sin las filas de la tabla del historial de revisión (el resto, incluido lo que siga a la tabla, se conserva)."""
+    fuera, en_historial = [], False
+    for linea in texto.splitlines():
+        if linea.startswith("## "):
+            en_historial = linea.strip() == TITULO_HISTORIAL
+        if not (en_historial and linea.lstrip().startswith("|")):
+            fuera.append(linea)
+    return "\n".join(fuera)
 
 
 def _proporcion(ok: int, n: int, z: float) -> dict[str, Any]:

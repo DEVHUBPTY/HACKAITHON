@@ -485,6 +485,18 @@ def test_una_revision_humana_pasa_sin_la_marca_provisional(rev, base, tmp_path) 
     assert r.fallos() == [] and r.conteo("revision_provisional_visible") == (1, 1)
 
 
+def test_una_persona_que_retoma_un_caso_del_asistente_pasa_aunque_el_historial_conserve_las_filas_provisionales(rev, base, tmp_path) -> None:
+    # D-112: la fila del asistente queda como historia rotulada; la de la persona pasa a ser la vigente.
+    id_a, _, _ = _revisar(rev, base, h.G_COMPLETO, "suficiente", tmp_path)
+    rev.reabrir(id_a, "David Feng", "Revisión humana independiente")
+    rev.aceptar(id_a, "David Feng")
+    assert not rev.vigente_provisional(id_a)
+    e = exportar.exportar_caso(rev, id_a, tmp_path / "notion", tmp_path / "fichas.jsonl")
+    assert MARCA in e.markdown                                    # el historial sigue mostrando la fila provisional del asistente
+    r = _verificar_rotulo(rev, base, id_a, [e.markdown, *e.fila.values()], e.fila, provisional=False)
+    assert r.conteo("revision_provisional_visible") == (1, 1)
+
+
 def test_una_revision_humana_rotulada_como_provisional_es_un_fallo(rev, base, tmp_path) -> None:
     id_h = rev.abrir(h.G_COMPLETO, "editorial", "David Feng").id_caso
     rev.aceptar(id_h, "David Feng")
