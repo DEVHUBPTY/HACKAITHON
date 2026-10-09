@@ -30,6 +30,8 @@ Después de 1–3 regenerar la página de métricas: `poetry run python -m scrip
 
 ## C-04 · Ensayo sin Wi-Fi (cierra T10)
 
+**Hecho (2026-10-09):** Javier Acosta hizo el recorrido de la demo con el Wi-Fi apagado y declara que funcionó; `scripts.verificar_offline` dio VERDE (0 comprobaciones obligatorias fallidas). Sin captura adjunta.
+
 Con la red apagada:
 ```bash
 poetry run python -m scripts.verificar_offline

@@ -1,4 +1,3 @@
 # Pruebas de aceptación T01–T10 (E1-17). Lo que el test automatizado NO cubre y por qué la prueba sigue «Pendiente».
 # Al cerrar la causa (E2-02, C-04), se borra la entrada: no hace falta tocar código.
-pendientes:
-  T10: "pendiente el ensayo con Wi-Fi apagado y su evidencia en Notion; el test cubre el recorrido con snapshot y caché"
+pendientes: {}   # T10 se cerró el 2026-10-09: ensayo con el Wi-Fi apagado hecho por Javier Acosta (docs/pendientes_humanos.md, C-04)
