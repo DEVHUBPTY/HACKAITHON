@@ -4,7 +4,7 @@
 
 ## Descripción
 
-Copiloto que convierte titulares públicos (TVN RSS y GDELT) y datos oficiales (Banco Mundial, USGS, SBP) en una bandeja de temas priorizados, fichas de evidencia y borradores para una decisión humana. Responde al reto «De la señal a la decisión» de TVN Media ([`docs/reto_TVN.pdf`](docs/reto_TVN.pdf)).
+Copiloto que convierte titulares públicos (TVN RSS y GDELT) y datos oficiales (Banco Mundial, USGS, SBP) en una bandeja de temas priorizados, fichas de evidencia y borradores para una decisión humana. Responde al reto de TVN Media ([`docs/reto_TVN.pdf`](docs/reto_TVN.pdf)).
 
 - Modalidad principal: editorial (TVN). Extensión: banca, como configuración sobre el mismo núcleo.
 - Todo lo que produce el sistema es un **borrador**. Nada se publica.
@@ -82,6 +82,35 @@ poetry run python -m scripts.calentar_cache          # SOLO CON RED: borradores 
 .venv/bin/streamlit run app.py -- --demo            # modo demo con data/demo.duckdb (C-06)
 poetry run python -m scripts.verificar_offline       # chequeo antes del pitch, sin red (C-06)
 ```
+
+## Cómo usar cada modalidad
+
+Las dos modalidades usan el mismo núcleo; lo que cambia está en `config/modalidad_editorial.yaml` y `config/modalidad_banca.yaml`.
+
+**Editorial (TVN, principal).** Es la modalidad por defecto.
+
+- En la app: `poetry run streamlit run app.py` y recorrer las etapas 1 a 7 y la Consulta. «Modalidad» en la barra lateral ya viene en «Editorial (TVN)».
+- Por línea de comandos:
+
+```bash
+poetry run python -m src.puntaje                                     # ranking editorial
+poetry run python -m src.ficha --grupo GRP-… --modalidad editorial   # ficha de evidencia en Markdown
+poetry run python -m src.generacion --grupo GRP-…                    # paquete editorial (o de investigación si falta evidencia)
+```
+
+**Banca (extensión).** Analista de entorno: boletín de entorno sobre señales públicas, sin score de clientes ni recomendaciones financieras. Es la única modalidad que usa las series agregadas de la SBP.
+
+- En la app: elegir **«Banca»** en «Modalidad» de la barra lateral. La app calcula sola los puntajes de banca en una copia de sesión; la base original no se toca y al volver a «Editorial» se usa de nuevo.
+- Por línea de comandos (la base guarda los puntajes de una sola modalidad, así que primero se recalcula):
+
+```bash
+poetry run python -m src.puntaje --modalidad banca                   # ranking de banca
+poetry run python -m src.ficha --grupo GRP-… --modalidad banca       # ficha de banca
+poetry run python -m src.generacion --grupo GRP-… --modalidad banca  # boletín de entorno bancario
+poetry run python -m src.puntaje                                     # volver al ranking editorial
+```
+
+- Para la demo sin red, los boletines de banca también salen de la caché: se calientan con red con `poetry run python -m scripts.calentar_cache --modalidad banca` (detalle en [`docs/demo.md`](docs/demo.md)).
 
 ## Reproducir en una máquina nueva (E1-20)
 
