@@ -1,6 +1,6 @@
 # Auditoría final · condiciones previas (C-07)
 
-Generada el 2026-10-08T20:18:41Z desde el commit `c76eb50` con `poetry run python -m scripts.auditoria_final`. PASS: 11 · FALTA: 4 · NO VERIFICABLE AUTOMÁTICAMENTE: 10.
+Generada el 2026-10-09T03:00:40Z desde el commit `3ad50f6` con `poetry run python -m scripts.auditoria_final`. PASS: 12 · FALTA: 3 · NO VERIFICABLE AUTOMÁTICAMENTE: 10.
 
 | ID | Requisito | Estado | Depende de |
 |---|---|---|---|
@@ -23,7 +23,7 @@ Generada el 2026-10-08T20:18:41Z desde el commit `c76eb50` con `poetry run pytho
 | S10-09 | Checklist de admisión y autoevaluación con la rúbrica completos | **NO VERIFICABLE AUTOMÁTICAMENTE** | C-08 |
 | S10-10 | Paquete de datos redistribuible: snapshot, diccionario, manifest, licencias, benchmark dev, sin campos restringidos | **PASS** | — |
 | S10-11 | SBP (D-116): autorización escrita o CSV retirado si la entrega es pública | **NO VERIFICABLE AUTOMÁTICAMENTE** | decisión del dueño |
-| P-01 | Sin secretos en historial, archivos, capturas ni exportaciones | **FALTA** | C-11 |
+| P-01 | Sin secretos en historial, archivos, capturas ni exportaciones | **PASS** | C-11 |
 | P-02 | Toda afirmación de fichas.jsonl y de las exportaciones pasa el validador; ninguna cita falsa | **PASS** | C-01 |
 | P-03 | Ninguna acción, botón o estado «publicar» | **PASS** | — |
 | P-04 | Nada con redistribución restringida, ni bases de datos de la sesión, ni el benchmark reservado en el repositorio (D-72) | **PASS** | — |
@@ -59,19 +59,19 @@ Generada el 2026-10-08T20:18:41Z desde el commit `c76eb50` con `poetry run pytho
 ### S5-05 · PASS
 
 - **Requisito:** Al menos 5 fichas trazables, incluyendo un caso sin evidencia suficiente
-- **Evidencia:** outputs/fichas_trazables/trazabilidad.json: 5 fichas, todo_ok=True, insuficientes=['CASO-007', 'CASO-008', 'CASO-009']. Aviso: juicio_humano=False (revisión provisional hasta C-09).
+- **Evidencia:** outputs/fichas_trazables/trazabilidad.json: 5 fichas, todo_ok=True, insuficientes=['CASO-016', 'CASO-018', 'CASO-019']. Aviso: juicio_humano=False (revisión provisional hasta C-09).
 - **Cómo verificar o corregir:** poetry run python -m scripts.fichas_trazables
 
 ### S5-06 · FALTA
 
 - **Requisito:** Matriz de los 10 casos de prueba, todos en «Pasa»
-- **Evidencia:** outputs/pruebas.csv: 10 filas; faltan ninguna; no pasan: {'T09': 'Pendiente', 'T10': 'Pendiente'}.
+- **Evidencia:** outputs/pruebas.csv: 10 filas; faltan ninguna; no pasan: {'T10': 'Pendiente'}.
 - **Cómo verificar o corregir:** poetry run python -m eval.reporte_pruebas (tras terminar E2-02/C-04 para T09 y T10)
 
 ### S5-07 · FALTA
 
 - **Requisito:** Métricas de la ejecución final: página generada del commit vigente, sin borrador ni juicios provisionales
-- **Evidencia:** outputs/pagina_metricas.md (commit c76eb50): la página sigue marcada «BORRADOR»; hay métricas con juicio PROVISIONAL (D-101)
+- **Evidencia:** outputs/pagina_metricas.md (commit 3ad50f6): la página sigue marcada «BORRADOR»; hay métricas con juicio PROVISIONAL (D-101)
 - **Cómo verificar o corregir:** Tras C-09 y C-10: correr los eval/ y `poetry run python -m scripts.pagina_metricas`.
 
 ### S5-08 · NO VERIFICABLE AUTOMÁTICAMENTE
@@ -146,16 +146,16 @@ Generada el 2026-10-08T20:18:41Z desde el commit `c76eb50` con `poetry run pytho
 - **Evidencia:** El CSV se incluye en el paquete; autorización escrita de la SBP: pendiente de pedir (docs/fuentes.md). Decisión del dueño según la visibilidad.
 - **Cómo verificar o corregir:** Si el repo o el paquete son públicos: pedir la autorización o poner paquete.sbp.incluir: false y retirar data/processed/sbp_series.csv.
 
-### P-01 · FALTA
+### P-01 · PASS
 
 - **Requisito:** Sin secretos en historial, archivos, capturas ni exportaciones
-- **Evidencia:** Pendiente C-11: no existe outputs/auditoria_secretos.json (escaneo del historial de git, capturas y exportaciones). escaneo rápido de 532 archivos versionados: sin coincidencias; local.env/.env versionados: no.
-- **Cómo verificar o corregir:** Correr el escaneo de C-11 y guardar su resultado.
+- **Evidencia:** outputs/auditoria_secretos.json: limpio=True. escaneo rápido de 570 archivos versionados: sin coincidencias; local.env/.env versionados: no.
+- **Cómo verificar o corregir:** Resultado de C-11.
 
 ### P-02 · PASS
 
 - **Requisito:** Toda afirmación de fichas.jsonl y de las exportaciones pasa el validador; ninguna cita falsa
-- **Evidencia:** outputs/fichas.jsonl: 9 fichas (CASO-001, CASO-002, CASO-003, CASO-004, CASO-005, CASO-006, CASO-007, CASO-008, CASO-009); re-verificadas con el validador contra data/senales.duckdb: 9 de 9; exportaciones revisadas: 12 archivos; problemas: ninguno; informativo: ['CASO-006: descartado · su grupo ya no está en el snapshot actual (se conserva en el historial; sus 6 citas ya no se pueden resolver)'].
+- **Evidencia:** outputs/fichas.jsonl: 6 fichas (CASO-014, CASO-015, CASO-016, CASO-017, CASO-018, CASO-019); re-verificadas con el validador contra data/senales.duckdb: 6 de 6; exportaciones revisadas: 6 archivos; problemas: ninguno; informativo: ninguno.
 - **Cómo verificar o corregir:** poetry run python -m scripts.fichas_trazables --casos; poetry run python -m src.ficha --formato jsonl
 
 ### P-03 · PASS
@@ -167,7 +167,7 @@ Generada el 2026-10-08T20:18:41Z desde el commit `c76eb50` con `poetry run pytho
 ### P-04 · PASS
 
 - **Requisito:** Nada con redistribución restringida, ni bases de datos de la sesión, ni el benchmark reservado en el repositorio (D-72)
-- **Evidencia:** `git ls-files` (532 archivos): rutas restringidas (['data/raw/rss_tvn/', 'data/raw/gdelt/', 'data/raw/sbp/']) versionadas: ninguna; bases ['data/demo.duckdb', '*.duckdb', '*.duckdb.wal'] versionadas: ninguna; benchmark reservado versionado: ninguno.
+- **Evidencia:** `git ls-files` (570 archivos): rutas restringidas (['data/raw/rss_tvn/', 'data/raw/gdelt/', 'data/raw/sbp/']) versionadas: ninguna; bases ['data/demo.duckdb', '*.duckdb', '*.duckdb.wal'] versionadas: ninguna; benchmark reservado versionado: ninguno.
 - **Cómo verificar o corregir:** git rm --cached <ruta>
 
 ### P-05 · FALTA

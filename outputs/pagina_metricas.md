@@ -2,7 +2,7 @@
 
 > **BORRADOR — métricas provisionales** · JUICIO PROVISIONAL DEL ASISTENTE, NO HUMANO (D-101): se rehace a mano en C-09; no reportar como juicio de una persona.
 
-Generada el 2026-10-08T23:28:14Z desde el commit `4931bbf` con `poetry run python -m scripts.pagina_metricas`. Ninguna cifra está escrita a mano: cada una sale del archivo que se indica. Toda proporción lleva numerador, denominador e IC 95 %.
+Generada el 2026-10-09T03:00:35Z desde el commit `3ad50f6` con `poetry run python -m scripts.pagina_metricas`. Ninguna cifra está escrita a mano: cada una sale del archivo que se indica. Toda proporción lleva numerador, denominador e IC 95 %.
 
 **Origen del juicio:** `humano` = lo decidió una persona (las etiquetas de clasificación y agrupación las propone el asistente y una persona las revisa y aprueba una por una, D-85) · **PROVISIONAL** = lo decidió el asistente (D-101) y se rehace en C-09 · `automático` = automático (sin juicio humano: lo calcula el código contra una referencia).
 
@@ -28,19 +28,19 @@ Generada el 2026-10-08T23:28:14Z desde el commit `4931bbf` con `poetry run pytho
 
 ## Pruebas de aceptación
 
-Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de aceptación, no una muestra: no lleva IC.
+Pruebas de aceptación T01–T10: Pasa 9, Pendiente 1 (de 10). Es una matriz de aceptación, no una muestra: no lleva IC.
 
 | Prueba | Estado | Resultado observado |
 |---|---|---|
 | T01 · Archivo con fechas inválidas y nulos | Pasa | 58 de 58 pruebas pasan |
 | T02 · Tres registros del mismo evento | Pasa | 7 de 7 pruebas pasan |
 | T03 · Noticia antigua recirculada | Pasa | 14 de 14 pruebas pasan |
-| T04 · Cifra anual del Banco Mundial | Pasa | 73 de 73 pruebas pasan |
+| T04 · Cifra anual del Banco Mundial | Pasa | 76 de 76 pruebas pasan |
 | T05 · Dos afirmaciones incompatibles | Pasa | 28 de 28 pruebas pasan |
 | T06 · Consulta sin respuesta en el corpus | Pasa | 7 de 7 pruebas pasan |
 | T07 · Fuente que exige ignorar instrucciones | Pasa | 25 de 25 pruebas pasan |
 | T08 · Caso de prioridad alta | Pasa | 49 de 49 pruebas pasan |
-| T09 · Brief editorial o boletín bancario | Pendiente | 23 de 23 pruebas pasan; pendiente la parte del boletín bancario (E2-02); el test cubre solo el brief editorial |
+| T09 · Brief editorial o boletín bancario | Pasa | 37 de 37 pruebas pasan |
 | T10 · Sin internet durante la demo | Pendiente | 9 de 9 pruebas pasan; pendiente el ensayo C-04 con Wi-Fi apagado y su evidencia en Notion; el test cubre el recorrido con snapshot y caché |
 
 ## Benchmark de desarrollo: citas y abstención
@@ -135,7 +135,7 @@ Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de 
 - Meta sugerida: mediana ≤ 15 s. Consulta: cumple; paquete por tipo: editorial no cumple, investigacion cumple.
 - Costo total estimado de la corrida de 12 paquetes: USD 0.0408; tokens totales 76825 de entrada y 14759 de salida.
 - **Supuesto del proyecto (D-97):** el contador de costo sobreestima ≈ 2.6 × respecto de la consola del proveedor (una comparación puntual); las cifras de USD son una cota superior conservadora, no la factura.
-- Contador acumulado del proyecto: 83903 tokens y USD 0.0267 (local, ignorado por git).
+- Contador acumulado del proyecto: 1846393 tokens y USD 0.8712 (local, ignorado por git).
 
 ## Rechazos del validador
 
@@ -178,7 +178,7 @@ Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de 
 ## Reproducibilidad
 
 - Registro del manifest: commit `3df0978`, árbol con cambios al registrar: **sí**; corte del snapshot 2026-10-08T03:35:18Z; hash del snapshot `4503952d97fb`.
-- Commit desde el que se generó: `4931bbf`. El registro es de otro commit: confirmar con `--verificar` antes de afirmar que se reproduce.
+- Commit desde el que se generó: `3ad50f6` (árbol con cambios sin commitear). El registro es de otro commit: confirmar con `--verificar` antes de afirmar que se reproduce.
 - LLM: deepseek/deepseek-flash, temperatura 0.0, semilla 0; embeddings minilm y e5 con revisión fijada.
 - Salidas deterministas con hash: 33. Borradores en caché: sin_cache 9, completo 1, con_vacios 2.
 - Comprobación: `HF_HUB_OFFLINE=1 poetry run python -m scripts.reproducir --verificar` (sale con 1 si algo difiere).
@@ -199,7 +199,7 @@ Pruebas de aceptación T01–T10: Pasa 8, Pendiente 2 (de 10). Es una matriz de 
 | `outputs/agrupacion.json` | a479628 | 2026-10-06T19:49:01-05:00 | — |
 | `outputs/sensibilidad.json` | 15e7e31 | 2026-10-08T15:13:45-05:00 | 2026-10-08T03:35:18Z |
 | `outputs/puntaje.json` | 15e7e31 | 2026-10-08T15:13:45-05:00 | — |
-| `outputs/pruebas.csv` | e9bf8a3 | 2026-10-07T06:46:06-05:00 | — |
+| `outputs/pruebas.csv` | e9bf8a3 + cambios sin commitear | 2026-10-07T06:46:06-05:00 | — |
 | `data/manifest.json` | ccb2a8e | 2026-10-07T23:07:47-05:00 | 2026-10-08T03:35:18Z |
 | `eval/etiquetas.csv` | fdfe422 | 2026-10-08T09:59:37-05:00 | — |
 | `docs/prueba_tiempo.md` | bf39099 | 2026-10-08T17:52:00-05:00 | — |
