@@ -1,4 +1,4 @@
-# HackIAthon · De la señal a la decisión
+# HackIAthon
 
 > **Licencia.** El archivo `LICENSE` (MIT) cubre **solo el código**. Los datos conservan la licencia de su fuente (`docs/fuentes.md`): Banco Mundial CC BY 4.0; USGS dominio público; TVN y GDELT, solo metadatos y bajo sus condiciones; SBP de uso restringido (D-116), no para redistribución pública.
 
