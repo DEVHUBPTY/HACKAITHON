@@ -11,7 +11,7 @@ api:
   tamano_pagina_hijos: 100             # bloques por página al listar el cuerpo (máximo de Notion)
 base_de_datos:
   nombre: "Casos y evidencias"
-  id: "c67a0b58ac8b40b6bc11338395231378"   # la base (no es secreta); la integración debe estar compartida con ella
+  id: "63642672380182548a3301bd850cce7e"   # la base (no es secreta); la integración debe estar compartida con ella
 variable_token: "NOTION_TOKEN"
 # Tipo de cada propiedad de la base (esquema leído de Notion); deben cubrir exactamente exportacion.columnas de revision.yaml.
 # P y Rango son fórmulas de Notion y no se escriben.
